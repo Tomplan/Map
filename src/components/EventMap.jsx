@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import useEventMarkers from '../hooks/useEventMarkers';
 import 'leaflet/dist/leaflet.css';
 
 const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
@@ -8,6 +9,7 @@ const DEFAULT_ZOOM = 17;
 export default function EventMap() {
   const mapRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+  const { markers, loading } = useEventMarkers();
 
   useEffect(() => {
     const observer = new window.IntersectionObserver(
@@ -51,6 +53,11 @@ export default function EventMap() {
             attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
             url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png"
           />
+          {!loading && markers.map(marker => (
+            <Marker key={marker.id} position={[marker.lat, marker.lng]}>
+              <Popup>{marker.label}</Popup>
+            </Marker>
+          ))}
         </MapContainer>
       )}
     </div>
