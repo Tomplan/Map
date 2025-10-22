@@ -1,3 +1,4 @@
+import EventMap from './components/EventMap';
 export default App;
 import React from 'react';
 import Icon from '@mdi/react';
@@ -15,12 +16,17 @@ function App() {
   return (
     <main>
       <AccessibilityToggle />
+      <EventMap />
       <div>
         <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
+          {viteLogo ? (
+            <img src={viteLogo} className="logo" alt="Vite logo" />
+          ) : null}
         </a>
         <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
+          {reactLogo ? (
+            <img src={reactLogo} className="logo react" alt="React logo" />
+          ) : null}
         </a>
         <div className="flex justify-center my-4">
           <span className="inline-block">
@@ -28,7 +34,7 @@ function App() {
           </span>
         </div>
       </div>
-  <h1 className="bg-green-500 text-white p-4 rounded" aria-label="App Title">Vite + React</h1>
+      <h1 className="bg-green-500 text-white p-4 rounded" aria-label="App Title">Vite + React</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)} aria-label={`Count is ${count}`}>
           count is {count}

@@ -3,6 +3,9 @@ module.exports = {
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!react-leaflet|leaflet)/',
+  ],
   moduleFileExtensions: ['js', 'jsx'],
   moduleNameMapper: {
     '\\.(svg|png|jpg|jpeg|gif|webp|avif)$': '<rootDir>/__mocks__/fileMock.js',
