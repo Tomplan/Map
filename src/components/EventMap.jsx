@@ -5,8 +5,8 @@ import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import blueIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
 
-// Debug: Check if L.AwesomeMarkers is defined
-console.log('L.AwesomeMarkers:', L.AwesomeMarkers);
+// Orange marker icon
+import orangeIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
 
 
 // Fallback to public path if import fails
@@ -17,7 +17,7 @@ const resolvedIconUrl = typeof blueIconUrl === 'string' && blueIconUrl.length > 
 // Helper to create booth marker with number
 export function createBoothMarkerIcon(number) {
   return L.icon({
-    iconUrl: blueIconUrl,
+    iconUrl: orangeIconUrl,
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [0, -41],
@@ -31,7 +31,7 @@ export function createBoothMarkerIcon(number) {
 // Helper to create special marker with SVG
 export function createSpecialMarkerIcon(svgUrl) {
   return L.icon({
-    iconUrl: svgUrl,
+    iconUrl: orangeIconUrl,
     iconSize: [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [0, -41],
@@ -150,7 +150,7 @@ export default function EventMap() {
                 icon = createSpecialMarkerIcon(marker.svgUrl);
               } else {
                 icon = L.icon({
-                  iconUrl: blueIconUrl,
+                  iconUrl: orangeIconUrl,
                   iconSize: [25, 41],
                   iconAnchor: [12, 41],
                   popupAnchor: [0, -41],
