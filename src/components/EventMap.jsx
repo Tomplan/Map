@@ -1,5 +1,38 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.css';
+import 'leaflet.awesome-markers';
+import blueIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
+
+// Debug: Check if L.AwesomeMarkers is defined
+console.log('L.AwesomeMarkers:', L.AwesomeMarkers);
+
+
+// Fallback to public path if import fails
+const resolvedIconUrl = typeof blueIconUrl === 'string' && blueIconUrl.length > 0
+  ? blueIconUrl
+  : '/assets/icons/glyph-marker-icon-blue.svg';
+
+// Helper to create booth marker with number
+function createBoothMarkerIcon(number) {
+  return L.AwesomeMarkers.icon({
+    icon: 'fa-number', // Placeholder, will be replaced with number
+    markerColor: 'blue',
+    prefix: 'fa',
+    extraClasses: `booth-marker booth-number-${number}`,
+  });
+}
+
+// Helper to create special marker with mdi glyph
+function createSpecialMarkerIcon(mdiIcon) {
+  return L.AwesomeMarkers.icon({
+    icon: mdiIcon, // e.g., 'mdi-information', 'mdi-star'
+    markerColor: 'red',
+    prefix: 'mdi',
+    extraClasses: 'special-marker',
+  });
+}
 import useEventMarkers from '../hooks/useEventMarkers';
 import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
@@ -29,6 +62,7 @@ export default function EventMap() {
     return () => observer.disconnect();
   }, []);
 
+
   return (
     <div
       ref={mapRef}
@@ -57,11 +91,31 @@ export default function EventMap() {
             attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
             url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png"
           />
-          {!loading && markers.map(marker => (
-            <Marker key={marker.id} position={[marker.lat, marker.lng]}>
-              <Popup onOpen={() => trackMarkerView(marker.id)}>{marker.label}</Popup>
-            </Marker>
-          ))}
+          {!loading && markers.map(marker => {
+            let icon;
+            if (marker.type === 'booth-holder' && marker.number) {
+              icon = createBoothMarkerIcon(marker.number);
+            } else if (marker.type === 'special' && marker.mdiIcon) {
+              icon = createSpecialMarkerIcon(marker.mdiIcon);
+            } else {
+              // Fallback: use a default blue marker icon
+              icon = L.AwesomeMarkers.icon({
+                icon: 'info-sign',
+                markerColor: 'blue',
+                prefix: 'glyphicon',
+                extraClasses: 'default-marker',
+              });
+            }
+            return (
+              <Marker
+                key={marker.id}
+                position={[marker.lat, marker.lng]}
+                icon={icon}
+              >
+                <Popup onOpen={() => trackMarkerView(marker.id)}>{marker.label}</Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       )}
     </div>
