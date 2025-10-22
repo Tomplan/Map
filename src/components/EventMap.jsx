@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
@@ -91,6 +92,7 @@ const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
 const DEFAULT_ZOOM = 17;
 
 export default function EventMap() {
+  const [mapInstance, setMapInstance] = useState(null);
   const mapRef = useRef(null);
   const searchControlRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -113,10 +115,21 @@ export default function EventMap() {
     return () => observer.disconnect();
   }, []);
 
+  // Floating control panel handlers
+  const handleZoomIn = () => {
+    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() + 0.5);
+  };
+  const handleZoomOut = () => {
+    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() - 0.5);
+  };
+  const handleHome = () => {
+    if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
+  };
+
   return (
     <div
       ref={mapRef}
-      style={{ height: '400px', width: '100%' }}
+      style={{ height: '400px', width: '100%', position: 'relative' }}
       tabIndex={0}
       aria-label="Event Map"
       aria-describedby="event-map-instructions"
@@ -125,6 +138,24 @@ export default function EventMap() {
       <span id="event-map-instructions" className="sr-only">
         Use Tab to focus the map. Use mouse or touch to pan and zoom. Map controls are not keyboard accessible by default. For assistance, contact event staff.
       </span>
+      {/* Floating control panel */}
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button aria-label="Zoom in" onClick={handleZoomIn} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
+            <MdZoomIn style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
+          </span>
+        </button>
+        <button aria-label="Zoom out" onClick={handleZoomOut} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
+            <MdZoomOut style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
+          </span>
+        </button>
+        <button aria-label="Home" onClick={handleHome} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
+            <MdHome style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
+          </span>
+        </button>
+      </div>
       {isVisible && (
         <MapContainer
           center={DEFAULT_POSITION}
@@ -133,8 +164,12 @@ export default function EventMap() {
           maxZoom={21}
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={true}
+          zoomControl={false}
           aria-label="Event Map Container"
-          whenReady={() => trackMapInteraction('map_ready')}
+          whenReady={map => {
+            setMapInstance(map.target);
+            trackMapInteraction('map_ready');
+          }}
           onClick={() => trackMapInteraction('map_click')}
         >
           <TileLayer
