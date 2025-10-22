@@ -1,0 +1,11 @@
+{
+  "appTitle": "Evenementenkaart App",
+  "welcome": "Welkom op het evenement!",
+  "home": "Startpagina",
+  "admin": "Admin Dashboard",
+  "marker": {
+    "event": "Evenement",
+    "parking": "Parkeren",
+    "food": "Eten"
+  }
+}

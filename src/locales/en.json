@@ -1,0 +1,11 @@
+{
+  "appTitle": "Event Map App",
+  "welcome": "Welcome to the event!",
+  "home": "Home",
+  "admin": "Admin Dashboard",
+  "marker": {
+    "event": "Event",
+    "parking": "Parking",
+    "food": "Food"
+  }
+}
