@@ -101,4 +101,13 @@ Accessibility:
 - Accessibility is verified by automated tests in `src/App.a11y.test.js` (using React Testing Library).
 - Further improvements planned: high-contrast mode, scalable text, keyboard navigation, and ARIA roles.
 
+Offline Map Support:
+-------------------
+- The app uses a service worker (Workbox) to cache map tiles and static assets for offline use.
+- When offline, users see a notification and can still view previously loaded map areas and marker data.
+- Marker data is cached in localStorage and loaded automatically if offline.
+- To enable offline map tiles, the service worker caches requests to Carto Voyager tile URLs.
+- See `public/service-worker.js` for implementation details.
+- Offline status is indicated in the UI via a banner at the bottom of the screen.
+
 

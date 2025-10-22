@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react';
+import OfflineStatus from './components/OfflineStatus';
 import Icon from '@mdi/react';
 import './i18n';
 import reactLogo from './assets/react.svg';
@@ -13,6 +14,7 @@ function App() {
   const [count, setCount] = useState(0);
   return (
     <main>
+      <OfflineStatus />
       <Suspense fallback={<div>Loading accessibility options...</div>}>
         <AccessibilityToggle />
       </Suspense>
