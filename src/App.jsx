@@ -1,5 +1,6 @@
 export default App;
 import React from 'react';
+import Icon from '@mdi/react';
 import './i18n';
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
@@ -27,9 +28,9 @@ function App() {
           </span>
         </div>
       </div>
-      <h1 className="bg-green-500 text-white p-4 rounded">Vite + React</h1>
+  <h1 className="bg-green-500 text-white p-4 rounded" aria-label="App Title">Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
+        <button onClick={() => setCount((count) => count + 1)} aria-label={`Count is ${count}`}>
           count is {count}
         </button>
         <p>
