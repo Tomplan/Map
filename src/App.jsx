@@ -9,9 +9,34 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import { mdiHome } from '@mdi/js';
 
-const EventMap = lazy(() => import('./components/EventMap'));
+const EventMap = lazy(() => import('./components/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./components/FeedbackForm'));
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    // Log the full error object for diagnosis
+    console.error('ErrorBoundary caught:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ color: 'red', padding: '2rem' }}>
+          <h2>Something went wrong in a component.</h2>
+          <pre>{typeof this.state.error === 'string' ? this.state.error : JSON.stringify(this.state.error, null, 2)}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const [count, setCount] = useState(0);
   const [branding, setBranding] = useState({
@@ -20,7 +45,7 @@ function App() {
     fontFamily: 'Montserrat, sans-serif',
   });
   return (
-    <>
+    <ErrorBoundary>
       <BrandingBar {...branding} />
       <BrandingSettings onChange={setBranding} />
       <main>
@@ -64,7 +89,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
       </main>
-    </>
+    </ErrorBoundary>
   );
 }
 

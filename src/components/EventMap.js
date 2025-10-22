@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from 'react';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
@@ -45,16 +46,14 @@ export function createSpecialMarkerIcon(svgUrl) {
 
 function SearchControl({ markers }) {
   const map = useMap();
-  // Ensure markers is always an array
-  const safeMarkers = Array.isArray(markers) ? markers : [];
   React.useEffect(() => {
-    if (!map || !safeMarkers || safeMarkers.length === 0) return;
+    if (!map || !markers || markers.length === 0) return;
     // Remove previous search control if exists
     if (map._searchControl) {
       map.removeControl(map._searchControl);
     }
     // Create invisible markers for search layer
-    const markerLayer = L.layerGroup(safeMarkers.map(marker => {
+    const markerLayer = L.layerGroup(markers.map(marker => {
       const markerObj = L.marker([marker.lat, marker.lng], {
         title: marker.label,
         opacity: 0, // Make marker invisible
@@ -81,28 +80,13 @@ function SearchControl({ markers }) {
         map._searchControl = null;
       }
     };
-  }, [map, safeMarkers]);
+  }, [map, markers]);
   return null;
 }
 
-const MAP_LAYERS = [
-  {
-    key: 'carto',
-    name: 'Carto Voyager',
-    attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
-  },
-  {
-    key: 'esri',
-    name: 'Esri World Imagery',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  },
-];
-
 function EventMap() {
   const mapRef = useRef(null);
-  const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
+  const [activeLayer, setActiveLayer] = useState('carto');
   const [mapInstance, setMapInstance] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -120,9 +104,6 @@ function EventMap() {
   const handleHome = () => {
     if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
   };
-
-  // Ensure markers is always an array
-  const safeMarkers = Array.isArray(markers) ? markers : [];
 
   return (
     <div
@@ -153,17 +134,11 @@ function EventMap() {
             <MdHome style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
           </span>
         </button>
-        {/* Step 2: Layer selection dropdown */}
-        <select
-          aria-label="Select map layer"
-          value={activeLayer}
-          onChange={e => setActiveLayer(e.target.value)}
-          style={{ background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: '6px', fontSize: 14, marginTop: 8 }}
-        >
-          {MAP_LAYERS.map(layer => (
-            <option key={layer.key} value={layer.key}>{layer.name}</option>
-          ))}
-        </select>
+        <button aria-label="Switch map layer" onClick={() => setActiveLayer(activeLayer === 'carto' ? 'esri' : 'carto')} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <span style={{ fontSize: 12, fontWeight: 500 }}>
+            {activeLayer === 'carto' ? 'Esri' : 'Carto'}
+          </span>
+        </button>
       </div>
       {isVisible && (
         <MapContainer
@@ -181,16 +156,19 @@ function EventMap() {
           }}
           onClick={() => trackMapInteraction('map_click')}
         >
-          {/* Step 4: Render only selected layer */}
-          {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
+          {activeLayer === 'carto' ? (
             <TileLayer
-              key={layer.key}
-              attribution={layer.attribution}
-              url={layer.url}
+              attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
+              url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png"
             />
-          ))}
+          ) : (
+            <TileLayer
+              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+            />
+          )}
           {!loading && <SearchControl markers={markers} />}
-          {!loading && safeMarkers.map(marker => {
+          {!loading && markers.map(marker => {
             let icon;
             if (marker.type === 'booth-holder' && marker.number) {
               icon = createBoothMarkerIcon(marker.number);
@@ -208,22 +186,13 @@ function EventMap() {
                 className: 'default-marker'
               });
             }
-            // Ensure marker.label is a string
-            let labelText = '';
-            if (typeof marker.label === 'string') {
-              labelText = marker.label;
-            } else if (marker.label && marker.label.toString) {
-              labelText = marker.label.toString();
-            } else {
-              labelText = JSON.stringify(marker.label);
-            }
             return (
               <Marker
                 key={marker.id}
                 position={[marker.lat, marker.lng]}
                 icon={icon}
               >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                <Popup onOpen={() => trackMarkerView(marker.id)}>{marker.label}</Popup>
               </Marker>
             );
           })}
@@ -232,6 +201,4 @@ function EventMap() {
     </div>
   );
 }
-
-export default EventMap;
 
