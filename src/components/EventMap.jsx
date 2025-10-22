@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import useEventMarkers from '../hooks/useEventMarkers';
+import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
 
 const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
@@ -10,6 +11,7 @@ export default function EventMap() {
   const mapRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const { markers, loading } = useEventMarkers();
+  const { trackMarkerView, trackMapInteraction } = useAnalytics();
 
   useEffect(() => {
     const observer = new window.IntersectionObserver(
@@ -48,6 +50,8 @@ export default function EventMap() {
           style={{ height: '100%', width: '100%' }}
           scrollWheelZoom={true}
           aria-label="Event Map Container"
+          whenReady={() => trackMapInteraction('map_ready')}
+          onClick={() => trackMapInteraction('map_click')}
         >
           <TileLayer
             attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
@@ -55,7 +59,7 @@ export default function EventMap() {
           />
           {!loading && markers.map(marker => (
             <Marker key={marker.id} position={[marker.lat, marker.lng]}>
-              <Popup>{marker.label}</Popup>
+              <Popup onOpen={() => trackMarkerView(marker.id)}>{marker.label}</Popup>
             </Marker>
           ))}
         </MapContainer>
