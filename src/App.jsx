@@ -10,6 +10,7 @@ import './App.css'
 import { mdiHome } from '@mdi/js';
 
 import AccessibilityToggle from './components/AccessibilityToggle';
+import FeedbackForm from './components/FeedbackForm';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -43,6 +44,7 @@ function App() {
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
+      <FeedbackForm />
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
