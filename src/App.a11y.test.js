@@ -4,10 +4,11 @@ import '@testing-library/jest-dom';
 import App from './App';
 
 describe('Accessibility', () => {
-  test('main heading has correct role', () => {
+  test('main heading has correct role and ARIA label', () => {
     const { getByRole } = render(<App />);
     const heading = getByRole('heading', { level: 1 });
     expect(heading).toBeInTheDocument();
+    expect(heading).toHaveAttribute('aria-label', 'App Title');
   });
 
   test('page has a landmark', () => {
