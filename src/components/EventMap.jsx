@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, LayersControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
@@ -117,10 +117,18 @@ export default function EventMap() {
 
   // Floating control panel handlers
   const handleZoomIn = () => {
-    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() + 0.5);
+    if (mapInstance) {
+      const currentZoom = mapInstance.getZoom();
+      console.log('Zoom In Clicked. Current zoom:', currentZoom);
+      mapInstance.setZoom(Math.round(currentZoom + 1));
+    }
   };
   const handleZoomOut = () => {
-    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() - 0.5);
+    if (mapInstance) {
+      const currentZoom = mapInstance.getZoom();
+      console.log('Zoom Out Clicked. Current zoom:', currentZoom);
+      mapInstance.setZoom(Math.round(currentZoom - 1));
+    }
   };
   const handleHome = () => {
     if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
@@ -172,10 +180,20 @@ export default function EventMap() {
           }}
           onClick={() => trackMapInteraction('map_click')}
         >
-          <TileLayer
-            attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
-            url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager/{z}/{x}/{y}.png"
-          />
+          <LayersControl position="topright">
+            <LayersControl.BaseLayer checked name="Carto Voyager (nolabels)">
+              <TileLayer
+                attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
+                url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png"
+              />
+            </LayersControl.BaseLayer>
+            <LayersControl.BaseLayer name="Esri World Imagery">
+              <TileLayer
+                attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              />
+            </LayersControl.BaseLayer>
+          </LayersControl>
           {!loading && <SearchControl markers={markers} />}
           {!loading && markers.map(marker => {
             let icon;
