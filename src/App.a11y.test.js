@@ -4,6 +4,13 @@ import '@testing-library/jest-dom';
 import App from './App';
 
 describe('Accessibility', () => {
+  beforeAll(() => {
+    global.IntersectionObserver = class {
+      constructor() {}
+      observe() {}
+      disconnect() {}
+    };
+  });
   test('main heading has correct role and ARIA label', () => {
     const { getByRole } = render(<App />);
     const heading = getByRole('heading', { level: 1 });

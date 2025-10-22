@@ -4,6 +4,13 @@ import '@testing-library/jest-dom';
 import EventMap from './EventMap';
 
 describe('EventMap accessibility', () => {
+  beforeAll(() => {
+    global.IntersectionObserver = class {
+      constructor() {}
+      observe() {}
+      disconnect() {}
+    };
+  });
   test('map container is focusable and has correct ARIA attributes', () => {
     render(<EventMap />);
     const mapRegion = screen.getByRole('region', { name: /event map/i });

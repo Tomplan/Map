@@ -1,32 +1,33 @@
-import EventMap from './components/EventMap';
-export default App;
-import React from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import Icon from '@mdi/react';
 import './i18n';
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg';
+import './App.css';
 import { mdiHome } from '@mdi/js';
 
-import AccessibilityToggle from './components/AccessibilityToggle';
-import FeedbackForm from './components/FeedbackForm';
-
+const EventMap = lazy(() => import('./components/EventMap'));
+const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
+const FeedbackForm = lazy(() => import('./components/FeedbackForm'));
 function App() {
   const [count, setCount] = useState(0);
   return (
     <main>
-      <AccessibilityToggle />
-      <EventMap />
+      <Suspense fallback={<div>Loading accessibility options...</div>}>
+        <AccessibilityToggle />
+      </Suspense>
+      <Suspense fallback={<div>Loading map...</div>}>
+        <EventMap />
+      </Suspense>
       <div>
         <a href="https://vite.dev" target="_blank">
           {viteLogo ? (
-            <img src={viteLogo} className="logo" alt="Vite logo" />
+            <img src={viteLogo} className="logo" alt="Vite logo" loading="lazy" />
           ) : null}
         </a>
         <a href="https://react.dev" target="_blank">
           {reactLogo ? (
-            <img src={reactLogo} className="logo react" alt="React logo" />
+            <img src={reactLogo} className="logo react" alt="React logo" loading="lazy" />
           ) : null}
         </a>
         <div className="flex justify-center my-4">
@@ -44,10 +45,14 @@ function App() {
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
-      <FeedbackForm />
+      <Suspense fallback={<div>Loading feedback form...</div>}>
+        <FeedbackForm />
+      </Suspense>
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>
     </main>
   );
 }
+
+export default App;
