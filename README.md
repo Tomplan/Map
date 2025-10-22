@@ -48,4 +48,42 @@ Other Features
 •	Admins can set marker visibility by zoom level.
 •	Admin guide included in dashboard for easy reference.
 
+Additional Planned Features
+--------------------------
+
+Core Features:
+----------------
+Accessibility:
+- High-contrast mode, larger text options, keyboard navigation, and screen reader support for users with disabilities.
+
+Performance:
+- Lazy loading for map tiles and images.
+- Optimized data fetching and caching for smooth user experience.
+
+Analytics:
+- Track user interactions (e.g., most viewed markers, map usage) for event insights.
+
+Offline Support:
+- Cache basic map and marker data for limited offline use during the event.
+
+Custom Branding:
+- Event logo, theme colors, and custom fonts for a branded experience.
+
+Optional Features:
+------------------
+Notifications:
+- Event updates or announcements for users (e.g., schedule changes, emergency info).
+
+User Feedback:
+- Simple feedback form for users to report issues or suggest improvements.
+
+Localization:
+- The app UI will be in English and event content will be in Dutch for now. Future support for more languages is planned.
+
+Admin Collaboration:
+- Real-time updates or notifications when multiple admins are editing.
+
+Data Export:
+- Allow admins to export event data (attendance, booth visits, feedback) for post-event analysis.
+
 
