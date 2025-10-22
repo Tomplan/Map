@@ -4,6 +4,7 @@ import useEventMarkers from './useEventMarkers';
 describe('useEventMarkers', () => {
   beforeEach(() => {
     localStorage.clear();
+    jest.resetModules();
   });
 
   test('fetches and caches marker data', async () => {
@@ -23,5 +24,17 @@ describe('useEventMarkers', () => {
     const { result } = renderHook(() => useEventMarkers());
     expect(result.current.loading).toBe(false);
     expect(result.current.markers[0].label).toBe('Cached Marker');
+  });
+
+  test('uses cached markers when offline', async () => {
+    localStorage.setItem('eventMarkers', JSON.stringify([
+      { id: 77, lat: 1, lng: 1, label: 'Offline Marker' }
+    ]));
+    const originalNavigator = global.navigator;
+    global.navigator = { onLine: false };
+    const { result } = renderHook(() => useEventMarkers());
+    expect(result.current.loading).toBe(false);
+    expect(result.current.markers[0].label).toBe('Offline Marker');
+    global.navigator = originalNavigator;
   });
 });
