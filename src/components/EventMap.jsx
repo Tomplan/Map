@@ -1,10 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet.awesome-markers/dist/leaflet.awesome-markers.css';
-import 'leaflet.awesome-markers';
-import 'leaflet-search/dist/leaflet-search.src.css';
-import 'leaflet-search';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import blueIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
@@ -19,22 +15,30 @@ const resolvedIconUrl = typeof blueIconUrl === 'string' && blueIconUrl.length > 
   : '/assets/icons/glyph-marker-icon-blue.svg';
 
 // Helper to create booth marker with number
-function createBoothMarkerIcon(number) {
-  return L.AwesomeMarkers.icon({
-    icon: 'fa-number', // Placeholder, will be replaced with number
-    markerColor: 'blue',
-    prefix: 'fa',
-    extraClasses: `booth-marker booth-number-${number}`,
+export function createBoothMarkerIcon(number) {
+  return L.icon({
+    iconUrl: blueIconUrl,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [0, -41],
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 41],
+    className: `booth-marker booth-number-${number}`
   });
 }
 
-// Helper to create special marker with mdi glyph
-function createSpecialMarkerIcon(mdiIcon) {
-  return L.AwesomeMarkers.icon({
-    icon: mdiIcon, // e.g., 'mdi-information', 'mdi-star'
-    markerColor: 'red',
-    prefix: 'mdi',
-    extraClasses: 'special-marker',
+// Helper to create special marker with SVG
+export function createSpecialMarkerIcon(svgUrl) {
+  return L.icon({
+    iconUrl: svgUrl,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [0, -41],
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    shadowSize: [41, 41],
+    shadowAnchor: [13, 41],
+    className: 'special-marker'
   });
 }
 import useEventMarkers from '../hooks/useEventMarkers';
@@ -140,18 +144,22 @@ export default function EventMap() {
           {!loading && <SearchControl markers={markers} />}
           {!loading && markers.map(marker => {
             let icon;
-            if (marker.type === 'booth-holder' && marker.number) {
-              icon = createBoothMarkerIcon(marker.number);
-            } else if (marker.type === 'special' && marker.mdiIcon) {
-              icon = createSpecialMarkerIcon(marker.mdiIcon);
-            } else {
-              icon = L.AwesomeMarkers.icon({
-                icon: 'info-sign',
-                markerColor: 'blue',
-                prefix: 'glyphicon',
-                extraClasses: 'default-marker',
-              });
-            }
+              if (marker.type === 'booth-holder' && marker.number) {
+                icon = createBoothMarkerIcon(marker.number);
+              } else if (marker.type === 'special' && marker.svgUrl) {
+                icon = createSpecialMarkerIcon(marker.svgUrl);
+              } else {
+                icon = L.icon({
+                  iconUrl: blueIconUrl,
+                  iconSize: [25, 41],
+                  iconAnchor: [12, 41],
+                  popupAnchor: [0, -41],
+                  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                  shadowSize: [41, 41],
+                  shadowAnchor: [13, 41],
+                  className: 'default-marker'
+                });
+              }
             return (
               <Marker
                 key={marker.id}
