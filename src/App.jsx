@@ -5,13 +5,15 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import Icon from '@mdi/react';
 import { mdiHome } from '@mdi/js';
+
+import AccessibilityToggle from './components/AccessibilityToggle';
 
 function App() {
   const [count, setCount] = useState(0);
   return (
     <main>
+      <AccessibilityToggle />
       <div>
         <a href="https://vite.dev" target="_blank">
           <img src={viteLogo} className="logo" alt="Vite logo" />
