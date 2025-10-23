@@ -1,25 +1,35 @@
+
 import React, { useState } from 'react';
 
 export default function BrandingSettings({ onChange }) {
   const [logo, setLogo] = useState('');
   const [themeColor, setThemeColor] = useState('#2d3748');
   const [fontFamily, setFontFamily] = useState('Montserrat, sans-serif');
+  const [eventName, setEventName] = useState('Event Map');
 
   function handleLogoChange(e) {
     setLogo(e.target.value);
-    onChange({ logo: e.target.value, themeColor, fontFamily });
+    onChange({ logo: e.target.value, themeColor, fontFamily, eventName });
   }
   function handleThemeColorChange(e) {
     setThemeColor(e.target.value);
-    onChange({ logo, themeColor: e.target.value, fontFamily });
+    onChange({ logo, themeColor: e.target.value, fontFamily, eventName });
   }
   function handleFontFamilyChange(e) {
     setFontFamily(e.target.value);
-    onChange({ logo, themeColor, fontFamily: e.target.value });
+    onChange({ logo, themeColor, fontFamily: e.target.value, eventName });
+  }
+  function handleEventNameChange(e) {
+    setEventName(e.target.value);
+    onChange({ logo, themeColor, fontFamily, eventName: e.target.value });
   }
 
   return (
-    <form className="flex flex-col gap-4 p-4 bg-gray-100 rounded shadow-md max-w-md mx-auto" aria-label="Branding Settings">
+    <form className="flex flex-col gap-4 p-4 bg-gray-100 rounded shadow-md max-w-md mx-auto" aria-label="Branding Settings" style={{ marginTop: '64px' }}>
+      <label htmlFor="event-name" className="font-bold flex items-center gap-3">
+        <span style={{ border: '1px solid #ccc', padding: '2px 6px', borderRadius: '4px', background: '#fff', color: '#222' }}>Event Name:</span>
+        <input id="event-name" type="text" value={eventName} onChange={handleEventNameChange} className="border rounded px-2 py-1 w-full" placeholder="Event Map" />
+      </label>
       <label htmlFor="logo-url" className="font-bold flex items-center gap-3">
         <span style={{ border: '1px solid #ccc', padding: '2px 6px', borderRadius: '4px', background: '#fff', color: '#222' }}>Logo URL:</span>
         <input id="logo-url" type="url" value={logo} onChange={handleLogoChange} className="border rounded px-2 py-1 w-full" placeholder="https://..." />

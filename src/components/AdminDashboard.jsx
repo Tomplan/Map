@@ -1,7 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
+import AdminLogin from './AdminLogin';
 
-// Basic admin dashboard for marker management
 export default function AdminDashboard() {
+  // Auth state
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const session = supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user || null);
+      setLoading(false);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+    return () => {
+      listener?.subscription.unsubscribe();
+    };
+  }, []);
+
   // Simulated marker data (replace with Supabase or API)
   const [markers, setMarkers] = useState([
     { id: 1, lat: 51.899, lng: 5.779, label: 'Main Stage', locked: false },
@@ -49,9 +67,12 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   }
 
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (!user) return <AdminLogin onLogin={setUser} />;
+
   return (
     <section className="p-6 bg-white rounded-lg shadow-lg max-w-2xl mx-auto border border-gray-200" aria-label="Admin Dashboard">
-  <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
       <div className="flex gap-3 mb-6">
         <button onClick={undo} disabled={undoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Undo</button>
         <button onClick={redo} disabled={redoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Redo</button>

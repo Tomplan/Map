@@ -52,8 +52,12 @@
 
 ## Additional Agent Rules
 
----
-## Diagnostic Conclusions & Lessons Learned (SVG/UI Sizing)
+### Proactive Guidance Rule
+Always point out:
+- Any expected errors or warnings due to incomplete setup.
+- Any steps the user needs to complete (like adding credentials, configuring services, or running commands).
+- Any limitations or requirements before features will work.
+
 
 - ALWAYS inspect computed styles for both container and SVG elements when diagnosing UI sizing issues.
 - If an SVG is not sized as expected, check the viewBox and path width; browser may shrink icon to fit path, not container.

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function BrandingBar({ logo, themeColor, fontFamily }) {
+export default function BrandingBar({ logo, themeColor, fontFamily, eventName }) {
   return (
     <header
       className="w-full flex items-center justify-between px-4 py-2 shadow-md"
@@ -18,7 +18,7 @@ export default function BrandingBar({ logo, themeColor, fontFamily }) {
       {logo && (
         <img src={logo} alt="Event Logo" className="h-10 w-auto mr-4" />
       )}
-      <span className="text-xl font-bold text-white">Event Map</span>
+      <span className="text-xl font-bold text-white">{eventName || 'Event Map'}</span>
     </header>
   );
 }
