@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -86,19 +87,26 @@ const MAP_LAYERS = [
 ];
 
 function EventMap() {
+  const { t } = useTranslation();
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
-  // Removed zoom state; use mapInstance.setZoom instead
   const markers = useEventMarkers();
-  const { trackMapInteraction, trackMarkerView } = useAnalytics();
+  const { trackMarkerView } = useAnalytics();
 
-  const handleZoomIn = () => {
-    if (mapInstance) mapInstance.zoomIn();
-  };
-  const handleZoomOut = () => {
-    if (mapInstance) mapInstance.zoomOut();
+  // Map config for fullscreen
+  const mapCenter = DEFAULT_POSITION;
+  const mapZoom = DEFAULT_ZOOM;
+  const minZoom = 14;
+  const maxZoom = 21;
+  const handleMapCreated = (mapOrEvent) => {
+    // React-Leaflet v5 passes event, v3/v4 passes map
+    if (mapOrEvent && mapOrEvent.target) {
+      setMapInstance(mapOrEvent.target);
+    } else {
+      setMapInstance(mapOrEvent);
+    }
   };
 
   // Log zoom level after change for accurate measurement
@@ -112,42 +120,31 @@ function EventMap() {
       mapInstance.off('zoomend', logZoom);
     };
   }, [mapInstance]);
-  const handleHome = () => {
-    if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
-  };
+  // Removed unused handleHome
 
   // Ensure markers is always an array, memoized for hook compliance
   const safeMarkers = React.useMemo(() => Array.isArray(markers) ? markers : [], [markers]);
 
+  // Add zoom and home controls
+  const handleZoomIn = () => {
+    if (mapInstance) mapInstance.zoomIn();
+  };
+  const handleZoomOut = () => {
+    if (mapInstance) mapInstance.zoomOut();
+  };
+  const handleHome = () => {
+    if (mapInstance) mapInstance.setView(mapCenter, mapZoom);
+  };
+
   return (
     <div
-      style={{ height: '400px', width: '100%', position: 'relative' }}
+      style={{ height: '100vh', width: '100vw', position: 'fixed', inset: 0, zIndex: 0 }}
       tabIndex={0}
       aria-label="Event Map"
-      aria-describedby="event-map-instructions"
       role="region"
     >
-      <span id="event-map-instructions" className="sr-only">
-        Use Tab to focus the map. Use mouse or touch to pan and zoom. Map controls are not keyboard accessible by default. For assistance, contact event staff.
-      </span>
-      {/* Floating control panel */}
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <button aria-label="Zoom in" onClick={handleZoomIn} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
-            <MdZoomIn style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
-          </span>
-        </button>
-        <button aria-label="Zoom out" onClick={handleZoomOut} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
-            <MdZoomOut style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
-          </span>
-        </button>
-        <button aria-label="Home" onClick={handleHome} style={{ background: '#fff', border: 'none', borderRadius: '50%', boxShadow: '0 2px 6px rgba(0,0,0,0.15)', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-          <span style={{ width: 24, height: 24, minWidth: 24, display: 'inline-block' }}>
-            <MdHome style={{ width: '100%', height: '100%', minWidth: 24 }} color="#ff9800" />
-          </span>
-        </button>
-        {/* Step 2: Layer selection dropdown */}
+      {/* Layer select button */}
+  <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }}>
         <select
           aria-label="Select map layer"
           value={activeLayer}
@@ -159,54 +156,85 @@ function EventMap() {
           ))}
         </select>
       </div>
-      <MapContainer
-        center={DEFAULT_POSITION}
-        zoom={DEFAULT_ZOOM}
-        minZoom={14}
-        maxZoom={21}
-        zoomDelta={0.5}
-        zoomSnap={0.5}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-        zoomControl={false}
-        aria-label="Event Map Container"
-        whenReady={map => {
-          setMapInstance(map.target);
-          trackMapInteraction('map_ready');
-        }}
-        onClick={() => trackMapInteraction('map_click')}
+      {/* Zoom and home controls */}
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <button
+          onClick={handleZoomIn}
+          aria-label="Zoom in"
+          className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          <MdZoomIn size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Zoom in</span>
+        </button>
+        <button
+          onClick={handleZoomOut}
+          aria-label="Zoom out"
+          className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          <MdZoomOut size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Zoom out</span>
+        </button>
+        <button
+          onClick={handleHome}
+          aria-label="Home"
+          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          <MdHome size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Home</span>
+        </button>
+      </div>
+      {/* Map container */}
+      <div
+        id="map-container"
+        className="fixed inset-0 w-full h-full"
+        style={{ zIndex: 1 }}
+        aria-label={t('map.ariaLabel')}
       >
-        {/* Step 4: Render only selected layer */}
-        {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
-          <TileLayer
-            key={layer.key}
-            attribution={layer.attribution}
-            url={layer.url}
-            maxZoom={21}
-          />
-        ))}
-        <SearchControl markers={markers} />
-        {safeMarkers.map(marker => {
-          let icon;
-          if (marker.type === 'booth-holder' && marker.number) {
-            icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
-          } else if (marker.type === 'special' && marker.svgUrl) {
-            icon = createMarkerIcon({ className: 'special-marker' });
-          } else {
-            icon = createMarkerIcon({ className: 'default-marker' });
-          }
-          const labelText = getMarkerLabel(marker.label);
-          return (
-            <Marker
-              key={marker.id}
-              position={[marker.lat, marker.lng]}
-              icon={icon}
-            >
-              <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+        <MapContainer
+          center={mapCenter}
+          zoom={mapZoom}
+          minZoom={minZoom}
+          maxZoom={maxZoom}
+          zoomControl={false}
+          style={{ width: '100vw', height: '100vh' }}
+          className="focus:outline-none focus:ring-2 focus:ring-primary"
+          whenReady={handleMapCreated}
+          attributionControl={false}
+        >
+          {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
+            <TileLayer
+              key={layer.key}
+              attribution={layer.attribution}
+              url={layer.url}
+              maxZoom={21}
+            />
+          ))}
+          <SearchControl markers={markers} />
+          {safeMarkers.map(marker => {
+            let icon;
+            if (marker.type === 'booth-holder' && marker.number) {
+              icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
+            } else if (marker.type === 'special' && marker.svgUrl) {
+              icon = createMarkerIcon({ className: 'special-marker' });
+            } else {
+              icon = createMarkerIcon({ className: 'default-marker' });
+            }
+            const labelText = getMarkerLabel(marker.label);
+            return (
+              <Marker
+                key={marker.id}
+                position={[marker.lat, marker.lng]}
+                icon={icon}
+              >
+                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+              </Marker>
+            );
+          })}
+        </MapContainer>
+      </div>
     </div>
   );
 }
