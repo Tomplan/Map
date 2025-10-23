@@ -1,13 +1,21 @@
 
 import React, { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
 
-const MARKER_JSON_PATH = '/marker-template.json';
+
+// Map tab keys to Supabase table names
+const TAB_TABLES = {
+  core: 'Markers_Core',
+  appearance: 'Markers_Appearance',
+  content: 'Markers_Content',
+  admin: 'Markers_Admin',
+};
 
 const TABS = [
-  { key: 'core', label: 'Core' },
-  { key: 'appearance', label: 'Appearance' },
-  { key: 'content', label: 'Content' },
-  { key: 'admin', label: 'Admin-only' },
+  { key: 'core', label: 'Markers - Core' },
+  { key: 'appearance', label: 'Markers - Appearance' },
+  { key: 'content', label: 'Markers - Content' },
+  { key: 'admin', label: 'Markers - Admin' },
 ];
 
 const COLUMNS = {
@@ -53,12 +61,25 @@ export default function MarkerTable() {
   const [activeTab, setActiveTab] = useState('core');
 
   useEffect(() => {
-    fetch(MARKER_JSON_PATH)
-      .then(res => res.json())
-      .then(data => setMarker(data));
-  }, []);
+    async function fetchMarker() {
+      const table = TAB_TABLES[activeTab];
+      const { data, error } = await supabase
+        .from(table)
+        .select('*')
+        .limit(1);
+      if (error) {
+        setMarker({ error: error.message });
+      } else if (data && data.length > 0) {
+        setMarker(data[0]);
+      } else {
+        setMarker({});
+      }
+    }
+    fetchMarker();
+  }, [activeTab]);
 
   if (!marker) return <div>Loading marker data...</div>;
+  if (marker.error) return <div>Error loading marker: {marker.error}</div>;
 
   return (
   <div className="marker-table-container" style={{ width: '100%', margin: '2rem auto', textAlign: 'center' }}>
