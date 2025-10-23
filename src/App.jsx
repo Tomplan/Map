@@ -49,15 +49,15 @@ function App() {
   {showAdmin && <BrandingSettings onChange={setBranding} />}
       <main>
         <OfflineStatus />
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setShowAdmin((v) => !v)}
-            className="px-4 py-2 bg-blue-500 text-white rounded shadow"
-            aria-label={showAdmin ? 'Show Map' : 'Show Admin Dashboard'}
-          >
-            {showAdmin ? 'User Map View' : 'Admin Dashboard'}
-          </button>
-        </div>
+        {/* Admin toggle button always visible, fixed top right */}
+        <button
+          onClick={() => setShowAdmin((v) => !v)}
+          style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 2000 }}
+          className="px-4 py-2 bg-blue-500 text-white rounded shadow"
+          aria-label={showAdmin ? 'Show Map' : 'Show Admin Dashboard'}
+        >
+          {showAdmin ? 'User Map View' : 'Admin Dashboard'}
+        </button>
         {showAdmin ? (
           <AdminDashboard />
         ) : (
