@@ -201,6 +201,7 @@ function EventMap() {
               key={layer.key}
               attribution={layer.attribution}
               url={layer.url}
+              maxZoom={21}
             />
           ))}
           {!loading && <SearchControl markers={markers} />}
