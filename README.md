@@ -42,6 +42,7 @@ UI/UX
 •	Home button always visible; zoom buttons use 0.5 step increments.
 •	Tooltip shows both name and logo if space allows; popup on click for full info.
 Other Features
+•	User feedback form (FeedbackForm component) exists and can be enabled in the UI when needed for collecting event feedback.
 •	Admins can upload and manage SVGs/icons and logos.
 •	Multiple map layers; admins can switch and set default.
 •	Admins can set marker visibility by zoom level.

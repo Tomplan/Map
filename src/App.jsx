@@ -45,8 +45,8 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   return (
     <ErrorBoundary>
-      <BrandingBar {...branding} />
-      <BrandingSettings onChange={setBranding} />
+  <BrandingBar {...branding} />
+  {showAdmin && <BrandingSettings onChange={setBranding} />}
       <main>
         <OfflineStatus />
         <div className="flex justify-end mb-4">
@@ -70,12 +70,6 @@ function App() {
             </Suspense>
             <div>
             </div>
-            <Suspense fallback={<div>Loading feedback form...</div>}>
-              <FeedbackForm />
-            </Suspense>
-            <p className="read-the-docs">
-              Click on the Vite and React logos to learn more
-            </p>
           </>
         )}
       </main>
