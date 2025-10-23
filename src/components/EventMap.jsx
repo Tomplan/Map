@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -15,8 +15,8 @@ const resolvedIconUrl = typeof blueIconUrl === 'string' && blueIconUrl.length > 
   ? blueIconUrl
   : '/assets/icons/glyph-marker-icon-blue.svg';
 
-// Helper to create booth marker with number
-export function createBoothMarkerIcon(number) {
+// Generalized helper to create marker icons
+export function createMarkerIcon({ className }) {
   return L.icon({
     iconUrl: orangeIconUrl,
     iconSize: [25, 41],
@@ -25,45 +25,42 @@ export function createBoothMarkerIcon(number) {
     shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
     shadowSize: [41, 41],
     shadowAnchor: [13, 41],
-    className: `booth-marker booth-number-${number}`
+    className
   });
 }
 
-// Helper to create special marker with SVG
-export function createSpecialMarkerIcon(svgUrl) {
-  return L.icon({
-    iconUrl: orangeIconUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [0, -41],
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 41],
-    className: 'special-marker'
-  });
+// Utility to extract marker label
+function getMarkerLabel(label) {
+  if (typeof label === 'string') return label;
+  if (label && label.toString) return label.toString();
+  return JSON.stringify(label);
 }
 
 function SearchControl({ markers }) {
   const map = useMap();
   // Ensure markers is always an array
   const safeMarkers = Array.isArray(markers) ? markers : [];
+  // Use a persistent marker layer for search
   React.useEffect(() => {
     if (!map || !safeMarkers || safeMarkers.length === 0) return;
-    // Remove previous search control if exists
+    if (!map._searchMarkerLayer) {
+      map._searchMarkerLayer = L.layerGroup();
+      map.addLayer(map._searchMarkerLayer);
+    }
+    map._searchMarkerLayer.clearLayers();
+    safeMarkers.forEach(marker => {
+      const markerObj = L.marker([marker.lat, marker.lng], {
+        title: marker.label,
+        opacity: 0,
+        interactive: false
+      });
+      map._searchMarkerLayer.addLayer(markerObj);
+    });
     if (map._searchControl) {
       map.removeControl(map._searchControl);
     }
-    // Create invisible markers for search layer
-    const markerLayer = L.layerGroup(safeMarkers.map(marker => {
-      const markerObj = L.marker([marker.lat, marker.lng], {
-        title: marker.label,
-        opacity: 0, // Make marker invisible
-        interactive: false // Prevent interaction
-      });
-      return markerObj;
-    }));
     const searchControl = new L.Control.Search({
-      layer: markerLayer,
+      layer: map._searchMarkerLayer,
       propertyName: 'title',
       moveToLocation: function(latlng, title, map) {
         map.setView(latlng, map.getZoom());
@@ -79,6 +76,10 @@ function SearchControl({ markers }) {
       if (map._searchControl) {
         map.removeControl(map._searchControl);
         map._searchControl = null;
+      }
+      if (map._searchMarkerLayer) {
+        map.removeLayer(map._searchMarkerLayer);
+        map._searchMarkerLayer = null;
       }
     };
   }, [map, safeMarkers]);
@@ -101,22 +102,34 @@ const MAP_LAYERS = [
 ];
 
 function EventMap() {
-  const mapRef = useRef(null);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
   const [mapInstance, setMapInstance] = useState(null);
   const [isVisible, setIsVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
-  const DEFAULT_ZOOM = 17;
+  const DEFAULT_ZOOM = 17; // Default zoom level
+  // Removed zoom state; use mapInstance.setZoom instead
   const markers = useEventMarkers();
   const { trackMapInteraction, trackMarkerView } = useAnalytics();
 
   const handleZoomIn = () => {
-    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() + 0.5);
+    if (mapInstance) mapInstance.zoomIn();
   };
   const handleZoomOut = () => {
-    if (mapInstance) mapInstance.setZoom(mapInstance.getZoom() - 0.5);
+    if (mapInstance) mapInstance.zoomOut();
   };
+
+  // Log zoom level after change for accurate measurement
+  React.useEffect(() => {
+    if (!mapInstance) return;
+    const logZoom = () => {
+      console.log('Zoom changed. Now:', mapInstance.getZoom());
+    };
+    mapInstance.on('zoomend', logZoom);
+    return () => {
+      mapInstance.off('zoomend', logZoom);
+    };
+  }, [mapInstance]);
   const handleHome = () => {
     if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
   };
@@ -126,7 +139,6 @@ function EventMap() {
 
   return (
     <div
-      ref={mapRef}
       style={{ height: '400px', width: '100%', position: 'relative' }}
       tabIndex={0}
       aria-label="Event Map"
@@ -165,22 +177,24 @@ function EventMap() {
           ))}
         </select>
       </div>
-      {isVisible && (
-        <MapContainer
-          center={DEFAULT_POSITION}
-          zoom={DEFAULT_ZOOM}
-          minZoom={14}
-          maxZoom={21}
-          style={{ height: '100%', width: '100%' }}
-          scrollWheelZoom={true}
-          zoomControl={false}
-          aria-label="Event Map Container"
-          whenReady={map => {
-            setMapInstance(map.target);
-            trackMapInteraction('map_ready');
-          }}
-          onClick={() => trackMapInteraction('map_click')}
-        >
+       {isVisible && (
+         <MapContainer
+           center={DEFAULT_POSITION}
+           zoom={DEFAULT_ZOOM}
+           minZoom={14}
+           maxZoom={21}
+           zoomDelta={0.5}
+           zoomSnap={0.5}
+           style={{ height: '100%', width: '100%' }}
+           scrollWheelZoom={true}
+           zoomControl={false}
+           aria-label="Event Map Container"
+           whenReady={map => {
+             setMapInstance(map.target);
+             trackMapInteraction('map_ready');
+           }}
+           onClick={() => trackMapInteraction('map_click')}
+         >
           {/* Step 4: Render only selected layer */}
           {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
             <TileLayer
@@ -193,30 +207,13 @@ function EventMap() {
           {!loading && safeMarkers.map(marker => {
             let icon;
             if (marker.type === 'booth-holder' && marker.number) {
-              icon = createBoothMarkerIcon(marker.number);
+              icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
             } else if (marker.type === 'special' && marker.svgUrl) {
-              icon = createSpecialMarkerIcon(marker.svgUrl);
+              icon = createMarkerIcon({ className: 'special-marker' });
             } else {
-              icon = L.icon({
-                iconUrl: orangeIconUrl,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [0, -41],
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                shadowSize: [41, 41],
-                shadowAnchor: [13, 41],
-                className: 'default-marker'
-              });
+              icon = createMarkerIcon({ className: 'default-marker' });
             }
-            // Ensure marker.label is a string
-            let labelText = '';
-            if (typeof marker.label === 'string') {
-              labelText = marker.label;
-            } else if (marker.label && marker.label.toString) {
-              labelText = marker.label.toString();
-            } else {
-              labelText = JSON.stringify(marker.label);
-            }
+            const labelText = getMarkerLabel(marker.label);
             return (
               <Marker
                 key={marker.id}
