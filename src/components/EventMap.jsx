@@ -88,7 +88,8 @@ const MAP_LAYERS = [
 
 function EventMap() {
   const { t } = useTranslation();
-  const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
+  // Always use Carto Voyager for user view
+  const activeLayer = MAP_LAYERS[0].key;
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
@@ -143,19 +144,7 @@ function EventMap() {
       aria-label="Event Map"
       role="region"
     >
-      {/* Layer select button */}
-  <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 1000 }}>
-        <select
-          aria-label="Select map layer"
-          value={activeLayer}
-          onChange={e => setActiveLayer(e.target.value)}
-          style={{ background: '#fff', border: '1px solid #ccc', borderRadius: 6, padding: '6px', fontSize: 14, marginTop: 8 }}
-        >
-          {MAP_LAYERS.map(layer => (
-            <option key={layer.key} value={layer.key}>{layer.name}</option>
-          ))}
-        </select>
-      </div>
+      {/* Layer select button removed for user view */}
       {/* Zoom and home controls */}
       <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
@@ -198,6 +187,8 @@ function EventMap() {
           zoom={mapZoom}
           minZoom={minZoom}
           maxZoom={maxZoom}
+          zoomDelta={0.5}
+          zoomSnap={0.5}
           zoomControl={false}
           style={{ width: '100vw', height: '100vh' }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
