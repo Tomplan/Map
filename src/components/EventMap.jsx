@@ -4,8 +4,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
-import { createMarkerIcon, createBoothMarkerIcon, createSpecialMarkerIcon } from '../utils/markerIcons';
-import orangeIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
+import { createMarkerIcon } from '../utils/markerIcons';
 import useEventMarkers from '../hooks/useEventMarkers';
 import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
@@ -23,8 +22,8 @@ function getMarkerLabel(label) {
 
 function SearchControl({ markers }) {
   const map = useMap();
-  // Ensure markers is always an array
-  const safeMarkers = Array.isArray(markers) ? markers : [];
+  // Ensure markers is always an array, memoized for hook compliance
+  const safeMarkers = React.useMemo(() => Array.isArray(markers) ? markers : [], [markers]);
   // Use a persistent marker layer for search
   React.useEffect(() => {
     if (!map || !safeMarkers || safeMarkers.length === 0) return;
