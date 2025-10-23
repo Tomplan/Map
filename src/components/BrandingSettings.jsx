@@ -1,27 +1,37 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function BrandingSettings({ onChange }) {
-  const [logo, setLogo] = useState('');
-  const [themeColor, setThemeColor] = useState('#2d3748');
-  const [fontFamily, setFontFamily] = useState('Montserrat, sans-serif');
-  const [eventName, setEventName] = useState('Event Map');
+export default function BrandingSettings({ onChange, initialValues }) {
+  const [logo, setLogo] = useState(initialValues?.logo || '');
+  const [themeColor, setThemeColor] = useState(initialValues?.themeColor || '#2d3748');
+  const [fontFamily, setFontFamily] = useState(initialValues?.fontFamily || 'Montserrat, sans-serif');
+  const [eventName, setEventName] = useState(initialValues?.eventName || 'Event Map');
+
+  // Sync local state with initialValues (for live updates)
+  useEffect(() => {
+    if (initialValues) {
+      setLogo(initialValues.logo || '');
+      setThemeColor(initialValues.themeColor || '#2d3748');
+      setFontFamily(initialValues.fontFamily || 'Montserrat, sans-serif');
+      setEventName(initialValues.eventName || 'Event Map');
+    }
+  }, [initialValues]);
 
   function handleLogoChange(e) {
     setLogo(e.target.value);
-    onChange({ logo: e.target.value, themeColor, fontFamily, eventName });
+    onChange({ id: 1, logo: e.target.value, themeColor, fontFamily, eventName });
   }
   function handleThemeColorChange(e) {
     setThemeColor(e.target.value);
-    onChange({ logo, themeColor: e.target.value, fontFamily, eventName });
+    onChange({ id: 1, logo, themeColor: e.target.value, fontFamily, eventName });
   }
   function handleFontFamilyChange(e) {
     setFontFamily(e.target.value);
-    onChange({ logo, themeColor, fontFamily: e.target.value, eventName });
+    onChange({ id: 1, logo, themeColor, fontFamily: e.target.value, eventName });
   }
   function handleEventNameChange(e) {
     setEventName(e.target.value);
-    onChange({ logo, themeColor, fontFamily, eventName: e.target.value });
+    onChange({ id: 1, logo, themeColor, fontFamily, eventName: e.target.value });
   }
 
   return (

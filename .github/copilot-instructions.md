@@ -1,3 +1,5 @@
+### Clarification Rule
+If a user request is unclear or ambiguous, always ask for more details or clarification instead of making assumptions or inventing information. Only answer based on explicit instructions or actual code context.
 # Copilot Instructions for Event Map App
 
 ## Project Overview
