@@ -7,6 +7,7 @@ import Icon from '@mdi/react';
 import './i18n';
 import './App.css';
 import AdminDashboard from './components/AdminDashboard';
+import MarkerTable from './components/MarkerTable';
 
 const EventMap = lazy(() => import('./components/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
@@ -26,13 +27,17 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ color: 'red', padding: '2rem' }}>
+        <div style={{ color: 'red', padding: '2rem', border: '2px solid blue' }}>
           <h2>Something went wrong in a component.</h2>
           <pre>{typeof this.state.error === 'string' ? this.state.error : JSON.stringify(this.state.error, null, 2)}</pre>
         </div>
       );
     }
-    return this.props.children;
+    return (
+      <div style={{ border: '2px solid blue', width: '100vw', height: '100vh', boxSizing: 'border-box', position: 'relative' }}>
+        {this.props.children}
+      </div>
+    );
   }
 }
 
@@ -47,7 +52,7 @@ function App() {
     <ErrorBoundary>
   <BrandingBar {...branding} />
   {showAdmin && <BrandingSettings onChange={setBranding} />}
-      <main>
+  <main style={{ border: '2px solid red' }}>
         <OfflineStatus />
         {/* Admin toggle button always visible, fixed top right */}
         <button
@@ -59,7 +64,12 @@ function App() {
           {showAdmin ? 'User Map View' : 'Admin Dashboard'}
         </button>
         {showAdmin ? (
-          <AdminDashboard />
+          <>
+            <AdminDashboard />
+            <div style={{ margin: '2rem 0' }}>
+              <MarkerTable />
+            </div>
+          </>
         ) : (
           <>
             <Suspense fallback={<div>Loading accessibility options...</div>}>

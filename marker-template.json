@@ -1,0 +1,32 @@
+{
+  "id": "unique-marker-id",
+  "position": [52.370216, 4.895168],
+  "iconUrl": "/assets/icons/pin.svg",
+  "iconSize": [32, 32],
+  "iconColor": "#1976d2",
+  "glyph": "A",
+  "glyphColor": "#fff",
+  "glyphSize": "20px",
+  "glyphAnchor": [16, 16],
+  "rectangle": {
+    "width": 40,
+    "height": 20
+  },
+  "angle": 0,
+  "boothNumber": "A12",
+  "name": "Main Stage",
+  "logo": "https://...",
+  "website": "https://...",
+  "info": "Main event area",
+  "locked": false,
+  "contact": "John Doe",
+  "phone": "+31...",
+  "email": "john@example.com",
+  "boothCount": 2,
+  "area": 36,
+  "coins": 10,
+  "breakfast": 2,
+  "lunch": 2,
+  "bbq": 0,
+  "notes": "Needs extra chairs"
+}
