@@ -51,7 +51,7 @@ export default function AdminDashboard() {
 
   return (
     <section className="p-6 bg-white rounded-lg shadow-lg max-w-2xl mx-auto border border-gray-200" aria-label="Admin Dashboard">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Admin Dashboard</h2>
+  <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
       <div className="flex gap-3 mb-6">
         <button onClick={undo} disabled={undoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Undo</button>
         <button onClick={redo} disabled={redoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Redo</button>
@@ -59,7 +59,7 @@ export default function AdminDashboard() {
       </div>
       <table className="w-full border border-gray-300 rounded overflow-hidden">
         <thead>
-          <tr className="bg-gray-100 text-gray-700">
+          <tr className="bg-gray-100 text-gray-900">
             <th className="py-2 px-3 border-b">ID</th>
             <th className="py-2 px-3 border-b">Label</th>
             <th className="py-2 px-3 border-b">Lat</th>
@@ -70,17 +70,17 @@ export default function AdminDashboard() {
         </thead>
         <tbody>
           {markers.map(marker => (
-            <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50' : 'bg-white'}>
+            <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
               <td className="py-2 px-3 border-b">{marker.id}</td>
               <td className="py-2 px-3 border-b">{marker.label}</td>
               <td className="py-2 px-3 border-b">{marker.lat}</td>
               <td className="py-2 px-3 border-b">{marker.lng}</td>
               <td className="py-2 px-3 border-b">{marker.locked ? '🔒' : '🔓'}</td>
               <td className="py-2 px-3 border-b">
-                <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300 transition">
+                <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition">
                   {marker.locked ? 'Unlock' : 'Lock'}
                 </button>
-                <button onClick={() => selectMarker(marker.id)} className="ml-2 px-2 py-1 text-xs bg-yellow-300 rounded hover:bg-yellow-400 transition">
+                <button onClick={() => selectMarker(marker.id)} className="ml-2 px-2 py-1 text-xs bg-yellow-300 text-gray-900 rounded hover:bg-yellow-400 transition">
                   Edit
                 </button>
               </td>
@@ -90,9 +90,9 @@ export default function AdminDashboard() {
       </table>
       {selected && (
         <div className="mt-6 p-4 border border-gray-300 rounded-lg bg-gray-50">
-          <h3 className="font-bold mb-2 text-gray-800">Edit Marker #{selected}</h3>
+          <h3 className="font-bold mb-2 text-gray-900">Edit Marker #{selected}</h3>
           {/* Add marker editing UI here */}
-          <button onClick={() => setSelected(null)} className="mt-2 px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition">Close</button>
+          <button onClick={() => setSelected(null)} className="mt-2 px-4 py-2 bg-gray-300 text-gray-900 rounded hover:bg-gray-400 transition">Close</button>
         </div>
       )}
     </section>
