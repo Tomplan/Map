@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component {
       );
     }
     return (
-      <div style={{ border: '2px solid blue', width: '100vw', height: '100vh', boxSizing: 'border-box', position: 'relative' }}>
+  <div style={{ border: '2px solid blue', width: '100%', minHeight: '100vh', boxSizing: 'border-box', position: 'relative' }}>
         {this.props.children}
       </div>
     );
