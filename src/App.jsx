@@ -89,7 +89,6 @@ function App() {
                 </span>
               </div>
             </div>
-            <h1 className="bg-green-500 text-white p-4 rounded" aria-label="App Title">Vite + React</h1>
             <div className="card">
               <button onClick={() => setCount((count) => count + 1)} aria-label={`Count is ${count}`}>
                 count is {count}
