@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import OfflineStatus from './components/OfflineStatus';
 import BrandingBar from './components/BrandingBar';
@@ -43,47 +44,46 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   const [branding, setBranding] = useState({
-  logo: '',
+    logo: '',
     themeColor: '#2d3748',
     fontFamily: 'Montserrat, sans-serif',
+    eventName: 'Event Map',
   });
-  const [showAdmin, setShowAdmin] = useState(false);
+
   return (
-    <ErrorBoundary>
-  <BrandingBar {...branding} />
-  {showAdmin && <BrandingSettings onChange={setBranding} />}
-  <main style={{ border: '2px solid red' }}>
-        <OfflineStatus />
-        {/* Admin toggle button always visible, fixed top right */}
-        <button
-          onClick={() => setShowAdmin((v) => !v)}
-          style={{ position: 'fixed', bottom: 20, right: 20, zIndex: 2000 }}
-          className="px-4 py-2 bg-blue-500 text-white rounded shadow"
-          aria-label={showAdmin ? 'Show Map' : 'Show Admin Dashboard'}
-        >
-          {showAdmin ? 'User Map View' : 'Admin Dashboard'}
-        </button>
-        {showAdmin ? (
-          <>
-            <AdminDashboard />
-            <div style={{ margin: '2rem 0' }}>
-              <MarkerTable />
-            </div>
-          </>
-        ) : (
-          <>
-            <Suspense fallback={<div>Loading accessibility options...</div>}>
-              <AccessibilityToggle />
-            </Suspense>
-            <Suspense fallback={<div>Loading map...</div>}>
-              <EventMap />
-            </Suspense>
-            <div>
-            </div>
-          </>
-        )}
-      </main>
-    </ErrorBoundary>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <ErrorBoundary>
+              <BrandingBar {...branding} />
+              <main style={{ border: '2px solid red' }}>
+                <OfflineStatus />
+                <Suspense fallback={<div>Loading accessibility options...</div>}>
+                  <AccessibilityToggle />
+                </Suspense>
+                <Suspense fallback={<div>Loading map...</div>}>
+                  <EventMap />
+                </Suspense>
+              </main>
+              <BrandingSettings onChange={setBranding} />
+            </ErrorBoundary>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ErrorBoundary>
+              <AdminDashboard />
+              <div style={{ margin: '2rem 0' }}>
+                <MarkerTable />
+              </div>
+            </ErrorBoundary>
+          }
+        />
+      </Routes>
+    </Router>
   );
 }
 
