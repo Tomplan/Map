@@ -4,39 +4,15 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
-import blueIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
+import { createMarkerIcon, createBoothMarkerIcon, createSpecialMarkerIcon } from '../utils/markerIcons';
 import orangeIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
 import useEventMarkers from '../hooks/useEventMarkers';
 import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
 
 // Fallback to public path if import fails
-const resolvedIconUrl = typeof blueIconUrl === 'string' && blueIconUrl.length > 0
-  ? blueIconUrl
-  : '/assets/icons/glyph-marker-icon-blue.svg';
 
 // Generalized helper to create marker icons
-export function createMarkerIcon({ className }) {
-  return L.icon({
-    iconUrl: orangeIconUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [0, -41],
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 41],
-    className
-  });
-}
-
-// Legacy exports for test compatibility
-export function createBoothMarkerIcon(number) {
-  return createMarkerIcon({ className: `booth-marker booth-number-${number}` });
-}
-
-export function createSpecialMarkerIcon(svgUrl) {
-  return createMarkerIcon({ className: 'special-marker' });
-}
 
 // Utility to extract marker label
 function getMarkerLabel(label) {
@@ -141,8 +117,8 @@ function EventMap() {
     if (mapInstance) mapInstance.setView(DEFAULT_POSITION, DEFAULT_ZOOM);
   };
 
-  // Ensure markers is always an array
-  const safeMarkers = Array.isArray(markers) ? markers : [];
+  // Ensure markers is always an array, memoized for hook compliance
+  const safeMarkers = React.useMemo(() => Array.isArray(markers) ? markers : [], [markers]);
 
   return (
     <div
