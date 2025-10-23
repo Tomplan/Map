@@ -146,7 +146,7 @@ function EventMap() {
     >
       {/* Layer select button removed for user view */}
       {/* Zoom and home controls */}
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+  <div style={{ position: 'absolute', top: 80, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
           onClick={handleZoomIn}
           aria-label="Zoom in"
