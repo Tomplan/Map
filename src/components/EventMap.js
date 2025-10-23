@@ -88,8 +88,6 @@ function EventMap() {
   const mapRef = useRef(null);
   const [activeLayer, setActiveLayer] = useState('carto');
   const [mapInstance, setMapInstance] = useState(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [loading, setLoading] = useState(false);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17;
   const markers = useEventMarkers();
@@ -150,55 +148,53 @@ function EventMap() {
           scrollWheelZoom={true}
           zoomControl={false}
           aria-label="Event Map Container"
-          whenReady={map => {
-            setMapInstance(map.target);
-            trackMapInteraction('map_ready');
-          }}
-          onClick={() => trackMapInteraction('map_click')}
-        >
-          {activeLayer === 'carto' ? (
-            <TileLayer
-              attribution='&copy; <a href="https://carto.com/attributions">Carto</a>'
-              url="https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png"
-            />
-          ) : (
-            <TileLayer
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-              url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            />
-          )}
-          {!loading && <SearchControl markers={markers} />}
-          {!loading && markers.map(marker => {
-            let icon;
-            if (marker.type === 'booth-holder' && marker.number) {
-              icon = createBoothMarkerIcon(marker.number);
-            } else if (marker.type === 'special' && marker.svgUrl) {
-              icon = createSpecialMarkerIcon(marker.svgUrl);
-            } else {
-              icon = L.icon({
-                iconUrl: orangeIconUrl,
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [0, -41],
-                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                shadowSize: [41, 41],
-                shadowAnchor: [13, 41],
-                className: 'default-marker'
-              });
-            }
-            return (
-              <Marker
-                key={marker.id}
-                position={[marker.lat, marker.lng]}
-                icon={icon}
-              >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>{marker.label}</Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
-      )}
-    </div>
-  );
+          <MapContainer
+            center={DEFAULT_POSITION}
+            zoom={DEFAULT_ZOOM}
+            minZoom={14}
+            maxZoom={21}
+            zoomDelta={0.5}
+            zoomSnap={0.5}
+            style={{ height: '100%', width: '100%' }}
+            scrollWheelZoom={true}
+            zoomControl={false}
+            aria-label="Event Map Container"
+            whenReady={map => {
+              setMapInstance(map.target);
+              trackMapInteraction('map_ready');
+            }}
+            onClick={() => trackMapInteraction('map_click')}
+          >
+            {/* Step 4: Render only selected layer */}
+            {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
+              <TileLayer
+                key={layer.key}
+                attribution={layer.attribution}
+                url={layer.url}
+                maxZoom={21}
+              />
+            ))}
+            <SearchControl markers={markers} />
+            {safeMarkers.map(marker => {
+              let icon;
+              if (marker.type === 'booth-holder' && marker.number) {
+                icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
+              } else if (marker.type === 'special' && marker.svgUrl) {
+                icon = createMarkerIcon({ className: 'special-marker' });
+              } else {
+                icon = createMarkerIcon({ className: 'default-marker' });
+              }
+              const labelText = getMarkerLabel(marker.label);
+              return (
+                <Marker
+                  key={marker.id}
+                  position={[marker.lat, marker.lng]}
+                  icon={icon}
+                >
+                  <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
 }
 

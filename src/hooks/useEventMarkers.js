@@ -43,7 +43,6 @@ export default function useEventMarkers() {
 
   useEffect(() => {
     loadMarkers(isOnline);
-    let lastOnline = isOnline;
     function handleOnline() {
       setIsOnline(true);
     }
@@ -55,7 +54,6 @@ export default function useEventMarkers() {
         setMarkers(JSON.parse(cached));
       }
       setLoading(false);
-      lastOnline = false;
     }
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);

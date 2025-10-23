@@ -29,6 +29,15 @@ export function createMarkerIcon({ className }) {
   });
 }
 
+// Legacy exports for test compatibility
+export function createBoothMarkerIcon(number) {
+  return createMarkerIcon({ className: `booth-marker booth-number-${number}` });
+}
+
+export function createSpecialMarkerIcon(svgUrl) {
+  return createMarkerIcon({ className: 'special-marker' });
+}
+
 // Utility to extract marker label
 function getMarkerLabel(label) {
   if (typeof label === 'string') return label;
@@ -104,8 +113,6 @@ const MAP_LAYERS = [
 function EventMap() {
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
   const [mapInstance, setMapInstance] = useState(null);
-  const [isVisible, setIsVisible] = useState(true);
-  const [loading, setLoading] = useState(false);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
   // Removed zoom state; use mapInstance.setZoom instead
@@ -177,56 +184,54 @@ function EventMap() {
           ))}
         </select>
       </div>
-       {isVisible && (
-         <MapContainer
-           center={DEFAULT_POSITION}
-           zoom={DEFAULT_ZOOM}
-           minZoom={14}
-           maxZoom={21}
-           zoomDelta={0.5}
-           zoomSnap={0.5}
-           style={{ height: '100%', width: '100%' }}
-           scrollWheelZoom={true}
-           zoomControl={false}
-           aria-label="Event Map Container"
-           whenReady={map => {
-             setMapInstance(map.target);
-             trackMapInteraction('map_ready');
-           }}
-           onClick={() => trackMapInteraction('map_click')}
-         >
-          {/* Step 4: Render only selected layer */}
-          {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
-            <TileLayer
-              key={layer.key}
-              attribution={layer.attribution}
-              url={layer.url}
-              maxZoom={21}
-            />
-          ))}
-          {!loading && <SearchControl markers={markers} />}
-          {!loading && safeMarkers.map(marker => {
-            let icon;
-            if (marker.type === 'booth-holder' && marker.number) {
-              icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
-            } else if (marker.type === 'special' && marker.svgUrl) {
-              icon = createMarkerIcon({ className: 'special-marker' });
-            } else {
-              icon = createMarkerIcon({ className: 'default-marker' });
-            }
-            const labelText = getMarkerLabel(marker.label);
-            return (
-              <Marker
-                key={marker.id}
-                position={[marker.lat, marker.lng]}
-                icon={icon}
-              >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
-      )}
+      <MapContainer
+        center={DEFAULT_POSITION}
+        zoom={DEFAULT_ZOOM}
+        minZoom={14}
+        maxZoom={21}
+        zoomDelta={0.5}
+        zoomSnap={0.5}
+        style={{ height: '100%', width: '100%' }}
+        scrollWheelZoom={true}
+        zoomControl={false}
+        aria-label="Event Map Container"
+        whenReady={map => {
+          setMapInstance(map.target);
+          trackMapInteraction('map_ready');
+        }}
+        onClick={() => trackMapInteraction('map_click')}
+      >
+        {/* Step 4: Render only selected layer */}
+        {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
+          <TileLayer
+            key={layer.key}
+            attribution={layer.attribution}
+            url={layer.url}
+            maxZoom={21}
+          />
+        ))}
+        <SearchControl markers={markers} />
+        {safeMarkers.map(marker => {
+          let icon;
+          if (marker.type === 'booth-holder' && marker.number) {
+            icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
+          } else if (marker.type === 'special' && marker.svgUrl) {
+            icon = createMarkerIcon({ className: 'special-marker' });
+          } else {
+            icon = createMarkerIcon({ className: 'default-marker' });
+          }
+          const labelText = getMarkerLabel(marker.label);
+          return (
+            <Marker
+              key={marker.id}
+              position={[marker.lat, marker.lng]}
+              icon={icon}
+            >
+              <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
     </div>
   );
 }
