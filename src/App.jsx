@@ -5,10 +5,7 @@ import BrandingBar from './components/BrandingBar';
 import BrandingSettings from './components/BrandingSettings';
 import Icon from '@mdi/react';
 import './i18n';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
-import { mdiHome } from '@mdi/js';
 import AdminDashboard from './components/AdminDashboard';
 
 const EventMap = lazy(() => import('./components/EventMap.jsx'));
@@ -40,9 +37,8 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
-  const [count, setCount] = useState(0);
   const [branding, setBranding] = useState({
-    logo: reactLogo,
+  logo: '',
     themeColor: '#2d3748',
     fontFamily: 'Montserrat, sans-serif',
   });
@@ -73,29 +69,6 @@ function App() {
               <EventMap />
             </Suspense>
             <div>
-              <a href="https://vite.dev" target="_blank">
-                {viteLogo ? (
-                  <img src={viteLogo} className="logo" alt="Vite logo" loading="lazy" />
-                ) : null}
-              </a>
-              <a href="https://react.dev" target="_blank">
-                {reactLogo ? (
-                  <img src={reactLogo} className="logo react" alt="React logo" loading="lazy" />
-                ) : null}
-              </a>
-              <div className="flex justify-center my-4">
-                <span className="inline-block">
-                  <Icon path={mdiHome} size={3} color="green" role="presentation" />
-                </span>
-              </div>
-            </div>
-            <div className="card">
-              <button onClick={() => setCount((count) => count + 1)} aria-label={`Count is ${count}`}>
-                count is {count}
-              </button>
-              <p>
-                Edit <code>src/App.jsx</code> and save to test HMR
-              </p>
             </div>
             <Suspense fallback={<div>Loading feedback form...</div>}>
               <FeedbackForm />
