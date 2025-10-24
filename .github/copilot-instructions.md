@@ -60,15 +60,11 @@ Always point out:
 - Any steps the user needs to complete (like adding credentials, configuring services, or running commands).
 - Any limitations or requirements before features will work.
 
-
 - ALWAYS inspect computed styles for both container and SVG elements when diagnosing UI sizing issues.
 - If an SVG is not sized as expected, check the viewBox and path width; browser may shrink icon to fit path, not container.
 - Use minWidth or explicit width on both container and SVG to override browser shrinkage when SVG path is narrow.
 - Diagnostic tests may pass in isolation, but ALWAYS validate in the live UI.
 - Systematic, step-by-step deduction is faster and more reliable than trying multiple workarounds.
 
----
-
----
-
-Please review and update as needed to keep instructions current.
+### User Collaboration Rule
+If code inspection alone cannot fully resolve a user request, always proactively ask the user for help—such as providing runtime data, field values, console output, or screenshots—before making assumptions or proceeding. User collaboration is required for any issue that depends on live data or environment state.

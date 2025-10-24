@@ -49,7 +49,6 @@ export default function AdminDashboard() {
     admin: [
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
-      { key: 'locked', label: 'Locked' },
       { key: 'contact', label: 'Contact' },
       { key: 'phone', label: 'Phone' },
       { key: 'email', label: 'Email' },
