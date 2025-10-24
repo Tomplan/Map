@@ -204,15 +204,16 @@ function EventMap() {
             />
           ))}
           <SearchControl markers={safeMarkers} />
-          {safeMarkers.map(marker => {
-            let icon;
-            if (marker.type === 'booth-holder' && marker.number) {
-              icon = createMarkerIcon({ className: `booth-marker booth-number-${marker.number}` });
-            } else if (marker.type === 'special' && marker.svgUrl) {
-              icon = createMarkerIcon({ className: 'special-marker' });
-            } else {
-              icon = createMarkerIcon({ className: 'default-marker' });
-            }
+            {safeMarkers.map(marker => {
+              let iconFile = marker.iconUrl;
+              if (!iconFile) {
+                iconFile = `${marker.type || 'default'}.svg`;
+              }
+              // Ensure path always starts with assets/icons/
+              if (!iconFile.startsWith('assets/icons/')) {
+                iconFile = `assets/icons/${iconFile}`;
+              }
+              const icon = createMarkerIcon({ className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon', iconUrl: iconFile });
             // Tooltip content: logo and name
             const logoPath = marker.logo ? `/assets/logos/${marker.logo}` : null;
             const tooltipContent = (
