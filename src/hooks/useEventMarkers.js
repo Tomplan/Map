@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
+import { supabase } from '../supabaseClient';
 
-// Simulated fetch function (replace with Supabase or real API)
-async function fetchMarkers() {
-  // Simulate network delay
-  await new Promise((r) => setTimeout(r, 500));
-  return [
-    { id: 1, lat: 51.899, lng: 5.779, label: 'Main Stage' },
-    { id: 2, lat: 51.898, lng: 5.780, label: 'Food Court' },
-  ];
-}
 export default function useEventMarkers() {
   const cached = typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
   const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
@@ -26,7 +18,7 @@ export default function useEventMarkers() {
     return true;
   });
 
-  // Helper to load markers based on online/offline status
+  // Helper to load markers from Supabase
   const loadMarkers = async (online) => {
     const cached = localStorage.getItem('eventMarkers');
     if (!online && cached) {
@@ -34,13 +26,16 @@ export default function useEventMarkers() {
       setLoading(false);
     } else if (online) {
       setLoading(true);
-      const data = await fetchMarkers();
+      const { data, error } = await supabase.from('Markers_Core').select('*');
+      if (error) {
+        setLoading(false);
+        return;
+      }
       setMarkers(data);
       localStorage.setItem('eventMarkers', JSON.stringify(data));
       setLoading(false);
     }
   };
-
   useEffect(() => {
     loadMarkers(isOnline);
     function handleOnline() {
@@ -57,9 +52,20 @@ export default function useEventMarkers() {
     }
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    // Supabase realtime subscription
+    let subscription;
+    if (isOnline) {
+      subscription = supabase
+        .channel('public:markers')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'markers' }, () => {
+          loadMarkers(true);
+        })
+        .subscribe();
+    }
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      if (subscription) supabase.removeChannel(subscription);
     };
   }, [isOnline]);
 
