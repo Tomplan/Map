@@ -93,7 +93,7 @@ function EventMap() {
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
-  const markers = useEventMarkers();
+  const { markers, loading, isOnline } = useEventMarkers();
   const { trackMarkerView } = useAnalytics();
 
   // Map config for fullscreen
@@ -203,7 +203,7 @@ function EventMap() {
               maxZoom={21}
             />
           ))}
-          <SearchControl markers={markers} />
+          <SearchControl markers={safeMarkers} />
           {safeMarkers.map(marker => {
             let icon;
             if (marker.type === 'booth-holder' && marker.number) {
