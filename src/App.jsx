@@ -1,4 +1,5 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { supabase } from './supabaseClient';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import OfflineStatus from './components/OfflineStatus';
@@ -43,12 +44,41 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+
   const [branding, setBranding] = useState({
     logo: '',
     themeColor: '#2d3748',
     fontFamily: 'Montserrat, sans-serif',
     eventName: 'Event Map',
+    id: 1
   });
+
+  // Fetch branding from Supabase and subscribe to changes
+  useEffect(() => {
+    async function fetchBranding() {
+      const { data } = await supabase
+        .from('Branding')
+        .select('*')
+        .eq('id', 1)
+        .single();
+      if (data) setBranding(data);
+    }
+    fetchBranding();
+    const channel = supabase
+      .channel('branding-user-sync')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'Branding',
+        filter: 'id=eq.1',
+      }, payload => {
+        if (payload.new) setBranding(payload.new);
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   return (
     <Router>
