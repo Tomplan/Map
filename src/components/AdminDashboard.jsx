@@ -20,10 +20,47 @@ export default function AdminDashboard() {
     { key: 'admin', label: 'Markers - Admin' },
   ];
   const COLUMNS = {
-    core: [ { key: 'id', label: 'ID' }, { key: 'position', label: 'Position' } ],
-    appearance: [ { key: 'iconUrl', label: 'Icon' }, { key: 'iconSize', label: 'Icon Size' }, { key: 'iconColor', label: 'Icon Color' }, { key: 'glyph', label: 'Glyph' }, { key: 'glyphColor', label: 'Glyph Color' }, { key: 'glyphSize', label: 'Glyph Size' }, { key: 'glyphAnchor', label: 'Glyph Anchor' }, { key: 'rectangle', label: 'Rectangle' }, { key: 'angle', label: 'Angle' } ],
-    content: [ { key: 'boothNumber', label: 'Booth #' }, { key: 'name', label: 'Name' }, { key: 'logo', label: 'Logo' }, { key: 'website', label: 'Website' }, { key: 'info', label: 'Info' } ],
-    admin: [ { key: 'locked', label: 'Locked' }, { key: 'contact', label: 'Contact' }, { key: 'phone', label: 'Phone' }, { key: 'email', label: 'Email' }, { key: 'boothCount', label: 'Booth Count' }, { key: 'area', label: 'Area' }, { key: 'coins', label: 'Coins' }, { key: 'breakfast', label: 'Breakfast' }, { key: 'lunch', label: 'Lunch' }, { key: 'bbq', label: 'BBQ' }, { key: 'notes', label: 'Notes' } ],
+    core: [
+      { key: 'id', label: 'ID' },
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'position', label: 'Position' }
+    ],
+    appearance: [
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'iconUrl', label: 'Icon' },
+      { key: 'iconSize', label: 'Icon Size' },
+      { key: 'iconColor', label: 'Icon Color' },
+      { key: 'glyph', label: 'Glyph' },
+      { key: 'glyphColor', label: 'Glyph Color' },
+      { key: 'glyphSize', label: 'Glyph Size' },
+      { key: 'glyphAnchor', label: 'Glyph Anchor' },
+      { key: 'rectangle', label: 'Rectangle' },
+      { key: 'angle', label: 'Angle' }
+    ],
+    content: [
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'logo', label: 'Logo' },
+      { key: 'website', label: 'Website' },
+      { key: 'info', label: 'Info' }
+    ],
+    admin: [
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'locked', label: 'Locked' },
+      { key: 'contact', label: 'Contact' },
+      { key: 'phone', label: 'Phone' },
+      { key: 'email', label: 'Email' },
+      { key: 'boothCount', label: 'Booth Count' },
+      { key: 'area', label: 'Area' },
+      { key: 'coins', label: 'Coins' },
+      { key: 'breakfast', label: 'Breakfast' },
+      { key: 'lunch', label: 'Lunch' },
+      { key: 'bbq', label: 'BBQ' },
+      { key: 'notes', label: 'Notes' }
+    ],
   };
   const [activeTab, setActiveTab] = useState('core');
   // Auth state
@@ -171,7 +208,7 @@ export default function AdminDashboard() {
     <>
       <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
       <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
-      <section className="p-6 bg-white rounded-lg shadow-lg max-w-2xl mx-auto border border-gray-200" aria-label="Admin Dashboard">
+  <section className="p-6 bg-white rounded-lg shadow-lg w-full border border-gray-200" aria-label="Admin Dashboard">
         <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
         <div className="flex gap-3 mb-6">
           <button onClick={undo} disabled={undoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Undo</button>
