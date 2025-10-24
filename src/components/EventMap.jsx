@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
@@ -213,6 +213,29 @@ function EventMap() {
             } else {
               icon = createMarkerIcon({ className: 'default-marker' });
             }
+            // Tooltip content: logo and name
+            const logoPath = marker.logo ? `/assets/logos/${marker.logo}` : null;
+            const tooltipContent = (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  gap: 0,
+                  padding: 0,
+                  whiteSpace: 'nowrap',
+                  minWidth: 'max-content',
+                }}
+              >
+                {logoPath && (
+                  <img
+                    src={logoPath}
+                    alt={marker.name || 'Logo'}
+                    style={{ width: 32, height: 32, objectFit: 'contain', marginRight: 4 }}
+                  />
+                )}
+                <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{marker.name}</span>
+              </div>
+            );
             const labelText = getMarkerLabel(marker.label);
             return (
               <Marker
@@ -221,6 +244,9 @@ function EventMap() {
                 icon={icon}
               >
                 <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
+                  {tooltipContent}
+                </Tooltip>
               </Marker>
             );
           })}
