@@ -238,9 +238,17 @@ export default function AdminDashboard() {
         <table className="w-full border border-gray-300 rounded overflow-hidden">
           <thead>
             <tr className="bg-gray-100 text-gray-900">
-              {COLUMNS[activeTab].map(col => (
-                <th key={col.key} className="py-2 px-3 border-b">{col.label}</th>
-              ))}
+              {COLUMNS[activeTab].map(col => {
+                // For core tab, make id column small
+                if (activeTab === 'core' && col.key === 'id') {
+                  return <th key={col.key} className="py-2 px-3 border-b text-left" style={{ minWidth: 40, width: 40, maxWidth: 40 }}>{col.label}</th>;
+                }
+                // For boothNumber column, set fixed width
+                if (col.key === 'boothNumber') {
+                  return <th key={col.key} className="py-2 px-3 border-b text-left" style={{ minWidth: 120, width: 120, maxWidth: 120 }}>{col.label}</th>;
+                }
+                return <th key={col.key} className="py-2 px-3 border-b text-left">{col.label}</th>;
+              })}
               <th className="py-2 px-3 border-b">Actions</th>
             </tr>
           </thead>
@@ -250,21 +258,21 @@ export default function AdminDashboard() {
                 {COLUMNS[activeTab].map(col => {
                   const value = marker[col.key];
                   if (col.key === 'iconUrl' && value) {
-                    return <td key={col.key} className="py-2 px-3 border-b"><img src={value} alt="icon" width={24} height={24} /> </td>;
+                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={value} alt="icon" width={24} height={24} /> </td>;
                   }
                   if (col.key === 'logo' && value) {
-                    return <td key={col.key} className="py-2 px-3 border-b"><img src={value} alt="logo" width={24} height={24} /> </td>;
+                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={value} alt="logo" width={24} height={24} /> </td>;
                   }
                   if (Array.isArray(value)) {
-                    return <td key={col.key} className="py-2 px-3 border-b">{value.join(', ')}</td>;
+                    return <td key={col.key} className="py-2 px-3 border-b text-left">{value.join(', ')}</td>;
                   }
                   if (typeof value === 'object' && value !== null) {
-                    return <td key={col.key} className="py-2 px-3 border-b">{JSON.stringify(value)}</td>;
+                    return <td key={col.key} className="py-2 px-3 border-b text-left">{JSON.stringify(value)}</td>;
                   }
                   if (typeof value === 'boolean') {
-                    return <td key={col.key} className="py-2 px-3 border-b">{value ? 'Yes' : 'No'}</td>;
+                    return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
                   }
-                  return <td key={col.key} className="py-2 px-3 border-b">{value}</td>;
+                  return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                 })}
                 <td className="py-2 px-3 border-b">
                   <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition">
