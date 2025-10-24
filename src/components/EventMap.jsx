@@ -213,7 +213,17 @@ function EventMap() {
               if (!iconFile.startsWith('assets/icons/')) {
                 iconFile = `assets/icons/${iconFile}`;
               }
-              const icon = createMarkerIcon({ className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon', iconUrl: iconFile });
+              const icon = createMarkerIcon({
+                className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
+                prefix: marker.prefix,
+                iconUrl: iconFile,
+                iconSize: marker.iconSize || [25, 41],
+                iconColor: marker.iconColor || 'blue',
+                glyph: marker.glyph || '',
+                glyphColor: marker.glyphColor || 'white',
+                glyphSize: marker.glyphSize || '14px',
+                glyphAnchor: marker.glyphAnchor || [0,0]
+               });
             // Tooltip content: logo and name
             const logoPath = marker.logo ? `/assets/logos/${marker.logo}` : null;
             const tooltipContent = (
