@@ -1,15 +1,16 @@
 import L from 'leaflet';
+import '../libs/Leaflet.Icon.Glyph.js';
 import orangeIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
 
-export function createMarkerIcon({ className }) {
-  return L.icon({
-    iconUrl: orangeIconUrl,
+export function createMarkerIcon({ glyph = 'home', glyphColor = 'white', bgColor = 'white', glyphSize = '11px', iconUrl = '/assets/icons/glyph-marker-icon-green.svg', className }) {
+  return L.icon.glyph({
+    prefix: 'mdi', // Material Design Icons
+    glyph,
+    glyphColor,
+    bgColor,
+    glyphSize,
+    iconUrl,
     iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [0, -41],
-    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [13, 41],
     className
   });
 }
