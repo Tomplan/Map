@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import { supabase } from '../supabaseClient';
 import AdminLogin from './AdminLogin';
 import BrandingSettings from './BrandingSettings';
@@ -119,9 +120,42 @@ export default function AdminDashboard() {
       .upsert({ id: 1, ...newSettings });
   };
 
+
+  // Export all data (branding + marker tables) as Excel file
+  async function exportData() {
+    // Fetch branding
+    const { data: branding } = await supabase
+      .from('Branding')
+      .select('*')
+      .eq('id', 1)
+      .single();
+    // Fetch marker tables
+    const { data: core } = await supabase.from('Markers_Core').select('*');
+    const { data: appearance } = await supabase.from('Markers_Appearance').select('*');
+    const { data: content } = await supabase.from('Markers_Content').select('*');
+    const { data: admin } = await supabase.from('Markers_Admin').select('*');
+    // Prepare sheets
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([branding]), 'Branding');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(core || []), 'Markers_Core');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(appearance || []), 'Markers_Appearance');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(content || []), 'Markers_Content');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(admin || []), 'Markers_Admin');
+    // Export Excel file
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'eventmap-backup.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <>
-  <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
+  <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
+      <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
       <section className="p-6 bg-white rounded-lg shadow-lg max-w-2xl mx-auto border border-gray-200" aria-label="Admin Dashboard">
         <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
         <div className="flex gap-3 mb-6">
