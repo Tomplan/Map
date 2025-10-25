@@ -27,11 +27,14 @@ export default function AdminDashboard() {
       { key: 'position', label: 'Position' }
     ],
     appearance: [
+      { key: 'id', label: 'ID' },
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'iconUrl', label: 'Icon' },
       { key: 'iconSize', label: 'Icon Size' },
       { key: 'iconColor', label: 'Icon Color' },
+      { key: 'className', label: 'Class Name' },
+      { key: 'prefix', label: 'Prefix' },
       { key: 'glyph', label: 'Glyph' },
       { key: 'glyphColor', label: 'Glyph Color' },
       { key: 'glyphSize', label: 'Glyph Size' },
@@ -40,6 +43,7 @@ export default function AdminDashboard() {
       { key: 'angle', label: 'Angle' }
     ],
     content: [
+      { key: 'id', label: 'ID' },
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'logo', label: 'Logo' },
@@ -47,6 +51,7 @@ export default function AdminDashboard() {
       { key: 'info', label: 'Info' }
     ],
     admin: [
+      { key: 'id', label: 'ID' },
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'contact', label: 'Contact' },
@@ -255,7 +260,32 @@ export default function AdminDashboard() {
             {tabData[activeTab].map(marker => (
               <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
                 {COLUMNS[activeTab].map(col => {
-                  const value = marker[col.key];
+                  let value = marker[col.key];
+                  // Reference field logic
+                  let isReference = false;
+                  let referenceTooltip = '';
+                  // id is only editable in core
+                  if (col.key === 'id') {
+                    const coreMarker = tabData.core.find(m => m.id === marker.id);
+                    value = coreMarker ? coreMarker.id : '';
+                    isReference = activeTab !== 'core';
+                    referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
+                  }
+                  // boothNumber and name are only editable in content
+                  if (col.key === 'boothNumber' || col.key === 'name') {
+                    const contentMarker = tabData.content.find(m => m.id === marker.id);
+                    value = contentMarker ? contentMarker[col.key] : '';
+                    isReference = activeTab !== 'content';
+                    referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
+                  }
+                  if (isReference) {
+                    return (
+                      <td key={col.key} className="py-2 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
+                        <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
+                        <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
+                      </td>
+                    );
+                  }
                   if (col.key === 'iconUrl' && value) {
                     return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={value} alt="icon" width={24} height={24} /> </td>;
                   }
