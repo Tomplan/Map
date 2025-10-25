@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { getLogoPath } from '../utils/getLogoPath';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
@@ -93,7 +94,7 @@ function EventMap() {
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
-  const { markers, loading, isOnline } = useEventMarkers();
+  const { markers } = useEventMarkers();
   const { trackMarkerView } = useAnalytics();
 
   // Map config for fullscreen
@@ -113,12 +114,9 @@ function EventMap() {
   // Log zoom level after change for accurate measurement
   React.useEffect(() => {
     if (!mapInstance) return;
-    const logZoom = () => {
-      console.log('Zoom changed. Now:', mapInstance.getZoom());
-    };
-    mapInstance.on('zoomend', logZoom);
+    // Removed zoom level logging for production
     return () => {
-      mapInstance.off('zoomend', logZoom);
+      // No cleanup needed
     };
   }, [mapInstance]);
   // Removed unused handleHome
@@ -225,7 +223,7 @@ function EventMap() {
                 glyphAnchor: marker.glyphAnchor || [0,0]
                });
             // Tooltip content: logo and name
-            const logoPath = marker.logo ? `/assets/logos/${marker.logo}` : null;
+            const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
             const tooltipContent = (
               <div
                 style={{

@@ -3,6 +3,7 @@ import * as XLSX from 'xlsx';
 import { supabase } from '../supabaseClient';
 import AdminLogin from './AdminLogin';
 import BrandingSettings from './BrandingSettings';
+import { getLogoPath } from '../utils/getLogoPath';
 
 
 export default function AdminDashboard() {
@@ -290,7 +291,8 @@ export default function AdminDashboard() {
                     return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={value} alt="icon" width={24} height={24} /> </td>;
                   }
                   if (col.key === 'logo' && value) {
-                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={value} alt="logo" width={24} height={24} /> </td>;
+                    const logoPath = getLogoPath(value);
+                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
                   }
                   if (Array.isArray(value)) {
                     return <td key={col.key} className="py-2 px-3 border-b text-left">{value.join(', ')}</td>;
