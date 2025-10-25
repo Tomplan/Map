@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { supabase } from '../supabaseClient';
@@ -6,8 +7,15 @@ import BrandingSettings from './BrandingSettings';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 
-
 export default function AdminDashboard() {
+  // Branding settings save handler
+  const handleBrandingChange = async (newSettings) => {
+    await supabase
+      .from('Branding')
+      .upsert({ id: 1, ...newSettings });
+  };
+  // Collapsible dashboard state
+  const [dashboardOpen, setDashboardOpen] = useState(true);
   // Tabbed dashboard structure
   const TAB_TABLES = useMemo(() => ({
     core: 'Markers_Core',
@@ -188,14 +196,6 @@ export default function AdminDashboard() {
     };
   }, []);
 
-  // Auto-save handler for branding settings
-  const handleBrandingChange = async (newSettings) => {
-    await supabase
-      .from('Branding')
-      .upsert({ id: 1, ...newSettings });
-  };
-
-
   // Export all data (branding + marker tables) as Excel file
   async function exportData() {
     // Fetch branding
@@ -229,164 +229,152 @@ export default function AdminDashboard() {
 
   return (
     <>
-      {/* Sort tabData for current tab by selected column/direction before rendering */}
-      {(() => {
-        if (tabData[activeTab] && Array.isArray(tabData[activeTab])) {
-          const { column, direction } = sortState[activeTab];
-          // Helper to get the correct value for sorting, including reference fields
-          function getSortValue(marker, colKey) {
-            // Reference logic: id from core, boothNumber/name from content
-            if (colKey === 'id' && activeTab !== 'core') {
-              const coreMarker = tabData.core.find(m => m.id === marker.id);
-              return coreMarker ? coreMarker.id : '';
-            }
-            if ((colKey === 'boothNumber' || colKey === 'name') && activeTab !== 'content') {
-              const contentMarker = tabData.content.find(m => m.id === marker.id);
-              return contentMarker ? contentMarker[colKey] : '';
-            }
-            return marker[colKey];
-          }
-          tabData[activeTab].sort((a, b) => {
-            let aVal = getSortValue(a, column);
-            let bVal = getSortValue(b, column);
-            if (aVal == null) aVal = '';
-            if (bVal == null) bVal = '';
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-              return direction === 'asc' ? aVal - bVal : bVal - aVal;
-            }
-            return direction === 'asc'
-              ? String(aVal).localeCompare(String(bVal))
-              : String(bVal).localeCompare(String(aVal));
-          });
-        }
-      })()}
-      <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
-      <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
-  <section className="p-6 bg-white rounded-lg shadow-lg w-full border border-gray-200" aria-label="Admin Dashboard">
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
-        <div className="flex gap-3 mb-6">
-          <button onClick={undo} disabled={undoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Undo</button>
-          <button onClick={redo} disabled={redoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Redo</button>
-          <button onClick={exportMarkers} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Export JSON</button>
-        </div>
-        {/* Tabbed marker table */}
-        <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              style={{
-                marginRight: 8,
-                padding: '0.5rem 1rem',
-                background: activeTab === tab.key ? '#1976d2' : '#eee',
-                color: activeTab === tab.key ? '#fff' : '#333',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer',
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-        <table className="w-full border border-gray-300 rounded overflow-hidden">
-          <thead>
-            <tr className="bg-gray-100 text-gray-900">
-              {COLUMNS[activeTab].map(col => {
-                // Sorting indicator
-                const isSorted = sortState[activeTab].column === col.key;
-                const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
-                // For core tab, make id column small
-                const thStyle =
-                  activeTab === 'core' && col.key === 'id'
-                    ? { minWidth: 40, width: 40, maxWidth: 40, cursor: 'pointer' }
-                    : col.key === 'boothNumber'
-                    ? { minWidth: 120, width: 120, maxWidth: 120, cursor: 'pointer' }
-                    : { cursor: 'pointer' };
-                return (
-                  <th
-                    key={col.key}
-                    className="py-2 px-3 border-b text-left select-none hover:bg-blue-50"
-                    style={thStyle}
-                    onClick={() => handleSort(activeTab, col.key)}
-                    title={`Sort by ${col.label}`}
-                  >
-                    <span style={{ userSelect: 'none' }}>{col.label} {arrow}</span>
-                  </th>
-                );
-              })}
-              <th className="py-2 px-3 border-b">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tabData[activeTab].map(marker => (
-              <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
-                {COLUMNS[activeTab].map(col => {
-                  let value = marker[col.key];
-                  // Reference field logic
-                  let isReference = false;
-                  let referenceTooltip = '';
-                  // id is only editable in core
-                  if (col.key === 'id') {
-                    const coreMarker = tabData.core.find(m => m.id === marker.id);
-                    value = coreMarker ? coreMarker.id : '';
-                    isReference = activeTab !== 'core';
-                    referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
-                  }
-                  // boothNumber and name are only editable in content
-                  if (col.key === 'boothNumber' || col.key === 'name') {
-                    const contentMarker = tabData.content.find(m => m.id === marker.id);
-                    value = contentMarker ? contentMarker[col.key] : '';
-                    isReference = activeTab !== 'content';
-                    referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
-                  }
-                  if (isReference) {
-                    return (
-                      <td key={col.key} className="py-2 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
-                        <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
-                        <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
-                      </td>
-                    );
-                  }
-                  if (col.key === 'iconUrl' && value) {
-                    const iconPath = getIconPath(value);
-                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
-                  }
-                  if (col.key === 'logo' && value) {
-                    const logoPath = getLogoPath(value);
-                    return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
-                  }
-                  if (Array.isArray(value)) {
-                    return <td key={col.key} className="py-2 px-3 border-b text-left">{value.join(', ')}</td>;
-                  }
-                  if (typeof value === 'object' && value !== null) {
-                    return <td key={col.key} className="py-2 px-3 border-b text-left">{JSON.stringify(value)}</td>;
-                  }
-                  if (typeof value === 'boolean') {
-                    return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
-                  }
-                  return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
-                })}
-                <td className="py-2 px-3 border-b">
-                  <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition">
-                    {marker.locked ? 'Unlock' : 'Lock'}
-                  </button>
-                  <button onClick={() => selectMarker(marker.id)} className="ml-2 px-2 py-1 text-xs bg-yellow-300 text-gray-900 rounded hover:bg-yellow-400 transition">
-                    Edit
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {selected && (
-          <div className="mt-6 p-4 border border-gray-300 rounded-lg bg-gray-50">
-            <h3 className="font-bold mb-2 text-gray-900">Edit Marker #{selected}</h3>
-            {/* Add marker editing UI here */}
-            <button onClick={() => setSelected(null)} className="mt-2 px-4 py-2 bg-gray-300 text-gray-900 rounded hover:bg-gray-400 transition">Close</button>
+      {/* Collapsible Admin Dashboard */}
+      <div className="mb-4">
+        <button
+          onClick={() => setDashboardOpen(open => !open)}
+          className="px-6 py-3 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition text-lg font-bold w-full flex items-center justify-between"
+          aria-expanded={dashboardOpen}
+          aria-controls="admin-dashboard-section"
+        >
+          Admin Dashboard
+          <span>{dashboardOpen ? '▲' : '▼'}</span>
+        </button>
+      </div>
+      {dashboardOpen && (
+        <section
+          id="admin-dashboard-section"
+          className="p-6 bg-white rounded-lg shadow-lg w-full border border-gray-200"
+          aria-label="Admin Dashboard"
+        >
+          {/* All dashboard functions inside */}
+          <h2 className="text-2xl font-bold mb-6 text-gray-900">Admin Dashboard</h2>
+          <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
+          <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
+          <div className="flex gap-3 mb-6">
+            <button onClick={undo} disabled={undoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Undo</button>
+            <button onClick={redo} disabled={redoStack.length === 0} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Redo</button>
+            <button onClick={exportMarkers} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">Export JSON</button>
           </div>
-        )}
-      </section>
+          {/* Tabbed marker table */}
+          <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                style={{
+                  marginRight: 8,
+                  padding: '0.5rem 1rem',
+                  background: activeTab === tab.key ? '#1976d2' : '#eee',
+                  color: activeTab === tab.key ? '#fff' : '#333',
+                  border: 'none',
+                  borderRadius: 4,
+                  cursor: 'pointer',
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <table className="w-full border border-gray-300 rounded overflow-hidden">
+            <thead>
+              <tr className="bg-gray-100 text-gray-900">
+                {COLUMNS[activeTab].map(col => {
+                  // Sorting indicator
+                  const isSorted = sortState[activeTab].column === col.key;
+                  const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
+                  // For core tab, make id column small
+                  const thStyle =
+                    activeTab === 'core' && col.key === 'id'
+                      ? { minWidth: 40, width: 40, maxWidth: 40, cursor: 'pointer' }
+                      : col.key === 'boothNumber'
+                      ? { minWidth: 120, width: 120, maxWidth: 120, cursor: 'pointer' }
+                      : { cursor: 'pointer' };
+                  return (
+                    <th
+                      key={col.key}
+                      className="py-2 px-3 border-b text-left select-none hover:bg-blue-50"
+                      style={thStyle}
+                      onClick={() => handleSort(activeTab, col.key)}
+                      title={`Sort by ${col.label}`}
+                    >
+                      <span style={{ userSelect: 'none' }}>{col.label} {arrow}</span>
+                    </th>
+                  );
+                })}
+                <th className="py-2 px-3 border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tabData[activeTab].map(marker => (
+                <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
+                  {COLUMNS[activeTab].map(col => {
+                    let value = marker[col.key];
+                    // Reference field logic
+                    let isReference = false;
+                    let referenceTooltip = '';
+                    // id is only editable in core
+                    if (col.key === 'id') {
+                      const coreMarker = tabData.core.find(m => m.id === marker.id);
+                      value = coreMarker ? coreMarker.id : '';
+                      isReference = activeTab !== 'core';
+                      referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
+                    }
+                    // boothNumber and name are only editable in content
+                    if (col.key === 'boothNumber' || col.key === 'name') {
+                      const contentMarker = tabData.content.find(m => m.id === marker.id);
+                      value = contentMarker ? contentMarker[col.key] : '';
+                      isReference = activeTab !== 'content';
+                      referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
+                    }
+                    if (isReference) {
+                      return (
+                        <td key={col.key} className="py-2 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
+                          <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
+                          <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
+                        </td>
+                      );
+                    }
+                    if (col.key === 'iconUrl' && value) {
+                      const iconPath = getIconPath(value);
+                      return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
+                    }
+                    if (col.key === 'logo' && value) {
+                      const logoPath = getLogoPath(value);
+                      return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                    }
+                    if (Array.isArray(value)) {
+                      return <td key={col.key} className="py-2 px-3 border-b text-left">{value.join(', ')}</td>;
+                    }
+                    if (typeof value === 'object' && value !== null) {
+                      return <td key={col.key} className="py-2 px-3 border-b text-left">{JSON.stringify(value)}</td>;
+                    }
+                    if (typeof value === 'boolean') {
+                      return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
+                    }
+                    return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
+                  })}
+                  <td className="py-2 px-3 border-b">
+                    <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition">
+                      {marker.locked ? 'Unlock' : 'Lock'}
+                    </button>
+                    <button onClick={() => selectMarker(marker.id)} className="ml-2 px-2 py-1 text-xs bg-yellow-300 text-gray-900 rounded hover:bg-yellow-400 transition">
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {selected && (
+            <div className="mt-6 p-4 border border-gray-300 rounded-lg bg-gray-50">
+              <h3 className="font-bold mb-2 text-gray-900">Edit Marker #{selected}</h3>
+              {/* Add marker editing UI here */}
+              <button onClick={() => setSelected(null)} className="mt-2 px-4 py-2 bg-gray-300 text-gray-900 rounded hover:bg-gray-400 transition">Close</button>
+            </div>
+          )}
+        </section>
+      )}
     </>
   );
 }
