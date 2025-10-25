@@ -238,17 +238,44 @@ export default function AdminDashboard() {
       .eq('id', 1)
       .single();
     // Fetch marker tables
-    const { data: core } = await supabase.from('Markers_Core').select('*');
-    const { data: appearance } = await supabase.from('Markers_Appearance').select('*');
-    const { data: content } = await supabase.from('Markers_Content').select('*');
-    const { data: admin } = await supabase.from('Markers_Admin').select('*');
+    const tabKeys = Object.keys(COLUMNS);
+    const tabData = {};
+    for (const tab of tabKeys) {
+      const { data } = await supabase.from(TAB_TABLES[tab]).select('*');
+      tabData[tab] = data || [];
+    }
+    // Helper to format rows per dashboard columns
+    function formatRows(tab, rows) {
+      return rows.map(row => {
+        const formatted = {};
+        for (const col of COLUMNS[tab]) {
+          // Reference field logic
+          if (col.key === 'id') {
+            if (tab !== 'core') {
+              const coreMarker = tabData.core.find(m => m.id === row.id);
+              formatted[col.key] = coreMarker ? coreMarker.id : '';
+              continue;
+            }
+          }
+          if (col.key === 'boothNumber' || col.key === 'name') {
+            if (tab !== 'content') {
+              const contentMarker = tabData.content.find(m => m.id === row.id);
+              formatted[col.key] = contentMarker ? contentMarker[col.key] : '';
+              continue;
+            }
+          }
+          formatted[col.key] = row[col.key];
+        }
+        return formatted;
+      });
+    }
     // Prepare sheets
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([branding]), 'Branding');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(core || []), 'Markers_Core');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(appearance || []), 'Markers_Appearance');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(content || []), 'Markers_Content');
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(admin || []), 'Markers_Admin');
+    for (const tab of tabKeys) {
+      const rows = formatRows(tab, tabData[tab]);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), TAB_TABLES[tab]);
+    }
     // Export Excel file
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
