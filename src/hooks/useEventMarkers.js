@@ -64,7 +64,6 @@ export default function useEventMarkers() {
         lng,
       };
     });
-    console.log('Merged markers:', mergedMarkers); // Diagnostic log
     setMarkers(mergedMarkers);
     localStorage.setItem('eventMarkers', JSON.stringify(mergedMarkers));
     setLoading(false);
