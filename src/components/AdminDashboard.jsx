@@ -69,6 +69,23 @@ export default function AdminDashboard() {
     ],
   };
   const [activeTab, setActiveTab] = useState('core');
+  // Sorting state: column and direction per tab
+  const [sortState, setSortState] = useState({
+    core: { column: 'id', direction: 'asc' },
+    appearance: { column: 'id', direction: 'asc' },
+    content: { column: 'id', direction: 'asc' },
+    admin: { column: 'id', direction: 'asc' }
+  });
+
+  // Handle sort change
+  function handleSort(tab, column) {
+    setSortState(prev => {
+      const current = prev[tab];
+      // Toggle direction if same column, else default to asc
+      const direction = current.column === column ? (current.direction === 'asc' ? 'desc' : 'asc') : 'asc';
+      return { ...prev, [tab]: { column, direction } };
+    });
+  }
   // Auth state
   // Remove unused auth state
 
@@ -212,10 +229,35 @@ export default function AdminDashboard() {
 
   return (
     <>
-      {/* Sort tabData for current tab by id ascending before rendering */}
+      {/* Sort tabData for current tab by selected column/direction before rendering */}
       {(() => {
         if (tabData[activeTab] && Array.isArray(tabData[activeTab])) {
-          tabData[activeTab].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+          const { column, direction } = sortState[activeTab];
+          // Helper to get the correct value for sorting, including reference fields
+          function getSortValue(marker, colKey) {
+            // Reference logic: id from core, boothNumber/name from content
+            if (colKey === 'id' && activeTab !== 'core') {
+              const coreMarker = tabData.core.find(m => m.id === marker.id);
+              return coreMarker ? coreMarker.id : '';
+            }
+            if ((colKey === 'boothNumber' || colKey === 'name') && activeTab !== 'content') {
+              const contentMarker = tabData.content.find(m => m.id === marker.id);
+              return contentMarker ? contentMarker[colKey] : '';
+            }
+            return marker[colKey];
+          }
+          tabData[activeTab].sort((a, b) => {
+            let aVal = getSortValue(a, column);
+            let bVal = getSortValue(b, column);
+            if (aVal == null) aVal = '';
+            if (bVal == null) bVal = '';
+            if (typeof aVal === 'number' && typeof bVal === 'number') {
+              return direction === 'asc' ? aVal - bVal : bVal - aVal;
+            }
+            return direction === 'asc'
+              ? String(aVal).localeCompare(String(bVal))
+              : String(bVal).localeCompare(String(aVal));
+          });
         }
       })()}
       <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
@@ -251,15 +293,27 @@ export default function AdminDashboard() {
           <thead>
             <tr className="bg-gray-100 text-gray-900">
               {COLUMNS[activeTab].map(col => {
+                // Sorting indicator
+                const isSorted = sortState[activeTab].column === col.key;
+                const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
                 // For core tab, make id column small
-                if (activeTab === 'core' && col.key === 'id') {
-                  return <th key={col.key} className="py-2 px-3 border-b text-left" style={{ minWidth: 40, width: 40, maxWidth: 40 }}>{col.label}</th>;
-                }
-                // For boothNumber column, set fixed width
-                if (col.key === 'boothNumber') {
-                  return <th key={col.key} className="py-2 px-3 border-b text-left" style={{ minWidth: 120, width: 120, maxWidth: 120 }}>{col.label}</th>;
-                }
-                return <th key={col.key} className="py-2 px-3 border-b text-left">{col.label}</th>;
+                const thStyle =
+                  activeTab === 'core' && col.key === 'id'
+                    ? { minWidth: 40, width: 40, maxWidth: 40, cursor: 'pointer' }
+                    : col.key === 'boothNumber'
+                    ? { minWidth: 120, width: 120, maxWidth: 120, cursor: 'pointer' }
+                    : { cursor: 'pointer' };
+                return (
+                  <th
+                    key={col.key}
+                    className="py-2 px-3 border-b text-left select-none hover:bg-blue-50"
+                    style={thStyle}
+                    onClick={() => handleSort(activeTab, col.key)}
+                    title={`Sort by ${col.label}`}
+                  >
+                    <span style={{ userSelect: 'none' }}>{col.label} {arrow}</span>
+                  </th>
+                );
               })}
               <th className="py-2 px-3 border-b">Actions</th>
             </tr>
