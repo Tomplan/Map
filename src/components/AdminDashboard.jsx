@@ -112,6 +112,39 @@ export default function AdminDashboard() {
     }
     fetchAllTabs();
   }, [TAB_TABLES]);
+    // Sort markers for current tab before rendering
+    const sortedMarkers = useMemo(() => {
+      const tab = activeTab;
+      const markers = tabData[tab] || [];
+      const { column, direction } = sortState[tab];
+      // Reference fields: id, boothNumber, name
+      let getValue = m => m[column];
+      if (column === 'id') {
+        getValue = m => {
+          const coreMarker = tabData.core.find(cm => cm.id === m.id);
+          return coreMarker ? coreMarker.id : '';
+        };
+      }
+      if (column === 'boothNumber' || column === 'name') {
+        getValue = m => {
+          const contentMarker = tabData.content.find(cm => cm.id === m.id);
+          return contentMarker ? contentMarker[column] : '';
+        };
+      }
+      return [...markers].sort((a, b) => {
+        const va = getValue(a);
+        const vb = getValue(b);
+        if (va == null && vb == null) return 0;
+        if (va == null) return direction === 'asc' ? -1 : 1;
+        if (vb == null) return direction === 'asc' ? 1 : -1;
+        if (typeof va === 'number' && typeof vb === 'number') {
+          return direction === 'asc' ? va - vb : vb - va;
+        }
+        return direction === 'asc'
+          ? String(va).localeCompare(String(vb), undefined, { numeric: true })
+          : String(vb).localeCompare(String(va), undefined, { numeric: true });
+      });
+    }, [tabData, activeTab, sortState]);
   const [selected, setSelected] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
@@ -306,7 +339,7 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {tabData[activeTab].map(marker => (
+              {sortedMarkers.map(marker => (
                 <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
                   {COLUMNS[activeTab].map(col => {
                     let value = marker[col.key];
