@@ -231,6 +231,19 @@ export default function AdminDashboard() {
 
   // Export all data (branding + marker tables) as Excel file
   async function exportData() {
+    // Instructions for admins
+    const instructions = [
+      {
+        Step: 'After opening in Excel:',
+        Instructions: '1. Freeze the header row (View > Freeze Panes > Freeze Top Row). 2. Protect the sheet (Review > Protect Sheet) and enable "Sort" and "Use AutoFilter". 3. Optionally, use "Allow Users to Edit Ranges" for advanced control.'
+      },
+      {
+        Note: 'Header cells are locked. Data cells are unlocked for editing, sorting, and filtering.'
+      },
+      {
+        Limitation: 'Some protection features (Freeze Panes, Edit Ranges) must be set manually in Excel.'
+      }
+    ];
     // Fetch branding
     const { data: branding } = await supabase
       .from('Branding')
@@ -271,13 +284,53 @@ export default function AdminDashboard() {
     }
     // Prepare sheets
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([branding]), 'Branding');
+    // Branding sheet (no protection needed)
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet([branding]), 'Branding');
+  // Instructions sheet
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(instructions), 'Instructions');
     for (const tab of tabKeys) {
       const rows = formatRows(tab, tabData[tab]);
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), TAB_TABLES[tab]);
+      const sheet = XLSX.utils.json_to_sheet(rows, { header: COLUMNS[tab].map(c => c.key) });
+      // Lock header row, unlock data cells
+      const numCols = COLUMNS[tab].length;
+      const numRows = rows.length + 1; // +1 for header
+      for (let c = 0; c < numCols; c++) {
+        const colKey = COLUMNS[tab][c].key;
+        const headerAddr = XLSX.utils.encode_cell({ r: 0, c });
+        if (sheet[headerAddr]) {
+          sheet[headerAddr].s = sheet[headerAddr].s || {};
+          sheet[headerAddr].s.protection = { locked: true };
+        }
+        for (let r = 1; r < numRows; r++) {
+          const cellAddr = XLSX.utils.encode_cell({ r, c });
+          if (sheet[cellAddr]) {
+            sheet[cellAddr].s = sheet[cellAddr].s || {};
+            // Lock reference columns in non-origin tabs
+            if (
+              (colKey === 'id' && tab !== 'core') ||
+              ((colKey === 'boothNumber' || colKey === 'name') && tab !== 'content')
+            ) {
+              sheet[cellAddr].s.protection = { locked: true };
+            } else {
+              sheet[cellAddr].s.protection = { locked: false };
+            }
+          }
+        }
+      }
+      // Protect sheet and allow sorting/filtering and formatting columns/rows
+      sheet['!protect'] = {
+        password: '', // no password
+        objects: true,
+        scenarios: true,
+        sort: true,
+        autofilter: true,
+        formatColumns: true,
+        formatRows: true
+      };
+      XLSX.utils.book_append_sheet(wb, sheet, TAB_TABLES[tab]);
     }
     // Export Excel file
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
