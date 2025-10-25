@@ -212,6 +212,12 @@ export default function AdminDashboard() {
 
   return (
     <>
+      {/* Sort tabData for current tab by id ascending before rendering */}
+      {(() => {
+        if (tabData[activeTab] && Array.isArray(tabData[activeTab])) {
+          tabData[activeTab].sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+        }
+      })()}
       <button onClick={exportData} className="mb-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Export Data</button>
       <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
   <section className="p-6 bg-white rounded-lg shadow-lg w-full border border-gray-200" aria-label="Admin Dashboard">
