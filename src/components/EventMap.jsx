@@ -89,6 +89,9 @@ const MAP_LAYERS = [
 
 function EventMap() {
   const { t } = useTranslation();
+  // Log admin/user view state
+  const isAdminView = typeof arguments[0] === 'object' && arguments[0] && 'isAdminView' in arguments[0] ? arguments[0].isAdminView : false;
+  // console.log('EventMap loaded:', isAdminView ? 'ADMIN VIEW' : 'USER VIEW');
   // Always use Carto Voyager for user view
   const activeLayer = MAP_LAYERS[0].key;
   const [mapInstance, setMapInstance] = useState(null);
@@ -251,6 +254,8 @@ function EventMap() {
                 key={marker.id}
                 position={[marker.lat, marker.lng]}
                 icon={icon}
+                draggable={isAdminView && !marker.locked} // Only draggable in admin view and if unlocked
+                
               >
                 <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
                 <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
@@ -259,6 +264,7 @@ function EventMap() {
               </Marker>
             );
           })}
+          
         </MapContainer>
       </div>
     </div>

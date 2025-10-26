@@ -179,6 +179,9 @@ export default function AdminDashboard() {
         .from(TAB_TABLES[activeTab])
         .update({ locked: changed.locked })
         .eq('id', id);
+        // Add your log here:
+    const isDraggable = activeTab === 'core' && !changed.locked;
+    console.log(`Marker ${id} draggable state:`, isDraggable);
     }
   }
 
@@ -257,7 +260,7 @@ export default function AdminDashboard() {
       </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
-        <EventMap />
+        <EventMap isAdminView={true} />
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
