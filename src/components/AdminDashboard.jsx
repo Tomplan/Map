@@ -274,7 +274,7 @@ export default function AdminDashboard() {
                       // For core tab, make id column small
                       const thStyle =
                         activeTab === 'core' && col.key === 'id'
-                          ? { minWidth: 40, width: 40, maxWidth: 40, cursor: 'pointer' }
+                          ? { minWidth: 80, width: 80, maxWidth: 80, cursor: 'pointer' }
                           : col.key === 'boothNumber'
                           ? { minWidth: 120, width: 120, maxWidth: 120, cursor: 'pointer' }
                           : { cursor: 'pointer' };
@@ -302,27 +302,28 @@ export default function AdminDashboard() {
                         <td key={col.key} className="py-2 px-3 border-b" />
                       ))}
                       <td className="py-2 px-3 border-b text-left">
-                        <button
-                          onClick={() => {
-                            const allLocked = sortedMarkers.every(m => m.locked);
-                            const updatedMarkers = sortedMarkers.map(m => ({ ...m, locked: !allLocked }));
-                            setTabData({ ...tabData, [activeTab]: updatedMarkers });
-                            // Save to Supabase
-                            updatedMarkers.forEach(async (marker) => {
-                              await supabase
-                                .from(TAB_TABLES[activeTab])
-                                .update({ locked: marker.locked })
-                                .eq('id', marker.id);
-                            });
-                          }}
-                          className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                          style={{ width: '100%' }}
-                          title="Lock or unlock all rows"
-                        >
-                          {sortedMarkers.every(m => m.locked)
-                            ? <Icon path={mdiLock} size={1.2} />
-                            : <Icon path={mdiLockOpenVariant} size={1.2} />}
-                        </button>
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => {
+                              const allLocked = sortedMarkers.every(m => m.locked);
+                              const updatedMarkers = sortedMarkers.map(m => ({ ...m, locked: !allLocked }));
+                              setTabData({ ...tabData, [activeTab]: updatedMarkers });
+                              // Save to Supabase
+                              updatedMarkers.forEach(async (marker) => {
+                                await supabase
+                                  .from(TAB_TABLES[activeTab])
+                                  .update({ locked: marker.locked })
+                                  .eq('id', marker.id);
+                              });
+                            }}
+                            className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                            title="Lock or unlock all rows"
+                          >
+                            {sortedMarkers.every(m => m.locked)
+                              ? <Icon path={mdiLock} size={1.2} />
+                              : <Icon path={mdiLockOpenVariant} size={1.2} />}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -398,15 +399,17 @@ export default function AdminDashboard() {
                         return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                       })}
                       <td className="py-2 px-3 border-b">
-                        <button
-                          onClick={() => toggleLock(marker.id)}
-                          className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                          title={marker.locked ? 'Unlock row' : 'Lock row'}
-                        >
-                          {marker.locked
-                            ? <Icon path={mdiLock} size={1.2} />
-                            : <Icon path={mdiLockOpenVariant} size={1.2} />}
-                        </button>
+                        <div className="flex justify-center">
+                          <button
+                            onClick={() => toggleLock(marker.id)}
+                            className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                            title={marker.locked ? 'Unlock row' : 'Lock row'}
+                          >
+                            {marker.locked
+                              ? <Icon path={mdiLock} size={1.2} />
+                              : <Icon path={mdiLockOpenVariant} size={1.2} />}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
