@@ -242,8 +242,8 @@ export default function AdminDashboard() {
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
-          <div className="absolute inset-0 z-40 flex justify-center items-start pt-20">
-            <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-3xl mx-auto">
+          <div className="absolute inset-0 left-4 right-4 z-40 flex justify-start items-start pt-20">
+            <div className="bg-white rounded-lg shadow-2xl p-8 w-full" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
               {/* Marker tables for each tab */}
               <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
                 {TABS.map(tab => (
