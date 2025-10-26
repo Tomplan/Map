@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import EventMap from './EventMap';
 import * as XLSX from 'xlsx';
-import { MdDashboard } from 'react-icons/md';
+import { MdDashboard, MdLock, MdLockOpen } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import AdminLogin from './AdminLogin';
 import BrandingSettings from './BrandingSettings';
@@ -267,8 +267,7 @@ export default function AdminDashboard() {
               <table className="w-full border border-gray-300 rounded overflow-hidden">
                 <thead>
                   <tr className="bg-gray-100 text-gray-900">
-                    {COLUMNS[activeTab].map(col => {
-                      // Sorting indicator
+                    {COLUMNS[activeTab].map((col) => {
                       const isSorted = sortState[activeTab].column === col.key;
                       const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
                       // For core tab, make id column small
@@ -294,6 +293,39 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody>
+                  {/* Global lock button row in actions column */}
+                  {sortedMarkers.length > 0 && (
+                    <tr>
+                      {/* Empty cells for all columns except actions */}
+                      {COLUMNS[activeTab].map((col) => (
+                        <td key={col.key} className="py-2 px-3 border-b" />
+                      ))}
+                      <td className="py-2 px-3 border-b text-left">
+                        <button
+                          onClick={() => {
+                            const allLocked = sortedMarkers.every(m => m.locked);
+                            const updatedMarkers = sortedMarkers.map(m => ({ ...m, locked: !allLocked }));
+                            setTabData({ ...tabData, [activeTab]: updatedMarkers });
+                            // Save to Supabase
+                            updatedMarkers.forEach(async (marker) => {
+                              await supabase
+                                .from(TAB_TABLES[activeTab])
+                                .update({ locked: marker.locked })
+                                .eq('id', marker.id);
+                            });
+                          }}
+                          className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                          style={{ width: '100%' }}
+                          title="Lock or unlock all rows"
+                        >
+                          {sortedMarkers.every(m => m.locked)
+                            ? <MdLock size={20} />
+                            : <MdLockOpen size={20} />}
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                  {/* Data rows */}
                   {sortedMarkers.map(marker => (
                     <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
                       {COLUMNS[activeTab].map(col => {
@@ -323,6 +355,28 @@ export default function AdminDashboard() {
                             </td>
                           );
                         }
+                        // Editable fields for unlocked markers
+                        if (!marker.locked) {
+                          if (col.key === 'iconUrl' && value) {
+                            const iconPath = getIconPath(value);
+                            return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
+                          }
+                          if (col.key === 'logo' && value) {
+                            const logoPath = getLogoPath(value);
+                            return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                          }
+                          if (Array.isArray(value)) {
+                            return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                          }
+                          if (typeof value === 'object' && value !== null) {
+                            return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                          }
+                          if (typeof value === 'boolean') {
+                            return <td key={col.key} className="py-2 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
+                          }
+                          return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
+                        }
+                        // Non-editable fields for locked markers
                         if (col.key === 'iconUrl' && value) {
                           const iconPath = getIconPath(value);
                           return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
@@ -343,11 +397,14 @@ export default function AdminDashboard() {
                         return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                       })}
                       <td className="py-2 px-3 border-b">
-                        <button onClick={() => toggleLock(marker.id)} className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition">
-                          {marker.locked ? 'Unlock' : 'Lock'}
-                        </button>
-                        <button onClick={() => selectMarker(marker.id)} className="ml-2 px-2 py-1 text-xs bg-yellow-300 text-gray-900 rounded hover:bg-yellow-400 transition">
-                          Edit
+                        <button
+                          onClick={() => toggleLock(marker.id)}
+                          className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                          title={marker.locked ? 'Unlock row' : 'Lock row'}
+                        >
+                          {marker.locked
+                            ? <MdLock size={20} />
+                            : <MdLockOpen size={20} />}
                         </button>
                       </td>
                     </tr>
