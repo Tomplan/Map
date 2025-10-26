@@ -94,7 +94,7 @@ function App() {
                   <AccessibilityToggle />
                 </Suspense>
                 <Suspense fallback={<div>Loading map...</div>}>
-                  <EventMap />
+                  <EventMap isAdminView={false} />
                 </Suspense>
               </main>
               <BrandingSettings onChange={setBranding} />
@@ -109,6 +109,9 @@ function App() {
               <div style={{ margin: '2rem 0' }}>
                 <MarkerTable />
               </div>
+              <Suspense fallback={<div>Loading map...</div>}>
+                <EventMap isAdminView={true} />
+              </Suspense>
             </ErrorBoundary>
           }
         />
