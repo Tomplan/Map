@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import EventMap from './EventMap';
 import * as XLSX from 'xlsx';
-import { MdDashboard, MdLock, MdLockOpen } from 'react-icons/md';
+import Icon from '@mdi/react';
+import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { supabase } from '../supabaseClient';
 import AdminLogin from './AdminLogin';
 import BrandingSettings from './BrandingSettings';
@@ -229,12 +230,12 @@ export default function AdminDashboard() {
     <div className="relative w-full h-screen">
       {/* Dashboard button at top */}
       <button
-  className="fixed top-4 right-4 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+        className="fixed top-4 right-4 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
         aria-label="Toggle dashboard"
         onClick={() => setShowDashboard((v) => !v)}
       >
-  <MdDashboard size={24} color="#1976d2" />
-  <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
+        <Icon path={mdiViewDashboard} size={1.2} color="#1976d2" />
+        <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
       </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
@@ -319,8 +320,8 @@ export default function AdminDashboard() {
                           title="Lock or unlock all rows"
                         >
                           {sortedMarkers.every(m => m.locked)
-                            ? <MdLock size={20} />
-                            : <MdLockOpen size={20} />}
+                            ? <Icon path={mdiLock} size={1.2} />
+                            : <Icon path={mdiLockOpenVariant} size={1.2} />}
                         </button>
                       </td>
                     </tr>
@@ -403,8 +404,8 @@ export default function AdminDashboard() {
                           title={marker.locked ? 'Unlock row' : 'Lock row'}
                         >
                           {marker.locked
-                            ? <MdLock size={20} />
-                            : <MdLockOpen size={20} />}
+                            ? <Icon path={mdiLock} size={1.2} />
+                            : <Icon path={mdiLockOpenVariant} size={1.2} />}
                         </button>
                       </td>
                     </tr>
