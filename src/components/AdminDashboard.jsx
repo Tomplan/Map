@@ -301,7 +301,7 @@ export default function AdminDashboard() {
                       {COLUMNS[activeTab].map((col) => (
                         <td key={col.key} className="p-0 border-b"></td>
                       ))}
-                      <td className="py-2 px-3 border-b text-left">
+                      <td className="py-1 px-3 border-b text-left">
                         <div className="flex justify-center p-0">
                           <button
                             onClick={() => {
@@ -351,7 +351,7 @@ export default function AdminDashboard() {
                         }
                         if (isReference) {
                           return (
-                            <td key={col.key} className="py-2 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
+                            <td key={col.key} className="py-1 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
                               <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
                               <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
                             </td>
@@ -361,44 +361,44 @@ export default function AdminDashboard() {
                         if (!marker.locked) {
                           if (col.key === 'iconUrl' && value) {
                             const iconPath = getIconPath(value);
-                            return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
                           }
                           if (col.key === 'logo' && value) {
                             const logoPath = getLogoPath(value);
-                            return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
                           }
                           if (Array.isArray(value)) {
-                            return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
                           }
                           if (typeof value === 'object' && value !== null) {
-                            return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
                           }
                           if (typeof value === 'boolean') {
-                            return <td key={col.key} className="py-2 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
                           }
-                          return <td key={col.key} className="py-2 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
                         }
                         // Non-editable fields for locked markers
                         if (col.key === 'iconUrl' && value) {
                           const iconPath = getIconPath(value);
-                          return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
                         }
                         if (col.key === 'logo' && value) {
                           const logoPath = getLogoPath(value);
-                          return <td key={col.key} className="py-2 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
                         }
                         if (Array.isArray(value)) {
-                          return <td key={col.key} className="py-2 px-3 border-b text-left">{value.join(', ')}</td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left">{value.join(', ')}</td>;
                         }
                         if (typeof value === 'object' && value !== null) {
-                          return <td key={col.key} className="py-2 px-3 border-b text-left">{JSON.stringify(value)}</td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left">{JSON.stringify(value)}</td>;
                         }
                         if (typeof value === 'boolean') {
-                          return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
+                          return <td key={col.key} className="py-1 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
                         }
-                        return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
+                        return <td key={col.key} className="py-1 px-3 border-b text-left">{value}</td>;
                       })}
-                      <td className="py-2 px-3 border-b">
+                      <td className="py-1 px-3 border-b">
                         <div className="flex justify-center p-0">
                           <button
                             onClick={() => toggleLock(marker.id)}
