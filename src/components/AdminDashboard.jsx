@@ -281,7 +281,7 @@ export default function AdminDashboard() {
                       return (
                         <th
                           key={col.key}
-                          className="py-2 px-3 border-b text-left select-none hover:bg-blue-50"
+                          className="p-0 border-b text-left select-none hover:bg-blue-50"
                           style={thStyle}
                           onClick={() => handleSort(activeTab, col.key)}
                           title={`Sort by ${col.label}`}
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
                         </th>
                       );
                     })}
-                    <th className="py-2 px-3 border-b">Actions</th>
+                    <th className="p-0 border-b">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -299,10 +299,10 @@ export default function AdminDashboard() {
                     <tr>
                       {/* Empty cells for all columns except actions */}
                       {COLUMNS[activeTab].map((col) => (
-                        <td key={col.key} className="py-2 px-3 border-b" />
+                        <td key={col.key} className="p-0 border-b"></td>
                       ))}
                       <td className="py-2 px-3 border-b text-left">
-                        <div className="flex justify-center">
+                        <div className="flex justify-center p-0">
                           <button
                             onClick={() => {
                               const allLocked = sortedMarkers.every(m => m.locked);
@@ -399,7 +399,7 @@ export default function AdminDashboard() {
                         return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                       })}
                       <td className="py-2 px-3 border-b">
-                        <div className="flex justify-center">
+                        <div className="flex justify-center p-0">
                           <button
                             onClick={() => toggleLock(marker.id)}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
