@@ -10,19 +10,23 @@ import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    async function checkUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    }
-    checkUser();
-  }, []);
-
-  if (!user) {
-    return <div>Access denied. Please log in as admin.</div>;
-    // Or redirect to <AdminLogin />
+// Basic field edit handler for table cells
+  async function handleFieldChange(id, key, value) {
+    // Update local state
+    setTabData(prev => {
+      const updated = { ...prev };
+      const tab = activeTab;
+      updated[tab] = updated[tab].map(m =>
+        m.id === id ? { ...m, [key]: value } : m
+      );
+      console.log('Updating tab:', activeTab, 'marker:', id, 'key:', key, 'value:', value);
+      return updated;
+    });
+    // Sync to Supa  base
+    await supabase
+      .from(TAB_TABLES[activeTab])
+      .update({ [key]: value })
+      .eq('id', id);
   }
   const [showDashboard, setShowDashboard] = useState(false);
   // Branding settings save handler
@@ -408,11 +412,11 @@ export default function AdminDashboard() {
                           return <td key={col.key} className="py-1 px-3 border-b text-left">{JSON.stringify(value)}</td>;
                         }
                         if (typeof value === 'boolean') {
-                          return <td key={col.key} className="py-1 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
+                          return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
                         }
-                        return <td key={col.key} className="py-1 px-3 border-b text-left">{value}</td>;
+                        return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                       })}
-                      <td className="py-1 px-3 border-b">
+                      <td className="py-2 px-3 border-b">
                         <div className="flex justify-center p-0">
                           <button
                             onClick={() => toggleLock(marker.id)}
