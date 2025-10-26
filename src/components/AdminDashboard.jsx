@@ -10,6 +10,20 @@ import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 
 export default function AdminDashboard() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    }
+    checkUser();
+  }, []);
+
+  if (!user) {
+    return <div>Access denied. Please log in as admin.</div>;
+    // Or redirect to <AdminLogin />
+  }
   const [showDashboard, setShowDashboard] = useState(false);
   // Branding settings save handler
   const handleBrandingChange = async (newSettings) => {
