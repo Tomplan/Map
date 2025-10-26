@@ -229,12 +229,12 @@ export default function AdminDashboard() {
     <div className="relative w-full h-screen">
       {/* Dashboard button at top */}
       <button
-        className="fixed top-4 left-4 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+  className="fixed top-4 right-4 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
         aria-label="Toggle dashboard"
         onClick={() => setShowDashboard((v) => !v)}
       >
-        <MdDashboard size={24} />
-        <span className="font-semibold">Dashboard</span>
+  <MdDashboard size={24} color="#1976d2" />
+  <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
       </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
