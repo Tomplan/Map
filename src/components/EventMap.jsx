@@ -35,13 +35,17 @@ function SearchControl({ markers }) {
     }
     map._searchMarkerLayer.clearLayers();
     safeMarkers.forEach(marker => {
-      const markerObj = L.marker([marker.lat, marker.lng], {
-        title: marker.label,
-        opacity: 0,
-        interactive: false
-      });
-      map._searchMarkerLayer.addLayer(markerObj);
+    let pos = [marker.lat, marker.lng];
+      console.log('Rendering marker:', marker, 'pos:', pos,);
+
+    const markerObj = L.marker(pos, {
+      title: marker.label,
+      opacity: 0,
+      interactive: false
     });
+    map._searchMarkerLayer.addLayer(markerObj);
+  
+});
     if (map._searchControl) {
       map.removeControl(map._searchControl);
     }
@@ -87,24 +91,24 @@ const MAP_LAYERS = [
   },
 ];
 
-function EventMap() {
+function EventMap({ isAdminView, markers })  {
   const { t } = useTranslation();
   // Log admin/user view state
-  const isAdminView = typeof arguments[0] === 'object' && arguments[0] && 'isAdminView' in arguments[0] ? arguments[0].isAdminView : false;
+  //const isAdminView = typeof arguments[0] === 'object' && arguments[0] && 'isAdminView' in arguments[0] ? arguments[0].isAdminView : false;
   // console.log('EventMap loaded:', isAdminView ? 'ADMIN VIEW' : 'USER VIEW');
   // Always use Carto Voyager for user view
   const activeLayer = MAP_LAYERS[0].key;
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
-  const { markers } = useEventMarkers();
+  //const { markers } = useEventMarkers();
   const { trackMarkerView } = useAnalytics();
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
   const mapZoom = DEFAULT_ZOOM;
   const minZoom = 14;
-  const maxZoom = 21;
+  const maxZoom = 22;
   const handleMapCreated = (mapOrEvent) => {
     // React-Leaflet v5 passes event, v3/v4 passes map
     if (mapOrEvent && mapOrEvent.target) {
@@ -201,11 +205,13 @@ function EventMap() {
               key={layer.key}
               attribution={layer.attribution}
               url={layer.url}
-              maxZoom={21}
+              maxZoom={22}
             />
           ))}
           <SearchControl markers={safeMarkers} />
             {safeMarkers.map(marker => {
+              let pos = [marker.lat, marker.lng];
+              console.log('Marker props:', marker);
               let iconFile = marker.iconUrl;
               if (!iconFile) {
                 iconFile = `${marker.type || 'default'}.svg`;
@@ -252,10 +258,10 @@ function EventMap() {
             return (
               <Marker
                 key={marker.id}
-                position={[marker.lat, marker.lng]}
+                position={pos}
                 icon={icon}
                 draggable={isAdminView && !marker.locked} // Only draggable in admin view and if unlocked
-                
+                name={marker.name || ''}
               >
                 <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
                 <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>

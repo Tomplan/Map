@@ -19,7 +19,7 @@ export default function AdminDashboard() {
       updated[tab] = updated[tab].map(m =>
         m.id === id ? { ...m, [key]: value } : m
       );
-      console.log('Updating tab:', activeTab, 'marker:', id, 'key:', key, 'value:', value);
+    //  console.log('Updating tab:', activeTab, 'marker:', id, 'key:', key, 'value:', value);
       return updated;
     });
     // Sync to Supa  base
@@ -52,7 +52,8 @@ export default function AdminDashboard() {
       { key: 'id', label: 'ID' },
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
-      { key: 'position', label: 'Position' }
+      { key: 'lat', label: 'Latitude' },
+      { key: 'lng', label: 'Longitude' },
     ],
     appearance: [
       { key: 'id', label: 'ID' },
@@ -68,7 +69,8 @@ export default function AdminDashboard() {
       { key: 'glyphSize', label: 'Glyph Size' },
       { key: 'glyphAnchor', label: 'Glyph Anchor' },
       { key: 'rectangle', label: 'Rectangle' },
-      { key: 'angle', label: 'Angle' }
+      { key: 'angle', label: 'Angle' },
+
     ],
     content: [
       { key: 'id', label: 'ID' },
@@ -76,7 +78,8 @@ export default function AdminDashboard() {
       { key: 'name', label: 'Name' },
       { key: 'logo', label: 'Logo' },
       { key: 'website', label: 'Website' },
-      { key: 'info', label: 'Info' }
+      { key: 'info', label: 'Info' },
+
     ],
     admin: [
       { key: 'id', label: 'ID' },
@@ -91,7 +94,7 @@ export default function AdminDashboard() {
       { key: 'breakfast', label: 'Breakfast' },
       { key: 'lunch', label: 'Lunch' },
       { key: 'bbq', label: 'BBQ' },
-      { key: 'notes', label: 'Notes' }
+      { key: 'notes', label: 'Notes' },
     ],
   };
   const [activeTab, setActiveTab] = useState('core');
@@ -260,7 +263,7 @@ export default function AdminDashboard() {
       </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
-        <EventMap isAdminView={true} />
+        <EventMap isAdminView={true} markers={tabData.core} />
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
