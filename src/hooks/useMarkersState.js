@@ -8,13 +8,26 @@ import { useState, useCallback } from 'react';
 export default function useMarkersState(initialMarkers = []) {
   const [markersState, setMarkersState] = useState(initialMarkers);
 
-  // Update a marker by id, merging new props
-  const updateMarker = useCallback((id, newProps) => {
+  // Update a marker by id, merging new props and syncing to Supabase
+  const updateMarker = useCallback(async (id, newProps) => {
     setMarkersState((prev) =>
       prev.map((marker) =>
         marker.id === id ? { ...marker, ...newProps } : marker
       )
     );
+    try {
+      // Dynamically import supabase to avoid circular deps if needed
+      const { supabase } = await import('../supabaseClient');
+      const { error } = await supabase
+        .from('Markers_Core')
+        .update(newProps)
+        .eq('id', id);
+      if (error) {
+        console.error('Supabase update failed:', error);
+      }
+    } catch (err) {
+      console.error('Supabase update error (offline or import failed):', err);
+    }
   }, []);
 
   return [markersState, updateMarker, setMarkersState];
