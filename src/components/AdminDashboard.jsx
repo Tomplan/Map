@@ -38,11 +38,11 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   ];
   const COLUMNS = {
     core: [
-      { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
-      { key: 'name', label: 'Name' },
-      { key: 'lat', label: 'Lat' },
-      { key: 'lng', label: 'Lng' }
+  { key: 'id', label: 'ID' },
+  { key: 'boothNumber', label: 'Booth #' },
+  { key: 'name', label: 'Name' },
+  { key: 'lat', label: 'Lat' },
+  { key: 'lng', label: 'Lng' }
     ],
     appearance: [
       { key: 'id', label: 'ID' },
@@ -58,7 +58,8 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       { key: 'glyphSize', label: 'Glyph Size' },
       { key: 'glyphAnchor', label: 'Glyph Anchor' },
       { key: 'rectangle', label: 'Rectangle' },
-      { key: 'angle', label: 'Angle' }
+      { key: 'angle', label: 'Angle' },
+
     ],
     content: [
       { key: 'id', label: 'ID' },
@@ -66,7 +67,8 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       { key: 'name', label: 'Name' },
       { key: 'logo', label: 'Logo' },
       { key: 'website', label: 'Website' },
-      { key: 'info', label: 'Info' }
+      { key: 'info', label: 'Info' },
+
     ],
     admin: [
       { key: 'id', label: 'ID' },
@@ -81,7 +83,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       { key: 'breakfast', label: 'Breakfast' },
       { key: 'lunch', label: 'Lunch' },
       { key: 'bbq', label: 'BBQ' },
-      { key: 'notes', label: 'Notes' }
+      { key: 'notes', label: 'Notes' },
     ],
   };
   const [activeTab, setActiveTab] = useState('core');
@@ -227,7 +229,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
-        <EventMap isAdminView={true} />
+        <EventMap isAdminView={true} markersState={markersState} updateMarker={updateMarker} />
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
