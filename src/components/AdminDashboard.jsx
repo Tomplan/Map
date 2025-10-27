@@ -52,7 +52,8 @@ export default function AdminDashboard() {
       { key: 'id', label: 'ID' },
       { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
-      { key: 'position', label: 'Position' }
+      { key: 'lat', label: 'Lat' },
+      { key: 'lng', label: 'Lng' }
     ],
     appearance: [
       { key: 'id', label: 'ID' },
