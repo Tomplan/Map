@@ -6,19 +6,49 @@ import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 
+// List of available SVG icons for selection
+const ICON_OPTIONS = [
+  'glyph-marker-icon-black.svg',
+  'glyph-marker-icon-blue.svg',
+  'glyph-marker-icon-gray.svg',
+  'glyph-marker-icon-green.svg',
+  'glyph-marker-icon-orange.svg',
+  'glyph-marker-icon-purple.svg',
+  'glyph-marker-icon-red.svg',
+  'glyph-marker-icon-yellow.svg',
+];
+const ICON_PATH_PREFIX = 'assets/icons/';
+
 export default function AdminDashboard({ markersState, setMarkersState, updateMarker, isAdminView }) {
+  // Popover state for icon selection (for iconUrl field)
+  const [iconPopover, setIconPopover] = useState({ open: false, markerId: null });
   // Basic field edit handler for table cells
   async function handleFieldChange(id, key, value) {
     setMarkersState(prev => {
       const updated = prev.map(m =>
         m.id === id ? { ...m, [key]: value } : m
       );
-      console.log('Updating marker:', id, 'key:', key, 'value:', value);
+      // console.log('Updating marker:', id, 'key:', key, 'value:', value);
       return updated;
     });
+    // Determine which table to update
+    let table = 'Markers_Core';
+    if ([
+      'iconUrl', 'iconSize', 'iconColor', 'className', 'prefix', 'glyph', 'glyphColor', 'glyphSize', 'glyphAnchor', 'rectangle', 'angle'
+    ].includes(key)) {
+      table = 'Markers_Appearance';
+    } else if ([
+      'logo', 'website', 'info'
+    ].includes(key)) {
+      table = 'Markers_Content';
+    } else if ([
+      'contact', 'phone', 'email', 'boothCount', 'area', 'coins', 'breakfast', 'lunch', 'bbq', 'notes'
+    ].includes(key)) {
+      table = 'Markers_Admin';
+    }
     // Sync to Supabase
     await supabase
-      .from('Markers_Core')
+      .from(table)
       .update({ [key]: value })
       .eq('id', id);
   }
@@ -138,9 +168,9 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
     setMarkersState(prev => {
       const updated = prev.map(m => m.id === id ? { ...m, locked: !m.locked } : m);
       const updatedMarker = updated.find(m => m.id === id);
-      console.log(`Marker ${id} lock toggled. New state:`, updatedMarker);
+      // console.log(`Marker ${id} lock toggled. New state:`, updatedMarker);
       const isDraggable = isAdminView && !updatedMarker.locked;
-      console.log(`Marker ${id} draggable state:`, isDraggable);
+      // console.log(`Marker ${id} draggable state:`, isDraggable);
       return updated;
     });
     // Auto-save to Supabase
@@ -349,9 +379,65 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                         }
                         // Editable fields for unlocked markers
                         if (!marker.locked) {
-                          if (col.key === 'iconUrl' && value) {
+                          if (col.key === 'iconUrl') {
                             const iconPath = getIconPath(value);
-                            return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
+                            return (
+                              <td key={col.key} className="py-1 px-3 border-b text-left relative">
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <img
+                                    src={iconPath}
+                                    alt="icon"
+                                    width={24}
+                                    height={24}
+                                    style={{ cursor: 'pointer', border: '2px solid #eee', borderRadius: 4 }}
+                                    onClick={() => setIconPopover({ open: true, markerId: marker.id })}
+                                    title="Click to change icon"
+                                  />
+                                  <span style={{ fontSize: 12, color: '#888' }}>Change</span>
+                                </div>
+                                {/* Popover for icon selection */}
+                                {iconPopover.open && iconPopover.markerId === marker.id && (
+                                  <div
+                                    style={{
+                                      position: 'absolute',
+                                      top: 32,
+                                      left: 0,
+                                      zIndex: 100,
+                                      background: '#fff',
+                                      border: '1px solid #ddd',
+                                      borderRadius: 8,
+                                      boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                                      padding: 12,
+                                      display: 'grid',
+                                      gridTemplateColumns: 'repeat(4, 40px)',
+                                      gap: 10,
+                                    }}
+                                    onMouseLeave={() => setIconPopover({ open: false, markerId: null })}
+                                  >
+                                    {ICON_OPTIONS.map(iconFile => (
+                                      <img
+                                        key={iconFile}
+                                        src={getIconPath(iconFile)}
+                                        alt={iconFile.replace('.svg','')}
+                                        width={32}
+                                        height={32}
+                                        style={{
+                                          cursor: 'pointer',
+                                          border: value === iconFile ? '2px solid #1976d2' : '2px solid #eee',
+                                          borderRadius: 4,
+                                          background: value === iconFile ? '#e3f2fd' : 'transparent',
+                                        }}
+                                        title={iconFile.replace('glyph-marker-icon-','').replace('.svg','')}
+                                        onClick={() => {
+                                          setIconPopover({ open: false, markerId: null });
+                                          handleFieldChange(marker.id, 'iconUrl', iconFile);
+                                        }}
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                            );
                           }
                           if (col.key === 'logo' && value) {
                             const logoPath = getLogoPath(value);
