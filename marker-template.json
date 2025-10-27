@@ -1,6 +1,7 @@
 {
   "id": "unique-marker-id",
-  "position": [52.370216, 4.895168],
+   "lat": 51.89858829,
+  "lng": 5.772593915,
   "iconUrl": "/assets/icons/pin.svg",
   "iconSize": [32, 32],
   "iconColor": "#1976d2",
