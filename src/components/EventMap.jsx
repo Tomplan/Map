@@ -35,29 +35,28 @@ function SearchControl({ markers }) {
     }
     map._searchMarkerLayer.clearLayers();
     safeMarkers.forEach(marker => {
-    let pos = [marker.lat, marker.lng];
-    //  console.log('Rendering marker:', marker, 'pos:', pos,);
-
-    const markerObj = L.marker(pos, {
-      title: marker.label,
-      opacity: 0,
-      interactive: false
+      let pos = [marker.lat, marker.lng];
+      // Invisible marker for search, with name prop
+      const markerObj = L.marker(pos, {
+        name: marker.name,
+        label: marker.label, // for future extensibility
+        opacity: 0,
+        interactive: false
+      });
+      map._searchMarkerLayer.addLayer(markerObj);
     });
-    map._searchMarkerLayer.addLayer(markerObj);
-  
-});
     if (map._searchControl) {
       map.removeControl(map._searchControl);
     }
     const searchControl = new L.Control.Search({
       layer: map._searchMarkerLayer,
-      propertyName: 'title',
-      moveToLocation: function(latlng, title, map) {
-        map.setView(latlng, map.getZoom());
+      propertyName: 'name', // search by marker.name
+      moveToLocation: function(latlng, name, map) {
+        map.setView(latlng, 20); // zoom in to level 20
       },
       initial: false,
-      zoom: map.getZoom(),
-      marker: false,
+      zoom: 20, // ensure zoom level is set for found marker
+      marker: true, // use default marker highlight (no circle)
       textPlaceholder: 'Search for a location...'
     });
     map._searchControl = searchControl;
