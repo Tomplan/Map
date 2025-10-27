@@ -36,7 +36,7 @@ function SearchControl({ markers }) {
     map._searchMarkerLayer.clearLayers();
     safeMarkers.forEach(marker => {
     let pos = [marker.lat, marker.lng];
-      console.log('Rendering marker:', marker, 'pos:', pos,);
+    //  console.log('Rendering marker:', marker, 'pos:', pos,);
 
     const markerObj = L.marker(pos, {
       title: marker.label,
@@ -101,7 +101,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const { trackMarkerView } = useAnalytics();
 
   useEffect(() => {
-    console.log('markersState updated:', markersState);
+  //  console.log('markersState updated:', markersState);
   }, [markersState]);
 
   // Map config for fullscreen
