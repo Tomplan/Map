@@ -3,6 +3,8 @@ import { supabase } from './supabaseClient';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import OfflineStatus from './components/OfflineStatus';
+import useMarkersState from './hooks/useMarkersState';
+import useEventMarkers from './hooks/useEventMarkers';
 import BrandingBar from './components/BrandingBar';
 import BrandingSettings from './components/BrandingSettings';
 import Icon from '@mdi/react';
@@ -44,6 +46,16 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
+  // Fetch marker data from Supabase
+  const { markers, loading, isOnline } = useEventMarkers();
+  // Shared marker state for map and dashboard
+  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers);
+  // Sync markersState whenever markers change
+  useEffect(() => {
+    if (Array.isArray(markers)) {
+      setMarkersState(markers);
+    }
+  }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
     logo: '',
@@ -94,7 +106,12 @@ function App() {
                   <AccessibilityToggle />
                 </Suspense>
                 <Suspense fallback={<div>Loading map...</div>}>
-                  <EventMap isAdminView={false} />
+                  <EventMap
+                    isAdminView={false}
+                    markersState={markersState}
+                    updateMarker={updateMarker}
+                    setMarkersState={setMarkersState}
+                  />
                 </Suspense>
               </main>
               <BrandingSettings onChange={setBranding} />
@@ -105,12 +122,21 @@ function App() {
           path="/admin"
           element={
             <ErrorBoundary>
-              <AdminDashboard />
+              <AdminDashboard
+                markersState={markersState}
+                updateMarker={updateMarker}
+                setMarkersState={setMarkersState}
+              />
               <div style={{ margin: '2rem 0' }}>
                 <MarkerTable />
               </div>
               <Suspense fallback={<div>Loading map...</div>}>
-                <EventMap isAdminView={true} />
+                <EventMap
+                  isAdminView={true}
+                  markersState={markersState}
+                  updateMarker={updateMarker}
+                  setMarkersState={setMarkersState}
+                />
               </Suspense>
             </ErrorBoundary>
           }

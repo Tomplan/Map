@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
@@ -7,7 +7,7 @@ import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import { createMarkerIcon } from '../utils/markerIcons';
-import useEventMarkers from '../hooks/useEventMarkers';
+// Marker state is now provided via props from App.jsx
 import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
 
@@ -90,15 +90,19 @@ const MAP_LAYERS = [
 function EventMap() {
   const { t } = useTranslation();
   // Log admin/user view state
-  const isAdminView = typeof arguments[0] === 'object' && arguments[0] && 'isAdminView' in arguments[0] ? arguments[0].isAdminView : false;
   // console.log('EventMap loaded:', isAdminView ? 'ADMIN VIEW' : 'USER VIEW');
   // Always use Carto Voyager for user view
   const activeLayer = MAP_LAYERS[0].key;
   const [mapInstance, setMapInstance] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
-  const { markers } = useEventMarkers();
+  // Use shared marker state from props
+  const { markersState, updateMarker, setMarkersState, isAdminView } = arguments[0] || {};
   const { trackMarkerView } = useAnalytics();
+
+  useEffect(() => {
+    console.log('markersState updated:', markersState);
+  }, [markersState]);
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
@@ -125,7 +129,7 @@ function EventMap() {
   // Removed unused handleHome
 
   // Ensure markers is always an array, memoized for hook compliance
-  const safeMarkers = React.useMemo(() => Array.isArray(markers) ? markers : [], [markers]);
+  const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
 
   // Add zoom and home controls
   const handleZoomIn = () => {
@@ -205,7 +209,8 @@ function EventMap() {
             />
           ))}
           <SearchControl markers={safeMarkers} />
-            {safeMarkers.map(marker => {
+              {markersState && markersState.map(marker => {
+              //console.log('Marker props:', marker);
               let iconFile = marker.iconUrl;
               if (!iconFile) {
                 iconFile = `${marker.type || 'default'}.svg`;
@@ -249,20 +254,29 @@ function EventMap() {
               </div>
             );
             const labelText = getMarkerLabel(marker.label);
-            return (
-              <Marker
-                key={marker.id}
-                position={[marker.lat, marker.lng]}
-                icon={icon}
-                draggable={isAdminView && !marker.locked} // Only draggable in admin view and if unlocked
-                
-              >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
-                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
-                  {tooltipContent}
-                </Tooltip>
-              </Marker>
-            );
+              const isDraggable = isAdminView && !marker.locked;
+              if (isDraggable) {
+                console.log(`Marker ${marker.id} is draggable.`);
+              }
+              return (
+                <Marker
+                  key={marker.id}
+                  position={[marker.lat, marker.lng]}
+                  icon={icon}
+                  draggable={isDraggable}
+                  eventHandlers={isDraggable ? {
+                    dragend: (e) => {
+                      const { lat, lng } = e.target.getLatLng();
+                      updateMarker(marker.id, { lat, lng });
+                    }
+                  } : {}}
+                >
+                  <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                  <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
+                    {tooltipContent}
+                  </Tooltip>
+                </Marker>
+              );
           })}
           
         </MapContainer>

@@ -1,30 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { supabase } from '../supabaseClient';
 import EventMap from './EventMap';
-import * as XLSX from 'xlsx';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
-import { supabase } from '../supabaseClient';
-import AdminLogin from './AdminLogin';
-import BrandingSettings from './BrandingSettings';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 
-export default function AdminDashboard() {
-// Basic field edit handler for table cells
+export default function AdminDashboard({ markersState, setMarkersState, updateMarker, isAdminView }) {
+  // Basic field edit handler for table cells
   async function handleFieldChange(id, key, value) {
-    // Update local state
-    setTabData(prev => {
-      const updated = { ...prev };
-      const tab = activeTab;
-      updated[tab] = updated[tab].map(m =>
+    setMarkersState(prev => {
+      const updated = prev.map(m =>
         m.id === id ? { ...m, [key]: value } : m
       );
-      console.log('Updating tab:', activeTab, 'marker:', id, 'key:', key, 'value:', value);
+      console.log('Updating marker:', id, 'key:', key, 'value:', value);
       return updated;
     });
-    // Sync to Supa  base
+    // Sync to Supabase
     await supabase
-      .from(TAB_TABLES[activeTab])
+      .from('Markers_Core')
       .update({ [key]: value })
       .eq('id', id);
   }
@@ -35,12 +29,7 @@ export default function AdminDashboard() {
       .from('Branding')
       .upsert({ id: 1, ...newSettings });
   };
-  const TAB_TABLES = useMemo(() => ({
-    core: 'Markers_Core',
-    appearance: 'Markers_Appearance',
-    content: 'Markers_Content',
-    admin: 'Markers_Admin',
-  }), []);
+  // Tabs and columns remain for UI, but marker data comes from markersState
   const TABS = [
     { key: 'core', label: 'Markers - Core' },
     { key: 'appearance', label: 'Markers - Appearance' },
@@ -118,85 +107,62 @@ export default function AdminDashboard() {
 
   // Remove unused auth effect
 
-  // Tabbed marker data
-  const [tabData, setTabData] = useState({ core: [], appearance: [], content: [], admin: [] });
-  useEffect(() => {
-    async function fetchAllTabs() {
-      const results = {};
-      for (const tab of Object.keys(TAB_TABLES)) {
-        const { data } = await supabase.from(TAB_TABLES[tab]).select('*');
-        results[tab] = data || [];
+  // Use markersState for all tabbed marker data
+  const sortedMarkers = React.useMemo(() => {
+    const tab = activeTab;
+    const markers = markersState || [];
+    const { column, direction } = sortState[tab];
+    let getValue = m => m[column];
+    return [...markers].sort((a, b) => {
+      const va = getValue(a);
+      const vb = getValue(b);
+      if (va == null && vb == null) return 0;
+      if (va == null) return direction === 'asc' ? -1 : 1;
+      if (vb == null) return direction === 'asc' ? 1 : -1;
+      if (typeof va === 'number' && typeof vb === 'number') {
+        return direction === 'asc' ? va - vb : vb - va;
       }
-      setTabData(results);
-    }
-    fetchAllTabs();
-  }, [TAB_TABLES]);
-    // Sort markers for current tab before rendering
-    const sortedMarkers = useMemo(() => {
-      const tab = activeTab;
-      const markers = tabData[tab] || [];
-      const { column, direction } = sortState[tab];
-      // Reference fields: id, boothNumber, name
-      let getValue = m => m[column];
-      if (column === 'id') {
-        getValue = m => {
-          const coreMarker = tabData.core.find(cm => cm.id === m.id);
-          return coreMarker ? coreMarker.id : '';
-        };
-      }
-      if (column === 'boothNumber' || column === 'name') {
-        getValue = m => {
-          const contentMarker = tabData.content.find(cm => cm.id === m.id);
-          return contentMarker ? contentMarker[column] : '';
-        };
-      }
-      return [...markers].sort((a, b) => {
-        const va = getValue(a);
-        const vb = getValue(b);
-        if (va == null && vb == null) return 0;
-        if (va == null) return direction === 'asc' ? -1 : 1;
-        if (vb == null) return direction === 'asc' ? 1 : -1;
-        if (typeof va === 'number' && typeof vb === 'number') {
-          return direction === 'asc' ? va - vb : vb - va;
-        }
-        return direction === 'asc'
-          ? String(va).localeCompare(String(vb), undefined, { numeric: true })
-          : String(vb).localeCompare(String(va), undefined, { numeric: true });
-      });
-    }, [tabData, activeTab, sortState]);
+      return direction === 'asc'
+        ? String(va).localeCompare(String(vb), undefined, { numeric: true })
+        : String(vb).localeCompare(String(va), undefined, { numeric: true });
+    });
+  }, [markersState, activeTab, sortState]);
   const [selected, setSelected] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
-    const tabMarkers = tabData[activeTab];
-    const updatedMarkers = tabMarkers.map(m => m.id === id ? { ...m, locked: !m.locked } : m);
-    setTabData({ ...tabData, [activeTab]: updatedMarkers });
-    // Auto-save to relevant table
-    const changed = updatedMarkers.find(m => m.id === id);
-    if (changed) {
+    setMarkersState(prev => {
+      const updated = prev.map(m => m.id === id ? { ...m, locked: !m.locked } : m);
+      const updatedMarker = updated.find(m => m.id === id);
+      console.log(`Marker ${id} lock toggled. New state:`, updatedMarker);
+      const isDraggable = isAdminView && !updatedMarker.locked;
+      console.log(`Marker ${id} draggable state:`, isDraggable);
+      return updated;
+    });
+    // Auto-save to Supabase
+    const currentMarker = markersState.find(m => m.id === id);
+    if (currentMarker) {
+      const newLocked = !currentMarker.locked;
       await supabase
-        .from(TAB_TABLES[activeTab])
-        .update({ locked: changed.locked })
+        .from('Markers_Core')
+        .update({ locked: newLocked })
         .eq('id', id);
-        // Add your log here:
-    const isDraggable = activeTab === 'core' && !changed.locked;
-    console.log(`Marker ${id} draggable state:`, isDraggable);
     }
   }
 
-  // Undo/redo logic for tabbed data
+  // Undo/redo logic for marker state
   function undo() {
     if (undoStack.length === 0) return;
-    setRedoStack([tabData[activeTab], ...redoStack]);
-    setTabData({ ...tabData, [activeTab]: undoStack[undoStack.length - 1] });
+    setRedoStack([markersState, ...redoStack]);
+    setMarkersState(undoStack[undoStack.length - 1]);
     setUndoStack(undoStack.slice(0, -1));
   }
   function redo() {
     if (redoStack.length === 0) return;
-    setUndoStack([...undoStack, tabData[activeTab]]);
-    setTabData({ ...tabData, [activeTab]: redoStack[0] });
+    setUndoStack([...undoStack, markersState]);
+    setMarkersState(redoStack[0]);
     setRedoStack(redoStack.slice(1));
   }
 
@@ -207,7 +173,7 @@ export default function AdminDashboard() {
 
   // Export current tab markers as JSON
   function exportMarkers() {
-    const dataStr = JSON.stringify(tabData[activeTab], null, 2);
+    const dataStr = JSON.stringify(sortedMarkers, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -326,15 +292,19 @@ export default function AdminDashboard() {
                       <td className="py-1 px-3 border-b text-left">
                         <div className="flex justify-center p-0">
                           <button
-                            onClick={() => {
+                            onClick={async () => {
                               const allLocked = sortedMarkers.every(m => m.locked);
-                              const updatedMarkers = sortedMarkers.map(m => ({ ...m, locked: !allLocked }));
-                              setTabData({ ...tabData, [activeTab]: updatedMarkers });
+                              const updatedMarkers = markersState.map(m =>
+                                sortedMarkers.some(sm => sm.id === m.id)
+                                  ? { ...m, locked: !allLocked }
+                                  : m
+                              );
+                              setMarkersState(updatedMarkers);
                               // Save to Supabase
-                              updatedMarkers.forEach(async (marker) => {
+                              sortedMarkers.forEach(async (marker) => {
                                 await supabase
-                                  .from(TAB_TABLES[activeTab])
-                                  .update({ locked: marker.locked })
+                                  .from('Markers_Core')
+                                  .update({ locked: !allLocked })
                                   .eq('id', marker.id);
                               });
                             }}
@@ -358,17 +328,13 @@ export default function AdminDashboard() {
                         let isReference = false;
                         let referenceTooltip = '';
                         // id is only editable in core
-                        if (col.key === 'id') {
-                          const coreMarker = tabData.core.find(m => m.id === marker.id);
-                          value = coreMarker ? coreMarker.id : '';
-                          isReference = activeTab !== 'core';
+                        if (col.key === 'id' && activeTab !== 'core') {
+                          isReference = true;
                           referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
                         }
                         // boothNumber and name are only editable in content
-                        if (col.key === 'boothNumber' || col.key === 'name') {
-                          const contentMarker = tabData.content.find(m => m.id === marker.id);
-                          value = contentMarker ? contentMarker[col.key] : '';
-                          isReference = activeTab !== 'content';
+                        if ((col.key === 'boothNumber' || col.key === 'name') && activeTab !== 'content') {
+                          isReference = true;
                           referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
                         }
                         if (isReference) {
