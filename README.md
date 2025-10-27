@@ -38,6 +38,28 @@ Hosting & Security
 UI/UX
 •	Material Design Icons for all marker types and controls.
 •	Map preview in dashboard; drag-and-drop/click to set marker locations.
+
+---
+
+## Marker State Management, Dashboard Tabs, and Supabase Integration
+
+### Marker State Management
+The app uses a custom React hook (`useMarkersState`) to manage all marker properties in a local state array. This array is the live source of truth for marker position, locked status, icon, and more while the app is running.
+
+### Dashboard Tabs
+When you interact with dashboard tabs (such as locking/unlocking, changing icons, or editing marker info), marker properties are updated using the `updateMarker` function from the custom hook. For example, unlocking a marker in the coreTab calls `updateMarker(marker.id, { locked: false })`, which updates the state and re-renders the map and dashboard instantly.
+
+### Supabase Integration
+On initial load, marker data is fetched from Supabase and passed as `initialMarkers` to the hook. When you make changes (drag, lock, edit), you update the local state first. To persist changes, you call a Supabase update function (e.g., after dragend or lock toggle) to sync the updated marker object back to the database. The dashboard can trigger these updates after any change, ensuring Supabase stays in sync with local state.
+
+### UI Reactivity
+Any change to `markersState` (via drag, dashboard tab, etc.) immediately updates the UI, since the map and dashboard both read from this state. Tabs can read and write marker properties using the state and update function, keeping everything consistent.
+
+**Summary:**
+- Local state (`markersState`) is the live source for all marker properties.
+- Dashboard tabs update marker properties via `updateMarker`.
+- Supabase is updated after local changes to persist them.
+- The UI always reflects the latest state.
 •	Confirmation and undo/redo for moving markers; option to lock positions on event day.
 •	Home button always visible; zoom buttons use 0.5 step increments.
 •	Tooltip shows both name and logo if space allows; popup on click for full info.
