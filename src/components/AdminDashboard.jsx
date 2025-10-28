@@ -75,20 +75,20 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   { key: 'lng', label: 'Lng' }
     ],
     appearance: [
-      { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
-      { key: 'name', label: 'Name' },
-      { key: 'iconUrl', label: 'Icon' },
-      { key: 'iconSize', label: 'Icon Size' },
-      { key: 'iconColor', label: 'Icon Color' },
-      { key: 'className', label: 'Class Name' },
-      { key: 'prefix', label: 'Prefix' },
-      { key: 'glyph', label: 'Glyph' },
-      { key: 'glyphColor', label: 'Glyph Color' },
-      { key: 'glyphSize', label: 'Glyph Size' },
-      { key: 'glyphAnchor', label: 'Glyph Anchor' },
-      { key: 'rectangle', label: 'Rectangle' },
-      { key: 'angle', label: 'Angle' },
+  { key: 'id', label: 'ID' },
+  { key: 'boothNumber', label: 'Booth #' },
+  { key: 'name', label: 'Name' },
+  { key: 'iconUrl', label: 'Icon' },
+  { key: 'iconSize', label: 'Icon Size' },
+  { key: 'iconColor', label: 'Icon Color' },
+  { key: 'className', label: 'Class Name' },
+  { key: 'prefix', label: 'Prefix' },
+  { key: 'glyph', label: 'Glyph' },
+  { key: 'glyphColor', label: 'Glyph Color' },
+  { key: 'glyphSize', label: 'Glyph Size' },
+  { key: 'glyphAnchor', label: 'Glyph Anchor' },
+  { key: 'rectangle', label: 'Rectangle' },
+  { key: 'angle', label: 'Angle' },
 
     ],
     content: [
@@ -166,20 +166,20 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
     setMarkersState(prev => {
-      const updated = prev.map(m => m.id === id ? { ...m, locked: !m.locked } : m);
-      const updatedMarker = updated.find(m => m.id === id);
-      // console.log(`Marker ${id} lock toggled. New state:`, updatedMarker);
-      const isDraggable = isAdminView && !updatedMarker.locked;
-      // console.log(`Marker ${id} draggable state:`, isDraggable);
+      const updated = prev.map(m =>
+        m.id === id
+          ? { ...m, appearanceLocked: !m.appearanceLocked }
+          : m
+      );
       return updated;
     });
     // Auto-save to Supabase
     const currentMarker = markersState.find(m => m.id === id);
     if (currentMarker) {
-      const newLocked = !currentMarker.locked;
+      const newAppearanceLocked = !currentMarker.appearanceLocked;
       await supabase
         .from('Markers_Core')
-        .update({ locked: newLocked })
+        .update({ appearanceLocked: newAppearanceLocked })
         .eq('id', id);
     }
   }
@@ -479,9 +479,9 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           <button
                             onClick={() => toggleLock(marker.id)}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                            title={marker.locked ? 'Unlock row' : 'Lock row'}
+                            title={marker.appearanceLocked ? 'Unlock rectangle/rotation' : 'Lock rectangle/rotation'}
                           >
-                            {marker.locked
+                            {marker.appearanceLocked
                               ? <Icon path={mdiLock} size={1.2} />
                               : <Icon path={mdiLockOpenVariant} size={1.2} />}
                           </button>

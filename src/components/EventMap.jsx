@@ -40,6 +40,20 @@ const MAP_LAYERS = [
 ];
 
 function EventMap({ isAdminView, markersState, updateMarker })  {
+  // Helper: get marker angle (default 0)
+  function getMarkerAngle(marker) {
+    // TODO: Replace with marker.appearanceTab.Angle or similar
+    return marker.angle || 0;
+  }
+
+  // Helper: rotate a point (meters offset) around origin by angle (degrees)
+  function rotatePoint(x, y, angleDeg) {
+    const theta = (angleDeg * Math.PI) / 180;
+    const xr = x * Math.cos(theta) - y * Math.sin(theta);
+    const yr = x * Math.sin(theta) + y * Math.cos(theta);
+    return [xr, yr];
+  }
+
   // Custom search button handler
   // Store the Leaflet Search control instance
   const searchControlRef = React.useRef(null);
@@ -65,6 +79,128 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const { trackMarkerView } = useAnalytics();
   // Ensure markers is always an array, memoized for hook compliance
   const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
+  // Rectangle size from appearanceTab (default [6, 6])
+  // TODO: Replace with actual appearanceTab.Rectangle prop/state when available
+  const rectangleSize = [6, 6]; // meters, [width, height]
+
+  // Helper functions for meters to lat/lng
+  function metersToLat(m) {
+    return m / 111320;
+  }
+  function metersToLng(m, lat) {
+    return m / (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
+  }
+
+  // Rectangle layer ref (do not use state)
+  const rectangleLayerRef = React.useRef(null);
+
+  // Create LayerGroup for rectangles when map is ready and markers change
+  useEffect(() => {
+    if (!mapInstance) return;
+    // Remove previous rectangle layer if exists
+    if (rectangleLayerRef.current) {
+      mapInstance.removeLayer(rectangleLayerRef.current);
+    }
+    const layerGroup = L.layerGroup();
+    safeMarkers.forEach(marker => {
+      if (marker.lat && marker.lng) {
+        const center = L.latLng(marker.lat, marker.lng);
+        const halfWidth = rectangleSize[0] / 2;
+        const halfHeight = rectangleSize[1] / 2;
+        const angle = getMarkerAngle(marker);
+        const markerBlue = marker.iconColor || '#1976d2';
+        // Rectangle corners (meters offset from center)
+        const corners = [
+          rotatePoint(-halfWidth, -halfHeight, angle), // bottom-left
+          rotatePoint(halfWidth, -halfHeight, angle),  // bottom-right
+          rotatePoint(halfWidth, halfHeight, angle),   // top-right
+          rotatePoint(-halfWidth, halfHeight, angle)   // top-left
+        ];
+        // Convert corners to lat/lng
+        const latlngs = corners.map(([x, y]) =>
+          L.latLng(
+            center.lat + metersToLat(y),
+            center.lng + metersToLng(x, center.lat)
+          )
+        );
+        // Draw rotated rectangle as polygon
+        const rectangle = L.polygon(latlngs, { color: markerBlue, weight: 1 });
+        layerGroup.addLayer(rectangle);
+        // Add draggable rotation handle (small blue marker) at top-right corner
+        const [handleX, handleY] = corners[2]; // top-right
+        const handleLatLng = L.latLng(
+          center.lat + metersToLat(handleY),
+          center.lng + metersToLng(handleX, center.lat)
+        );
+        let handleMarker;
+        if (isAdminView && !(marker.appearanceLocked)) {
+          // Use a small blue icon for the handle
+          const handleIcon = L.divIcon({
+            className: 'rotation-handle-icon',
+            html: '<div style="width:12px;height:12px;background:#1976d2;border-radius:50%;border:2px solid #fff;"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+          });
+          handleMarker = L.marker(handleLatLng, {
+            icon: handleIcon,
+            draggable: true,
+            interactive: true,
+            keyboard: true,
+            title: 'Drag to rotate',
+          });
+          handleMarker.on('dragstart', function() {
+            if (mapInstance) mapInstance.dragging.disable();
+          });
+          handleMarker.on('drag', function(e) {
+            const newPos = e.target.getLatLng();
+            // Calculate angle between center and new handle position
+            const dx = metersToLngInv(newPos.lng - center.lng, center.lat);
+            const dy = metersToLatInv(newPos.lat - center.lat);
+            // Angle in degrees
+            const angleRad = Math.atan2(dy, dx);
+            let angleDeg = angleRad * 180 / Math.PI;
+            if (angleDeg < 0) angleDeg += 360;
+            updateMarker(marker.id, { angle: angleDeg });
+          });
+          handleMarker.on('dragend', function() {
+            if (mapInstance) mapInstance.dragging.enable();
+          });
+        } else {
+          // Non-draggable handle for locked state
+          const handleIcon = L.divIcon({
+            className: 'rotation-handle-icon',
+            html: '<div style="width:12px;height:12px;background:#1976d2;border-radius:50%;border:2px solid #fff;opacity:0.5;"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+          });
+          handleMarker = L.marker(handleLatLng, {
+            icon: handleIcon,
+            draggable: false,
+            interactive: false,
+            keyboard: false,
+            title: 'Locked',
+          });
+        }
+        layerGroup.addLayer(handleMarker);
+  // Helper: inverse meters to lat/lng (for drag calculation)
+  function metersToLatInv(deltaLat) {
+    return deltaLat * 111320;
+  }
+  function metersToLngInv(deltaLng, lat) {
+    return deltaLng * (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
+  }
+      }
+    });
+    layerGroup.addTo(mapInstance);
+    rectangleLayerRef.current = layerGroup;
+    // Cleanup function to remove the layer when dependencies change
+    return () => {
+      if (mapInstance && rectangleLayerRef.current) {
+        mapInstance.removeLayer(rectangleLayerRef.current);
+        rectangleLayerRef.current = null;
+      }
+    };
+  }, [mapInstance, markersState, rectangleSize]);
 
   useEffect(() => {
     // Create LayerGroup for markers when map is ready and markers change
