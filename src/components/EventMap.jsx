@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Icon from '@mdi/react';
+import { mdiLayersTriple } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
@@ -354,6 +356,18 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           <MdHome size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Home</span>
         </button>
+        {/* Admin-only layers button below zoom/home controls */}
+        {isAdminView && (
+          <button
+            aria-label="Map layers"
+            className="bg-white rounded-full shadow p-2 flex items-center justify-center mt-2 hover:bg-gray-100 focus:outline-none"
+            style={{ width: 44, height: 44 }}
+            onClick={() => setShowLayersMenu && setShowLayersMenu(v => !v)}
+          >
+            <Icon path={mdiLayersTriple} size={1.2} color="#1976d2" />
+            <span className="sr-only">Map layers</span>
+          </button>
+        )}
       </div>
       {/* Map container */}
       <div
