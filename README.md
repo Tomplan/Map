@@ -1,3 +1,11 @@
+<<<<<<< HEAD
+
+=======
+## TODO
+
+- [ ] Integrate CSS spinner with search input
+	- Show the .leaflet-search-spinner during search loading in the React/Leaflet component. Add a loading state, set it when search starts/ends, and conditionally render the spinner next to the input. Ensure spinner CSS is present in leaflet-search-custom.css.
+>>>>>>> 1f15d46 (Hide cancel button in Leaflet Search, update spinner and icons)
 Here’s a full summary of our conversation so far. You can copy and paste this into a file (like README.md or requirements.txt) in your workspace to keep all your info safe.
  
 Event Map App – Full Planning Summary
