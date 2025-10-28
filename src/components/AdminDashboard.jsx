@@ -250,7 +250,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
     <div className="relative w-full h-screen">
       {/* Dashboard button at top */}
       <button
-        className="fixed top-4 right-4 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+        className="fixed top-4 left-2 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
         aria-label="Toggle dashboard"
         onClick={() => setShowDashboard((v) => !v)}
       >
