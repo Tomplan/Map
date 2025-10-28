@@ -111,8 +111,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           icon: false,
           animate: true
         },
-        textPlaceholder: 'Search for a marker...',
-        position: 'topright',
+        textPlaceholder: 'Search for a booth-holder...',
+        position: 'topleft',
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
@@ -158,7 +158,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     >
       {/* Layer select button removed for user view */}
       {/* Zoom, home, and custom search controls */}
-  <div style={{ position: 'absolute', top: 80, left: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+  <div style={{ position: 'absolute', top: 80, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
           onClick={handleZoomIn}
           aria-label="Zoom in"
