@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdZoomIn, MdZoomOut, MdHome, MdSearch } from 'react-icons/md';
+import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
 import L from 'leaflet';
@@ -109,7 +109,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         zoom: 20,
         marker: false,
         textPlaceholder: 'Search for a marker...',
-        position: 'topleft',
+        position: 'topright',
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
@@ -155,14 +155,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     >
       {/* Layer select button removed for user view */}
       {/* Zoom, home, and custom search controls */}
-      <div style={{ position: 'absolute', top: 80, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+  <div style={{ position: 'absolute', top: 80, left: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
           onClick={handleZoomIn}
           aria-label="Zoom in"
           className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
           style={{ width: 44, height: 44 }}
         >
-          <MdZoomIn size={28} color="#1976d2" aria-hidden="true" />
+          <MdAdd size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Zoom in</span>
         </button>
         <button
@@ -171,7 +171,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
           style={{ width: 44, height: 44 }}
         >
-          <MdZoomOut size={28} color="#1976d2" aria-hidden="true" />
+          <MdRemove size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Zoom out</span>
         </button>
         <button
@@ -182,16 +182,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         >
           <MdHome size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Home</span>
-        </button>
-        <button
-          onClick={handleCustomSearchClick}
-          aria-label="Search"
-          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
-          style={{ width: 44, height: 44 }}
-        >
-          {/* Use MDI search icon for search */}
-          <MdSearch size={28} color="#1976d2" aria-hidden="true" />
-          <span className="sr-only">Search</span>
         </button>
       </div>
       {/* Map container */}
