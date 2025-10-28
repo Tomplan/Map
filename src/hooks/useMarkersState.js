@@ -18,12 +18,23 @@ export default function useMarkersState(initialMarkers = []) {
     try {
       // Dynamically import supabase to avoid circular deps if needed
       const { supabase } = await import('../supabaseClient');
-      const { error } = await supabase
-        .from('Markers_Core')
-        .update(newProps)
-        .eq('id', id);
-      if (error) {
-        console.error('Supabase update failed:', error);
+      // If updating angle, use Markers_Appearance table
+      if ('angle' in newProps) {
+        const { error } = await supabase
+          .from('Markers_Appearance')
+          .update({ angle: newProps.angle })
+          .eq('id', id);
+        if (error) {
+          console.error('Supabase update failed:', error);
+        }
+      } else {
+        const { error } = await supabase
+          .from('Markers_Core')
+          .update(newProps)
+          .eq('id', id);
+        if (error) {
+          console.error('Supabase update failed:', error);
+        }
       }
     } catch (err) {
       console.error('Supabase update error (offline or import failed):', err);
