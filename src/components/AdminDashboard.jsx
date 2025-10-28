@@ -399,7 +399,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                   {sortedMarkers.map(marker => (
                     <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
                       {COLUMNS[activeTab].map(col => {
-                        let value = marker[col.key];
+                        const value = marker[col.key];
                         // Reference field logic
                         let isReference = false;
                         let referenceTooltip = '';
@@ -421,8 +421,29 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                             </td>
                           );
                         }
+                        // Special logic for Angle column in Appearance tab
+                        if (col.key === 'angle' && activeTab === 'appearance') {
+                          return marker.appearanceLocked ? (
+                            <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">
+                              {value ?? 0}
+                            </td>
+                          ) : (
+                            <td key={col.key} className="py-1 px-3 border-b text-left">
+                              <input
+                                type="number"
+                                step="0.1"
+                                min="0"
+                                max="360"
+                                value={value ?? 0}
+                                onChange={e => handleFieldChange(marker.id, col.key, parseFloat(e.target.value))}
+                                className="w-full bg-white border rounded px-2 py-1"
+                              />
+                            </td>
+                          );
+                        }
                         // Editable fields for unlocked markers
-                        if (!marker.coreLocked) {
+                        const isAppearanceUnlocked = activeTab === 'appearance' ? !marker.appearanceLocked : !marker.coreLocked;
+                        if (isAppearanceUnlocked) {
                           if (col.key === 'iconUrl') {
                             const iconPath = getIconPath(value);
                             return (
