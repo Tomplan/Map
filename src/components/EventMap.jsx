@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
-import L from 'leaflet';
+import L, { icon } from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import '../assets/leaflet-search-custom.css';
@@ -107,7 +107,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         layer: markerLayer,
         initial: false,
         zoom: 20,
-        marker: false,
+        marker: {
+          icon: false,
+          animate: true
+        },
         textPlaceholder: 'Search for a marker...',
         position: 'topright',
       });
