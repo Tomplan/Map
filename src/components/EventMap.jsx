@@ -163,9 +163,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           if (isAdminView && !(marker.appearanceLocked)) {
             const handleIcon = L.divIcon({
               className: 'rotation-handle-icon',
-              html: '<div style="width:12px;height:12px;background:#1976d2;border-radius:50%;border:2px solid #fff;"></div>',
-              iconSize: [12, 12],
-              iconAnchor: [6, 6],
+              html: '<div style="width:8px;height:8px;background:#1976d2;border-radius:50%;"></div>',
+              iconSize: [8, 8],
+              iconAnchor: [4, 4],
             });
             handleMarker = L.marker(handleLatLng, {
               icon: handleIcon,
@@ -213,9 +213,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           } else {
             const handleIcon = L.divIcon({
               className: 'rotation-handle-icon',
-              html: '<div style="width:12px;height:12px;background:#1976d2;border-radius:50%;border:2px solid #fff;opacity:0.5;"></div>',
-              iconSize: [12, 12],
-              iconAnchor: [6, 6],
+              html: '<div style="width:8px;height:8px;background:#1976d2;border-radius:50%;opacity:0.5;"></div>',
+              iconSize: [8, 8],
+              iconAnchor: [4, 4],
             });
             handleMarker = L.marker(handleLatLng, {
               icon: handleIcon,

@@ -166,21 +166,47 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
     setMarkersState(prev => {
-      const updated = prev.map(m =>
-        m.id === id
-          ? { ...m, appearanceLocked: !m.appearanceLocked }
-          : m
-      );
-      return updated;
+      return prev.map(m => {
+        if (m.id !== id) return m;
+        if (activeTab === 'appearance') {
+          return { ...m, appearanceLocked: !m.appearanceLocked };
+        } else if (activeTab === 'content') {
+          return { ...m, contentLocked: !m.contentLocked };
+        } else if (activeTab === 'admin') {
+          return { ...m, adminLocked: !m.adminLocked };
+        } else {
+          return { ...m, coreLocked: !m.coreLocked };
+        }
+      });
     });
     // Auto-save to Supabase
     const currentMarker = markersState.find(m => m.id === id);
     if (currentMarker) {
-      const newAppearanceLocked = !currentMarker.appearanceLocked;
-      await supabase
-        .from('Markers_Core')
-        .update({ appearanceLocked: newAppearanceLocked })
-        .eq('id', id);
+      if (activeTab === 'appearance') {
+        const newAppearanceLocked = !currentMarker.appearanceLocked;
+        await supabase
+          .from('Markers_Appearance')
+          .update({ appearanceLocked: newAppearanceLocked })
+          .eq('id', id);
+      } else if (activeTab === 'content') {
+        const newContentLocked = !currentMarker.contentLocked;
+        await supabase
+          .from('Markers_Content')
+          .update({ contentLocked: newContentLocked })
+          .eq('id', id);
+      } else if (activeTab === 'admin') {
+        const newAdminLocked = !currentMarker.adminLocked;
+        await supabase
+          .from('Markers_Admin')
+          .update({ adminLocked: newAdminLocked })
+          .eq('id', id);
+      } else {
+        const newCoreLocked = !currentMarker.coreLocked;
+        await supabase
+          .from('Markers_Core')
+          .update({ coreLocked: newCoreLocked })
+          .eq('id', id);
+      }
     }
   }
 
@@ -325,25 +351,43 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                         <div className="flex justify-center p-0">
                           <button
                             onClick={async () => {
-                              const allLocked = sortedMarkers.every(m => m.locked);
+                              let lockKey = 'coreLocked';
+                              let table = 'Markers_Core';
+                              if (activeTab === 'appearance') {
+                                lockKey = 'appearanceLocked';
+                                table = 'Markers_Appearance';
+                              } else if (activeTab === 'content') {
+                                lockKey = 'contentLocked';
+                                table = 'Markers_Content';
+                              } else if (activeTab === 'admin') {
+                                lockKey = 'adminLocked';
+                                table = 'Markers_Admin';
+                              }
+                              const allLocked = sortedMarkers.every(m => m[lockKey]);
                               const updatedMarkers = markersState.map(m =>
                                 sortedMarkers.some(sm => sm.id === m.id)
-                                  ? { ...m, locked: !allLocked }
+                                  ? { ...m, [lockKey]: !allLocked }
                                   : m
                               );
                               setMarkersState(updatedMarkers);
                               // Save to Supabase
                               sortedMarkers.forEach(async (marker) => {
                                 await supabase
-                                  .from('Markers_Core')
-                                  .update({ locked: !allLocked })
+                                  .from(table)
+                                  .update({ [lockKey]: !allLocked })
                                   .eq('id', marker.id);
                               });
                             }}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
                             title="Lock or unlock all rows"
                           >
-                            {sortedMarkers.every(m => m.locked)
+                            {(activeTab === 'appearance'
+                              ? sortedMarkers.every(m => m.appearanceLocked)
+                              : activeTab === 'content'
+                                ? sortedMarkers.every(m => m.contentLocked)
+                                : activeTab === 'admin'
+                                  ? sortedMarkers.every(m => m.adminLocked)
+                                  : sortedMarkers.every(m => m.coreLocked))
                               ? <Icon path={mdiLock} size={1.2} />
                               : <Icon path={mdiLockOpenVariant} size={1.2} />}
                           </button>
@@ -378,7 +422,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           );
                         }
                         // Editable fields for unlocked markers
-                        if (!marker.locked) {
+                        if (!marker.coreLocked) {
                           if (col.key === 'iconUrl') {
                             const iconPath = getIconPath(value);
                             return (
@@ -479,11 +523,32 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           <button
                             onClick={() => toggleLock(marker.id)}
                             className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                            title={marker.appearanceLocked ? 'Unlock rectangle/rotation' : 'Lock rectangle/rotation'}
+                            title={
+                              activeTab === 'appearance'
+                                ? marker.appearanceLocked ? 'Unlock rectangle/rotation' : 'Lock rectangle/rotation'
+                                : activeTab === 'content'
+                                  ? marker.contentLocked ? 'Unlock content' : 'Lock content'
+                                  : activeTab === 'admin'
+                                    ? marker.adminLocked ? 'Unlock admin' : 'Lock admin'
+                                    : marker.coreLocked ? 'Unlock core' : 'Lock core'
+                            }
                           >
-                            {marker.appearanceLocked
-                              ? <Icon path={mdiLock} size={1.2} />
-                              : <Icon path={mdiLockOpenVariant} size={1.2} />}
+                            {activeTab === 'appearance'
+                              ? (marker.appearanceLocked
+                                ? <Icon path={mdiLock} size={1.2} />
+                                : <Icon path={mdiLockOpenVariant} size={1.2} />)
+                              : activeTab === 'content'
+                                ? (marker.contentLocked
+                                  ? <Icon path={mdiLock} size={1.2} />
+                                  : <Icon path={mdiLockOpenVariant} size={1.2} />)
+                                : activeTab === 'admin'
+                                  ? (marker.adminLocked
+                                    ? <Icon path={mdiLock} size={1.2} />
+                                    : <Icon path={mdiLockOpenVariant} size={1.2} />)
+                                  : (marker.coreLocked
+                                    ? <Icon path={mdiLock} size={1.2} />
+                                    : <Icon path={mdiLockOpenVariant} size={1.2} />)
+                            }
                           </button>
                         </div>
                       </td>
