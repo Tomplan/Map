@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdZoomIn, MdZoomOut, MdHome } from 'react-icons/md';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MdZoomIn, MdZoomOut, MdHome, MdSearch } from 'react-icons/md';
+import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
 import L from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
+import '../assets/leaflet-search-custom.css';
 import { createMarkerIcon } from '../utils/markerIcons';
 // Marker state is now provided via props from App.jsx
 import useAnalytics from '../hooks/useAnalytics';
@@ -22,58 +23,6 @@ function getMarkerLabel(label) {
   return JSON.stringify(label);
 }
 
-function SearchControl({ markers }) {
-  const map = useMap();
-  // Ensure markers is always an array, memoized for hook compliance
-  const safeMarkers = React.useMemo(() => Array.isArray(markers) ? markers : [], [markers]);
-  // Use a persistent marker layer for search
-  React.useEffect(() => {
-    if (!map || !safeMarkers || safeMarkers.length === 0) return;
-    if (!map._searchMarkerLayer) {
-      map._searchMarkerLayer = L.layerGroup();
-      map.addLayer(map._searchMarkerLayer);
-    }
-    map._searchMarkerLayer.clearLayers();
-    safeMarkers.forEach(marker => {
-      let pos = [marker.lat, marker.lng];
-      // Invisible marker for search, with name prop
-      const markerObj = L.marker(pos, {
-        name: marker.name,
-        label: marker.label, // for future extensibility
-        opacity: 0,
-        interactive: false
-      });
-      map._searchMarkerLayer.addLayer(markerObj);
-    });
-    if (map._searchControl) {
-      map.removeControl(map._searchControl);
-    }
-    const searchControl = new L.Control.Search({
-      layer: map._searchMarkerLayer,
-      propertyName: 'name', // search by marker.name
-      moveToLocation: function(latlng, name, map) {
-        map.setView(latlng, 20); // zoom in to level 20
-      },
-      initial: false,
-      zoom: 20, // ensure zoom level is set for found marker
-      marker: true, // use default marker highlight (no circle)
-      textPlaceholder: 'Search for a location...'
-    });
-    map._searchControl = searchControl;
-    map.addControl(searchControl);
-    return () => {
-      if (map._searchControl) {
-        map.removeControl(map._searchControl);
-        map._searchControl = null;
-      }
-      if (map._searchMarkerLayer) {
-        map.removeLayer(map._searchMarkerLayer);
-        map._searchMarkerLayer = null;
-      }
-    };
-  }, [map, safeMarkers]);
-  return null;
-}
 
 const MAP_LAYERS = [
   {
@@ -91,17 +40,85 @@ const MAP_LAYERS = [
 ];
 
 function EventMap({ isAdminView, markersState, updateMarker })  {
+  // Custom search button handler
+  // Store the Leaflet Search control instance
+  const searchControlRef = React.useRef(null);
+  const handleCustomSearchClick = () => {
+    if (searchControlRef.current && typeof searchControlRef.current.expand === 'function') {
+      searchControlRef.current.expand();
+      // Focus the input after expanding
+      setTimeout(() => {
+        const searchInput = document.querySelector('.leaflet-control-search .search-input');
+        if (searchInput) searchInput.focus();
+      }, 50);
+    } else {
+      console.warn('Leaflet Search control instance not available.');
+    }
+  };
   const { t } = useTranslation();
   // Always use Carto Voyager for user view
   const activeLayer = MAP_LAYERS[0].key;
   const [mapInstance, setMapInstance] = useState(null);
+  const [markerLayer, setMarkerLayer] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
   const { trackMarkerView } = useAnalytics();
+  // Ensure markers is always an array, memoized for hook compliance
+  const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
 
   useEffect(() => {
-  //  console.log('markersState updated:', markersState);
-  }, [markersState]);
+    // Create LayerGroup for markers when map is ready and markers change
+    if (mapInstance) {
+      // Remove previous layer if exists
+      if (markerLayer) {
+        mapInstance.removeLayer(markerLayer);
+      }
+      const layerGroup = L.layerGroup();
+      safeMarkers.forEach(marker => {
+        if (marker.lat && marker.lng) {
+          const leafletMarker = L.marker([marker.lat, marker.lng], {
+            title: marker.name || marker.label || '',
+            icon: createMarkerIcon({
+              className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
+              prefix: marker.prefix,
+              iconUrl: marker.iconUrl || `${marker.type || 'default'}.svg`,
+              iconSize: marker.iconSize || [25, 41],
+              iconColor: marker.iconColor || 'blue',
+              glyph: marker.glyph || '',
+              glyphColor: marker.glyphColor || 'white',
+              glyphSize: marker.glyphSize || '14px',
+              glyphAnchor: marker.glyphAnchor || [0,0]
+            })
+          });
+          leafletMarker.bindPopup(getMarkerLabel(marker.label));
+          layerGroup.addLayer(leafletMarker);
+        }
+      });
+      layerGroup.addTo(mapInstance);
+      setMarkerLayer(layerGroup);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapInstance, markersState]);
+
+  // Add Leaflet Search control when map and markerLayer are ready
+  useEffect(() => {
+    if (mapInstance && markerLayer) {
+      const searchControl = new L.Control.Search({
+        layer: markerLayer,
+        initial: false,
+        zoom: 20,
+        marker: false,
+        textPlaceholder: 'Search for a marker...',
+        position: 'topleft',
+      });
+      mapInstance.addControl(searchControl);
+      searchControlRef.current = searchControl;
+      return () => {
+        mapInstance.removeControl(searchControl);
+        searchControlRef.current = null;
+      };
+    }
+  }, [mapInstance, markerLayer]);
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
@@ -117,8 +134,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     }
   };
 
-  // Ensure markers is always an array, memoized for hook compliance
-  const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
 
   // Add zoom and home controls
   const handleZoomIn = () => {
@@ -139,8 +154,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       role="region"
     >
       {/* Layer select button removed for user view */}
-      {/* Zoom and home controls */}
-  <div style={{ position: 'absolute', top: 80, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Zoom, home, and custom search controls */}
+      <div style={{ position: 'absolute', top: 80, right: 16, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
           onClick={handleZoomIn}
           aria-label="Zoom in"
@@ -167,6 +182,16 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         >
           <MdHome size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Home</span>
+        </button>
+        <button
+          onClick={handleCustomSearchClick}
+          aria-label="Search"
+          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          {/* Use MDI search icon for search */}
+          <MdSearch size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Search</span>
         </button>
       </div>
       {/* Map container */}
@@ -197,7 +222,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               maxZoom={22}
             />
           ))}
-          <SearchControl markers={safeMarkers} />
+
           {safeMarkers.map(marker => {
             let pos = [marker.lat, marker.lng];
             let iconFile = marker.iconUrl;

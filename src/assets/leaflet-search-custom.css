@@ -1,0 +1,175 @@
+/* CSS-only spinner for search loading state */
+.leaflet-search-spinner {
+	width: 20px;
+	height: 20px;
+	border: 2.5px solid #1976d2;
+	border-top: 2.5px solid #fff;
+	border-radius: 50%;
+	animation: leaflet-spin 0.8s linear infinite;
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	z-index: 2;
+}
+
+@keyframes leaflet-spin {
+	0% { transform: translateY(-50%) rotate(0deg); }
+	100% { transform: translateY(-50%) rotate(360deg); }
+}
+/* Copy of Leaflet Control Search v3.0.5 CSS for safe customization */
+
+/* ...existing code from leaflet-search.src.css... */
+
+.leaflet-container .leaflet-control-search {
+    position: relative;
+    float: left;
+    background: #fff;
+    color: #1978cf;
+    border: none;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.08);
+    z-index: 1000;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+.leaflet-control-search.search-exp {
+    background: #fff;
+    border: none;
+    background-clip: padding-box;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.08);
+}
+.leaflet-control-search .search-input {
+    background: #fff;
+	border: 1.5px solid #1976d2 !important;
+	outline: none;
+    border-radius: 9999px;
+    height: 32px;
+    padding: 0 16px;
+    margin: 4px 0 4px 4px;
+    font-size: 16px;
+    color: #1976d2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.leaflet-control-search.search-load .search-input {
+	background: url('../images/loader.gif') no-repeat center right #fff;
+	border-radius: 9999px;
+	border: 1.5px solid #1976d2;
+	height: 32px;
+	padding: 0 16px;
+	font-size: 16px;
+	color: #1976d2;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.leaflet-control-search.search-load .search-cancel {
+	visibility:hidden;
+}
+.leaflet-control-search .search-cancel {
+	display: none !important;
+	display: block;
+	width: 44px;
+	height: 44px;
+	position: absolute;
+	right: 28px;
+	margin: 6px 0;
+	background: none;
+	background-size: 60% 60%;
+	border-radius: 9999px;
+	text-decoration: none;
+	opacity: 0.8;
+}
+.leaflet-control-search .search-cancel:hover {
+	opacity: 1;
+	background-color: #f4f4f4;
+}
+.leaflet-control-search .search-cancel span {
+	display: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 22px;
+	line-height: 1;
+	color: #ccc;
+	font-weight: bold;
+	width: 100%;
+	height: 100%;
+	font-size: 22px;
+	line-height: 1;
+	color: #ccc;
+	font-weight: bold;
+	width: 100%;
+	height: 100%;
+}
+.leaflet-control-search .search-cancel:hover span {
+	color: #1976d2;
+}
+.leaflet-control-search .search-button {
+	display: flex;
+	width: 44px;
+	height: 44px;
+	background: url('../assets/icons/map-marker-question-blue.svg') no-repeat center center #fff;
+	background-size: 60% 60%;
+	border-radius: 9999px;
+	align-items: center;
+	justify-content: center;
+}
+.leaflet-control-search .search-button:hover {
+	background: url('../assets/icons/map-marker-question-blue.svg') no-repeat center center #f4f4f4;
+	background-size: 60% 60%;
+}
+.leaflet-control-search .search-tooltip {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	list-style: none;
+	padding-left: 0;
+	min-width: 120px;
+	max-height: 180px;
+	overflow-y: scroll;
+	scrollbar-width: thin;
+	scrollbar-color: #1976d2 #f4f4f4;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.12), 0 1.5px 4px rgba(0,0,0,0.08);
+	background-color: #fff;
+	border-radius: 12px;
+	z-index: 1010;
+	overflow-y: auto;
+	overflow-x: hidden;
+	cursor: pointer;
+}
+.leaflet-control-search .search-tip {
+	margin: 4px 8px;
+	padding: 8px 16px;
+	display: block;
+	color: #1976d2;
+	background: #f4f4f4;
+	border-radius: 9999px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.leaflet-control-search .search-button:hover {
+	background-color: #f4f4f4;
+}
+.leaflet-control-search .search-tip-select,
+.leaflet-control-search .search-tip:hover {
+	background-color: #fff;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.12);
+    border-radius: 9999px;
+    color: #1976d2;
+}
+.leaflet-control-search .search-alert {
+	cursor: pointer;
+	clear: both;
+	font-size: .85em;
+	margin-bottom: 8px;
+	padding: 6px 16px;
+	color: #e00;
+	font-weight: bold;
+	border-radius: 8px;
+	background: #ffeaea;
+	box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+}
+
+
+
