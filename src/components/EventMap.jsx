@@ -123,6 +123,12 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     return deltaLng * (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
   }
 
+    // Helper: determine if marker is draggable (admin only, lock off)
+  function isMarkerDraggable(marker) {
+    // Marker is draggable if admin view is active and coreLocked is false
+    return isAdminView && marker && marker.coreLocked === false;
+  }
+
   // Persistent LayerGroup for rectangles/handles
   // Only update rectangles/handles when marker data changes, not on zoom
   useEffect(() => {
@@ -533,10 +539,11 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 </div>
               );
               const labelText = getMarkerLabel(marker.label);
-              const isDraggable = isAdminView && !marker.coreLocked;
+              // Use helper for draggable logic
+              const isDraggable = isMarkerDraggable(marker);
               return (
                 <Marker
-                  key={marker.id}
+                  key={`${marker.id}-${marker.coreLocked}`}
                   position={pos}
                   icon={icon}
                   draggable={isDraggable}
@@ -618,19 +625,21 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               </div>
             );
             const labelText = getMarkerLabel(marker.label);
-            const isDraggable = isAdminView && !marker.coreLocked;
+            // Use helper for draggable logic
+            const isDraggable = isMarkerDraggable(marker);
+            const eventHandlers = isDraggable ? {
+              dragend: (e) => {
+                const { lat, lng } = e.target.getLatLng();
+                updateMarker(marker.id, { lat, lng });
+              }
+            } : {};
             return (
               <Marker
-                key={marker.id}
+                key={`${marker.id}-${marker.coreLocked}`}
                 position={pos}
                 icon={icon}
                 draggable={isDraggable}
-                eventHandlers={isDraggable ? {
-                  dragend: (e) => {
-                    const { lat, lng } = e.target.getLatLng();
-                    updateMarker(marker.id, { lat, lng });
-                  }
-                } : {}}
+                eventHandlers={eventHandlers}
               >
                 <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
                 <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
