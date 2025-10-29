@@ -93,7 +93,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
   const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
-  const [markerLayer, setMarkerLayer] = useState(null);
+  // Hidden LayerGroup for search markers
+  const [searchLayer, setSearchLayer] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
   const DEFAULT_ZOOM = 17; // Default zoom level
   const { trackMarkerView } = useAnalytics();
@@ -264,45 +265,36 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     // Rectangle/handle layers are independent from main marker layers
   }, [mapInstance, markersState, rectangleSize, isAdminView, showRectanglesAndHandles]);
 
-  useEffect(() => {
-    // Create LayerGroup for markers when map is ready and markers change
-    if (mapInstance) {
-      // Remove previous layer if exists
-      if (markerLayer) {
-        mapInstance.removeLayer(markerLayer);
-      }
-      const layerGroup = L.layerGroup();
-      safeMarkers.forEach(marker => {
-        if (marker.lat && marker.lng) {
-          const leafletMarker = L.marker([marker.lat, marker.lng], {
-            title: marker.name || marker.label || '',
-            icon: createMarkerIcon({
-              className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
-              prefix: marker.prefix,
-              iconUrl: marker.iconUrl || `${marker.type || 'default'}.svg`,
-              iconSize: marker.iconSize || [25, 41],
-              iconColor: marker.iconColor || 'blue',
-              glyph: marker.glyph || '',
-              glyphColor: marker.glyphColor || 'white',
-              glyphSize: marker.glyphSize || '14px',
-              glyphAnchor: marker.glyphAnchor || [0,0]
-            })
-          });
-          leafletMarker.bindPopup(getMarkerLabel(marker.label));
-          layerGroup.addLayer(leafletMarker);
-        }
-      });
-      layerGroup.addTo(mapInstance);
-      setMarkerLayer(layerGroup);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, markersState]);
 
-  // Add Leaflet Search control when map and markerLayer are ready
+  // Create and sync hidden LayerGroup for search markers
   useEffect(() => {
-    if (mapInstance && markerLayer) {
+    if (!mapInstance) return;
+    // Create LayerGroup if not exists
+    let layerGroup = searchLayer;
+    if (!layerGroup) {
+      layerGroup = L.layerGroup();
+      setSearchLayer(layerGroup);
+    }
+    // Remove all layers
+    layerGroup.clearLayers();
+    // Add Leaflet marker objects for each marker
+    safeMarkers.forEach(marker => {
+      if (marker.lat && marker.lng) {
+        const leafletMarker = L.marker([marker.lat, marker.lng], {
+          title: marker.name || marker.label || '',
+          opacity: 0, // Hide from map
+        });
+        leafletMarker.bindPopup(marker.name || marker.label || '');
+        layerGroup.addLayer(leafletMarker);
+      }
+    });
+  }, [mapInstance, safeMarkers, searchLayer]);
+
+  // Add Leaflet Search control when map and searchLayer are ready
+  useEffect(() => {
+    if (mapInstance && searchLayer) {
       const searchControl = new L.Control.Search({
-        layer: markerLayer,
+        layer: searchLayer,
         initial: false,
         zoom: 20,
         marker: {
@@ -319,7 +311,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         searchControlRef.current = null;
       };
     }
-  }, [mapInstance, markerLayer]);
+  }, [mapInstance, searchLayer]);
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
@@ -471,7 +463,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             />
           ))}
 
-          <MarkerClusterGroup>
+          <MarkerClusterGroup
+            chunkedLoading={true}
+            showCoverageOnHover={true}
+            spiderfyOnMaxZoom={false}
+            removeOutsideVisibleBounds={true}
+            disableClusteringAtZoom={18}
+            maxClusterRadius={400}
+          >
             {safeMarkers.map(marker => {
               let pos = [marker.lat, marker.lng];
               let iconFile = marker.iconUrl;
