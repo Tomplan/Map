@@ -92,7 +92,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   // Layer selection state (admin only)
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
-  const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(true);
+  const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [markerLayer, setMarkerLayer] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
@@ -356,7 +356,16 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       role="region"
     >
       {/* Zoom, home, and custom search controls + admin layers popover */}
-      <div style={{ position: 'absolute', top: 80, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <button
+          onClick={handleHome}
+          aria-label="Home"
+          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
+          style={{ width: 44, height: 44 }}
+        >
+          <MdHome size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Home</span>
+        </button>
         <button
           onClick={handleZoomIn}
           aria-label="Zoom in"
@@ -375,21 +384,12 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           <MdRemove size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Zoom out</span>
         </button>
-        <button
-          onClick={handleHome}
-          aria-label="Home"
-          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
-          style={{ width: 44, height: 44 }}
-        >
-          <MdHome size={28} color="#1976d2" aria-hidden="true" />
-          <span className="sr-only">Home</span>
-        </button>
         {/* Admin-only layers button and popover */}
         {isAdminView && (
           <div style={{ position: 'relative' }}>
             <button
               aria-label="Map layers"
-              className="bg-white rounded-full shadow p-2 flex items-center justify-center mt-2 hover:bg-gray-100 focus:outline-none"
+              className="bg-white rounded-full shadow p-2 flex items-center justify-center mt-0 hover:bg-gray-100 focus:outline-none"
               style={{ width: 44, height: 44 }}
               onClick={() => setShowLayersMenu(v => !v)}
             >
