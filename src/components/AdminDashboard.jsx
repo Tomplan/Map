@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap';
+import BrandingSettings from './BrandingSettings';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
@@ -245,7 +246,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
 
 
   // Branding state for live sync
-  const [branding, setBranding] = useState({ logo: '', themeColor: '#2d3748', fontFamily: 'Montserrat, sans-serif', eventName: 'Event Map', id: 1 });
+  const [branding, setBranding] = useState({ logo: 'assets/logos/4x4Vakantiebeurs.png', themeColor: '#ffffff', fontFamily: 'Arvo, Sans-serif', eventName: '4x4 Vakantiebeurs', id: 1 });
 
   // Fetch initial branding data
   useEffect(() => {
@@ -291,6 +292,10 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       {showDashboard && (
           <div className="absolute inset-0 left-4 right-4 z-40 flex justify-start items-start pt-20">
             <div className="bg-white rounded-lg shadow-2xl p-8 w-full" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+              {/* Branding settings at top of dashboard */}
+              <div className="w-full flex justify-center mb-6">
+                <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
+              </div>
               {/* Marker tables for each tab */}
               <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
                 {TABS.map(tab => (

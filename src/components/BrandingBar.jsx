@@ -1,24 +1,35 @@
 import React from 'react';
 
 export default function BrandingBar({ logo, themeColor, fontFamily, eventName }) {
+  // Match dashboard/zoom button style
+  const bgColor = themeColor || '#fff';
+  const borderColor = '#1976d2';
+  const textColor = '#1976d2';
   return (
-    <header
-      className="w-full flex items-center justify-between px-4 py-2 shadow-md"
+    <div
+      className="flex items-center justify-center shadow rounded-full"
       style={{
-        background: themeColor || '#1a202c',
-        fontFamily: fontFamily || 'inherit',
         position: 'fixed',
-        top: 0,
-        left: 0,
+        top: 10, // match search button height
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 3000,
-        width: '100%'
+        background: bgColor,
+        border: `2px solid ${borderColor}`,
+        padding: '0.5rem 1.25rem',
+        minHeight: 44,
+        minWidth: 0,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        fontFamily: fontFamily || 'inherit',
+        width: 'auto',
+        maxWidth: '90vw',
       }}
       aria-label="Event Branding"
     >
       {logo && (
-        <img src={logo} alt="Event Logo" className="h-10 w-auto mr-4" />
+        <img src={logo} alt="Event Logo" style={{ height: 32, width: 32, objectFit: 'contain', marginRight: 12 }} />
       )}
-      <span className="text-xl font-bold text-white">{eventName || 'Event Map'}</span>
-    </header>
+      <span style={{ fontWeight: 700, fontSize: 22, color: textColor, whiteSpace: 'nowrap' }}>{eventName || 'Event Map'}</span>
+    </div>
   );
 }
