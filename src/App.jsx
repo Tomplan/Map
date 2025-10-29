@@ -58,10 +58,10 @@ function App() {
   }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
-    logo: '',
-    themeColor: '#2d3748',
-    fontFamily: 'Montserrat, sans-serif',
-    eventName: 'Event Map',
+    logo: 'assets/logos/4x4Vakantiebeurs.png',
+    themeColor: '#ffffff',
+    fontFamily: 'Arvo, Sans-serif',
+    eventName: '4x4 Vakantiebeurs',
     id: 1
   });
 
@@ -114,7 +114,6 @@ function App() {
                   />
                 </Suspense>
               </main>
-              <BrandingSettings onChange={setBranding} />
             </ErrorBoundary>
           }
         />
@@ -122,6 +121,7 @@ function App() {
           path="/admin"
           element={
             <ErrorBoundary>
+              <BrandingBar {...branding} />
               <AdminDashboard
                 markersState={markersState}
                 updateMarker={updateMarker}
