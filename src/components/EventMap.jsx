@@ -463,6 +463,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             />
           ))}
 
+          {/* Clustered markers (id < 1001) */}
           <MarkerClusterGroup
             chunkedLoading={true}
             showCoverageOnHover={true}
@@ -471,7 +472,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             disableClusteringAtZoom={18}
             maxClusterRadius={400}
           >
-            {safeMarkers.map(marker => {
+            {safeMarkers.filter(marker => marker.id < 1001).map(marker => {
               let pos = [marker.lat, marker.lng];
               let iconFile = marker.iconUrl;
               if (!iconFile) {
@@ -554,6 +555,90 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               );
             })}
           </MarkerClusterGroup>
+
+          {/* Special markers (id >= 1001) - never clustered */}
+          {safeMarkers.filter(marker => marker.id >= 1001).map(marker => {
+            let pos = [marker.lat, marker.lng];
+            let iconFile = marker.iconUrl;
+            if (!iconFile) {
+              iconFile = `${marker.type || 'default'}.svg`;
+            }
+            // Ensure path always starts with assets/icons/
+            if (!iconFile.startsWith('assets/icons/')) {
+              iconFile = `assets/icons/${iconFile}`;
+            }
+            const icon = createMarkerIcon({
+              className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
+              prefix: marker.prefix,
+              iconUrl: iconFile,
+              iconSize: marker.iconSize || [25, 41],
+              iconColor: marker.iconColor || 'blue',
+              glyph: marker.glyph || '',
+              glyphColor: marker.glyphColor || 'white',
+              glyphSize: marker.glyphSize || '14px',
+              glyphAnchor: marker.glyphAnchor || [0,0]
+            });
+            // Tooltip content: logo and name
+            const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
+            const tooltipContent = (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 1,
+                  padding: 0,
+                  whiteSpace: 'nowrap',
+                  minWidth: 'max-content',
+                  // background: '#e7f2fcff',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)'
+                }}
+              >
+                {logoPath && (
+                  <img
+                    src={logoPath}
+                    alt={marker.name || 'Logo'}
+                    style={{
+                       maxWidth: 120,
+                       maxHeight: 80,
+                      // minWidth: 40,
+                      // minHeight: 40,
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      borderRadius: '0px',
+                      marginBottom: 0,
+                      padding: 0,
+                      // background: '#d2e3f4ff'
+                    }}
+                  />
+                )}
+                <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: '#1976d2' }}>{marker.name}</span>
+              </div>
+            );
+            const labelText = getMarkerLabel(marker.label);
+            const isDraggable = isAdminView && !marker.coreLocked;
+            return (
+              <Marker
+                key={marker.id}
+                position={pos}
+                icon={icon}
+                draggable={isDraggable}
+                eventHandlers={isDraggable ? {
+                  dragend: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    updateMarker(marker.id, { lat, lng });
+                  }
+                } : {}}
+              >
+                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
+                  {tooltipContent}
+                </Tooltip>
+              </Marker>
+            );
+          })}
           
         </MapContainer>
       </div>
