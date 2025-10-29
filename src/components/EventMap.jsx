@@ -499,21 +499,37 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               <div
                 style={{
                   display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: 0,
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 1,
                   padding: 0,
                   whiteSpace: 'nowrap',
                   minWidth: 'max-content',
+                  // background: '#e7f2fcff',
+                  borderRadius: 2,
+                  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)'
                 }}
               >
                 {logoPath && (
                   <img
                     src={logoPath}
                     alt={marker.name || 'Logo'}
-                    style={{ width: 32, height: 32, objectFit: 'contain', marginRight: 4 }}
+                    style={{
+                       maxWidth: 120,
+                       maxHeight: 80,
+                      // minWidth: 40,
+                      // minHeight: 40,
+                      width: 'auto',
+                      height: 'auto',
+                      objectFit: 'contain',
+                      borderRadius: '0px',
+                      marginBottom: 0,
+                      padding: 0,
+                      // background: '#d2e3f4ff'
+                    }}
                   />
                 )}
-                <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{marker.name}</span>
+                <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: '#1976d2' }}>{marker.name}</span>
               </div>
             );
             const labelText = getMarkerLabel(marker.label);
