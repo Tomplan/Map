@@ -533,7 +533,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               </div>
             );
             const labelText = getMarkerLabel(marker.label);
-            const isDraggable = isAdminView && !marker.locked;
+            const isDraggable = isAdminView && !marker.coreLocked;
             return (
               <Marker
                 key={marker.id}
