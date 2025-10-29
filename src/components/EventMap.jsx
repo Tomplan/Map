@@ -92,8 +92,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   // Layer selection state (admin only)
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
-  const [showRectangles, setShowRectangles] = useState(true);
-  const [showHandles, setShowHandles] = useState(true);
+  const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(true);
   const [mapInstance, setMapInstance] = useState(null);
   const [markerLayer, setMarkerLayer] = useState(null);
   const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
@@ -255,19 +254,16 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     });
     // Show/hide rectangles and handles independently
     Object.values(rectLayerGroup._markerLayers).forEach(({ rectangle, handle }) => {
-      if (showRectangles) {
+      if (showRectanglesAndHandles) {
         rectLayerGroup.addLayer(rectangle);
-      } else {
-        rectLayerGroup.removeLayer(rectangle);
-      }
-      if (showHandles) {
         rectLayerGroup.addLayer(handle);
       } else {
+        rectLayerGroup.removeLayer(rectangle);
         rectLayerGroup.removeLayer(handle);
       }
     });
     // Rectangle/handle layers are independent from main marker layers
-  }, [mapInstance, markersState, rectangleSize, isAdminView, showRectangles, showHandles]);
+  }, [mapInstance, markersState, rectangleSize, isAdminView, showRectanglesAndHandles]);
 
   useEffect(() => {
     // Create LayerGroup for markers when map is ready and markers change
@@ -423,8 +419,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 <label className="flex items-center px-2 py-1 cursor-pointer hover:bg-blue-50 rounded" style={{ color: '#1976d2' }}>
                   <input
                     type="checkbox"
-                    checked={showRectangles}
-                    onChange={e => setShowRectangles(e.target.checked)}
+                    checked={showRectanglesAndHandles}
+                    onChange={e => setShowRectanglesAndHandles(e.target.checked)}
                     style={checkboxStyle}
                   />
                   <span style={{
@@ -433,36 +429,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                     width: 18,
                     height: 18,
                     pointerEvents: 'none',
-                    display: showRectangles ? 'inline-block' : 'none',
+                    display: showRectanglesAndHandles ? 'inline-block' : 'none',
                   }}>
                     {/* SVG checkmark, blue */}
                     <svg width="18" height="18" viewBox="0 0 18 18" style={{ position: 'absolute', top: 0, left: 0 }}>
                       <polyline points="4,9 8,13 14,5" stroke="#1976d2" strokeWidth="2.5" fill="none" />
                     </svg>
                   </span>
-                  <span style={{ marginLeft: showRectangles ? -8 : 0 }}>Show rectangles</span>
-                </label>
-                <label className="flex items-center px-2 py-1 cursor-pointer hover:bg-blue-50 rounded" style={{ color: '#1976d2' }}>
-                  <input
-                    type="checkbox"
-                    checked={showHandles}
-                    onChange={e => setShowHandles(e.target.checked)}
-                    style={checkboxStyle}
-                  />
-                  <span style={{
-                    position: 'relative',
-                    left: -26,
-                    width: 18,
-                    height: 18,
-                    pointerEvents: 'none',
-                    display: showHandles ? 'inline-block' : 'none',
-                  }}>
-                    {/* SVG checkmark, blue */}
-                    <svg width="18" height="18" viewBox="0 0 18 18" style={{ position: 'absolute', top: 0, left: 0 }}>
-                      <polyline points="4,9 8,13 14,5" stroke="#1976d2" strokeWidth="2.5" fill="none" />
-                    </svg>
-                  </span>
-                  <span style={{ marginLeft: showHandles ? -8 : 0 }}>Show rotation handles</span>
+                  <span style={{ marginLeft: showRectanglesAndHandles ? -8 : 0 }}>Booth Surface</span>
                 </label>
               </div>
             )}
