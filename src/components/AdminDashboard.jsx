@@ -275,29 +275,29 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
 
   return (
     <div className="relative w-full h-screen">
-      {/* Dashboard button at top */}
-      <button
-        className="fixed top-4 right-2 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
-        aria-label="Toggle dashboard"
-        onClick={() => setShowDashboard((v) => !v)}
-      >
-        <Icon path={mdiViewDashboard} size={1.2} color="#1976d2" />
-        <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
-      </button>
       {/* Map fills the whole screen */}
       <div className="absolute inset-0 w-full h-full">
+        {/* Dashboard button now inside map container, top-left */}
+        <button
+          className="absolute top-2 right-20 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+          aria-label="Toggle dashboard"
+          onClick={() => setShowDashboard((v) => !v)}
+        >
+          <Icon path={mdiViewDashboard} size={1.2} color="#1976d2" />
+          <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
+        </button>
         <EventMap isAdminView={true} markersState={markersState} updateMarker={updateMarker} />
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
-          <div className="absolute inset-0 left-4 right-4 z-40 flex justify-start items-start pt-20">
-            <div className="bg-white rounded-lg shadow-2xl p-8 w-full" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
-              {/* Branding settings at top of dashboard */}
-              <div className="w-full flex justify-center mb-6">
-                <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
-              </div>
-              {/* Marker tables for each tab */}
-              <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
+        <div className="absolute inset-0 left-2 right-20 z-40 flex justify-start items-start pt-20">
+          <div className="bg-white rounded-lg shadow-2xl p-8 w-full" style={{ maxHeight: '90vh', overflowY: 'auto', opacity: 0.80 }}>
+            {/* Branding settings at top of dashboard */}
+            <div className="w-full flex justify-center mb-6">
+              <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
+            </div>
+            {/* Marker tables for each tab */}
+            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
                 {TABS.map(tab => (
                   <button
                     key={tab.key}
