@@ -317,7 +317,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                 ))}
               </div>
               <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
-                <table className="w-full border border-gray-300 rounded" style={{ tableLayout: 'fixed', fontSize: '12px'  }}>
+                <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px'  }}>
                   <thead>
                     <tr className="bg-gray-100 text-gray-900">
                       {COLUMNS[activeTab].map((col) => {
@@ -336,7 +336,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           width: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
                           maxWidth: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
                           cursor: 'pointer',
-                          borderBottom: '1px solid #d1d5db',
+                        //  borderBottom: '1px solid #d1d5db',
                         };
                         return (
                           <th
@@ -350,13 +350,13 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           </th>
                         );
                       })}
-                      <th className="p-0" style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f3f4f6', borderBottom: '1px solid #d1d5db', cursor: 'pointer' }}>Actions</th>
+                      <th className="p-0" style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f3f4f6', cursor: 'pointer' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {/* Global lock button row in actions column */}
                     {sortedMarkers.length > 0 && (
-                        <tr className="bg-white" style={{ position: 'sticky', top: '40px', zIndex: 2 }}>
+                        <tr className="bg-white" style={{ position: 'sticky', top: '33.5px', zIndex: 2 }}>
                           {COLUMNS[activeTab].map((col) => (
                             <td key={col.key} className="p-0 border-b"></td>
                           ))}
