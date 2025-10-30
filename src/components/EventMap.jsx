@@ -10,7 +10,7 @@ import L, { icon } from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import '../assets/leaflet-search-custom.css';
-import { createMarkerIcon } from '../utils/markerIcons';
+import { createMarkerIcon, createMarkerPopupHTML } from '../utils/markerIcons';
 // Marker state is now provided via props from App.jsx
 import useAnalytics from '../hooks/useAnalytics';
 import 'leaflet/dist/leaflet.css';
@@ -554,7 +554,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                     }
                   } : {}}
                 >
-                  <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                  <Popup onOpen={() => trackMarkerView(marker.id)}>
+                    <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
+                  </Popup>
                   <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
                     {tooltipContent}
                   </Tooltip>
@@ -641,7 +643,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 draggable={isDraggable}
                 eventHandlers={eventHandlers}
               >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>{labelText}</Popup>
+                <Popup onOpen={() => trackMarkerView(marker.id)}>
+                  <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
+                </Popup>
                 <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
                   {tooltipContent}
                 </Tooltip>
