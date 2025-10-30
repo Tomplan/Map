@@ -543,7 +543,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               const isDraggable = isMarkerDraggable(marker);
               return (
                 <Marker
-                  key={`${marker.id}-${marker.coreLocked}`}
+                  key={`${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`}
                   position={pos}
                   icon={icon}
                   draggable={isDraggable}
@@ -635,7 +635,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             } : {};
             return (
               <Marker
-                key={`${marker.id}-${marker.coreLocked}`}
+                key={`${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`}
                 position={pos}
                 icon={icon}
                 draggable={isDraggable}
