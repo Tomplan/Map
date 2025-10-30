@@ -12,6 +12,12 @@ import '../assets/leaflet-search-custom.css';
 import { createMarkerIcon, createMarkerPopupHTML } from '../utils/markerIcons';
 import { syncRectangleLayers } from '../utils/rectangleLayer';
 import {
+  handleZoomIn,
+  handleZoomOut,
+  handleHome,
+  handleCustomSearchClick
+} from '../utils/mapControls';
+import {
   getMarkerAngle,
   rotatePoint,
   metersToLat,
@@ -68,21 +74,8 @@ const MAP_LAYERS = [
 
 function EventMap({ isAdminView, markersState, updateMarker })  {
 
-  // Custom search button handler
   // Store the Leaflet Search control instance
   const searchControlRef = React.useRef(null);
-  const handleCustomSearchClick = () => {
-    if (searchControlRef.current && typeof searchControlRef.current.expand === 'function') {
-      searchControlRef.current.expand();
-      // Focus the input after expanding
-      setTimeout(() => {
-        const searchInput = document.querySelector('.leaflet-control-search .search-input');
-        if (searchInput) searchInput.focus();
-      }, 50);
-    } else {
-      console.warn('Leaflet Search control instance not available.');
-    }
-  };
   const { t } = useTranslation();
   // Layer selection state (admin only)
   const [showLayersMenu, setShowLayersMenu] = useState(false);
@@ -226,15 +219,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
 
 
   // Add zoom and home controls
-  const handleZoomIn = () => {
-    if (mapInstance) mapInstance.zoomIn();
-  };
-  const handleZoomOut = () => {
-    if (mapInstance) mapInstance.zoomOut();
-  };
-  const handleHome = () => {
-    if (mapInstance) mapInstance.setView(mapCenter, mapZoom);
-  };
+  const zoomIn = () => handleZoomIn(mapInstance);
+  const zoomOut = () => handleZoomOut(mapInstance);
+  const goHome = () => handleHome(mapInstance, mapCenter, mapZoom);
+  const customSearchClick = () => handleCustomSearchClick(searchControlRef);
 
   return (
     <div
@@ -246,7 +234,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       {/* Zoom, home, and custom search controls + admin layers popover */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <button
-          onClick={handleHome}
+          onClick={goHome}
           aria-label="Home"
           className="bg-white rounded-full shadow p-2 flex items-center justify-center"
           style={{ width: 44, height: 44 }}
@@ -255,7 +243,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           <span className="sr-only">Home</span>
         </button>
         <button
-          onClick={handleZoomIn}
+          onClick={zoomIn}
           aria-label="Zoom in"
           className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
           style={{ width: 44, height: 44 }}
@@ -264,7 +252,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           <span className="sr-only">Zoom in</span>
         </button>
         <button
-          onClick={handleZoomOut}
+          onClick={zoomOut}
           aria-label="Zoom out"
           className="bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center"
           style={{ width: 44, height: 44 }}
