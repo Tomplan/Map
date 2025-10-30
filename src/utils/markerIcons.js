@@ -16,7 +16,7 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
     glyph: glyph || '',
     glyphColor: glyphColor || 'white',
     bgColor,
-    glyphSize: [35, 35],
+    glyphSize: glyphSize || [35, 35],
     className
   });
 }
