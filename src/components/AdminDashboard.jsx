@@ -35,7 +35,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
     // Determine which table to update
     let table = 'Markers_Core';
     if ([
-      'iconUrl', 'iconSize', 'iconColor', 'className', 'prefix', 'glyph', 'glyphColor', 'glyphSize', 'glyphAnchor', 'rectangle', 'angle'
+      'iconUrl', 'iconSize', 'iconColor', 'className', 'prefix', 'glyph', 'glyphColor', 'glyphSize', 'glyphAnchor'
     ].includes(key)) {
       table = 'Markers_Appearance';
     } else if ([
@@ -69,28 +69,27 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   ];
   const COLUMNS = {
     core: [
-  { key: 'id', label: 'ID' },
-  { key: 'boothNumber', label: 'Booth #' },
-  { key: 'name', label: 'Name' },
-  { key: 'lat', label: 'Lat' },
-  { key: 'lng', label: 'Lng' }
+      { key: 'id', label: 'ID' },
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'lat', label: 'Lat' },
+      { key: 'lng', label: 'Lng' },
+      { key: 'rectangle', label: 'Rectangle' },
+      { key: 'angle', label: 'Angle' }
     ],
     appearance: [
-  { key: 'id', label: 'ID' },
-  { key: 'boothNumber', label: 'Booth #' },
-  { key: 'name', label: 'Name' },
-  { key: 'iconUrl', label: 'Icon' },
-  { key: 'iconSize', label: 'Icon Size' },
-  { key: 'iconColor', label: 'Icon Color' },
-  { key: 'className', label: 'Class Name' },
-  { key: 'prefix', label: 'Prefix' },
-  { key: 'glyph', label: 'Glyph' },
-  { key: 'glyphColor', label: 'Glyph Color' },
-  { key: 'glyphSize', label: 'Glyph Size' },
-  { key: 'glyphAnchor', label: 'Glyph Anchor' },
-  { key: 'rectangle', label: 'Rectangle' },
-  { key: 'angle', label: 'Angle' },
-
+      { key: 'id', label: 'ID' },
+      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'name', label: 'Name' },
+      { key: 'iconUrl', label: 'Icon' },
+      { key: 'iconSize', label: 'Icon Size' },
+      { key: 'iconColor', label: 'Icon Color' },
+      { key: 'className', label: 'Class Name' },
+      { key: 'prefix', label: 'Prefix' },
+      { key: 'glyph', label: 'Glyph' },
+      { key: 'glyphColor', label: 'Glyph Color' },
+      { key: 'glyphSize', label: 'Glyph Size' },
+      { key: 'glyphAnchor', label: 'Glyph Anchor' }
     ],
     content: [
       { key: 'id', label: 'ID' },
@@ -428,8 +427,9 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                               </td>
                             );
                           }
-                          if (col.key === 'angle' && activeTab === 'appearance') {
-                            return marker.appearanceLocked ? (
+                          // Angle field editable in core tab
+                          if (col.key === 'angle' && activeTab === 'core') {
+                            return marker.coreLocked ? (
                               <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">
                                 {value ?? 0}
                               </td>
@@ -442,6 +442,23 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                   max="360"
                                   value={value ?? 0}
                                   onChange={e => handleFieldChange(marker.id, col.key, parseFloat(e.target.value))}
+                                  className="w-full bg-white border rounded px-2 py-1"
+                                />
+                              </td>
+                            );
+                          }
+                          // Rectangle field editable in core tab
+                          if (col.key === 'rectangle' && activeTab === 'core') {
+                            return marker.coreLocked ? (
+                              <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">
+                                {Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
+                              </td>
+                            ) : (
+                              <td key={col.key} className="py-1 px-3 border-b text-left">
+                                <input
+                                  type="text"
+                                  value={Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
+                                  onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))}
                                   className="w-full bg-white border rounded px-2 py-1"
                                 />
                               </td>

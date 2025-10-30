@@ -21,7 +21,7 @@ export default function useMarkersState(initialMarkers = []) {
       // If updating angle, use Markers_Appearance table
       if ('angle' in newProps) {
         const { error } = await supabase
-          .from('Markers_Appearance')
+          .from('Markers_Core')
           .update({ angle: newProps.angle })
           .eq('id', id);
         if (error) {
