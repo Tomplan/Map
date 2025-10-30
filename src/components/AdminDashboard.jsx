@@ -329,14 +329,10 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           top: 0,
                           zIndex: 2,
                           background: '#f3f4f6',
-                        //  minWidth: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
-                        //  width: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
-                        //  maxWidth: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
-                          minWidth: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
-                          width: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
-                          maxWidth: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
+                          minWidth: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
+                          width: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
+                          maxWidth: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
                           cursor: 'pointer',
-                        //  borderBottom: '1px solid #d1d5db',
                         };
                         return (
                           <th
@@ -350,7 +346,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           </th>
                         );
                       })}
-                      <th className="p-0" style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f3f4f6', cursor: 'pointer' }}>Actions</th>
+                      <th className="p-0 text-right" style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f3f4f6', paddingLeft: '16px', paddingRight: '16px', cursor: 'pointer', minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -411,6 +407,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                     {sortedMarkers.map(marker => (
                       <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
                         {COLUMNS[activeTab].map(col => {
+                          const cellStyle = col.key === 'iconUrl' ? { minWidth: 40, width: 40, maxWidth: 40 } : undefined;
                           const value = marker[col.key];
                           // ...existing cell rendering logic...
                           let isReference = false;
@@ -455,7 +452,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                             if (col.key === 'iconUrl') {
                               const iconPath = getIconPath(value);
                               return (
-                                <td key={col.key} className="py-1 px-3 border-b text-left relative">
+                                <td key={col.key} className="py-1 px-3 border-b text-left relative" style={cellStyle}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                     <img
                                       src={iconPath}
@@ -545,7 +542,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           }
                           return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
                         })}
-                        <td className="py-2 px-3 border-b">
+                        <td className="py-2 px-3 border-b text-right" style={{ paddingLeft: '16px', paddingRight: '16px', minWidth: '90px', width: '90px', maxWidth: '120px' }}>
                           <div className="flex justify-center p-0">
                             <button
                               onClick={() => toggleLock(marker.id)}
