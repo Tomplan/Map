@@ -155,7 +155,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         const halfWidth = rectangleSize[0] / 2;
         const halfHeight = rectangleSize[1] / 2;
         const angle = getMarkerAngle(marker);
-        const markerBlue = marker.iconColor || '#1976d2';
+        const markerBlue = '#1976d2';
         const corners = [
           rotatePoint(-halfWidth, -halfHeight, angle),
           rotatePoint(halfWidth, -halfHeight, angle),
@@ -493,10 +493,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 prefix: marker.prefix,
                 iconUrl: iconFile,
                 iconSize: marker.iconSize || [25, 41],
-                iconColor: marker.iconColor || 'blue',
                 glyph: marker.glyph || '',
                 glyphColor: marker.glyphColor || 'white',
-                glyphSize: marker.glyphSize || '14px',
+                glyphSize: marker.glyphSize || '13px',
                 glyphAnchor: marker.glyphAnchor || [0,0]
               });
               // Tooltip content: logo and name
@@ -581,10 +580,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               prefix: marker.prefix,
               iconUrl: iconFile,
               iconSize: marker.iconSize || [25, 41],
-              iconColor: marker.iconColor || 'blue',
               glyph: marker.glyph || '?',
               glyphColor: marker.glyphColor || 'white',
-              glyphSize: '24px',
+              glyphSize: marker.glyphSize || '18px',
               glyphAnchor: marker.glyphAnchor || [0,0]
             });
             // Tooltip content: logo and name
