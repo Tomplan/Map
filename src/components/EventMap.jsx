@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import Icon from '@mdi/react';
-import { mdiLayersTriple } from '@mdi/js';
+import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
@@ -11,8 +10,17 @@ import 'leaflet-search/dist/leaflet-search.src.css';
 import 'leaflet-search';
 import '../assets/leaflet-search-custom.css';
 import { createMarkerIcon, createMarkerPopupHTML } from '../utils/markerIcons';
+import {
+  getMarkerAngle,
+  rotatePoint,
+  metersToLat,
+  metersToLng,
+  metersToLatInv,
+  metersToLngInv
+} from '../utils/geometryHelpers';
 // Marker state is now provided via props from App.jsx
 import useAnalytics from '../hooks/useAnalytics';
+import { createNewMarker, generateUniqueMarkerId } from '../utils/markerFactory';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-markercluster/styles';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
@@ -58,19 +66,6 @@ const MAP_LAYERS = [
 ];
 
 function EventMap({ isAdminView, markersState, updateMarker })  {
-  // Helper: get marker angle (default 0)
-  function getMarkerAngle(marker) {
-    // TODO: Replace with marker.appearanceTab.Angle or similar
-    return marker.angle || 0;
-  }
-
-  // Helper: rotate a point (meters offset) around origin by angle (degrees)
-  function rotatePoint(x, y, angleDeg) {
-    const theta = (angleDeg * Math.PI) / 180;
-    const xr = x * Math.cos(theta) - y * Math.sin(theta);
-    const yr = x * Math.sin(theta) + y * Math.cos(theta);
-    return [xr, yr];
-  }
 
   // Custom search button handler
   // Store the Leaflet Search control instance
@@ -100,34 +95,56 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const { trackMarkerView } = useAnalytics();
   // Ensure markers is always an array, memoized for hook compliance
   const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
+
   // Rectangle size from appearanceTab (default [6, 6])
   // TODO: Replace with actual appearanceTab.Rectangle prop/state when available
   const rectangleSize = [6, 6]; // meters, [width, height]
 
-  // Helper functions for meters to lat/lng
-  function metersToLat(m) {
-    return m / 111320;
-  }
-  function metersToLng(m, lat) {
-    return m / (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
-  }
-
   // Rectangle/handle LayerGroup (independent from marker LayerGroup)
   const rectangleLayerRef = React.useRef(null);
-
-  // Helper: inverse meters to lat/lng (for drag calculation)
-  function metersToLatInv(deltaLat) {
-    return deltaLat * 111320;
-  }
-  function metersToLngInv(deltaLng, lat) {
-    return deltaLng * (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
-  }
 
     // Helper: determine if marker is draggable (admin only, lock off)
   function isMarkerDraggable(marker) {
     // Marker is draggable if admin view is active and coreLocked is false
     return isAdminView && marker && marker.coreLocked === false;
   }
+
+  // Track drag state for marker creation
+  const [isDraggingMarker, setIsDraggingMarker] = useState(false);
+
+
+  // Handler for drop event on map
+  function handleMapDrop(e) {
+    if (!isDraggingMarker || !mapInstance) return;
+    // Get pixel position from drop event
+    const rect = e.target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Convert pixel to lat/lng
+    const latlng = mapInstance.containerPointToLatLng([x, y]);
+    // Create new marker object using factory
+    const newMarker = createNewMarker({ lat: latlng.lat, lng: latlng.lng });
+    // Add marker to state via updateMarker or parent handler
+    if (typeof updateMarker === 'function') {
+      updateMarker(newMarker.id, newMarker, { add: true });
+    }
+    setIsDraggingMarker(false);
+    e.preventDefault();
+  }
+
+  // Attach drop event to map container
+  useEffect(() => {
+    const mapEl = document.getElementById('map-container');
+    if (!mapEl) return;
+    function onDrop(e) { handleMapDrop(e); }
+    function onDragOver(e) { if (isDraggingMarker) e.preventDefault(); }
+    mapEl.addEventListener('drop', onDrop);
+    mapEl.addEventListener('dragover', onDragOver);
+    return () => {
+      mapEl.removeEventListener('drop', onDrop);
+      mapEl.removeEventListener('dragover', onDragOver);
+    };
+  }, [isDraggingMarker, mapInstance]);
 
   // Persistent LayerGroup for rectangles/handles
   // Only update rectangles/handles when marker data changes, not on zoom
@@ -381,6 +398,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           <MdRemove size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Zoom out</span>
         </button>
+
         {/* Admin-only layers button and popover */}
         {isAdminView && (
           <div style={{ position: 'relative' }}>
@@ -440,6 +458,30 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           </div>
         )}
       </div>
+      {/* Admin-only draggable add marker button below search (top-left) */}
+      {isAdminView && (
+        <button
+          draggable
+          onDragStart={() => setIsDraggingMarker(true)}
+          onDragEnd={() => setIsDraggingMarker(false)}
+          aria-label="Add marker"
+          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
+          style={{
+            position: 'absolute',
+            left: 10,
+            top: 60,
+            zIndex: 1001,
+            width: 44,
+            height: 44,
+            border: 'none',
+            cursor: 'grab'
+          }}
+          title="Drag to add marker"
+        >
+          <Icon path={mdiMapMarkerPlus}  size={28} color="#1976d2" aria-hidden="true" />
+          <span className="sr-only">Add marker</span>
+        </button>
+      )}
       {/* Map container */}
       <div
         id="map-container"
