@@ -580,9 +580,9 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               iconUrl: iconFile,
               iconSize: marker.iconSize || [25, 41],
               iconColor: marker.iconColor || 'blue',
-              glyph: marker.glyph || '',
+              glyph: marker.glyph || '?',
               glyphColor: marker.glyphColor || 'white',
-              glyphSize: marker.glyphSize || '14px',
+              glyphSize: '24px',
               glyphAnchor: marker.glyphAnchor || [0,0]
             });
             // Tooltip content: logo and name
