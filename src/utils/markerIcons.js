@@ -22,8 +22,18 @@ export function createMarkerPopupHTML(marker) {
 }
 
 export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '11px', iconUrl = '/assets/icons/glyph-marker-icon-blue.svg', className, iconSize, prefix }) {
+  // Ensure glyphSize is a string ending with 'px'
+  let safeGlyphSize = glyphSize;
+  if (typeof safeGlyphSize === 'number') {
+    safeGlyphSize = `${safeGlyphSize}px`;
+  } else if (typeof safeGlyphSize === 'string' && !safeGlyphSize.endsWith('px')) {
+    // If it's a string but missing px, add it
+    safeGlyphSize = `${safeGlyphSize}px`;
+  } else if (!safeGlyphSize) {
+    safeGlyphSize = '11px';
+  }
   return L.icon.glyph({
-    iconUrl: iconUrl,
+    iconUrl: iconUrl || '/assets/icons/glyph-marker-icon-blue.svg',
     iconSize: iconSize || [25, 41],
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
@@ -35,8 +45,8 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
     glyph: glyph || '',
     glyphColor: glyphColor || 'white',
     bgColor,
-    glyphSize: glyphSize || [35, 35],
-    className
+    glyphSize: safeGlyphSize,
+    className: className || ''
   });
 }
 
