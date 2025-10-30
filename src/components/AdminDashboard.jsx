@@ -279,7 +279,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       <div className="absolute inset-0 w-full h-full">
         {/* Dashboard button now inside map container, top-left */}
         <button
-          className="absolute top-2 right-20 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+          className="fixed top-2 right-20 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
           aria-label="Toggle dashboard"
           onClick={() => setShowDashboard((v) => !v)}
         >
@@ -290,8 +290,8 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
-        <div className="absolute inset-0 left-2 right-20 z-40 flex justify-start items-start pt-20">
-          <div className="bg-white rounded-lg shadow-2xl p-8 w-full" style={{ maxHeight: '90vh', overflowY: 'auto', opacity: 0.80 }}>
+        <div className="absolute inset-5 left-2 right-16 z-40 flex justify-start items-start pt-20">
+          <div className="bg-white rounded-lg shadow-2xl p-2 w-full" style={{ maxHeight: '100vh', overflowY: 'auto', opacity: 0.90 }}>
             {/* Branding settings at top of dashboard */}
             <div className="w-full flex justify-center mb-6">
               <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
@@ -316,272 +316,274 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                   </button>
                 ))}
               </div>
-              <table className="w-full border border-gray-300 rounded overflow-hidden">
-                <thead>
-                  <tr className="bg-gray-100 text-gray-900">
-                    {COLUMNS[activeTab].map((col) => {
-                      const isSorted = sortState[activeTab].column === col.key;
-                      const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
-                      // For core tab, make id column small
-                      const thStyle =
-                        activeTab === 'core' && col.key === 'id'
-                          ? { minWidth: 80, width: 80, maxWidth: 80, cursor: 'pointer' }
-                          : col.key === 'boothNumber'
-                          ? { minWidth: 120, width: 120, maxWidth: 120, cursor: 'pointer' }
-                          : { cursor: 'pointer' };
-                      return (
-                        <th
-                          key={col.key}
-                          className="p-0 border-b text-left select-none hover:bg-blue-50"
-                          style={thStyle}
-                          onClick={() => handleSort(activeTab, col.key)}
-                          title={`Sort by ${col.label}`}
-                        >
-                          <span style={{ userSelect: 'none' }}>{col.label} {arrow}</span>
-                        </th>
-                      );
-                    })}
-                    <th className="p-0 border-b">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Global lock button row in actions column */}
-                  {sortedMarkers.length > 0 && (
-                    <tr>
-                      {/* Empty cells for all columns except actions */}
-                      {COLUMNS[activeTab].map((col) => (
-                        <td key={col.key} className="p-0 border-b"></td>
-                      ))}
-                      <td className="py-1 px-3 border-b text-left">
-                        <div className="flex justify-center p-0">
-                          <button
-                            onClick={async () => {
-                              let lockKey = 'coreLocked';
-                              let table = 'Markers_Core';
-                              if (activeTab === 'appearance') {
-                                lockKey = 'appearanceLocked';
-                                table = 'Markers_Appearance';
-                              } else if (activeTab === 'content') {
-                                lockKey = 'contentLocked';
-                                table = 'Markers_Content';
-                              } else if (activeTab === 'admin') {
-                                lockKey = 'adminLocked';
-                                table = 'Markers_Admin';
-                              }
-                              const allLocked = sortedMarkers.every(m => m[lockKey]);
-                              const updatedMarkers = markersState.map(m =>
-                                sortedMarkers.some(sm => sm.id === m.id)
-                                  ? { ...m, [lockKey]: !allLocked }
-                                  : m
-                              );
-                              setMarkersState(updatedMarkers);
-                              // Save to Supabase
-                              sortedMarkers.forEach(async (marker) => {
-                                await supabase
-                                  .from(table)
-                                  .update({ [lockKey]: !allLocked })
-                                  .eq('id', marker.id);
-                              });
-                            }}
-                            className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                            title="Lock or unlock all rows"
+              <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
+                <table className="w-full border border-gray-300 rounded" style={{ tableLayout: 'fixed', fontSize: '12px'  }}>
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-900">
+                      {COLUMNS[activeTab].map((col) => {
+                        const isSorted = sortState[activeTab].column === col.key;
+                        const arrow = isSorted ? (sortState[activeTab].direction === 'asc' ? '▲' : '▼') : '';
+                        // For core tab, make id column small
+                        const thStyle = {
+                          position: 'sticky',
+                          top: 0,
+                          zIndex: 2,
+                          background: '#f3f4f6',
+                        //  minWidth: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
+                        //  width: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
+                        //  maxWidth: activeTab === 'core' && col.key === 'id' ? 80 : (col.key === 'boothNumber' ? 120 : undefined),
+                          minWidth: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
+                          width: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
+                          maxWidth: col.key === 'id' ? 60 : (col.key === 'boothNumber' ? 80 : undefined),
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #d1d5db',
+                        };
+                        return (
+                          <th
+                            key={col.key}
+                            className="p-2 text-left select-none hover:bg-blue-50"
+                            style={thStyle}
+                            onClick={() => handleSort(activeTab, col.key)}
+                            title={`Sort by ${col.label}`}
                           >
-                            {(activeTab === 'appearance'
-                              ? sortedMarkers.every(m => m.appearanceLocked)
-                              : activeTab === 'content'
-                                ? sortedMarkers.every(m => m.contentLocked)
-                                : activeTab === 'admin'
-                                  ? sortedMarkers.every(m => m.adminLocked)
-                                  : sortedMarkers.every(m => m.coreLocked))
-                              ? <Icon path={mdiLock} size={1.2} />
-                              : <Icon path={mdiLockOpenVariant} size={1.2} />}
-                          </button>
-                        </div>
-                      </td>
+                            <span style={{ userSelect: 'none' }}>{col.label} {arrow}</span>
+                          </th>
+                        );
+                      })}
+                      <th className="p-0" style={{ position: 'sticky', top: 0, zIndex: 2, background: '#f3f4f6', borderBottom: '1px solid #d1d5db', cursor: 'pointer' }}>Actions</th>
                     </tr>
-                  )}
-                  {/* Data rows */}
-                  {sortedMarkers.map(marker => (
-                    <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
-                      {COLUMNS[activeTab].map(col => {
-                        const value = marker[col.key];
-                        // Reference field logic
-                        let isReference = false;
-                        let referenceTooltip = '';
-                        // id is only editable in core
-                        if (col.key === 'id' && activeTab !== 'core') {
-                          isReference = true;
-                          referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
-                        }
-                        // boothNumber and name are only editable in content
-                        if ((col.key === 'boothNumber' || col.key === 'name') && activeTab !== 'content') {
-                          isReference = true;
-                          referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
-                        }
-                        if (isReference) {
-                          return (
-                            <td key={col.key} className="py-1 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
-                              <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
-                              <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
-                            </td>
-                          );
-                        }
-                        // Special logic for Angle column in Appearance tab
-                        if (col.key === 'angle' && activeTab === 'appearance') {
-                          return marker.appearanceLocked ? (
-                            <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">
-                              {value ?? 0}
-                            </td>
-                          ) : (
-                            <td key={col.key} className="py-1 px-3 border-b text-left">
-                              <input
-                                type="number"
-                                step="0.1"
-                                min="0"
-                                max="360"
-                                value={value ?? 0}
-                                onChange={e => handleFieldChange(marker.id, col.key, parseFloat(e.target.value))}
-                                className="w-full bg-white border rounded px-2 py-1"
-                              />
-                            </td>
-                          );
-                        }
-                        // Editable fields for unlocked markers
-                        const isAppearanceUnlocked = activeTab === 'appearance' ? !marker.appearanceLocked : !marker.coreLocked;
-                        if (isAppearanceUnlocked) {
-                          if (col.key === 'iconUrl') {
-                            const iconPath = getIconPath(value);
+                  </thead>
+                  <tbody>
+                    {/* Global lock button row in actions column */}
+                    {sortedMarkers.length > 0 && (
+                      <tr>
+                        {COLUMNS[activeTab].map((col) => (
+                          <td key={col.key} className="p-0 border-b"></td>
+                        ))}
+                        <td className="py-1 px-3 border-b text-left">
+                          <div className="flex justify-center p-0">
+                            <button
+                              onClick={async () => {
+                                let lockKey = 'coreLocked';
+                                let table = 'Markers_Core';
+                                if (activeTab === 'appearance') {
+                                  lockKey = 'appearanceLocked';
+                                  table = 'Markers_Appearance';
+                                } else if (activeTab === 'content') {
+                                  lockKey = 'contentLocked';
+                                  table = 'Markers_Content';
+                                } else if (activeTab === 'admin') {
+                                  lockKey = 'adminLocked';
+                                  table = 'Markers_Admin';
+                                }
+                                const allLocked = sortedMarkers.every(m => m[lockKey]);
+                                const updatedMarkers = markersState.map(m =>
+                                  sortedMarkers.some(sm => sm.id === m.id)
+                                    ? { ...m, [lockKey]: !allLocked }
+                                    : m
+                                );
+                                setMarkersState(updatedMarkers);
+                                // Save to Supabase
+                                sortedMarkers.forEach(async (marker) => {
+                                  await supabase
+                                    .from(table)
+                                    .update({ [lockKey]: !allLocked })
+                                    .eq('id', marker.id);
+                                });
+                              }}
+                              className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                              title="Lock or unlock all rows"
+                            >
+                              {(activeTab === 'appearance'
+                                ? sortedMarkers.every(m => m.appearanceLocked)
+                                : activeTab === 'content'
+                                  ? sortedMarkers.every(m => m.contentLocked)
+                                  : activeTab === 'admin'
+                                    ? sortedMarkers.every(m => m.adminLocked)
+                                    : sortedMarkers.every(m => m.coreLocked))
+                                ? <Icon path={mdiLock} size={0.8} />
+                                : <Icon path={mdiLockOpenVariant} size={0.8} />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    {sortedMarkers.map(marker => (
+                      <tr key={marker.id} className={selected === marker.id ? 'bg-blue-50 text-gray-900' : 'bg-white text-gray-900'}>
+                        {COLUMNS[activeTab].map(col => {
+                          const value = marker[col.key];
+                          // ...existing cell rendering logic...
+                          let isReference = false;
+                          let referenceTooltip = '';
+                          if (col.key === 'id' && activeTab !== 'core') {
+                            isReference = true;
+                            referenceTooltip = 'Reference field from Markers_Core; cannot be edited here.';
+                          }
+                          if ((col.key === 'boothNumber' || col.key === 'name') && activeTab !== 'content') {
+                            isReference = true;
+                            referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
+                          }
+                          if (isReference) {
                             return (
-                              <td key={col.key} className="py-1 px-3 border-b text-left relative">
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                  <img
-                                    src={iconPath}
-                                    alt="icon"
-                                    width={24}
-                                    height={24}
-                                    style={{ cursor: 'pointer', border: '2px solid #eee', borderRadius: 4 }}
-                                    onClick={() => setIconPopover({ open: true, markerId: marker.id })}
-                                    title="Click to change icon"
-                                  />
-                                  <span style={{ fontSize: 12, color: '#888' }}>Change</span>
-                                </div>
-                                {/* Popover for icon selection */}
-                                {iconPopover.open && iconPopover.markerId === marker.id && (
-                                  <div
-                                    style={{
-                                      position: 'absolute',
-                                      top: 32,
-                                      left: 0,
-                                      zIndex: 100,
-                                      background: '#fff',
-                                      border: '1px solid #ddd',
-                                      borderRadius: 8,
-                                      boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-                                      padding: 12,
-                                      display: 'grid',
-                                      gridTemplateColumns: 'repeat(4, 40px)',
-                                      gap: 10,
-                                    }}
-                                    onMouseLeave={() => setIconPopover({ open: false, markerId: null })}
-                                  >
-                                    {ICON_OPTIONS.map(iconFile => (
-                                      <img
-                                        key={iconFile}
-                                        src={getIconPath(iconFile)}
-                                        alt={iconFile.replace('.svg','')}
-                                        width={32}
-                                        height={32}
-                                        style={{
-                                          cursor: 'pointer',
-                                          border: value === iconFile ? '2px solid #1976d2' : '2px solid #eee',
-                                          borderRadius: 4,
-                                          background: value === iconFile ? '#e3f2fd' : 'transparent',
-                                        }}
-                                        title={iconFile.replace('glyph-marker-icon-','').replace('.svg','')}
-                                        onClick={() => {
-                                          setIconPopover({ open: false, markerId: null });
-                                          handleFieldChange(marker.id, 'iconUrl', iconFile);
-                                        }}
-                                      />
-                                    ))}
-                                  </div>
-                                )}
+                              <td key={col.key} className="py-1 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>
+                                <span style={{ pointerEvents: 'none', userSelect: 'none' }}>{value}</span>
+                                <span style={{ marginLeft: 4 }} title={referenceTooltip}>🔒</span>
                               </td>
                             );
+                          }
+                          if (col.key === 'angle' && activeTab === 'appearance') {
+                            return marker.appearanceLocked ? (
+                              <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">
+                                {value ?? 0}
+                              </td>
+                            ) : (
+                              <td key={col.key} className="py-1 px-3 border-b text-left">
+                                <input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  max="360"
+                                  value={value ?? 0}
+                                  onChange={e => handleFieldChange(marker.id, col.key, parseFloat(e.target.value))}
+                                  className="w-full bg-white border rounded px-2 py-1"
+                                />
+                              </td>
+                            );
+                          }
+                          const isAppearanceUnlocked = activeTab === 'appearance' ? !marker.appearanceLocked : !marker.coreLocked;
+                          if (isAppearanceUnlocked) {
+                            if (col.key === 'iconUrl') {
+                              const iconPath = getIconPath(value);
+                              return (
+                                <td key={col.key} className="py-1 px-3 border-b text-left relative">
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <img
+                                      src={iconPath}
+                                      alt="icon"
+                                      width={24}
+                                      height={24}
+                                      style={{ cursor: 'pointer', border: '2px solid #eee', borderRadius: 4 }}
+                                      onClick={() => setIconPopover({ open: true, markerId: marker.id })}
+                                      title="Click to change icon"
+                                    />
+                                    {/* <span style={{ fontSize: 12, color: '#888' }}>Change</span> */}
+                                  </div>
+                                  {iconPopover.open && iconPopover.markerId === marker.id && (
+                                    <div
+                                      style={{
+                                        position: 'absolute',
+                                        bottom: 32,
+                                        left: 0,
+                                        zIndex: 100,
+                                        background: '#fff',
+                                        border: '1px solid #ddd',
+                                        borderRadius: 8,
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
+                                        padding: 12,
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(4, 40px)',
+                                        gap: 10,
+                                      }}
+                                      onMouseLeave={() => setIconPopover({ open: false, markerId: null })}
+                                    >
+                                      {ICON_OPTIONS.map(iconFile => (
+                                        <img
+                                          key={iconFile}
+                                          src={getIconPath(iconFile)}
+                                          alt={iconFile.replace('.svg','')}
+                                          width={32}
+                                          height={32}
+                                          style={{
+                                            cursor: 'pointer',
+                                            border: value === iconFile ? '2px solid #1976d2' : '2px solid #eee',
+                                            borderRadius: 4,
+                                            background: value === iconFile ? '#e3f2fd' : 'transparent',
+                                          }}
+                                          title={iconFile.replace('glyph-marker-icon-','').replace('.svg','')}
+                                          onClick={() => {
+                                            setIconPopover({ open: false, markerId: null });
+                                            handleFieldChange(marker.id, 'iconUrl', iconFile);
+                                          }}
+                                        />
+                                      ))}
+                                    </div>
+                                  )}
+                                </td>
+                              );
+                            }
+                            if (col.key === 'logo' && value) {
+                              const logoPath = getLogoPath(value);
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                            }
+                            if (Array.isArray(value)) {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            }
+                            if (typeof value === 'object' && value !== null) {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            }
+                            if (typeof value === 'boolean') {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
+                            }
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
+                          }
+                          if (col.key === 'iconUrl' && value) {
+                            const iconPath = getIconPath(value);
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
                           }
                           if (col.key === 'logo' && value) {
                             const logoPath = getLogoPath(value);
                             return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
                           }
                           if (Array.isArray(value)) {
-                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left">{value.join(', ')}</td>;
                           }
                           if (typeof value === 'object' && value !== null) {
-                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            return <td key={col.key} className="py-1 px-3 border-b text-left">{JSON.stringify(value)}</td>;
                           }
                           if (typeof value === 'boolean') {
-                            return <td key={col.key} className="py-1 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
+                            return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
                           }
-                          return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
-                        }
-                        // Non-editable fields for locked markers
-                        if (col.key === 'iconUrl' && value) {
-                          const iconPath = getIconPath(value);
-                          return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={iconPath} alt="icon" width={24} height={24} /> </td>;
-                        }
-                        if (col.key === 'logo' && value) {
-                          const logoPath = getLogoPath(value);
-                          return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
-                        }
-                        if (Array.isArray(value)) {
-                          return <td key={col.key} className="py-1 px-3 border-b text-left">{value.join(', ')}</td>;
-                        }
-                        if (typeof value === 'object' && value !== null) {
-                          return <td key={col.key} className="py-1 px-3 border-b text-left">{JSON.stringify(value)}</td>;
-                        }
-                        if (typeof value === 'boolean') {
-                          return <td key={col.key} className="py-2 px-3 border-b text-left">{value ? 'Yes' : 'No'}</td>;
-                        }
-                        return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
-                      })}
-                      <td className="py-2 px-3 border-b">
-                        <div className="flex justify-center p-0">
-                          <button
-                            onClick={() => toggleLock(marker.id)}
-                            className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
-                            title={
-                              activeTab === 'appearance'
-                                ? marker.appearanceLocked ? 'Unlock rectangle/rotation' : 'Lock rectangle/rotation'
+                          return <td key={col.key} className="py-2 px-3 border-b text-left">{value}</td>;
+                        })}
+                        <td className="py-2 px-3 border-b">
+                          <div className="flex justify-center p-0">
+                            <button
+                              onClick={() => toggleLock(marker.id)}
+                              className="px-2 py-1 text-xs bg-gray-200 text-gray-900 rounded hover:bg-gray-300 transition flex items-center justify-center"
+                              title={
+                                activeTab === 'appearance'
+                                  ? marker.appearanceLocked ? 'Unlock rectangle/rotation' : 'Lock rectangle/rotation'
+                                  : activeTab === 'content'
+                                    ? marker.contentLocked ? 'Unlock content' : 'Lock content'
+                                    : activeTab === 'admin'
+                                      ? marker.adminLocked ? 'Unlock admin' : 'Lock admin'
+                                      : marker.coreLocked ? 'Unlock core' : 'Lock core'
+                              }
+                            >
+                              {activeTab === 'appearance'
+                                ? (marker.appearanceLocked
+                                  ? <Icon path={mdiLock} size={0.8} />
+                                  : <Icon path={mdiLockOpenVariant} size={0.8} />)
                                 : activeTab === 'content'
-                                  ? marker.contentLocked ? 'Unlock content' : 'Lock content'
+                                  ? (marker.contentLocked
+                                    ? <Icon path={mdiLock} size={0.8} />
+                                    : <Icon path={mdiLockOpenVariant} size={0.8} />)
                                   : activeTab === 'admin'
-                                    ? marker.adminLocked ? 'Unlock admin' : 'Lock admin'
-                                    : marker.coreLocked ? 'Unlock core' : 'Lock core'
-                            }
-                          >
-                            {activeTab === 'appearance'
-                              ? (marker.appearanceLocked
-                                ? <Icon path={mdiLock} size={1.2} />
-                                : <Icon path={mdiLockOpenVariant} size={1.2} />)
-                              : activeTab === 'content'
-                                ? (marker.contentLocked
-                                  ? <Icon path={mdiLock} size={1.2} />
-                                  : <Icon path={mdiLockOpenVariant} size={1.2} />)
-                                : activeTab === 'admin'
-                                  ? (marker.adminLocked
-                                    ? <Icon path={mdiLock} size={1.2} />
-                                    : <Icon path={mdiLockOpenVariant} size={1.2} />)
-                                  : (marker.coreLocked
-                                    ? <Icon path={mdiLock} size={1.2} />
-                                    : <Icon path={mdiLockOpenVariant} size={1.2} />)
-                            }
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                                    ? (marker.adminLocked
+                                      ? <Icon path={mdiLock} size={0.8} />
+                                      : <Icon path={mdiLockOpenVariant} size={0.8} />)
+                                    : (marker.coreLocked
+                                      ? <Icon path={mdiLock} size={0.8} />
+                                      : <Icon path={mdiLockOpenVariant} size={0.8} />)
+                              }
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}
