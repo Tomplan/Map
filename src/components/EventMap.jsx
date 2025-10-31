@@ -103,42 +103,31 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     return isAdminView && marker && marker.coreLocked === false;
   }
 
-  // Track drag state for marker creation
-  const [isDraggingMarker, setIsDraggingMarker] = useState(false);
+  // Track marker placement mode for admin
+  const [isPlacingMarker, setIsPlacingMarker] = useState(false);
 
 
-  // Handler for drop event on map
-  function handleMapDrop(e) {
-    if (!isDraggingMarker || !mapInstance) return;
-    // Get pixel position from drop event
-    const rect = e.target.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    // Convert pixel to lat/lng
-    const latlng = mapInstance.containerPointToLatLng([x, y]);
-    // Create new marker object using factory
-    const newMarker = createNewMarker({ lat: latlng.lat, lng: latlng.lng });
-    // Add marker to state via updateMarker or parent handler
-    if (typeof updateMarker === 'function') {
-      updateMarker(newMarker.id, newMarker, { add: true });
-    }
-    setIsDraggingMarker(false);
-    e.preventDefault();
-  }
 
-  // Attach drop event to map container
+  // Handler for map click to add marker
   useEffect(() => {
-    const mapEl = document.getElementById('map-container');
-    if (!mapEl) return;
-    function onDrop(e) { handleMapDrop(e); }
-    function onDragOver(e) { if (isDraggingMarker) e.preventDefault(); }
-    mapEl.addEventListener('drop', onDrop);
-    mapEl.addEventListener('dragover', onDragOver);
-    return () => {
-      mapEl.removeEventListener('drop', onDrop);
-      mapEl.removeEventListener('dragover', onDragOver);
+    if (!isPlacingMarker || !mapInstance) return;
+    const onMapClick = (e) => {
+      const latlng = e.latlng;
+      const newMarker = createNewMarker({ lat: latlng.lat, lng: latlng.lng });
+      if (typeof updateMarker === 'function') {
+        updateMarker(newMarker.id, newMarker, { add: true });
+      }
+      setIsPlacingMarker(false);
+      mapInstance.off('click', onMapClick);
     };
-  }, [isDraggingMarker, mapInstance]);
+    mapInstance.on('click', onMapClick);
+    // Cleanup in case placement is cancelled
+    return () => {
+      mapInstance.off('click', onMapClick);
+    };
+  }, [isPlacingMarker, mapInstance, updateMarker]);
+
+
 
   // Persistent LayerGroup for rectangles/handles
   // Only update rectangles/handles when marker data changes, not on zoom
@@ -320,12 +309,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           </div>
         )}
       </div>
-      {/* Admin-only draggable add marker button below search (top-left) */}
+      {/* Admin-only add marker button (top-left) */}
       {isAdminView && (
         <button
-          draggable
-          onDragStart={() => setIsDraggingMarker(true)}
-          onDragEnd={() => setIsDraggingMarker(false)}
+          onClick={() => setIsPlacingMarker(true)}
           aria-label="Add marker"
           className="bg-white rounded-full shadow p-2 flex items-center justify-center"
           style={{
@@ -336,9 +323,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             width: 44,
             height: 44,
             border: 'none',
-            cursor: 'grab'
+            cursor: isPlacingMarker ? 'crosshair' : 'pointer',
+            background: isPlacingMarker ? '#e3f2fd' : 'white'
           }}
-          title="Drag to add marker"
+          title={isPlacingMarker ? "Click on map to place marker" : "Add marker"}
         >
           <Icon path={mdiMapMarkerPlus}  size={28} color="#1976d2" aria-hidden="true" />
           <span className="sr-only">Add marker</span>
@@ -396,7 +384,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
                 prefix: marker.prefix,
                 iconUrl: iconFile,
-                iconSize: marker.iconSize || [25, 41],
+                iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [25, 41],
                 glyph: marker.glyph || '',
                 glyphColor: marker.glyphColor || 'white',
                 glyphSize: marker.glyphSize || '13px',
@@ -473,7 +461,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             let pos = [marker.lat, marker.lng];
             let iconFile = marker.iconUrl;
             if (!iconFile) {
-              iconFile = `${marker.type || 'default'}.svg`;
+              iconFile = `${marker.type || 'glyph-marker-icon-blue'}.svg`;
             }
             // Ensure path always starts with assets/icons/
             if (!iconFile.startsWith('assets/icons/')) {
@@ -483,7 +471,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
               prefix: marker.prefix,
               iconUrl: iconFile,
-              iconSize: marker.iconSize || [25, 41],
+              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [25, 41],
               glyph: marker.glyph || '?',
               glyphColor: marker.glyphColor || 'white',
               glyphSize: marker.glyphSize || '18px',
