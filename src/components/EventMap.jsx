@@ -332,8 +332,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         )}
       </div>
       {/* Admin-only add marker button (top-left) */}
-      {/* Admin-only add marker button is hidden for now, but code is preserved for later use */}
-      {false && isAdminView && (
+      {/* Admin-only add marker button is hidden for now, but code is preserved for later use , add: false && */}
+      {isAdminView && (
         <button
           onClick={() => setIsPlacingMarker(true)}
           aria-label="Add marker"
@@ -351,7 +351,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           }}
           title={isPlacingMarker ? "Click on map to place marker" : "Add marker"}
         >
-          <Icon path={mdiMapMarkerPlus}  size={28} color="#1976d2" aria-hidden="true" />
+          <Icon path={mdiMapMarkerPlus} size={1.5} color="#1976d2" aria-hidden="true" style={{ width: '42px', height: '42px' }} />
           <span className="sr-only">Add marker</span>
         </button>
       )}
