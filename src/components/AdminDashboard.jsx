@@ -64,7 +64,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
     ].includes(key)) {
       table = 'Markers_Appearance';
     } else if ([
-      'logo', 'website', 'info'
+      'boothNumber', 'name', 'logo', 'website', 'info'
     ].includes(key)) {
       table = 'Markers_Content';
     } else if ([
@@ -309,7 +309,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
           <Icon path={mdiViewDashboard} size={1.2} color="#1976d2" />
           <span className="font-semibold" style={{ color: '#1976d2' }}>Dashboard</span>
         </button>
-        <EventMap isAdminView={true} markersState={markersState} updateMarker={updateMarker} />
+        {/* Map is now rendered only by parent (App.jsx) */}
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
@@ -507,10 +507,15 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                               <td key={col.key} className="py-1 px-3 border-b text-left">
                                 <input
                                   type="text"
-                                  value={Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
+                                  value={Array.isArray(value) ? value.join(', ') : (value === null ? '' : JSON.stringify(value))}
                                   onChange={e => {
-                                    const arr = e.target.value.split(',').map(v => v.trim()).map(v => v === '' ? 0 : Number(v));
-                                    handleFieldChange(marker.id, col.key, arr);
+                                    const raw = e.target.value.trim();
+                                    if (raw === '') {
+                                      handleFieldChange(marker.id, col.key, null);
+                                    } else {
+                                      const arr = raw.split(',').map(v => v.trim()).map(v => v === '' ? 0 : Number(v));
+                                      handleFieldChange(marker.id, col.key, arr);
+                                    }
                                   }}
                                   className="w-full bg-white border rounded px-2 py-1"
                                 />
