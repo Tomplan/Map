@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 
 export default function BrandingSettings({ onChange, initialValues }) {
-  const [logo, setLogo] = useState(initialValues?.logo || '/assets/logos/4x4Vakantiebeurs.png');
+  const [logo, setLogo] = useState(initialValues?.logo || `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`);
   const [themeColor, setThemeColor] = useState(initialValues?.themeColor || '#ffffff');
   const [fontFamily, setFontFamily] = useState(initialValues?.fontFamily || 'Arvo, Sans-serif');
   const [eventName, setEventName] = useState(initialValues?.eventName || '4x4 Vakantiebeurs');
@@ -10,7 +10,7 @@ export default function BrandingSettings({ onChange, initialValues }) {
   // Sync local state with initialValues (for live updates)
   useEffect(() => {
     if (initialValues) {
-  setLogo(initialValues.logo || '/assets/logos/4x4Vakantiebeurs.png');
+  setLogo(initialValues.logo || `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`);
       setThemeColor(initialValues.themeColor || '#ffffff');
       setFontFamily(initialValues.fontFamily || 'Arvo, Sans-serif');
       setEventName(initialValues.eventName || '4x4 Vakantiebeurs');
