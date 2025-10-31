@@ -58,7 +58,7 @@ function App() {
   }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
-    logo: 'assets/logos/4x4Vakantiebeurs.png',
+  logo: '/assets/logos/4x4Vakantiebeurs.png',
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
@@ -93,7 +93,7 @@ function App() {
   }, []);
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           path="/"

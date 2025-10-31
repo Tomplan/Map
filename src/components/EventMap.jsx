@@ -31,7 +31,8 @@ import {
 import useAnalytics from '../hooks/useAnalytics';
 import { createNewMarker, generateUniqueMarkerId } from '../utils/markerFactory';
 import 'leaflet/dist/leaflet.css';
-import 'react-leaflet-markercluster/styles';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 // Custom checkbox styles for layers popover

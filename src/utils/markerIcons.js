@@ -1,7 +1,7 @@
 import { getLogoPath } from './getLogoPath';
 import L from 'leaflet';
 import '../libs/Leaflet.Icon.Glyph.js';
-import orangeIconUrl from '../../assets/icons/glyph-marker-icon-blue.svg';
+// import removed; use /assets/icons/ URLs for runtime asset access
 
 /**
  * Generate HTML for a marker popup with logo, name, website, and info fields.
@@ -42,7 +42,7 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
   const shadowAnchorX = Math.round(shadowWidth * 12 / 41);
   const shadowAnchorY = shadowHeight;
   return L.icon.glyph({
-    iconUrl: iconUrl || '/assets/icons/glyph-marker-icon-blue.svg',
+  iconUrl: iconUrl || '/assets/icons/glyph-marker-icon-blue.svg',
     iconSize: size,
     iconAnchor: [Math.round(size[0] / 2), size[1]],
     popupAnchor: [1, -34],
