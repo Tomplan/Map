@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
 import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter, BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import OfflineStatus from './components/OfflineStatus';
 import useMarkersState from './hooks/useMarkersState';
@@ -13,6 +13,7 @@ import './i18n';
 import './App.css';
 import AdminDashboard from './components/AdminDashboard';
 import MarkerTable from './components/MarkerTable';
+import AdminLogin from './components/AdminLogin';
 
 const EventMap = lazy(() => import('./components/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
@@ -104,8 +105,23 @@ function App() {
     };
   }, []);
 
+  // Track Supabase auth state
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const session = supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user || null);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
+
+  const RouterComponent = import.meta.env.PROD ? HashRouter : BrowserRouter;
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <RouterComponent basename={import.meta.env.BASE_URL}>
       <Routes>
         <Route
           path="/"
@@ -134,27 +150,36 @@ function App() {
           element={
             <ErrorBoundary>
               <BrandingBar {...branding} />
-              <AdminDashboard
-                markersState={markersState}
-                updateMarker={updateMarker}
-                setMarkersState={setMarkersState}
-              />
-              <div style={{ margin: '2rem 0' }}>
-                <MarkerTable />
-              </div>
-              <Suspense fallback={<div>Loading map...</div>}>
-                <EventMap
-                  isAdminView={true}
-                  markersState={markersState}
-                  updateMarker={updateMarker}
-                  setMarkersState={setMarkersState}
-                />
-              </Suspense>
+              {user ? (
+                <>
+                  <AdminDashboard
+                    markersState={markersState}
+                    updateMarker={updateMarker}
+                    setMarkersState={setMarkersState}
+                  />
+                  <div style={{ margin: '2rem 0' }}>
+                    <MarkerTable />
+                  </div>
+                  <Suspense fallback={<div>Loading map...</div>}>
+                    <EventMap
+                      isAdminView={true}
+                      markersState={markersState}
+                      updateMarker={updateMarker}
+                      setMarkersState={setMarkersState}
+                    />
+                  </Suspense>
+                </>
+              ) : (
+                <Suspense fallback={<div>Loading login...</div>}>
+                  <FeedbackForm />
+                  <AdminLogin onLogin={setUser} />
+                </Suspense>
+              )}
             </ErrorBoundary>
           }
         />
       </Routes>
-    </Router>
+    </RouterComponent>
   );
 }
 

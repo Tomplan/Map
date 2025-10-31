@@ -352,9 +352,9 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                           top: 0,
                           zIndex: 2,
                           background: '#f3f4f6',
-                          minWidth: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
-                          width: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
-                          maxWidth: col.key === 'id' ? 60 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
+                          minWidth: col.key === 'id' ? 80 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
+                          width: col.key === 'id' ? 80 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
+                          maxWidth: col.key === 'id' ? 80 : col.key === 'boothNumber' ? 80 : col.key === 'iconUrl' ? 40 : undefined,
                           cursor: 'pointer',
                         };
                         return (
