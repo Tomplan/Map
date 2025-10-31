@@ -1,3 +1,14 @@
-<script>
-  window.location.replace('/Map/');
-</script>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="refresh" content="0; url=./" />
+    <script>
+      // For SPA fallback: redirect to index.html and preserve path
+      var path = window.location.pathname.replace(/\/Map/, '');
+      window.location.replace('./' + (path ? '#' + path : ''));
+    </script>
+  </head>
+  <body>
+    <h1>Redirecting…</h1>
+  </body>
+</html>
