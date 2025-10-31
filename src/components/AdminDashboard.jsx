@@ -21,6 +21,19 @@ const ICON_OPTIONS = [
 const ICON_PATH_PREFIX = 'assets/icons/';
 
 export default function AdminDashboard({ markersState, setMarkersState, updateMarker, isAdminView }) {
+  // Track iconSize input values for each marker by ID
+  const [iconSizeInputs, setIconSizeInputs] = useState({});
+
+  // Sync iconSizeInputs with markersState when markersState changes
+  useEffect(() => {
+    if (!markersState) return;
+    const newInputs = {};
+    markersState.forEach(marker => {
+      const val = marker.iconSize;
+      newInputs[marker.id] = Array.isArray(val) ? val.join(', ') : val ?? '';
+    });
+    setIconSizeInputs(newInputs);
+  }, [markersState]);
   // Popover state for icon selection (for iconUrl field)
   const [iconPopover, setIconPopover] = useState({ open: false, markerId: null });
   // Basic field edit handler for table cells
@@ -537,16 +550,31 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                 <td key={col.key} className="py-1 px-3 border-b text-left">
                                   <input
                                     type="text"
-                                    value={Array.isArray(value) ? value.join(', ') : value ?? ''}
+                                    value={iconSizeInputs[marker.id] ?? ''}
                                     onChange={e => {
+                                      setIconSizeInputs(prev => ({ ...prev, [marker.id]: e.target.value }));
+                                    }}
+                                    onBlur={e => {
                                       const val = e.target.value.trim();
                                       if (val === '') {
                                         handleFieldChange(marker.id, 'iconSize', undefined);
                                       } else {
-                                        const arr = val.split(',').map(v => Number(v.trim()) || 0);
-                                        handleFieldChange(marker.id, 'iconSize', arr);
+                                        const parts = val.split(',').map(v => v.trim()).filter(v => v !== '');
+                                        if (parts.length === 1) {
+                                          const width = parseInt(parts[0], 10);
+                                          if (!isNaN(width) && width > 0) {
+                                            const height = Math.round(width * 1.64);
+                                            handleFieldChange(marker.id, 'iconSize', [width, height]);
+                                          }
+                                        } else if (parts.length === 2) {
+                                          const arr = parts.map(v => parseInt(v, 10));
+                                          if (!isNaN(arr[0]) && !isNaN(arr[1]) && arr[0] > 0 && arr[1] > 0) {
+                                            handleFieldChange(marker.id, 'iconSize', arr);
+                                          }
+                                        }
                                       }
                                     }}
+                                    placeholder="width[,height]"
                                     className="w-full bg-white border rounded px-2 py-1"
                                   />
                                 </td>
