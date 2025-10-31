@@ -93,12 +93,23 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   // Ensure markers is always an array, memoized for hook compliance
   const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
 
+
   // Rectangle size from appearanceTab (default [6, 6])
   // TODO: Replace with actual appearanceTab.Rectangle prop/state when available
   const rectangleSize = [6, 6]; // meters, [width, height]
 
   // Rectangle/handle LayerGroup (independent from marker LayerGroup)
   const rectangleLayerRef = React.useRef(null);
+
+  // Preload all marker logo images to improve tooltip smoothness
+  React.useEffect(() => {
+    safeMarkers.forEach(marker => {
+      if (marker.logo) {
+        const img = new window.Image();
+        img.src = getLogoPath(marker.logo);
+      }
+    });
+  }, [safeMarkers]);
 
     // Helper: determine if marker is draggable (admin only, lock off)
   function isMarkerDraggable(marker) {
@@ -168,6 +179,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           .join(' | ');
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0, // Hide from map
+            interactive: false, // Prevent popups/tooltips from being triggered
           searchText // Custom property for Leaflet Search
         });
         leafletMarker.bindPopup(marker.name || marker.label || '');
