@@ -59,7 +59,7 @@ function App() {
   }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
-  logo: `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`,
+    logo: `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`,
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
