@@ -48,8 +48,12 @@ export function syncRectangleLayers({
   markers.forEach(marker => {
     if (marker.lat && marker.lng) {
       const center = L.latLng(marker.lat, marker.lng);
-      const halfWidth = rectangleSize[0] / 2;
-      const halfHeight = rectangleSize[1] / 2;
+      // Use marker.rectangle if present, else fallback to rectangleSize
+      const rectDims = Array.isArray(marker.rectangle) && marker.rectangle.length === 2
+        ? marker.rectangle
+        : rectangleSize;
+      const halfWidth = Number(rectDims[0]) / 2;
+      const halfHeight = Number(rectDims[1]) / 2;
       const angle = getMarkerAngle(marker);
       const markerBlue = '#1976d2';
       const corners = [
@@ -83,7 +87,7 @@ export function syncRectangleLayers({
           center.lng + metersToLng(handleX, center.lat)
         );
         let handleMarker;
-        if (isAdminView && !(marker.appearanceLocked)) {
+        if (isAdminView && !(marker.coreLocked)) {
           const handleIcon = L.divIcon({
             className: 'rotation-handle-icon',
             html: '<div style="width:8px;height:8px;background:#1976d2;border-radius:50%;"></div>',

@@ -441,7 +441,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                   min="0"
                                   max="360"
                                   value={value ?? 0}
-                                  onChange={e => handleFieldChange(marker.id, col.key, parseFloat(e.target.value))}
+                                  onChange={e => handleFieldChange(marker.id, col.key, e.target.value === '' ? 0 : parseFloat(e.target.value))}
                                   className="w-full bg-white border rounded px-2 py-1"
                                 />
                               </td>
@@ -458,7 +458,10 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                 <input
                                   type="text"
                                   value={Array.isArray(value) ? value.join(', ') : JSON.stringify(value)}
-                                  onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))}
+                                  onChange={e => {
+                                    const arr = e.target.value.split(',').map(v => v.trim()).map(v => v === '' ? 0 : Number(v));
+                                    handleFieldChange(marker.id, col.key, arr);
+                                  }}
                                   className="w-full bg-white border rounded px-2 py-1"
                                 />
                               </td>
