@@ -27,5 +27,7 @@ export function createNewMarker({ lat, lng }) {
 
 // Helper to generate a unique marker id
 export function generateUniqueMarkerId() {
-  return `m${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  // Safe integer below PostgreSQL max (2,147,483,647)
+  // Use current timestamp modulo 2_000_000_000 plus random offset
+  return Math.floor((Date.now() % 2000000000) + Math.floor(Math.random() * 100000));
 }
