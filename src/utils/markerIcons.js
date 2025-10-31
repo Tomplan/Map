@@ -21,7 +21,7 @@ export function createMarkerPopupHTML(marker) {
   `;
 }
 
-export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '11px', iconUrl = '/assets/icons/glyph-marker-icon-blue.svg', className, iconSize, prefix }) {
+export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '11px', iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`, className, iconSize, prefix }) {
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
   if (typeof safeGlyphSize === 'number') {
@@ -42,12 +42,12 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
   const shadowAnchorX = Math.round(shadowWidth * 12 / 41);
   const shadowAnchorY = shadowHeight;
   return L.icon.glyph({
-  iconUrl: iconUrl || '/assets/icons/glyph-marker-icon-blue.svg',
+  iconUrl: iconUrl || `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
     iconSize: size,
     iconAnchor: [Math.round(size[0] / 2), size[1]],
     popupAnchor: [1, -34],
     tooltipAnchor: [0, 0],
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  shadowUrl: `${import.meta.env.BASE_URL}assets/icons/marker-shadow.png`,
     shadowSize: [shadowWidth, shadowHeight],
   shadowAnchor: [shadowAnchorX, shadowAnchorY],
     prefix: prefix || '', // Material Design Icons

@@ -1,4 +1,5 @@
 import React, { Suspense, lazy, useState, useEffect } from 'react';
+import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
@@ -58,7 +59,7 @@ function App() {
   }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
-  logo: '/assets/logos/4x4Vakantiebeurs.png',
+  logo: `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`,
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
@@ -73,7 +74,13 @@ function App() {
         .select('*')
         .eq('id', 1)
         .single();
-      if (data) setBranding(data);
+      if (data) {
+        // Normalize logo path from Supabase
+        setBranding({
+          ...data,
+          logo: getLogoPath(data.logo)
+        });
+      }
     }
     fetchBranding();
     const channel = supabase
@@ -84,7 +91,12 @@ function App() {
         table: 'Branding',
         filter: 'id=eq.1',
       }, payload => {
-        if (payload.new) setBranding(payload.new);
+        if (payload.new) {
+          setBranding({
+            ...payload.new,
+            logo: getLogoPath(payload.new.logo)
+          });
+        }
       })
       .subscribe();
     return () => {
