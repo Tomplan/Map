@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { iconCreateFunction } from '../utils/clusterIcons';
 import Icon from '@mdi/react';
 import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
@@ -369,6 +370,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             removeOutsideVisibleBounds={true}
             disableClusteringAtZoom={18}
             maxClusterRadius={400}
+            iconCreateFunction={iconCreateFunction}
           >
             {safeMarkers.filter(marker => marker.id < 1001).map(marker => {
               let pos = [marker.lat, marker.lng];
