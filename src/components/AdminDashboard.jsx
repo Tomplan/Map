@@ -432,6 +432,33 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                             isReference = true;
                             referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
                           }
+                          // Content tab: editable if contentLocked is false
+                          if (activeTab === 'content' && !marker.contentLocked) {
+                            if (col.key === 'logo') {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
+                            }
+                            if (Array.isArray(value)) {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            }
+                            if (typeof value === 'object' && value !== null) {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                            }
+                            if (typeof value === 'boolean') {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><select value={value ? 'true' : 'false'} onChange={e => handleFieldChange(marker.id, col.key, e.target.value === 'true')} className="w-full bg-white border rounded px-2 py-1"><option value="true">Yes</option><option value="false">No</option></select></td>;
+                            }
+                            if (col.key === 'info') {
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><textarea value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" rows={3} /></td>;
+                            }
+                            return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value ?? ''} onChange={e => handleFieldChange(marker.id, col.key, e.target.value)} className="w-full bg-white border rounded px-2 py-1" /></td>;
+                          }
+                          // Content tab: locked, show logo image for logo column, else read-only
+                          if (activeTab === 'content' && marker.contentLocked) {
+                            if (col.key === 'logo' && value) {
+                              const logoPath = getLogoPath(value);
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
+                            }
+                            return <td key={col.key} className="py-1 px-3 border-b text-left text-gray-500 italic">{value}</td>;
+                          }
                           if (isReference) {
                             return (
                               <td key={col.key} className="py-1 px-3 border-b text-left bg-gray-100 italic text-gray-500" title={referenceTooltip}>

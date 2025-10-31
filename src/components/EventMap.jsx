@@ -450,6 +450,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                   <Popup onOpen={() => trackMarkerView(marker.id)}>
                     <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
                   </Popup>
+                  {/* Only one tooltip per marker: logo and name */}
                   <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
                     {tooltipContent}
                   </Tooltip>
@@ -538,6 +539,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 <Popup onOpen={() => trackMarkerView(marker.id)}>
                   <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
                 </Popup>
+                {/* Only one tooltip per marker: logo and name */}
                 <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
                   {tooltipContent}
                 </Tooltip>
