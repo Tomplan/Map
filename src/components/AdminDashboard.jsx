@@ -18,7 +18,7 @@ const ICON_OPTIONS = [
   'glyph-marker-icon-red.svg',
   'glyph-marker-icon-yellow.svg',
 ];
-const ICON_PATH_PREFIX = 'assets/icons/';
+const ICON_PATH_PREFIX = '/assets/icons/';
 
 export default function AdminDashboard({ markersState, setMarkersState, updateMarker, isAdminView }) {
   // Track iconSize input values for each marker by ID
@@ -269,7 +269,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
 
 
   // Branding state for live sync
-  const [branding, setBranding] = useState({ logo: 'assets/logos/4x4Vakantiebeurs.png', themeColor: '#ffffff', fontFamily: 'Arvo, Sans-serif', eventName: '4x4 Vakantiebeurs', id: 1 });
+  const [branding, setBranding] = useState({ logo: '/assets/logos/4x4Vakantiebeurs.png', themeColor: '#ffffff', fontFamily: 'Arvo, Sans-serif', eventName: '4x4 Vakantiebeurs', id: 1 });
 
   // Fetch initial branding data
   useEffect(() => {
