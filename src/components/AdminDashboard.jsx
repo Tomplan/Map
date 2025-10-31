@@ -38,11 +38,23 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
   const [iconPopover, setIconPopover] = useState({ open: false, markerId: null });
   // Basic field edit handler for table cells
   async function handleFieldChange(id, key, value) {
+    // Lock fields must always be boolean
+    const lockFields = ['coreLocked', 'appearanceLocked', 'contentLocked', 'adminLocked'];
+    let sendValue = value;
+    if (!lockFields.includes(key)) {
+      // For non-lock fields, treat empty string, empty array, or undefined as null
+      if (
+        value === '' ||
+        value === undefined ||
+        (Array.isArray(value) && value.length === 0)
+      ) {
+        sendValue = null;
+      }
+    }
     setMarkersState(prev => {
       const updated = prev.map(m =>
-        m.id === id ? { ...m, [key]: value } : m
+        m.id === id ? { ...m, [key]: sendValue } : m
       );
-      // console.log('Updating marker:', id, 'key:', key, 'value:', value);
       return updated;
     });
     // Determine which table to update
@@ -63,7 +75,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
     // Sync to Supabase
     await supabase
       .from(table)
-      .update({ [key]: value })
+      .update({ [key]: sendValue })
       .eq('id', id);
   }
   const [showDashboard, setShowDashboard] = useState(false);
@@ -96,7 +108,6 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
       { key: 'name', label: 'Name' },
       { key: 'iconUrl', label: 'Icon' },
       { key: 'iconSize', label: 'Icon Size' },
-      { key: 'iconColor', label: 'Icon Color' },
       { key: 'className', label: 'Class Name' },
       { key: 'prefix', label: 'Prefix' },
       { key: 'glyph', label: 'Glyph' },
@@ -391,7 +402,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                       : m
                                   );
                                   setMarkersState(updatedMarkers);
-                                  // Save to Supabase
+                                        table = 'Markers_Appearance';
                                   sortedMarkers.forEach(async (marker) => {
                                     await supabase
                                       .from(table)
