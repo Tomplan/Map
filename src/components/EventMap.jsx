@@ -192,6 +192,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
+      // Restore plugin's default behavior: do not modify search input ids
       return () => {
         mapInstance.removeControl(searchControl);
         searchControlRef.current = null;
