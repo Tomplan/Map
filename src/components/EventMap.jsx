@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { iconCreateFunction } from '../utils/clusterIcons';
 import Icon from '@mdi/react';
@@ -160,9 +161,13 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     // Add Leaflet marker objects for each marker
     safeMarkers.forEach(marker => {
       if (marker.lat && marker.lng) {
+        // Combine name and booth number for search
+        const searchText = [marker.name, marker.boothNumber, marker.label]
+          .filter(Boolean)
+          .join(' | ');
         const leafletMarker = L.marker([marker.lat, marker.lng], {
-          title: marker.name || marker.label || '',
           opacity: 0, // Hide from map
+          searchText // Custom property for Leaflet Search
         });
         leafletMarker.bindPopup(marker.name || marker.label || '');
         layerGroup.addLayer(leafletMarker);
@@ -175,13 +180,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     if (mapInstance && searchLayer) {
       const searchControl = new L.Control.Search({
         layer: searchLayer,
+        propertyName: 'searchText', // Search by combined name/booth/label
         initial: false,
         zoom: 20,
         marker: {
           icon: false,
           animate: true
         },
-        textPlaceholder: 'Search for a booth-holder...',
+        textPlaceholder: 'Search for name or booth...',
         position: 'topleft',
       });
       mapInstance.addControl(searchControl);
@@ -192,6 +198,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       };
     }
   }, [mapInstance, searchLayer]);
+
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
@@ -311,7 +318,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         )}
       </div>
       {/* Admin-only add marker button (top-left) */}
-      {isAdminView && (
+      {/* Admin-only add marker button is hidden for now, but code is preserved for later use */}
+      {false && isAdminView && (
         <button
           onClick={() => setIsPlacingMarker(true)}
           aria-label="Add marker"
