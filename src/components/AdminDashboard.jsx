@@ -402,7 +402,6 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                                       : m
                                   );
                                   setMarkersState(updatedMarkers);
-                                        table = 'Markers_Appearance';
                                   sortedMarkers.forEach(async (marker) => {
                                     await supabase
                                       .from(table)
