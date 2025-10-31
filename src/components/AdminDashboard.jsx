@@ -532,6 +532,26 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                               const logoPath = getLogoPath(value);
                               return <td key={col.key} className="py-1 px-3 border-b text-left"><img src={logoPath} alt="logo" width={24} height={24} /> </td>;
                             }
+                            if (col.key === 'iconSize' && activeTab === 'appearance') {
+                              return (
+                                <td key={col.key} className="py-1 px-3 border-b text-left">
+                                  <input
+                                    type="text"
+                                    value={Array.isArray(value) ? value.join(', ') : value ?? ''}
+                                    onChange={e => {
+                                      const val = e.target.value.trim();
+                                      if (val === '') {
+                                        handleFieldChange(marker.id, 'iconSize', undefined);
+                                      } else {
+                                        const arr = val.split(',').map(v => Number(v.trim()) || 0);
+                                        handleFieldChange(marker.id, 'iconSize', arr);
+                                      }
+                                    }}
+                                    className="w-full bg-white border rounded px-2 py-1"
+                                  />
+                                </td>
+                              );
+                            }
                             if (Array.isArray(value)) {
                               return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
                             }

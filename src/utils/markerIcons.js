@@ -32,15 +32,24 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
   } else if (!safeGlyphSize) {
     safeGlyphSize = '11px';
   }
+  // Calculate proportional shadow size based on iconSize
+  const size = iconSize || [25, 41];
+  // Default Leaflet marker is 25x41 icon, 41x41 shadow
+  // So shadow width/height = icon width/height * (41/25) and (41/41)
+  const shadowWidth = Math.round(size[0] * (41 / 25));
+  const shadowHeight = Math.round(size[1] * (41 / 41));
+  // Leaflet default: [12, 41] for [41, 41] shadow, so anchorX = 12/41 ≈ 0.29
+  const shadowAnchorX = Math.round(shadowWidth * 12 / 41);
+  const shadowAnchorY = shadowHeight;
   return L.icon.glyph({
     iconUrl: iconUrl || '/assets/icons/glyph-marker-icon-blue.svg',
-    iconSize: iconSize || [25, 41],
-    iconAnchor: [12, 41],
+    iconSize: size,
+    iconAnchor: [Math.round(size[0] / 2), size[1]],
     popupAnchor: [1, -34],
     tooltipAnchor: [0, 0],
     shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-    shadowSize: [41, 41],
-    shadowAnchor: [12, 41],
+    shadowSize: [shadowWidth, shadowHeight],
+  shadowAnchor: [shadowAnchorX, shadowAnchorY],
     prefix: prefix || '', // Material Design Icons
     glyph: glyph || '',
     glyphColor: glyphColor || 'white',
