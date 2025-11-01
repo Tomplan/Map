@@ -623,7 +623,9 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                               );
                             }
                             if (Array.isArray(value)) {
-                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} 
+                              
+                              className="w-full bg-white border rounded px-2 py-1" /> </td>;
                             }
                             if (typeof value === 'object' && value !== null) {
                               return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
