@@ -6,7 +6,7 @@ export function createNewMarker({ lat, lng }) {
     lat,
     lng,
     name: '',
-    boothNumber: '',
+    boothNumber: null,
     rectangle: [6, 6],
     angle: 0,
     iconUrl: 'glyph-marker-icon-blue.svg',
