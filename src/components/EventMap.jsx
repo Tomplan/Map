@@ -27,6 +27,7 @@ import {
   metersToLatInv,
   metersToLngInv
 } from '../utils/geometryHelpers';
+import { getIconPath } from '../utils/getIconPath';
 // Marker state is now provided via props from App.jsx
 import useAnalytics from '../hooks/useAnalytics';
 import { createNewMarker, generateUniqueMarkerId } from '../utils/markerFactory';
@@ -119,19 +120,25 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
 
   // Track marker placement mode for admin
   const [isPlacingMarker, setIsPlacingMarker] = useState(false);
+  // New: Admin marker ID entry modal
+  const [showIdModal, setShowIdModal] = useState(false);
+  const [pendingMarkerId, setPendingMarkerId] = useState("");
+  const [idError, setIdError] = useState("");
 
 
 
-  // Handler for map click to add marker
+  // Handler for map click to add marker (with admin ID check)
   useEffect(() => {
-    if (!isPlacingMarker || !mapInstance) return;
+    if (!isPlacingMarker || !mapInstance || !pendingMarkerId) return;
     const onMapClick = (e) => {
       const latlng = e.latlng;
-      const newMarker = createNewMarker({ lat: latlng.lat, lng: latlng.lng });
+      // Use entered ID for marker
+      const newMarker = { ...createNewMarker({ lat: latlng.lat, lng: latlng.lng }), id: Number(pendingMarkerId) };
       if (typeof updateMarker === 'function') {
         updateMarker(newMarker.id, newMarker, { add: true });
       }
       setIsPlacingMarker(false);
+      setPendingMarkerId("");
       mapInstance.off('click', onMapClick);
     };
     mapInstance.on('click', onMapClick);
@@ -139,9 +146,53 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     return () => {
       mapInstance.off('click', onMapClick);
     };
-  }, [isPlacingMarker, mapInstance, updateMarker]);
+  }, [isPlacingMarker, mapInstance, updateMarker, pendingMarkerId]);
 
+  // Helper: check if marker ID exists in Supabase
+  async function checkMarkerIdExists(id) {
+    try {
+      const { supabase } = await import('../supabaseClient');
+      const tables = ['Markers_Core', 'Markers_Appearance', 'Markers_Content', 'Markers_Admin'];
+      for (const table of tables) {
+        const { data, error } = await supabase.from(table).select('id').eq('id', Number(id));
+        if (error) return false; // ignore error, treat as not found
+        if (data && data.length > 0) return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  }
 
+  // Handler for admin add marker button
+  const handleAdminAddMarker = () => {
+    setShowIdModal(true);
+    setPendingMarkerId("");
+    setIdError("");
+  };
+
+  // Handler for modal confirm
+  const handleIdModalConfirm = async () => {
+    if (!pendingMarkerId || isNaN(Number(pendingMarkerId))) {
+      setIdError("Please enter a valid numeric ID.");
+      return;
+    }
+    const exists = await checkMarkerIdExists(pendingMarkerId);
+    if (exists) {
+      setIdError("ID already exists. Please choose another.");
+      return;
+    }
+    setShowIdModal(false);
+    setIsPlacingMarker(true);
+    setIdError("");
+  };
+
+  // Handler for modal cancel
+  const handleIdModalCancel = () => {
+    setShowIdModal(false);
+    setPendingMarkerId("");
+    setIdError("");
+  };
 
   // Persistent LayerGroup for rectangles/handles
   // Only update rectangles/handles when marker data changes, not on zoom
@@ -179,9 +230,15 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           .join(' | ');
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0, // Hide from map
-            interactive: false, // Prevent popups/tooltips from being triggered
-          searchText // Custom property for Leaflet Search
+          interactive: false // Prevent popups/tooltips from being triggered
         });
+        // Patch: add feature.properties.searchText for Leaflet Search compatibility
+        leafletMarker.feature = {
+          type: 'Feature',
+          properties: {
+            searchText
+          }
+        };
         leafletMarker.bindPopup(marker.name || marker.label || '');
         layerGroup.addLayer(leafletMarker);
       }
@@ -334,26 +391,98 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       {/* Admin-only add marker button (top-left) */}
       {/* Admin-only add marker button is hidden for now, but code is preserved for later use , add: false && */}
       {isAdminView && (
-        <button
-          onClick={() => setIsPlacingMarker(true)}
-          aria-label="Add marker"
-          className="bg-white rounded-full shadow p-2 flex items-center justify-center"
-          style={{
-            position: 'absolute',
-            left: 10,
-            top: 60,
-            zIndex: 1001,
-            width: 44,
-            height: 44,
-            border: 'none',
-            cursor: isPlacingMarker ? 'crosshair' : 'pointer',
-            background: isPlacingMarker ? '#e3f2fd' : 'white'
-          }}
-          title={isPlacingMarker ? "Click on map to place marker" : "Add marker"}
-        >
-          <Icon path={mdiMapMarkerPlus} size={1.5} color="#1976d2" aria-hidden="true" style={{ width: '42px', height: '42px' }} />
-          <span className="sr-only">Add marker</span>
-        </button>
+        <>
+          <button
+            onClick={handleAdminAddMarker}
+            aria-label="Add marker"
+            className="bg-white rounded-full shadow p-2 flex items-center justify-center"
+            style={{
+              position: 'absolute',
+              left: 10,
+              top: 60,
+              zIndex: 1001,
+              width: 44,
+              height: 44,
+              border: 'none',
+              cursor: isPlacingMarker ? 'crosshair' : 'pointer',
+              background: isPlacingMarker ? '#e3f2fd' : 'white'
+            }}
+            title={isPlacingMarker ? "Click on map to place marker" : "Add marker"}
+          >
+            <Icon path={mdiMapMarkerPlus} size={1.5} color="#1976d2" aria-hidden="true" style={{ width: '42px', height: '42px' }} />
+            <span className="sr-only">Add marker</span>
+          </button>
+          {/* Modal for marker ID entry */}
+          {showIdModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.3)',
+              zIndex: 2000,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                background: 'white',
+                borderRadius: 8,
+                boxShadow: '0 2px 16px rgba(25,118,210,0.15)',
+                padding: 32,
+                minWidth: 320,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
+              }}>
+                <h2 style={{ color: '#1976d2', fontWeight: 700, marginBottom: 16 }}>Enter Marker ID</h2>
+                <input
+                  type="number"
+                  value={pendingMarkerId}
+                  onChange={e => setPendingMarkerId(e.target.value)}
+                  style={{
+                    fontSize: 18,
+                    padding: '8px 12px',
+                    border: '2px solid #1976d2',
+                    borderRadius: 4,
+                    marginBottom: 12,
+                    width: '100%'
+                  }}
+                  placeholder="Marker ID (integer)"
+                  min={1}
+                />
+                {idError && <div style={{ color: 'red', marginBottom: 8 }}>{idError}</div>}
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button
+                    onClick={handleIdModalConfirm}
+                    style={{
+                      background: '#1976d2',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '8px 20px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >Confirm</button>
+                  <button
+                    onClick={handleIdModalCancel}
+                    style={{
+                      background: '#eee',
+                      color: '#1976d2',
+                      border: 'none',
+                      borderRadius: 4,
+                      padding: '8px 20px',
+                      fontWeight: 600,
+                      cursor: 'pointer'
+                    }}
+                  >Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
       {/* Map container */}
       <div
@@ -400,10 +529,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               if (!iconFile) {
                 iconFile = `${marker.type || 'default'}.svg`;
               }
-              // Ensure path always starts with assets/icons/
-              if (!iconFile.startsWith('assets/icons/')) {
-                iconFile = `assets/icons/${iconFile}`;
-              }
+              // Always resolve iconFile using getIconPath for correct BASE_URL
+              iconFile = getIconPath(iconFile);
               const icon = createMarkerIcon({
                 className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
                 prefix: marker.prefix,
@@ -488,10 +615,8 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             if (!iconFile) {
               iconFile = `${marker.type || 'glyph-marker-icon-blue'}.svg`;
             }
-            // Ensure path always starts with assets/icons/
-            if (!iconFile.startsWith('assets/icons/')) {
-              iconFile = `assets/icons/${iconFile}`;
-            }
+            // Always resolve iconFile using getIconPath for correct BASE_URL
+            iconFile = getIconPath(iconFile);
             const icon = createMarkerIcon({
               className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
               prefix: marker.prefix,
