@@ -35,11 +35,7 @@ export default function useMarkersState(initialMarkers = []) {
         if (table === 'Markers_Appearance') row.appearanceLocked = false;
         if (table === 'Markers_Content') row.contentLocked = false;
         if (table === 'Markers_Admin') row.adminLocked = false;
-        const { error: insertError } = await supabase.from(table).insert([row]);
-        if (insertError) {
-          console.error(`Supabase insert failed for id in ${table}:`, insertError);
-          return false;
-        }
+        await supabase.from(table).insert([row]);
         return true;
       }
       return true;
@@ -75,38 +71,16 @@ export default function useMarkersState(initialMarkers = []) {
           table = 'Markers_Admin';
         }
         if (table) {
-          // Ensure marker exists before update/fetch
           const exists = await ensureMarkerRow(supabase, table, intId);
           if (!exists) continue;
-          const { error } = await supabase
+          await supabase
             .from(table)
             .update({ [key]: value })
             .eq('id', intId);
-          if (error) {
-            console.error(`Supabase update failed for ${key} in ${table}:`, error);
-          } else {
-            // Fetch the updated row to confirm the value
-            const { data, error: fetchError } = await supabase
-              .from(table)
-              .select(key)
-              .eq('id', intId)
-              .single();
-            if (fetchError || !data) {
-              console.error(`Supabase fetch failed for ${key} in ${table}:`, fetchError || { message: 'No data returned' });
-            } else {
-              if (data && data[key] === value) {
-                console.log(`Confirmed value for ${key} in ${table}:`, data[key]);
-              } else {
-                console.warn(`Value mismatch for ${key} in ${table}: expected`, value, 'got', data ? data[key] : undefined);
-              }
-            }
-          }
-        } else {
-          console.warn(`Unknown field "${key}" not synced to Supabase.`);
         }
       }
     } catch (err) {
-      console.error('Supabase update error (offline or import failed):', err);
+      // Silently ignore errors in production
     }
   }, []);
 
