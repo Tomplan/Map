@@ -519,7 +519,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             showCoverageOnHover={true}
             spiderfyOnMaxZoom={false}
             removeOutsideVisibleBounds={true}
-            disableClusteringAtZoom={18}
+            disableClusteringAtZoom={17}
             maxClusterRadius={400}
             iconCreateFunction={iconCreateFunction}
           >
@@ -535,11 +535,11 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
                 prefix: marker.prefix,
                 iconUrl: iconFile,
-                iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [25, 41],
+                iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
                 glyph: marker.glyph || '',
                 glyphColor: marker.glyphColor || 'white',
-                glyphSize: marker.glyphSize || '13px',
-                glyphAnchor: marker.glyphAnchor || [0,0]
+                glyphSize: marker.glyphSize || '9px',
+                glyphAnchor: marker.glyphAnchor || [-1,-10]
               });
               // Tooltip content: logo and name
               const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
@@ -621,11 +621,11 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
               prefix: marker.prefix,
               iconUrl: iconFile,
-              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [25, 41],
+              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [20, 33],
               glyph: marker.glyph || '?',
               glyphColor: marker.glyphColor || 'white',
-              glyphSize: marker.glyphSize || '18px',
-              glyphAnchor: marker.glyphAnchor || [0,0]
+              glyphSize: marker.glyphSize || '15px',
+              glyphAnchor: marker.glyphAnchor || [0, -5]
             });
             // Tooltip content: logo and name
             const logoPath = marker.logo ? getLogoPath(marker.logo) : null;

@@ -10,14 +10,14 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
       className="flex items-center justify-center shadow rounded-full"
       style={{
         position: 'fixed',
-        top: 10, // match search button height
+        top: 5, // match search button height
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 3000,
         background: bgColor,
         border: `2px solid ${borderColor}`,
-        padding: '0.5rem 1.25rem',
-        minHeight: 44,
+        padding: '0.1rem 0.25rem',
+        minHeight: 20,
         minWidth: 0,
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
         fontFamily: fontFamily || 'inherit',
@@ -27,9 +27,9 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
       aria-label="Event Branding"
     >
       {logo && (
-        <img src={logo} alt="Event Logo" style={{ height: 32, width: 32, objectFit: 'contain', marginRight: 12 }} />
+        <img src={logo} alt="Event Logo" style={{ height: 20, width: 20, objectFit: 'contain', marginRight: 2 }} />
       )}
-      <span style={{ fontWeight: 700, fontSize: 22, color: textColor, whiteSpace: 'nowrap' }}>{eventName || 'Event Map'}</span>
+      <span style={{ fontWeight: 300, fontSize: 12, color: textColor, whiteSpace: 'nowrap' }}>{eventName || 'Event Map'}</span>
     </div>
   );
 }

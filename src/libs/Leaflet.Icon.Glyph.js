@@ -19,7 +19,7 @@ L.Icon.Glyph = L.Icon.extend({
 		glyph: 'home',
 		glyphColor: 'white',
 		glyphSize: '11px',	// in CSS units
-		glyphAnchor: [0, -7]	// In pixels, counting from the center of the image.
+		glyphAnchor: [0, 0]	// In pixels, counting from the center of the image.
 	},
 
 	createIcon: function () {

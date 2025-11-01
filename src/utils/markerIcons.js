@@ -21,7 +21,7 @@ export function createMarkerPopupHTML(marker) {
   `;
 }
 
-export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '11px', iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`, className, iconSize, prefix }) {
+export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '8px', iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`, className, iconSize, prefix, glyphAnchor }) {
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
   if (typeof safeGlyphSize === 'number') {
@@ -30,7 +30,7 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
     // If it's a string but missing px, add it
     safeGlyphSize = `${safeGlyphSize}px`;
   } else if (!safeGlyphSize) {
-    safeGlyphSize = '11px';
+    safeGlyphSize = '8px';
   }
   // Calculate proportional shadow size based on iconSize
   const size = iconSize || [25, 41];
@@ -55,6 +55,7 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
     glyphColor: glyphColor || 'white',
     bgColor,
     glyphSize: safeGlyphSize,
+    glyphAnchor: glyphAnchor || [0,-7],
     className: className || ''
   });
 }
