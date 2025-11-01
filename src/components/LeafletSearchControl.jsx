@@ -8,6 +8,30 @@ import "leaflet-search";
  * Usage: <LeafletSearchControl map={mapInstance} markerLayer={layerGroup} />
  */
 const LeafletSearchControl = ({ map, markerLayer }) => {
+  // Inject dynamic style for search button icon using BASE_URL
+  useEffect(() => {
+    const searchIconUrl = `${import.meta.env.BASE_URL}assets/icons/map-marker-question-blue.svg`;
+    const styleId = 'leaflet-search-dynamic-style';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `
+        .leaflet-control-search .search-button {
+          background: url('${searchIconUrl}') no-repeat center center #fff !important;
+          background-size: 60% 60% !important;
+        }
+        .leaflet-control-search .search-button:hover {
+          background: url('${searchIconUrl}') no-repeat center center #f4f4f4 !important;
+          background-size: 60% 60% !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    return () => {
+      const style = document.getElementById(styleId);
+      if (style) document.head.removeChild(style);
+    };
+  }, []);
   useEffect(() => {
     if (!map || !markerLayer) return;
 
