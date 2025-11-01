@@ -3,9 +3,9 @@
   <head>
     <meta http-equiv="refresh" content="0; url=./" />
     <script>
-      // For SPA fallback: redirect to index.html and preserve path
-      var path = window.location.pathname.replace(/\/Map/, '');
-      window.location.replace('./' + (path ? '#' + path : ''));
+  // For SPA fallback: redirect to index.html and preserve full path
+  var path = window.location.pathname;
+  window.location.replace('./index.html#' + path);
     </script>
   </head>
   <body>

@@ -119,68 +119,136 @@ function App() {
     };
   }, []);
 
-  const RouterComponent = import.meta.env.PROD ? HashRouter : BrowserRouter;
-  return (
-    <RouterComponent basename={import.meta.env.BASE_URL}>
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ErrorBoundary>
-              <BrandingBar {...branding} />
-              <main style={{ border: '2px solid red' }}>
-                <OfflineStatus />
-                <Suspense fallback={<div>Loading accessibility options...</div>}>
-                  <AccessibilityToggle />
-                </Suspense>
-                <Suspense fallback={<div>Loading map...</div>}>
-                  <EventMap
-                    isAdminView={false}
-                    markersState={markersState}
-                    updateMarker={updateMarker}
-                    setMarkersState={setMarkersState}
-                  />
-                </Suspense>
-              </main>
-            </ErrorBoundary>
-          }
-        />
-        <Route
-          path="/admin"
-          element={
-            <ErrorBoundary>
-              <BrandingBar {...branding} />
-              {user ? (
-                <>
-                  <AdminDashboard
-                    markersState={markersState}
-                    updateMarker={updateMarker}
-                    setMarkersState={setMarkersState}
-                  />
-                  <div style={{ margin: '2rem 0' }}>
-                    <MarkerTable />
-                  </div>
+  const isProd = import.meta.env.PROD;
+  // Only set basename if BASE_URL is not '/' or '/./'
+  const safeBase = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/' && import.meta.env.BASE_URL !== '/./') ? import.meta.env.BASE_URL : undefined;
+  if (isProd) {
+    // HashRouter: do NOT pass basename
+    return (
+      <HashRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary>
+                <BrandingBar {...branding} />
+                <main style={{ border: '2px solid red' }}>
+                  <OfflineStatus />
+                  <Suspense fallback={<div>Loading accessibility options...</div>}>
+                    <AccessibilityToggle />
+                  </Suspense>
                   <Suspense fallback={<div>Loading map...</div>}>
                     <EventMap
-                      isAdminView={true}
+                      isAdminView={false}
                       markersState={markersState}
                       updateMarker={updateMarker}
                       setMarkersState={setMarkersState}
                     />
                   </Suspense>
-                </>
-              ) : (
-                <Suspense fallback={<div>Loading login...</div>}>
-                  <FeedbackForm />
-                  <AdminLogin onLogin={setUser} />
-                </Suspense>
-              )}
-            </ErrorBoundary>
-          }
-        />
-      </Routes>
-    </RouterComponent>
-  );
+                </main>
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ErrorBoundary>
+                <BrandingBar {...branding} />
+                {user ? (
+                  <>
+                    <AdminDashboard
+                      markersState={markersState}
+                      updateMarker={updateMarker}
+                      setMarkersState={setMarkersState}
+                    />
+                    <div style={{ margin: '2rem 0' }}>
+                      <MarkerTable />
+                    </div>
+                    <Suspense fallback={<div>Loading map...</div>}>
+                      <EventMap
+                        isAdminView={true}
+                        markersState={markersState}
+                        updateMarker={updateMarker}
+                        setMarkersState={setMarkersState}
+                      />
+                    </Suspense>
+                  </>
+                ) : (
+                  <Suspense fallback={<div>Loading login...</div>}>
+                    <FeedbackForm />
+                    <AdminLogin onLogin={setUser} />
+                  </Suspense>
+                )}
+              </ErrorBoundary>
+            }
+          />
+        </Routes>
+      </HashRouter>
+    );
+  } else {
+    // BrowserRouter: pass basename if needed
+    return (
+      <BrowserRouter basename={safeBase}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary>
+                <BrandingBar {...branding} />
+                <main style={{ border: '2px solid red' }}>
+                  <OfflineStatus />
+                  <Suspense fallback={<div>Loading accessibility options...</div>}>
+                    <AccessibilityToggle />
+                  </Suspense>
+                  <Suspense fallback={<div>Loading map...</div>}>
+                    <EventMap
+                      isAdminView={false}
+                      markersState={markersState}
+                      updateMarker={updateMarker}
+                      setMarkersState={setMarkersState}
+                    />
+                  </Suspense>
+                </main>
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ErrorBoundary>
+                <BrandingBar {...branding} />
+                {user ? (
+                  <>
+                    <AdminDashboard
+                      markersState={markersState}
+                      updateMarker={updateMarker}
+                      setMarkersState={setMarkersState}
+                    />
+                    <div style={{ margin: '2rem 0' }}>
+                      <MarkerTable />
+                    </div>
+                    <Suspense fallback={<div>Loading map...</div>}>
+                      <EventMap
+                        isAdminView={true}
+                        markersState={markersState}
+                        updateMarker={updateMarker}
+                        setMarkersState={setMarkersState}
+                      />
+                    </Suspense>
+                  </>
+                ) : (
+                  <Suspense fallback={<div>Loading login...</div>}>
+                    <FeedbackForm />
+                    <AdminLogin onLogin={setUser} />
+                  </Suspense>
+                )}
+              </ErrorBoundary>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
 }
 
 export default App;
