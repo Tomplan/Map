@@ -294,7 +294,17 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
 
   return (
     <div
-      style={{ height: '100dvh', height: '100vh', width: '100vw', position: 'fixed', inset: 0, zIndex: 0 }}
+      style={{
+        height: '100svh',
+        height: '100dvh',
+        height: '100vh',
+        width: '100vw',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        touchAction: 'pan-x pan-y',
+        overflow: 'hidden'
+      }}
       tabIndex={0}
       aria-label="Event Map"
       role="region"
@@ -488,7 +498,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       <div
         id="map-container"
         className="fixed inset-0 w-full h-full"
-        style={{ zIndex: 1, height: '100dvh', height: '100vh' }}
+        style={{
+          zIndex: 1,
+          height: '100svh',
+          height: '100dvh',
+          height: '100vh',
+          touchAction: 'pan-x pan-y',
+          overflow: 'hidden'
+        }}
         aria-label={t('map.ariaLabel')}
       >
         <MapContainer
