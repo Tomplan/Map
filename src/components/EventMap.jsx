@@ -88,7 +88,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const [mapInstance, setMapInstance] = useState(null);
   // Hidden LayerGroup for search markers
   const [searchLayer, setSearchLayer] = useState(null);
-  const DEFAULT_POSITION = [51.898945656392904, 5.779029262641933];
+  const DEFAULT_POSITION = [51.89833010088164, 5.772789716720581];
   const DEFAULT_ZOOM = 17; // Default zoom level
   const { trackMarkerView } = useAnalytics();
   // Ensure markers is always an array, memoized for hook compliance
@@ -262,6 +262,13 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
+        // Fly to marker when search result is found
+        searchControl.on('search:locationfound', function(e) {
+          if (e && e.layer && e.layer.getLatLng) {
+            const latlng = e.layer.getLatLng();
+            mapInstance.flyTo(latlng, 20, { animate: true });
+          }
+        });
       // Restore plugin's default behavior: do not modify search input ids
       return () => {
         mapInstance.removeControl(searchControl);
@@ -536,7 +543,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             showCoverageOnHover={true}
             spiderfyOnMaxZoom={false}
             removeOutsideVisibleBounds={true}
-            disableClusteringAtZoom={17}
+            disableClusteringAtZoom={18}
             maxClusterRadius={400}
             iconCreateFunction={iconCreateFunction}
           >
