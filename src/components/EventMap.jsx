@@ -535,11 +535,11 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
                 prefix: marker.prefix,
                 iconUrl: iconFile,
-                iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
+                iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [15, 25],
                 glyph: marker.glyph || '',
                 glyphColor: marker.glyphColor || 'white',
                 glyphSize: marker.glyphSize || '9px',
-                glyphAnchor: marker.glyphAnchor || [-1,-10]
+                glyphAnchor: marker.glyphAnchor || [0, -4]
               });
               // Tooltip content: logo and name
               const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
@@ -621,10 +621,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
               prefix: marker.prefix,
               iconUrl: iconFile,
-              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [20, 33],
+              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
               glyph: marker.glyph || '?',
               glyphColor: marker.glyphColor || 'white',
-              glyphSize: marker.glyphSize || '15px',
+              glyphSize: marker.glyphSize || '12px',
               glyphAnchor: marker.glyphAnchor || [0, -5]
             });
             // Tooltip content: logo and name
