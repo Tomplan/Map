@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap';
 import BrandingSettings from './BrandingSettings';
@@ -431,7 +432,6 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                         {COLUMNS[activeTab].map(col => {
                           const cellStyle = col.key === 'iconUrl' ? { minWidth: 40, width: 40, maxWidth: 40 } : undefined;
                           const value = marker[col.key];
-                          // ...existing cell rendering logic...
                           let isReference = false;
                           let referenceTooltip = '';
                           if (col.key === 'id' && activeTab !== 'core') {
@@ -442,6 +442,20 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                             isReference = true;
                             referenceTooltip = 'Reference field from Markers_Content; cannot be edited here.';
                           }
+                          // Appearance tab: glyphAnchor editable as numeric array
+                          if (col.key === 'glyphAnchor' && activeTab === 'appearance' && !marker.appearanceLocked) {
+                            return (
+                              <td key={col.key} className="py-1 px-3 border-b text-left">
+                                <NumericArrayInputs
+                                  value={Array.isArray(value) ? value : [0, 0]}
+                                  onChange={arr => handleFieldChange(marker.id, col.key, arr)}
+                                  labels={["X", "Y"]}
+                                  length={2}
+                                />
+                              </td>
+                            );
+                          }
+                          // ...existing cell rendering logic...
                           // Content tab: editable if contentLocked is false
                           if (activeTab === 'content' && !marker.contentLocked) {
                             if (col.key === 'logo') {
@@ -623,9 +637,7 @@ export default function AdminDashboard({ markersState, setMarkersState, updateMa
                               );
                             }
                             if (Array.isArray(value)) {
-                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} 
-                              
-                              className="w-full bg-white border rounded px-2 py-1" /> </td>;
+                              return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={value.join(', ')} onChange={e => handleFieldChange(marker.id, col.key, e.target.value.split(',').map(v => v.trim()))} className="w-full bg-white border rounded px-2 py-1" /> </td>;
                             }
                             if (typeof value === 'object' && value !== null) {
                               return <td key={col.key} className="py-1 px-3 border-b text-left"><input type="text" value={JSON.stringify(value)} onChange={e => handleFieldChange(marker.id, col.key, JSON.parse(e.target.value))} className="w-full bg-white border rounded px-2 py-1" /> </td>;

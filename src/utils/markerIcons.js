@@ -55,7 +55,7 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
     glyphColor: glyphColor || 'white',
     bgColor,
     glyphSize: safeGlyphSize,
-    glyphAnchor: glyphAnchor || [0,-7],
+    glyphAnchor: glyphAnchor || [0,0],
     className: className || ''
   });
 }

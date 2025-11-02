@@ -30,8 +30,10 @@ L.Icon.Glyph = L.Icon.extend({
 			div.appendChild(this._createGlyph());
 		}
 
-		this._setIconStyles(div, options.className);
-		return div;
+ 		// Enable absolute positioning for glyph
+ 		div.style.position = 'relative';
+ 		this._setIconStyles(div, options.className);
+ 		return div;
 	},
 
 	_createGlyph: function() {
@@ -51,22 +53,23 @@ L.Icon.Glyph = L.Icon.extend({
 			glyphClass = options.prefix + "-" + options.glyph;
 		}
 
-		var span = L.DomUtil.create('span', options.prefix + ' ' + glyphClass);
-		span.style.fontSize = options.glyphSize;
-		span.style.color = options.glyphColor;
-		span.style.width = options.iconSize[0] + 'px';
-		span.style.lineHeight = options.iconSize[1] + 'px';
-		span.style.textAlign = 'center';
-		span.style.marginLeft = options.glyphAnchor[0] + 'px';
-		span.style.marginTop = options.glyphAnchor[1] + 'px';
-		span.style.pointerEvents = 'none';
-		span.style.display = 'inline-block';
+ 		var span = L.DomUtil.create('span', options.prefix + ' ' + glyphClass);
+ 		span.style.position = 'absolute';
+ 		span.style.fontSize = options.glyphSize;
+ 		span.style.color = options.glyphColor;
+ 		span.style.width = options.iconSize[0] + 'px';
+ 		span.style.lineHeight = options.iconSize[1] + 'px';
+ 		span.style.textAlign = 'center';
+ 		span.style.left = options.glyphAnchor[0] + 'px';
+ 		span.style.top = options.glyphAnchor[1] + 'px';
+ 		span.style.pointerEvents = 'none';
+ 		span.style.display = 'inline-block';
 
-		if (textContent) {
-			span.innerHTML = textContent;
-		}
+ 		if (textContent) {
+ 			span.innerHTML = textContent;
+ 		}
 
-		return span;
+ 		return span;
 	},
 
 	_setIconStyles: function (div, name) {
