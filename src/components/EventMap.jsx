@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
+import EventSpecialMarkers from './EventSpecialMarkers';
 import EventClusterMarkers from './EventClusterMarkers';
+import AdminMarkerPlacement from './AdminMarkerPlacement';
 import { iconCreateFunction } from '../utils/clusterIcons';
 import Icon from '@mdi/react';
 import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
@@ -598,64 +600,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           />
 
           {/* Special markers (id >= 1001) - never clustered */}
-          {safeMarkers.filter(marker => marker.id >= 1001).map(marker => {
-            const isInfoToggled = infoButtonToggled[marker.id];
-            let pos = [marker.lat, marker.lng];
-            let iconFile = marker.iconUrl;
-            if (!iconFile) {
-              iconFile = `${marker.type || 'glyph-marker-icon-blue'}.svg`;
-            }
-            iconFile = getIconPath(iconFile);
-            const icon = createMarkerIcon({
-              className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
-              prefix: marker.prefix,
-              iconUrl: iconFile,
-              iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
-              glyph: marker.glyph || '?',
-              glyphColor: marker.glyphColor || 'white',
-              glyphSize: marker.glyphSize || '12px',
-              glyphAnchor: marker.glyphAnchor || [0, -5]
-            });
-            const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
-            const isDraggable = isMarkerDraggable(marker);
-            // ...existing code...
-            const markerEventHandlers = {
-              ...(isDraggable ? {
-                dragend: (e) => {
-                  const { lat, lng } = e.target.getLatLng();
-                  updateMarker(marker.id, { lat, lng });
-                }
-              } : {})
-            };
-            return (
-              <Marker
-                key={`${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`}
-                position={pos}
-                icon={icon}
-                draggable={isDraggable}
-                eventHandlers={markerEventHandlers}
-              >
-                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false} interactive={true}>
-                  <div className="flex flex-col items-center">
-                    {logoPath && (
-                      <img src={logoPath} alt={marker.name || 'Logo'} style={{ maxWidth: 120, maxHeight: 80, objectFit: 'contain', borderRadius: 0 }} />
-                    )}
-                    <span style={{ fontWeight: 600, color: '#1976d2' }}>{marker.name}</span>
-                    {isMobile && (
-                      <button
-                        className={`mt-2 px-2 py-1 text-xs rounded ${isInfoToggled ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'}`}
-                        onClick={() => {
-                          setInfoButtonToggled(prev => ({ ...prev, [marker.id]: !prev[marker.id] }));
-                        }}
-                      >
-                        More info
-                      </button>
-                    )}
-                  </div>
-                </Tooltip>
-              </Marker>
-            );
-          })}
+          <EventSpecialMarkers
+            safeMarkers={safeMarkers}
+            infoButtonToggled={infoButtonToggled}
+            setInfoButtonToggled={setInfoButtonToggled}
+            isMobile={isMobile}
+            updateMarker={updateMarker}
+            isMarkerDraggable={isMarkerDraggable}
+          />
           
         </MapContainer>
       </div>
