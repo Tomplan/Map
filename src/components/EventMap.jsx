@@ -80,6 +80,9 @@ const MAP_LAYERS = [
 function EventMap({ isAdminView, markersState, updateMarker })  {
 
   // Store the Leaflet Search control instance
+  // Controlled tooltip/popup state
+  // const [tooltipOpen, setTooltipOpen] = useState(null);
+  // const [popupOpen, setPopupOpen] = useState(null);
   const searchControlRef = React.useRef(null);
   const { t } = useTranslation();
   // Layer selection state (admin only)
@@ -594,7 +597,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               if (!iconFile) {
                 iconFile = `${marker.type || 'default'}.svg`;
               }
-              // Always resolve iconFile using getIconPath for correct BASE_URL
               iconFile = getIconPath(iconFile);
               const icon = createMarkerIcon({
                 className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
@@ -606,67 +608,32 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 glyphSize: marker.glyphSize || '9px',
                 glyphAnchor: marker.glyphAnchor || [0, -4]
               });
-              // Tooltip content: logo and name
               const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
-              const tooltipContent = (
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: 1,
-                    padding: 0,
-                    whiteSpace: 'nowrap',
-                    minWidth: 'max-content',
-                    // background: '#e7f2fcff',
-                    borderRadius: 2,
-                    boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)'
-                  }}
-                >
-                  {logoPath && (
-                    <img
-                      src={logoPath}
-                      alt={marker.name || 'Logo'}
-                      style={{
-                         maxWidth: 120,
-                         maxHeight: 80,
-                        // minWidth: 40,
-                        // minHeight: 40,
-                        width: 'auto',
-                        height: 'auto',
-                        objectFit: 'contain',
-                        borderRadius: '0px',
-                        marginBottom: 0,
-                        padding: 0,
-                        // background: '#d2e3f4ff'
-                      }}
-                    />
-                  )}
-                  <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: '#1976d2' }}>{marker.name}</span>
-                </div>
-              );
-              const labelText = getMarkerLabel(marker.label);
-              // Use helper for draggable logic
               const isDraggable = isMarkerDraggable(marker);
+              // ...existing code...
+              const markerEventHandlers = {
+                ...(isDraggable ? {
+                  dragend: (e) => {
+                    const { lat, lng } = e.target.getLatLng();
+                    updateMarker(marker.id, { lat, lng });
+                  }
+                } : {})
+              };
               return (
                 <Marker
                   key={`${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`}
                   position={pos}
                   icon={icon}
                   draggable={isDraggable}
-                  eventHandlers={isDraggable ? {
-                    dragend: (e) => {
-                      const { lat, lng } = e.target.getLatLng();
-                      updateMarker(marker.id, { lat, lng });
-                    }
-                  } : {}}
+                  eventHandlers={markerEventHandlers}
                 >
-                  <Popup onOpen={() => trackMarkerView(marker.id)}>
-                    <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
-                  </Popup>
-                  {/* Only one tooltip per marker: logo and name */}
-                  <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
-                    {tooltipContent}
+                  <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false} interactive>
+                    <div className="flex flex-col items-center">
+                      {logoPath && (
+                        <img src={logoPath} alt={marker.name || 'Logo'} style={{ maxWidth: 120, maxHeight: 80, objectFit: 'contain', borderRadius: 0 }} />
+                      )}
+                      <span style={{ fontWeight: 600, color: '#1976d2' }}>{marker.name}</span>
+                    </div>
                   </Tooltip>
                 </Marker>
               );
@@ -680,7 +647,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             if (!iconFile) {
               iconFile = `${marker.type || 'glyph-marker-icon-blue'}.svg`;
             }
-            // Always resolve iconFile using getIconPath for correct BASE_URL
             iconFile = getIconPath(iconFile);
             const icon = createMarkerIcon({
               className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
@@ -692,68 +658,32 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               glyphSize: marker.glyphSize || '12px',
               glyphAnchor: marker.glyphAnchor || [0, -5]
             });
-            // Tooltip content: logo and name
             const logoPath = marker.logo ? getLogoPath(marker.logo) : null;
-            const tooltipContent = (
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 1,
-                  padding: 0,
-                  whiteSpace: 'nowrap',
-                  minWidth: 'max-content',
-                  // background: '#e7f2fcff',
-                  borderRadius: 2,
-                  boxShadow: '0 2px 8px rgba(25, 118, 210, 0.08)'
-                }}
-              >
-                {logoPath && (
-                  <img
-                    src={logoPath}
-                    alt={marker.name || 'Logo'}
-                    style={{
-                       maxWidth: 120,
-                       maxHeight: 80,
-                      // minWidth: 40,
-                      // minHeight: 40,
-                      width: 'auto',
-                      height: 'auto',
-                      objectFit: 'contain',
-                      borderRadius: '0px',
-                      marginBottom: 0,
-                      padding: 0,
-                      // background: '#d2e3f4ff'
-                    }}
-                  />
-                )}
-                <span style={{ fontWeight: 600, whiteSpace: 'nowrap', color: '#1976d2' }}>{marker.name}</span>
-              </div>
-            );
-            const labelText = getMarkerLabel(marker.label);
-            // Use helper for draggable logic
             const isDraggable = isMarkerDraggable(marker);
-            const eventHandlers = isDraggable ? {
-              dragend: (e) => {
-                const { lat, lng } = e.target.getLatLng();
-                updateMarker(marker.id, { lat, lng });
-              }
-            } : {};
+            // ...existing code...
+            const markerEventHandlers = {
+              ...(isDraggable ? {
+                dragend: (e) => {
+                  const { lat, lng } = e.target.getLatLng();
+                  updateMarker(marker.id, { lat, lng });
+                }
+              } : {})
+            };
             return (
               <Marker
                 key={`${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`}
                 position={pos}
                 icon={icon}
                 draggable={isDraggable}
-                eventHandlers={eventHandlers}
+                eventHandlers={markerEventHandlers}
               >
-                <Popup onOpen={() => trackMarkerView(marker.id)}>
-                  <div dangerouslySetInnerHTML={{ __html: createMarkerPopupHTML(marker) }} />
-                </Popup>
-                {/* Only one tooltip per marker: logo and name */}
-                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false}>
-                  {tooltipContent}
+                <Tooltip direction="top" offset={[0, -32]} opacity={1} permanent={false} interactive>
+                  <div className="flex flex-col items-center">
+                    {logoPath && (
+                      <img src={logoPath} alt={marker.name || 'Logo'} style={{ maxWidth: 120, maxHeight: 80, objectFit: 'contain', borderRadius: 0 }} />
+                    )}
+                    <span style={{ fontWeight: 600, color: '#1976d2' }}>{marker.name}</span>
+                  </div>
                 </Tooltip>
               </Marker>
             );
