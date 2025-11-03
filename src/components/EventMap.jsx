@@ -35,7 +35,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-
+import 'leaflet-minimap/dist/Control.MiniMap.min.css';
+import 'leaflet-minimap';
 // Custom checkbox styles for layers popover
 const checkboxStyle = {
   appearance: 'none',
@@ -88,7 +89,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const [mapInstance, setMapInstance] = useState(null);
   // Hidden LayerGroup for search markers
   const [searchLayer, setSearchLayer] = useState(null);
-  const DEFAULT_POSITION = [51.89833010088164, 5.772789716720581];
+  const DEFAULT_POSITION = [51.898095078807025, 5.772961378097534];
   const DEFAULT_ZOOM = 17; // Default zoom level
   const { trackMarkerView } = useAnalytics();
   // Ensure markers is always an array, memoized for hook compliance
@@ -252,21 +253,61 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         layer: searchLayer,
         propertyName: 'searchText', // Search by combined name/booth/label
         initial: false,
-        zoom: 20,
+        zoom: 21,
         marker: {
           icon: false,
-          animate: true
+          animate: true // draw red cicle around found marker
         },
         textPlaceholder: 'Search for name or booth...',
         position: 'topleft',
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
+        // Add MiniMap control (bottomright)
+        if (!mapInstance._minimapControl) {
+          const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
+            attribution: '',
+            minZoom: 0,
+            maxZoom: 16
+          });
+          const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
+            position: 'bottomright',
+            width: 120,
+            height: 120,
+            zoomLevelFixed: 15,
+            toggleDisplay: true,
+            centerFixed: DEFAULT_POSITION,
+            aimingRectOptions: {
+              color: '#1976d2', // app primary blue
+              weight: 2,
+              opacity: 0.9,
+              fillOpacity: 0.1,
+              fill: true
+            },
+            shadowRectOptions: {
+              color: '#90caf9', // lighter blue shadow
+              weight: 1,
+              opacity: 0.5,
+              fillOpacity: 0.05,
+              fill: true
+            },
+            strings: {
+              hideText: 'Hide MiniMap',
+              showText: 'Show MiniMap'
+            }
+          });
+          miniMapControl.addTo(mapInstance);
+          mapInstance._minimapControl = miniMapControl;
+        }
         // Fly to marker when search result is found
         searchControl.on('search:locationfound', function(e) {
           if (e && e.layer && e.layer.getLatLng) {
             const latlng = e.layer.getLatLng();
-            mapInstance.flyTo(latlng, 20, { animate: true });
+            mapInstance.flyTo(latlng, 21, { animate: true });
+            // Auto-close the search box
+            if (searchControl._input) searchControl._input.blur();
+            if (searchControl.hideAlert) searchControl.hideAlert();
+            if (searchControl.collapse) searchControl.collapse();
           }
         });
       // Restore plugin's default behavior: do not modify search input ids
