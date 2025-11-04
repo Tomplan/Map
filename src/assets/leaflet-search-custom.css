@@ -38,7 +38,7 @@
     0 1.5px 4px rgba(0, 0, 0, 0.08);
   z-index: 1000;
   margin-left: 10px;
-  margin-top: 120px;
+  margin-top: 10px; /* Changed from 120px */
 }
 .leaflet-control-search.search-exp {
   background: #fff;
@@ -179,4 +179,18 @@
   border-radius: 8px;
   background: #ffeaea;
   box-shadow: 0 2px 8px rgba(220, 38, 38, 0.08);
+}
+/* Force search to appear first */
+.leaflet-top.leaflet-left {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+.leaflet-control-search {
+  order: -1 !important;
+}
+
+.leaflet-top.leaflet-left > *:not(.leaflet-control-search) {
+  order: 1 !important;
 }
