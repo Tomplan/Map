@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
+import MapControls from './MapControls';
 import { iconCreateFunction } from '../../utils/clusterIcons';
-import Icon from '@mdi/react';
-import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
-import { useTranslation } from 'react-i18next';
-import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
-import { MapContainer, TileLayer } from 'react-leaflet';
 import { getLogoPath } from '../../utils/getLogoPath';
-import L, { icon } from 'leaflet';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../utils/useIsMobile';
-import MapControls from './MapControls';
+
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -23,13 +21,24 @@ import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
- // Utility to extract marker label function 
- function getMarkerLabel(label) { if (typeof label === 'string') 
- 	return label; 
- if (label && label.toString) 
- return label.toString(); 
- return JSON.stringify(label); 
- } 
+// Constants
+const MAP_CONFIG = {
+  DEFAULT_POSITION: [51.898095078807025, 5.772961378097534],
+  DEFAULT_ZOOM: 17,
+  MIN_ZOOM: 14,
+  MAX_ZOOM: 22,
+  SEARCH_ZOOM: 21,
+  ZOOM_DELTA: 0.5,
+  ZOOM_SNAP: 0.5,
+  RECTANGLE_SIZE: [6, 6],
+  MINIMAP: {
+    WIDTH: 120,
+    HEIGHT: 120,
+    ZOOM_LEVEL: 15,
+    AIMING_COLOR: '#1976d2',
+    SHADOW_COLOR: '#90caf9',
+  },
+};
 
 const MAP_LAYERS = [
   {
@@ -47,6 +56,15 @@ const MAP_LAYERS = [
   },
 ];
 
+// Utility functions
+const createSearchText = (marker) => {
+  return [marker.name, marker.boothNumber, marker.label].filter(Boolean).join(' | ');
+};
+
+const isMarkerDraggable = (marker, isAdminView) => {
+  return isAdminView && marker && marker.coreLocked === false;
+};
+
 function EventMap({ isAdminView, markersState, updateMarker }) {
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
@@ -54,22 +72,18 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
   const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [searchLayer, setSearchLayer] = useState(null);
+  
   const searchControlRef = useRef(null);
+  const rectangleLayerRef = useRef(null);
+  
   const { t } = useTranslation();
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
-  const safeMarkers = useMemo(() => (Array.isArray(markersState) ? markersState : []), [
-    markersState,
-  ]);
-
-  const rectangleLayerRef = useRef(null);
-  const DEFAULT_POSITION = [51.898095078807025, 5.772961378097534];
-  const DEFAULT_ZOOM = 17;
-  const mapCenter = DEFAULT_POSITION;
-  const mapZoom = DEFAULT_ZOOM;
-
-  const rectangleSize = [6, 6];
+  const safeMarkers = useMemo(
+    () => (Array.isArray(markersState) ? markersState : []),
+    [markersState]
+  );
 
   // Preload marker logos
   useEffect(() => {
@@ -81,148 +95,156 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
     });
   }, [safeMarkers]);
 
-  function isMarkerDraggable(marker) {
-    return isAdminView && marker && marker.coreLocked === false;
-  }
-
   // Sync rectangles/handles
   useEffect(() => {
+    if (!mapInstance) return;
+
     syncRectangleLayers({
       mapInstance,
       markers: safeMarkers,
-      rectangleSize,
+      rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
       isAdminView,
       showRectanglesAndHandles,
       updateMarker,
       rectangleLayerRef,
     });
-  }, [mapInstance, markersState, rectangleSize, isAdminView, showRectanglesAndHandles]);
+  }, [mapInstance, safeMarkers, isAdminView, showRectanglesAndHandles, updateMarker]);
 
-  // Hidden search LayerGroup for Leaflet Search
+  // Setup search layer and populate it with markers
   useEffect(() => {
     if (!mapInstance) return;
-    let layerGroup = searchLayer;
-    if (!layerGroup) {
-      layerGroup = window.L.layerGroup();
-      setSearchLayer(layerGroup);
-    }
-    layerGroup.clearLayers();
+
+    // Create and populate search layer
+    const layerGroup = L.layerGroup();
+    
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
-        const searchText = [marker.name, marker.boothNumber, marker.label].filter(Boolean).join(' | ');
-        const leafletMarker = window.L.marker([marker.lat, marker.lng], { opacity: 0, interactive: false });
+        const searchText = createSearchText(marker);
+        const leafletMarker = L.marker([marker.lat, marker.lng], {
+          opacity: 0,
+          interactive: false,
+        });
         leafletMarker.feature = { type: 'Feature', properties: { searchText } };
         leafletMarker.bindPopup(marker.name || marker.label || '');
         layerGroup.addLayer(leafletMarker);
       }
     });
-  }, [mapInstance, safeMarkers, searchLayer]);
 
+    setSearchLayer(layerGroup);
+  }, [mapInstance, safeMarkers]);
 
-  // Add Leaflet Search control when map and searchLayer are ready
+  // Setup search control once search layer is ready
   useEffect(() => {
-    if (mapInstance && searchLayer) {
-      const searchControl = new L.Control.Search({
-        layer: searchLayer,
-        propertyName: 'searchText', // Search by combined name/booth/label
-        initial: false,
-        zoom: 21,
-        marker: {
-          icon: false,
-          animate: true, // draw red cicle around found marker
-        },
-        textPlaceholder: 'Search for name or booth...',
-        position: 'topleft',
-      });
-      mapInstance.addControl(searchControl);
-      searchControlRef.current = searchControl;
-      // Add MiniMap control (bottomright)
-      if (!mapInstance._minimapControl) {
-        const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
-          attribution: '',
-          minZoom: 0,
-          maxZoom: 16,
-        });
-        const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
-          position: 'bottomright',
-          width: 120,
-          height: 120,
-          zoomLevelFixed: 15,
-          toggleDisplay: true,
-          centerFixed: DEFAULT_POSITION,
-          aimingRectOptions: {
-            color: '#1976d2', // app primary blue
-            weight: 2,
-            opacity: 0.9,
-            fillOpacity: 0.1,
-            fill: true,
-          },
-          shadowRectOptions: {
-            color: '#90caf9', // lighter blue shadow
-            weight: 1,
-            opacity: 0.5,
-            fillOpacity: 0.05,
-            fill: true,
-          },
-          strings: {
-            hideText: 'Hide MiniMap',
-            showText: 'Show MiniMap',
-          },
-        });
-        miniMapControl.addTo(mapInstance);
-        mapInstance._minimapControl = miniMapControl;
+    if (!mapInstance || !searchLayer) return;
+
+    // Setup search control
+    const searchControl = new L.Control.Search({
+      layer: searchLayer,
+      propertyName: 'searchText',
+      initial: false,
+      zoom: MAP_CONFIG.SEARCH_ZOOM,
+      marker: {
+        icon: false,
+        animate: true,
+      },
+      textPlaceholder: 'Search for name or booth...',
+      position: 'topleft',
+    });
+
+    mapInstance.addControl(searchControl);
+    searchControlRef.current = searchControl;
+
+    // Handle search result selection
+    searchControl.on('search:locationfound', (e) => {
+      if (e?.layer?.getLatLng) {
+        const latlng = e.layer.getLatLng();
+        mapInstance.flyTo(latlng, MAP_CONFIG.SEARCH_ZOOM, { animate: true });
+
+        // Auto-close search box
+        if (searchControl._input) searchControl._input.blur();
+        if (searchControl.hideAlert) searchControl.hideAlert();
+        if (searchControl.collapse) searchControl.collapse();
       }
-      // Fly to marker when search result is found
-      searchControl.on('search:locationfound', function (e) {
-        if (e && e.layer && e.layer.getLatLng) {
-          const latlng = e.layer.getLatLng();
-          mapInstance.flyTo(latlng, 21, { animate: true });
-          // Auto-close the search box
-          if (searchControl._input) searchControl._input.blur();
-          if (searchControl.hideAlert) searchControl.hideAlert();
-          if (searchControl.collapse) searchControl.collapse();
-        }
-      });
-      // Restore plugin's default behavior: do not modify search input ids
-      return () => {
+    });
+
+    return () => {
+      if (mapInstance && searchControl) {
         mapInstance.removeControl(searchControl);
         searchControlRef.current = null;
-      };
-    }
+      }
+    };
   }, [mapInstance, searchLayer]);
 
+  // Setup minimap control
+  useEffect(() => {
+    if (!mapInstance) return;
 
-  // Map created callback
-  const handleMapCreated = (mapOrEvent) => {
-    if (mapOrEvent && mapOrEvent.target) {
-      setMapInstance(mapOrEvent.target);
-    } else {
-      setMapInstance(mapOrEvent);
+    // Setup minimap control only once
+    if (!mapInstance._minimapControl) {
+      const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
+        attribution: '',
+        minZoom: 0,
+        maxZoom: 16,
+      });
+
+      const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
+        position: 'bottomright',
+        width: MAP_CONFIG.MINIMAP.WIDTH,
+        height: MAP_CONFIG.MINIMAP.HEIGHT,
+        zoomLevelFixed: MAP_CONFIG.MINIMAP.ZOOM_LEVEL,
+        toggleDisplay: true,
+        centerFixed: MAP_CONFIG.DEFAULT_POSITION,
+        aimingRectOptions: {
+          color: MAP_CONFIG.MINIMAP.AIMING_COLOR,
+          weight: 2,
+          opacity: 0.9,
+          fillOpacity: 0.1,
+          fill: true,
+        },
+        shadowRectOptions: {
+          color: MAP_CONFIG.MINIMAP.SHADOW_COLOR,
+          weight: 1,
+          opacity: 0.5,
+          fillOpacity: 0.05,
+          fill: true,
+        },
+        strings: {
+          hideText: 'Hide MiniMap',
+          showText: 'Show MiniMap',
+        },
+      });
+
+      miniMapControl.addTo(mapInstance);
+      mapInstance._minimapControl = miniMapControl;
     }
+  }, [mapInstance]);
+
+  const handleMapCreated = (mapOrEvent) => {
+    const map = mapOrEvent?.target || mapOrEvent;
+    setMapInstance(map);
+  };
+
+  const containerStyle = {
+    height: '100vh',
+    width: '100vw',
+    position: 'fixed',
+    inset: 0,
+    zIndex: 0,
+    touchAction: 'pan-x pan-y',
+    overflow: 'hidden',
   };
 
   return (
     <div
-      style={{
-        height: '100svh',
-        height: '100dvh',
-        height: '100vh',
-        width: '100vw',
-        position: 'fixed',
-        inset: 0,
-        zIndex: 0,
-        touchAction: 'pan-x pan-y',
-        overflow: 'hidden',
-      }}
+      style={containerStyle}
       tabIndex={0}
       aria-label="Event Map"
       role="region"
     >
-      {/* Map controls: zoom/home/admin layers/rectangles */}
       <MapControls
         mapInstance={mapInstance}
-        mapCenter={mapCenter}
-        mapZoom={mapZoom}
+        mapCenter={MAP_CONFIG.DEFAULT_POSITION}
+        mapZoom={MAP_CONFIG.DEFAULT_ZOOM}
         searchControlRef={searchControlRef}
         isAdminView={isAdminView}
         showLayersMenu={showLayersMenu}
@@ -247,8 +269,6 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
         className="fixed inset-0 w-full h-full"
         style={{
           zIndex: 1,
-          height: '100svh',
-          height: '100dvh',
           height: '100vh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
@@ -256,12 +276,12 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
         aria-label={t('map.ariaLabel')}
       >
         <MapContainer
-          center={DEFAULT_POSITION}
-          zoom={DEFAULT_ZOOM}
-          minZoom={14}
-          maxZoom={22}
-          zoomDelta={0.5}
-          zoomSnap={0.5}
+          center={MAP_CONFIG.DEFAULT_POSITION}
+          zoom={MAP_CONFIG.DEFAULT_ZOOM}
+          minZoom={MAP_CONFIG.MIN_ZOOM}
+          maxZoom={MAP_CONFIG.MAX_ZOOM}
+          zoomDelta={MAP_CONFIG.ZOOM_DELTA}
+          zoomSnap={MAP_CONFIG.ZOOM_SNAP}
           zoomControl={false}
           style={{ width: '100vw', height: '100vh' }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
@@ -269,7 +289,12 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
           attributionControl={false}
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
-            <TileLayer key={layer.key} attribution={layer.attribution} url={layer.url} maxZoom={22} />
+            <TileLayer
+              key={layer.key}
+              attribution={layer.attribution}
+              url={layer.url}
+              maxZoom={MAP_CONFIG.MAX_ZOOM}
+            />
           ))}
 
           <EventClusterMarkers
@@ -278,7 +303,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={isMarkerDraggable}
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
             iconCreateFunction={iconCreateFunction}
           />
 
@@ -288,7 +313,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={isMarkerDraggable}
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
           />
         </MapContainer>
       </div>
