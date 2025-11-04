@@ -11,6 +11,7 @@ export default defineConfig([
       globals: globals.browser,
       ecmaVersion: "latest",
       sourceType: "module",
+      ecmaFeatures: { jsx: true }, // <-- Add this line
     },
     plugins: {
       js,
@@ -18,8 +19,8 @@ export default defineConfig([
       prettier: pluginPrettier,
     },
     rules: {
-      ...pluginReact.configs.recommended.rules, // Apply React recommended rules
-      "prettier/prettier": "error",             // Enforce Prettier formatting
+      ...pluginReact.configs.recommended.rules,
+      "prettier/prettier": "error",
     },
     settings: {
       react: { version: "detect" },
