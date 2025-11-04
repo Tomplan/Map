@@ -6,7 +6,7 @@ import {
   metersToLat,
   metersToLng,
   metersToLatInv,
-  metersToLngInv
+  metersToLngInv,
 } from './geometryHelpers';
 
 /**
@@ -26,7 +26,7 @@ export function syncRectangleLayers({
   isAdminView,
   showRectanglesAndHandles,
   updateMarker,
-  rectangleLayerRef
+  rectangleLayerRef,
 }) {
   if (!mapInstance) return;
   // Create rectangle/handle LayerGroup if not exists
@@ -37,21 +37,22 @@ export function syncRectangleLayers({
   const rectLayerGroup = rectangleLayerRef.current;
   if (!rectLayerGroup._markerLayers) rectLayerGroup._markerLayers = {};
   // Remove layers for markers that no longer exist
-  Object.keys(rectLayerGroup._markerLayers).forEach(id => {
-    if (!markers.find(m => m.id === id)) {
+  Object.keys(rectLayerGroup._markerLayers).forEach((id) => {
+    if (!markers.find((m) => m.id === id)) {
       rectLayerGroup.removeLayer(rectLayerGroup._markerLayers[id].rectangle);
       rectLayerGroup.removeLayer(rectLayerGroup._markerLayers[id].handle);
       delete rectLayerGroup._markerLayers[id];
     }
   });
   // Add/update layers for current markers
-  markers.forEach(marker => {
+  markers.forEach((marker) => {
     if (marker.lat && marker.lng) {
       const center = L.latLng(marker.lat, marker.lng);
       // Use marker.rectangle if present, else fallback to rectangleSize
-      const rectDims = Array.isArray(marker.rectangle) && marker.rectangle.length === 2
-        ? marker.rectangle
-        : rectangleSize;
+      const rectDims =
+        Array.isArray(marker.rectangle) && marker.rectangle.length === 2
+          ? marker.rectangle
+          : rectangleSize;
       const halfWidth = Number(rectDims[0]) / 2;
       const halfHeight = Number(rectDims[1]) / 2;
       const angle = getMarkerAngle(marker);
@@ -60,13 +61,10 @@ export function syncRectangleLayers({
         rotatePoint(-halfWidth, -halfHeight, angle),
         rotatePoint(halfWidth, -halfHeight, angle),
         rotatePoint(halfWidth, halfHeight, angle),
-        rotatePoint(-halfWidth, halfHeight, angle)
+        rotatePoint(-halfWidth, halfHeight, angle),
       ];
       const latlngs = corners.map(([x, y]) =>
-        L.latLng(
-          center.lat + metersToLat(y),
-          center.lng + metersToLng(x, center.lat)
-        )
+        L.latLng(center.lat + metersToLat(y), center.lng + metersToLng(x, center.lat)),
       );
       let rectangle, handleMarker;
       if (rectLayerGroup._markerLayers[marker.id]) {
@@ -76,7 +74,7 @@ export function syncRectangleLayers({
         const [handleX, handleY] = corners[2];
         const handleLatLng = L.latLng(
           center.lat + metersToLat(handleY),
-          center.lng + metersToLng(handleX, center.lat)
+          center.lng + metersToLng(handleX, center.lat),
         );
         handleMarker.setLatLng(handleLatLng);
       } else {
@@ -84,10 +82,10 @@ export function syncRectangleLayers({
         const [handleX, handleY] = corners[2];
         const handleLatLng = L.latLng(
           center.lat + metersToLat(handleY),
-          center.lng + metersToLng(handleX, center.lat)
+          center.lng + metersToLng(handleX, center.lat),
         );
         let handleMarker;
-        if (isAdminView && !(marker.coreLocked)) {
+        if (isAdminView && !marker.coreLocked) {
           const handleIcon = L.divIcon({
             className: 'rotation-handle-icon',
             html: '<div style="width:8px;height:8px;background:#1976d2;border-radius:50%;"></div>',
@@ -101,39 +99,36 @@ export function syncRectangleLayers({
             keyboard: true,
             title: 'Drag to rotate',
           });
-          handleMarker.on('dragstart', function() {
+          handleMarker.on('dragstart', function () {
             if (mapInstance) mapInstance.dragging.disable();
           });
           let lastAngle = angle;
-          handleMarker.on('drag', function(e) {
+          handleMarker.on('drag', function (e) {
             const newPos = e.target.getLatLng();
             const dx = metersToLngInv(newPos.lng - center.lng, center.lat);
             const dy = metersToLatInv(newPos.lat - center.lat);
             const angleRad = Math.atan2(dy, dx);
-            let angleDeg = angleRad * 180 / Math.PI;
+            let angleDeg = (angleRad * 180) / Math.PI;
             if (angleDeg < 0) angleDeg += 360;
             lastAngle = angleDeg;
             const newCorners = [
               rotatePoint(-halfWidth, -halfHeight, lastAngle),
               rotatePoint(halfWidth, -halfHeight, lastAngle),
               rotatePoint(halfWidth, halfHeight, lastAngle),
-              rotatePoint(-halfWidth, halfHeight, lastAngle)
+              rotatePoint(-halfWidth, halfHeight, lastAngle),
             ];
             const newLatLngs = newCorners.map(([x, y]) =>
-              L.latLng(
-                center.lat + metersToLat(y),
-                center.lng + metersToLng(x, center.lat)
-              )
+              L.latLng(center.lat + metersToLat(y), center.lng + metersToLng(x, center.lat)),
             );
             rectangle.setLatLngs(newLatLngs);
             const [newHandleX, newHandleY] = newCorners[2];
             const newHandleLatLng = L.latLng(
               center.lat + metersToLat(newHandleY),
-              center.lng + metersToLng(newHandleX, center.lat)
+              center.lng + metersToLng(newHandleX, center.lat),
             );
             handleMarker.setLatLng(newHandleLatLng);
           });
-          handleMarker.on('dragend', function() {
+          handleMarker.on('dragend', function () {
             if (mapInstance) mapInstance.dragging.enable();
             updateMarker(marker.id, { angle: lastAngle });
           });

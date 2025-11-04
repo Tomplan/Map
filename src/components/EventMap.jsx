@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import EventSpecialMarkers from './EventSpecialMarkers';
 import EventClusterMarkers from './EventClusterMarkers';
@@ -8,7 +7,15 @@ import Icon from '@mdi/react';
 import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
-import { MapContainer, TileLayer, Marker, Popup, Tooltip, CircleMarker, useMap } from 'react-leaflet';
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Tooltip,
+  CircleMarker,
+  useMap,
+} from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
 import L, { icon } from 'leaflet';
 import 'leaflet-search/dist/leaflet-search.src.css';
@@ -20,7 +27,7 @@ import {
   handleZoomIn,
   handleZoomOut,
   handleHome,
-  handleCustomSearchClick
+  handleCustomSearchClick,
 } from '../utils/mapControls';
 import {
   getMarkerAngle,
@@ -28,7 +35,7 @@ import {
   metersToLat,
   metersToLng,
   metersToLatInv,
-  metersToLngInv
+  metersToLngInv,
 } from '../utils/geometryHelpers';
 import { getIconPath } from '../utils/getIconPath';
 // Marker state is now provided via props from App.jsx
@@ -40,6 +47,8 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
+import useIsMobile from '../utils/useIsMobile';
+
 // Custom checkbox styles for layers popover
 const checkboxStyle = {
   appearance: 'none',
@@ -64,7 +73,6 @@ function getMarkerLabel(label) {
   return JSON.stringify(label);
 }
 
-
 const MAP_LAYERS = [
   {
     key: 'carto',
@@ -75,16 +83,17 @@ const MAP_LAYERS = [
   {
     key: 'esri',
     name: 'Esri World Imagery',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    attribution:
+      'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   },
 ];
 
-function EventMap({ isAdminView, markersState, updateMarker })  {
+function EventMap({ isAdminView, markersState, updateMarker }) {
   // Track button toggle state per marker (mobile only)
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   // Device recognition: simple user agent check
-  const isMobile = typeof window !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(window.navigator.userAgent);
+  const isMobile = useIsMobile();
 
   // Store the Leaflet Search control instance
   // Controlled tooltip/popup state
@@ -103,8 +112,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
   const DEFAULT_ZOOM = 17; // Default zoom level
   const { trackMarkerView } = useAnalytics();
   // Ensure markers is always an array, memoized for hook compliance
-  const safeMarkers = React.useMemo(() => Array.isArray(markersState) ? markersState : [], [markersState]);
-
+  const safeMarkers = React.useMemo(
+    () => (Array.isArray(markersState) ? markersState : []),
+    [markersState],
+  );
 
   // Rectangle size from appearanceTab (default [6, 6])
   // TODO: Replace with actual appearanceTab.Rectangle prop/state when available
@@ -115,7 +126,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
 
   // Preload all marker logo images to improve tooltip smoothness
   React.useEffect(() => {
-    safeMarkers.forEach(marker => {
+    safeMarkers.forEach((marker) => {
       if (marker.logo) {
         const img = new window.Image();
         img.src = getLogoPath(marker.logo);
@@ -123,15 +134,11 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     });
   }, [safeMarkers]);
 
-    // Helper: determine if marker is draggable (admin only, lock off)
+  // Helper: determine if marker is draggable (admin only, lock off)
   function isMarkerDraggable(marker) {
     // Marker is draggable if admin view is active and coreLocked is false
     return isAdminView && marker && marker.coreLocked === false;
   }
-
-
-
-
 
   // Persistent LayerGroup for rectangles/handles
   // Only update rectangles/handles when marker data changes, not on zoom
@@ -143,11 +150,10 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       isAdminView,
       showRectanglesAndHandles,
       updateMarker,
-      rectangleLayerRef
+      rectangleLayerRef,
     });
     // Rectangle/handle layers are independent from main marker layers
   }, [mapInstance, markersState, rectangleSize, isAdminView, showRectanglesAndHandles]);
-
 
   // Create and sync hidden LayerGroup for search markers
   useEffect(() => {
@@ -161,7 +167,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
     // Remove all layers
     layerGroup.clearLayers();
     // Add Leaflet marker objects for each marker
-    safeMarkers.forEach(marker => {
+    safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         // Combine name and booth number for search
         const searchText = [marker.name, marker.boothNumber, marker.label]
@@ -169,14 +175,14 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           .join(' | ');
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0, // Hide from map
-          interactive: false // Prevent popups/tooltips from being triggered
+          interactive: false, // Prevent popups/tooltips from being triggered
         });
         // Patch: add feature.properties.searchText for Leaflet Search compatibility
         leafletMarker.feature = {
           type: 'Feature',
           properties: {
-            searchText
-          }
+            searchText,
+          },
         };
         leafletMarker.bindPopup(marker.name || marker.label || '');
         layerGroup.addLayer(leafletMarker);
@@ -194,60 +200,60 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         zoom: 21,
         marker: {
           icon: false,
-          animate: true // draw red cicle around found marker
+          animate: true, // draw red cicle around found marker
         },
         textPlaceholder: 'Search for name or booth...',
         position: 'topleft',
       });
       mapInstance.addControl(searchControl);
       searchControlRef.current = searchControl;
-        // Add MiniMap control (bottomright)
-        if (!mapInstance._minimapControl) {
-          const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
-            attribution: '',
-            minZoom: 0,
-            maxZoom: 16
-          });
-          const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
-            position: 'bottomright',
-            width: 120,
-            height: 120,
-            zoomLevelFixed: 15,
-            toggleDisplay: true,
-            centerFixed: DEFAULT_POSITION,
-            aimingRectOptions: {
-              color: '#1976d2', // app primary blue
-              weight: 2,
-              opacity: 0.9,
-              fillOpacity: 0.1,
-              fill: true
-            },
-            shadowRectOptions: {
-              color: '#90caf9', // lighter blue shadow
-              weight: 1,
-              opacity: 0.5,
-              fillOpacity: 0.05,
-              fill: true
-            },
-            strings: {
-              hideText: 'Hide MiniMap',
-              showText: 'Show MiniMap'
-            }
-          });
-          miniMapControl.addTo(mapInstance);
-          mapInstance._minimapControl = miniMapControl;
-        }
-        // Fly to marker when search result is found
-        searchControl.on('search:locationfound', function(e) {
-          if (e && e.layer && e.layer.getLatLng) {
-            const latlng = e.layer.getLatLng();
-            mapInstance.flyTo(latlng, 21, { animate: true });
-            // Auto-close the search box
-            if (searchControl._input) searchControl._input.blur();
-            if (searchControl.hideAlert) searchControl.hideAlert();
-            if (searchControl.collapse) searchControl.collapse();
-          }
+      // Add MiniMap control (bottomright)
+      if (!mapInstance._minimapControl) {
+        const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
+          attribution: '',
+          minZoom: 0,
+          maxZoom: 16,
         });
+        const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
+          position: 'bottomright',
+          width: 120,
+          height: 120,
+          zoomLevelFixed: 15,
+          toggleDisplay: true,
+          centerFixed: DEFAULT_POSITION,
+          aimingRectOptions: {
+            color: '#1976d2', // app primary blue
+            weight: 2,
+            opacity: 0.9,
+            fillOpacity: 0.1,
+            fill: true,
+          },
+          shadowRectOptions: {
+            color: '#90caf9', // lighter blue shadow
+            weight: 1,
+            opacity: 0.5,
+            fillOpacity: 0.05,
+            fill: true,
+          },
+          strings: {
+            hideText: 'Hide MiniMap',
+            showText: 'Show MiniMap',
+          },
+        });
+        miniMapControl.addTo(mapInstance);
+        mapInstance._minimapControl = miniMapControl;
+      }
+      // Fly to marker when search result is found
+      searchControl.on('search:locationfound', function (e) {
+        if (e && e.layer && e.layer.getLatLng) {
+          const latlng = e.layer.getLatLng();
+          mapInstance.flyTo(latlng, 21, { animate: true });
+          // Auto-close the search box
+          if (searchControl._input) searchControl._input.blur();
+          if (searchControl.hideAlert) searchControl.hideAlert();
+          if (searchControl.collapse) searchControl.collapse();
+        }
+      });
       // Restore plugin's default behavior: do not modify search input ids
       return () => {
         mapInstance.removeControl(searchControl);
@@ -255,7 +261,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       };
     }
   }, [mapInstance, searchLayer]);
-
 
   // Map config for fullscreen
   const mapCenter = DEFAULT_POSITION;
@@ -270,7 +275,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
       setMapInstance(mapOrEvent);
     }
   };
-
 
   // Add zoom and home controls
   const zoomIn = () => handleZoomIn(mapInstance);
@@ -289,14 +293,24 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
         inset: 0,
         zIndex: 0,
         touchAction: 'pan-x pan-y',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
       tabIndex={0}
       aria-label="Event Map"
       role="region"
     >
       {/* Zoom, home, and custom search controls + admin layers popover */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div
+        style={{
+          position: 'absolute',
+          top: 10,
+          right: 10,
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+        }}
+      >
         <button
           onClick={goHome}
           aria-label="Home"
@@ -332,7 +346,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
               aria-label="Map layers"
               className="bg-white rounded-full shadow p-2 flex items-center justify-center mt-0 hover:bg-gray-100 focus:outline-none"
               style={{ width: 44, height: 44 }}
-              onClick={() => setShowLayersMenu(v => !v)}
+              onClick={() => setShowLayersMenu((v) => !v)}
             >
               <Icon path={mdiLayersTriple} size={1.2} color="#1976d2" />
               <span className="sr-only">Map layers</span>
@@ -345,7 +359,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                 aria-label="Layer selection"
               >
                 <div className="font-semibold mb-2">Base Layers</div>
-                {MAP_LAYERS.map(layer => (
+                {MAP_LAYERS.map((layer) => (
                   <button
                     key={layer.key}
                     className={`w-full text-left px-2 py-1 rounded hover:bg-blue-50 ${activeLayer === layer.key ? 'bg-blue-50 font-bold' : ''}`}
@@ -357,27 +371,44 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
                   </button>
                 ))}
                 <div className="font-semibold mt-4 mb-2">Map Features</div>
-                <label className="flex items-center px-2 py-1 cursor-pointer hover:bg-blue-50 rounded" style={{ color: '#1976d2' }}>
+                <label
+                  className="flex items-center px-2 py-1 cursor-pointer hover:bg-blue-50 rounded"
+                  style={{ color: '#1976d2' }}
+                >
                   <input
                     type="checkbox"
                     checked={showRectanglesAndHandles}
-                    onChange={e => setShowRectanglesAndHandles(e.target.checked)}
+                    onChange={(e) => setShowRectanglesAndHandles(e.target.checked)}
                     style={checkboxStyle}
                   />
-                  <span style={{
-                    position: 'relative',
-                    left: -26,
-                    width: 18,
-                    height: 18,
-                    pointerEvents: 'none',
-                    display: showRectanglesAndHandles ? 'inline-block' : 'none',
-                  }}>
+                  <span
+                    style={{
+                      position: 'relative',
+                      left: -26,
+                      width: 18,
+                      height: 18,
+                      pointerEvents: 'none',
+                      display: showRectanglesAndHandles ? 'inline-block' : 'none',
+                    }}
+                  >
                     {/* SVG checkmark, blue */}
-                    <svg width="18" height="18" viewBox="0 0 18 18" style={{ position: 'absolute', top: 0, left: 0 }}>
-                      <polyline points="4,9 8,13 14,5" stroke="#1976d2" strokeWidth="2.5" fill="none" />
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 18 18"
+                      style={{ position: 'absolute', top: 0, left: 0 }}
+                    >
+                      <polyline
+                        points="4,9 8,13 14,5"
+                        stroke="#1976d2"
+                        strokeWidth="2.5"
+                        fill="none"
+                      />
                     </svg>
                   </span>
-                  <span style={{ marginLeft: showRectanglesAndHandles ? -8 : 0 }}>Booth Surface</span>
+                  <span style={{ marginLeft: showRectanglesAndHandles ? -8 : 0 }}>
+                    Booth Surface
+                  </span>
                 </label>
               </div>
             )}
@@ -401,7 +432,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           height: '100dvh',
           height: '100vh',
           touchAction: 'pan-x pan-y',
-          overflow: 'hidden'
+          overflow: 'hidden',
         }}
         aria-label={t('map.ariaLabel')}
       >
@@ -418,7 +449,7 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
           whenReady={handleMapCreated}
           attributionControl={false}
         >
-          {MAP_LAYERS.filter(layer => layer.key === activeLayer).map(layer => (
+          {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
               key={layer.key}
               attribution={layer.attribution}
@@ -447,7 +478,6 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
             updateMarker={updateMarker}
             isMarkerDraggable={isMarkerDraggable}
           />
-          
         </MapContainer>
       </div>
     </div>
@@ -455,4 +485,3 @@ function EventMap({ isAdminView, markersState, updateMarker })  {
 }
 
 export default EventMap;
-

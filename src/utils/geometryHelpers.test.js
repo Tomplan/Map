@@ -4,7 +4,7 @@ import {
   metersToLat,
   metersToLng,
   metersToLatInv,
-  metersToLngInv
+  metersToLngInv,
 } from './geometryHelpers';
 
 describe('geometryHelpers', () => {

@@ -27,9 +27,15 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
       aria-label="Event Branding"
     >
       {logo && (
-        <img src={logo} alt="Event Logo" style={{ height: 20, width: 20, objectFit: 'contain', marginRight: 2 }} />
+        <img
+          src={logo}
+          alt="Event Logo"
+          style={{ height: 20, width: 20, objectFit: 'contain', marginRight: 2 }}
+        />
       )}
-      <span style={{ fontWeight: 300, fontSize: 12, color: textColor, whiteSpace: 'nowrap' }}>{eventName || 'Event Map'}</span>
+      <span style={{ fontWeight: 300, fontSize: 12, color: textColor, whiteSpace: 'nowrap' }}>
+        {eventName || 'Event Map'}
+      </span>
     </div>
   );
 }

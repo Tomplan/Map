@@ -29,19 +29,41 @@ export default function FeedbackForm() {
   }
 
   if (submitted) {
-    return <div role="status" aria-live="polite" className="p-4 text-green-700">Thank you for your feedback!</div>;
+    return (
+      <div role="status" aria-live="polite" className="p-4 text-green-700">
+        Thank you for your feedback!
+      </div>
+    );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 border rounded bg-white shadow" aria-label="Feedback form" noValidate>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-md mx-auto p-4 border rounded bg-white shadow"
+      aria-label="Feedback form"
+      noValidate
+    >
       <h2 className="text-lg font-bold mb-2">Send Feedback</h2>
       <label className="block mb-2">
         Name (optional)
-        <input name="name" value={form.name} onChange={handleChange} className="w-full p-2 border rounded" autoComplete="name" />
+        <input
+          name="name"
+          value={form.name}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          autoComplete="name"
+        />
       </label>
       <label className="block mb-2">
         Email (optional)
-        <input name="email" value={form.email} onChange={handleChange} className="w-full p-2 border rounded" autoComplete="email" type="email" />
+        <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+          autoComplete="email"
+          type="email"
+        />
       </label>
       <label className="block mb-2">
         Message <span className="text-red-600">*</span>
@@ -55,7 +77,9 @@ export default function FeedbackForm() {
           ref={messageRef}
         />
       </label>
-      <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">Submit</button>
+      <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded">
+        Submit
+      </button>
     </form>
   );
 }

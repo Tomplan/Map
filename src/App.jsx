@@ -35,12 +35,24 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ color: 'red', padding: '2rem', border: '2px solid blue' }}>
           <h2>Something went wrong in a component.</h2>
-          <pre>{typeof this.state.error === 'string' ? this.state.error : JSON.stringify(this.state.error, null, 2)}</pre>
+          <pre>
+            {typeof this.state.error === 'string'
+              ? this.state.error
+              : JSON.stringify(this.state.error, null, 2)}
+          </pre>
         </div>
       );
     }
     return (
-  <div style={{ border: '2px solid blue', width: '100%', minHeight: '100vh', boxSizing: 'border-box', position: 'relative' }}>
+      <div
+        style={{
+          border: '2px solid blue',
+          width: '100%',
+          minHeight: '100vh',
+          boxSizing: 'border-box',
+          position: 'relative',
+        }}
+      >
         {this.props.children}
       </div>
     );
@@ -64,41 +76,41 @@ function App() {
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
-    id: 1
+    id: 1,
   });
 
   // Fetch branding from Supabase and subscribe to changes
   useEffect(() => {
     async function fetchBranding() {
-      const { data } = await supabase
-        .from('Branding')
-        .select('*')
-        .eq('id', 1)
-        .single();
+      const { data } = await supabase.from('Branding').select('*').eq('id', 1).single();
       if (data) {
         // Normalize logo path from Supabase
         setBranding({
           ...data,
-          logo: getLogoPath(data.logo)
+          logo: getLogoPath(data.logo),
         });
       }
     }
     fetchBranding();
     const channel = supabase
       .channel('branding-user-sync')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'Branding',
-        filter: 'id=eq.1',
-      }, payload => {
-        if (payload.new) {
-          setBranding({
-            ...payload.new,
-            logo: getLogoPath(payload.new.logo)
-          });
-        }
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'Branding',
+          filter: 'id=eq.1',
+        },
+        (payload) => {
+          if (payload.new) {
+            setBranding({
+              ...payload.new,
+              logo: getLogoPath(payload.new.logo),
+            });
+          }
+        },
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -121,7 +133,12 @@ function App() {
 
   const isProd = import.meta.env.PROD;
   // Only set basename if BASE_URL is not '/' or '/./'
-  const safeBase = (import.meta.env.BASE_URL && import.meta.env.BASE_URL !== '/' && import.meta.env.BASE_URL !== '/./') ? import.meta.env.BASE_URL : undefined;
+  const safeBase =
+    import.meta.env.BASE_URL &&
+    import.meta.env.BASE_URL !== '/' &&
+    import.meta.env.BASE_URL !== '/./'
+      ? import.meta.env.BASE_URL
+      : undefined;
   if (isProd) {
     // HashRouter: do NOT pass basename
     return (

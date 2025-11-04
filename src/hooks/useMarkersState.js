@@ -7,17 +7,32 @@ import { useState, useCallback } from 'react';
  */
 export default function useMarkersState(initialMarkers = []) {
   const [markersState, setMarkersState] = useState(initialMarkers);
-  const coreFields = [
-    'id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'
-  ];
+  const coreFields = ['id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'];
   const appearanceFields = [
-    'iconUrl', 'iconSize', 'iconColor', 'className', 'prefix', 'glyph', 'glyphColor', 'glyphSize', 'glyphAnchor', 'appearanceLocked'
+    'iconUrl',
+    'iconSize',
+    'iconColor',
+    'className',
+    'prefix',
+    'glyph',
+    'glyphColor',
+    'glyphSize',
+    'glyphAnchor',
+    'appearanceLocked',
   ];
-  const contentFields = [
-    'boothNumber', 'name', 'logo', 'website', 'info', 'contentLocked'
-  ];
+  const contentFields = ['boothNumber', 'name', 'logo', 'website', 'info', 'contentLocked'];
   const adminFields = [
-    'contact', 'phone', 'email', 'boothCount', 'area', 'coins', 'breakfast', 'lunch', 'bbq', 'notes', 'adminLocked'
+    'contact',
+    'phone',
+    'email',
+    'boothCount',
+    'area',
+    'coins',
+    'breakfast',
+    'lunch',
+    'bbq',
+    'notes',
+    'adminLocked',
   ];
 
   // Update a marker by id, merging new props and syncing to Supabase
@@ -43,9 +58,7 @@ export default function useMarkersState(initialMarkers = []) {
     // Ensure id is always an integer for Supabase queries
     const intId = typeof id === 'string' && id.startsWith('m') ? parseInt(id.slice(1), 10) : id;
     setMarkersState((prev) =>
-      prev.map((marker) =>
-        marker.id === id ? { ...marker, ...newProps } : marker
-      )
+      prev.map((marker) => (marker.id === id ? { ...marker, ...newProps } : marker)),
     );
     try {
       const { supabase } = await import('../supabaseClient');
@@ -54,7 +67,7 @@ export default function useMarkersState(initialMarkers = []) {
         { name: 'Markers_Core', fields: coreFields },
         { name: 'Markers_Appearance', fields: appearanceFields },
         { name: 'Markers_Content', fields: contentFields },
-        { name: 'Markers_Admin', fields: adminFields }
+        { name: 'Markers_Admin', fields: adminFields },
       ];
       for (const { name: table } of tables) {
         await ensureMarkerRow(supabase, table, intId);

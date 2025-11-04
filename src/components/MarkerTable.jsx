@@ -1,5 +1,3 @@
-
-
 export default function MarkerTable() {
-	return null;
+  return null;
 }

@@ -22,7 +22,10 @@ export default function AdminLogin({ onLogin }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-sm mx-auto mt-8 p-6 border rounded shadow bg-white">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-sm mx-auto mt-8 p-6 border rounded shadow bg-white"
+    >
       <div className="flex flex-col items-center mb-4">
         <img src="/Map/assets/logos/4x4Vakantiebeurs.png" alt="Event Logo" className="h-12 mb-2" />
         <span className="font-bold text-xl">4x4 Vakantiebeurs Admin</span>
@@ -33,7 +36,7 @@ export default function AdminLogin({ onLogin }) {
         <input
           type="email"
           value={email}
-          onChange={e => setEmail(e.target.value)}
+          onChange={(e) => setEmail(e.target.value)}
           className="w-full p-2 border rounded"
           required
         />
@@ -44,14 +47,14 @@ export default function AdminLogin({ onLogin }) {
           <input
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border rounded"
             required
           />
           <button
             type="button"
             className="ml-2 px-2 py-1 text-xs bg-gray-200 rounded"
-            onClick={() => setShowPassword(s => !s)}
+            onClick={() => setShowPassword((s) => !s)}
             tabIndex={-1}
           >
             {showPassword ? 'Hide' : 'Show'}
@@ -59,10 +62,16 @@ export default function AdminLogin({ onLogin }) {
         </div>
       </label>
       <div className="mb-4 text-right">
-        <a href="#" className="text-blue-600 text-sm hover:underline">Forgot password?</a>
+        <a href="#" className="text-blue-600 text-sm hover:underline">
+          Forgot password?
+        </a>
       </div>
       {error && <div className="text-red-600 mb-2 font-semibold">{error}</div>}
-      <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded" disabled={loading}>
+      <button
+        type="submit"
+        className="w-full py-2 bg-blue-600 text-white rounded"
+        disabled={loading}
+      >
         {loading ? 'Logging in...' : 'Login'}
       </button>
     </form>

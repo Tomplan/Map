@@ -21,7 +21,17 @@ export function createMarkerPopupHTML(marker) {
   `;
 }
 
-export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white', glyphSize = '8px', iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`, className, iconSize, prefix, glyphAnchor }) {
+export function createMarkerIcon({
+  glyph,
+  glyphColor = 'white',
+  bgColor = 'white',
+  glyphSize = '8px',
+  iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
+  className,
+  iconSize,
+  prefix,
+  glyphAnchor,
+}) {
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
   if (typeof safeGlyphSize === 'number') {
@@ -39,24 +49,24 @@ export function createMarkerIcon({ glyph, glyphColor = 'white', bgColor = 'white
   const shadowWidth = Math.round(size[0] * (41 / 25));
   const shadowHeight = Math.round(size[1] * (41 / 41));
   // Leaflet default: [12, 41] for [41, 41] shadow, so anchorX = 12/41 ≈ 0.29
-  const shadowAnchorX = Math.round(shadowWidth * 12 / 41);
+  const shadowAnchorX = Math.round((shadowWidth * 12) / 41);
   const shadowAnchorY = shadowHeight;
   return L.icon.glyph({
-  iconUrl: iconUrl || `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
+    iconUrl: iconUrl || `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
     iconSize: size,
     iconAnchor: [Math.round(size[0] / 2), size[1]],
     popupAnchor: [1, -34],
     tooltipAnchor: [0, 0],
-  shadowUrl: `${import.meta.env.BASE_URL}assets/icons/marker-shadow.png`,
+    shadowUrl: `${import.meta.env.BASE_URL}assets/icons/marker-shadow.png`,
     shadowSize: [shadowWidth, shadowHeight],
-  shadowAnchor: [shadowAnchorX, shadowAnchorY],
+    shadowAnchor: [shadowAnchorX, shadowAnchorY],
     prefix: prefix || '', // Material Design Icons
     glyph: glyph || '',
     glyphColor: glyphColor || 'white',
     bgColor,
     glyphSize: safeGlyphSize,
-    glyphAnchor: glyphAnchor || [0,0],
-    className: className || ''
+    glyphAnchor: glyphAnchor || [0, 0],
+    className: className || '',
   });
 }
 
