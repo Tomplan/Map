@@ -15,7 +15,7 @@ import AdminDashboard from './components/AdminDashboard';
 import MarkerTable from './components/MarkerTable';
 import AdminLogin from './components/AdminLogin';
 
-const EventMap = lazy(() => import('./components/EventMap.jsx'));
+const EventMap = lazy(() => import('./components/EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./components/AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./components/FeedbackForm'));
 class ErrorBoundary extends React.Component {
