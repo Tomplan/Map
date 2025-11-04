@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
-import EventMap from './EventMap';
+import EventMap from './EventMap/EventMap';
 import BrandingSettings from './BrandingSettings';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
