@@ -2,14 +2,18 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
-import MapControls from './MapControls';
 import { iconCreateFunction } from '../../utils/clusterIcons';
+import Icon from '@mdi/react';
+import { mdiLayersTriple, mdiMapMarkerPlus } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
+import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { getLogoPath } from '../../utils/getLogoPath';
+import L, { icon } from 'leaflet';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../utils/useIsMobile';
+import MapControls from './MapControls';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
@@ -18,6 +22,14 @@ import 'leaflet-search';
 import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
+
+ // Utility to extract marker label function 
+ function getMarkerLabel(label) { if (typeof label === 'string') 
+ 	return label; 
+ if (label && label.toString) 
+ return label.toString(); 
+ return JSON.stringify(label); 
+ } 
 
 const MAP_LAYERS = [
   {
@@ -86,7 +98,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
     });
   }, [mapInstance, markersState, rectangleSize, isAdminView, showRectanglesAndHandles]);
 
-  // Hidden search LayerGroup
+  // Hidden search LayerGroup for Leaflet Search
   useEffect(() => {
     if (!mapInstance) return;
     let layerGroup = searchLayer;
@@ -105,6 +117,80 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
       }
     });
   }, [mapInstance, safeMarkers, searchLayer]);
+
+
+  // Add Leaflet Search control when map and searchLayer are ready
+  useEffect(() => {
+    if (mapInstance && searchLayer) {
+      const searchControl = new L.Control.Search({
+        layer: searchLayer,
+        propertyName: 'searchText', // Search by combined name/booth/label
+        initial: false,
+        zoom: 21,
+        marker: {
+          icon: false,
+          animate: true, // draw red cicle around found marker
+        },
+        textPlaceholder: 'Search for name or booth...',
+        position: 'topleft',
+      });
+      mapInstance.addControl(searchControl);
+      searchControlRef.current = searchControl;
+      // Add MiniMap control (bottomright)
+      if (!mapInstance._minimapControl) {
+        const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
+          attribution: '',
+          minZoom: 0,
+          maxZoom: 16,
+        });
+        const miniMapControl = new L.Control.MiniMap(miniMapLayer, {
+          position: 'bottomright',
+          width: 120,
+          height: 120,
+          zoomLevelFixed: 15,
+          toggleDisplay: true,
+          centerFixed: DEFAULT_POSITION,
+          aimingRectOptions: {
+            color: '#1976d2', // app primary blue
+            weight: 2,
+            opacity: 0.9,
+            fillOpacity: 0.1,
+            fill: true,
+          },
+          shadowRectOptions: {
+            color: '#90caf9', // lighter blue shadow
+            weight: 1,
+            opacity: 0.5,
+            fillOpacity: 0.05,
+            fill: true,
+          },
+          strings: {
+            hideText: 'Hide MiniMap',
+            showText: 'Show MiniMap',
+          },
+        });
+        miniMapControl.addTo(mapInstance);
+        mapInstance._minimapControl = miniMapControl;
+      }
+      // Fly to marker when search result is found
+      searchControl.on('search:locationfound', function (e) {
+        if (e && e.layer && e.layer.getLatLng) {
+          const latlng = e.layer.getLatLng();
+          mapInstance.flyTo(latlng, 21, { animate: true });
+          // Auto-close the search box
+          if (searchControl._input) searchControl._input.blur();
+          if (searchControl.hideAlert) searchControl.hideAlert();
+          if (searchControl.collapse) searchControl.collapse();
+        }
+      });
+      // Restore plugin's default behavior: do not modify search input ids
+      return () => {
+        mapInstance.removeControl(searchControl);
+        searchControlRef.current = null;
+      };
+    }
+  }, [mapInstance, searchLayer]);
+
 
   // Map created callback
   const handleMapCreated = (mapOrEvent) => {
@@ -132,30 +218,41 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
       aria-label="Event Map"
       role="region"
     >
-      {/* Map controls */}
+      {/* Map controls: zoom/home/admin layers/rectangles */}
       <MapControls
-  mapInstance={mapInstance}
-  mapCenter={mapCenter}
-  mapZoom={mapZoom}
-  searchControlRef={searchControlRef}
-  isAdminView={isAdminView}
-  showLayersMenu={showLayersMenu}
-  setShowLayersMenu={setShowLayersMenu}
-  activeLayer={activeLayer}
-  setActiveLayer={setActiveLayer}
-  showRectanglesAndHandles={showRectanglesAndHandles}
-  setShowRectanglesAndHandles={setShowRectanglesAndHandles}
-  MAP_LAYERS={MAP_LAYERS}
-/>
+        mapInstance={mapInstance}
+        mapCenter={mapCenter}
+        mapZoom={mapZoom}
+        searchControlRef={searchControlRef}
+        isAdminView={isAdminView}
+        showLayersMenu={showLayersMenu}
+        setShowLayersMenu={setShowLayersMenu}
+        activeLayer={activeLayer}
+        setActiveLayer={setActiveLayer}
+        showRectanglesAndHandles={showRectanglesAndHandles}
+        setShowRectanglesAndHandles={setShowRectanglesAndHandles}
+        MAP_LAYERS={MAP_LAYERS}
+      />
 
       {isAdminView && (
-        <AdminMarkerPlacement mapInstance={mapInstance} isAdminView={isAdminView} updateMarker={updateMarker} />
+        <AdminMarkerPlacement
+          mapInstance={mapInstance}
+          isAdminView={isAdminView}
+          updateMarker={updateMarker}
+        />
       )}
 
       <div
         id="map-container"
         className="fixed inset-0 w-full h-full"
-        style={{ zIndex: 1, height: '100svh', height: '100dvh', height: '100vh', touchAction: 'pan-x pan-y', overflow: 'hidden' }}
+        style={{
+          zIndex: 1,
+          height: '100svh',
+          height: '100dvh',
+          height: '100vh',
+          touchAction: 'pan-x pan-y',
+          overflow: 'hidden',
+        }}
         aria-label={t('map.ariaLabel')}
       >
         <MapContainer
@@ -175,7 +272,6 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             <TileLayer key={layer.key} attribution={layer.attribution} url={layer.url} maxZoom={22} />
           ))}
 
-          {/* Clustered markers (id < 1001) */}
           <EventClusterMarkers
             safeMarkers={safeMarkers}
             infoButtonToggled={infoButtonToggled}
@@ -186,7 +282,6 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             iconCreateFunction={iconCreateFunction}
           />
 
-          {/* Special markers (id >= 1001) */}
           <EventSpecialMarkers
             safeMarkers={safeMarkers}
             infoButtonToggled={infoButtonToggled}
