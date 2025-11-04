@@ -20,7 +20,7 @@ export function metersToLat(m) {
 
 // Convert meters to longitude delta (requires latitude)
 export function metersToLng(m, lat) {
-  return m / (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
+  return m / ((40075000 * Math.cos((lat * Math.PI) / 180)) / 360);
 }
 
 // Inverse: convert latitude delta to meters
@@ -30,5 +30,5 @@ export function metersToLatInv(deltaLat) {
 
 // Inverse: convert longitude delta to meters (requires latitude)
 export function metersToLngInv(deltaLng, lat) {
-  return deltaLng * (40075000 * Math.cos((lat * Math.PI) / 180) / 360);
+  return deltaLng * ((40075000 * Math.cos((lat * Math.PI) / 180)) / 360);
 }

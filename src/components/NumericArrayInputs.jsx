@@ -10,7 +10,7 @@ import React from 'react';
 export default function NumericArrayInputs({ value = [], onChange, labels = [], length }) {
   const inputCount = length || value.length || 2;
   const [inputs, setInputs] = React.useState(
-    Array.from({ length: inputCount }, (_, i) => value[i]?.toString() ?? '')
+    Array.from({ length: inputCount }, (_, i) => value[i]?.toString() ?? ''),
   );
 
   React.useEffect(() => {
@@ -24,7 +24,7 @@ export default function NumericArrayInputs({ value = [], onChange, labels = [], 
   }
 
   function handleBlur() {
-    const arr = inputs.map(v => v === '' ? 0 : Number(v));
+    const arr = inputs.map((v) => (v === '' ? 0 : Number(v)));
     onChange(arr);
   }
 
@@ -36,7 +36,7 @@ export default function NumericArrayInputs({ value = [], onChange, labels = [], 
           type="number"
           step="any"
           value={inputs[i]}
-          onChange={e => handleInput(i, e.target.value)}
+          onChange={(e) => handleInput(i, e.target.value)}
           onBlur={handleBlur}
           className="w-1/2 bg-white border rounded px-2 py-1"
           placeholder={labels[i] || `Value ${i + 1}`}

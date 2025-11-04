@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import L from "leaflet";
-import "leaflet-search";
+import { useEffect } from 'react';
+import L from 'leaflet';
+import 'leaflet-search';
 
 /**
  * LeafletSearchControl
@@ -41,8 +41,8 @@ const LeafletSearchControl = ({ map, markerLayer }) => {
       initial: false,
       zoom: 20,
       marker: false,
-      textPlaceholder: "Search for a marker...",
-      position: "topright",
+      textPlaceholder: 'Search for a marker...',
+      position: 'topright',
     });
 
     map.addControl(searchControl);

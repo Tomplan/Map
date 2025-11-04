@@ -21,7 +21,7 @@ export function createNewMarker({ lat, lng }) {
     coreLocked: false,
     appearanceLocked: false,
     contentLocked: false,
-    adminLocked: false
+    adminLocked: false,
   };
 }
 

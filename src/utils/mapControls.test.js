@@ -15,8 +15,8 @@ describe('mapControls', () => {
 
   it('handleHome sets view on mapInstance', () => {
     const map = { setView: jest.fn() };
-    handleHome(map, [1,2], 10);
-    expect(map.setView).toHaveBeenCalledWith([1,2], 10);
+    handleHome(map, [1, 2], 10);
+    expect(map.setView).toHaveBeenCalledWith([1, 2], 10);
   });
 
   it('handleCustomSearchClick expands and focuses search', () => {
