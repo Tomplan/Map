@@ -31,6 +31,7 @@ export function createMarkerIcon({
   iconSize,
   prefix,
   glyphAnchor,
+  isActive,
 }) {
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
@@ -66,7 +67,7 @@ export function createMarkerIcon({
     bgColor,
     glyphSize: safeGlyphSize,
     glyphAnchor: glyphAnchor || [0, 0],
-    className: className || '',
+    className: isActive ? `${className} marker-active` : className || '',
   });
 }
 
