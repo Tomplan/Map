@@ -29,9 +29,13 @@ const DEFAULT_ICON = {
 const getIconFile = (marker) =>
   marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
 
-const createIcon = (marker) =>
+const createIcon = (marker, isActive = false) =>
   createMarkerIcon({
-    className: marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon',
+    className: isActive
+      ? `${marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon'} marker-active`
+      : marker.type
+      ? `marker-icon marker-type-${marker.type}`
+      : 'marker-icon',
     prefix: marker.prefix,
     iconUrl: getIconFile(marker),
     iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
@@ -41,6 +45,9 @@ const createIcon = (marker) =>
     glyphAnchor: marker.glyphAnchor || DEFAULT_ICON.GLYPH_ANCHOR,
   });
 
+
+
+  
 const getMarkerKey = (marker) =>
   `${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`;
 
@@ -108,9 +115,10 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
       >
         {filteredMarkers.map((marker) => {
           const position = [marker.lat, marker.lng];
-          const icon = createIcon(marker);
+          const icon = createIcon(marker, selectedMarker?.id === marker.id); // pass isActive
           const isDraggable = isMarkerDraggable(marker);
           const markerKey = getMarkerKey(marker);
+          
 
           return (
             <Marker

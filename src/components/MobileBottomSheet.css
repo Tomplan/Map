@@ -16,8 +16,9 @@
   padding: 1rem;
   z-index: 1000;
   max-height: 70vh;
-  overflow-y: auto;
+  overflow: hidden; /* outer container hidden; inner content scrolls */
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+  touch-action: none; /* prevents map dragging */
 }
 
 .bottom-sheet .handle {
@@ -30,4 +31,15 @@
 
 .bottom-sheet .content {
   text-align: center;
+  overflow-y: auto; /* allow vertical scrolling */
+  max-height: 60vh; /* adjust as needed */
+  touch-action: pan-y; /* scroll vertical inside content */
+}
+
+/* Active marker SVG glow using drop-shadow */
+.marker-active img {
+  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.8))
+          drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
+  transform: scale(1.1); /* optional subtle zoom */
+  transition: filter 0.2s, transform 0.2s;
 }
