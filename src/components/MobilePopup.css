@@ -1,0 +1,39 @@
+/* MobilePopup.css */
+.mobile-popup {
+  width: 100%;
+  max-width: 320px;
+  background: white;
+  border-radius: 16px;
+  padding: 12px;
+  transition: max-height 0.3s ease;
+  overflow: hidden;
+}
+
+.mobile-popup.expanded {
+  max-height: 500px; /* Adjust to fit content */
+}
+
+.mobile-popup img {
+  display: block;
+  margin: 0 auto;
+}
+
+.expandable {
+  transition: opacity 0.3s ease;
+}
+
+.mobile-popup button {
+  width: 100%;
+  text-align: left;
+  margin-top: 8px;
+  text-decoration: underline;
+  color: #2563eb; /* Tailwind blue-600 */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem; /* text-sm */
+}
+
+.mobile-popup button:hover {
+  color: #1e40af; /* Tailwind blue-800 */
+}

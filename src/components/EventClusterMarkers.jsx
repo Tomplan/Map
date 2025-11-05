@@ -5,6 +5,7 @@ import { getLogoPath } from '../utils/getLogoPath';
 import { getIconPath } from '../utils/getIconPath';
 import { createMarkerIcon } from '../utils/markerIcons';
 import useIsMobile from '../utils/useIsMobile';
+import './MobilePopup.css';
 
 const CLUSTER_CONFIG = {
   CHUNKED_LOADING: true,
@@ -54,60 +55,30 @@ const MarkerTooltipContent = ({ marker }) => (
 
 const MarkerPopupContent = ({ marker, isMobile }) => {
   const [expanded, setExpanded] = useState(false);
-
-  // On desktop, always expanded
   const showExpanded = !isMobile || expanded;
 
   return (
-    <div className={`p-2 min-w-[200px] ${showExpanded ? 'expanded-popup' : ''}`}>
-      {marker.logo && <img src={getLogoPath(marker.logo)} alt={marker.name || 'Logo'} className="w-20 h-20 object-contain mx-auto mb-3" />}
-      <div className="space-y-2">
-        {marker.boothNumber && (
-          <div className="text-sm">
-            <span className="font-semibold text-gray-700">Booth:</span>{' '}
-            <span className="text-gray-900">{marker.boothNumber}</span>
-          </div>
-        )}
-        {marker.name && <div className="text-base font-semibold text-gray-900">{marker.name}</div>}
+    <div className={`${isMobile ? 'mobile-popup' : ''} ${showExpanded ? 'expanded' : ''}`}>
+      {marker.logo && <img src={getLogoPath(marker.logo)} alt={marker.name || 'Logo'} className="w-20 h-20 object-contain mx-auto mb-2" />}
+      {marker.boothNumber && <div className="text-sm font-semibold">Booth: {marker.boothNumber}</div>}
+      {marker.name && <div className="text-base font-semibold">{marker.name}</div>}
 
-        {showExpanded && (
-          <>
-            {marker.website && (
-              <div className="text-sm">
-                <span className="font-semibold text-gray-700">Website:</span>{' '}
-                <a
-                  href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  {marker.website}
-                </a>
-              </div>
-            )}
-            {marker.info && (
-              <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">{marker.info}</div>
-            )}
-            {marker.label && !marker.name && <div className="text-sm text-gray-600">{marker.label}</div>}
-          </>
-        )}
+      {showExpanded && (
+        <div className="expandable mt-2 space-y-2">
+          {marker.website && <div>Website: <a href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">{marker.website}</a></div>}
+          {marker.info && <div className="text-sm text-gray-600">{marker.info}</div>}
+          {marker.label && !marker.name && <div className="text-sm">{marker.label}</div>}
+        </div>
+      )}
 
-        {isMobile && (marker.website || marker.info || marker.label) && (
-          <button
-            className="text-blue-600 hover:text-blue-800 text-sm mt-1 underline"
-            onClick={(e) => {
-              e.stopPropagation();
-              setExpanded(!expanded);
-            }}
-          >
-            {expanded ? 'Show less' : 'Show more'}
-          </button>
-        )}
-      </div>
+      {isMobile && (marker.website || marker.info || marker.label) && (
+        <button onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}>
+          {expanded ? 'Show less ▲' : 'Show more ▼'}
+        </button>
+      )}
     </div>
   );
 };
-
 
 function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction }) {
   const markerRefs = useRef({});
@@ -132,27 +103,24 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   }, []);
 
   const getEventHandlers = useCallback(
-  (markerId) => {
-    if (isMobile) {
-      // Mobile: single tap opens popup
-      return {
-        dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
-        click: (e) => {
-          const marker = e.target;
-          if (!marker.isPopupOpen()) marker.openPopup();
-        },
-      };
-    } else {
-      // Desktop: default Leaflet behavior
-      return {
-        dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
-        popupopen: (e) => e.target.closeTooltip(), // Close tooltip when popup opens
-      };
-    }
-  },
-  [isMobile, isMarkerDraggable, handleDragEnd]
-);
-
+    (markerId) => {
+      if (isMobile) {
+        return {
+          dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+          click: (e) => {
+            const marker = e.target;
+            if (!marker.isPopupOpen()) marker.openPopup();
+          },
+        };
+      } else {
+        return {
+          dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+          popupopen: (e) => e.target.closeTooltip(), // hide tooltip when popup opens
+        };
+      }
+    },
+    [isMobile, isMarkerDraggable, handleDragEnd]
+  );
 
   return (
     <MarkerClusterGroup
@@ -178,6 +146,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
             eventHandlers={getEventHandlers(marker.id)}
             ref={getMarkerRef(marker.id)}
           >
+            {/* Tooltip only on desktop */}
             {!isMobile && (
               <Tooltip
                 direction="top"
