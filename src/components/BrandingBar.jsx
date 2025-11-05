@@ -10,7 +10,7 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
       className="flex items-center justify-center shadow rounded-full"
       style={{
         position: 'fixed',
-        top: 5, // match search button height
+        bottom: 5, // match search button height
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 3000,
