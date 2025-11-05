@@ -1,39 +1,39 @@
-/* MobilePopup.css */
-.mobile-popup {
-  width: 100%;
-  max-width: 320px;
+/* Backdrop behind popup */
+.mobile-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  background: black;
+  opacity: 0.5;
+  z-index: 999;
+}
+
+/* The bottom sheet itself */
+.mobile-popup-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
   background: white;
-  border-radius: 16px;
-  padding: 12px;
-  transition: max-height 0.3s ease;
-  overflow: hidden;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.mobile-popup.expanded {
-  max-height: 500px; /* Adjust to fit content */
+/* Little drag handle */
+.mobile-popup-handle {
+  width: 50px;
+  height: 5px;
+  background: #ccc;
+  border-radius: 3px;
+  margin: 8px auto;
 }
 
-.mobile-popup img {
-  display: block;
-  margin: 0 auto;
-}
-
-.expandable {
-  transition: opacity 0.3s ease;
-}
-
-.mobile-popup button {
-  width: 100%;
-  text-align: left;
-  margin-top: 8px;
-  text-decoration: underline;
-  color: #2563eb; /* Tailwind blue-600 */
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.875rem; /* text-sm */
-}
-
-.mobile-popup button:hover {
-  color: #1e40af; /* Tailwind blue-800 */
+/* Scrollable content */
+.mobile-popup-content {
+  overflow-y: auto;
+  padding: 16px;
 }
