@@ -36,10 +36,23 @@
   touch-action: pan-y; /* scroll vertical inside content */
 }
 
-/* Active marker SVG glow using drop-shadow */
-.marker-active img {
-  filter: drop-shadow(0 0 5px rgba(59, 130, 246, 0.8))
-          drop-shadow(0 0 8px rgba(59, 130, 246, 0.5));
-  transform: scale(1.1); /* optional subtle zoom */
+/* Highlight the Leaflet glyph marker (background-image div) */
+.marker-active {
+  filter: drop-shadow(0 0 5px rgba(246, 59, 59, 0.8))
+          drop-shadow(0 0 8px rgba(246, 75, 59, 0.5));
+  transform: scale(1.2); /* optional slight zoom */
   transition: filter 0.2s, transform 0.2s;
+}
+
+.more-info-btn {
+  background-color: #3b82f6;   /* slightly lighter blue */
+  color: white;
+  font-size: 0.75rem;          /* smaller text */
+  padding: 0.25rem 0.5rem;     /* less padding */
+  border-radius: 0.375rem;     /* slightly rounded corners */
+  transition: background-color 0.2s;
+}
+
+.more-info-btn:hover {
+  background-color: #2563eb;   /* darker blue on hover */
 }

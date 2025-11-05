@@ -153,7 +153,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
                     </div>
                     <button
                       onClick={() => setSelectedMarker(marker)}
-                      className="bg-blue-600 text-white text-xs px-3 py-1 rounded-full hover:bg-blue-700"
+                      className="more-info-btn"
                     >
                       More Info
                     </button>

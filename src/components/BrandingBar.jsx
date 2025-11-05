@@ -23,6 +23,7 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
         fontFamily: fontFamily || 'inherit',
         width: 'auto',
         maxWidth: '90vw',
+        opacity: 0.85,
       }}
       aria-label="Event Branding"
     >
