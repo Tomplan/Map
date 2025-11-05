@@ -52,41 +52,62 @@ const MarkerTooltipContent = ({ marker }) => (
   </div>
 );
 
-const MarkerPopupContent = ({ marker }) => {
+const MarkerPopupContent = ({ marker, isMobile }) => {
   const [expanded, setExpanded] = useState(false);
 
+  // On desktop, always expanded
+  const showExpanded = !isMobile || expanded;
+
   return (
-    <div className="p-2 min-w-[200px]">
+    <div className={`p-2 min-w-[200px] ${showExpanded ? 'expanded-popup' : ''}`}>
       {marker.logo && <img src={getLogoPath(marker.logo)} alt={marker.name || 'Logo'} className="w-20 h-20 object-contain mx-auto mb-3" />}
       <div className="space-y-2">
-        {marker.boothNumber && <div className="text-sm"><span className="font-semibold text-gray-700">Booth:</span> <span className="text-gray-900">{marker.boothNumber}</span></div>}
+        {marker.boothNumber && (
+          <div className="text-sm">
+            <span className="font-semibold text-gray-700">Booth:</span>{' '}
+            <span className="text-gray-900">{marker.boothNumber}</span>
+          </div>
+        )}
         {marker.name && <div className="text-base font-semibold text-gray-900">{marker.name}</div>}
 
-        {expanded && (
+        {showExpanded && (
           <>
             {marker.website && (
               <div className="text-sm">
                 <span className="font-semibold text-gray-700">Website:</span>{' '}
-                <a href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">{marker.website}</a>
+                <a
+                  href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  {marker.website}
+                </a>
               </div>
             )}
-            {marker.info && <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">{marker.info}</div>}
+            {marker.info && (
+              <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">{marker.info}</div>
+            )}
             {marker.label && !marker.name && <div className="text-sm text-gray-600">{marker.label}</div>}
           </>
         )}
 
-        {marker.website || marker.info || marker.label ? (
+        {isMobile && (marker.website || marker.info || marker.label) && (
           <button
             className="text-blue-600 hover:text-blue-800 text-sm mt-1 underline"
-            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpanded(!expanded);
+            }}
           >
             {expanded ? 'Show less' : 'Show more'}
           </button>
-        ) : null}
+        )}
       </div>
     </div>
   );
 };
+
 
 function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction }) {
   const markerRefs = useRef({});
@@ -111,36 +132,27 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   }, []);
 
   const getEventHandlers = useCallback(
-    (markerId) => ({
-      dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
-
-      // Desktop hover
-      mouseover: (e) => { if (!isMobile) e.target.openTooltip(); },
-      mouseout: (e) => { if (!isMobile) e.target.closeTooltip(); },
-
-      // Desktop click
-      click: (e) => {
-        if (!isMobile) {
+  (markerId) => {
+    if (isMobile) {
+      // Mobile: single tap opens popup
+      return {
+        dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+        click: (e) => {
           const marker = e.target;
-          if (marker.isPopupOpen()) marker.closePopup();
-          else marker.openPopup();
-        }
-      },
+          if (!marker.isPopupOpen()) marker.openPopup();
+        },
+      };
+    } else {
+      // Desktop: default Leaflet behavior
+      return {
+        dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+        popupopen: (e) => e.target.closeTooltip(), // Close tooltip when popup opens
+      };
+    }
+  },
+  [isMobile, isMarkerDraggable, handleDragEnd]
+);
 
-      // Mobile click: open popup with basic info, expandable
-      touchstart: (e) => {
-        if (!isMobile) return;
-        const marker = e.target;
-        if (!marker.isPopupOpen()) marker.openPopup();
-        e.originalEvent.preventDefault();
-        e.originalEvent.stopPropagation();
-      },
-
-      // Optional: close tooltip when popup opens (desktop)
-      popupopen: (e) => e.target.closeTooltip(),
-    }),
-    [isMobile, isMarkerDraggable, handleDragEnd]
-  );
 
   return (
     <MarkerClusterGroup
@@ -166,16 +178,18 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
             eventHandlers={getEventHandlers(marker.id)}
             ref={getMarkerRef(marker.id)}
           >
-            <Tooltip
-              direction="top"
-              offset={[0, -10]}
-              opacity={0.95}
-              permanent={false}
-              interactive={false}
-              className="marker-tooltip"
-            >
-              <MarkerTooltipContent marker={marker} />
-            </Tooltip>
+            {!isMobile && (
+              <Tooltip
+                direction="top"
+                offset={[0, -10]}
+                opacity={0.95}
+                permanent={false}
+                interactive={false}
+                className="marker-tooltip"
+              >
+                <MarkerTooltipContent marker={marker} />
+              </Tooltip>
+            )}
 
             <Popup
               closeButton={true}
@@ -185,7 +199,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
               autoPan={true}
               keepInView={true}
             >
-              <MarkerPopupContent marker={marker} />
+              <MarkerPopupContent marker={marker} isMobile={isMobile} />
             </Popup>
           </Marker>
         );
