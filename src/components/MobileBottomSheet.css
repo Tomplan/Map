@@ -1,0 +1,33 @@
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: black;
+  z-index: 999;
+}
+
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  padding: 1rem;
+  z-index: 1000;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.bottom-sheet .handle {
+  width: 36px;
+  height: 4px;
+  background: #ccc;
+  border-radius: 2px;
+  margin: 0 auto 0.5rem;
+}
+
+.bottom-sheet .content {
+  text-align: center;
+}
