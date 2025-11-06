@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMap } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
@@ -16,7 +17,8 @@ const BottomSheet = ({ marker, onClose }) => {
 
   if (!marker) return null;
 
-  return (
+  // Render bottom sheet outside the map container using a portal
+  return createPortal(
     <AnimatePresence>
       {/* Backdrop */}
       <motion.div
@@ -39,7 +41,6 @@ const BottomSheet = ({ marker, onClose }) => {
         onDragEnd={(event, info) => {
           if (info.offset.y > 100) onClose();
         }}
-
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -90,7 +91,8 @@ const BottomSheet = ({ marker, onClose }) => {
           </button>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body // Render directly to document.body, outside the map container
   );
 };
 
