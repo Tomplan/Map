@@ -1,58 +1,81 @@
+/* --- Backdrop --- */
 .bottom-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: black;
-  z-index: 999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  transition: opacity 0.3s ease;
+  z-index: 1199;
 }
 
+/* --- Sheet Container --- */
 .bottom-sheet {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  background: white;
-  border-top-left-radius: 1rem;
-  border-top-right-radius: 1rem;
-  padding: 1rem;
-  z-index: 1000;
-  max-height: 70vh;
-  overflow: hidden; /* outer container hidden; inner content scrolls */
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
-  touch-action: none; /* prevents map dragging */
+  background: #fff;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.25);
+  z-index: 1200; /* covers branding bar */
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(100%);
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* --- Smooth slide-up animation --- */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0%);
+  }
+}
+
+/* --- Grab Handle --- */
 .bottom-sheet .handle {
-  width: 36px;
-  height: 4px;
-  background: #ccc;
-  border-radius: 2px;
-  margin: 0 auto 0.5rem;
+  width: 40px;
+  height: 5px;
+  background: linear-gradient(to bottom, #ccc, #bbb);
+  border-radius: 9999px;
+  margin: 10px auto 12px;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+.bottom-sheet .handle:active {
+  background: #999;
+  transform: scale(0.95);
 }
 
+/* --- Content Area --- */
 .bottom-sheet .content {
-  text-align: center;
-  overflow-y: auto; /* allow vertical scrolling */
-  max-height: 60vh; /* adjust as needed */
-  touch-action: pan-y; /* scroll vertical inside content */
+  padding: 0 1rem 1.5rem;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
-/* Highlight the Leaflet glyph marker (background-image div) */
-.marker-active {
-  filter: drop-shadow(0 0 5px rgba(246, 59, 59, 0.8))
-          drop-shadow(0 0 8px rgba(246, 75, 59, 0.5));
-  transform: scale(1.2); /* optional slight zoom */
-  transition: filter 0.2s, transform 0.2s;
+.bottom-sheet .content a {
+  word-break: break-word;
 }
 
-.more-info-btn {
-  background-color: #3b82f6;   /* slightly lighter blue */
-  color: white;
-  font-size: 0.75rem;          /* smaller text */
-  padding: 0.25rem 0.5rem;     /* less padding */
-  border-radius: 0.375rem;     /* slightly rounded corners */
-  transition: background-color 0.2s;
+/* --- Buttons --- */
+.bottom-sheet button {
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+.bottom-sheet button:active {
+  transform: scale(0.98);
 }
 
-.more-info-btn:hover {
-  background-color: #2563eb;   /* darker blue on hover */
+/* --- Responsive Spacing --- */
+@media (min-width: 640px) {
+  .bottom-sheet {
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 20px;
+  }
 }

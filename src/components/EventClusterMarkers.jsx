@@ -152,7 +152,13 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
                       Booth {marker.boothNumber}
                     </div>
                     <button
-                      onClick={() => setSelectedMarker(marker)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        e.target.closest('.leaflet-popup-close-button')?.click();
+                        setSelectedMarker(marker);
+                        }}
+
                       className="more-info-btn"
                     >
                       More Info
