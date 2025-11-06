@@ -24,8 +24,9 @@ const BottomSheet = ({ marker, onClose }) => {
         className="bottom-sheet-backdrop"
         onClick={onClose}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.4 }}
+        animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
       />
 
       {/* Sheet */}
@@ -36,13 +37,13 @@ const BottomSheet = ({ marker, onClose }) => {
         dragConstraints={{ top: 0, bottom: 0 }}
         dragElastic={0.25}
         onDragEnd={(event, info) => {
-          const sheetHeight = window.innerHeight * 0.7;
-          if (info.point.y > sheetHeight / 2) onClose();
+          if (info.offset.y > 100) onClose();
         }}
+
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
+        transition={{ type: 'spring', stiffness: 180, damping: 22 }}
       >
         <div className="handle" />
         <div className="content">

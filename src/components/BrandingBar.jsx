@@ -13,7 +13,7 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
         bottom: 5, // match search button height
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 3000,
+        zIndex: 900,
         background: bgColor,
         border: `2px solid ${borderColor}`,
         padding: '0.1rem 0.25rem',

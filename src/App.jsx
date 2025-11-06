@@ -77,6 +77,7 @@ function App() {
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
     id: 1,
+    zIndex: 900,
   });
 
   // Fetch branding from Supabase and subscribe to changes

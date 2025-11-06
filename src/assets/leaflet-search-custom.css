@@ -117,14 +117,14 @@
   display: flex;
   width: 44px;
   height: 44px;
-  background: url('/Map/assets/icons/map-marker-question-blue.svg') no-repeat center center #fff;
+  background: url('/Map/assets/icons/mdi-magnify.svg') no-repeat center center #fff;
   background-size: 60% 60%;
   border-radius: 9999px;
   align-items: center;
   justify-content: center;
 }
 .leaflet-control-search .search-button:hover {
-  background: url('/Map/assets/icons/map-marker-question-blue.svg') no-repeat center center #f4f4f4;
+  background: url('/Map/assets/icons/mdi-magnify.svg') no-repeat center center #f4f4f4;
   background-size: 60% 60%;
 }
 .leaflet-control-search .search-tooltip {
