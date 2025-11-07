@@ -48,3 +48,28 @@ body {
 .read-the-docs {
   color: #888;
 }
+
+/* Hide map controls and overlays during print (global fallback) */
+@media print {
+  .leaflet-control,
+  .leaflet-top,
+  .leaflet-bottom,
+  .leaflet-bar,
+  .leaflet-control-container,
+  .map-control-button,
+  .branding-bar,
+  .admin-panel,
+  .dashboard-btn,
+  .minimap,
+  .leaflet-control-minimap,
+  .leaflet-control-attribution,
+  .map-controls-print-hide,
+  .map-controls,
+  .map-control,
+  .language-toggle,
+  .feedback-toggle,
+  .feedback-form,
+  .print-hide {
+    display: none !important;
+  }
+}

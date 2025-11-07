@@ -25,6 +25,7 @@
     "leaflet-minimap": "^3.6.1",
     "leaflet-search": "^4.0.0",
     "leaflet.awesome-markers": "^2.0.5",
+    "leaflet.browser.print": "^2.0.2",
     "leaflet.locatecontrol": "^0.85.1",
     "material-icons": "^1.13.14",
     "react": "^19.1.1",

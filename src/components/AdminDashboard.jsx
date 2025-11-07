@@ -316,7 +316,7 @@ export default function AdminDashboard({
       <div className="absolute inset-0 w-full h-full">
         {/* Dashboard button now inside map container, top-left */}
         <button
-          className="fixed top-2 right-20 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none"
+          className="fixed top-2 right-20 z-50 bg-white rounded-full shadow-md p-3 flex items-center gap-2 hover:bg-gray-100 focus:outline-none print-hide"
           aria-label="Toggle dashboard"
           onClick={() => setShowDashboard((v) => !v)}
         >
@@ -329,23 +329,10 @@ export default function AdminDashboard({
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
-        <div
-          className="fixed z-40 flex justify-start items-start pt-20"
-          style={{
-            top: '1.25rem', // 20px, matches dashboard button offset
-            left: '0.5rem', // 8px
-            right: '4rem', // 64px
-            bottom: '28px', // exactly matches branding bar height
-            pointerEvents: 'auto',
-          }}
-        >
+        <div className="absolute inset-5 left-2 right-16 z-40 flex justify-start items-start pt-20">
           <div
             className="bg-white rounded-lg shadow-2xl p-2 w-full"
-            style={{
-              maxHeight: 'calc(100vh - 28px - 20px)', // 28px branding bar, 20px dashboard button
-              overflowY: 'auto',
-              opacity: 0.9,
-            }}
+            style={{ maxHeight: '100svh', overflowY: 'auto', opacity: 0.9 }}
           >
             {/* Branding settings at top of dashboard */}
             <div className="w-full flex justify-center mb-6">
