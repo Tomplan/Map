@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getLogoPath } from '../utils/getLogoPath';
 
 export default function BrandingSettings({ onChange, initialValues }) {
   const [logo, setLogo] = useState(
@@ -61,7 +62,7 @@ export default function BrandingSettings({ onChange, initialValues }) {
         <div className="flex items-center w-full" style={{ gap: 10 }}>
           {logo && (
             <img
-              src={logo}
+              src={getLogoPath(logo)}
               alt="Logo"
               style={{
                 height: 44,

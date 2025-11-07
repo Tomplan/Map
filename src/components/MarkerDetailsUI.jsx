@@ -31,44 +31,60 @@ export const MarkerTooltipContent = ({ marker }) => (
   </div>
 );
 
-// --- Desktop Popup ---
+// --- Desktop Popup with scrollable content ---
 export const MarkerPopupDesktop = ({ marker }) => (
-  <Popup closeButton={true} className="marker-popup" autoPan={true}>
-    <div className="p-2 min-w-[220px]">
-      <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
-        {marker.logo && (
-          <img
-            src={getLogoPath(marker.logo)}
-            alt={marker.name || 'Logo'}
-            className="max-w-[80%] max-h-[80%] object-contain"
-          />
+  <Popup 
+    closeButton={true} 
+    className="marker-popup-scrollable" 
+    autoPan={true}
+    maxWidth={320}
+    minWidth={240}
+  >
+    <div className="popup-scroll-container">
+      <div className="popup-scroll-content">
+        <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
+          {marker.logo && (
+            <img
+              src={getLogoPath(marker.logo)}
+              alt={marker.name || 'Logo'}
+              className="max-w-[80%] max-h-[80%] object-contain"
+            />
+          )}
+        </div>
+        <div className="text-base font-semibold text-gray-900 mb-1">{marker.name}</div>
+        <div className="text-sm text-gray-700 mb-2">
+          Booth {marker.boothNumber}
+        </div>
+        {marker.website && (
+          <div className="text-sm mb-2">
+            <a
+              href={
+                marker.website.startsWith('http')
+                  ? marker.website
+                  : `https://${marker.website}`
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+              style={{ wordBreak: 'break-all' }}
+            >
+              {marker.website}
+            </a>
+          </div>
+        )}
+        {marker.info && (
+          <div 
+            className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200"
+            style={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'pre-wrap'
+            }}
+          >
+            {marker.info}
+          </div>
         )}
       </div>
-      <div className="text-base font-semibold text-gray-900">{marker.name}</div>
-      <div className="text-sm text-gray-700 mb-1">
-        Booth {marker.boothNumber}
-      </div>
-      {marker.website && (
-        <div className="text-sm">
-          <a
-            href={
-              marker.website.startsWith('http')
-                ? marker.website
-                : `https://${marker.website}`
-            }
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800 underline"
-          >
-            {marker.website}
-          </a>
-        </div>
-      )}
-      {marker.info && (
-        <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
-          {marker.info}
-        </div>
-      )}
     </div>
   </Popup>
 );

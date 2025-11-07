@@ -121,7 +121,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
             top: 0,
             left: 0,
             width: '100vw',
-            height: '100vh',
+            height: '100svh',
             background: 'rgba(0,0,0,0.3)',
             zIndex: 2000,
             display: 'flex',

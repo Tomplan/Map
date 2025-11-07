@@ -48,7 +48,7 @@ class ErrorBoundary extends React.Component {
         style={{
           border: '2px solid blue',
           width: '100%',
-          minHeight: '100vh',
+          minHeight: '100svh',
           boxSizing: 'border-box',
           position: 'relative',
         }}

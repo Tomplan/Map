@@ -1,0 +1,60 @@
+/* Leaflet Popup scrollable fixes - force override Leaflet's styles */
+.marker-popup-scrollable .leaflet-popup-content-wrapper {
+  padding: 0 !important;
+  max-height: 70vh;
+}
+
+.marker-popup-scrollable .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  max-height: 70vh;
+  width: auto !important;
+}
+
+/* Scrollable container */
+.popup-scroll-container {
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+}
+
+.popup-scroll-content {
+  min-width: 220px;
+  max-width: 300px;
+}
+
+/* Custom scrollbar styling */
+.popup-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+.popup-scroll-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.popup-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.popup-scroll-container::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+
+.popup-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Prevent popup from breaking layout */
+.leaflet-popup {
+  margin-bottom: 20px;
+}
+
+/* Ensure autoPan works correctly */
+.leaflet-popup-tip-container {
+  pointer-events: none;
+}
