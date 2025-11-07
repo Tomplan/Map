@@ -225,7 +225,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
   };
 
   const containerStyle = {
-    height: '100vh',
+    height: '100svh',
     width: '100vw',
     position: 'fixed',
     inset: 0,
@@ -269,7 +269,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
         className="fixed inset-0 w-full h-full"
         style={{
           zIndex: 1,
-          height: '100vh',
+          height: '100svh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
         }}
@@ -283,7 +283,7 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
           zoomDelta={MAP_CONFIG.ZOOM_DELTA}
           zoomSnap={MAP_CONFIG.ZOOM_SNAP}
           zoomControl={false}
-          style={{ width: '100vw', height: '100vh' }}
+          style={{ width: '100vw', height: '100svh' }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
           attributionControl={false}

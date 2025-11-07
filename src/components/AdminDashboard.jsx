@@ -278,7 +278,7 @@ export default function AdminDashboard({
 
   // Branding state for live sync
   const [branding, setBranding] = useState({
-    logo: `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`,
+    logo: '4x4Vakantiebeurs.png',
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
@@ -329,10 +329,23 @@ export default function AdminDashboard({
       </div>
       {/* Dashboard panel overlays map when open */}
       {showDashboard && (
-        <div className="absolute inset-5 left-2 right-16 z-40 flex justify-start items-start pt-20">
+        <div
+          className="fixed z-40 flex justify-start items-start pt-20"
+          style={{
+            top: '1.25rem', // 20px, matches dashboard button offset
+            left: '0.5rem', // 8px
+            right: '4rem', // 64px
+            bottom: '28px', // exactly matches branding bar height
+            pointerEvents: 'auto',
+          }}
+        >
           <div
             className="bg-white rounded-lg shadow-2xl p-2 w-full"
-            style={{ maxHeight: '100vh', overflowY: 'auto', opacity: 0.9 }}
+            style={{
+              maxHeight: 'calc(100vh - 28px - 20px)', // 28px branding bar, 20px dashboard button
+              overflowY: 'auto',
+              opacity: 0.9,
+            }}
           >
             {/* Branding settings at top of dashboard */}
             <div className="w-full flex justify-center mb-6">
