@@ -1,4 +1,5 @@
 import React from 'react';
+import LanguageToggle from './LanguageToggle';
 
 export default function BrandingBar({ logo, themeColor, fontFamily, eventName }) {
   // Match dashboard/zoom button style
@@ -7,16 +8,16 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
   const textColor = '#1976d2';
   return (
     <div
-      className="flex items-center justify-center shadow rounded-full"
+      className="flex items-center justify-center gap-3 shadow rounded-full"
       style={{
         position: 'fixed',
-        bottom: 5, // match search button height
+        bottom: 5,
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 900,
         background: bgColor,
         border: `2px solid ${borderColor}`,
-        padding: '0.1rem 0.25rem',
+        padding: '0.1rem 0.5rem',
         minHeight: 20,
         minWidth: 0,
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
