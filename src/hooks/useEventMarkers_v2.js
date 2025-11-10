@@ -46,6 +46,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         if (appearanceRes.error) throw appearanceRes.error;
         if (assignmentsRes.error) throw assignmentsRes.error;
 
+        console.log(`📊 Loaded ${assignmentsRes.data?.length || 0} assignments for year ${eventYear}`);
+
         // Build lookup maps
         const appearanceById = {};
         for (const row of appearanceRes.data || []) {
@@ -144,14 +146,16 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
     const assignmentsChannel = supabase
       .channel('assignments-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, (payload) => {
+        console.log('📌 Assignment changed:', payload);
         loadMarkers(true);
       })
       .subscribe();
 
     const companiesChannel = supabase
       .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
+        console.log('🏢 Company changed:', payload);
         loadMarkers(true);
       })
       .subscribe();
