@@ -52,13 +52,24 @@ export default function AssignmentsTab() {
     loadMarkerIds();
   }, []);
 
-  // Count assignments per company
+  // Count assignments per company (for badge display)
   const companyAssignmentCounts = useMemo(() => {
     const counts = {};
     assignments.forEach(assignment => {
       counts[assignment.company_id] = (counts[assignment.company_id] || 0) + 1;
     });
     return counts;
+  }, [assignments]);
+
+  // Get lowest marker ID for each company (for sorting by marker position)
+  const companyLowestMarkers = useMemo(() => {
+    const lowestMarkers = {};
+    assignments.forEach(assignment => {
+      if (!lowestMarkers[assignment.company_id] || assignment.marker_id < lowestMarkers[assignment.company_id]) {
+        lowestMarkers[assignment.company_id] = assignment.marker_id;
+      }
+    });
+    return lowestMarkers;
   }, [assignments]);
 
   // Filter and sort companies based on search and sort option
@@ -72,20 +83,29 @@ export default function AssignmentsTab() {
     const sorted = [...filtered].sort((a, b) => {
       const countA = companyAssignmentCounts[a.id] || 0;
       const countB = companyAssignmentCounts[b.id] || 0;
+      const markerA = companyLowestMarkers[a.id];
+      const markerB = companyLowestMarkers[b.id];
 
       switch (sortBy) {
-        case 'assignmentCount':
-          // Sort by assignment count (ascending: 0, 1, 2, ...)
-          if (countA !== countB) return countA - countB;
-          // If same count, sort alphabetically
+        case 'byMarker':
+          // Sort by lowest marker ID assigned
+          // Unassigned companies go last
+          if (!markerA && markerB) return 1;
+          if (markerA && !markerB) return -1;
+          if (!markerA && !markerB) return a.name.localeCompare(b.name);
+          if (markerA !== markerB) return markerA - markerB;
+          // If same marker, sort alphabetically
           return a.name.localeCompare(b.name);
 
         case 'unassignedFirst':
-          // Unassigned (0) first, then by assignment count
+          // Unassigned (0) first, then by lowest marker ID
           if (countA === 0 && countB > 0) return -1;
           if (countA > 0 && countB === 0) return 1;
-          if (countA !== countB) return countA - countB;
-          // If same count, sort alphabetically
+          if (countA === 0 && countB === 0) return a.name.localeCompare(b.name);
+          // Both assigned, sort by marker
+          if (!markerA && markerB) return 1;
+          if (markerA && !markerB) return -1;
+          if (markerA !== markerB) return markerA - markerB;
           return a.name.localeCompare(b.name);
 
         case 'alphabetic':
@@ -96,7 +116,7 @@ export default function AssignmentsTab() {
     });
 
     return sorted;
-  }, [companies, searchTerm, sortBy, companyAssignmentCounts]);
+  }, [companies, searchTerm, sortBy, companyAssignmentCounts, companyLowestMarkers]);
 
   // Create assignment map: key = `${company_id}_${marker_id}`, value = assignment
   const assignmentMap = useMemo(() => {
@@ -228,7 +248,7 @@ export default function AssignmentsTab() {
               className="px-3 py-2 border rounded-lg bg-white text-sm"
             >
               <option value="alphabetic">Sort: A-Z</option>
-              <option value="assignmentCount">Sort: By assignment count (0, 1, 2...)</option>
+              <option value="byMarker">Sort: By marker assignment (1, 2, 3...)</option>
               <option value="unassignedFirst">Sort: Unassigned first</option>
             </select>
           </div>
