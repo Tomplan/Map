@@ -3,6 +3,8 @@ import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
 import BrandingSettings from './BrandingSettings';
+import CompaniesTab from './admin/CompaniesTab';
+import AssignmentsTab from './admin/AssignmentsTab';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
@@ -108,6 +110,8 @@ export default function AdminDashboard({
     { key: 'appearance', label: 'Markers - Appearance' },
     { key: 'content', label: 'Markers - Content' },
     { key: 'admin', label: 'Markers - Admin' },
+    { key: 'companies', label: 'Companies' },
+    { key: 'assignments', label: 'Assignments' },
   ];
   const COLUMNS = {
     core: [
@@ -359,10 +363,16 @@ export default function AdminDashboard({
               ))}
             </div>
             <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
-              <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
-                <thead>
-                  <tr className="bg-gray-100 text-gray-900">
-                    {COLUMNS[activeTab].map((col) => {
+              {/* Render new tab components */}
+              {activeTab === 'companies' ? (
+                <CompaniesTab />
+              ) : activeTab === 'assignments' ? (
+                <AssignmentsTab />
+              ) : (
+                <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-900">
+                      {COLUMNS[activeTab].map((col) => {
                       const isSorted = sortState[activeTab].column === col.key;
                       const arrow = isSorted
                         ? sortState[activeTab].direction === 'asc'
@@ -1045,6 +1055,7 @@ export default function AdminDashboard({
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
           </div>
         </div>
