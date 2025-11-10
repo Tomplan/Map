@@ -9,8 +9,10 @@ const ASSIGNMENT_FIELDS = ['boothNumber'];
 
 /**
  * Update a marker field in Supabase
- * Handles new architecture: Core/Appearance/Admin in original tables,
- * Company data in companies table, booth number in assignments table
+ * Handles split architecture:
+ * - Markers < 1000 (Company booths): Use Companies/Assignments tables
+ * - Markers >= 1000 (Special markers): Use Markers_Content table
+ * - Core/Appearance/Admin: Use original tables for all markers
  * @param {number} id - Marker ID
  * @param {string} key - Field name
  * @param {*} value - New value
@@ -28,14 +30,32 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
       }
     }
 
-    // Handle company fields - update via companies table
-    if (COMPANY_FIELDS.includes(key)) {
-      return await updateCompanyField(id, key, sendValue, eventYear);
-    }
+    // For booth markers (< 1000), route company fields to Companies/Assignments tables
+    if (id < 1000) {
+      // Handle company fields - update via companies table
+      if (COMPANY_FIELDS.includes(key)) {
+        return await updateCompanyField(id, key, sendValue, eventYear);
+      }
 
-    // Handle assignment fields - update via assignments table
-    if (ASSIGNMENT_FIELDS.includes(key)) {
-      return await updateAssignmentField(id, key, sendValue, eventYear);
+      // Handle assignment fields - update via assignments table
+      if (ASSIGNMENT_FIELDS.includes(key)) {
+        return await updateAssignmentField(id, key, sendValue, eventYear);
+      }
+    } else {
+      // For special markers (>= 1000), content fields go directly to Markers_Content
+      if (COMPANY_FIELDS.includes(key) || ASSIGNMENT_FIELDS.includes(key)) {
+        const { error } = await supabase
+          .from('Markers_Content')
+          .update({ [key]: sendValue })
+          .eq('id', id);
+
+        if (error) {
+          console.error(`Failed to update ${key} for special marker ${id}:`, error);
+          return { error };
+        }
+
+        return { error: null };
+      }
     }
 
     // For other fields (Core, Appearance, Admin), use original table mapping

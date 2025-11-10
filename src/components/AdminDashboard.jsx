@@ -542,6 +542,12 @@ export default function AdminDashboard({
                           referenceTooltip =
                             'Reference field from Markers_Content; cannot be edited here.';
                         }
+                        // In Content tab, booth markers (< 1000) show company data from assignments (read-only)
+                        if (activeTab === 'content' && marker.id < 1000) {
+                          isReference = true;
+                          referenceTooltip =
+                            'Company booth - managed via Companies and Assignments tabs. Only special markers (ID >= 1000) are editable here.';
+                        }
                         // Appearance tab: glyphAnchor editable as numeric array
                         if (
                           col.key === 'glyphAnchor' &&
@@ -560,8 +566,9 @@ export default function AdminDashboard({
                           );
                         }
                         // ...existing cell rendering logic...
-                        // Content tab: editable if contentLocked is false
-                        if (activeTab === 'content' && !marker.contentLocked) {
+                        // Content tab: editable only for special markers (id >= 1000) and if contentLocked is false
+                        // Markers < 1000 are company booths managed via Companies/Assignments tables
+                        if (activeTab === 'content' && !marker.contentLocked && marker.id >= 1000) {
                           if (col.key === 'logo') {
                             return (
                               <td key={col.key} className="py-1 px-3 border-b text-left">
