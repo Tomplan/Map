@@ -177,7 +177,12 @@ export default function CompaniesTab() {
             <button
               onClick={() => {
                 setIsCreating(false);
-                setNewCompanyForm({ name: '', logo: '', website: '', info: '' });
+                setNewCompanyForm({
+                  name: '',
+                  logo: BRANDING_CONFIG.getDefaultLogoPath(),
+                  website: '',
+                  info: ''
+                });
               }}
               className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
@@ -246,10 +251,10 @@ export default function CompaniesTab() {
       />
     </div>
   ) : (
-    <img 
-      src={getLogoPath(company.logo && company.logo.trim() !== '' ? company.logo : BRANDING_CONFIG.getDefaultLogoPath())} 
-      alt={company.name} 
-      className="h-8 object-contain" 
+    <img
+      src={getLogoPath((company.logo && company.logo.trim() !== '') ? company.logo : BRANDING_CONFIG.DEFAULT_LOGO)}
+      alt={company.name}
+      className="h-8 object-contain"
     />
   )}
 </td>
