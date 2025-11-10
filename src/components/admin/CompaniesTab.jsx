@@ -160,16 +160,16 @@ export default function CompaniesTab() {
       )}
 
       {/* Companies table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto border rounded-lg">
+        <table className="w-full border-collapse bg-white">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="py-2 px-3 text-left border-b">ID</th>
-              <th className="py-2 px-3 text-left border-b">Name</th>
-              <th className="py-2 px-3 text-left border-b">Logo</th>
-              <th className="py-2 px-3 text-left border-b">Website</th>
-              <th className="py-2 px-3 text-left border-b">Info</th>
-              <th className="py-2 px-3 text-left border-b">Actions</th>
+            <tr className="bg-gray-800 text-white">
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">ID</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Name</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Logo</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Website</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Info</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -177,25 +177,25 @@ export default function CompaniesTab() {
               const isEditing = editingId === company.id;
 
               return (
-                <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="py-2 px-3 border-b">{company.id}</td>
+                <tr key={company.id} className="hover:bg-blue-50 even:bg-gray-50">
+                  <td className="py-3 px-4 border-b border-gray-200 text-gray-900">{company.id}</td>
 
                   {/* Name */}
-                  <td className="py-2 px-3 border-b">
+                  <td className="py-3 px-4 border-b border-gray-200">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-2 py-1 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                       />
                     ) : (
-                      <span className="font-semibold">{company.name}</span>
+                      <span className="font-semibold text-gray-900">{company.name}</span>
                     )}
                   </td>
 
                   {/* Logo */}
-                  <td className="py-2 px-3 border-b">
+                  <td className="py-3 px-4 border-b border-gray-200">
                     {isEditing ? (
                       <input
                         type="text"
@@ -212,40 +212,40 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Website */}
-                  <td className="py-2 px-3 border-b">
+                  <td className="py-3 px-4 border-b border-gray-200">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editForm.website || ''}
                         onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                        className="w-full px-2 py-1 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         placeholder="Website URL"
                       />
                     ) : company.website ? (
-                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 hover:underline font-medium">
                         {company.website.substring(0, 30)}...
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No website</span>
+                      <span className="text-gray-500 text-sm italic">No website</span>
                     )}
                   </td>
 
                   {/* Info */}
-                  <td className="py-2 px-3 border-b max-w-xs">
+                  <td className="py-3 px-4 border-b border-gray-200 max-w-xs">
                     {isEditing ? (
                       <textarea
                         value={editForm.info || ''}
                         onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
-                        className="w-full px-2 py-1 border rounded"
+                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         rows={2}
                       />
                     ) : (
-                      <span className="text-sm text-gray-700 line-clamp-2">{company.info || 'No info'}</span>
+                      <span className="text-sm text-gray-800 line-clamp-2">{company.info || <span className="text-gray-500 italic">No info</span>}</span>
                     )}
                   </td>
 
                   {/* Actions */}
-                  <td className="py-2 px-3 border-b">
+                  <td className="py-3 px-4 border-b border-gray-200">
                     {isEditing ? (
                       <div className="flex gap-1">
                         <button
