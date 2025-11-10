@@ -3,18 +3,17 @@ import { Tooltip, Popup } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../utils/useIsMobile';
+import { BRANDING_CONFIG } from '../config/mapConfig';
 
 // --- Tooltip for both cluster + special markers ---
 export const MarkerTooltipContent = ({ marker }) => (
   <div className="flex items-center gap-2 p-1">
     <div className="w-8 h-8 flex items-center justify-center bg-white rounded-sm border border-gray-200 overflow-hidden">
-      {marker.logo && (
-        <img
-          src={getLogoPath(marker.logo)}
-          alt=""
-          className="max-w-[70%] max-h-[70%] object-contain"
-        />
-      )}
+      <img
+        src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+        alt=""
+        className="max-w-[70%] max-h-[70%] object-contain"
+      />
     </div>
     <div className="flex flex-col min-w-0">
       {marker.boothNumber && (
@@ -43,13 +42,11 @@ export const MarkerPopupDesktop = ({ marker }) => (
     <div className="popup-scroll-container">
       <div className="popup-scroll-content">
         <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
-          {marker.logo && (
-            <img
-              src={getLogoPath(marker.logo)}
-              alt={marker.name || 'Logo'}
-              className="max-w-[80%] max-h-[80%] object-contain"
-            />
-          )}
+          <img
+            src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+            alt={marker.name || 'Logo'}
+            className="max-w-[80%] max-h-[80%] object-contain"
+          />
         </div>
         <div className="text-base font-semibold text-gray-900 mb-1">{marker.name}</div>
         <div className="text-sm text-gray-700 mb-2">
@@ -94,13 +91,11 @@ export const MarkerPopupMobile = ({ marker, onMoreInfo }) => (
   <Popup closeButton={true} className="marker-popup" autoPan={true}>
     <div className="p-2 text-center">
       <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
-        {marker.logo && (
-          <img
-            src={getLogoPath(marker.logo)}
-            alt=""
-            className="max-w-[80%] max-h-[80%] object-contain"
-          />
-        )}
+        <img
+          src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+          alt=""
+          className="max-w-[80%] max-h-[80%] object-contain"
+        />
       </div>
       <div className="font-semibold text-gray-900 text-sm">{marker.name}</div>
       <div className="text-xs text-gray-700 mb-2">

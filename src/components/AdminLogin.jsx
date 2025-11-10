@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
+import { BRANDING_CONFIG } from '../config/mapConfig';
 
 export default function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function AdminLogin({ onLogin }) {
       className="max-w-sm mx-auto mt-8 p-6 border rounded shadow bg-white"
     >
       <div className="flex flex-col items-center mb-4">
-        <img src="/Map/assets/logos/4x4Vakantiebeurs.png" alt="Event Logo" className="h-12 mb-2" />
+        <img src={BRANDING_CONFIG.getDefaultLogoPath()} alt="Event Logo" className="h-12 mb-2" />
         <span className="font-bold text-xl">4x4 Vakantiebeurs Admin</span>
       </div>
       <h2 className="text-lg font-bold mb-4">Sign in to manage event markers</h2>

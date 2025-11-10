@@ -3,6 +3,8 @@ import useCompanies from '../../hooks/useCompanies';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
+import LogoUploader from '../LogoUploader';
+import { BRANDING_CONFIG } from '../../config/mapConfig';
 
 /**
  * CompaniesTab - Manage permanent company list
@@ -15,7 +17,12 @@ export default function CompaniesTab() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [isCreating, setIsCreating] = useState(false);
-  const [newCompanyForm, setNewCompanyForm] = useState({ name: '', logo: '', website: '', info: '' });
+  const [newCompanyForm, setNewCompanyForm] = useState({ 
+    name: '', 
+    logo: BRANDING_CONFIG.getDefaultLogoPath(), 
+    website: '', 
+    info: '' 
+  });
 
   // Filter companies based on search
   const filteredCompanies = searchTerm ? searchCompanies(searchTerm) : companies;
@@ -64,7 +71,12 @@ export default function CompaniesTab() {
     const { error } = await createCompany(newCompanyForm);
     if (!error) {
       setIsCreating(false);
-      setNewCompanyForm({ name: '', logo: '', website: '', info: '' });
+      setNewCompanyForm({ 
+        name: '', 
+        logo: BRANDING_CONFIG.getDefaultLogoPath(), 
+        website: '', 
+        info: '' 
+      });
     } else {
       alert(`Error creating company: ${error}`);
     }
@@ -116,13 +128,29 @@ export default function CompaniesTab() {
               onChange={(e) => setNewCompanyForm({ ...newCompanyForm, name: e.target.value })}
               className="px-3 py-2 border rounded"
             />
-            <input
-              type="text"
-              placeholder="Logo URL"
-              value={newCompanyForm.logo}
-              onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
-              className="px-3 py-2 border rounded"
-            />
+            <div className="col-span-2">
+  <label className="block text-sm font-medium mb-1">Company Logo</label>
+  <LogoUploader
+    currentLogo={newCompanyForm.logo}
+    onUploadComplete={(url, path) => {
+      setNewCompanyForm({ ...newCompanyForm, logo: url });
+    }}
+    folder="companies"
+    label="Upload Logo"
+    showPreview={true}
+    allowDelete={true}
+    onDelete={() => {
+      setNewCompanyForm({ ...newCompanyForm, logo: BRANDING_CONFIG.getDefaultLogoPath() });
+    }}
+  />
+  <input
+    type="text"
+    placeholder="Or paste external logo URL"
+    value={newCompanyForm.logo}
+    onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
+    className="px-3 py-2 border rounded mt-2 w-full text-sm"
+  />
+</div>
             <input
               type="text"
               placeholder="Website URL"
@@ -194,20 +222,37 @@ export default function CompaniesTab() {
 
                   {/* Logo */}
                   <td className="py-1 px-3 border-b text-left">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.logo || ''}
-                        onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-                        className="w-full bg-white border rounded px-2 py-1"
-                        placeholder="Logo URL"
-                      />
-                    ) : company.logo && company.logo.trim() !== '' ? (
-                      <img src={getLogoPath(company.logo)} alt={company.name} className="h-8 object-contain" />
-                    ) : (
-                      <span className="text-gray-400 text-sm">No logo</span>
-                    )}
-                  </td>
+  {isEditing ? (
+    <div className="flex flex-col gap-2">
+      <LogoUploader
+        currentLogo={editForm.logo}
+        onUploadComplete={(url, path) => {
+          setEditForm({ ...editForm, logo: url });
+        }}
+        folder="companies"
+        label="Upload"
+        showPreview={true}
+        allowDelete={true}
+        onDelete={() => {
+          setEditForm({ ...editForm, logo: BRANDING_CONFIG.getDefaultLogoPath() });
+        }}
+      />
+      <input
+        type="text"
+        value={editForm.logo || ''}
+        onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
+        className="w-full bg-white border rounded px-2 py-1 text-xs"
+        placeholder="Or paste URL"
+      />
+    </div>
+  ) : (
+    <img 
+      src={getLogoPath(company.logo && company.logo.trim() !== '' ? company.logo : BRANDING_CONFIG.getDefaultLogoPath())} 
+      alt={company.name} 
+      className="h-8 object-contain" 
+    />
+  )}
+</td>
 
                   {/* Website */}
                   <td className="py-1 px-3 border-b text-left">

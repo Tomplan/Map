@@ -9,6 +9,7 @@ import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
+import { BRANDING_CONFIG } from '../config/mapConfig';
 
 // List of available SVG icons for selection
 const ICON_OPTIONS = [
@@ -288,7 +289,7 @@ export default function AdminDashboard({
 
   // Branding state for live sync
   const [branding, setBranding] = useState({
-    logo: '4x4Vakantiebeurs.png',
+    logo: BRANDING_CONFIG.DEFAULT_LOGO,
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',
