@@ -3,7 +3,7 @@ import useAssignments from '../../hooks/useAssignments';
 import useCompanies from '../../hooks/useCompanies';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
-import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck } from '@mdi/js';
+import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown } from '@mdi/js';
 
 /**
  * AssignmentsTab - Matrix view for managing yearly marker-to-company assignments
@@ -13,7 +13,8 @@ export default function AssignmentsTab() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('alphabetic'); // 'alphabetic', 'assignmentCount', 'unassignedFirst'
+  const [sortBy, setSortBy] = useState('alphabetic'); // 'alphabetic', 'byMarker', 'unassignedFirst'
+  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
   const [markerIds, setMarkerIds] = useState([]);
   const [loadingMarkers, setLoadingMarkers] = useState(true);
 
@@ -86,37 +87,46 @@ export default function AssignmentsTab() {
       const markerA = companyLowestMarkers[a.id];
       const markerB = companyLowestMarkers[b.id];
 
+      let result = 0;
+
       switch (sortBy) {
         case 'byMarker':
           // Sort by lowest marker ID assigned
           // Unassigned companies go last
-          if (!markerA && markerB) return 1;
-          if (markerA && !markerB) return -1;
-          if (!markerA && !markerB) return a.name.localeCompare(b.name);
-          if (markerA !== markerB) return markerA - markerB;
-          // If same marker, sort alphabetically
-          return a.name.localeCompare(b.name);
+          if (!markerA && markerB) result = 1;
+          else if (markerA && !markerB) result = -1;
+          else if (!markerA && !markerB) result = a.name.localeCompare(b.name);
+          else if (markerA !== markerB) result = markerA - markerB;
+          else result = a.name.localeCompare(b.name); // If same marker, sort alphabetically
+          break;
 
         case 'unassignedFirst':
           // Unassigned (0) first, then by lowest marker ID
-          if (countA === 0 && countB > 0) return -1;
-          if (countA > 0 && countB === 0) return 1;
-          if (countA === 0 && countB === 0) return a.name.localeCompare(b.name);
-          // Both assigned, sort by marker
-          if (!markerA && markerB) return 1;
-          if (markerA && !markerB) return -1;
-          if (markerA !== markerB) return markerA - markerB;
-          return a.name.localeCompare(b.name);
+          if (countA === 0 && countB > 0) result = -1;
+          else if (countA > 0 && countB === 0) result = 1;
+          else if (countA === 0 && countB === 0) result = a.name.localeCompare(b.name);
+          else {
+            // Both assigned, sort by marker
+            if (!markerA && markerB) result = 1;
+            else if (markerA && !markerB) result = -1;
+            else if (markerA !== markerB) result = markerA - markerB;
+            else result = a.name.localeCompare(b.name);
+          }
+          break;
 
         case 'alphabetic':
         default:
           // Sort alphabetically
-          return a.name.localeCompare(b.name);
+          result = a.name.localeCompare(b.name);
+          break;
       }
+
+      // Apply sort direction
+      return sortDirection === 'desc' ? -result : result;
     });
 
     return sorted;
-  }, [companies, searchTerm, sortBy, companyAssignmentCounts, companyLowestMarkers]);
+  }, [companies, searchTerm, sortBy, sortDirection, companyAssignmentCounts, companyLowestMarkers]);
 
   // Create assignment map: key = `${company_id}_${marker_id}`, value = assignment
   const assignmentMap = useMemo(() => {
@@ -251,6 +261,13 @@ export default function AssignmentsTab() {
               <option value="byMarker">Sort: By marker assignment (1, 2, 3...)</option>
               <option value="unassignedFirst">Sort: Unassigned first</option>
             </select>
+            <button
+              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+              className="p-2 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
+              title={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
+            >
+              <Icon path={sortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} className="text-gray-700" />
+            </button>
           </div>
           <div className="text-sm text-gray-600">
             {filteredCompanies.length} companies × {markerIds.length} markers = {assignments.length} assignments
