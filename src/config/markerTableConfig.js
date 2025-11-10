@@ -1,0 +1,127 @@
+// Icon options for marker appearance
+export const ICON_OPTIONS = [
+  'glyph-marker-icon-black.svg',
+  'glyph-marker-icon-blue.svg',
+  'glyph-marker-icon-gray.svg',
+  'glyph-marker-icon-green.svg',
+  'glyph-marker-icon-orange.svg',
+  'glyph-marker-icon-purple.svg',
+  'glyph-marker-icon-red.svg',
+  'glyph-marker-icon-yellow.svg',
+];
+
+export const ICON_PATH_PREFIX = `${import.meta.env.BASE_URL}assets/icons/`;
+
+// Tab definitions
+export const TABS = {
+  CORE: 'core',
+  APPEARANCE: 'appearance',
+  CONTENT: 'content',
+  ADMIN: 'admin',
+};
+
+// Field to table mapping
+export const FIELD_TABLE_MAP = {
+  // Core fields
+  lat: 'Markers_Core',
+  lng: 'Markers_Core',
+  type: 'Markers_Core',
+  angle: 'Markers_Core',
+  rectWidth: 'Markers_Core',
+  rectHeight: 'Markers_Core',
+  coreLocked: 'Markers_Core',
+
+  // Appearance fields
+  iconUrl: 'Markers_Appearance',
+  iconSize: 'Markers_Appearance',
+  iconColor: 'Markers_Appearance',
+  className: 'Markers_Appearance',
+  prefix: 'Markers_Appearance',
+  glyph: 'Markers_Appearance',
+  glyphColor: 'Markers_Appearance',
+  glyphSize: 'Markers_Appearance',
+  glyphAnchor: 'Markers_Appearance',
+  appearanceLocked: 'Markers_Appearance',
+
+  // Content fields
+  boothNumber: 'Markers_Content',
+  name: 'Markers_Content',
+  logo: 'Markers_Content',
+  website: 'Markers_Content',
+  info: 'Markers_Content',
+  contentLocked: 'Markers_Content',
+
+  // Admin fields
+  contact: 'Markers_Admin',
+  phone: 'Markers_Admin',
+  email: 'Markers_Admin',
+  boothCount: 'Markers_Admin',
+  area: 'Markers_Admin',
+  coins: 'Markers_Admin',
+  breakfast: 'Markers_Admin',
+  lunch: 'Markers_Admin',
+  bbq: 'Markers_Admin',
+  notes: 'Markers_Admin',
+  adminLocked: 'Markers_Admin',
+};
+
+// Column definitions for each tab
+export const COLUMN_CONFIGS = {
+  [TABS.CORE]: [
+    { key: 'id', label: 'ID', editable: false },
+    { key: 'lat', label: 'Latitude', type: 'number' },
+    { key: 'lng', label: 'Longitude', type: 'number' },
+    { key: 'type', label: 'Type' },
+    { key: 'angle', label: 'Angle', type: 'number' },
+    { key: 'rectWidth', label: 'Rect Width', type: 'number' },
+    { key: 'rectHeight', label: 'Rect Height', type: 'number' },
+    { key: 'coreLocked', label: 'Locked', type: 'boolean' },
+  ],
+  [TABS.APPEARANCE]: [
+    { key: 'id', label: 'ID', editable: false },
+    { key: 'iconUrl', label: 'Icon URL', type: 'icon' },
+    { key: 'iconSize', label: 'Icon Size', type: 'array' },
+    { key: 'iconColor', label: 'Icon Color' },
+    { key: 'className', label: 'Class Name' },
+    { key: 'prefix', label: 'Prefix' },
+    { key: 'glyph', label: 'Glyph' },
+    { key: 'glyphColor', label: 'Glyph Color' },
+    { key: 'glyphSize', label: 'Glyph Size' },
+    { key: 'glyphAnchor', label: 'Glyph Anchor', type: 'array' },
+    { key: 'appearanceLocked', label: 'Locked', type: 'boolean' },
+  ],
+  [TABS.CONTENT]: [
+    { key: 'id', label: 'ID', editable: false },
+    { key: 'boothNumber', label: 'Booth #' },
+    { key: 'name', label: 'Name' },
+    { key: 'logo', label: 'Logo', type: 'logo' },
+    { key: 'website', label: 'Website' },
+    { key: 'info', label: 'Info', type: 'textarea' },
+    { key: 'contentLocked', label: 'Locked', type: 'boolean' },
+  ],
+  [TABS.ADMIN]: [
+    { key: 'id', label: 'ID', editable: false },
+    { key: 'contact', label: 'Contact' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'email', label: 'Email' },
+    { key: 'boothCount', label: 'Booth Count', type: 'number' },
+    { key: 'area', label: 'Area' },
+    { key: 'coins', label: 'Coins', type: 'boolean' },
+    { key: 'breakfast', label: 'Breakfast', type: 'boolean' },
+    { key: 'lunch', label: 'Lunch', type: 'boolean' },
+    { key: 'bbq', label: 'BBQ', type: 'boolean' },
+    { key: 'notes', label: 'Notes', type: 'textarea' },
+    { key: 'adminLocked', label: 'Locked', type: 'boolean' },
+  ],
+};
+
+// Lock field for each tab
+export const TAB_LOCK_FIELDS = {
+  [TABS.CORE]: 'coreLocked',
+  [TABS.APPEARANCE]: 'appearanceLocked',
+  [TABS.CONTENT]: 'contentLocked',
+  [TABS.ADMIN]: 'adminLocked',
+};
+
+// All lock fields
+export const LOCK_FIELDS = ['coreLocked', 'appearanceLocked', 'contentLocked', 'adminLocked'];

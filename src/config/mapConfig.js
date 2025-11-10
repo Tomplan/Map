@@ -1,0 +1,35 @@
+// Map configuration constants
+export const MAP_CONFIG = {
+  DEFAULT_POSITION: [51.898095078807025, 5.772961378097534],
+  DEFAULT_ZOOM: 17,
+  MIN_ZOOM: 14,
+  MAX_ZOOM: 22,
+  SEARCH_ZOOM: 21,
+  ZOOM_DELTA: 0.5,
+  ZOOM_SNAP: 0.5,
+  RECTANGLE_SIZE: [6, 6],
+  MINIMAP: {
+    WIDTH: 120,
+    HEIGHT: 120,
+    ZOOM_LEVEL: 15,
+    AIMING_COLOR: '#1976d2',
+    SHADOW_COLOR: '#90caf9',
+  },
+};
+
+// Available map tile layers
+export const MAP_LAYERS = [
+  {
+    key: 'carto',
+    name: 'Carto Voyager',
+    attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
+    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+  },
+  {
+    key: 'esri',
+    name: 'Esri World Imagery',
+    attribution:
+      'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  },
+];
