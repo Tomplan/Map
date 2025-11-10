@@ -8,7 +8,7 @@
 -- ============================================
 
 -- 1. Create Companies Table
-CREATE TABLE IF NOT EXISTS public.Companies (
+CREATE TABLE IF NOT EXISTS public.companies (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     logo TEXT,
@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS public.Companies (
 );
 
 -- Add indexes for performance
-CREATE INDEX IF NOT EXISTS idx_companies_name ON public.Companies(name);
-CREATE INDEX IF NOT EXISTS idx_companies_created_at ON public.Companies(created_at);
+CREATE INDEX IF NOT EXISTS idx_companies_name ON public.companies(name);
+CREATE INDEX IF NOT EXISTS idx_companies_created_at ON public.companies(created_at);
 
 -- Add trigger for updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -31,13 +31,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-DROP TRIGGER IF EXISTS update_companies_updated_at ON public.Companies;
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE
-    ON public.Companies FOR EACH ROW
+    ON public.companies FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- 2. Create Assignments Table
-CREATE TABLE IF NOT EXISTS public.Assignments (
+CREATE TABLE IF NOT EXISTS public.assignments (
     id BIGSERIAL PRIMARY KEY,
     marker_id BIGINT NOT NULL,
     company_id BIGINT NOT NULL,
@@ -50,20 +50,20 @@ CREATE TABLE IF NOT EXISTS public.Assignments (
     CONSTRAINT fk_marker FOREIGN KEY (marker_id)
         REFERENCES public."Markers_Core"(id) ON DELETE CASCADE,
     CONSTRAINT fk_company FOREIGN KEY (company_id)
-        REFERENCES public.Companies(id) ON DELETE CASCADE,
+        REFERENCES public.companies(id) ON DELETE CASCADE,
 
     -- Prevent duplicate assignments
     CONSTRAINT unique_assignment UNIQUE (marker_id, company_id, event_year)
 );
 
 -- Add indexes for queries
-CREATE INDEX IF NOT EXISTS idx_assignments_marker ON public.Assignments(marker_id);
-CREATE INDEX IF NOT EXISTS idx_assignments_company ON public.Assignments(company_id);
-CREATE INDEX IF NOT EXISTS idx_assignments_year ON public.Assignments(event_year);
-CREATE INDEX IF NOT EXISTS idx_assignments_marker_year ON public.Assignments(marker_id, event_year);
+CREATE INDEX IF NOT EXISTS idx_assignments_marker ON public.assignments(marker_id);
+CREATE INDEX IF NOT EXISTS idx_assignments_company ON public.assignments(company_id);
+CREATE INDEX IF NOT EXISTS idx_assignments_year ON public.assignments(event_year);
+CREATE INDEX IF NOT EXISTS idx_assignments_marker_year ON public.assignments(marker_id, event_year);
 
 -- 3. Create Assignments Archive
-CREATE TABLE IF NOT EXISTS public.Assignments_Archive (
+CREATE TABLE IF NOT EXISTS public.assignments_archive (
     id BIGSERIAL PRIMARY KEY,
     marker_id BIGINT NOT NULL,
     company_id BIGINT NOT NULL,
@@ -74,8 +74,8 @@ CREATE TABLE IF NOT EXISTS public.Assignments_Archive (
     archived_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_assignments_archive_year ON public.Assignments_Archive(event_year);
-CREATE INDEX IF NOT EXISTS idx_assignments_archive_marker ON public.Assignments_Archive(marker_id, event_year);
+CREATE INDEX IF NOT EXISTS idx_assignments_archive_year ON public.assignments_archive(event_year);
+CREATE INDEX IF NOT EXISTS idx_assignments_archive_marker ON public.assignments_archive(marker_id, event_year);
 
 -- ============================================
 -- PART 2: Helper Functions
@@ -88,18 +88,18 @@ DECLARE
     archived_count INTEGER;
 BEGIN
     -- Copy to archive
-    INSERT INTO public.Assignments_Archive (
+    INSERT INTO public.assignments_archive (
         marker_id, company_id, event_year, booth_number, created_at, created_by
     )
     SELECT
         marker_id, company_id, event_year, booth_number, created_at, created_by
-    FROM public.Assignments
+    FROM public.assignments
     WHERE event_year = year_to_archive;
 
     GET DIAGNOSTICS archived_count = ROW_COUNT;
 
     -- Delete from active assignments
-    DELETE FROM public.Assignments WHERE event_year = year_to_archive;
+    DELETE FROM public.assignments WHERE event_year = year_to_archive;
 
     RETURN archived_count;
 END;
@@ -110,84 +110,84 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ============================================
 
 -- Enable RLS on all tables
-ALTER TABLE public.Companies ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.Assignments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.Assignments_Archive ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assignments_archive ENABLE ROW LEVEL SECURITY;
 
 -- Drop any existing policies
-DROP POLICY IF EXISTS "Public can view companies" ON public.Companies;
-DROP POLICY IF EXISTS "Authenticated admins can manage companies" ON public.Companies;
-DROP POLICY IF EXISTS "Authenticated users can insert companies" ON public.Companies;
-DROP POLICY IF EXISTS "Authenticated users can update companies" ON public.Companies;
-DROP POLICY IF EXISTS "Authenticated users can delete companies" ON public.Companies;
+DROP POLICY IF EXISTS "Public can view companies" ON public.companies;
+DROP POLICY IF EXISTS "Authenticated admins can manage companies" ON public.companies;
+DROP POLICY IF EXISTS "Authenticated users can insert companies" ON public.companies;
+DROP POLICY IF EXISTS "Authenticated users can update companies" ON public.companies;
+DROP POLICY IF EXISTS "Authenticated users can delete companies" ON public.companies;
 
-DROP POLICY IF EXISTS "Public can view assignments" ON public.Assignments;
-DROP POLICY IF EXISTS "Public can view current year assignments" ON public.Assignments;
-DROP POLICY IF EXISTS "Authenticated admins can manage assignments" ON public.Assignments;
-DROP POLICY IF EXISTS "Authenticated users can insert assignments" ON public.Assignments;
-DROP POLICY IF EXISTS "Authenticated users can update assignments" ON public.Assignments;
-DROP POLICY IF EXISTS "Authenticated users can delete assignments" ON public.Assignments;
+DROP POLICY IF EXISTS "Public can view assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Public can view current year assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Authenticated admins can manage assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Authenticated users can insert assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Authenticated users can update assignments" ON public.assignments;
+DROP POLICY IF EXISTS "Authenticated users can delete assignments" ON public.assignments;
 
-DROP POLICY IF EXISTS "Authenticated admins can view archive" ON public.Assignments_Archive;
-DROP POLICY IF EXISTS "Authenticated admins can insert archive" ON public.Assignments_Archive;
+DROP POLICY IF EXISTS "Authenticated admins can view archive" ON public.assignments_archive;
+DROP POLICY IF EXISTS "Authenticated admins can insert archive" ON public.assignments_archive;
 
 -- Create RLS policies for Companies
 CREATE POLICY "Public can view companies"
-    ON public.Companies
+    ON public.companies
     FOR SELECT
     USING (true);
 
 CREATE POLICY "Authenticated users can insert companies"
-    ON public.Companies
+    ON public.companies
     FOR INSERT
     TO authenticated
     WITH CHECK (true);
 
 CREATE POLICY "Authenticated users can update companies"
-    ON public.Companies
+    ON public.companies
     FOR UPDATE
     TO authenticated
     USING (true)
     WITH CHECK (true);
 
 CREATE POLICY "Authenticated users can delete companies"
-    ON public.Companies
+    ON public.companies
     FOR DELETE
     TO authenticated
     USING (true);
 
 -- Create RLS policies for Assignments
 CREATE POLICY "Public can view assignments"
-    ON public.Assignments
+    ON public.assignments
     FOR SELECT
     USING (true);
 
 CREATE POLICY "Authenticated users can insert assignments"
-    ON public.Assignments
+    ON public.assignments
     FOR INSERT
     TO authenticated
     WITH CHECK (true);
 
 CREATE POLICY "Authenticated users can update assignments"
-    ON public.Assignments
+    ON public.assignments
     FOR UPDATE
     TO authenticated
     USING (true)
     WITH CHECK (true);
 
 CREATE POLICY "Authenticated users can delete assignments"
-    ON public.Assignments
+    ON public.assignments
     FOR DELETE
     TO authenticated
     USING (true);
 
 -- Create RLS policies for Archive (Admin only)
 CREATE POLICY "Authenticated admins can view archive"
-    ON public.Assignments_Archive FOR SELECT
+    ON public.assignments_archive FOR SELECT
     USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Authenticated admins can insert archive"
-    ON public.Assignments_Archive FOR INSERT
+    ON public.assignments_archive FOR INSERT
     WITH CHECK (auth.role() = 'authenticated');
 
 -- ============================================
@@ -195,7 +195,7 @@ CREATE POLICY "Authenticated admins can insert archive"
 -- ============================================
 
 -- Step 1: Migrate Companies from Markers_Content
-INSERT INTO public.Companies (name, logo, website, info)
+INSERT INTO public.companies (name, logo, website, info)
 SELECT DISTINCT ON (name, logo, website, info)
     name,
     logo,
@@ -204,7 +204,7 @@ SELECT DISTINCT ON (name, logo, website, info)
 FROM public."Markers_Content"
 WHERE name IS NOT NULL
   AND NOT EXISTS (
-    SELECT 1 FROM public.Companies c
+    SELECT 1 FROM public.companies c
     WHERE c.name = "Markers_Content".name
     AND COALESCE(c.logo, '') = COALESCE("Markers_Content".logo, '')
     AND COALESCE(c.website, '') = COALESCE("Markers_Content".website, '')
@@ -213,7 +213,7 @@ WHERE name IS NOT NULL
 ORDER BY name, logo, website, info;
 
 -- Step 2: Create Assignments for 2025
-INSERT INTO public.Assignments (marker_id, company_id, event_year, booth_number, created_by)
+INSERT INTO public.assignments (marker_id, company_id, event_year, booth_number, created_by)
 SELECT
     mc.id as marker_id,
     c.id as company_id,
@@ -221,7 +221,7 @@ SELECT
     mc."boothNumber" as booth_number,
     'system_migration' as created_by
 FROM public."Markers_Content" mc
-JOIN public.Companies c ON (
+JOIN public.companies c ON (
     mc.name = c.name
     AND COALESCE(mc.logo, '') = COALESCE(c.logo, '')
     AND COALESCE(mc.website, '') = COALESCE(c.website, '')
@@ -229,7 +229,7 @@ JOIN public.Companies c ON (
 )
 WHERE mc.name IS NOT NULL
   AND NOT EXISTS (
-    SELECT 1 FROM public.Assignments a
+    SELECT 1 FROM public.assignments a
     WHERE a.marker_id = mc.id
     AND a.company_id = c.id
     AND a.event_year = 2025
@@ -245,8 +245,8 @@ DECLARE
     assignment_count INTEGER;
 BEGIN
     SELECT COUNT(*) INTO content_count FROM public."Markers_Content" WHERE name IS NOT NULL;
-    SELECT COUNT(*) INTO company_count FROM public.Companies;
-    SELECT COUNT(*) INTO assignment_count FROM public.Assignments WHERE event_year = 2025;
+    SELECT COUNT(*) INTO company_count FROM public.companies;
+    SELECT COUNT(*) INTO assignment_count FROM public.assignments WHERE event_year = 2025;
 
     RAISE NOTICE '=================================';
     RAISE NOTICE 'Migration Complete!';
