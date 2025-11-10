@@ -3,6 +3,8 @@ import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
 import BrandingSettings from './BrandingSettings';
+import CompaniesTab from './admin/CompaniesTab';
+import AssignmentsTab from './admin/AssignmentsTab';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
@@ -108,6 +110,8 @@ export default function AdminDashboard({
     { key: 'appearance', label: 'Markers - Appearance' },
     { key: 'content', label: 'Markers - Content' },
     { key: 'admin', label: 'Markers - Admin' },
+    { key: 'companies', label: 'Companies' },
+    { key: 'assignments', label: 'Assignments' },
   ];
   const COLUMNS = {
     core: [
@@ -163,6 +167,8 @@ export default function AdminDashboard({
     appearance: { column: 'id', direction: 'asc' },
     content: { column: 'id', direction: 'asc' },
     admin: { column: 'id', direction: 'asc' },
+    companies: { column: 'id', direction: 'asc' },
+    assignments: { column: 'id', direction: 'asc' },
   });
 
   // Handle sort change
@@ -180,9 +186,13 @@ export default function AdminDashboard({
 
   // Remove unused auth effect
 
-  // Use markersState for all tabbed marker data
+  // Use markersState for all tabbed marker data (skip for companies/assignments tabs)
   const sortedMarkers = React.useMemo(() => {
     const tab = activeTab;
+    // Skip sorting for new tabs that don't use markers
+    if (tab === 'companies' || tab === 'assignments') {
+      return [];
+    }
     const markers = markersState || [];
     const { column, direction } = sortState[tab];
     let getValue = (m) => m[column];
@@ -359,10 +369,16 @@ export default function AdminDashboard({
               ))}
             </div>
             <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
-              <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
-                <thead>
-                  <tr className="bg-gray-100 text-gray-900">
-                    {COLUMNS[activeTab].map((col) => {
+              {/* Render new tab components */}
+              {activeTab === 'companies' ? (
+                <CompaniesTab />
+              ) : activeTab === 'assignments' ? (
+                <AssignmentsTab />
+              ) : (
+                <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-900">
+                      {COLUMNS[activeTab].map((col) => {
                       const isSorted = sortState[activeTab].column === col.key;
                       const arrow = isSorted
                         ? sortState[activeTab].direction === 'asc'
@@ -1045,6 +1061,7 @@ export default function AdminDashboard({
                   ))}
                 </tbody>
               </table>
+              )}
             </div>
           </div>
         </div>

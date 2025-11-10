@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration Test</title>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const supabaseUrl = 'https://xtkbvnnkovogqwcwdhkg.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0a2J2bm5rb3ZvZ3F3Y3dkaGtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMzg5ODEsImV4cCI6MjA3NjgxNDk4MX0.71MqQy05baMcDaGI5Xq_fUbcjgGvA0rjnNuXtacEwKs';
+
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+        async function testMigration() {
+            const output = document.getElementById('output');
+
+            output.innerHTML += '<h2>Testing Migration...</h2>';
+
+            // Test 1: Count companies
+            output.innerHTML += '<h3>Test 1: Companies</h3>';
+            const { data: companies, error: cError } = await supabase
+                .from('companies')
+                .select('*');
+
+            if (cError) {
+                output.innerHTML += `<p style="color: red;">❌ Error: ${cError.message}</p>`;
+            } else {
+                output.innerHTML += `<p style="color: green;">✅ Found ${companies.length} companies</p>`;
+                if (companies.length > 0) {
+                    output.innerHTML += `<pre>${JSON.stringify(companies.slice(0, 3), null, 2)}</pre>`;
+                }
+            }
+
+            // Test 2: Count assignments
+            output.innerHTML += '<h3>Test 2: Assignments (2025)</h3>';
+            const { data: assignments, error: aError } = await supabase
+                .from('assignments')
+                .select('*')
+                .eq('event_year', 2025);
+
+            if (aError) {
+                output.innerHTML += `<p style="color: red;">❌ Error: ${aError.message}</p>`;
+            } else {
+                output.innerHTML += `<p style="color: green;">✅ Found ${assignments.length} assignments</p>`;
+                if (assignments.length > 0) {
+                    output.innerHTML += `<pre>${JSON.stringify(assignments.slice(0, 3), null, 2)}</pre>`;
+                }
+            }
+
+            // Test 3: Test join query
+            output.innerHTML += '<h3>Test 3: Markers with Assignments</h3>';
+            const { data: markers, error: mError } = await supabase
+                .from('Markers_Core')
+                .select(`
+                    id,
+                    lat,
+                    lng,
+                    assignments:assignments!marker_id(
+                        booth_number,
+                        company:companies(name, logo)
+                    )
+                `)
+                .eq('assignments.event_year', 2025)
+                .limit(5);
+
+            if (mError) {
+                output.innerHTML += `<p style="color: red;">❌ Error: ${mError.message}</p>`;
+            } else {
+                output.innerHTML += `<p style="color: green;">✅ Found ${markers.length} markers with assignments</p>`;
+                output.innerHTML += `<pre>${JSON.stringify(markers, null, 2)}</pre>`;
+            }
+
+            output.innerHTML += '<h2>✅ Migration Test Complete!</h2>';
+        }
+
+        window.addEventListener('DOMContentLoaded', testMigration);
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        #output {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Migration Verification Test</h1>
+    <div id="output">Loading...</div>
+</body>
+</html>
