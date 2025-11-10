@@ -144,14 +144,14 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
     const assignmentsChannel = supabase
       .channel('assignments-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Assignments' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, () => {
         loadMarkers(true);
       })
       .subscribe();
 
     const companiesChannel = supabase
       .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Companies' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
         loadMarkers(true);
       })
       .subscribe();
