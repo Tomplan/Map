@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import useCompanies from '../../hooks/useCompanies';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
+import { getLogoPath } from '../../utils/getLogoPath';
 
 /**
  * CompaniesTab - Manage permanent company list
@@ -160,16 +161,15 @@ export default function CompaniesTab() {
       )}
 
       {/* Companies table */}
-      <div className="overflow-x-auto border rounded-lg">
-        <table className="w-full border-collapse bg-white">
+      <div className="overflow-x-auto">
+        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
           <thead>
-            <tr className="bg-gray-800 text-white">
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">ID</th>
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Name</th>
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Logo</th>
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Website</th>
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Info</th>
-              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Actions</th>
+            <tr className="bg-gray-100 text-gray-900">
+              <th className="p-2 text-left">Name</th>
+              <th className="p-2 text-left">Logo</th>
+              <th className="p-2 text-left">Website</th>
+              <th className="p-2 text-left">Info</th>
+              <th className="p-2 text-left" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -177,75 +177,73 @@ export default function CompaniesTab() {
               const isEditing = editingId === company.id;
 
               return (
-                <tr key={company.id} className="hover:bg-blue-50 even:bg-gray-50">
-                  <td className="py-3 px-4 border-b border-gray-200 text-gray-900">{company.id}</td>
-
+                <tr key={company.id} className="bg-white text-gray-900">
                   {/* Name */}
-                  <td className="py-3 px-4 border-b border-gray-200">
+                  <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-white border rounded px-2 py-1"
                       />
                     ) : (
-                      <span className="font-semibold text-gray-900">{company.name}</span>
+                      <span className="font-semibold">{company.name}</span>
                     )}
                   </td>
 
                   {/* Logo */}
-                  <td className="py-3 px-4 border-b border-gray-200">
+                  <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editForm.logo || ''}
                         onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-                        className="w-full px-2 py-1 border rounded"
+                        className="w-full bg-white border rounded px-2 py-1"
                         placeholder="Logo URL"
                       />
-                    ) : company.logo ? (
-                      <img src={company.logo} alt={company.name} className="h-8 object-contain" />
+                    ) : company.logo && company.logo.trim() !== '' ? (
+                      <img src={getLogoPath(company.logo)} alt={company.name} className="h-8 object-contain" />
                     ) : (
                       <span className="text-gray-400 text-sm">No logo</span>
                     )}
                   </td>
 
                   {/* Website */}
-                  <td className="py-3 px-4 border-b border-gray-200">
+                  <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editForm.website || ''}
                         onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-white border rounded px-2 py-1"
                         placeholder="Website URL"
                       />
                     ) : company.website ? (
-                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:text-blue-900 hover:underline font-medium">
+                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                         {company.website.substring(0, 30)}...
                       </a>
                     ) : (
-                      <span className="text-gray-500 text-sm italic">No website</span>
+                      <span className="text-gray-400 text-sm">No website</span>
                     )}
                   </td>
 
                   {/* Info */}
-                  <td className="py-3 px-4 border-b border-gray-200 max-w-xs">
+                  <td className="py-1 px-3 border-b text-left max-w-xs">
                     {isEditing ? (
                       <textarea
                         value={editForm.info || ''}
                         onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full bg-white border rounded px-2 py-1"
                         rows={2}
                       />
                     ) : (
-                      <span className="text-sm text-gray-800 line-clamp-2">{company.info || <span className="text-gray-500 italic">No info</span>}</span>
+                      <span className="line-clamp-2">{company.info || <span className="text-gray-400 text-sm italic">No info</span>}</span>
                     )}
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3 px-4 border-b border-gray-200">
+                  <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
                       <div className="flex gap-1">
                         <button
