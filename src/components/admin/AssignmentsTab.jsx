@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import useAssignments from '../../hooks/useAssignments';
 import useCompanies from '../../hooks/useCompanies';
 import Icon from '@mdi/react';
@@ -11,7 +11,6 @@ import { mdiPlus, mdiDelete, mdiArchive, mdiHistory, mdiMagnify } from '@mdi/js'
 export default function AssignmentsTab() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
-  const [showArchived, setShowArchived] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [newAssignment, setNewAssignment] = useState({ marker_id: '', company_id: '', booth_number: '' });
@@ -88,12 +87,12 @@ export default function AssignmentsTab() {
 
   // Handle view archived
   const handleViewArchived = async (year) => {
-    setShowArchived(true);
-    const { data, error } = await loadArchivedAssignments(year);
+    const { error } = await loadArchivedAssignments(year);
     if (error) {
       alert(`Error loading archived assignments: ${error}`);
+    } else {
+      alert(`Archived data loaded for ${year}. Feature coming soon: display in table.`);
     }
-    // Note: Would need additional state to display archived data
   };
 
   if (loading) {
@@ -273,7 +272,8 @@ export default function AssignmentsTab() {
                   )}
                 </td>
                 <td className="py-2 px-3 border-b text-xs text-gray-600">
-                  {assignment.marker?.lat && assignment.marker?.lng
+                  {assignment.marker?.lat && assignment.marker?.lng &&
+                   typeof assignment.marker.lat === 'number' && typeof assignment.marker.lng === 'number'
                     ? `${assignment.marker.lat.toFixed(4)}, ${assignment.marker.lng.toFixed(4)}`
                     : '-'}
                 </td>
