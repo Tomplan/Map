@@ -167,6 +167,8 @@ export default function AdminDashboard({
     appearance: { column: 'id', direction: 'asc' },
     content: { column: 'id', direction: 'asc' },
     admin: { column: 'id', direction: 'asc' },
+    companies: { column: 'id', direction: 'asc' },
+    assignments: { column: 'id', direction: 'asc' },
   });
 
   // Handle sort change
@@ -184,9 +186,13 @@ export default function AdminDashboard({
 
   // Remove unused auth effect
 
-  // Use markersState for all tabbed marker data
+  // Use markersState for all tabbed marker data (skip for companies/assignments tabs)
   const sortedMarkers = React.useMemo(() => {
     const tab = activeTab;
+    // Skip sorting for new tabs that don't use markers
+    if (tab === 'companies' || tab === 'assignments') {
+      return [];
+    }
     const markers = markersState || [];
     const { column, direction } = sortState[tab];
     let getValue = (m) => m[column];
