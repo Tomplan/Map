@@ -28,7 +28,7 @@ export default function AssignmentsTab() {
 
   const { companies } = useCompanies();
 
-  // Load all marker IDs from Markers_Core
+  // Load all marker IDs from Markers_Core (only booth markers < 1000)
   useEffect(() => {
     async function loadMarkerIds() {
       try {
@@ -36,6 +36,7 @@ export default function AssignmentsTab() {
         const { data, error } = await supabase
           .from('Markers_Core')
           .select('id')
+          .lt('id', 1000) // Only load booth markers (id < 1000)
           .order('id', { ascending: true });
 
         if (error) throw error;

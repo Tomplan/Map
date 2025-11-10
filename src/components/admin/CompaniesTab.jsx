@@ -270,9 +270,14 @@ export default function CompaniesTab() {
                         placeholder="Website URL"
                       />
                     ) : company.website ? (
-                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {company.website.substring(0, 30)}...
-                      </a>
+                      (() => {
+                        const displayUrl = company.website.replace(/^https?:\/\//, '');
+                        return (
+                          <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                            {displayUrl.length > 30 ? `${displayUrl.substring(0, 30)}...` : displayUrl}
+                          </a>
+                        );
+                      })()
                     ) : (
                       <span className="text-gray-400 text-sm">No website</span>
                     )}
