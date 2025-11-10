@@ -13,6 +13,7 @@ export default function AssignmentsTab() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('alphabetic'); // 'alphabetic', 'assignmentCount', 'unassignedFirst'
   const [markerIds, setMarkerIds] = useState([]);
   const [loadingMarkers, setLoadingMarkers] = useState(true);
 
@@ -51,12 +52,51 @@ export default function AssignmentsTab() {
     loadMarkerIds();
   }, []);
 
-  // Filter companies based on search
+  // Count assignments per company
+  const companyAssignmentCounts = useMemo(() => {
+    const counts = {};
+    assignments.forEach(assignment => {
+      counts[assignment.company_id] = (counts[assignment.company_id] || 0) + 1;
+    });
+    return counts;
+  }, [assignments]);
+
+  // Filter and sort companies based on search and sort option
   const filteredCompanies = useMemo(() => {
-    if (!searchTerm) return companies;
-    const term = searchTerm.toLowerCase();
-    return companies.filter(c => c.name?.toLowerCase().includes(term));
-  }, [companies, searchTerm]);
+    // First, filter by search term
+    let filtered = searchTerm
+      ? companies.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      : companies;
+
+    // Then, sort based on selected option
+    const sorted = [...filtered].sort((a, b) => {
+      const countA = companyAssignmentCounts[a.id] || 0;
+      const countB = companyAssignmentCounts[b.id] || 0;
+
+      switch (sortBy) {
+        case 'assignmentCount':
+          // Sort by assignment count (ascending: 0, 1, 2, ...)
+          if (countA !== countB) return countA - countB;
+          // If same count, sort alphabetically
+          return a.name.localeCompare(b.name);
+
+        case 'unassignedFirst':
+          // Unassigned (0) first, then by assignment count
+          if (countA === 0 && countB > 0) return -1;
+          if (countA > 0 && countB === 0) return 1;
+          if (countA !== countB) return countA - countB;
+          // If same count, sort alphabetically
+          return a.name.localeCompare(b.name);
+
+        case 'alphabetic':
+        default:
+          // Sort alphabetically
+          return a.name.localeCompare(b.name);
+      }
+    });
+
+    return sorted;
+  }, [companies, searchTerm, sortBy, companyAssignmentCounts]);
 
   // Create assignment map: key = `${company_id}_${marker_id}`, value = assignment
   const assignmentMap = useMemo(() => {
@@ -171,9 +211,9 @@ export default function AssignmentsTab() {
           </div>
         </div>
 
-        {/* Search and stats */}
+        {/* Search, sort, and stats */}
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-3 flex-1">
             <Icon path={mdiMagnify} size={1} className="text-gray-500" />
             <input
               type="text"
@@ -182,6 +222,15 @@ export default function AssignmentsTab() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="flex-1 px-3 py-2 border rounded-lg"
             />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border rounded-lg bg-white text-sm"
+            >
+              <option value="alphabetic">Sort: A-Z</option>
+              <option value="assignmentCount">Sort: By assignment count (0, 1, 2...)</option>
+              <option value="unassignedFirst">Sort: Unassigned first</option>
+            </select>
           </div>
           <div className="text-sm text-gray-600">
             {filteredCompanies.length} companies × {markerIds.length} markers = {assignments.length} assignments
@@ -205,13 +254,27 @@ export default function AssignmentsTab() {
             </tr>
           </thead>
           <tbody>
-            {filteredCompanies.map((company) => (
-              <tr key={company.id} className="hover:bg-gray-50">
-                <td className="p-2 border-b border-r bg-white sticky left-0 z-10">
-                  <div className="font-semibold text-gray-900 truncate" title={company.name}>
-                    {company.name}
-                  </div>
-                </td>
+            {filteredCompanies.map((company) => {
+              const assignmentCount = companyAssignmentCounts[company.id] || 0;
+              return (
+                <tr key={company.id} className="hover:bg-gray-50">
+                  <td className="p-2 border-b border-r bg-white sticky left-0 z-10">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="font-semibold text-gray-900 truncate" title={company.name}>
+                        {company.name}
+                      </div>
+                      <span
+                        className={`inline-flex items-center justify-center min-w-[24px] h-5 px-1.5 rounded-full text-xs font-medium ${
+                          assignmentCount === 0
+                            ? 'bg-gray-200 text-gray-600'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}
+                        title={`${assignmentCount} assignment${assignmentCount !== 1 ? 's' : ''}`}
+                      >
+                        {assignmentCount}
+                      </span>
+                    </div>
+                  </td>
                 {markerIds.map(markerId => {
                   const assigned = isAssigned(company.id, markerId);
                   return (
@@ -231,7 +294,8 @@ export default function AssignmentsTab() {
                   );
                 })}
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
 
