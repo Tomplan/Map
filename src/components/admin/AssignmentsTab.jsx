@@ -228,39 +228,39 @@ export default function AssignmentsTab() {
       )}
 
       {/* Assignments table */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
+      <div className="overflow-x-auto border rounded-lg">
+        <table className="w-full border-collapse bg-white">
           <thead>
-            <tr className="bg-gray-200">
-              <th className="py-2 px-3 text-left border-b">Assignment ID</th>
-              <th className="py-2 px-3 text-left border-b">Marker ID</th>
-              <th className="py-2 px-3 text-left border-b">Booth #</th>
-              <th className="py-2 px-3 text-left border-b">Company</th>
-              <th className="py-2 px-3 text-left border-b">Logo</th>
-              <th className="py-2 px-3 text-left border-b">Location</th>
-              <th className="py-2 px-3 text-left border-b">Actions</th>
+            <tr className="bg-gray-800 text-white">
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Assignment ID</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Marker ID</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Booth #</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Company</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Logo</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Location</th>
+              <th className="py-3 px-4 text-left border-b-2 border-gray-300 font-semibold">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredAssignments.map((assignment) => (
-              <tr key={assignment.id} className="hover:bg-gray-50">
-                <td className="py-2 px-3 border-b">{assignment.id}</td>
-                <td className="py-2 px-3 border-b font-mono">{assignment.marker_id}</td>
-                <td className="py-2 px-3 border-b font-semibold">{assignment.booth_number || '-'}</td>
-                <td className="py-2 px-3 border-b">
-                  <div className="font-semibold">{assignment.company?.name || 'Unknown'}</div>
+              <tr key={assignment.id} className="hover:bg-blue-50 even:bg-gray-50">
+                <td className="py-3 px-4 border-b border-gray-200 text-gray-900">{assignment.id}</td>
+                <td className="py-3 px-4 border-b border-gray-200 font-mono text-gray-900">{assignment.marker_id}</td>
+                <td className="py-3 px-4 border-b border-gray-200 font-semibold text-gray-900">{assignment.booth_number || '-'}</td>
+                <td className="py-3 px-4 border-b border-gray-200">
+                  <div className="font-semibold text-gray-900">{assignment.company?.name || 'Unknown'}</div>
                   {assignment.company?.website && (
                     <a
                       href={assignment.company.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-blue-700 hover:text-blue-900 hover:underline font-medium"
                     >
                       {assignment.company.website.substring(0, 30)}...
                     </a>
                   )}
                 </td>
-                <td className="py-2 px-3 border-b">
+                <td className="py-3 px-4 border-b border-gray-200">
                   {assignment.company?.logo ? (
                     <img
                       src={assignment.company.logo}
@@ -271,13 +271,13 @@ export default function AssignmentsTab() {
                     <span className="text-gray-400 text-sm">No logo</span>
                   )}
                 </td>
-                <td className="py-2 px-3 border-b text-xs text-gray-600">
+                <td className="py-3 px-4 border-b border-gray-200 text-xs text-gray-600">
                   {assignment.marker?.lat && assignment.marker?.lng &&
                    typeof assignment.marker.lat === 'number' && typeof assignment.marker.lng === 'number'
                     ? `${assignment.marker.lat.toFixed(4)}, ${assignment.marker.lng.toFixed(4)}`
                     : '-'}
                 </td>
-                <td className="py-2 px-3 border-b">
+                <td className="py-3 px-4 border-b border-gray-200">
                   <button
                     onClick={() => handleDeleteAssignment(assignment.id, assignment.company?.name)}
                     className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
