@@ -217,43 +217,49 @@ export default function AdminDashboard({
 
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
+    // Get current marker state before updating
+    const currentMarker = markersState.find((m) => m.id === id);
+    if (!currentMarker) return;
+
+    // Determine which lock field to update
+    let lockField, newValue, table;
+    if (activeTab === 'appearance') {
+      lockField = 'appearanceLocked';
+      newValue = !currentMarker.appearanceLocked;
+      table = 'Markers_Appearance';
+    } else if (activeTab === 'content') {
+      lockField = 'contentLocked';
+      newValue = !currentMarker.contentLocked;
+      table = 'Markers_Content';
+    } else if (activeTab === 'admin') {
+      lockField = 'adminLocked';
+      newValue = !currentMarker.adminLocked;
+      table = 'Markers_Admin';
+    } else {
+      lockField = 'coreLocked';
+      newValue = !currentMarker.coreLocked;
+      table = 'Markers_Core';
+    }
+
+    // Update database first
+    const { error } = await supabase
+      .from(table)
+      .update({ [lockField]: newValue })
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Failed to update ${lockField}:`, error);
+      alert(`Error updating lock: ${error.message}`);
+      return;
+    }
+
+    // Only update local state after successful database update
     setMarkersState((prev) => {
       return prev.map((m) => {
         if (m.id !== id) return m;
-        if (activeTab === 'appearance') {
-          return { ...m, appearanceLocked: !m.appearanceLocked };
-        } else if (activeTab === 'content') {
-          return { ...m, contentLocked: !m.contentLocked };
-        } else if (activeTab === 'admin') {
-          return { ...m, adminLocked: !m.adminLocked };
-        } else {
-          return { ...m, coreLocked: !m.coreLocked };
-        }
+        return { ...m, [lockField]: newValue };
       });
     });
-    // Auto-save to Supabase
-    const currentMarker = markersState.find((m) => m.id === id);
-    if (currentMarker) {
-      if (activeTab === 'appearance') {
-        const newAppearanceLocked = !currentMarker.appearanceLocked;
-        await supabase
-          .from('Markers_Appearance')
-          .update({ appearanceLocked: newAppearanceLocked })
-          .eq('id', id);
-      } else if (activeTab === 'content') {
-        const newContentLocked = !currentMarker.contentLocked;
-        await supabase
-          .from('Markers_Content')
-          .update({ contentLocked: newContentLocked })
-          .eq('id', id);
-      } else if (activeTab === 'admin') {
-        const newAdminLocked = !currentMarker.adminLocked;
-        await supabase.from('Markers_Admin').update({ adminLocked: newAdminLocked }).eq('id', id);
-      } else {
-        const newCoreLocked = !currentMarker.coreLocked;
-        await supabase.from('Markers_Core').update({ coreLocked: newCoreLocked }).eq('id', id);
-      }
-    }
   }
 
   // Undo/redo logic for marker state
