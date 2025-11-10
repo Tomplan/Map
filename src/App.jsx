@@ -5,6 +5,7 @@ import { HashRouter, BrowserRouter } from 'react-router-dom';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
 import AppRoutes from './components/AppRoutes';
+import { BRANDING_CONFIG } from './config/mapConfig';
 import './i18n';
 import './App.css';
 
@@ -22,7 +23,7 @@ function App() {
   }, [markers, setMarkersState]);
 
   const [branding, setBranding] = useState({
-    logo: `${import.meta.env.BASE_URL}assets/logos/4x4Vakantiebeurs.png`,
+    logo: BRANDING_CONFIG.getDefaultLogoPath(),
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
     eventName: '4x4 Vakantiebeurs',

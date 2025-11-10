@@ -6,6 +6,7 @@ import BrandingBar from './BrandingBar';
 import AdminDashboard from './AdminDashboard';
 import MarkerTable from './MarkerTable';
 import AdminLogin from './AdminLogin';
+import StorageTestPage from './StorageTestPage';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
@@ -69,6 +70,8 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           </ErrorBoundary>
         }
       />
+      <Route path="/storage-test" element={<StorageTestPage />} />
+
     </Routes>
   );
 }

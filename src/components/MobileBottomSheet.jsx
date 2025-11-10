@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMap } from 'react-leaflet';
 import { getLogoPath } from '../utils/getLogoPath';
+import { BRANDING_CONFIG } from '../config/mapConfig';
 
 const BottomSheet = ({ marker, onClose }) => {
   const map = useMap();
@@ -50,13 +51,11 @@ const BottomSheet = ({ marker, onClose }) => {
         <div className="content">
           {/* Logo */}
           <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
-            {marker.logo && (
-              <img
-                src={getLogoPath(marker.logo)}
-                alt={marker.name || 'Logo'}
-                className="max-w-[80%] max-h-[80%] object-contain"
-              />
-            )}
+            <img
+              src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+              alt={marker.name || 'Logo'}
+              className="max-w-[80%] max-h-[80%] object-contain"
+            />
           </div>
 
           {/* Name and Booth */}
