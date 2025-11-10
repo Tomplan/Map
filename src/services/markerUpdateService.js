@@ -1,14 +1,23 @@
 import { supabase } from '../supabaseClient';
 import { FIELD_TABLE_MAP, LOCK_FIELDS } from '../config/markerTableConfig';
 
+// Fields that belong to companies table
+const COMPANY_FIELDS = ['name', 'logo', 'website', 'info'];
+
+// Fields that belong to assignments table
+const ASSIGNMENT_FIELDS = ['boothNumber'];
+
 /**
  * Update a marker field in Supabase
+ * Handles new architecture: Core/Appearance/Admin in original tables,
+ * Company data in companies table, booth number in assignments table
  * @param {number} id - Marker ID
  * @param {string} key - Field name
  * @param {*} value - New value
+ * @param {number} eventYear - Current event year (for assignments)
  * @returns {Promise<{error: Error | null}>}
  */
-export async function updateMarkerField(id, key, value) {
+export async function updateMarkerField(id, key, value, eventYear = new Date().getFullYear()) {
   try {
     // Lock fields must always be boolean
     let sendValue = value;
@@ -19,7 +28,17 @@ export async function updateMarkerField(id, key, value) {
       }
     }
 
-    // Determine which table to update
+    // Handle company fields - update via companies table
+    if (COMPANY_FIELDS.includes(key)) {
+      return await updateCompanyField(id, key, sendValue, eventYear);
+    }
+
+    // Handle assignment fields - update via assignments table
+    if (ASSIGNMENT_FIELDS.includes(key)) {
+      return await updateAssignmentField(id, key, sendValue, eventYear);
+    }
+
+    // For other fields (Core, Appearance, Admin), use original table mapping
     const table = FIELD_TABLE_MAP[key] || 'Markers_Core';
 
     // Sync to Supabase
@@ -33,6 +52,90 @@ export async function updateMarkerField(id, key, value) {
     return { error: null };
   } catch (error) {
     console.error(`Exception updating ${key} for marker ${id}:`, error);
+    return { error };
+  }
+}
+
+/**
+ * Update a company field for a marker's assignment
+ * @param {number} markerId - Marker ID
+ * @param {string} key - Company field name
+ * @param {*} value - New value
+ * @param {number} eventYear - Current event year
+ * @returns {Promise<{error: Error | null}>}
+ */
+async function updateCompanyField(markerId, key, value, eventYear) {
+  try {
+    // Get the assignment for this marker in the current year
+    const { data: assignments, error: fetchError } = await supabase
+      .from('assignments')
+      .select('company_id')
+      .eq('marker_id', markerId)
+      .eq('event_year', eventYear)
+      .limit(1);
+
+    if (fetchError) {
+      console.error(`Failed to fetch assignment for marker ${markerId}:`, fetchError);
+      return { error: fetchError };
+    }
+
+    if (!assignments || assignments.length === 0) {
+      console.warn(`No assignment found for marker ${markerId} in year ${eventYear}`);
+      return { error: new Error('No assignment found') };
+    }
+
+    const companyId = assignments[0].company_id;
+
+    // Update the company field
+    const { error } = await supabase
+      .from('companies')
+      .update({ [key]: value })
+      .eq('id', companyId);
+
+    if (error) {
+      console.error(`Failed to update ${key} for company ${companyId}:`, error);
+      return { error };
+    }
+
+    return { error: null };
+  } catch (error) {
+    console.error(`Exception updating company field ${key}:`, error);
+    return { error };
+  }
+}
+
+/**
+ * Update an assignment field (booth number)
+ * @param {number} markerId - Marker ID
+ * @param {string} key - Assignment field name
+ * @param {*} value - New value
+ * @param {number} eventYear - Current event year
+ * @returns {Promise<{error: Error | null}>}
+ */
+async function updateAssignmentField(markerId, key, value, eventYear) {
+  try {
+    // Map field name to assignment column
+    const columnMap = {
+      boothNumber: 'booth_number',
+    };
+
+    const column = columnMap[key] || key;
+
+    // Update the assignment
+    const { error } = await supabase
+      .from('assignments')
+      .update({ [column]: value })
+      .eq('marker_id', markerId)
+      .eq('event_year', eventYear);
+
+    if (error) {
+      console.error(`Failed to update ${key} for marker ${markerId}:`, error);
+      return { error };
+    }
+
+    return { error: null };
+  } catch (error) {
+    console.error(`Exception updating assignment field ${key}:`, error);
     return { error };
   }
 }
