@@ -330,12 +330,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <input
                         type="number"
                         min="1"
-                        value={editForm.boothCount || 1}
-                        onChange={(e) => setEditForm({ ...editForm, boothCount: parseInt(e.target.value) })}
+                        value={editForm.booth_count || 1}
+                        onChange={(e) => setEditForm({ ...editForm, booth_count: parseInt(e.target.value) })}
                         className="w-16 px-2 py-1 border rounded text-xs text-center"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.boothCount}</span>
+                      <span className="text-xs">{subscription.booth_count}</span>
                     )}
                   </td>
 

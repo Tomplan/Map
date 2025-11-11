@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS public.event_subscriptions (
     email TEXT,
 
     -- Booth requirements
-    boothCount INTEGER DEFAULT 1,
+    booth_count INTEGER DEFAULT 1,
     area TEXT, -- Location preference: "large field", "small field", etc.
 
     -- Meal counts per day
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS public.event_subscriptions_archive (
     contact TEXT,
     phone TEXT,
     email TEXT,
-    boothCount INTEGER,
+    booth_count INTEGER,
     area TEXT,
     breakfast_sat INTEGER,
     lunch_sat INTEGER,
@@ -129,13 +129,13 @@ BEGIN
     -- Copy to archive
     INSERT INTO public.event_subscriptions_archive (
         company_id, event_year, contact, phone, email,
-        boothCount, area, breakfast_sat, lunch_sat, bbq_sat,
+        booth_count, area, breakfast_sat, lunch_sat, bbq_sat,
         breakfast_sun, lunch_sun, coins, notes,
         subscribed_at, created_by, updated_at, archived_by
     )
     SELECT
         company_id, event_year, contact, phone, email,
-        boothCount, area, breakfast_sat, lunch_sat, bbq_sat,
+        booth_count, area, breakfast_sat, lunch_sat, bbq_sat,
         breakfast_sun, lunch_sun, coins, notes,
         subscribed_at, created_by, updated_at, archived_by_user
     FROM public.event_subscriptions
