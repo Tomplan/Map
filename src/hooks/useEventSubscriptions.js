@@ -106,6 +106,25 @@ export default function useEventSubscriptions(eventYear) {
   // Unsubscribe a company from the event year
   const unsubscribeCompany = async (subscriptionId) => {
     try {
+      // Get the subscription to find company_id and event_year
+      const { data: subscription, error: fetchError } = await supabase
+        .from('event_subscriptions')
+        .select('company_id, event_year')
+        .eq('id', subscriptionId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Delete all booth assignments for this company in this year
+      const { error: assignmentsError } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('company_id', subscription.company_id)
+        .eq('event_year', subscription.event_year);
+
+      if (assignmentsError) throw assignmentsError;
+
+      // Delete the subscription
       const { error: deleteError } = await supabase
         .from('event_subscriptions')
         .delete()
