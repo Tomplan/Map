@@ -58,7 +58,7 @@ const MAP_LAYERS = [
 
 // Utility functions
 const createSearchText = (marker) => {
-  return [marker.name, marker.boothNumber, marker.label].filter(Boolean).join(' | ');
+  return [marker.name, marker.glyph, marker.label].filter(Boolean).join(' | ');
 };
 
 const isMarkerDraggable = (marker, isAdminView) => {
