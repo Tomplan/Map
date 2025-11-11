@@ -15,7 +15,9 @@ export default function AssignmentsTab() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('alphabetic'); // 'alphabetic', 'byMarker', 'unassignedFirst'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [markerIds, setMarkerIds] = useState([]);
+  const [columnSort, setColumnSort] = useState('markerId'); // 'markerId' or 'glyphText'
+  const [columnSortDirection, setColumnSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [markers, setMarkers] = useState([]); // Array of {id, glyph}
   const [loadingMarkers, setLoadingMarkers] = useState(true);
 
   const {
@@ -30,27 +32,51 @@ export default function AssignmentsTab() {
 
   const { companies } = useCompanies();
 
-  // Load all marker IDs from Markers_Core (only booth markers < 1000)
+  // Load all markers with glyphText from Markers_Core and Markers_Appearance (only booth markers < 1000)
   useEffect(() => {
-    async function loadMarkerIds() {
+    async function loadMarkers() {
       try {
         setLoadingMarkers(true);
-        const { data, error } = await supabase
+
+        // Join Markers_Core with Markers_Appearance to get glyphText
+        const { data: coreData, error: coreError } = await supabase
           .from('Markers_Core')
           .select('id')
           .lt('id', 1000) // Only load booth markers (id < 1000)
           .order('id', { ascending: true });
 
-        if (error) throw error;
-        setMarkerIds(data.map(m => m.id));
+        if (coreError) throw coreError;
+
+        const { data: appearanceData, error: appearanceError } = await supabase
+          .from('Markers_Appearance')
+          .select('id, glyph')
+          .lt('id', 1000);
+
+        if (appearanceError) throw appearanceError;
+
+        // Create a map of glyph text by marker id
+        const glyphMap = {};
+        (appearanceData || []).forEach(row => {
+          if (row && row.id) {
+            glyphMap[row.id] = row.glyph || '';
+          }
+        });
+
+        // Merge core and appearance data
+        const mergedMarkers = (coreData || []).map(marker => ({
+          id: marker.id,
+          glyph: glyphMap[marker.id] || marker.id.toString() // Fallback to ID if no glyph
+        }));
+
+        setMarkers(mergedMarkers);
       } catch (err) {
-        console.error('Error loading marker IDs:', err);
+        console.error('Error loading markers:', err);
       } finally {
         setLoadingMarkers(false);
       }
     }
 
-    loadMarkerIds();
+    loadMarkers();
   }, []);
 
   // Count assignments per company (for badge display)
@@ -127,6 +153,25 @@ export default function AssignmentsTab() {
 
     return sorted;
   }, [companies, searchTerm, sortBy, sortDirection, companyAssignmentCounts, companyLowestMarkers]);
+
+  // Sort markers by column sort criteria
+  const sortedMarkers = useMemo(() => {
+    const sorted = [...markers].sort((a, b) => {
+      let result = 0;
+
+      if (columnSort === 'glyphText') {
+        // Sort alphabetically by glyph text
+        result = a.glyph.localeCompare(b.glyph, undefined, { numeric: true, sensitivity: 'base' });
+      } else {
+        // Sort by marker ID (default)
+        result = a.id - b.id;
+      }
+
+      return columnSortDirection === 'desc' ? -result : result;
+    });
+
+    return sorted;
+  }, [markers, columnSort, columnSortDirection]);
 
   // Create assignment map: key = `${company_id}_${marker_id}`, value = assignment
   const assignmentMap = useMemo(() => {
@@ -257,9 +302,9 @@ export default function AssignmentsTab() {
               onChange={(e) => setSortBy(e.target.value)}
               className="px-3 py-2 border rounded-lg bg-white text-sm"
             >
-              <option value="alphabetic">Sort: A-Z</option>
-              <option value="byMarker">Sort: By marker assignment (1, 2, 3...)</option>
-              <option value="unassignedFirst">Sort: Unassigned first</option>
+              <option value="alphabetic">Sort Rows: A-Z</option>
+              <option value="byMarker">Sort Rows: By marker assignment (1, 2, 3...)</option>
+              <option value="unassignedFirst">Sort Rows: Unassigned first</option>
             </select>
             <button
               onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
@@ -270,8 +315,28 @@ export default function AssignmentsTab() {
             </button>
           </div>
           <div className="text-sm text-gray-600">
-            {filteredCompanies.length} companies × {markerIds.length} markers = {assignments.length} assignments
+            {filteredCompanies.length} companies × {markers.length} markers = {assignments.length} assignments
           </div>
+        </div>
+
+        {/* Column sort controls */}
+        <div className="flex items-center gap-3 justify-end">
+          <span className="text-sm font-medium text-gray-700">Sort Columns:</span>
+          <select
+            value={columnSort}
+            onChange={(e) => setColumnSort(e.target.value)}
+            className="px-3 py-2 border rounded-lg bg-white text-sm"
+          >
+            <option value="markerId">By Marker ID (spatial order)</option>
+            <option value="glyphText">By Booth Label (A-Z)</option>
+          </select>
+          <button
+            onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
+            className="p-2 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
+            title={columnSortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
+          >
+            <Icon path={columnSortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} className="text-gray-700" />
+          </button>
         </div>
       </div>
 
@@ -283,9 +348,14 @@ export default function AssignmentsTab() {
               <th className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 z-20" style={{ minWidth: '200px' }}>
                 Company
               </th>
-              {markerIds.map(markerId => (
-                <th key={markerId} className="p-1 text-center border-b" style={{ minWidth: '40px', maxWidth: '40px' }}>
-                  {markerId}
+              {sortedMarkers.map(marker => (
+                <th
+                  key={marker.id}
+                  className="p-1 text-center border-b"
+                  style={{ minWidth: '45px', maxWidth: '45px' }}
+                  title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}`}
+                >
+                  <div className="font-semibold">{marker.glyph}</div>
                 </th>
               ))}
             </tr>
@@ -312,18 +382,18 @@ export default function AssignmentsTab() {
                       </span>
                     </div>
                   </td>
-                {markerIds.map(markerId => {
-                  const assigned = isAssigned(company.id, markerId);
+                {sortedMarkers.map(marker => {
+                  const assigned = isAssigned(company.id, marker.id);
                   return (
-                    <td key={markerId} className="p-0 border-b border-r text-center">
+                    <td key={marker.id} className="p-0 border-b border-r text-center">
                       <button
-                        onClick={() => handleToggleAssignment(company.id, markerId)}
+                        onClick={() => handleToggleAssignment(company.id, marker.id)}
                         className={`w-full h-full p-2 transition-colors ${
                           assigned
                             ? 'bg-green-100 hover:bg-green-200 text-green-700'
                             : 'bg-white hover:bg-gray-100 text-gray-300'
                         }`}
-                        title={assigned ? `Assigned to ${company.name}` : `Click to assign to ${company.name}`}
+                        title={assigned ? `${company.name} → Booth ${marker.glyph}` : `Assign ${company.name} to Booth ${marker.glyph}`}
                       >
                         {assigned && <Icon path={mdiCheck} size={0.6} />}
                       </button>
