@@ -1,26 +1,28 @@
 // src/utils/clusterIcons.js
 // Utility for custom Leaflet marker cluster icons
-import L from 'leaflet';
 import { createMarkerIcon } from './markerIcons';
-import { BRANDING_CONFIG } from '../config/mapConfig';
+import { getDefaultLogoPath } from './getDefaultLogo';
 
 /**
- * Custom iconCreateFunction for marker clusters.
- * @param {L.MarkerCluster} cluster - The cluster object.
- * @returns {L.DivIcon} Custom cluster icon.
+ * Creates a custom iconCreateFunction for marker clusters.
+ * @param {string} organizationLogo - The organization logo filename from context
+ * @returns {function} Custom iconCreateFunction for clusters
  */
-export function iconCreateFunction(cluster) {
-  const count = cluster.getChildCount();
-  // Use the default logo as the glyph
-  return createMarkerIcon({
-    iconUrl: `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-orange.svg`,
-    iconSize: [50, 82],
-    iconAnchor: [25, 41],
-    glyph: `<div style='display:flex;align-items:center;justify-content:center;width:100%;height:100%;'>
-  <img src='${BRANDING_CONFIG.getDefaultLogoPath()}' alt='logo' style='width:40px;height:40px;object-fit:contain;display:block;margin:auto;position:relative;left:1px;top:10px;' />
+export function createIconCreateFunction(organizationLogo) {
+  return function iconCreateFunction(cluster) {
+    const logoPath = getDefaultLogoPath(organizationLogo);
+
+    // Use the organization logo as the glyph
+    return createMarkerIcon({
+      iconUrl: `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-orange.svg`,
+      iconSize: [50, 82],
+      iconAnchor: [25, 41],
+      glyph: `<div style='display:flex;align-items:center;justify-content:center;width:100%;height:100%;'>
+  <img src='${logoPath}' alt='logo' style='width:40px;height:40px;object-fit:contain;display:block;margin:auto;position:relative;left:1px;top:10px;' />
       </div>`,
-    glyphColor: 'white',
-    glyphSize: '40px',
-    className: 'custom-cluster-icon',
-  });
+      glyphColor: 'white',
+      glyphSize: '40px',
+      className: 'custom-cluster-icon',
+    });
+  };
 }

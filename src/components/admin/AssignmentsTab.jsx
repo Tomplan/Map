@@ -9,14 +9,36 @@ import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown 
  * AssignmentsTab - Matrix view for managing yearly marker-to-company assignments
  * Grid layout: Companies (rows) x Marker IDs (columns)
  */
+const SORT_STORAGE_KEY = 'assignmentsTab_sortPreferences';
+
 export default function AssignmentsTab() {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('alphabetic'); // 'alphabetic', 'byMarker', 'unassignedFirst'
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [columnSort, setColumnSort] = useState('markerId'); // 'markerId' or 'glyphText'
-  const [columnSortDirection, setColumnSortDirection] = useState('asc'); // 'asc' or 'desc'
+
+  // Load sort preferences from localStorage on mount
+  const loadSortPreferences = () => {
+    try {
+      const stored = localStorage.getItem(SORT_STORAGE_KEY);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+    } catch (error) {
+      console.error('Error loading sort preferences:', error);
+    }
+    return {
+      sortBy: 'alphabetic',
+      sortDirection: 'asc',
+      columnSort: 'markerId',
+      columnSortDirection: 'asc'
+    };
+  };
+
+  const initialPrefs = loadSortPreferences();
+  const [sortBy, setSortBy] = useState(initialPrefs.sortBy); // 'alphabetic', 'byMarker', 'unassignedFirst'
+  const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
+  const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'markerId' or 'glyphText'
+  const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
   const [markers, setMarkers] = useState([]); // Array of {id, glyph}
   const [loadingMarkers, setLoadingMarkers] = useState(true);
 
@@ -31,6 +53,21 @@ export default function AssignmentsTab() {
   } = useAssignments(selectedYear);
 
   const { companies } = useCompanies();
+
+  // Save sort preferences to localStorage whenever they change
+  useEffect(() => {
+    try {
+      const preferences = {
+        sortBy,
+        sortDirection,
+        columnSort,
+        columnSortDirection
+      };
+      localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Error saving sort preferences:', error);
+    }
+  }, [sortBy, sortDirection, columnSort, columnSortDirection]);
 
   // Load all markers with glyphText from Markers_Core and Markers_Appearance (only booth markers < 1000)
   useEffect(() => {
@@ -183,6 +220,20 @@ export default function AssignmentsTab() {
     return map;
   }, [assignments]);
 
+  // Track which markers have any assignments (for column styling)
+  const markerHasAssignments = useMemo(() => {
+    const markerAssignments = new Set();
+    assignments.forEach(assignment => {
+      markerAssignments.add(assignment.marker_id);
+    });
+    return markerAssignments;
+  }, [assignments]);
+
+  // Check if a marker has any assignments
+  const isMarkerAssigned = (markerId) => {
+    return markerHasAssignments.has(markerId);
+  };
+
   // Check if a company is assigned to a marker
   const isAssigned = (companyId, markerId) => {
     const key = `${companyId}_${markerId}`;
@@ -249,115 +300,135 @@ export default function AssignmentsTab() {
   return (
     <div className="p-4">
       {/* Header with controls */}
-      <div className="mb-4 space-y-3">
-        {/* Year selector and actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <label className="font-semibold">Event Year:</label>
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="px-3 py-2 border rounded-lg"
-            >
-              {[currentYear, currentYear - 1, currentYear - 2, currentYear + 1].map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => handleViewArchived(selectedYear)}
-              className="flex items-center gap-2 px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            >
-              <Icon path={mdiHistory} size={0.8} />
-              View Archive
-            </button>
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="flex flex-col md:flex-row md:justify-between gap-4">
+          {/* Left side: Year, Archive, and Search */}
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="font-semibold text-gray-700">Year:</label>
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                  className="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {[currentYear + 1, currentYear, currentYear - 1, currentYear - 2].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleViewArchived(selectedYear)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
+                  title={`View archived assignments for ${selectedYear}`}
+                >
+                  <Icon path={mdiHistory} size={0.75} />
+                  <span>Archive</span>
+                </button>
+                <button
+                  onClick={handleArchive}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm"
+                  disabled={assignments.length === 0}
+                  title={`Archive all assignments for ${selectedYear}`}
+                >
+                  <Icon path={mdiArchive} size={0.75} />
+                </button>
+              </div>
+            </div>
+            <div className="relative flex-1 md:min-w-[200px]">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon path={mdiMagnify} size={0.8} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={handleArchive}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
-              disabled={assignments.length === 0}
-            >
-              <Icon path={mdiArchive} size={0.8} />
-              Archive {selectedYear}
-            </button>
+          {/* Right side: Sort and Stats */}
+          <div className="flex flex-col items-start md:items-end gap-2">
+            <div className="flex items-end gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Companies</label>
+                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="pl-3 pr-8 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0"
+                    title="Sort table rows"
+                  >
+                    <option value="alphabetic">A-Z</option>
+                    <option value="byMarker">Marker</option>
+                    <option value="unassignedFirst">Unassigned</option>
+                  </select>
+                  <button
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    className="p-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                    title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    <Icon path={sortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} />
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Markers</label>
+                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                  <select
+                    value={columnSort}
+                    onChange={(e) => setColumnSort(e.target.value)}
+                    className="pl-3 pr-8 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0"
+                    title="Sort table columns"
+                  >
+                    <option value="markerId">ID</option>
+                    <option value="glyphText">Label</option>
+                  </select>
+                  <button
+                    onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
+                    className="p-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                    title={columnSortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    <Icon path={columnSortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="text-sm text-gray-600 text-right w-full">
+              {filteredCompanies.length} companies × {markers.length} markers = {assignments.length} assignments
+            </div>
           </div>
-        </div>
-
-        {/* Search, sort, and stats */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <Icon path={mdiMagnify} size={1} className="text-gray-500" />
-            <input
-              type="text"
-              placeholder="Search companies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg"
-            />
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border rounded-lg bg-white text-sm"
-            >
-              <option value="alphabetic">Sort Rows: A-Z</option>
-              <option value="byMarker">Sort Rows: By marker assignment (1, 2, 3...)</option>
-              <option value="unassignedFirst">Sort Rows: Unassigned first</option>
-            </select>
-            <button
-              onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="p-2 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
-              title={sortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
-            >
-              <Icon path={sortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} className="text-gray-700" />
-            </button>
-          </div>
-          <div className="text-sm text-gray-600">
-            {filteredCompanies.length} companies × {markers.length} markers = {assignments.length} assignments
-          </div>
-        </div>
-
-        {/* Column sort controls */}
-        <div className="flex items-center gap-3 justify-end">
-          <span className="text-sm font-medium text-gray-700">Sort Columns:</span>
-          <select
-            value={columnSort}
-            onChange={(e) => setColumnSort(e.target.value)}
-            className="px-3 py-2 border rounded-lg bg-white text-sm"
-          >
-            <option value="markerId">By Marker ID (spatial order)</option>
-            <option value="glyphText">By Booth Label (A-Z)</option>
-          </select>
-          <button
-            onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
-            className="p-2 border rounded-lg bg-white hover:bg-gray-50 transition-colors"
-            title={columnSortDirection === 'asc' ? 'Sort ascending' : 'Sort descending'}
-          >
-            <Icon path={columnSortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} className="text-gray-700" />
-          </button>
         </div>
       </div>
 
       {/* Assignment Matrix */}
-      <div className="overflow-auto border rounded-lg" style={{ maxHeight: '600px' }}>
+      <div className="overflow-auto border rounded-lg" style={{ maxHeight: 'calc(100vh - 300px)' }}>
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-gray-100 text-gray-900">
               <th className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 z-20" style={{ minWidth: '200px' }}>
                 Company
               </th>
-              {sortedMarkers.map(marker => (
-                <th
-                  key={marker.id}
-                  className="p-1 text-center border-b"
-                  style={{ minWidth: '45px', maxWidth: '45px' }}
-                  title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}`}
-                >
-                  <div className="font-semibold">{marker.glyph}</div>
-                </th>
-              ))}
+              {sortedMarkers.map(marker => {
+                const hasAssignment = isMarkerAssigned(marker.id);
+                return (
+                  <th
+                    key={marker.id}
+                    className={`p-1 text-center border-b ${hasAssignment ? '' : 'bg-gray-200'}`}
+                    style={{ minWidth: '45px', maxWidth: '45px' }}
+                    title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}${hasAssignment ? '' : ' (Unassigned)'}`}
+                  >
+                    <div className={`font-semibold ${hasAssignment ? '' : 'text-gray-500'}`}>
+                      {marker.glyph}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -384,14 +455,17 @@ export default function AssignmentsTab() {
                   </td>
                 {sortedMarkers.map(marker => {
                   const assigned = isAssigned(company.id, marker.id);
+                  const markerHasAnyAssignment = isMarkerAssigned(marker.id);
                   return (
-                    <td key={marker.id} className="p-0 border-b border-r text-center">
+                    <td key={marker.id} className={`p-0 border-b border-r text-center ${markerHasAnyAssignment ? '' : 'bg-gray-100'}`}>
                       <button
                         onClick={() => handleToggleAssignment(company.id, marker.id)}
                         className={`w-full h-full p-2 transition-colors ${
                           assigned
                             ? 'bg-green-100 hover:bg-green-200 text-green-700'
-                            : 'bg-white hover:bg-gray-100 text-gray-300'
+                            : markerHasAnyAssignment
+                            ? 'bg-white hover:bg-gray-100 text-gray-300'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
                         }`}
                         title={assigned ? `${company.name} → Booth ${marker.glyph}` : `Assign ${company.name} to Booth ${marker.glyph}`}
                       >
