@@ -47,6 +47,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         if (assignmentsRes.error) throw assignmentsRes.error;
 
         console.log(`📊 Loaded ${assignmentsRes.data?.length || 0} assignments for year ${eventYear}`);
+        if (assignmentsRes.data && assignmentsRes.data.length > 0) {
+          console.log('Sample assignment:', assignmentsRes.data[0]);
+        }
 
         // Build lookup maps
         const appearanceById = {};
@@ -97,6 +100,21 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
             assignmentId: primaryAssignment.assignmentId,
           };
         });
+
+        console.log(`✅ Merged ${mergedMarkers.length} markers`);
+        if (mergedMarkers.length > 0) {
+          const sampleMarker = mergedMarkers.find(m => m.id < 1000);
+          if (sampleMarker) {
+            console.log('Sample booth marker:', {
+              id: sampleMarker.id,
+              name: sampleMarker.name,
+              logo: sampleMarker.logo,
+              boothNumber: sampleMarker.boothNumber,
+              website: sampleMarker.website,
+              info: sampleMarker.info
+            });
+          }
+        }
 
         setMarkers(mergedMarkers);
         localStorage.setItem('eventMarkers', JSON.stringify(mergedMarkers));
