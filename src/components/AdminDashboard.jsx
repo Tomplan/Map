@@ -155,6 +155,11 @@ export default function AdminDashboard({
     ],
   };
   const [activeTab, setActiveTab] = useState('core');
+
+  // Global year selector for year-based tabs (Event Subscriptions, Assignments)
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
   // Sorting state: column and direction per tab
   const [sortState, setSortState] = useState({
     core: { column: 'id', direction: 'asc' },
@@ -311,34 +316,62 @@ export default function AdminDashboard({
             className="bg-white rounded-lg shadow-2xl p-2 w-full"
             style={{ maxHeight: '100svh', overflowY: 'auto', opacity: 0.9 }}
           >
-            {/* Marker tables for each tab */}
-            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  style={{
-                    marginRight: 8,
-                    padding: '0.5rem 1rem',
-                    background: activeTab === tab.key ? '#1976d2' : '#eee',
-                    color: activeTab === tab.key ? '#fff' : '#333',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* Header with tabs and year selector */}
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Tabs */}
+              <div style={{ textAlign: 'left' }}>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      marginRight: 8,
+                      padding: '0.5rem 1rem',
+                      background: activeTab === tab.key ? '#1976d2' : '#eee',
+                      color: activeTab === tab.key ? '#fff' : '#333',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Global Year Selector - only show for year-based tabs */}
+              {(activeTab === 'eventSubscriptions' || activeTab === 'assignments') && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: 'bold', color: '#1976d2' }}>Event Year:</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '2px solid #1976d2',
+                      borderRadius: 4,
+                      background: 'white',
+                      color: '#333',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {Array.from({ length: 10 }, (_, i) => currentYear - 5 + i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
               {/* Render new tab components */}
               {activeTab === 'companies' ? (
                 <CompaniesTab />
               ) : activeTab === 'eventSubscriptions' ? (
-                <EventSubscriptionsTab selectedYear={new Date().getFullYear()} />
+                <EventSubscriptionsTab selectedYear={selectedYear} />
               ) : activeTab === 'assignments' ? (
-                <AssignmentsTab />
+                <AssignmentsTab selectedYear={selectedYear} />
               ) : (
                 <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
                   <thead>
