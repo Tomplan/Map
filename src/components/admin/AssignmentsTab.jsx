@@ -1,13 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import useAssignments from '../../hooks/useAssignments';
-import useCompanies from '../../hooks/useCompanies';
+import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown } from '@mdi/js';
 
 /**
  * AssignmentsTab - Matrix view for managing yearly marker-to-company assignments
- * Grid layout: Companies (rows) x Marker IDs (columns)
+ * Grid layout: Subscribed Companies (rows) x Marker IDs (columns)
+ * Only shows companies that are subscribed to the selected year
  */
 const SORT_STORAGE_KEY = 'assignmentsTab_sortPreferences';
 
@@ -52,7 +53,17 @@ export default function AssignmentsTab() {
     loadArchivedAssignments
   } = useAssignments(selectedYear);
 
-  const { companies } = useCompanies();
+  // Load subscriptions to filter companies
+  const { subscriptions } = useEventSubscriptions(selectedYear);
+
+  // Extract subscribed companies with their info
+  const subscribedCompanies = useMemo(() => {
+    return subscriptions.map(sub => ({
+      id: sub.company_id,
+      name: sub.company?.name || 'Unknown',
+      logo: sub.company?.logo || '',
+    }));
+  }, [subscriptions]);
 
   // Save sort preferences to localStorage whenever they change
   useEffect(() => {
@@ -138,10 +149,11 @@ export default function AssignmentsTab() {
 
   // Filter and sort companies based on search and sort option
   const filteredCompanies = useMemo(() => {
+    // Only show subscribed companies for the selected year
     // First, filter by search term
     let filtered = searchTerm
-      ? companies.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-      : companies;
+      ? subscribedCompanies.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      : subscribedCompanies;
 
     // Then, sort based on selected option
     const sorted = [...filtered].sort((a, b) => {
@@ -189,7 +201,7 @@ export default function AssignmentsTab() {
     });
 
     return sorted;
-  }, [companies, searchTerm, sortBy, sortDirection, companyAssignmentCounts, companyLowestMarkers]);
+  }, [subscribedCompanies, searchTerm, sortBy, sortDirection, companyAssignmentCounts, companyLowestMarkers]);
 
   // Sort markers by column sort criteria
   const sortedMarkers = useMemo(() => {
