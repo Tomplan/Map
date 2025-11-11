@@ -83,7 +83,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   // Delete subscription
   const handleDelete = async (subscription) => {
     const companyName = subscription.company?.name || 'this company';
-    if (!confirm(`Unsubscribe ${companyName} from ${selectedYear}? This will NOT delete their booth assignments.`)) {
+    const boothLabels = getBoothLabels(subscription.company_id);
+    const assignmentInfo = boothLabels ? ` and their booth assignments (${boothLabels})` : '';
+
+    if (!confirm(`Unsubscribe ${companyName} from ${selectedYear}? This will delete their subscription${assignmentInfo}.`)) {
       return;
     }
     const { error } = await unsubscribeCompany(subscription.id);
