@@ -33,9 +33,11 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
       try {
         // Fetch all data in parallel
-        const [coreRes, appearanceRes, assignmentsRes] = await Promise.all([
+        const [coreRes, appearanceRes, contentRes, adminRes, assignmentsRes] = await Promise.all([
           supabase.from('Markers_Core').select('*'),
           supabase.from('Markers_Appearance').select('*'),
+          supabase.from('Markers_Content').select('*'),
+          supabase.from('Markers_Admin').select('*'),
           supabase.from('assignments').select(`
             *,
             company:companies(id, name, logo, website, info)
@@ -44,6 +46,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
         if (coreRes.error) throw coreRes.error;
         if (appearanceRes.error) throw appearanceRes.error;
+        if (contentRes.error) throw contentRes.error;
+        if (adminRes.error) throw adminRes.error;
         if (assignmentsRes.error) throw assignmentsRes.error;
 
         console.log(`📊 Loaded ${assignmentsRes.data?.length || 0} assignments for year ${eventYear}`);
@@ -55,6 +59,16 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         const appearanceById = {};
         for (const row of appearanceRes.data || []) {
           if (row && row.id) appearanceById[row.id] = row;
+        }
+
+        const contentById = {};
+        for (const row of contentRes.data || []) {
+          if (row && row.id) contentById[row.id] = row;
+        }
+
+        const adminById = {};
+        for (const row of adminRes.data || []) {
+          if (row && row.id) adminById[row.id] = row;
         }
 
         // Group assignments by marker_id
@@ -76,26 +90,41 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         // Merge all data
         const mergedMarkers = (coreRes.data || []).map((marker) => {
           const appearance = appearanceById[marker.id] || {};
+          const content = contentById[marker.id] || {};
+          const admin = adminById[marker.id] || {};
           const assignments = assignmentsByMarker[marker.id] || [];
 
-          // For backward compatibility, if there's only one assignment,
-          // spread its data at the marker level
-          const primaryAssignment = assignments[0] || {};
+          // Determine content source based on marker type
+          let contentData = {};
+          if (marker.id < 1000) {
+            // Booth markers: use company assignment data
+            const primaryAssignment = assignments[0] || {};
+            contentData = {
+              name: primaryAssignment.name,
+              logo: primaryAssignment.logo,
+              website: primaryAssignment.website,
+              info: primaryAssignment.info,
+              companyId: primaryAssignment.companyId,
+              assignmentId: primaryAssignment.assignmentId,
+            };
+          } else {
+            // Special markers: use Markers_Content data
+            contentData = {
+              name: content.name,
+              logo: content.logo,
+              website: content.website,
+              info: content.info,
+            };
+          }
 
           return {
             ...marker,
             ...appearance,
+            ...contentData,
+            ...admin,
 
-            // Assignment data
+            // Assignment data (for booth markers)
             assignments, // Array of all assignments
-
-            // Primary assignment (for backward compatibility)
-            name: primaryAssignment.name,
-            logo: primaryAssignment.logo,
-            website: primaryAssignment.website,
-            info: primaryAssignment.info,
-            companyId: primaryAssignment.companyId,
-            assignmentId: primaryAssignment.assignmentId,
           };
         });
 
@@ -160,6 +189,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       })
       .subscribe();
 
+    const contentChannel = supabase
+      .channel('markers-content-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Content' }, () => {
+        loadMarkers(true);
+      })
+      .subscribe();
+
+    const adminChannel = supabase
+      .channel('markers-admin-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Admin' }, () => {
+        loadMarkers(true);
+      })
+      .subscribe();
+
     const assignmentsChannel = supabase
       .channel('assignments-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, (payload) => {
@@ -181,6 +224,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       window.removeEventListener('offline', handleOffline);
       supabase.removeChannel(coreChannel);
       supabase.removeChannel(appearanceChannel);
+      supabase.removeChannel(contentChannel);
+      supabase.removeChannel(adminChannel);
       supabase.removeChannel(assignmentsChannel);
       supabase.removeChannel(companiesChannel);
     };
