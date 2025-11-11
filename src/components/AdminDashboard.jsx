@@ -76,7 +76,7 @@ export default function AdminDashboard({
       ].includes(key)
     ) {
       table = 'Markers_Appearance';
-    } else if (['boothNumber', 'name', 'logo', 'website', 'info'].includes(key)) {
+    } else if (['name', 'logo', 'website', 'info'].includes(key)) {
       table = 'Markers_Content';
     } else if (
       [
@@ -117,7 +117,6 @@ export default function AdminDashboard({
   const COLUMNS = {
     core: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'lat', label: 'Lat' },
       { key: 'lng', label: 'Lng' },
@@ -126,20 +125,18 @@ export default function AdminDashboard({
     ],
     appearance: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'glyph', label: 'Booth Label' },
       { key: 'name', label: 'Name' },
       { key: 'iconUrl', label: 'Icon' },
       { key: 'iconSize', label: 'Icon Size' },
       { key: 'className', label: 'Class Name' },
       { key: 'prefix', label: 'Prefix' },
-      { key: 'glyph', label: 'Glyph' },
       { key: 'glyphColor', label: 'Glyph Color' },
       { key: 'glyphSize', label: 'Glyph Size' },
       { key: 'glyphAnchor', label: 'Glyph Anchor' },
     ],
     content: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'logo', label: 'Logo' },
       { key: 'website', label: 'Website' },
@@ -147,7 +144,6 @@ export default function AdminDashboard({
     ],
     admin: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'contact', label: 'Contact' },
       { key: 'phone', label: 'Phone' },
@@ -401,25 +397,19 @@ export default function AdminDashboard({
                         minWidth:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
                                 : undefined,
                         width:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
                                 : undefined,
                         maxWidth:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
                                 : undefined,
                         cursor: 'pointer',
@@ -541,7 +531,7 @@ export default function AdminDashboard({
                             'Reference field from Markers_Core; cannot be edited here.';
                         }
                         if (
-                          (col.key === 'boothNumber' || col.key === 'name') &&
+                          col.key === 'name' &&
                           activeTab !== 'content'
                         ) {
                           isReference = true;
