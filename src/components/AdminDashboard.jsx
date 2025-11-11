@@ -3,6 +3,7 @@ import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
 import CompaniesTab from './admin/CompaniesTab';
+import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import AssignmentsTab from './admin/AssignmentsTab';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
@@ -107,6 +108,7 @@ export default function AdminDashboard({
     { key: 'content', label: 'Markers - Content' },
     { key: 'admin', label: 'Markers - Admin' },
     { key: 'companies', label: 'Companies' },
+    { key: 'eventSubscriptions', label: 'Event Subscriptions' },
     { key: 'assignments', label: 'Assignments' },
   ];
   const COLUMNS = {
@@ -160,6 +162,7 @@ export default function AdminDashboard({
     content: { column: 'id', direction: 'asc' },
     admin: { column: 'id', direction: 'asc' },
     companies: { column: 'id', direction: 'asc' },
+    eventSubscriptions: { column: 'id', direction: 'asc' },
     assignments: { column: 'id', direction: 'asc' },
   });
 
@@ -332,6 +335,8 @@ export default function AdminDashboard({
               {/* Render new tab components */}
               {activeTab === 'companies' ? (
                 <CompaniesTab />
+              ) : activeTab === 'eventSubscriptions' ? (
+                <EventSubscriptionsTab selectedYear={new Date().getFullYear()} />
               ) : activeTab === 'assignments' ? (
                 <AssignmentsTab />
               ) : (
@@ -345,7 +350,7 @@ export default function AdminDashboard({
                           ? '▲'
                           : '▼'
                         : '';
-                      // For core tab, make id column small
+                      // Set specific column widths
                       const thStyle = {
                         position: 'sticky',
                         top: 0,
@@ -356,19 +361,25 @@ export default function AdminDashboard({
                             ? 80
                             : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         width:
                           col.key === 'id'
                             ? 80
                             : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         maxWidth:
                           col.key === 'id'
                             ? 80
                             : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         cursor: 'pointer',
                       };
                       return (
