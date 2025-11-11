@@ -262,7 +262,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               const boothLabels = getBoothLabels(subscription.company_id);
 
               return (
-                <tr key={subscription.id} className="hover:bg-gray-50 border-b">
+                <tr key={subscription.id} className="hover:bg-gray-50 border-b text-gray-900">
                   {/* Company name with logo */}
                   <td className="p-2">
                     <div className="flex items-center gap-2">
@@ -271,7 +271,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         alt={company?.name}
                         className="w-8 h-8 object-contain"
                       />
-                      <span className="font-semibold">{company?.name}</span>
+                      <span className="font-semibold text-gray-900">{company?.name}</span>
                     </div>
                   </td>
 
@@ -289,10 +289,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.contact || ''}
                         onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs"
+                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.contact || '-'}</span>
+                      <span className="text-xs text-gray-900">{subscription.contact || '-'}</span>
                     )}
                   </td>
 
@@ -303,10 +303,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.phone || ''}
                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs"
+                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.phone || '-'}</span>
+                      <span className="text-xs text-gray-900">{subscription.phone || '-'}</span>
                     )}
                   </td>
 
@@ -317,10 +317,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="email"
                         value={editForm.email || ''}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs"
+                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.email || '-'}</span>
+                      <span className="text-xs text-gray-900">{subscription.email || '-'}</span>
                     )}
                   </td>
 
@@ -332,10 +332,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         min="1"
                         value={editForm.booth_count || 1}
                         onChange={(e) => setEditForm({ ...editForm, booth_count: parseInt(e.target.value) })}
-                        className="w-16 px-2 py-1 border rounded text-xs text-center"
+                        className="w-16 px-2 py-1 border rounded text-xs text-center text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.booth_count}</span>
+                      <span className="text-xs text-gray-900">{subscription.booth_count}</span>
                     )}
                   </td>
 
@@ -346,11 +346,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.area || ''}
                         onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs"
+                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                         placeholder="large field, small field..."
                       />
                     ) : (
-                      <span className="text-xs">{subscription.area || '-'}</span>
+                      <span className="text-xs text-gray-900">{subscription.area || '-'}</span>
                     )}
                   </td>
 
@@ -363,10 +363,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           min="0"
                           value={editForm[field] || 0}
                           onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center"
+                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900"
                         />
                       ) : (
-                        <span className="text-xs">{subscription[field]}</span>
+                        <span className="text-xs text-gray-900">{subscription[field]}</span>
                       )}
                     </td>
                   ))}
@@ -380,10 +380,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           min="0"
                           value={editForm[field] || 0}
                           onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center"
+                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900"
                         />
                       ) : (
-                        <span className="text-xs">{subscription[field]}</span>
+                        <span className="text-xs text-gray-900">{subscription[field]}</span>
                       )}
                     </td>
                   ))}
@@ -399,7 +399,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-12 px-1 py-1 border rounded text-xs text-center"
                       />
                     ) : (
-                      <span className="text-xs">{subscription.coins}</span>
+                      <span className="text-xs text-gray-900">{subscription.coins}</span>
                     )}
                   </td>
 
@@ -409,11 +409,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <textarea
                         value={editForm.notes || ''}
                         onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs"
+                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                         rows={2}
                       />
                     ) : (
-                      <span className="text-xs">{subscription.notes || '-'}</span>
+                      <span className="text-xs text-gray-900">{subscription.notes || '-'}</span>
                     )}
                   </td>
 
