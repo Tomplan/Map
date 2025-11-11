@@ -5,7 +5,8 @@ import { FIELD_TABLE_MAP, LOCK_FIELDS } from '../config/markerTableConfig';
 const COMPANY_FIELDS = ['name', 'logo', 'website', 'info'];
 
 // Fields that belong to assignments table
-const ASSIGNMENT_FIELDS = ['boothNumber'];
+// Note: booth_number removed - now using glyphText from Markers_Appearance
+const ASSIGNMENT_FIELDS = [];
 
 /**
  * Update a marker field in Supabase
@@ -125,35 +126,21 @@ async function updateCompanyField(markerId, key, value, eventYear) {
 }
 
 /**
- * Update an assignment field (booth number)
- * @param {number} markerId - Marker ID
+ * Update an assignment field
+ * NOTE: This function is deprecated as booth_number has been removed.
+ * Keeping for backward compatibility but ASSIGNMENT_FIELDS is now empty.
+ * @param {number} _markerId - Marker ID (unused)
  * @param {string} key - Assignment field name
- * @param {*} value - New value
- * @param {number} eventYear - Current event year
+ * @param {*} _value - New value (unused)
+ * @param {number} _eventYear - Current event year (unused)
  * @returns {Promise<{error: Error | null}>}
  */
-async function updateAssignmentField(markerId, key, value, eventYear) {
+async function updateAssignmentField(_markerId, key, _value, _eventYear) {
   try {
-    // Map field name to assignment column
-    const columnMap = {
-      boothNumber: 'booth_number',
-    };
-
-    const column = columnMap[key] || key;
-
-    // Update the assignment
-    const { error } = await supabase
-      .from('assignments')
-      .update({ [column]: value })
-      .eq('marker_id', markerId)
-      .eq('event_year', eventYear);
-
-    if (error) {
-      console.error(`Failed to update ${key} for marker ${markerId}:`, error);
-      return { error };
-    }
-
-    return { error: null };
+    // No assignment fields currently supported
+    // booth_number removed - now using glyphText from Markers_Appearance
+    console.warn(`updateAssignmentField called with key: ${key}, but no assignment fields are supported`);
+    return { error: new Error('No assignment fields supported') };
   } catch (error) {
     console.error(`Exception updating assignment field ${key}:`, error);
     return { error };

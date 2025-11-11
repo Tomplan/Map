@@ -69,7 +69,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           assignmentsByMarker[assignment.marker_id].push({
             assignmentId: assignment.id,
             companyId: assignment.company_id,
-            boothNumber: assignment.booth_number,
             ...assignment.company, // Spread company data (name, logo, website, info)
           });
         }
@@ -91,7 +90,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
             assignments, // Array of all assignments
 
             // Primary assignment (for backward compatibility)
-            boothNumber: primaryAssignment.boothNumber,
             name: primaryAssignment.name,
             logo: primaryAssignment.logo,
             website: primaryAssignment.website,
@@ -109,7 +107,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               id: sampleMarker.id,
               name: sampleMarker.name,
               logo: sampleMarker.logo,
-              boothNumber: sampleMarker.boothNumber,
+              glyphText: sampleMarker.glyph, // Using glyphText from Markers_Appearance
               website: sampleMarker.website,
               info: sampleMarker.info
             });

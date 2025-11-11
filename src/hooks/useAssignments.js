@@ -119,11 +119,11 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
   // Assign company to marker
   const assignCompanyToMarker = useCallback(
-    async (markerId, companyId, boothNumber = null) => {
+    async (markerId, companyId) => {
       return createAssignment({
         marker_id: markerId,
         company_id: companyId,
-        booth_number: boothNumber,
+        // Note: booth_number removed - now using glyphText from Markers_Appearance
       });
     },
     [createAssignment]

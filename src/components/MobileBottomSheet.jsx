@@ -60,7 +60,9 @@ const BottomSheet = ({ marker, onClose }) => {
 
           {/* Name and Booth */}
           <div className="text-base font-semibold text-gray-900">{marker.name}</div>
-          <div className="text-sm text-gray-700 mb-1">Booth {marker.boothNumber}</div>
+          {marker.glyph && (
+            <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>
+          )}
 
           {/* Website */}
           {marker.website && (
