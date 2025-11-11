@@ -44,7 +44,7 @@ export const FIELD_TABLE_MAP = {
   appearanceLocked: 'Markers_Appearance',
 
   // Content fields
-  boothNumber: 'Markers_Content',
+  // Note: boothNumber removed - now using glyphText from Markers_Appearance
   name: 'Markers_Content',
   logo: 'Markers_Content',
   website: 'Markers_Content',
@@ -92,7 +92,7 @@ export const COLUMN_CONFIGS = {
   ],
   [TABS.CONTENT]: [
     { key: 'id', label: 'ID', editable: false },
-    { key: 'boothNumber', label: 'Booth #' },
+    // Note: boothNumber removed - now using glyphText from Markers_Appearance
     { key: 'name', label: 'Name' },
     { key: 'logo', label: 'Logo', type: 'logo' },
     { key: 'website', label: 'Website' },

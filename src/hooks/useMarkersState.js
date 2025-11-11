@@ -20,7 +20,7 @@ export default function useMarkersState(initialMarkers = []) {
     'glyphAnchor',
     'appearanceLocked',
   ];
-  const contentFields = ['boothNumber', 'name', 'logo', 'website', 'info', 'contentLocked'];
+  const contentFields = ['name', 'logo', 'website', 'info', 'contentLocked'];
   const adminFields = [
     'contact',
     'phone',

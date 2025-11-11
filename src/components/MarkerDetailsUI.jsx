@@ -16,9 +16,9 @@ export const MarkerTooltipContent = ({ marker }) => (
       />
     </div>
     <div className="flex flex-col min-w-0">
-      {marker.boothNumber && (
+      {marker.glyph && (
         <div className="text-xs font-semibold text-gray-700">
-          Booth {marker.boothNumber}
+          Booth {marker.glyph}
         </div>
       )}
       {marker.name && (
@@ -49,9 +49,11 @@ export const MarkerPopupDesktop = ({ marker }) => (
           />
         </div>
         <div className="text-base font-semibold text-gray-900 mb-1">{marker.name}</div>
-        <div className="text-sm text-gray-700 mb-2">
-          Booth {marker.boothNumber}
-        </div>
+        {marker.glyph && (
+          <div className="text-sm text-gray-700 mb-2">
+            Booth {marker.glyph}
+          </div>
+        )}
         {marker.website && (
           <div className="text-sm mb-2">
             <a
@@ -98,9 +100,11 @@ export const MarkerPopupMobile = ({ marker, onMoreInfo }) => (
         />
       </div>
       <div className="font-semibold text-gray-900 text-sm">{marker.name}</div>
-      <div className="text-xs text-gray-700 mb-2">
-        Booth {marker.boothNumber}
-      </div>
+      {marker.glyph && (
+        <div className="text-xs text-gray-700 mb-2">
+          Booth {marker.glyph}
+        </div>
+      )}
       <button
         onClick={onMoreInfo}
         className="bg-blue-500/90 text-white text-xs px-3 py-1 rounded-full hover:bg-blue-600"
