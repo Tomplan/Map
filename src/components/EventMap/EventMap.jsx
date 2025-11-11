@@ -6,11 +6,12 @@ import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
 import MapControls from './MapControls';
-import { iconCreateFunction } from '../../utils/clusterIcons';
+import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../utils/useIsMobile';
+import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -72,9 +73,16 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
   const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [searchLayer, setSearchLayer] = useState(null);
-  
+  const { organizationLogo } = useOrganizationLogo();
+
   const searchControlRef = useRef(null);
   const rectangleLayerRef = useRef(null);
+
+  // Create the iconCreateFunction with organization logo
+  const iconCreateFunction = useMemo(
+    () => createIconCreateFunction(organizationLogo),
+    [organizationLogo]
+  );
   
   const { t } = useTranslation();
   const isMobile = useIsMobile();

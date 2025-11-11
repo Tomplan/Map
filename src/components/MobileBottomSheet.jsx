@@ -2,11 +2,12 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMap } from 'react-leaflet';
-import { getLogoPath } from '../utils/getLogoPath';
-import { BRANDING_CONFIG } from '../config/mapConfig';
+import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
+import { getLogoWithFallback } from '../utils/getDefaultLogo';
 
 const BottomSheet = ({ marker, onClose }) => {
   const map = useMap();
+  const { organizationLogo } = useOrganizationLogo();
 
   // Lock map dragging while sheet is open
   useEffect(() => {
@@ -52,7 +53,7 @@ const BottomSheet = ({ marker, onClose }) => {
           {/* Logo */}
           <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
             <img
-              src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+              src={getLogoWithFallback(marker.logo, organizationLogo)}
               alt={marker.name || 'Logo'}
               className="max-w-[80%] max-h-[80%] object-contain"
             />

@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
-import BrandingSettings from './BrandingSettings';
 import CompaniesTab from './admin/CompaniesTab';
 import AssignmentsTab from './admin/AssignmentsTab';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
-import { BRANDING_CONFIG } from '../config/mapConfig';
 
 // List of available SVG icons for selection
 const ICON_OPTIONS = [
@@ -101,10 +99,7 @@ export default function AdminDashboard({
       .eq('id', id);
   }
   const [showDashboard, setShowDashboard] = useState(false);
-  // Branding settings save handler
-  const handleBrandingChange = async (newSettings) => {
-    await supabase.from('Branding').upsert({ id: 1, ...newSettings });
-  };
+
   // Tabs and columns remain for UI, but marker data comes from markersState
   const TABS = [
     { key: 'core', label: 'Markers - Core' },
@@ -289,40 +284,6 @@ export default function AdminDashboard({
     URL.revokeObjectURL(url);
   }
 
-  // Branding state for live sync
-  const [branding, setBranding] = useState({
-    logo: BRANDING_CONFIG.DEFAULT_LOGO,
-    themeColor: '#ffffff',
-    fontFamily: 'Arvo, Sans-serif',
-    eventName: '4x4 Vakantiebeurs',
-    id: 1,
-  });
-
-  // Fetch initial branding data
-  useEffect(() => {
-    async function fetchBranding() {
-      const { data } = await supabase.from('Branding').select('*').eq('id', 1).single();
-      if (data) setBranding(data);
-    }
-    fetchBranding();
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('branding-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'Branding',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          if (payload.new) setBranding(payload.new);
-        },
-      )
-      .subscribe();
-  }, []);
-
   return (
     <div className="relative w-full h-screen">
       {/* Map fills the whole screen */}
@@ -347,10 +308,6 @@ export default function AdminDashboard({
             className="bg-white rounded-lg shadow-2xl p-2 w-full"
             style={{ maxHeight: '100svh', overflowY: 'auto', opacity: 0.9 }}
           >
-            {/* Branding settings at top of dashboard */}
-            <div className="w-full flex justify-center mb-6">
-              <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
-            </div>
             {/* Marker tables for each tab */}
             <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
               {TABS.map((tab) => (

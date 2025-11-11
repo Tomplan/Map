@@ -1,16 +1,15 @@
 import React from 'react';
 import { Tooltip, Popup } from 'react-leaflet';
-import { getLogoPath } from '../utils/getLogoPath';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../utils/useIsMobile';
-import { BRANDING_CONFIG } from '../config/mapConfig';
+import { getLogoWithFallback } from '../utils/getDefaultLogo';
 
 // --- Tooltip for both cluster + special markers ---
-export const MarkerTooltipContent = ({ marker }) => (
+export const MarkerTooltipContent = ({ marker, organizationLogo }) => (
   <div className="flex items-center gap-2 p-1">
     <div className="w-8 h-8 flex items-center justify-center bg-white rounded-sm border border-gray-200 overflow-hidden">
       <img
-        src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+        src={getLogoWithFallback(marker.logo, organizationLogo)}
         alt=""
         className="max-w-[70%] max-h-[70%] object-contain"
       />
@@ -31,10 +30,10 @@ export const MarkerTooltipContent = ({ marker }) => (
 );
 
 // --- Desktop Popup with scrollable content ---
-export const MarkerPopupDesktop = ({ marker }) => (
-  <Popup 
-    closeButton={true} 
-    className="marker-popup-scrollable" 
+export const MarkerPopupDesktop = ({ marker, organizationLogo }) => (
+  <Popup
+    closeButton={true}
+    className="marker-popup-scrollable"
     autoPan={true}
     maxWidth={320}
     minWidth={240}
@@ -43,7 +42,7 @@ export const MarkerPopupDesktop = ({ marker }) => (
       <div className="popup-scroll-content">
         <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
           <img
-            src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+            src={getLogoWithFallback(marker.logo, organizationLogo)}
             alt={marker.name || 'Logo'}
             className="max-w-[80%] max-h-[80%] object-contain"
           />
@@ -89,12 +88,12 @@ export const MarkerPopupDesktop = ({ marker }) => (
 );
 
 // --- Mobile Popup + Bottom Sheet pair ---
-export const MarkerPopupMobile = ({ marker, onMoreInfo }) => (
+export const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => (
   <Popup closeButton={true} className="marker-popup" autoPan={true}>
     <div className="p-2 text-center">
       <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
         <img
-          src={getLogoPath(marker.logo && marker.logo.trim() !== '' ? marker.logo : BRANDING_CONFIG.getDefaultLogoPath())}
+          src={getLogoWithFallback(marker.logo, organizationLogo)}
           alt=""
           className="max-w-[80%] max-h-[80%] object-contain"
         />
@@ -116,16 +115,16 @@ export const MarkerPopupMobile = ({ marker, onMoreInfo }) => (
 );
 
 // --- Combined helper ---
-export const MarkerUI = ({ marker, onMoreInfo, isMobile }) => (
+export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => (
   <>
     {!isMobile && (
       <>
         <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
-          <MarkerTooltipContent marker={marker} />
+          <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
         </Tooltip>
-        <MarkerPopupDesktop marker={marker} />
+        <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
       </>
     )}
-    {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} />}
+    {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
   </>
 );

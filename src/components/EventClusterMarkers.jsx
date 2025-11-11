@@ -6,6 +6,7 @@ import { createMarkerIcon } from '../utils/markerIcons';
 import useIsMobile from '../utils/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
+import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import './MobileBottomSheet.css';
 
 const CLUSTER_CONFIG = {
@@ -54,7 +55,8 @@ const getMarkerKey = (marker) =>
 function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
-  const [selectedMarker, setSelectedMarker] = useState(null); // NEW STATE
+  const [selectedMarker, setSelectedMarker] = useState(null);
+  const { organizationLogo } = useOrganizationLogo();
 
   const filteredMarkers = useMemo(
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
@@ -112,6 +114,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
               <MarkerUI
                 marker={marker}
                 isMobile={isMobile}
+                organizationLogo={organizationLogo}
                 onMoreInfo={() => {
                   setSelectedMarker(marker);
                 }}
