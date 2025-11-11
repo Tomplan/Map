@@ -12,9 +12,7 @@ import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown 
  */
 const SORT_STORAGE_KEY = 'assignmentsTab_sortPreferences';
 
-export default function AssignmentsTab() {
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+export default function AssignmentsTab({ selectedYear }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Load sort preferences from localStorage on mount
@@ -314,23 +312,9 @@ export default function AssignmentsTab() {
       {/* Header with controls */}
       <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
         <div className="flex flex-col md:flex-row md:justify-between gap-4">
-          {/* Left side: Year, Archive, and Search */}
+          {/* Left side: Archive and Search */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <label className="font-semibold text-gray-700">Year:</label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                  className="px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500"
-                >
-                  {[currentYear + 1, currentYear, currentYear - 1, currentYear - 2].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-              </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleViewArchived(selectedYear)}
