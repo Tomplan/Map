@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo, useState } from 'react';
+import React, { useRef, useCallback, useMemo, useState, memo } from 'react';
 import { Marker } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { getIconPath } from '../utils/getIconPath';
@@ -48,9 +48,53 @@ const createIcon = (marker, isActive = false) =>
 
 
 
-  
+
+// Optimized marker key - only includes properties that affect visual rendering
+// Excludes metadata (companyId, assignmentId, name, locks) to prevent unnecessary unmount/remount
 const getMarkerKey = (marker) =>
-  `${marker.id}-${marker.coreLocked}-${marker.appearanceLocked}-${marker.contentLocked}-${marker.adminLocked}`;
+  `${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
+
+// Memoized individual marker component to prevent unnecessary re-renders
+const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerRef, isMobile, organizationLogo, onMarkerSelect }) => (
+  <Marker
+    position={[marker.lat, marker.lng]}
+    icon={icon}
+    draggable={isDraggable}
+    eventHandlers={eventHandlers}
+    ref={markerRef}
+  >
+    <MarkerUI
+      marker={marker}
+      isMobile={isMobile}
+      organizationLogo={organizationLogo}
+      onMoreInfo={() => onMarkerSelect(marker)}
+    />
+  </Marker>
+), (prevProps, nextProps) => {
+  // Return true to SKIP re-render, false to re-render
+  // Check if cached icon is the same object (meaning visual properties haven't changed)
+  const iconUnchanged = prevProps.icon === nextProps.icon;
+  const draggableUnchanged = prevProps.isDraggable === nextProps.isDraggable;
+  const handlersUnchanged = prevProps.eventHandlers === nextProps.eventHandlers;
+
+  // If visual properties unchanged, check if tooltip content needs update
+  if (iconUnchanged && draggableUnchanged && handlersUnchanged) {
+    // Allow tooltip/popup content to update without remounting marker
+    // Check if metadata changed (name, logo, website, info)
+    const metadataChanged =
+      prevProps.marker.name !== nextProps.marker.name ||
+      prevProps.marker.logo !== nextProps.marker.logo ||
+      prevProps.marker.website !== nextProps.marker.website ||
+      prevProps.marker.info !== nextProps.marker.info;
+
+    // If only metadata changed, allow re-render (return false)
+    // If nothing changed, skip re-render (return true)
+    return !metadataChanged;
+  }
+
+  // Visual properties changed, must re-render
+  return false;
+});
 
 function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction }) {
   const markerRefs = useRef({});
@@ -76,13 +120,31 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     return markerRefs.current[markerId];
   }, []);
 
+  // Memoize event handlers by marker ID to prevent recreation
+  const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
-    (markerId) => ({
-      dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
-      popupopen: (e) => e.target.closeTooltip(),
-    }),
+    (markerId) => {
+      const key = `${markerId}-${isMarkerDraggable ? 'draggable' : 'static'}`;
+      if (!eventHandlersByMarker.current[key]) {
+        eventHandlersByMarker.current[key] = {
+          dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+          popupopen: (e) => e.target.closeTooltip(),
+        };
+      }
+      return eventHandlersByMarker.current[key];
+    },
     [isMarkerDraggable, handleDragEnd]
   );
+
+  // Memoize icons by marker visual properties to prevent recreation
+  const iconsByMarker = useRef({});
+  const getIcon = useCallback((marker, isSelected) => {
+    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}`;
+    if (!iconsByMarker.current[key]) {
+      iconsByMarker.current[key] = createIcon(marker, isSelected);
+    }
+    return iconsByMarker.current[key];
+  }, []);
 
   return (
     <>
@@ -96,30 +158,23 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         iconCreateFunction={iconCreateFunction}
       >
         {filteredMarkers.map((marker) => {
-          const position = [marker.lat, marker.lng];
-          const icon = createIcon(marker, selectedMarker?.id === marker.id); // pass isActive
+          const isSelected = selectedMarker?.id === marker.id;
+          const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
           const markerKey = getMarkerKey(marker);
-          
 
           return (
-            <Marker
+            <MemoizedMarker
               key={markerKey}
-              position={position}
+              marker={marker}
+              isDraggable={isDraggable}
               icon={icon}
-              draggable={isDraggable}
               eventHandlers={getEventHandlers(marker.id)}
-              ref={getMarkerRef(marker.id)}
-            >
-              <MarkerUI
-                marker={marker}
-                isMobile={isMobile}
-                organizationLogo={organizationLogo}
-                onMoreInfo={() => {
-                  setSelectedMarker(marker);
-                }}
-              />
-            </Marker>
+              markerRef={getMarkerRef(marker.id)}
+              isMobile={isMobile}
+              organizationLogo={organizationLogo}
+              onMarkerSelect={setSelectedMarker}
+            />
           );
         })}
       </MarkerClusterGroup>

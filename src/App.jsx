@@ -11,17 +11,24 @@ import './i18n';
 import './App.css';
 
 function App() {
-  // Fetch marker data from Supabase
-  const { markers } = useEventMarkers();
-  // Shared marker state for map and dashboard
-  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers);
+  // Global year selector for filtering markers by event year
+  const currentYear = new Date().getFullYear();
 
-  // Sync markersState whenever markers change
+  // Load selected year from localStorage or default to current year
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const stored = localStorage.getItem('selectedEventYear');
+    return stored ? parseInt(stored, 10) : currentYear;
+  });
+
+  // Persist selected year to localStorage whenever it changes
   useEffect(() => {
-    if (Array.isArray(markers)) {
-      setMarkersState(markers);
-    }
-  }, [markers, setMarkersState]);
+    localStorage.setItem('selectedEventYear', selectedYear.toString());
+  }, [selectedYear]);
+
+  // Fetch marker data from Supabase filtered by selected year
+  const { markers } = useEventMarkers(selectedYear);
+  // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
+  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers);
 
   const [branding, setBranding] = useState({
     logo: null, // Will be set from Organization_Profile
@@ -115,6 +122,8 @@ function App() {
           updateMarker={updateMarker}
           setMarkersState={setMarkersState}
           onLogin={setUser}
+          selectedYear={selectedYear}
+          setSelectedYear={setSelectedYear}
         />
       </Router>
     </OrganizationLogoProvider>

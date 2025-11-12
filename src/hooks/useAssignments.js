@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 /**
@@ -9,12 +9,23 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Use ref to store current eventYear so real-time subscriptions always use latest value
+  const eventYearRef = useRef(eventYear);
+
+  // Update ref whenever eventYear changes
+  useEffect(() => {
+    eventYearRef.current = eventYear;
+  }, [eventYear]);
+
   // Load assignments for specific year
   const loadAssignments = useCallback(
-    async (year = eventYear) => {
+    async (year) => {
       try {
         setLoading(true);
         setError(null);
+
+        // Always use the latest eventYear from ref if no year specified
+        const targetYear = year !== undefined ? year : eventYearRef.current;
 
         const { data, error: fetchError } = await supabase
           .from('assignments')
@@ -25,7 +36,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           marker:Markers_Core(id, lat, lng)
         `
           )
-          .eq('event_year', year)
+          .eq('event_year', targetYear)
           .order('marker_id', { ascending: true });
 
         if (fetchError) throw fetchError;
@@ -38,7 +49,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         setLoading(false);
       }
     },
-    [eventYear]
+    [] // eventYear removed from dependencies
   );
 
   // Create new assignment
@@ -215,6 +226,11 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   useEffect(() => {
     loadAssignments();
   }, [loadAssignments]);
+
+  // Reload assignments when eventYear changes
+  useEffect(() => {
+    loadAssignments();
+  }, [eventYear, loadAssignments]);
 
   // Subscribe to realtime changes
   useEffect(() => {

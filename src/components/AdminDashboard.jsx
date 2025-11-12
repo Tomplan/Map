@@ -28,6 +28,8 @@ export default function AdminDashboard({
   setMarkersState,
   updateMarker,
   isAdminView,
+  selectedYear,
+  setSelectedYear,
 }) {
   // Track iconSize input values for each marker by ID
   const [iconSizeInputs, setIconSizeInputs] = useState({});
@@ -156,9 +158,8 @@ export default function AdminDashboard({
   };
   const [activeTab, setActiveTab] = useState('core');
 
-  // Global year selector for year-based tabs (Event Subscriptions, Assignments)
+  // Current year for year selector range
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   // Sorting state: column and direction per tab
   const [sortState, setSortState] = useState({
@@ -339,8 +340,8 @@ export default function AdminDashboard({
                 ))}
               </div>
 
-              {/* Global Year Selector - only show for year-based tabs */}
-              {(activeTab === 'eventSubscriptions' || activeTab === 'assignments') && (
+              {/* Global Year Selector - show for all tabs except Companies */}
+              {activeTab !== 'companies' && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <label style={{ fontWeight: 'bold', color: '#1976d2' }}>Event Year:</label>
                   <select
