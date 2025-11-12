@@ -12,7 +12,6 @@ export function useMarkerSorting(markers, activeTab) {
     core: { column: 'id', direction: 'asc' },
     appearance: { column: 'id', direction: 'asc' },
     content: { column: 'id', direction: 'asc' },
-    admin: { column: 'id', direction: 'asc' },
     companies: { column: 'id', direction: 'asc' },
     eventSubscriptions: { column: 'id', direction: 'asc' },
     assignments: { column: 'id', direction: 'asc' },
