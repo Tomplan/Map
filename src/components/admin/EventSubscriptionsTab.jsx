@@ -304,12 +304,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       <div className="overflow-x-auto border rounded-lg">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100 text-gray-900 sticky top-0">
+            {/* Main header row with grouped columns */}
             <tr>
               {/* Booths - First column with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
                 onClick={() => handleSort('booths')}
                 title="Click to sort by booth labels"
+                rowSpan={2}
               >
                 <div className="flex items-center gap-1">
                   <span>Booths</span>
@@ -327,6 +329,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
                 onClick={() => handleSort('company')}
                 title="Click to sort by company name"
+                rowSpan={2}
               >
                 <div className="flex items-center gap-1">
                   <span>Company</span>
@@ -339,19 +342,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b">Contact</th>
-              <th className="p-2 text-left border-b">Phone</th>
-              <th className="p-2 text-left border-b">Email</th>
-              <th className="p-2 text-center border-b">Booth Count</th>
-              <th className="p-2 text-left border-b">Area</th>
-              <th className="p-2 text-center border-b">Breakfast (Sat)</th>
-              <th className="p-2 text-center border-b">Lunch (Sat)</th>
-              <th className="p-2 text-center border-b">BBQ (Sat)</th>
-              <th className="p-2 text-center border-b">Breakfast (Sun)</th>
-              <th className="p-2 text-center border-b">Lunch (Sun)</th>
-              <th className="p-2 text-center border-b">Coins</th>
-              <th className="p-2 text-left border-b">Notes</th>
-              <th className="p-2 text-center border-b" style={{ minWidth: '80px' }}>Actions</th>
+              <th className="p-2 text-left border-b" rowSpan={2}>Contact</th>
+              <th className="p-2 text-left border-b" rowSpan={2}>Phone</th>
+              <th className="p-2 text-left border-b" rowSpan={2}>Email</th>
+              <th className="p-2 text-center border-b" rowSpan={2}>Booth Count</th>
+              <th className="p-2 text-left border-b" rowSpan={2}>Area</th>
+              <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
+                <span className="font-bold text-blue-700">Saturday</span>
+              </th>
+              <th className="p-2 text-center border-b bg-green-50" colSpan={2}>
+                <span className="font-bold text-green-700">Sunday</span>
+              </th>
+              <th className="p-2 text-center border-b" rowSpan={2}>Coins</th>
+              <th className="p-2 text-left border-b" rowSpan={2}>Notes</th>
+              <th className="p-2 text-center border-b" rowSpan={2} style={{ minWidth: '80px' }}>Actions</th>
+            </tr>
+            {/* Sub-header row for meals */}
+            <tr>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs">Breakfast</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs">Lunch</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs">BBQ</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs">Breakfast</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs">Lunch</th>
             </tr>
           </thead>
           <tbody>
