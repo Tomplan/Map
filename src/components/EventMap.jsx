@@ -189,8 +189,8 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
     // Add Leaflet marker objects for each marker
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
-        // Combine name and booth number for search
-        const searchText = [marker.name, marker.boothNumber, marker.label]
+        // Combine name and glyph text for search
+        const searchText = [marker.name, marker.glyph, marker.label]
           .filter(Boolean)
           .join(' | ');
         const leafletMarker = L.marker([marker.lat, marker.lng], {

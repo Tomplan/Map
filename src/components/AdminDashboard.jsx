@@ -2,14 +2,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
-import BrandingSettings from './BrandingSettings';
 import CompaniesTab from './admin/CompaniesTab';
+import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import AssignmentsTab from './admin/AssignmentsTab';
 import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
-import { BRANDING_CONFIG } from '../config/mapConfig';
 
 // List of available SVG icons for selection
 const ICON_OPTIONS = [
@@ -29,6 +28,8 @@ export default function AdminDashboard({
   setMarkersState,
   updateMarker,
   isAdminView,
+  selectedYear,
+  setSelectedYear,
 }) {
   // Track iconSize input values for each marker by ID
   const [iconSizeInputs, setIconSizeInputs] = useState({});
@@ -76,7 +77,7 @@ export default function AdminDashboard({
       ].includes(key)
     ) {
       table = 'Markers_Appearance';
-    } else if (['boothNumber', 'name', 'logo', 'website', 'info'].includes(key)) {
+    } else if (['name', 'logo', 'website', 'info'].includes(key)) {
       table = 'Markers_Content';
     } else if (
       [
@@ -101,10 +102,7 @@ export default function AdminDashboard({
       .eq('id', id);
   }
   const [showDashboard, setShowDashboard] = useState(false);
-  // Branding settings save handler
-  const handleBrandingChange = async (newSettings) => {
-    await supabase.from('Branding').upsert({ id: 1, ...newSettings });
-  };
+
   // Tabs and columns remain for UI, but marker data comes from markersState
   const TABS = [
     { key: 'core', label: 'Markers - Core' },
@@ -112,12 +110,12 @@ export default function AdminDashboard({
     { key: 'content', label: 'Markers - Content' },
     { key: 'admin', label: 'Markers - Admin' },
     { key: 'companies', label: 'Companies' },
+    { key: 'eventSubscriptions', label: 'Event Subscriptions' },
     { key: 'assignments', label: 'Assignments' },
   ];
   const COLUMNS = {
     core: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'lat', label: 'Lat' },
       { key: 'lng', label: 'Lng' },
@@ -126,20 +124,18 @@ export default function AdminDashboard({
     ],
     appearance: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
+      { key: 'glyph', label: 'Booth Label' },
       { key: 'name', label: 'Name' },
       { key: 'iconUrl', label: 'Icon' },
       { key: 'iconSize', label: 'Icon Size' },
       { key: 'className', label: 'Class Name' },
       { key: 'prefix', label: 'Prefix' },
-      { key: 'glyph', label: 'Glyph' },
       { key: 'glyphColor', label: 'Glyph Color' },
       { key: 'glyphSize', label: 'Glyph Size' },
       { key: 'glyphAnchor', label: 'Glyph Anchor' },
     ],
     content: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'logo', label: 'Logo' },
       { key: 'website', label: 'Website' },
@@ -147,7 +143,6 @@ export default function AdminDashboard({
     ],
     admin: [
       { key: 'id', label: 'ID' },
-      { key: 'boothNumber', label: 'Booth #' },
       { key: 'name', label: 'Name' },
       { key: 'contact', label: 'Contact' },
       { key: 'phone', label: 'Phone' },
@@ -162,6 +157,10 @@ export default function AdminDashboard({
     ],
   };
   const [activeTab, setActiveTab] = useState('core');
+
+  // Current year for year selector range
+  const currentYear = new Date().getFullYear();
+
   // Sorting state: column and direction per tab
   const [sortState, setSortState] = useState({
     core: { column: 'id', direction: 'asc' },
@@ -169,6 +168,7 @@ export default function AdminDashboard({
     content: { column: 'id', direction: 'asc' },
     admin: { column: 'id', direction: 'asc' },
     companies: { column: 'id', direction: 'asc' },
+    eventSubscriptions: { column: 'id', direction: 'asc' },
     assignments: { column: 'id', direction: 'asc' },
   });
 
@@ -217,43 +217,49 @@ export default function AdminDashboard({
 
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
+    // Get current marker state before updating
+    const currentMarker = markersState.find((m) => m.id === id);
+    if (!currentMarker) return;
+
+    // Determine which lock field to update
+    let lockField, newValue, table;
+    if (activeTab === 'appearance') {
+      lockField = 'appearanceLocked';
+      newValue = !currentMarker.appearanceLocked;
+      table = 'Markers_Appearance';
+    } else if (activeTab === 'content') {
+      lockField = 'contentLocked';
+      newValue = !currentMarker.contentLocked;
+      table = 'Markers_Content';
+    } else if (activeTab === 'admin') {
+      lockField = 'adminLocked';
+      newValue = !currentMarker.adminLocked;
+      table = 'Markers_Admin';
+    } else {
+      lockField = 'coreLocked';
+      newValue = !currentMarker.coreLocked;
+      table = 'Markers_Core';
+    }
+
+    // Update database first
+    const { error } = await supabase
+      .from(table)
+      .update({ [lockField]: newValue })
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Failed to update ${lockField}:`, error);
+      alert(`Error updating lock: ${error.message}`);
+      return;
+    }
+
+    // Only update local state after successful database update
     setMarkersState((prev) => {
       return prev.map((m) => {
         if (m.id !== id) return m;
-        if (activeTab === 'appearance') {
-          return { ...m, appearanceLocked: !m.appearanceLocked };
-        } else if (activeTab === 'content') {
-          return { ...m, contentLocked: !m.contentLocked };
-        } else if (activeTab === 'admin') {
-          return { ...m, adminLocked: !m.adminLocked };
-        } else {
-          return { ...m, coreLocked: !m.coreLocked };
-        }
+        return { ...m, [lockField]: newValue };
       });
     });
-    // Auto-save to Supabase
-    const currentMarker = markersState.find((m) => m.id === id);
-    if (currentMarker) {
-      if (activeTab === 'appearance') {
-        const newAppearanceLocked = !currentMarker.appearanceLocked;
-        await supabase
-          .from('Markers_Appearance')
-          .update({ appearanceLocked: newAppearanceLocked })
-          .eq('id', id);
-      } else if (activeTab === 'content') {
-        const newContentLocked = !currentMarker.contentLocked;
-        await supabase
-          .from('Markers_Content')
-          .update({ contentLocked: newContentLocked })
-          .eq('id', id);
-      } else if (activeTab === 'admin') {
-        const newAdminLocked = !currentMarker.adminLocked;
-        await supabase.from('Markers_Admin').update({ adminLocked: newAdminLocked }).eq('id', id);
-      } else {
-        const newCoreLocked = !currentMarker.coreLocked;
-        await supabase.from('Markers_Core').update({ coreLocked: newCoreLocked }).eq('id', id);
-      }
-    }
   }
 
   // Undo/redo logic for marker state
@@ -287,40 +293,6 @@ export default function AdminDashboard({
     URL.revokeObjectURL(url);
   }
 
-  // Branding state for live sync
-  const [branding, setBranding] = useState({
-    logo: BRANDING_CONFIG.DEFAULT_LOGO,
-    themeColor: '#ffffff',
-    fontFamily: 'Arvo, Sans-serif',
-    eventName: '4x4 Vakantiebeurs',
-    id: 1,
-  });
-
-  // Fetch initial branding data
-  useEffect(() => {
-    async function fetchBranding() {
-      const { data } = await supabase.from('Branding').select('*').eq('id', 1).single();
-      if (data) setBranding(data);
-    }
-    fetchBranding();
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('branding-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'Branding',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          if (payload.new) setBranding(payload.new);
-        },
-      )
-      .subscribe();
-  }, []);
-
   return (
     <div className="relative w-full h-screen">
       {/* Map fills the whole screen */}
@@ -345,36 +317,62 @@ export default function AdminDashboard({
             className="bg-white rounded-lg shadow-2xl p-2 w-full"
             style={{ maxHeight: '100svh', overflowY: 'auto', opacity: 0.9 }}
           >
-            {/* Branding settings at top of dashboard */}
-            <div className="w-full flex justify-center mb-6">
-              <BrandingSettings onChange={handleBrandingChange} initialValues={branding} />
-            </div>
-            {/* Marker tables for each tab */}
-            <div style={{ marginBottom: '1rem', textAlign: 'left' }}>
-              {TABS.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  style={{
-                    marginRight: 8,
-                    padding: '0.5rem 1rem',
-                    background: activeTab === tab.key ? '#1976d2' : '#eee',
-                    color: activeTab === tab.key ? '#fff' : '#333',
-                    border: 'none',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            {/* Header with tabs and year selector */}
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Tabs */}
+              <div style={{ textAlign: 'left' }}>
+                {TABS.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      marginRight: 8,
+                      padding: '0.5rem 1rem',
+                      background: activeTab === tab.key ? '#1976d2' : '#eee',
+                      color: activeTab === tab.key ? '#fff' : '#333',
+                      border: 'none',
+                      borderRadius: 4,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Global Year Selector - show for all tabs except Companies */}
+              {activeTab !== 'companies' && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <label style={{ fontWeight: 'bold', color: '#1976d2' }}>Event Year:</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      border: '2px solid #1976d2',
+                      borderRadius: 4,
+                      background: 'white',
+                      color: '#333',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    {Array.from({ length: 10 }, (_, i) => currentYear - 5 + i).map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
             <div style={{ maxHeight: '72vh', overflowY: 'auto' }}>
               {/* Render new tab components */}
               {activeTab === 'companies' ? (
                 <CompaniesTab />
+              ) : activeTab === 'eventSubscriptions' ? (
+                <EventSubscriptionsTab selectedYear={selectedYear} />
               ) : activeTab === 'assignments' ? (
-                <AssignmentsTab />
+                <AssignmentsTab selectedYear={selectedYear} />
               ) : (
                 <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
                   <thead>
@@ -386,7 +384,7 @@ export default function AdminDashboard({
                           ? '▲'
                           : '▼'
                         : '';
-                      // For core tab, make id column small
+                      // Set specific column widths
                       const thStyle = {
                         position: 'sticky',
                         top: 0,
@@ -395,27 +393,27 @@ export default function AdminDashboard({
                         minWidth:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         width:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         maxWidth:
                           col.key === 'id'
                             ? 80
-                            : col.key === 'boothNumber'
-                              ? 80
-                              : col.key === 'iconUrl'
+                            : col.key === 'iconUrl'
                                 ? 40
-                                : undefined,
+                                : col.key === 'glyph'
+                                    ? 100
+                                    : undefined,
                         cursor: 'pointer',
                       };
                       return (
@@ -535,12 +533,18 @@ export default function AdminDashboard({
                             'Reference field from Markers_Core; cannot be edited here.';
                         }
                         if (
-                          (col.key === 'boothNumber' || col.key === 'name') &&
+                          col.key === 'name' &&
                           activeTab !== 'content'
                         ) {
                           isReference = true;
                           referenceTooltip =
                             'Reference field from Markers_Content; cannot be edited here.';
+                        }
+                        // In Content tab, booth markers (< 1000) show company data from assignments (read-only)
+                        if (activeTab === 'content' && marker.id < 1000) {
+                          isReference = true;
+                          referenceTooltip =
+                            'Company booth - managed via Companies and Assignments tabs. Only special markers (ID >= 1000) are editable here.';
                         }
                         // Appearance tab: glyphAnchor editable as numeric array
                         if (
@@ -560,8 +564,9 @@ export default function AdminDashboard({
                           );
                         }
                         // ...existing cell rendering logic...
-                        // Content tab: editable if contentLocked is false
-                        if (activeTab === 'content' && !marker.contentLocked) {
+                        // Content tab: editable only for special markers (id >= 1000) and if contentLocked is false
+                        // Markers < 1000 are company booths managed via Companies/Assignments tables
+                        if (activeTab === 'content' && !marker.contentLocked && marker.id >= 1000) {
                           if (col.key === 'logo') {
                             return (
                               <td key={col.key} className="py-1 px-3 border-b text-left">

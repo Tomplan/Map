@@ -1,12 +1,20 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * Custom hook to manage an array of marker objects and their state.
- * @param {Array} initialMarkers - Array of marker objects from data source.
+ * Automatically syncs with incoming markers from useEventMarkers.
+ * @param {Array} markers - Array of marker objects from data source.
  * @returns {[Array, Function, Function]} - [markersState, updateMarker, setMarkersState]
  */
-export default function useMarkersState(initialMarkers = []) {
-  const [markersState, setMarkersState] = useState(initialMarkers);
+export default function useMarkersState(markers = []) {
+  const [markersState, setMarkersState] = useState(markers);
+
+  // Sync markersState with incoming markers from useEventMarkers real-time updates
+  useEffect(() => {
+    if (Array.isArray(markers)) {
+      setMarkersState(markers);
+    }
+  }, [markers]);
   const coreFields = ['id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'];
   const appearanceFields = [
     'iconUrl',
@@ -20,7 +28,7 @@ export default function useMarkersState(initialMarkers = []) {
     'glyphAnchor',
     'appearanceLocked',
   ];
-  const contentFields = ['boothNumber', 'name', 'logo', 'website', 'info', 'contentLocked'];
+  const contentFields = ['name', 'logo', 'website', 'info', 'contentLocked'];
   const adminFields = [
     'contact',
     'phone',

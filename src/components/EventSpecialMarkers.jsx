@@ -5,6 +5,7 @@ import { createMarkerIcon } from '../utils/markerIcons';
 import useIsMobile from '../utils/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
+import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 
 function EventSpecialMarkers({
   safeMarkers,
@@ -13,6 +14,7 @@ function EventSpecialMarkers({
 }) {
   const isMobile = useIsMobile('md');
   const [selectedMarker, setSelectedMarker] = useState(null);
+  const { organizationLogo } = useOrganizationLogo();
 
   const handleDragEnd = useCallback(
     (markerId) => (e) => {
@@ -62,6 +64,7 @@ function EventSpecialMarkers({
               <MarkerUI
                 marker={marker}
                 isMobile={isMobile}
+                organizationLogo={organizationLogo}
                 onMoreInfo={() => {
                   setSelectedMarker(marker);
                 }}
