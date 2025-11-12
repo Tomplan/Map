@@ -129,6 +129,12 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               assignmentId: primaryAssignment.assignmentId,
             };
 
+            // Set icon color based on assignment status
+            const hasAssignment = primaryAssignment.companyId;
+            appearance.iconUrl = hasAssignment
+              ? (appearance.iconUrl || 'glyph-marker-icon-blue.svg')
+              : 'glyph-marker-icon-gray.svg';
+
             // If this marker has a company assignment, get subscription data for admin fields
             if (primaryAssignment.companyId) {
               const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
@@ -266,7 +272,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                           website: companyData.website,
                           info: companyData.info,
                           companyId: companyData.id,
-                          assignmentId: assignment.id
+                          assignmentId: assignment.id,
+                          iconUrl: 'glyph-marker-icon-blue.svg'
                         }
                       : m
                   ));
