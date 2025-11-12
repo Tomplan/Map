@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiArchive, mdiContentCopy } from '@mdi/js';
+import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
+import { supabase } from '../../supabaseClient';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
@@ -32,6 +33,56 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [editForm, setEditForm] = useState({});
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
+  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [markers, setMarkers] = useState([]); // Array of {id, glyph}
+  const [loadingMarkers, setLoadingMarkers] = useState(true);
+
+  // Load all markers with glyphText from Markers_Core and Markers_Appearance
+  useEffect(() => {
+    async function loadMarkers() {
+      try {
+        setLoadingMarkers(true);
+
+        const { data: coreData, error: coreError } = await supabase
+          .from('Markers_Core')
+          .select('id')
+          .lt('id', 1000) // Only load booth markers (id < 1000)
+          .order('id', { ascending: true });
+
+        if (coreError) throw coreError;
+
+        const { data: appearanceData, error: appearanceError } = await supabase
+          .from('Markers_Appearance')
+          .select('id, glyph')
+          .lt('id', 1000);
+
+        if (appearanceError) throw appearanceError;
+
+        // Create a map of glyph text by marker id
+        const glyphMap = {};
+        (appearanceData || []).forEach(row => {
+          if (row && row.id) {
+            glyphMap[row.id] = row.glyph || '';
+          }
+        });
+
+        // Merge core and appearance data
+        const mergedMarkers = (coreData || []).map(marker => ({
+          id: marker.id,
+          glyph: glyphMap[marker.id] || marker.id.toString()
+        }));
+
+        setMarkers(mergedMarkers);
+      } catch (err) {
+        console.error('Error loading markers:', err);
+      } finally {
+        setLoadingMarkers(false);
+      }
+    }
+
+    loadMarkers();
+  }, [selectedYear]); // Reload markers when year changes
 
   // Get list of available companies (not yet subscribed)
   const availableCompanies = useMemo(() => {
@@ -51,14 +102,69 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     return map;
   }, [assignments]);
 
-  // Filter subscriptions by search term
+  // Create a map of marker ID to glyph text for quick lookup
+  const markerGlyphMap = useMemo(() => {
+    const map = {};
+    markers.forEach(marker => {
+      map[marker.id] = marker.glyph;
+    });
+    return map;
+  }, [markers]);
+
+  // Get booth labels for a subscription (actual glyph text)
+  const getBoothLabels = useCallback((companyId) => {
+    const companyAssignments = subscriptionAssignments[companyId] || [];
+    if (companyAssignments.length === 0) return '-';
+
+    // Get all booth labels for this company, sorted by marker_id
+    const labels = companyAssignments
+      .sort((a, b) => a.marker_id - b.marker_id)
+      .map(assignment => markerGlyphMap[assignment.marker_id] || assignment.marker_id.toString())
+      .filter(Boolean);
+
+    return labels.length > 0 ? labels.join(', ') : '-';
+  }, [subscriptionAssignments, markerGlyphMap]);
+
+  // Filter and sort subscriptions
   const filteredSubscriptions = useMemo(() => {
-    if (!searchTerm) return subscriptions;
-    const lowercasedTerm = searchTerm.toLowerCase();
-    return subscriptions.filter(sub =>
-      sub.company?.name?.toLowerCase().includes(lowercasedTerm)
-    );
-  }, [subscriptions, searchTerm]);
+    let filtered = subscriptions;
+
+    // Apply search filter
+    if (searchTerm) {
+      const lowercasedTerm = searchTerm.toLowerCase();
+      filtered = filtered.filter(sub =>
+        sub.company?.name?.toLowerCase().includes(lowercasedTerm)
+      );
+    }
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      let compareValue = 0;
+
+      if (sortBy === 'company') {
+        // Sort by company name
+        const nameA = (a.company?.name || '').toLowerCase();
+        const nameB = (b.company?.name || '').toLowerCase();
+        compareValue = nameA.localeCompare(nameB);
+      } else if (sortBy === 'booths') {
+        // Sort by booth labels
+        const boothsA = getBoothLabels(a.company_id);
+        const boothsB = getBoothLabels(b.company_id);
+
+        // Handle '-' (no booths) - put them at the end
+        if (boothsA === '-' && boothsB !== '-') return 1;
+        if (boothsA !== '-' && boothsB === '-') return -1;
+        if (boothsA === '-' && boothsB === '-') return 0;
+
+        // Compare booth labels alphanumerically
+        compareValue = boothsA.localeCompare(boothsB, undefined, { numeric: true });
+      }
+
+      return sortDirection === 'asc' ? compareValue : -compareValue;
+    });
+
+    return sorted;
+  }, [subscriptions, searchTerm, sortBy, sortDirection, getBoothLabels]);
 
   // Start editing
   const handleEdit = (subscription) => {
@@ -136,12 +242,16 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     }
   };
 
-  // Get booth labels for a subscription
-  const getBoothLabels = (companyId) => {
-    const companyAssignments = subscriptionAssignments[companyId] || [];
-    if (companyAssignments.length === 0) return '-';
-    // Fetch glyph from assignments (we'd need to join with markers, for now show count)
-    return `${companyAssignments.length} booth${companyAssignments.length !== 1 ? 's' : ''}`;
+  // Toggle sort
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      // Toggle direction if same column
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new column and default to ascending
+      setSortBy(column);
+      setSortDirection('asc');
+    }
   };
 
   if (loadingSubscriptions) {
@@ -241,8 +351,40 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100 text-gray-900 sticky top-0">
             <tr>
-              <th className="p-2 text-left border-b">Company</th>
-              <th className="p-2 text-left border-b">Booths</th>
+              {/* Booths - First column with sort */}
+              <th
+                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
+                onClick={() => handleSort('booths')}
+                title="Click to sort by booth labels"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Booths</span>
+                  {sortBy === 'booths' && (
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
+                  )}
+                </div>
+              </th>
+              {/* Company - Second column with sort */}
+              <th
+                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
+                onClick={() => handleSort('company')}
+                title="Click to sort by company name"
+              >
+                <div className="flex items-center gap-1">
+                  <span>Company</span>
+                  {sortBy === 'company' && (
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
+                  )}
+                </div>
+              </th>
               <th className="p-2 text-left border-b">Contact</th>
               <th className="p-2 text-left border-b">Phone</th>
               <th className="p-2 text-left border-b">Email</th>
@@ -266,7 +408,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
               return (
                 <tr key={subscription.id} className="hover:bg-gray-50 border-b text-gray-900">
-                  {/* Company name with logo */}
+                  {/* Assigned booths - First column */}
+                  <td className="p-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+                      {boothLabels}
+                    </span>
+                  </td>
+
+                  {/* Company name with logo - Second column */}
                   <td className="p-2">
                     <div className="flex items-center gap-2">
                       <img
@@ -276,13 +425,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       />
                       <span className="font-semibold text-gray-900">{company?.name}</span>
                     </div>
-                  </td>
-
-                  {/* Assigned booths */}
-                  <td className="p-2 text-center">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                      {boothLabels}
-                    </span>
                   </td>
 
                   {/* Contact */}

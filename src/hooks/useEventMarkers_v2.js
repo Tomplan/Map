@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 /**
@@ -22,8 +22,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     return true;
   });
 
+  // Use ref to store current eventYear so real-time subscriptions always use latest value
+  const eventYearRef = useRef(eventYear);
+
+  // Update ref whenever eventYear changes
+  useEffect(() => {
+    eventYearRef.current = eventYear;
+  }, [eventYear]);
+
   const loadMarkers = useCallback(
     async (online) => {
+      // Always use the latest eventYear from ref
+      const targetYear = eventYearRef.current;
+      console.log('useEventMarkers: loadMarkers called with year', targetYear);
+
       setLoading(true);
       if (!online && cached) {
         setMarkers(JSON.parse(cached));
@@ -33,7 +45,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
       try {
         // Fetch all data in parallel
-        const [coreRes, appearanceRes, contentRes, adminRes, assignmentsRes] = await Promise.all([
+        const [coreRes, appearanceRes, contentRes, adminRes, assignmentsRes, subscriptionsRes] = await Promise.all([
           supabase.from('Markers_Core').select('*'),
           supabase.from('Markers_Appearance').select('*'),
           supabase.from('Markers_Content').select('*'),
@@ -41,7 +53,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           supabase.from('assignments').select(`
             *,
             company:companies(id, name, logo, website, info)
-          `).eq('event_year', eventYear),
+          `).eq('event_year', targetYear),
+          supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
         ]);
 
         if (coreRes.error) throw coreRes.error;
@@ -49,6 +62,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         if (contentRes.error) throw contentRes.error;
         if (adminRes.error) throw adminRes.error;
         if (assignmentsRes.error) throw assignmentsRes.error;
+        if (subscriptionsRes.error) throw subscriptionsRes.error;
 
         // Build lookup maps
         const appearanceById = {};
@@ -64,6 +78,14 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         const adminById = {};
         for (const row of adminRes.data || []) {
           if (row && row.id) adminById[row.id] = row;
+        }
+
+        // Build subscriptions lookup by company_id
+        const subscriptionByCompany = {};
+        for (const sub of subscriptionsRes.data || []) {
+          if (sub && sub.company_id) {
+            subscriptionByCompany[sub.company_id] = sub;
+          }
         }
 
         // Group assignments by marker_id
@@ -91,6 +113,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
           // Determine content source based on marker type
           let contentData = {};
+          let adminData = {};
+
           if (marker.id < 1000) {
             // Booth markers: use company assignment data
             const primaryAssignment = assignments[0] || {};
@@ -102,6 +126,23 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               companyId: primaryAssignment.companyId,
               assignmentId: primaryAssignment.assignmentId,
             };
+
+            // If this marker has a company assignment, get subscription data for admin fields
+            if (primaryAssignment.companyId) {
+              const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
+              adminData = {
+                contact: subscription.contact,
+                phone: subscription.phone,
+                email: subscription.email,
+                boothCount: subscription.booth_count,
+                area: subscription.area,
+                coins: subscription.coins,
+                breakfast: subscription.breakfast_sat,
+                lunch: subscription.lunch_sat,
+                bbq: subscription.bbq_sat,
+                notes: subscription.notes,
+              };
+            }
           } else {
             // Special markers: use Markers_Content data
             contentData = {
@@ -110,13 +151,15 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               website: content.website,
               info: content.info,
             };
+            // Special markers use Markers_Admin data
+            adminData = admin;
           }
 
           return {
             ...marker,
             ...appearance,
             ...contentData,
-            ...admin,
+            ...adminData,
 
             // Assignment data (for booth markers)
             assignments, // Array of all assignments
@@ -131,7 +174,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         setLoading(false);
       }
     },
-    [cached, eventYear]
+    [cached]
   );
 
   useEffect(() => {
@@ -184,15 +227,99 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       .subscribe();
 
     const assignmentsChannel = supabase
-      .channel('assignments-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, () => {
-        loadMarkers(true);
+      .channel('markers-assignments-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, async (payload) => {
+        console.log('Assignment change detected:', payload.eventType, payload);
+
+        // For granular updates, only refetch if year matches
+        const assignmentYear = payload.new?.event_year || payload.old?.event_year;
+        if (assignmentYear !== eventYearRef.current) {
+          console.log('Assignment for different year, ignoring');
+          return;
+        }
+
+        // Handle different event types
+        if (payload.eventType === 'DELETE') {
+          // Assignment deleted - marker becomes unassigned
+          const markerId = payload.old?.marker_id;
+          if (markerId) {
+            setMarkers(prev => prev.map(m =>
+              m.id === markerId
+                ? { ...m, name: null, logo: null, website: null, info: null, companyId: null, assignmentId: null }
+                : m
+            ));
+          }
+        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          // Assignment added/updated - fetch company data and update marker
+          const assignment = payload.new;
+          if (assignment?.marker_id && assignment?.company_id) {
+            try {
+              const { data: companyData, error: companyError } = await supabase
+                .from('companies')
+                .select('id, name, logo, website, info')
+                .eq('id', assignment.company_id)
+                .single();
+
+              if (!companyError && companyData) {
+                setMarkers(prev => prev.map(m =>
+                  m.id === assignment.marker_id
+                    ? {
+                        ...m,
+                        name: companyData.name,
+                        logo: companyData.logo,
+                        website: companyData.website,
+                        info: companyData.info,
+                        companyId: companyData.id,
+                        assignmentId: assignment.id
+                      }
+                    : m
+                ));
+                // Update localStorage
+                setMarkers(current => {
+                  localStorage.setItem('eventMarkers', JSON.stringify(current));
+                  return current;
+                });
+              } else {
+                // Fallback to full reload if company fetch fails
+                loadMarkers(true);
+              }
+            } catch (err) {
+              console.error('Error fetching company for granular update:', err);
+              loadMarkers(true);
+            }
+          }
+        }
       })
       .subscribe();
 
     const companiesChannel = supabase
       .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
+        console.log('Company change detected:', payload.eventType, payload);
+
+        // Company data changed - update all markers using this company
+        if (payload.eventType === 'UPDATE' && payload.new) {
+          const company = payload.new;
+          setMarkers(prev => prev.map(m =>
+            m.companyId === company.id
+              ? { ...m, name: company.name, logo: company.logo, website: company.website, info: company.info }
+              : m
+          ));
+          // Update localStorage
+          setMarkers(current => {
+            localStorage.setItem('eventMarkers', JSON.stringify(current));
+            return current;
+          });
+        } else {
+          // For INSERT/DELETE, do full reload (rare events)
+          loadMarkers(true);
+        }
+      })
+      .subscribe();
+
+    const subscriptionsChannel = supabase
+      .channel('event-subscriptions-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_subscriptions' }, () => {
         loadMarkers(true);
       })
       .subscribe();
@@ -206,8 +333,14 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       supabase.removeChannel(adminChannel);
       supabase.removeChannel(assignmentsChannel);
       supabase.removeChannel(companiesChannel);
+      supabase.removeChannel(subscriptionsChannel);
     };
   }, [isOnline, loadMarkers]);
+
+  // Reload markers when eventYear changes
+  useEffect(() => {
+    loadMarkers(isOnline);
+  }, [eventYear, isOnline, loadMarkers]);
 
   return { markers, loading, isOnline, reload: () => loadMarkers(isOnline) };
 }

@@ -12,7 +12,7 @@ const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./FeedbackForm'));
 
-function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin }) {
+function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
   return (
     <Routes>
       <Route
@@ -48,6 +48,8 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                   markersState={markersState}
                   updateMarker={updateMarker}
                   setMarkersState={setMarkersState}
+                  selectedYear={selectedYear}
+                  setSelectedYear={setSelectedYear}
                 />
                 <div style={{ margin: '2rem 0' }}>
                   <MarkerTable />
