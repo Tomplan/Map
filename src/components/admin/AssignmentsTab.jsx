@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown } from '@mdi/js';
@@ -38,8 +39,7 @@ export default function AssignmentsTab({ selectedYear }) {
   const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
   const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'markerId' or 'glyphText'
   const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
-  const [markers, setMarkers] = useState([]); // Array of {id, glyph}
-  const [loadingMarkers, setLoadingMarkers] = useState(true);
+  const { markers, loading: loadingMarkers } = useMarkerGlyphs();
 
   const {
     assignments,
@@ -77,53 +77,6 @@ export default function AssignmentsTab({ selectedYear }) {
       console.error('Error saving sort preferences:', error);
     }
   }, [sortBy, sortDirection, columnSort, columnSortDirection]);
-
-  // Load all markers with glyphText from Markers_Core and Markers_Appearance (only booth markers < 1000)
-  useEffect(() => {
-    async function loadMarkers() {
-      try {
-        setLoadingMarkers(true);
-
-        // Join Markers_Core with Markers_Appearance to get glyphText
-        const { data: coreData, error: coreError } = await supabase
-          .from('Markers_Core')
-          .select('id')
-          .lt('id', 1000) // Only load booth markers (id < 1000)
-          .order('id', { ascending: true });
-
-        if (coreError) throw coreError;
-
-        const { data: appearanceData, error: appearanceError } = await supabase
-          .from('Markers_Appearance')
-          .select('id, glyph')
-          .lt('id', 1000);
-
-        if (appearanceError) throw appearanceError;
-
-        // Create a map of glyph text by marker id
-        const glyphMap = {};
-        (appearanceData || []).forEach(row => {
-          if (row && row.id) {
-            glyphMap[row.id] = row.glyph || '';
-          }
-        });
-
-        // Merge core and appearance data
-        const mergedMarkers = (coreData || []).map(marker => ({
-          id: marker.id,
-          glyph: glyphMap[marker.id] || marker.id.toString() // Fallback to ID if no glyph
-        }));
-
-        setMarkers(mergedMarkers);
-      } catch (err) {
-        console.error('Error loading markers:', err);
-      } finally {
-        setLoadingMarkers(false);
-      }
-    }
-
-    loadMarkers();
-  }, []);
 
   // Count assignments per company (for badge display)
   const companyAssignmentCounts = useMemo(() => {
