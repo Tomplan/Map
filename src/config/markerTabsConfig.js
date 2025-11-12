@@ -6,7 +6,6 @@ export const TABS = [
   { key: 'core', label: 'Markers - Core' },
   { key: 'appearance', label: 'Markers - Appearance' },
   { key: 'content', label: 'Markers - Content' },
-  { key: 'admin', label: 'Markers - Admin' },
   { key: 'companies', label: 'Companies' },
   { key: 'eventSubscriptions', label: 'Event Subscriptions' },
   { key: 'assignments', label: 'Assignments' },
@@ -39,20 +38,6 @@ export const COLUMNS = {
     { key: 'logo', label: 'Logo' },
     { key: 'website', label: 'Website' },
     { key: 'info', label: 'Info' },
-  ],
-  admin: [
-    { key: 'id', label: 'ID' },
-    { key: 'name', label: 'Name' },
-    { key: 'contact', label: 'Contact' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'email', label: 'Email' },
-    { key: 'boothCount', label: 'Booth Count' },
-    { key: 'area', label: 'Area' },
-    { key: 'coins', label: 'Coins' },
-    { key: 'breakfast', label: 'Breakfast' },
-    { key: 'lunch', label: 'Lunch' },
-    { key: 'bbq', label: 'BBQ' },
-    { key: 'notes', label: 'Notes' },
   ],
 };
 
