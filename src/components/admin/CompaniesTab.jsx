@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import useCompanies from '../../hooks/useCompanies';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
+import { useCompanyMutations } from '../../hooks/useCompanyMutations';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
@@ -18,14 +19,28 @@ export default function CompaniesTab() {
   const { organizationLogo } = useOrganizationLogo();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null); // Can be company.id or 'organization'
-  const [editForm, setEditForm] = useState({});
-  const [isCreating, setIsCreating] = useState(false);
-  const [newCompanyForm, setNewCompanyForm] = useState({
-    name: '',
-    logo: organizationLogo, // Use organization logo as default
-    website: '',
-    info: ''
+
+  // Use company mutations hook
+  const {
+    editingId,
+    editForm,
+    setEditForm,
+    isCreating,
+    newCompanyForm,
+    setNewCompanyForm,
+    handleEdit,
+    handleSave,
+    handleCancel,
+    handleDelete,
+    handleCreate,
+    handleStartCreate,
+    handleCancelCreate,
+  } = useCompanyMutations({
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    updateProfile,
+    organizationLogo
   });
 
   // Combine organization profile with companies and filter
@@ -41,63 +56,6 @@ export default function CompaniesTab() {
     const lowercasedTerm = searchTerm.toLowerCase();
     return allItems.filter(item => item.name?.toLowerCase().includes(lowercasedTerm));
   }, [organizationProfile, companies, searchTerm]);
-
-  // Start editing
-  const handleEdit = (item) => {
-    setEditingId(item.id);
-    setEditForm({ ...item });
-  };
-
-  // Save edited item (organization or company)
-  const handleSave = async () => {
-    const id = editingId;
-    if (id === 'organization') {
-      const { name, logo, website, info } = editForm;
-      await updateProfile({ name, logo, website, info });
-    } else {
-      await updateCompany(id, editForm);
-    }
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  // Cancel edit
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  // Delete company
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete "${name}"? This will also delete all assignments for this company.`)) {
-      return;
-    }
-    const { error } = await deleteCompany(id);
-    if (error) {
-      alert(`Error deleting company: ${error}`);
-    }
-  };
-
-  // Create new company
-  const handleCreate = async () => {
-    if (!newCompanyForm.name.trim()) {
-      alert('Company name is required');
-      return;
-    }
-
-    const { error } = await createCompany(newCompanyForm);
-    if (!error) {
-      setIsCreating(false);
-      setNewCompanyForm({
-        name: '',
-        logo: organizationLogo, // Use organization logo as default
-        website: '',
-        info: ''
-      });
-    } else {
-      alert(`Error creating company: ${error}`);
-    }
-  };
 
   const loading = loadingCompanies || loadingProfile;
   const error = errorCompanies || errorProfile;
@@ -128,7 +86,7 @@ export default function CompaniesTab() {
           </span>
         </div>
         <button
-          onClick={() => setIsCreating(true)}
+          onClick={handleStartCreate}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <Icon path={mdiPlus} size={0.8} />
@@ -195,15 +153,7 @@ export default function CompaniesTab() {
               Create
             </button>
             <button
-              onClick={() => {
-                setIsCreating(false);
-                setNewCompanyForm({
-                  name: '',
-                  logo: organizationLogo,
-                  website: '',
-                  info: ''
-                });
-              }}
+              onClick={handleCancelCreate}
               className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               <Icon path={mdiClose} size={0.7} />
