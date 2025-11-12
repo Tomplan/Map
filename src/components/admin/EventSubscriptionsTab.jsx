@@ -301,14 +301,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       )}
 
       {/* Subscriptions table */}
-      <div className="overflow-x-auto border rounded-lg">
+      <div className="overflow-auto border rounded-lg" style={{ maxHeight: '70vh' }}>
         <table className="w-full" style={{ fontSize: '11px' }}>
-          <thead className="bg-gray-100 text-gray-900 sticky top-0">
+          <thead className="bg-gray-100 text-gray-900 sticky top-0 z-10">
             {/* Main header row with grouped columns */}
             <tr>
               {/* Booths - First column with sort */}
               <th
-                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
+                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('booths')}
                 title="Click to sort by booth labels"
                 rowSpan={2}
@@ -326,7 +326,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               </th>
               {/* Company - Second column with sort */}
               <th
-                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none"
+                className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('company')}
                 title="Click to sort by company name"
                 rowSpan={2}
@@ -342,20 +342,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b" rowSpan={2}>Contact</th>
-              <th className="p-2 text-left border-b" rowSpan={2}>Phone</th>
-              <th className="p-2 text-left border-b" rowSpan={2}>Email</th>
-              <th className="p-2 text-center border-b" rowSpan={2}>Booth Count</th>
-              <th className="p-2 text-left border-b" rowSpan={2}>Area</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Contact</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Phone</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Email</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2}>Booth Count</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Area</th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
                 <span className="font-bold text-blue-700">Saturday</span>
               </th>
               <th className="p-2 text-center border-b bg-green-50" colSpan={2}>
                 <span className="font-bold text-green-700">Sunday</span>
               </th>
-              <th className="p-2 text-center border-b" rowSpan={2}>Coins</th>
-              <th className="p-2 text-left border-b" rowSpan={2}>Notes</th>
-              <th className="p-2 text-center border-b" rowSpan={2} style={{ minWidth: '80px' }}>Actions</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2}>Coins</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Notes</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2} style={{ minWidth: '80px' }}>Actions</th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
@@ -467,14 +467,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                   {/* Meals - Saturday */}
                   {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map(field => (
-                    <td key={field} className="p-2 text-center">
+                    <td key={field} className="p-2 text-center bg-blue-50">
                       {isEditing ? (
                         <input
                           type="number"
                           min="0"
                           value={editForm[field] || 0}
                           onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900"
+                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
                         />
                       ) : (
                         <span className="text-xs text-gray-900">{subscription[field]}</span>
@@ -484,14 +484,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                   {/* Meals - Sunday */}
                   {['breakfast_sun', 'lunch_sun'].map(field => (
-                    <td key={field} className="p-2 text-center">
+                    <td key={field} className="p-2 text-center bg-green-50">
                       {isEditing ? (
                         <input
                           type="number"
                           min="0"
                           value={editForm[field] || 0}
                           onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900"
+                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
                         />
                       ) : (
                         <span className="text-xs text-gray-900">{subscription[field]}</span>
