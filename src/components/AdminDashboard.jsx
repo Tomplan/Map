@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
 import EventMap from './EventMap/EventMap';
@@ -9,19 +9,9 @@ import Icon from '@mdi/react';
 import { mdiViewDashboard, mdiLock, mdiLockOpenVariant } from '@mdi/js';
 import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
-
-// List of available SVG icons for selection
-const ICON_OPTIONS = [
-  'glyph-marker-icon-black.svg',
-  'glyph-marker-icon-blue.svg',
-  'glyph-marker-icon-gray.svg',
-  'glyph-marker-icon-green.svg',
-  'glyph-marker-icon-orange.svg',
-  'glyph-marker-icon-purple.svg',
-  'glyph-marker-icon-red.svg',
-  'glyph-marker-icon-yellow.svg',
-];
-const ICON_PATH_PREFIX = `${import.meta.env.BASE_URL}assets/icons/`;
+import { useMarkerFieldHandler } from '../hooks/useMarkerFieldHandler';
+import { useMarkerSorting } from '../hooks/useMarkerSorting';
+import { TABS, COLUMNS, ICON_OPTIONS, ICON_PATH_PREFIX } from '../config/markerTabsConfig';
 
 export default function AdminDashboard({
   markersState,
@@ -44,173 +34,21 @@ export default function AdminDashboard({
     });
     setIconSizeInputs(newInputs);
   }, [markersState]);
+
   // Popover state for icon selection (for iconUrl field)
   const [iconPopover, setIconPopover] = useState({ open: false, markerId: null });
-  // Basic field edit handler for table cells
-  async function handleFieldChange(id, key, value) {
-    // Lock fields must always be boolean
-    const lockFields = ['coreLocked', 'appearanceLocked', 'contentLocked', 'adminLocked'];
-    let sendValue = value;
-    if (!lockFields.includes(key)) {
-      // For non-lock fields, treat empty string, empty array, or undefined as null
-      if (value === '' || value === undefined || (Array.isArray(value) && value.length === 0)) {
-        sendValue = null;
-      }
-    }
-    setMarkersState((prev) => {
-      const updated = prev.map((m) => (m.id === id ? { ...m, [key]: sendValue } : m));
-      return updated;
-    });
-    // Determine which table to update
-    let table = 'Markers_Core';
-    if (
-      [
-        'iconUrl',
-        'iconSize',
-        'iconColor',
-        'className',
-        'prefix',
-        'glyph',
-        'glyphColor',
-        'glyphSize',
-        'glyphAnchor',
-      ].includes(key)
-    ) {
-      table = 'Markers_Appearance';
-    } else if (['name', 'logo', 'website', 'info'].includes(key)) {
-      table = 'Markers_Content';
-    } else if (
-      [
-        'contact',
-        'phone',
-        'email',
-        'boothCount',
-        'area',
-        'coins',
-        'breakfast',
-        'lunch',
-        'bbq',
-        'notes',
-      ].includes(key)
-    ) {
-      table = 'Markers_Admin';
-    }
-    // Sync to Supabase
-    await supabase
-      .from(table)
-      .update({ [key]: sendValue })
-      .eq('id', id);
-  }
-  const [showDashboard, setShowDashboard] = useState(false);
 
-  // Tabs and columns remain for UI, but marker data comes from markersState
-  const TABS = [
-    { key: 'core', label: 'Markers - Core' },
-    { key: 'appearance', label: 'Markers - Appearance' },
-    { key: 'content', label: 'Markers - Content' },
-    { key: 'admin', label: 'Markers - Admin' },
-    { key: 'companies', label: 'Companies' },
-    { key: 'eventSubscriptions', label: 'Event Subscriptions' },
-    { key: 'assignments', label: 'Assignments' },
-  ];
-  const COLUMNS = {
-    core: [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Name' },
-      { key: 'lat', label: 'Lat' },
-      { key: 'lng', label: 'Lng' },
-      { key: 'rectangle', label: 'Rectangle' },
-      { key: 'angle', label: 'Angle' },
-    ],
-    appearance: [
-      { key: 'id', label: 'ID' },
-      { key: 'glyph', label: 'Booth Label' },
-      { key: 'name', label: 'Name' },
-      { key: 'iconUrl', label: 'Icon' },
-      { key: 'iconSize', label: 'Icon Size' },
-      { key: 'className', label: 'Class Name' },
-      { key: 'prefix', label: 'Prefix' },
-      { key: 'glyphColor', label: 'Glyph Color' },
-      { key: 'glyphSize', label: 'Glyph Size' },
-      { key: 'glyphAnchor', label: 'Glyph Anchor' },
-    ],
-    content: [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Name' },
-      { key: 'logo', label: 'Logo' },
-      { key: 'website', label: 'Website' },
-      { key: 'info', label: 'Info' },
-    ],
-    admin: [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Name' },
-      { key: 'contact', label: 'Contact' },
-      { key: 'phone', label: 'Phone' },
-      { key: 'email', label: 'Email' },
-      { key: 'boothCount', label: 'Booth Count' },
-      { key: 'area', label: 'Area' },
-      { key: 'coins', label: 'Coins' },
-      { key: 'breakfast', label: 'Breakfast' },
-      { key: 'lunch', label: 'Lunch' },
-      { key: 'bbq', label: 'BBQ' },
-      { key: 'notes', label: 'Notes' },
-    ],
-  };
+  // Use field handler hook
+  const handleFieldChange = useMarkerFieldHandler(setMarkersState);
+
+  const [showDashboard, setShowDashboard] = useState(false);
   const [activeTab, setActiveTab] = useState('core');
 
   // Current year for year selector range
   const currentYear = new Date().getFullYear();
 
-  // Sorting state: column and direction per tab
-  const [sortState, setSortState] = useState({
-    core: { column: 'id', direction: 'asc' },
-    appearance: { column: 'id', direction: 'asc' },
-    content: { column: 'id', direction: 'asc' },
-    admin: { column: 'id', direction: 'asc' },
-    companies: { column: 'id', direction: 'asc' },
-    eventSubscriptions: { column: 'id', direction: 'asc' },
-    assignments: { column: 'id', direction: 'asc' },
-  });
-
-  // Handle sort change
-  function handleSort(tab, column) {
-    setSortState((prev) => {
-      const current = prev[tab];
-      // Toggle direction if same column, else default to asc
-      const direction =
-        current.column === column ? (current.direction === 'asc' ? 'desc' : 'asc') : 'asc';
-      return { ...prev, [tab]: { column, direction } };
-    });
-  }
-  // Auth state
-  // Remove unused auth state
-
-  // Remove unused auth effect
-
-  // Use markersState for all tabbed marker data (skip for companies/assignments tabs)
-  const sortedMarkers = React.useMemo(() => {
-    const tab = activeTab;
-    // Skip sorting for new tabs that don't use markers
-    if (tab === 'companies' || tab === 'assignments') {
-      return [];
-    }
-    const markers = markersState || [];
-    const { column, direction } = sortState[tab];
-    let getValue = (m) => m[column];
-    return [...markers].sort((a, b) => {
-      const va = getValue(a);
-      const vb = getValue(b);
-      if (va == null && vb == null) return 0;
-      if (va == null) return direction === 'asc' ? -1 : 1;
-      if (vb == null) return direction === 'asc' ? 1 : -1;
-      if (typeof va === 'number' && typeof vb === 'number') {
-        return direction === 'asc' ? va - vb : vb - va;
-      }
-      return direction === 'asc'
-        ? String(va).localeCompare(String(vb), undefined, { numeric: true })
-        : String(vb).localeCompare(String(va), undefined, { numeric: true });
-    });
-  }, [markersState, activeTab, sortState]);
+  // Use sorting hook
+  const { sortState, sortedMarkers, handleSort } = useMarkerSorting(markersState, activeTab);
   const [selected, setSelected] = useState(null);
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);

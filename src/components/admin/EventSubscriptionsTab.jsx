@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
+import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
@@ -27,6 +28,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   const { companies } = useCompanies();
   const { assignments } = useAssignments(selectedYear);
+  const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -35,54 +37,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [markers, setMarkers] = useState([]); // Array of {id, glyph}
-  const [loadingMarkers, setLoadingMarkers] = useState(true);
-
-  // Load all markers with glyphText from Markers_Core and Markers_Appearance
-  useEffect(() => {
-    async function loadMarkers() {
-      try {
-        setLoadingMarkers(true);
-
-        const { data: coreData, error: coreError } = await supabase
-          .from('Markers_Core')
-          .select('id')
-          .lt('id', 1000) // Only load booth markers (id < 1000)
-          .order('id', { ascending: true });
-
-        if (coreError) throw coreError;
-
-        const { data: appearanceData, error: appearanceError } = await supabase
-          .from('Markers_Appearance')
-          .select('id, glyph')
-          .lt('id', 1000);
-
-        if (appearanceError) throw appearanceError;
-
-        // Create a map of glyph text by marker id
-        const glyphMap = {};
-        (appearanceData || []).forEach(row => {
-          if (row && row.id) {
-            glyphMap[row.id] = row.glyph || '';
-          }
-        });
-
-        // Merge core and appearance data
-        const mergedMarkers = (coreData || []).map(marker => ({
-          id: marker.id,
-          glyph: glyphMap[marker.id] || marker.id.toString()
-        }));
-
-        setMarkers(mergedMarkers);
-      } catch (err) {
-        console.error('Error loading markers:', err);
-      } finally {
-        setLoadingMarkers(false);
-      }
-    }
-
-    loadMarkers();
-  }, [selectedYear]); // Reload markers when year changes
 
   // Get list of available companies (not yet subscribed)
   const availableCompanies = useMemo(() => {
