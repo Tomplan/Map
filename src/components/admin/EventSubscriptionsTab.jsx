@@ -120,6 +120,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     return sorted;
   }, [subscriptions, searchTerm, sortBy, sortDirection, getBoothLabels]);
 
+  // Calculate totals for numeric columns
+  const totals = useMemo(() => {
+    return filteredSubscriptions.reduce((acc, sub) => {
+      acc.booth_count += sub.booth_count || 0;
+      acc.breakfast_sat += sub.breakfast_sat || 0;
+      acc.lunch_sat += sub.lunch_sat || 0;
+      acc.bbq_sat += sub.bbq_sat || 0;
+      acc.breakfast_sun += sub.breakfast_sun || 0;
+      acc.lunch_sun += sub.lunch_sun || 0;
+      acc.coins += sub.coins || 0;
+      return acc;
+    }, {
+      booth_count: 0,
+      breakfast_sat: 0,
+      lunch_sat: 0,
+      bbq_sat: 0,
+      breakfast_sun: 0,
+      lunch_sun: 0,
+      coins: 0
+    });
+  }, [filteredSubscriptions]);
+
   // Start editing
   const handleEdit = (subscription) => {
     setEditingId(subscription.id);
@@ -311,7 +333,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('booths')}
                 title="Click to sort by booth labels"
-                rowSpan={2}
+                rowSpan={3}
               >
                 <div className="flex items-center gap-1">
                   <span>Booths</span>
@@ -329,7 +351,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('company')}
                 title="Click to sort by company name"
-                rowSpan={2}
+                rowSpan={3}
               >
                 <div className="flex items-center gap-1">
                   <span>Company</span>
@@ -342,28 +364,40 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Contact</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Phone</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Email</th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2}>Booth Count</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Area</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Contact</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Phone</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Email</th>
+              <th className="p-2 text-center border-b bg-gray-100">Booth Count</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Area</th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
                 <span className="font-bold text-blue-700">Saturday</span>
               </th>
               <th className="p-2 text-center border-b bg-green-50" colSpan={2}>
                 <span className="font-bold text-green-700">Sunday</span>
               </th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2}>Coins</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={2}>Notes</th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={2} style={{ minWidth: '80px' }}>Actions</th>
+              <th className="p-2 text-center border-b bg-gray-100">Coins</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Notes</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>Actions</th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs">Breakfast</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs">Lunch</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs">BBQ</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs">Breakfast</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs">Lunch</th>
+              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>Breakfast</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>Lunch</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>BBQ</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>Breakfast</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>Lunch</th>
+              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
+            </tr>
+            {/* Totals row */}
+            <tr>
+              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.booth_count}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.breakfast_sat}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.lunch_sat}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.bbq_sat}</th>
+              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.breakfast_sun}</th>
+              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.lunch_sun}</th>
+              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.coins}</th>
             </tr>
           </thead>
           <tbody>
@@ -373,28 +407,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               const boothLabels = getBoothLabels(subscription.company_id);
 
               return (
-                <tr key={subscription.id} className="hover:bg-gray-50 border-b text-gray-900">
+                <tr key={subscription.id} className="bg-white hover:bg-gray-50 border-b">
                   {/* Assigned booths - First column */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
                       {boothLabels}
                     </span>
                   </td>
 
                   {/* Company name with logo - Second column */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     <div className="flex items-center gap-2">
                       <img
                         src={getLogoPath(company?.logo || organizationLogo)}
                         alt={company?.name}
                         className="w-8 h-8 object-contain"
                       />
-                      <span className="font-semibold text-gray-900">{company?.name}</span>
+                      <span className="font-semibold text-gray-700">{company?.name}</span>
                     </div>
                   </td>
 
                   {/* Contact */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     {isEditing ? (
                       <input
                         type="text"
@@ -403,12 +437,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.contact || '-'}</span>
+                      <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
                     )}
                   </td>
 
                   {/* Phone */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     {isEditing ? (
                       <input
                         type="text"
@@ -417,12 +451,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.phone || '-'}</span>
+                      <span className="text-xs text-gray-700">{subscription.phone || '-'}</span>
                     )}
                   </td>
 
                   {/* Email */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     {isEditing ? (
                       <input
                         type="email"
@@ -431,7 +465,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-full px-2 py-1 border rounded text-xs text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.email || '-'}</span>
+                      <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
                     )}
                   </td>
 
@@ -446,7 +480,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-16 px-2 py-1 border rounded text-xs text-center text-gray-900"
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.booth_count}</span>
+                      <span className="text-xs text-gray-700">{subscription.booth_count}</span>
                     )}
                   </td>
 
@@ -461,7 +495,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         placeholder="large field, small field..."
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.area || '-'}</span>
+                      <span className="text-xs text-gray-700">{subscription.area || '-'}</span>
                     )}
                   </td>
 
@@ -477,7 +511,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
                         />
                       ) : (
-                        <span className="text-xs text-gray-900">{subscription[field]}</span>
+                        <span className="text-xs text-gray-700">{subscription[field]}</span>
                       )}
                     </td>
                   ))}
@@ -494,7 +528,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
                         />
                       ) : (
-                        <span className="text-xs text-gray-900">{subscription[field]}</span>
+                        <span className="text-xs text-gray-700">{subscription[field]}</span>
                       )}
                     </td>
                   ))}
@@ -510,12 +544,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         className="w-12 px-1 py-1 border rounded text-xs text-center"
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.coins}</span>
+                      <span className="text-xs text-gray-700">{subscription.coins}</span>
                     )}
                   </td>
 
                   {/* Notes */}
-                  <td className="p-2">
+                  <td className="p-2 text-left">
                     {isEditing ? (
                       <textarea
                         value={editForm.notes || ''}
@@ -524,12 +558,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         rows={2}
                       />
                     ) : (
-                      <span className="text-xs text-gray-900">{subscription.notes || '-'}</span>
+                      <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
                     )}
                   </td>
 
                   {/* Actions */}
-                  <td className="p-2">
+                  <td className="p-2 text-center">
                     {isEditing ? (
                       <div className="flex gap-1 justify-center">
                         <button

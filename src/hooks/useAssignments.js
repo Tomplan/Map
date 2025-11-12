@@ -232,20 +232,29 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     loadAssignments();
   }, [eventYear, loadAssignments]);
 
-  // Subscribe to realtime changes
+  // Subscribe to realtime changes - filter by event year
   useEffect(() => {
     const channel = supabase
-      .channel('assignments-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, (payload) => {
-        console.log('Assignments change:', payload);
-        loadAssignments();
-      })
+      .channel(`assignments-changes-${eventYear}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'assignments',
+          filter: `event_year=eq.${eventYear}`,
+        },
+        (payload) => {
+          console.log('Assignments change:', payload);
+          loadAssignments();
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadAssignments]);
+  }, [eventYear, loadAssignments]);
 
   return {
     assignments,

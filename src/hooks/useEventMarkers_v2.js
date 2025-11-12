@@ -57,6 +57,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
         ]);
 
+        console.log('Fetched assignments for year', targetYear, ':', assignmentsRes.data?.length, 'assignments');
+
         if (coreRes.error) throw coreRes.error;
         if (appearanceRes.error) throw appearanceRes.error;
         if (contentRes.error) throw contentRes.error;
@@ -231,64 +233,58 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, async (payload) => {
         console.log('Assignment change detected:', payload.eventType, payload);
 
-        // For granular updates, only refetch if year matches
-        const assignmentYear = payload.new?.event_year || payload.old?.event_year;
-        if (assignmentYear !== eventYearRef.current) {
-          console.log('Assignment for different year, ignoring');
-          return;
-        }
-
         // Handle different event types
         if (payload.eventType === 'DELETE') {
-          // Assignment deleted - marker becomes unassigned
-          const markerId = payload.old?.marker_id;
-          if (markerId) {
-            setMarkers(prev => prev.map(m =>
-              m.id === markerId
-                ? { ...m, name: null, logo: null, website: null, info: null, companyId: null, assignmentId: null }
-                : m
-            ));
-          }
+          // Assignment deleted - reload all markers to reflect the deletion
+          // Note: Supabase DELETE payloads don't include marker_id, only the primary key
+          console.log('Assignment deleted, reloading markers...');
+          loadMarkers(true);
         } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-          // Assignment added/updated - fetch company data and update marker
+          // For INSERT/UPDATE, check year before processing
           const assignment = payload.new;
-          if (assignment?.marker_id && assignment?.company_id) {
-            try {
-              const { data: companyData, error: companyError } = await supabase
-                .from('companies')
-                .select('id, name, logo, website, info')
-                .eq('id', assignment.company_id)
-                .single();
+          if (assignment?.event_year !== eventYearRef.current) {
+            console.log('Assignment INSERT/UPDATE for different year, ignoring');
+            return;
+          }
 
-              if (!companyError && companyData) {
-                setMarkers(prev => prev.map(m =>
-                  m.id === assignment.marker_id
-                    ? {
-                        ...m,
-                        name: companyData.name,
-                        logo: companyData.logo,
-                        website: companyData.website,
-                        info: companyData.info,
-                        companyId: companyData.id,
-                        assignmentId: assignment.id
-                      }
-                    : m
-                ));
-                // Update localStorage
-                setMarkers(current => {
-                  localStorage.setItem('eventMarkers', JSON.stringify(current));
-                  return current;
-                });
-              } else {
-                // Fallback to full reload if company fetch fails
+          // Assignment added/updated - fetch company data and update marker
+          if (assignment?.marker_id && assignment?.company_id) {
+              try {
+                const { data: companyData, error: companyError } = await supabase
+                  .from('companies')
+                  .select('id, name, logo, website, info')
+                  .eq('id', assignment.company_id)
+                  .single();
+
+                if (!companyError && companyData) {
+                  setMarkers(prev => prev.map(m =>
+                    m.id === assignment.marker_id
+                      ? {
+                          ...m,
+                          name: companyData.name,
+                          logo: companyData.logo,
+                          website: companyData.website,
+                          info: companyData.info,
+                          companyId: companyData.id,
+                          assignmentId: assignment.id
+                        }
+                      : m
+                  ));
+                  // Update localStorage
+                  setMarkers(current => {
+                    localStorage.setItem('eventMarkers', JSON.stringify(current));
+                    return current;
+                  });
+                } else {
+                  // Fallback to full reload if company fetch fails
+                  loadMarkers(true);
+                }
+              } catch (err) {
+                console.error('Error fetching company for granular update:', err);
                 loadMarkers(true);
               }
-            } catch (err) {
-              console.error('Error fetching company for granular update:', err);
-              loadMarkers(true);
             }
           }
-        }
       })
       .subscribe();
 
@@ -318,10 +314,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       .subscribe();
 
     const subscriptionsChannel = supabase
-      .channel('event-subscriptions-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'event_subscriptions' }, () => {
-        loadMarkers(true);
-      })
+      .channel(`event-subscriptions-changes-${eventYear}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_subscriptions',
+          filter: `event_year=eq.${eventYear}`,
+        },
+        (payload) => {
+          console.log('Subscription change detected:', payload.eventType, payload);
+          loadMarkers(true);
+        }
+      )
       .subscribe();
 
     return () => {
