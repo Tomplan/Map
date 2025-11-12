@@ -1,47 +1,64 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import useCompanies from '../../hooks/useCompanies';
+import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify } from '@mdi/js';
+import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
 import LogoUploader from '../LogoUploader';
-import { BRANDING_CONFIG } from '../../config/mapConfig';
+import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
+import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
 
 /**
  * CompaniesTab - Manage permanent company list
  * Companies are reusable across years
  */
 export default function CompaniesTab() {
-  const { companies, loading, error, createCompany, updateCompany, deleteCompany, searchCompanies } = useCompanies();
+  const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies } = useCompanies();
+  const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
+  const { organizationLogo } = useOrganizationLogo();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState(null); // Can be company.id or 'organization'
   const [editForm, setEditForm] = useState({});
   const [isCreating, setIsCreating] = useState(false);
-  const [newCompanyForm, setNewCompanyForm] = useState({ 
-    name: '', 
-    logo: BRANDING_CONFIG.getDefaultLogoPath(), 
-    website: '', 
-    info: '' 
+  const [newCompanyForm, setNewCompanyForm] = useState({
+    name: '',
+    logo: organizationLogo, // Use organization logo as default
+    website: '',
+    info: ''
   });
 
-  // Filter companies based on search
-  const filteredCompanies = searchTerm ? searchCompanies(searchTerm) : companies;
+  // Combine organization profile with companies and filter
+  const filteredItems = useMemo(() => {
+    const allItems = [];
+    if (organizationProfile) {
+      allItems.push({ ...organizationProfile, id: 'organization', isOrganization: true });
+    }
+    allItems.push(...companies);
 
-  // Start editing a company
-  const handleEdit = (company) => {
-    setEditingId(company.id);
-    setEditForm({ ...company });
+    if (!searchTerm) return allItems;
+
+    const lowercasedTerm = searchTerm.toLowerCase();
+    return allItems.filter(item => item.name?.toLowerCase().includes(lowercasedTerm));
+  }, [organizationProfile, companies, searchTerm]);
+
+  // Start editing
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setEditForm({ ...item });
   };
 
-  // Save edited company
-  const handleSave = async (id) => {
-    const { error } = await updateCompany(id, editForm);
-    if (!error) {
-      setEditingId(null);
-      setEditForm({});
+  // Save edited item (organization or company)
+  const handleSave = async () => {
+    const id = editingId;
+    if (id === 'organization') {
+      const { name, logo, website, info } = editForm;
+      await updateProfile({ name, logo, website, info });
     } else {
-      alert(`Error updating company: ${error}`);
+      await updateCompany(id, editForm);
     }
+    setEditingId(null);
+    setEditForm({});
   };
 
   // Cancel edit
@@ -71,19 +88,22 @@ export default function CompaniesTab() {
     const { error } = await createCompany(newCompanyForm);
     if (!error) {
       setIsCreating(false);
-      setNewCompanyForm({ 
-        name: '', 
-        logo: BRANDING_CONFIG.getDefaultLogoPath(), 
-        website: '', 
-        info: '' 
+      setNewCompanyForm({
+        name: '',
+        logo: organizationLogo, // Use organization logo as default
+        website: '',
+        info: ''
       });
     } else {
       alert(`Error creating company: ${error}`);
     }
   };
 
+  const loading = loadingCompanies || loadingProfile;
+  const error = errorCompanies || errorProfile;
+
   if (loading) {
-    return <div className="p-4">Loading companies...</div>;
+    return <div className="p-4">Loading data...</div>;
   }
 
   if (error) {
@@ -104,7 +124,7 @@ export default function CompaniesTab() {
             className="px-3 py-2 border rounded-lg"
           />
           <span className="text-sm text-gray-600">
-            {filteredCompanies.length} of {companies.length} companies
+            {filteredItems.length} of {companies.length + 1}
           </span>
         </div>
         <button
@@ -140,7 +160,7 @@ export default function CompaniesTab() {
     showPreview={true}
     allowDelete={true}
     onDelete={() => {
-      setNewCompanyForm({ ...newCompanyForm, logo: BRANDING_CONFIG.getDefaultLogoPath() });
+      setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo });
     }}
   />
   <input
@@ -177,7 +197,12 @@ export default function CompaniesTab() {
             <button
               onClick={() => {
                 setIsCreating(false);
-                setNewCompanyForm({ name: '', logo: '', website: '', info: '' });
+                setNewCompanyForm({
+                  name: '',
+                  logo: organizationLogo,
+                  website: '',
+                  info: ''
+                });
               }}
               className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
@@ -201,11 +226,13 @@ export default function CompaniesTab() {
             </tr>
           </thead>
           <tbody>
-            {filteredCompanies.map((company) => {
-              const isEditing = editingId === company.id;
+            {filteredItems.map((item) => {
+              const isEditing = editingId === item.id;
+              const isOrg = item.isOrganization;
+              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900';
 
               return (
-                <tr key={company.id} className="bg-white text-gray-900">
+                <tr key={item.id} className={`${rowClass} border-b`}>
                   {/* Name */}
                   <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
@@ -213,10 +240,10 @@ export default function CompaniesTab() {
                         type="text"
                         value={editForm.name}
                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full bg-white border rounded px-2 py-1"
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
                       />
                     ) : (
-                      <span className="font-semibold">{company.name}</span>
+                      <span className="font-semibold">{item.name}</span>
                     )}
                   </td>
 
@@ -229,27 +256,27 @@ export default function CompaniesTab() {
         onUploadComplete={(url, path) => {
           setEditForm({ ...editForm, logo: url });
         }}
-        folder="companies"
+        folder={isOrg ? "organization" : "companies"}
         label="Upload"
         showPreview={true}
         allowDelete={true}
         onDelete={() => {
-          setEditForm({ ...editForm, logo: BRANDING_CONFIG.getDefaultLogoPath() });
+          setEditForm({ ...editForm, logo: organizationLogo });
         }}
       />
       <input
         type="text"
         value={editForm.logo || ''}
         onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-        className="w-full bg-white border rounded px-2 py-1 text-xs"
+        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
         placeholder="Or paste URL"
       />
     </div>
   ) : (
-    <img 
-      src={getLogoPath(company.logo && company.logo.trim() !== '' ? company.logo : BRANDING_CONFIG.getDefaultLogoPath())} 
-      alt={company.name} 
-      className="h-8 object-contain" 
+    <img
+      src={getLogoPath((item.logo && item.logo.trim() !== '') ? item.logo : organizationLogo)}
+      alt={item.name}
+      className="h-8 object-contain"
     />
   )}
 </td>
@@ -261,15 +288,15 @@ export default function CompaniesTab() {
                         type="text"
                         value={editForm.website || ''}
                         onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                        className="w-full bg-white border rounded px-2 py-1"
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
                         placeholder="Website URL"
                       />
-                    ) : company.website ? (
-                      <a href={company.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                        {company.website.substring(0, 30)}...
+                    ) : item.website ? (
+                      <a href={item.website.startsWith('http') ? item.website : `https://${item.website}`} target="_blank" rel="noopener noreferrer" className={isOrg ? "text-blue-300 hover:underline" : "text-blue-600 hover:underline"}>
+                        {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm">No website</span>
+                      <span className="text-gray-400 text-sm italic">Not set</span>
                     )}
                   </td>
 
@@ -279,49 +306,56 @@ export default function CompaniesTab() {
                       <textarea
                         value={editForm.info || ''}
                         onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
-                        className="w-full bg-white border rounded px-2 py-1"
-                        rows={2}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+                        rows={4}
                       />
                     ) : (
-                      <span className="line-clamp-2">{company.info || <span className="text-gray-400 text-sm italic">No info</span>}</span>
+                      <p className="line-clamp-3 whitespace-pre-wrap">{item.info || <span className="text-gray-400 text-sm italic">Not set</span>}</p>
                     )}
                   </td>
 
                   {/* Actions */}
                   <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 justify-center">
                         <button
-                          onClick={() => handleSave(company.id)}
-                          className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
+                          onClick={handleSave}
+                          className="p-1.5 bg-green-600 text-white rounded hover:bg-green-700"
                           title="Save"
                         >
-                          <Icon path={mdiCheck} size={0.7} />
+                          <Icon path={mdiCheck} size={0.8} />
                         </button>
                         <button
                           onClick={handleCancel}
-                          className="p-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+                          className="p-1.5 bg-gray-500 text-white rounded hover:bg-gray-600"
                           title="Cancel"
                         >
-                          <Icon path={mdiClose} size={0.7} />
+                          <Icon path={mdiClose} size={0.8} />
                         </button>
                       </div>
                     ) : (
-                      <div className="flex gap-1">
+                      <div className="flex gap-1 justify-center">
                         <button
-                          onClick={() => handleEdit(company)}
-                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          onClick={() => handleEdit(item)}
+                          className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
                           title="Edit"
                         >
-                          <Icon path={mdiPencil} size={0.7} />
+                          <Icon path={mdiPencil} size={0.8} />
                         </button>
-                        <button
-                          onClick={() => handleDelete(company.id, company.name)}
-                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
-                          title="Delete"
-                        >
-                          <Icon path={mdiDelete} size={0.7} />
-                        </button>
+                        {!isOrg && (
+                          <button
+                            onClick={() => handleDelete(item.id, item.name)}
+                            className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
+                            title="Delete"
+                          >
+                            <Icon path={mdiDelete} size={0.8} />
+                          </button>
+                        )}
+                        {isOrg && (
+                          <div className="flex items-center justify-center pt-1 text-gray-400">
+                            <Icon path={mdiDomain} size={0.8} />
+                          </div>
+                        )}
                       </div>
                     )}
                   </td>
@@ -331,9 +365,9 @@ export default function CompaniesTab() {
           </tbody>
         </table>
 
-        {filteredCompanies.length === 0 && (
+        {filteredItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm ? 'No companies found matching your search' : 'No companies yet. Click "Add Company" to create one.'}
+            {searchTerm ? 'No items found matching your search' : 'No companies yet. Click "Add Company" to create one.'}
           </div>
         )}
       </div>

@@ -204,7 +204,7 @@ function createNewMarker({ lat, lng }) {
     name: '',
     label: '',
     logo: '',
-    boothNumber: '',
+    // Note: boothNumber removed - now using glyph from Markers_Appearance
     coreLocked: false,
     // ...other marker fields as needed
   };
