@@ -31,6 +31,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                   markersState={markersState}
                   updateMarker={updateMarker}
                   setMarkersState={setMarkersState}
+                  selectedYear={selectedYear}
                 />
               </Suspense>
             </main>
@@ -60,6 +61,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                     markersState={markersState}
                     updateMarker={updateMarker}
                     setMarkersState={setMarkersState}
+                    selectedYear={selectedYear}
                   />
                 </Suspense>
               </>

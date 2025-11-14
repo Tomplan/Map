@@ -66,7 +66,7 @@ const isMarkerDraggable = (marker, isAdminView) => {
   return isAdminView && marker && marker.coreLocked === false;
 };
 
-function EventMap({ isAdminView, markersState, updateMarker }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
@@ -313,6 +313,8 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             updateMarker={updateMarker}
             isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
             iconCreateFunction={iconCreateFunction}
+            selectedYear={selectedYear}
+            isAdminView={isAdminView}
           />
 
           <EventSpecialMarkers
@@ -322,6 +324,8 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             isMobile={isMobile}
             updateMarker={updateMarker}
             isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+            selectedYear={selectedYear}
+            isAdminView={isAdminView}
           />
         </MapContainer>
       </div>
