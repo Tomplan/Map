@@ -1,12 +1,16 @@
 import React, { useRef, useCallback, useMemo, useState, memo } from 'react';
-import { Marker } from 'react-leaflet';
+import { Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import L from 'leaflet';
 import { getIconPath } from '../utils/getIconPath';
 import { createMarkerIcon } from '../utils/markerIcons';
 import useIsMobile from '../utils/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
+import MarkerContextMenu from './MarkerContextMenu';
+import useEventSubscriptions from '../hooks/useEventSubscriptions';
+import useAssignments from '../hooks/useAssignments';
 import './MobileBottomSheet.css';
 
 const CLUSTER_CONFIG = {
@@ -96,11 +100,23 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [selectedMarker, setSelectedMarker] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
+  
+  // Context menu state
+  const [contextMenu, setContextMenu] = useState({
+    isOpen: false,
+    position: null,
+    marker: null,
+  });
+  const [contextMenuLoading, setContextMenuLoading] = useState(false);
+
+  // Load subscriptions and assignments (only when in admin view and year is provided)
+  const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
+  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
 
   const filteredMarkers = useMemo(
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
@@ -120,20 +136,66 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     return markerRefs.current[markerId];
   }, []);
 
+  // Handle context menu open
+  const handleContextMenu = useCallback(
+    (marker) => (e) => {
+      console.log('Context menu triggered:', { marker, isAdminView, position: e.latlng });
+      if (!isAdminView) return; // Only show in admin view
+      L.DomEvent.preventDefault(e); // Prevent default browser context menu
+      setContextMenu({
+        isOpen: true,
+        position: e.latlng,
+        marker: marker,
+      });
+    },
+    [isAdminView]
+  );
+
+  // Handle assignment
+  const handleAssign = useCallback(
+    async (markerId, companyId) => {
+      setContextMenuLoading(true);
+      try {
+        await assignCompanyToMarker(markerId, companyId);
+      } catch (error) {
+        console.error('Error assigning company:', error);
+      } finally {
+        setContextMenuLoading(false);
+      }
+    },
+    [assignCompanyToMarker]
+  );
+
+  // Handle unassignment
+  const handleUnassign = useCallback(
+    async (markerId, companyId) => {
+      setContextMenuLoading(true);
+      try {
+        await unassignCompanyFromMarker(markerId, companyId);
+      } catch (error) {
+        console.error('Error unassigning company:', error);
+      } finally {
+        setContextMenuLoading(false);
+      }
+    },
+    [unassignCompanyFromMarker]
+  );
+
   // Memoize event handlers by marker ID to prevent recreation
   const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
-    (markerId) => {
-      const key = `${markerId}-${isMarkerDraggable ? 'draggable' : 'static'}`;
+    (marker) => {
+      const key = `${marker.id}-${isMarkerDraggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}`;
       if (!eventHandlersByMarker.current[key]) {
         eventHandlersByMarker.current[key] = {
-          dragend: isMarkerDraggable ? handleDragEnd(markerId) : undefined,
+          dragend: isMarkerDraggable ? handleDragEnd(marker.id) : undefined,
           popupopen: (e) => e.target.closeTooltip(),
+          contextmenu: isAdminView ? handleContextMenu(marker) : undefined,
         };
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd]
+    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu]
   );
 
   // Memoize icons by marker visual properties to prevent recreation
@@ -169,7 +231,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
               marker={marker}
               isDraggable={isDraggable}
               icon={icon}
-              eventHandlers={getEventHandlers(marker.id)}
+              eventHandlers={getEventHandlers(marker)}
               markerRef={getMarkerRef(marker.id)}
               isMobile={isMobile}
               organizationLogo={organizationLogo}
@@ -178,6 +240,29 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
           );
         })}
       </MarkerClusterGroup>
+
+      {/* Context Menu - render outside cluster group at map level */}
+      {contextMenu.isOpen && contextMenu.marker && (
+        <Popup
+          position={contextMenu.position}
+          onClose={() => setContextMenu({ isOpen: false, position: null, marker: null })}
+          closeButton={true}
+          closeOnClick={false}
+          autoClose={false}
+          maxWidth={300}
+          minWidth={250}
+        >
+          <MarkerContextMenu
+            marker={contextMenu.marker}
+            subscriptions={subscriptions}
+            assignments={assignments}
+            onAssign={handleAssign}
+            onUnassign={handleUnassign}
+            isLoading={contextMenuLoading}
+            onClose={() => setContextMenu({ isOpen: false, position: null, marker: null })}
+          />
+        </Popup>
+      )}
 
       {/* MOBILE Bottom Sheet */}
       {isMobile && selectedMarker && (
