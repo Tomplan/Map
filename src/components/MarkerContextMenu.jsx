@@ -23,21 +23,43 @@ function MarkerContextMenu({
   // Find current assignment for this marker
   const currentAssignment = assignments.find((a) => a.marker_id === marker.id);
 
-  // Filter available companies: subscribed but not assigned to this marker
+  // Filter available companies: subscribed and have available booth slots
   const availableCompanies = subscriptions
     .filter((sub) => {
-      // Exclude if already assigned to this marker
-      const isAssigned = assignments.some(
-        (a) => a.marker_id === marker.id && a.company_id === sub.company_id
+      // Count current assignments for this company in this year
+      const companyAssignments = assignments.filter(
+        (a) => a.company_id === sub.company_id
       );
-      return !isAssigned;
+      
+      const assignedBoothCount = companyAssignments.length;
+      const totalBoothCount = sub.booth_count || 1;
+      
+      // Check if already assigned to this specific marker
+      const isAssignedToThisMarker = companyAssignments.some(
+        (a) => a.marker_id === marker.id
+      );
+      
+      // Show if: NOT assigned to this marker AND has available booths
+      return !isAssignedToThisMarker && assignedBoothCount < totalBoothCount;
     })
-    .map((sub) => ({
-      id: sub.company_id,
-      name: sub.company?.name || 'Unknown Company',
-      logo: sub.company?.logo || null,
-      website: sub.company?.website || null,
-    }))
+    .map((sub) => {
+      const companyAssignments = assignments.filter(
+        (a) => a.company_id === sub.company_id
+      );
+      const assignedBoothCount = companyAssignments.length;
+      const totalBoothCount = sub.booth_count || 1;
+      const remainingBooths = totalBoothCount - assignedBoothCount;
+      
+      return {
+        id: sub.company_id,
+        name: sub.company?.name || 'Unknown Company',
+        logo: sub.company?.logo || null,
+        website: sub.company?.website || null,
+        assignedBooths: assignedBoothCount,
+        totalBooths: totalBoothCount,
+        remainingBooths: remainingBooths,
+      };
+    })
     .filter((company) =>
       company.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -72,34 +94,51 @@ function MarkerContextMenu({
         </div>
 
         {/* Current Assignment */}
-        {currentAssignment && (
-          <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                {currentAssignment.company?.logo ? (
-                  <img
-                    src={getLogoPath(currentAssignment.company.logo)}
-                    alt={currentAssignment.company.name}
-                    className="w-8 h-8 object-contain flex-shrink-0"
-                  />
-                ) : (
-                  <MdBusiness className="w-8 h-8 text-gray-400 flex-shrink-0" />
-                )}
-                <span className="text-sm font-medium text-gray-800 truncate">
-                  {currentAssignment.company?.name || 'Unknown'}
-                </span>
+        {currentAssignment && (() => {
+          // Calculate booth usage for currently assigned company
+          const companyAssignments = assignments.filter(
+            (a) => a.company_id === currentAssignment.company_id
+          );
+          const assignedCount = companyAssignments.length;
+          const subscription = subscriptions.find(
+            (s) => s.company_id === currentAssignment.company_id
+          );
+          const totalBooths = subscription?.booth_count || 1;
+          
+          return (
+            <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  {currentAssignment.company?.logo ? (
+                    <img
+                      src={getLogoPath(currentAssignment.company.logo)}
+                      alt={currentAssignment.company.name}
+                      className="w-8 h-8 object-contain flex-shrink-0"
+                    />
+                  ) : (
+                    <MdBusiness className="w-8 h-8 text-gray-400 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-gray-800 truncate">
+                      {currentAssignment.company?.name || 'Unknown'}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      Using {assignedCount} of {totalBooths} booth{totalBooths !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={handleUnassign}
+                  disabled={isLoading}
+                  className="ml-2 px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  title="Unassign company"
+                >
+                  <MdClose className="inline" size={14} />
+                </button>
               </div>
-              <button
-                onClick={handleUnassign}
-                disabled={isLoading}
-                className="ml-2 px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                title="Unassign company"
-              >
-                <MdClose className="inline" size={14} />
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Search Input */}
         {availableCompanies.length > 5 && (
@@ -134,7 +173,7 @@ function MarkerContextMenu({
                   onClick={() => handleAssign(company.id)}
                   disabled={isLoading}
                   className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                  title={`Assign ${company.name}`}
+                  title={`Assign ${company.name} (${company.remainingBooths} booth${company.remainingBooths !== 1 ? 's' : ''} available)`}
                 >
                   {company.logo ? (
                     <img
@@ -145,9 +184,14 @@ function MarkerContextMenu({
                   ) : (
                     <MdBusiness className="w-8 h-8 text-gray-400 flex-shrink-0" />
                   )}
-                  <span className="text-sm text-gray-800 truncate flex-1">
-                    {company.name}
-                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-800 truncate">
+                      {company.name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {company.remainingBooths} of {company.totalBooths} booth{company.totalBooths !== 1 ? 's' : ''} available
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
