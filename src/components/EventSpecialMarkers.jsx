@@ -45,7 +45,6 @@ function EventSpecialMarkers({
   // Handle context menu open
   const handleContextMenu = useCallback(
     (marker) => (e) => {
-      console.log('Context menu triggered (special):', { marker, isAdminView, position: e.latlng });
       if (!isAdminView) return; // Only show in admin view
       L.DomEvent.preventDefault(e); // Prevent default browser context menu
       setContextMenu({
