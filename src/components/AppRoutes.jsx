@@ -17,14 +17,10 @@ const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./FeedbackForm'));
 
 function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
-  // Shared visitor layout with branding bar, offline status, and tab navigation
+  // Shared visitor layout with offline status and tab navigation
   const VisitorLayout = ({ children }) => (
     <ErrorBoundary>
-      <BrandingBar {...branding} />
       <OfflineStatus />
-      <Suspense fallback={<div>Loading accessibility options...</div>}>
-        <AccessibilityToggle />
-      </Suspense>
       <main className="pb-16 md:pb-0">
         {children}
       </main>
