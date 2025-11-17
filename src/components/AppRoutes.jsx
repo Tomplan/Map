@@ -8,11 +8,15 @@ import MarkerTable from './MarkerTable';
 import AdminLogin from './AdminLogin';
 import StorageTestPage from './StorageTestPage';
 import TabNavigation from './TabNavigation';
-import DesktopNav from './DesktopNav';
 import HomePage from './HomePage';
 import ExhibitorListView from './ExhibitorListView';
 import EventSchedule from './EventSchedule';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
+import AdminLayout from './AdminLayout';
+import Dashboard from './admin/Dashboard';
+import CompaniesTab from './admin/CompaniesTab';
+import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
+import AssignmentsTab from './admin/AssignmentsTab';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
@@ -20,12 +24,12 @@ const FeedbackForm = lazy(() => import('./FeedbackForm'));
 
 function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
   // Shared visitor layout with offline status, favorites context, and tab navigation
+  // Mobile-only design - bottom tabs always visible
   const VisitorLayout = ({ children }) => (
     <ErrorBoundary>
       <FavoritesProvider selectedYear={selectedYear}>
         <OfflineStatus />
-        <DesktopNav />
-        <main className="pb-16 md:pb-0">
+        <main className="pb-16">
           {children}
         </main>
         <TabNavigation />
@@ -79,42 +83,55 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           </VisitorLayout>
         }
       />
-      <Route
-        path="/admin"
-        element={
-          <ErrorBoundary>
-            <BrandingBar {...branding} />
-            {user ? (
-              <>
-                <AdminDashboard
-                  markersState={markersState}
-                  updateMarker={updateMarker}
-                  setMarkersState={setMarkersState}
-                  selectedYear={selectedYear}
-                  setSelectedYear={setSelectedYear}
-                />
-                <div style={{ margin: '2rem 0' }}>
-                  <MarkerTable />
-                </div>
-                <Suspense fallback={<div>Loading map...</div>}>
-                  <EventMap
-                    isAdminView={true}
-                    markersState={markersState}
-                    updateMarker={updateMarker}
-                    setMarkersState={setMarkersState}
-                    selectedYear={selectedYear}
-                  />
-                </Suspense>
-              </>
-            ) : (
+      {/* Admin Routes - Nested with sidebar layout */}
+      {user ? (
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Dashboard selectedYear={selectedYear} />} />
+          <Route
+            path="map"
+            element={
+              <div className="bg-white rounded-lg shadow p-6">
+                <h1 className="text-2xl font-bold mb-4">Map Management</h1>
+                <p className="text-gray-600">
+                  Unified map management interface coming in Phase 3...
+                </p>
+                {/* TODO: Phase 3 - MapManagement component */}
+              </div>
+            }
+          />
+          <Route path="companies" element={<CompaniesTab />} />
+          <Route
+            path="subscriptions"
+            element={<EventSubscriptionsTab selectedYear={selectedYear} />}
+          />
+          <Route
+            path="assignments"
+            element={<AssignmentsTab selectedYear={selectedYear} />}
+          />
+          <Route
+            path="settings"
+            element={
+              <div className="bg-white rounded-lg shadow p-6">
+                <h1 className="text-2xl font-bold mb-4">Settings</h1>
+                <p className="text-gray-600">Settings panel coming soon...</p>
+              </div>
+            }
+          />
+        </Route>
+      ) : (
+        <Route
+          path="/admin/*"
+          element={
+            <ErrorBoundary>
+              <BrandingBar {...branding} />
               <Suspense fallback={<div>Loading login...</div>}>
                 <FeedbackForm />
                 <AdminLogin onLogin={onLogin} />
               </Suspense>
-            )}
-          </ErrorBoundary>
-        }
-      />
+            </ErrorBoundary>
+          }
+        />
+      )}
       <Route path="/storage-test" element={<StorageTestPage />} />
 
     </Routes>
