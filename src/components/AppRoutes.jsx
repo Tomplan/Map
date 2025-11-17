@@ -23,7 +23,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
     <ErrorBoundary>
       <FavoritesProvider selectedYear={selectedYear}>
         <OfflineStatus />
-        <main className="pb-16 md:pb-0">
+        <main className="pb-16 md:pb-0 md:pt-16">
           {children}
         </main>
         <TabNavigation />
