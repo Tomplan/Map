@@ -1,18 +1,23 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiStar, mdiStarOutline, mdiMapMarker } from '@mdi/js';
+import { mdiMagnify, mdiMapMarker, mdiFilterVariant } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
+import FavoriteButton from './FavoriteButton';
 
 /**
- * ExhibitorListView - List view of all exhibitors
- * TODO: Phase 3 - Add search, category filtering, favorites integration
+ * ExhibitorListView - List view of all exhibitors with favorites
  */
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
   const { organizationLogo } = useOrganizationLogo();
   const [searchTerm, setSearchTerm] = useState('');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Favorites management from context
+  const { favorites, isFavorite, toggleFavorite } = useFavoritesContext();
 
   // Filter markers: only show booth markers (id < 1000) with company assignments
   const exhibitors = useMemo(() => {
@@ -26,26 +31,32 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       });
   }, [markersState]);
 
-  // Apply search filter
+  // Apply search and favorites filters
   const filteredExhibitors = useMemo(() => {
-    if (!searchTerm) return exhibitors;
+    let filtered = exhibitors;
 
-    const lowerSearch = searchTerm.toLowerCase();
-    return exhibitors.filter((exhibitor) =>
-      exhibitor.name?.toLowerCase().includes(lowerSearch) ||
-      exhibitor.glyph?.toLowerCase().includes(lowerSearch)
-    );
-  }, [exhibitors, searchTerm]);
+    // Apply favorites filter
+    if (showFavoritesOnly) {
+      filtered = filtered.filter((exhibitor) =>
+        exhibitor.companyId && isFavorite(exhibitor.companyId)
+      );
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((exhibitor) =>
+        exhibitor.name?.toLowerCase().includes(lowerSearch) ||
+        exhibitor.glyph?.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    return filtered;
+  }, [exhibitors, searchTerm, showFavoritesOnly, isFavorite]);
 
   const handleExhibitorClick = (markerId) => {
     // TODO: Navigate to map and focus on this marker
     navigate(`/map?focus=${markerId}`);
-  };
-
-  const handleToggleFavorite = (e, exhibitorId) => {
-    e.stopPropagation(); // Prevent navigation when clicking star
-    // TODO: Phase 4 - Implement favorites
-    console.log('Toggle favorite:', exhibitorId);
   };
 
   return (
@@ -71,9 +82,27 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
             />
           </div>
 
-          {/* Results Count */}
-          <div className="mt-3 text-sm text-gray-600">
-            Showing {filteredExhibitors.length} of {exhibitors.length} exhibitors
+          {/* Filters and Results Count */}
+          <div className="mt-3 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing {filteredExhibitors.length} of {exhibitors.length} exhibitors
+              {favorites.length > 0 && ` • ${favorites.length} favorited`}
+            </div>
+
+            {/* Favorites Only Toggle */}
+            {favorites.length > 0 && (
+              <button
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  showFavoritesOnly
+                    ? 'bg-yellow-100 text-yellow-800 border border-yellow-300'
+                    : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                }`}
+              >
+                <Icon path={mdiFilterVariant} size={0.7} />
+                Favorites Only
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -109,13 +138,15 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         {exhibitor.name}
                       </h3>
 
-                      {/* Favorite Button - Placeholder */}
-                      <button
-                        onClick={(e) => handleToggleFavorite(e, exhibitor.id)}
-                        className="flex-shrink-0 text-gray-400 hover:text-orange-500 transition-colors"
-                      >
-                        <Icon path={mdiStarOutline} size={1} />
-                      </button>
+                      {/* Favorite Button */}
+                      {exhibitor.companyId && (
+                        <FavoriteButton
+                          isFavorite={isFavorite(exhibitor.companyId)}
+                          onToggle={() => toggleFavorite(exhibitor.companyId)}
+                          size="md"
+                          className="flex-shrink-0"
+                        />
+                      )}
                     </div>
 
                     {/* Booth Number */}
