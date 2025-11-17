@@ -434,7 +434,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.contact || ''}
                         onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
+                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
@@ -448,7 +448,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.phone || ''}
                         onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
+                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.phone || '-'}</span>
@@ -462,7 +462,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="email"
                         value={editForm.email || ''}
                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
+                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
@@ -477,7 +477,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         min="1"
                         value={editForm.booth_count || 1}
                         onChange={(e) => setEditForm({ ...editForm, booth_count: parseInt(e.target.value) })}
-                        className="w-16 px-2 py-1 border rounded text-xs text-center text-gray-900"
+                        className="w-16 px-2 py-1 border rounded text-xs text-center bg-white text-gray-900"
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.booth_count}</span>
@@ -491,7 +491,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         type="text"
                         value={editForm.area || ''}
                         onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
+                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                         placeholder="large field, small field..."
                       />
                     ) : (
@@ -541,7 +541,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         min="0"
                         value={editForm.coins || 0}
                         onChange={(e) => setEditForm({ ...editForm, coins: parseInt(e.target.value) || 0 })}
-                        className="w-12 px-1 py-1 border rounded text-xs text-center"
+                        className="w-12 px-1 py-1 border rounded text-xs text-center bg-white text-gray-900"
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.coins}</span>
@@ -554,7 +554,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <textarea
                         value={editForm.notes || ''}
                         onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs text-gray-900"
+                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                         rows={2}
                       />
                     ) : (
