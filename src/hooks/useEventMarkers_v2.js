@@ -34,7 +34,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     async (online) => {
       // Always use the latest eventYear from ref
       const targetYear = eventYearRef.current;
-      console.log('useEventMarkers: loadMarkers called with year', targetYear);
 
       setLoading(true);
       if (!online && cached) {
@@ -56,8 +55,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           `).eq('event_year', targetYear),
           supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
         ]);
-
-        console.log('Fetched assignments for year', targetYear, ':', assignmentsRes.data?.length, 'assignments');
 
         if (coreRes.error) throw coreRes.error;
         if (appearanceRes.error) throw appearanceRes.error;
@@ -237,19 +234,15 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     const assignmentsChannel = supabase
       .channel('markers-assignments-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'assignments' }, async (payload) => {
-        console.log('Assignment change detected:', payload.eventType, payload);
-
         // Handle different event types
         if (payload.eventType === 'DELETE') {
           // Assignment deleted - reload all markers to reflect the deletion
           // Note: Supabase DELETE payloads don't include marker_id, only the primary key
-          console.log('Assignment deleted, reloading markers...');
           loadMarkers(true);
         } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
           // For INSERT/UPDATE, check year before processing
           const assignment = payload.new;
           if (assignment?.event_year !== eventYearRef.current) {
-            console.log('Assignment INSERT/UPDATE for different year, ignoring');
             return;
           }
 
@@ -298,8 +291,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     const companiesChannel = supabase
       .channel('companies-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
-        console.log('Company change detected:', payload.eventType, payload);
-
         // Company data changed - update all markers using this company
         if (payload.eventType === 'UPDATE' && payload.new) {
           const company = payload.new;
@@ -331,7 +322,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           filter: `event_year=eq.${eventYear}`,
         },
         (payload) => {
-          console.log('Subscription change detected:', payload.eventType, payload);
           loadMarkers(true);
         }
       )

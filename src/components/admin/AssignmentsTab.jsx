@@ -220,7 +220,42 @@ export default function AssignmentsTab({ selectedYear }) {
         alert(`Error removing assignment: ${error}`);
       }
     } else {
-      // Assign
+      // Assign - Check if marker already has assignments
+      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+
+      if (existingAssignments.length > 0) {
+        // Get company and marker info
+        const newCompany = subscribedCompanies.find(c => c.id === companyId);
+        const newCompanyName = newCompany?.name || 'this company';
+        const marker = sortedMarkers.find(m => m.id === markerId);
+        const boothLabel = marker?.glyph || markerId;
+
+        // Build warning message
+        let warningMessage;
+        if (existingAssignments.length === 1) {
+          const existingCompany = subscribedCompanies.find(
+            c => c.id === existingAssignments[0].company_id
+          );
+          const existingCompanyName = existingCompany?.name || 'another company';
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
+        } else {
+          const companyNames = existingAssignments
+            .map(a => {
+              const comp = subscribedCompanies.find(c => c.id === a.company_id);
+              return comp?.name;
+            })
+            .filter(Boolean)
+            .join(', ');
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
+        }
+
+        // Show confirmation
+        if (!confirm(warningMessage)) {
+          return; // User cancelled
+        }
+      }
+
+      // Proceed with assignment
       const { error } = await assignCompanyToMarker(markerId, companyId, null);
       if (error) {
         alert(`Error creating assignment: ${error}`);

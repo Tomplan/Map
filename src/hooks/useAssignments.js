@@ -245,8 +245,24 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           filter: `event_year=eq.${eventYear}`,
         },
         (payload) => {
-          console.log('Assignments change:', payload);
-          loadAssignments();
+          // For INSERT events, check if we already have this assignment locally
+          // (it was created by us, not another user)
+          if (payload.eventType === 'INSERT' && payload.new) {
+            setAssignments((prev) => {
+              // Check if this assignment already exists
+              const exists = prev.some(a => a.id === payload.new.id);
+              if (exists) {
+                // We already have it (we created it locally), no need to reload
+                return prev;
+              }
+              // New assignment from another user/session, reload to get full data
+              loadAssignments();
+              return prev;
+            });
+          } else {
+            // For UPDATE/DELETE, always reload
+            loadAssignments();
+          }
         }
       )
       .subscribe();

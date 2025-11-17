@@ -145,6 +145,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         isOpen: true,
         position: e.latlng,
         marker: marker,
+        timestamp: Date.now(), // Force React to recognize as new state
       });
     },
     [isAdminView]
@@ -153,6 +154,37 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   // Handle assignment
   const handleAssign = useCallback(
     async (markerId, companyId) => {
+      // Check if marker already has assignments
+      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+
+      if (existingAssignments.length > 0) {
+        // Get company name being assigned
+        const newCompany = subscriptions.find(s => s.company_id === companyId)?.company;
+        const newCompanyName = newCompany?.name || 'this company';
+
+        // Get booth number/glyph from marker
+        const marker = safeMarkers.find(m => m.id === markerId);
+        const boothLabel = marker?.glyph || marker?.id || 'this booth';
+
+        // Build warning message
+        let warningMessage;
+        if (existingAssignments.length === 1) {
+          const existingCompanyName = existingAssignments[0].company?.name || 'another company';
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
+        } else {
+          const companyNames = existingAssignments
+            .map(a => a.company?.name)
+            .filter(Boolean)
+            .join(', ');
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
+        }
+
+        // Show confirmation
+        if (!confirm(warningMessage)) {
+          return; // User cancelled
+        }
+      }
+
       setContextMenuLoading(true);
       try {
         await assignCompanyToMarker(markerId, companyId);
@@ -162,7 +194,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker]
+    [assignCompanyToMarker, assignments, subscriptions, safeMarkers]
   );
 
   // Handle unassignment
@@ -243,10 +275,12 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
       {/* Context Menu - render outside cluster group at map level */}
       {contextMenu.isOpen && contextMenu.marker && (
         <Popup
+          key={`context-${contextMenu.marker.id}-${contextMenu.timestamp || Date.now()}`}
           position={contextMenu.position}
           onClose={() => setContextMenu({ isOpen: false, position: null, marker: null })}
           closeButton={true}
-          closeOnClick={false}
+          closeOnClick={true}
+          closeOnEscapeKey={true}
           autoClose={false}
           maxWidth={300}
           minWidth={250}
