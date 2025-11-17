@@ -147,16 +147,27 @@ export const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
 };
 
 // --- Combined helper ---
-export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => (
-  <>
-    {!isMobile && (
-      <>
-        <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
-          <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
-        </Tooltip>
-        <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
-      </>
-    )}
-    {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
-  </>
-);
+export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => {
+  // Only show tooltip if marker has meaningful content (glyph or name)
+  // This prevents showing empty/incomplete tooltips on first hover
+  const hasTooltipContent = marker && (
+    (marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') ||
+    marker.name
+  );
+
+  return (
+    <>
+      {!isMobile && (
+        <>
+          {hasTooltipContent && (
+            <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
+              <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
+            </Tooltip>
+          )}
+          <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
+        </>
+      )}
+      {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
+    </>
+  );
+};
