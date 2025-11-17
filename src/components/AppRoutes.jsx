@@ -3,8 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineStatus from './OfflineStatus';
 import BrandingBar from './BrandingBar';
-import AdminDashboard from './AdminDashboard';
-import MarkerTable from './MarkerTable';
 import AdminLogin from './AdminLogin';
 import StorageTestPage from './StorageTestPage';
 import TabNavigation from './TabNavigation';
@@ -14,6 +12,7 @@ import EventSchedule from './EventSchedule';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
 import AdminLayout from './AdminLayout';
 import Dashboard from './admin/Dashboard';
+import MapManagement from './admin/MapManagement';
 import CompaniesTab from './admin/CompaniesTab';
 import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import AssignmentsTab from './admin/AssignmentsTab';
@@ -90,13 +89,11 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           <Route
             path="map"
             element={
-              <div className="bg-white rounded-lg shadow p-6">
-                <h1 className="text-2xl font-bold mb-4">Map Management</h1>
-                <p className="text-gray-600">
-                  Unified map management interface coming in Phase 3...
-                </p>
-                {/* TODO: Phase 3 - MapManagement component */}
-              </div>
+              <MapManagement
+                markersState={markersState}
+                setMarkersState={setMarkersState}
+                selectedYear={selectedYear}
+              />
             }
           />
           <Route path="companies" element={<CompaniesTab />} />
