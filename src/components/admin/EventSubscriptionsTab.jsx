@@ -150,7 +150,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Save edited subscription
   const handleSave = async () => {
-    const { id, ...updates } = editForm;
+    const { id, company, ...updates } = editForm;
     await updateSubscription(id, updates);
     setEditingId(null);
     setEditForm({});
