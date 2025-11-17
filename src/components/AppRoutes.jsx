@@ -8,6 +8,7 @@ import MarkerTable from './MarkerTable';
 import AdminLogin from './AdminLogin';
 import StorageTestPage from './StorageTestPage';
 import TabNavigation from './TabNavigation';
+import DesktopNav from './DesktopNav';
 import HomePage from './HomePage';
 import ExhibitorListView from './ExhibitorListView';
 import EventSchedule from './EventSchedule';
@@ -23,7 +24,8 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
     <ErrorBoundary>
       <FavoritesProvider selectedYear={selectedYear}>
         <OfflineStatus />
-        <main className="pb-16 md:pb-0 md:pt-16">
+        <DesktopNav />
+        <main className="pb-16 md:pb-0">
           {children}
         </main>
         <TabNavigation />
