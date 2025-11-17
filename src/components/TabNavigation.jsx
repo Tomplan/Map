@@ -43,7 +43,7 @@ export default function TabNavigation() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:relative md:shadow-none md:border-b">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:hidden">
       <div className="flex justify-around items-center h-16 max-w-screen-xl mx-auto">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
