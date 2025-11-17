@@ -3,6 +3,8 @@ import { Tooltip, Popup } from 'react-leaflet';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../utils/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
+import FavoriteButton from './FavoriteButton';
 
 // --- Tooltip for both cluster + special markers ---
 export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
@@ -42,6 +44,7 @@ export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
 // --- Desktop Popup with scrollable content ---
 export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
 
   return (
     <Popup
@@ -63,7 +66,16 @@ export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
             </div>
           )}
           {marker.name ? (
-            <div className="text-base font-semibold text-gray-900 mb-1">{marker.name}</div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+              {marker.companyId && (
+                <FavoriteButton
+                  isFavorite={isFavorite(marker.companyId)}
+                  onToggle={() => toggleFavorite(marker.companyId)}
+                  size="sm"
+                />
+              )}
+            </div>
           ) : (
             <div className="text-base font-semibold text-gray-500 italic mb-1">Unassigned Booth</div>
           )}

@@ -11,20 +11,23 @@ import TabNavigation from './TabNavigation';
 import HomePage from './HomePage';
 import ExhibitorListView from './ExhibitorListView';
 import EventSchedule from './EventSchedule';
+import { FavoritesProvider } from '../contexts/FavoritesContext';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./FeedbackForm'));
 
 function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
-  // Shared visitor layout with offline status and tab navigation
+  // Shared visitor layout with offline status, favorites context, and tab navigation
   const VisitorLayout = ({ children }) => (
     <ErrorBoundary>
-      <OfflineStatus />
-      <main className="pb-16 md:pb-0">
-        {children}
-      </main>
-      <TabNavigation />
+      <FavoritesProvider selectedYear={selectedYear}>
+        <OfflineStatus />
+        <main className="pb-16 md:pb-0">
+          {children}
+        </main>
+        <TabNavigation />
+      </FavoritesProvider>
     </ErrorBoundary>
   );
 
