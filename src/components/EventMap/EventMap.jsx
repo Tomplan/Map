@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
@@ -74,9 +75,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchLayer, setSearchLayer] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const searchControlRef = useRef(null);
   const rectangleLayerRef = useRef(null);
+  const hasProcessedFocus = useRef(false);
 
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
@@ -226,6 +229,31 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
       mapInstance._minimapControl = miniMapControl;
     }
   }, [mapInstance]);
+
+  // Handle focus parameter from URL (navigate from exhibitor list)
+  useEffect(() => {
+    if (!mapInstance || !safeMarkers.length || hasProcessedFocus.current) return;
+
+    const focusId = searchParams.get('focus');
+    if (focusId) {
+      const markerId = parseInt(focusId, 10);
+      const marker = safeMarkers.find((m) => m.id === markerId);
+
+      if (marker && marker.lat && marker.lng) {
+        // Zoom to marker with animation
+        setTimeout(() => {
+          mapInstance.flyTo([marker.lat, marker.lng], MAP_CONFIG.SEARCH_ZOOM, {
+            animate: true,
+            duration: 1,
+          });
+        }, 300);
+
+        // Mark as processed and clear URL parameter
+        hasProcessedFocus.current = true;
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
 
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
