@@ -8,6 +8,7 @@ import useIsMobile from '../utils/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
 import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
@@ -34,13 +35,13 @@ const DEFAULT_ICON = {
 const getIconFile = (marker) =>
   marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
 
-const createIcon = (marker, isActive = false) =>
-  createMarkerIcon({
-    className: isActive
-      ? `${marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon'} marker-active`
-      : marker.type
-      ? `marker-icon marker-type-${marker.type}`
-      : 'marker-icon',
+const createIcon = (marker, isActive = false, isFavorited = false) => {
+  let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
+  if (isActive) className += ' marker-active';
+  if (isFavorited) className += ' marker-favorited';
+
+  return createMarkerIcon({
+    className,
     prefix: marker.prefix,
     iconUrl: getIconFile(marker),
     iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
@@ -49,6 +50,7 @@ const createIcon = (marker, isActive = false) =>
     glyphSize: marker.glyphSize || DEFAULT_ICON.GLYPH_SIZE,
     glyphAnchor: marker.glyphAnchor || DEFAULT_ICON.GLYPH_ANCHOR,
   });
+};
 
 
 
@@ -105,7 +107,16 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   const isMobile = useIsMobile('md');
   const [selectedMarker, setSelectedMarker] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
-  
+
+  // Favorites context (only available in visitor view)
+  let favoritesContext = null;
+  try {
+    favoritesContext = useFavoritesContext();
+  } catch (e) {
+    // Context not available in admin view, ignore
+  }
+  const isFavorite = favoritesContext?.isFavorite || (() => false);
+
   // Context menu state
   const [contextMenu, setContextMenu] = useState({
     isOpen: false,
@@ -232,12 +243,13 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   // Memoize icons by marker visual properties to prevent recreation
   const iconsByMarker = useRef({});
   const getIcon = useCallback((marker, isSelected) => {
-    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}`;
+    const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
+    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}`;
     if (!iconsByMarker.current[key]) {
-      iconsByMarker.current[key] = createIcon(marker, isSelected);
+      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited);
     }
     return iconsByMarker.current[key];
-  }, []);
+  }, [isFavorite]);
 
   return (
     <>
