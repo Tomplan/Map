@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MdBusiness, MdClose, MdSearch } from 'react-icons/md';
+import Icon from '@mdi/react';
+import { mdiDomain, mdiClose, mdiMagnify } from '@mdi/js';
 import { getLogoPath } from '../utils/getLogoPath';
 
 /**
@@ -88,7 +89,7 @@ function MarkerContextMenu({
       {/* Header */}
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-300">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <MdBusiness className="text-blue-600" />
+            <Icon path={mdiDomain} size={0.8} className="text-blue-600" />
             {marker.name || `Marker ${marker.id}`}
           </h3>
         </div>
@@ -116,7 +117,7 @@ function MarkerContextMenu({
                       className="w-8 h-8 object-contain flex-shrink-0"
                     />
                   ) : (
-                    <MdBusiness className="w-8 h-8 text-gray-400 flex-shrink-0" />
+                    <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-800 truncate">
@@ -133,7 +134,7 @@ function MarkerContextMenu({
                   className="ml-2 px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   title="Unassign company"
                 >
-                  <MdClose className="inline" size={14} />
+                  <Icon path={mdiClose} size={0.55} className="inline" />
                 </button>
               </div>
             </div>
@@ -143,7 +144,7 @@ function MarkerContextMenu({
         {/* Search Input */}
         {availableCompanies.length > 5 && (
           <div className="mb-2 relative">
-            <MdSearch className="absolute left-2 top-2 text-gray-400" size={16} />
+            <Icon path={mdiMagnify} size={0.65} className="absolute left-2 top-2 text-gray-400" />
             <input
               ref={searchInputRef}
               type="text"
@@ -182,7 +183,7 @@ function MarkerContextMenu({
                       className="w-8 h-8 object-contain flex-shrink-0"
                     />
                   ) : (
-                    <MdBusiness className="w-8 h-8 text-gray-400 flex-shrink-0" />
+                    <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-gray-800 truncate">

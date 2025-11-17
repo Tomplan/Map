@@ -200,7 +200,7 @@ export default function CompaniesTab() {
 
       {/* Companies table */}
       <div className="overflow-auto border rounded-lg" style={{ maxHeight: '70vh' }}>
-        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
+        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             {/* Section headers row */}
             <tr>
@@ -210,29 +210,29 @@ export default function CompaniesTab() {
               <th className="p-2 text-center bg-green-100 border-b font-bold text-green-800" colSpan={3}>
                 Manager-Only Info
               </th>
-              <th className="p-2 bg-gray-100 border-b" rowSpan={2} style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" rowSpan={2} style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
             </tr>
             {/* Column headers row */}
-            <tr className="bg-gray-100 text-gray-900">
-              <th className="p-2 text-left bg-blue-50">Name</th>
-              <th className="p-2 text-left bg-blue-50">Logo</th>
-              <th className="p-2 text-left bg-blue-50">Website</th>
-              <th className="p-2 text-left bg-blue-50">Info</th>
-              <th className="p-2 text-left bg-green-50">Contact</th>
-              <th className="p-2 text-left bg-green-50">Phone</th>
-              <th className="p-2 text-left bg-green-50">Email</th>
+            <tr>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
             </tr>
           </thead>
           <tbody>
             {filteredItems.map((item) => {
               const isEditing = editingId === item.id;
               const isOrg = item.isOrganization;
-              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900';
+              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 hover:bg-gray-50';
 
               return (
                 <tr key={item.id} className={`${rowClass} border-b`}>
                   {/* Name */}
-                  <td className="py-1 px-3 border-b text-left bg-blue-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -246,7 +246,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Logo */}
-                  <td className="py-1 px-3 border-b text-left bg-blue-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
   {isEditing ? (
     <div className="flex flex-col gap-2">
       <LogoUploader
@@ -280,7 +280,7 @@ export default function CompaniesTab() {
 </td>
 
                   {/* Website */}
-                  <td className="py-1 px-3 border-b text-left bg-blue-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -299,7 +299,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Info */}
-                  <td className="py-1 px-3 border-b text-left max-w-xs bg-blue-50">
+                  <td className={`py-1 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <textarea
                         value={editForm.info || ''}
@@ -313,7 +313,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Contact */}
-                  <td className="py-1 px-3 border-b text-left bg-green-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -328,7 +328,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Phone */}
-                  <td className="py-1 px-3 border-b text-left bg-green-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -343,7 +343,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Email */}
-                  <td className="py-1 px-3 border-b text-left bg-green-50">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="email"
@@ -395,7 +395,7 @@ export default function CompaniesTab() {
                           </button>
                         )}
                         {isOrg && (
-                          <div className="flex items-center justify-center pt-1 text-gray-400">
+                          <div className="flex items-center justify-center pt-1 text-gray-300">
                             <Icon path={mdiDomain} size={0.8} />
                           </div>
                         )}
