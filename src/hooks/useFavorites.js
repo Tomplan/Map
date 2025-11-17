@@ -1,34 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
- * useFavorites - Manage favorite exhibitors in localStorage
- * Stores favorites per event year
+ * useFavorites - Manage favorite exhibitors in session memory only
+ * No persistence - favorites cleared when page is closed (perfect for one-day events)
  *
- * @param {number} selectedYear - Current event year
+ * @param {number} selectedYear - Current event year (for consistency)
  * @returns {Object} Favorites state and actions
  */
 export default function useFavorites(selectedYear) {
-  const STORAGE_KEY = `event_favorites_${selectedYear}`;
-
-  // Initialize favorites from localStorage
-  const [favorites, setFavorites] = useState(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch (error) {
-      console.error('Error loading favorites from localStorage:', error);
-      return [];
-    }
-  });
-
-  // Persist to localStorage whenever favorites change
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
-    } catch (error) {
-      console.error('Error saving favorites to localStorage:', error);
-    }
-  }, [favorites, STORAGE_KEY]);
+  // Session-only favorites (no localStorage!)
+  const [favorites, setFavorites] = useState([]);
 
   // Check if a company is favorited
   const isFavorite = useCallback(
