@@ -42,8 +42,11 @@ export default function TabNavigation() {
     navigate(path);
   };
 
+  // Hide on desktop when on map route (map needs full screen)
+  const isMapRoute = location.pathname === '/map';
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:top-0 md:bottom-auto md:border-t-0 md:border-b md:shadow-md">
+    <nav className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:top-0 md:bottom-auto md:border-t-0 md:border-b md:shadow-md ${isMapRoute ? 'md:hidden' : ''}`}>
       <div className="flex justify-around items-center h-16 max-w-screen-xl mx-auto md:justify-center md:gap-8">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;
