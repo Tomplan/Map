@@ -82,43 +82,13 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           </VisitorLayout>
         }
       />
-      {/* Admin Routes - Nested with sidebar layout */}
-      {user ? (
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard selectedYear={selectedYear} />} />
-          <Route
-            path="map"
-            element={
-              <MapManagement
-                markersState={markersState}
-                setMarkersState={setMarkersState}
-                selectedYear={selectedYear}
-              />
-            }
-          />
-          <Route path="companies" element={<CompaniesTab />} />
-          <Route
-            path="subscriptions"
-            element={<EventSubscriptionsTab selectedYear={selectedYear} />}
-          />
-          <Route
-            path="assignments"
-            element={<AssignmentsTab selectedYear={selectedYear} />}
-          />
-          <Route
-            path="settings"
-            element={
-              <div className="bg-white rounded-lg shadow p-6">
-                <h1 className="text-2xl font-bold mb-4">Settings</h1>
-                <p className="text-gray-600">Settings panel coming soon...</p>
-              </div>
-            }
-          />
-        </Route>
-      ) : (
-        <Route
-          path="/admin/*"
-          element={
+      {/* Admin Routes - Conditional rendering based on auth */}
+      <Route
+        path="/admin"
+        element={
+          user ? (
+            <AdminLayout />
+          ) : (
             <ErrorBoundary>
               <BrandingBar {...branding} />
               <Suspense fallback={<div>Loading login...</div>}>
@@ -126,9 +96,39 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                 <AdminLogin onLogin={onLogin} />
               </Suspense>
             </ErrorBoundary>
+          )
+        }
+      >
+        <Route index element={<Dashboard selectedYear={selectedYear} />} />
+        <Route
+          path="map"
+          element={
+            <MapManagement
+              markersState={markersState}
+              setMarkersState={setMarkersState}
+              selectedYear={selectedYear}
+            />
           }
         />
-      )}
+        <Route path="companies" element={<CompaniesTab />} />
+        <Route
+          path="subscriptions"
+          element={<EventSubscriptionsTab selectedYear={selectedYear} />}
+        />
+        <Route
+          path="assignments"
+          element={<AssignmentsTab selectedYear={selectedYear} />}
+        />
+        <Route
+          path="settings"
+          element={
+            <div className="bg-white rounded-lg shadow p-6">
+              <h1 className="text-2xl font-bold mb-4">Settings</h1>
+              <p className="text-gray-600">Settings panel coming soon...</p>
+            </div>
+          }
+        />
+      </Route>
       <Route path="/storage-test" element={<StorageTestPage />} />
 
     </Routes>
