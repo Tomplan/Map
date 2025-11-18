@@ -4,10 +4,14 @@ import './index.css';
 import App from './App.jsx';
 import L from 'leaflet';
 
+const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : `${import.meta.env.BASE_URL}/`;
+
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: `${import.meta.env.BASE_URL}assets/icons/marker-icon-2x.png`,
-  iconUrl: `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`, // or your preferred default
-  shadowUrl: `${import.meta.env.BASE_URL}assets/icons/marker-shadow.png`,
+  iconRetinaUrl: `${baseUrl}assets/icons/marker-icon-2x.png`,
+  iconUrl: `${baseUrl}assets/icons/glyph-marker-icon-blue.svg`, // or your preferred default
+  shadowUrl: `${baseUrl}assets/icons/marker-shadow.png`,
 });
 
 createRoot(document.getElementById('root')).render(
@@ -19,6 +23,9 @@ createRoot(document.getElementById('root')).render(
 // Register service worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}service-worker.js`);
+    const base = import.meta.env.BASE_URL.endsWith('/')
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+    navigator.serviceWorker.register(`${base}service-worker.js`);
   });
 }
