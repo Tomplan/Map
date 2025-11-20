@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiStar, mdiStarOutline } from '@mdi/js';
 
@@ -49,3 +50,15 @@ export default function FavoriteButton({
     </button>
   );
 }
+
+FavoriteButton.propTypes = {
+  isFavorite: PropTypes.bool.isRequired,
+  onToggle: PropTypes.func.isRequired,
+  size: PropTypes.oneOf(['sm', 'md', 'lg']),
+  className: PropTypes.string,
+};
+
+FavoriteButton.defaultProps = {
+  size: 'md',
+  className: '',
+};

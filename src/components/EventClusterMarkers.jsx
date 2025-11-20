@@ -1,4 +1,5 @@
-import React, { useRef, useCallback, useMemo, useState, memo } from 'react';
+import React, { useRef, useCallback, useMemo, useState, memo, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { Marker, Popup } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import L from 'leaflet';
@@ -12,6 +13,7 @@ import { useFavoritesContext } from '../contexts/FavoritesContext';
 import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
+import { useDialog } from '../contexts/DialogContext';
 import './MobileBottomSheet.css';
 
 const CLUSTER_CONFIG = {
@@ -115,7 +117,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   const setSelectedMarker = isAdminView && onMarkerSelect
     ? (marker) => onMarkerSelect(marker ? marker.id : null)
     : setInternalSelectedMarker;
-  const { organizationLogo } = useOrganizationLogo();
+  const { organizationLogo, loading: logoLoading } = useOrganizationLogo();
 
   // Favorites context (only available in visitor view)
   let favoritesContext = null;
@@ -137,6 +139,9 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
+
+  // Dialog context for confirmations
+  const { confirm } = useDialog();
 
   const filteredMarkers = useMemo(
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
@@ -200,7 +205,13 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         }
 
         // Show confirmation
-        if (!confirm(warningMessage)) {
+        const confirmed = await confirm({
+          title: 'Multiple Assignments',
+          message: warningMessage,
+          confirmText: 'Assign',
+          variant: 'warning',
+        });
+        if (!confirmed) {
           return; // User cancelled
         }
       }
@@ -260,10 +271,36 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     return iconsByMarker.current[key];
   }, [isFavorite]);
 
+  // Clean up stale cache entries when markers change to prevent memory leaks
+  useEffect(() => {
+    const currentMarkerIds = new Set(filteredMarkers.map(m => m.id));
+
+    // Clean up event handlers cache
+    Object.keys(eventHandlersByMarker.current).forEach(key => {
+      const markerId = parseInt(key.split('-')[0], 10);
+      if (!currentMarkerIds.has(markerId)) {
+        delete eventHandlersByMarker.current[key];
+      }
+    });
+
+    // Clean up icons cache
+    Object.keys(iconsByMarker.current).forEach(key => {
+      const markerId = parseInt(key.split('-')[0], 10);
+      if (!currentMarkerIds.has(markerId)) {
+        delete iconsByMarker.current[key];
+      }
+    });
+  }, [filteredMarkers]);
+
+  // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
+  if (logoLoading) {
+    return null;
+  }
+
   return (
     <>
       <MarkerClusterGroup
-        key={`cluster-${organizationLogo || 'default'}`}
+        key="cluster-group"
         chunkedLoading={CLUSTER_CONFIG.CHUNKED_LOADING}
         showCoverageOnHover={CLUSTER_CONFIG.SHOW_COVERAGE_ON_HOVER}
         spiderfyOnMaxZoom={CLUSTER_CONFIG.SPIDERFY_ON_MAX_ZOOM}
@@ -326,5 +363,42 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     </>
   );
 }
+
+EventClusterMarkers.propTypes = {
+  safeMarkers: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      lat: PropTypes.number.isRequired,
+      lng: PropTypes.number.isRequired,
+      type: PropTypes.string,
+      iconUrl: PropTypes.string,
+      iconSize: PropTypes.arrayOf(PropTypes.number),
+      glyph: PropTypes.string,
+      glyphColor: PropTypes.string,
+      glyphSize: PropTypes.string,
+      glyphAnchor: PropTypes.arrayOf(PropTypes.number),
+      prefix: PropTypes.string,
+      name: PropTypes.string,
+      logo: PropTypes.string,
+      website: PropTypes.string,
+      info: PropTypes.string,
+      companyId: PropTypes.number,
+    })
+  ).isRequired,
+  updateMarker: PropTypes.func.isRequired,
+  isMarkerDraggable: PropTypes.func.isRequired,
+  iconCreateFunction: PropTypes.func.isRequired,
+  selectedYear: PropTypes.number,
+  isAdminView: PropTypes.bool,
+  selectedMarkerId: PropTypes.number,
+  onMarkerSelect: PropTypes.func,
+};
+
+EventClusterMarkers.defaultProps = {
+  selectedYear: new Date().getFullYear(),
+  isAdminView: false,
+  selectedMarkerId: null,
+  onMarkerSelect: null,
+};
 
 export default EventClusterMarkers;

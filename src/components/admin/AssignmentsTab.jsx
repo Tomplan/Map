@@ -5,6 +5,7 @@ import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown } from '@mdi/js';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * AssignmentsTab - Matrix view for managing yearly marker-to-company assignments
@@ -53,6 +54,9 @@ export default function AssignmentsTab({ selectedYear }) {
 
   // Load subscriptions to filter companies
   const { subscriptions } = useEventSubscriptions(selectedYear);
+
+  // Dialog context
+  const { confirm, toastError, toastSuccess, toastInfo } = useDialog();
 
   // Extract subscribed companies with their info
   const subscribedCompanies = useMemo(() => {
@@ -217,7 +221,7 @@ export default function AssignmentsTab({ selectedYear }) {
       // Unassign
       const { error } = await unassignCompanyFromMarker(markerId, companyId);
       if (error) {
-        alert(`Error removing assignment: ${error}`);
+        toastError(`Error removing assignment: ${error}`);
       }
     } else {
       // Assign - Check if marker already has assignments
@@ -250,7 +254,13 @@ export default function AssignmentsTab({ selectedYear }) {
         }
 
         // Show confirmation
-        if (!confirm(warningMessage)) {
+        const confirmed = await confirm({
+          title: 'Multiple Assignments',
+          message: warningMessage,
+          confirmText: 'Assign',
+          variant: 'warning',
+        });
+        if (!confirmed) {
           return; // User cancelled
         }
       }
@@ -258,22 +268,28 @@ export default function AssignmentsTab({ selectedYear }) {
       // Proceed with assignment
       const { error } = await assignCompanyToMarker(markerId, companyId, null);
       if (error) {
-        alert(`Error creating assignment: ${error}`);
+        toastError(`Error creating assignment: ${error}`);
       }
     }
   };
 
   // Handle archive current year
   const handleArchive = async () => {
-    if (!confirm(`Archive all assignments for ${selectedYear}? This will move them to the archive and clear the current year.`)) {
+    const confirmed = await confirm({
+      title: 'Archive Assignments',
+      message: `Archive all assignments for ${selectedYear}? This will move them to the archive and clear the current year.`,
+      confirmText: 'Archive',
+      variant: 'warning',
+    });
+    if (!confirmed) {
       return;
     }
 
     const { error } = await archiveCurrentYear();
     if (error) {
-      alert(`Error archiving: ${error}`);
+      toastError(`Error archiving: ${error}`);
     } else {
-      alert(`Successfully archived ${assignments.length} assignments for ${selectedYear}`);
+      toastSuccess(`Successfully archived ${assignments.length} assignments for ${selectedYear}`);
     }
   };
 
@@ -281,9 +297,9 @@ export default function AssignmentsTab({ selectedYear }) {
   const handleViewArchived = async (year) => {
     const { error } = await loadArchivedAssignments(year);
     if (error) {
-      alert(`Error loading archived assignments: ${error}`);
+      toastError(`Error loading archived assignments: ${error}`);
     } else {
-      alert(`Archived data loaded for ${year}. Feature coming soon: display in table.`);
+      toastInfo(`Archived data loaded for ${year}. Feature coming soon: display in table.`);
     }
   };
 

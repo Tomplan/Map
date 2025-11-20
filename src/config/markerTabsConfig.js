@@ -2,6 +2,9 @@
  * Configuration for marker table tabs and columns in AdminDashboard
  */
 
+// Re-export icon configuration from markerTableConfig to avoid duplication
+export { ICON_OPTIONS, ICON_PATH_PREFIX } from './markerTableConfig';
+
 export const TABS = [
   { key: 'core', label: 'Markers - Core' },
   { key: 'appearance', label: 'Markers - Appearance' },
@@ -40,17 +43,3 @@ export const COLUMNS = {
     { key: 'info', label: 'Info' },
   ],
 };
-
-// Icon options for marker appearance configuration
-export const ICON_OPTIONS = [
-  'glyph-marker-icon-black.svg',
-  'glyph-marker-icon-blue.svg',
-  'glyph-marker-icon-gray.svg',
-  'glyph-marker-icon-green.svg',
-  'glyph-marker-icon-orange.svg',
-  'glyph-marker-icon-purple.svg',
-  'glyph-marker-icon-red.svg',
-  'glyph-marker-icon-yellow.svg',
-];
-
-export const ICON_PATH_PREFIX = `${import.meta.env.BASE_URL}assets/icons/`;

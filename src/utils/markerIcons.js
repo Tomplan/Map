@@ -1,4 +1,5 @@
 import { getLogoPath } from './getLogoPath';
+import { getBaseUrl } from './getBaseUrl';
 import L from 'leaflet';
 import '../libs/Leaflet.Icon.Glyph.js';
 // import removed; use /assets/icons/ URLs for runtime asset access
@@ -53,10 +54,7 @@ export function createMarkerIcon({
   const shadowAnchorX = Math.round((shadowWidth * 12) / 41);
   const shadowAnchorY = shadowHeight;
 
-  // Normalize base URL to always have trailing slash (same as getIconPath)
-  const base = import.meta.env.BASE_URL.endsWith('/')
-    ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`;
+  const base = getBaseUrl();
 
   return L.icon.glyph({
     iconUrl: iconUrl || `${base}assets/icons/glyph-marker-icon-blue.svg`,

@@ -10,6 +10,7 @@ import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
+import { useDialog } from '../contexts/DialogContext';
 
 function EventSpecialMarkers({
   safeMarkers,
@@ -44,6 +45,9 @@ function EventSpecialMarkers({
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
+
+  // Dialog context for confirmations
+  const { confirm } = useDialog();
 
   const handleDragEnd = useCallback(
     (markerId) => (e) => {
@@ -97,7 +101,13 @@ function EventSpecialMarkers({
         }
 
         // Show confirmation
-        if (!confirm(warningMessage)) {
+        const confirmed = await confirm({
+          title: 'Multiple Assignments',
+          message: warningMessage,
+          confirmText: 'Assign',
+          variant: 'warning',
+        });
+        if (!confirmed) {
           return; // User cancelled
         }
       }

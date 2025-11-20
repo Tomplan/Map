@@ -7,6 +7,7 @@ import { getLogoPath } from '../../utils/getLogoPath';
 import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -20,6 +21,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
   const [editData, setEditData] = useState(null);
   const [sortBy, setSortBy] = useState('id-asc'); // id-asc, id-desc, name-asc, name-desc, type
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
+  const { toastError } = useDialog();
 
   // Fetch default markers on mount
   useEffect(() => {
@@ -158,8 +160,6 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
         setDefaultMarkers(prev =>
           prev.map(m => (m.id === editData.id ? { ...m, ...editData } : m))
         );
-
-        console.log('Default marker saved successfully');
       } else {
         // Save regular marker (existing logic)
         setMarkersState((prev) =>
@@ -167,14 +167,13 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
         );
 
         // TODO: Save regular markers to Supabase
-        console.log('Saving marker:', editData);
       }
 
       setEditMode(false);
       setEditData(null);
     } catch (error) {
       console.error('Error saving marker:', error);
-      alert('Failed to save marker. Please try again.');
+      toastError('Failed to save marker. Please try again.');
     }
   };
 

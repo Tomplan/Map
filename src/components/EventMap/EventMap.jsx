@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer } from 'react-leaflet';
@@ -13,6 +14,7 @@ import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../utils/useIsMobile';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
+import { MAP_CONFIG, MAP_LAYERS } from '../../config/mapConfig';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -22,41 +24,6 @@ import 'leaflet-search';
 import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
-
-// Constants
-const MAP_CONFIG = {
-  DEFAULT_POSITION: [51.898095078807025, 5.772961378097534],
-  DEFAULT_ZOOM: 17,
-  MIN_ZOOM: 14,
-  MAX_ZOOM: 22,
-  SEARCH_ZOOM: 21,
-  ZOOM_DELTA: 0.1,
-  ZOOM_SNAP: 0.1,
-  RECTANGLE_SIZE: [6, 6],
-  MINIMAP: {
-    WIDTH: 120,
-    HEIGHT: 120,
-    ZOOM_LEVEL: 15,
-    AIMING_COLOR: '#1976d2',
-    SHADOW_COLOR: '#90caf9',
-  },
-};
-
-const MAP_LAYERS = [
-  {
-    key: 'carto',
-    name: 'Carto Voyager',
-    attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
-  },
-  {
-    key: 'esri',
-    name: 'Esri World Imagery',
-    attribution:
-      'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  },
-];
 
 // Utility functions
 const createSearchText = (marker) => {
@@ -377,5 +344,22 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     </div>
   );
 }
+
+EventMap.propTypes = {
+  isAdminView: PropTypes.bool,
+  markersState: PropTypes.array,
+  updateMarker: PropTypes.func.isRequired,
+  selectedYear: PropTypes.number,
+  selectedMarkerId: PropTypes.number,
+  onMarkerSelect: PropTypes.func,
+};
+
+EventMap.defaultProps = {
+  isAdminView: false,
+  markersState: [],
+  selectedYear: new Date().getFullYear(),
+  selectedMarkerId: null,
+  onMarkerSelect: null,
+};
 
 export default EventMap;

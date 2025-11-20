@@ -8,6 +8,7 @@ import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiArchi
 import { getLogoPath } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { supabase } from '../../supabaseClient';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
@@ -37,6 +38,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+
+  // Dialog context
+  const { confirm, toastError, toastSuccess, toastWarning } = useDialog();
 
   // Get list of available companies (not yet subscribed)
   const availableCompanies = useMemo(() => {
@@ -168,19 +172,25 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     const boothLabels = getBoothLabels(subscription.company_id);
     const assignmentInfo = boothLabels ? ` and their booth assignments (${boothLabels})` : '';
 
-    if (!confirm(`Unsubscribe ${companyName} from ${selectedYear}? This will delete their subscription${assignmentInfo}.`)) {
+    const confirmed = await confirm({
+      title: 'Unsubscribe Company',
+      message: `Unsubscribe ${companyName} from ${selectedYear}? This will delete their subscription${assignmentInfo}.`,
+      confirmText: 'Unsubscribe',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
     const { error } = await unsubscribeCompany(subscription.id);
     if (error) {
-      alert(`Error unsubscribing company: ${error}`);
+      toastError(`Error unsubscribing company: ${error}`);
     }
   };
 
   // Add new subscription
   const handleAdd = async () => {
     if (!selectedCompanyId) {
-      alert('Please select a company');
+      toastWarning('Please select a company');
       return;
     }
 
@@ -189,20 +199,26 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       setIsAdding(false);
       setSelectedCompanyId('');
     } else {
-      alert(`Error subscribing company: ${error}`);
+      toastError(`Error subscribing company: ${error}`);
     }
   };
 
   // Archive current year
   const handleArchive = async () => {
-    if (!confirm(`Archive all subscriptions for ${selectedYear}? This will move them to the archive and clear the active list.`)) {
+    const confirmed = await confirm({
+      title: 'Archive Subscriptions',
+      message: `Archive all subscriptions for ${selectedYear}? This will move them to the archive and clear the active list.`,
+      confirmText: 'Archive',
+      variant: 'warning',
+    });
+    if (!confirmed) {
       return;
     }
     const { data, error } = await archiveCurrentYear();
     if (error) {
-      alert(`Error archiving: ${error}`);
+      toastError(`Error archiving: ${error}`);
     } else {
-      alert(`Archived ${data} subscriptions for ${selectedYear}`);
+      toastSuccess(`Archived ${data} subscriptions for ${selectedYear}`);
     }
   };
 

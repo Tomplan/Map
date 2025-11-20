@@ -1,3 +1,5 @@
+import { getBaseUrl } from './getBaseUrl';
+
 // Utility to normalize logo paths for consistent rendering
 export function getLogoPath(logo) {
   if (!logo) return '';
@@ -7,10 +9,7 @@ export function getLogoPath(logo) {
     return logo;
   }
 
-  // Normalize base URL to always have trailing slash
-  const base = import.meta.env.BASE_URL.endsWith('/')
-    ? import.meta.env.BASE_URL
-    : `${import.meta.env.BASE_URL}/`;
+  const base = getBaseUrl();
 
   // Handle local paths
   if (logo.startsWith('/assets/logos/')) return `${base}${logo.slice(1)}`;

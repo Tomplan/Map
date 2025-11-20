@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath } from '../utils/getLogoPath';
@@ -115,3 +116,16 @@ export default function HomePage({ selectedYear, branding }) {
     </div>
   );
 }
+
+HomePage.propTypes = {
+  selectedYear: PropTypes.number,
+  branding: PropTypes.shape({
+    eventName: PropTypes.string,
+    fontFamily: PropTypes.string,
+  }),
+};
+
+HomePage.defaultProps = {
+  selectedYear: new Date().getFullYear(),
+  branding: null,
+};

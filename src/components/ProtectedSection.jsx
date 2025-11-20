@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import useUserRole from '../hooks/useUserRole';
 import Icon from '@mdi/react';
 import { mdiLockOutline } from '@mdi/js';
@@ -46,3 +47,16 @@ export default function ProtectedSection({ requiredRole, children, message }) {
 
   return <>{children}</>;
 }
+
+ProtectedSection.propTypes = {
+  requiredRole: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string),
+  ]).isRequired,
+  children: PropTypes.node.isRequired,
+  message: PropTypes.string,
+};
+
+ProtectedSection.defaultProps = {
+  message: null,
+};
