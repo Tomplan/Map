@@ -239,9 +239,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   }
 
   return (
-    <div className="p-4">
+    <div className="h-full flex flex-col p-4">
       {/* Header with search and action buttons */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
@@ -283,7 +283,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
       {/* Add new subscription form */}
       {isAdding && (
-        <div className="mb-4 p-4 border rounded-lg bg-blue-50">
+        <div className="mb-4 p-4 border rounded-lg bg-blue-50 flex-shrink-0">
           <h3 className="font-bold mb-3">Subscribe Company to {selectedYear}</h3>
           <div className="flex items-center gap-3">
             <select
@@ -323,7 +323,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       )}
 
       {/* Subscriptions table */}
-      <div className="overflow-auto border rounded-lg" style={{ maxHeight: '70vh' }}>
+      <div className="flex-1 overflow-auto border rounded-lg">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100 text-gray-900 sticky top-0 z-10">
             {/* Main header row with grouped columns */}
@@ -613,13 +613,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               : `No companies subscribed to ${selectedYear} yet. Click "Subscribe Company" to add one.`}
           </div>
         )}
-      </div>
-
-      {/* Statistics */}
-      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-        <div className="text-sm text-gray-900">
-          <strong>Statistics for {selectedYear}:</strong> {subscriptions.length} subscribed companies
-        </div>
       </div>
     </div>
   );

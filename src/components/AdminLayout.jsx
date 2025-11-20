@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import Icon from '@mdi/react';
 import {
@@ -9,6 +9,8 @@ import {
   mdiMapMarkerMultiple,
   mdiCog,
   mdiLogout,
+  mdiChevronLeft,
+  mdiChevronRight,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import { supabase } from '../supabaseClient';
@@ -17,13 +19,31 @@ import { supabase } from '../supabaseClient';
  * AdminLayout - Main layout for admin panel with sidebar navigation
  * Desktop-optimized with role-based navigation
  */
-export default function AdminLayout() {
+export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const location = useLocation();
   const { role, loading, hasAnyRole } = useUserRole();
 
+  // Generate year options (current year ± 2 years)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+
+  // Collapsible sidebar state (persisted in localStorage)
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('adminSidebarCollapsed');
+    return saved === 'true';
+  });
+
+  // Persist collapse state
+  useEffect(() => {
+    localStorage.setItem('adminSidebarCollapsed', isCollapsed);
+  }, [isCollapsed]);
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/admin'; // Redirect to admin login
+    // Redirect to admin login with proper base URL
+    const base = import.meta.env.BASE_URL || '/';
+    const isProd = import.meta.env.PROD;
+    window.location.href = isProd ? `${base}#/admin` : `${base}admin`;
   };
 
   // Navigation items with role-based visibility
@@ -80,20 +100,31 @@ export default function AdminLayout() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-          {role && (
-            <p className="text-xs text-gray-500 mt-1 capitalize">
-              {role.replace('_', ' ')}
-            </p>
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          {!isCollapsed && (
+            <div className="flex-1">
+              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+              {role && (
+                <p className="text-xs text-gray-500 mt-1 capitalize">
+                  {role.replace('_', ' ')}
+                </p>
+              )}
+            </div>
           )}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <Icon path={isCollapsed ? mdiChevronRight : mdiChevronLeft} size={0.9} className="text-gray-600" />
+          </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 overflow-y-auto p-2">
+          <ul className="space-y-1">
             {visibleNavItems.map((item) => {
               const isActive = location.pathname === item.path;
 
@@ -101,14 +132,15 @@ export default function AdminLayout() {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-lg transition-colors ${
                       isActive
                         ? 'bg-blue-50 text-blue-700 font-semibold'
                         : 'text-gray-700 hover:bg-gray-50'
                     }`}
+                    title={isCollapsed ? item.label : ''}
                   >
                     <Icon path={item.icon} size={1} />
-                    <span>{item.label}</span>
+                    {!isCollapsed && <span>{item.label}</span>}
                   </Link>
                 </li>
               );
@@ -116,21 +148,49 @@ export default function AdminLayout() {
           </ul>
         </nav>
 
+        {/* Year Selector */}
+        <div className="p-2 border-t border-gray-200">
+          {!isCollapsed ? (
+            <div className="px-2 py-3">
+              <label className="block text-xs font-medium text-gray-700 mb-2">Event Year</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
+              >
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div
+              className="flex justify-center px-3 py-3 text-gray-700 text-sm font-medium"
+              title={`Event Year: ${selectedYear}`}
+            >
+              {selectedYear}
+            </div>
+          )}
+        </div>
+
         {/* Logout */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-2 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition-colors`}
+            title={isCollapsed ? 'Logout' : ''}
           >
             <Icon path={mdiLogout} size={1} />
-            <span>Logout</span>
+            {!isCollapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto p-6">
+        <div className="h-full p-4">
           <Outlet />
         </div>
       </main>

@@ -7,8 +7,13 @@ export function getLogoPath(logo) {
     return logo;
   }
 
+  // Normalize base URL to always have trailing slash
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+
   // Handle local paths
-  if (logo.startsWith('/assets/logos/')) return `${import.meta.env.BASE_URL}${logo.slice(1)}`;
-  if (logo.startsWith('logos/')) return `${import.meta.env.BASE_URL}assets/logos/${logo.slice(6)}`;
-  return `${import.meta.env.BASE_URL}assets/logos/${logo}`;
+  if (logo.startsWith('/assets/logos/')) return `${base}${logo.slice(1)}`;
+  if (logo.startsWith('logos/')) return `${base}assets/logos/${logo.slice(6)}`;
+  return `${base}assets/logos/${logo}`;
 }

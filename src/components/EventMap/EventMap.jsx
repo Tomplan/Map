@@ -67,7 +67,7 @@ const isMarkerDraggable = (marker, isAdminView) => {
   return isAdminView && marker && marker.coreLocked === false;
 };
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect }) {
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
@@ -260,15 +260,25 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
     setMapInstance(map);
   };
 
-  const containerStyle = {
-    height: '100svh',
-    width: '100vw',
-    position: 'fixed',
-    inset: 0,
-    zIndex: 0,
-    touchAction: 'pan-x pan-y',
-    overflow: 'hidden',
-  };
+  const containerStyle = isAdminView
+    ? {
+        // Admin view: relative positioning to fit within flex parent
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+        touchAction: 'pan-x pan-y',
+        overflow: 'hidden',
+      }
+    : {
+        // Public view: fixed full-screen positioning
+        height: '100svh',
+        width: '100vw',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        touchAction: 'pan-x pan-y',
+        overflow: 'hidden',
+      };
 
   return (
     <div
@@ -302,10 +312,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
 
       <div
         id="map-container"
-        className="fixed inset-0 w-full h-full"
+        className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
         style={{
-          zIndex: 1,
-          height: '100svh',
+          zIndex: isAdminView ? 'auto' : 1,
+          height: isAdminView ? '100%' : '100svh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
         }}
@@ -319,7 +329,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
           zoomDelta={MAP_CONFIG.ZOOM_DELTA}
           zoomSnap={MAP_CONFIG.ZOOM_SNAP}
           zoomControl={false}
-          style={{ width: '100vw', height: '100svh' }}
+          style={{
+            width: isAdminView ? '100%' : '100vw',
+            height: isAdminView ? '100%' : '100svh'
+          }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
           attributionControl={false}
@@ -343,6 +356,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerSelect={onMarkerSelect}
           />
 
           <EventSpecialMarkers
@@ -352,8 +367,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear }) {
             isMobile={isMobile}
             updateMarker={updateMarker}
             isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
-            selectedYear={selectedYear}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}
+            selectedYear={selectedYear}
           />
         </MapContainer>
       </div>

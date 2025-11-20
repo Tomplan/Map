@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { mdiMapMarker, mdiDomain, mdiCalendar, mdiClipboardCheck } from '@mdi/js';
 
@@ -44,8 +45,6 @@ export default function Dashboard({ selectedYear }) {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Dashboard</h1>
-
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
@@ -68,33 +67,33 @@ export default function Dashboard({ selectedYear }) {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a
-            href="/admin/companies"
+          <Link
+            to="/admin/companies"
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="font-semibold text-gray-900">Add New Company</div>
             <div className="text-sm text-gray-600 mt-1">
               Register a new company in the system
             </div>
-          </a>
-          <a
-            href="/admin/subscriptions"
+          </Link>
+          <Link
+            to="/admin/subscriptions"
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="font-semibold text-gray-900">Manage Subscriptions</div>
             <div className="text-sm text-gray-600 mt-1">
               Add or update event subscriptions
             </div>
-          </a>
-          <a
-            href="/admin/assignments"
+          </Link>
+          <Link
+            to="/admin/assignments"
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="font-semibold text-gray-900">Assign Booths</div>
             <div className="text-sm text-gray-600 mt-1">
               Manage booth assignments for companies
             </div>
-          </a>
+          </Link>
         </div>
       </div>
 

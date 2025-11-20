@@ -102,10 +102,19 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
-  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
+
+  // In admin view with external selection, use selectedMarkerId; otherwise use internal state
+  const selectedMarker = isAdminView && selectedMarkerId !== undefined
+    ? safeMarkers.find(m => m.id === selectedMarkerId)
+    : internalSelectedMarker;
+
+  const setSelectedMarker = isAdminView && onMarkerSelect
+    ? (marker) => onMarkerSelect(marker ? marker.id : null)
+    : setInternalSelectedMarker;
   const { organizationLogo } = useOrganizationLogo();
 
   // Favorites context (only available in visitor view)
@@ -254,6 +263,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   return (
     <>
       <MarkerClusterGroup
+        key={`cluster-${organizationLogo || 'default'}`}
         chunkedLoading={CLUSTER_CONFIG.CHUNKED_LOADING}
         showCoverageOnHover={CLUSTER_CONFIG.SHOW_COVERAGE_ON_HOVER}
         spiderfyOnMaxZoom={CLUSTER_CONFIG.SPIDERFY_ON_MAX_ZOOM}
