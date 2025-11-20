@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import NumericArrayInputs from './NumericArrayInputs';
 import { supabase } from '../supabaseClient';
-import EventMap from './EventMap/EventMap';
 import CompaniesTab from './admin/CompaniesTab';
 import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import AssignmentsTab from './admin/AssignmentsTab';
@@ -11,7 +11,8 @@ import { getIconPath } from '../utils/getIconPath';
 import { getLogoPath } from '../utils/getLogoPath';
 import { useMarkerFieldHandler } from '../hooks/useMarkerFieldHandler';
 import { useMarkerSorting } from '../hooks/useMarkerSorting';
-import { TABS, COLUMNS, ICON_OPTIONS, ICON_PATH_PREFIX } from '../config/markerTabsConfig';
+import { TABS, COLUMNS, ICON_OPTIONS } from '../config/markerTabsConfig';
+import { useDialog } from '../contexts/DialogContext';
 
 export default function AdminDashboard({
   markersState,
@@ -53,6 +54,9 @@ export default function AdminDashboard({
   const [undoStack, setUndoStack] = useState([]);
   const [redoStack, setRedoStack] = useState([]);
 
+  // Dialog context for error notifications
+  const { toastError } = useDialog();
+
   // Lock/unlock marker for current tab
   async function toggleLock(id) {
     // Get current marker state before updating
@@ -87,7 +91,7 @@ export default function AdminDashboard({
 
     if (error) {
       console.error(`Failed to update ${lockField}:`, error);
-      alert(`Error updating lock: ${error.message}`);
+      toastError(`Error updating lock: ${error.message}`);
       return;
     }
 
@@ -913,3 +917,27 @@ export default function AdminDashboard({
     </div>
   );
 }
+
+AdminDashboard.propTypes = {
+  markersState: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      lat: PropTypes.number,
+      lng: PropTypes.number,
+      coreLocked: PropTypes.bool,
+      appearanceLocked: PropTypes.bool,
+      contentLocked: PropTypes.bool,
+      adminLocked: PropTypes.bool,
+    })
+  ),
+  setMarkersState: PropTypes.func.isRequired,
+  updateMarker: PropTypes.func.isRequired,
+  isAdminView: PropTypes.bool,
+  selectedYear: PropTypes.number.isRequired,
+  setSelectedYear: PropTypes.func.isRequired,
+};
+
+AdminDashboard.defaultProps = {
+  markersState: [],
+  isAdminView: true,
+};

@@ -6,6 +6,7 @@ import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers_v2';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
+import { DialogProvider } from './contexts/DialogContext';
 import { getDefaultLogoPath } from './utils/getDefaultLogo';
 import './i18n';
 import './App.css';
@@ -113,20 +114,22 @@ function App() {
   const routerProps = isProd ? {} : { basename: safeBase };
 
   return (
-    <OrganizationLogoProvider>
-      <Router {...routerProps}>
-        <AppRoutes
-          branding={branding}
-          user={user}
-          markersState={markersState}
-          updateMarker={updateMarker}
-          setMarkersState={setMarkersState}
-          onLogin={setUser}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-        />
-      </Router>
-    </OrganizationLogoProvider>
+    <DialogProvider>
+      <OrganizationLogoProvider>
+        <Router {...routerProps}>
+          <AppRoutes
+            branding={branding}
+            user={user}
+            markersState={markersState}
+            updateMarker={updateMarker}
+            setMarkersState={setMarkersState}
+            onLogin={setUser}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+          />
+        </Router>
+      </OrganizationLogoProvider>
+    </DialogProvider>
   );
 }
 

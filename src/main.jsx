@@ -3,10 +3,9 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 import L from 'leaflet';
+import { getBaseUrl } from './utils/getBaseUrl';
 
-const baseUrl = import.meta.env.BASE_URL.endsWith('/')
-  ? import.meta.env.BASE_URL
-  : `${import.meta.env.BASE_URL}/`;
+const baseUrl = getBaseUrl();
 
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: `${baseUrl}assets/icons/marker-icon-2x.png`,
@@ -23,9 +22,6 @@ createRoot(document.getElementById('root')).render(
 // Register service worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const base = import.meta.env.BASE_URL.endsWith('/')
-      ? import.meta.env.BASE_URL
-      : `${import.meta.env.BASE_URL}/`;
-    navigator.serviceWorker.register(`${base}service-worker.js`);
+    navigator.serviceWorker.register(`${getBaseUrl()}service-worker.js`);
   });
 }

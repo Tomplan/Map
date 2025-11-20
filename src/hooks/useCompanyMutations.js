@@ -9,6 +9,8 @@ import { useState } from 'react';
  * @param {Function} params.deleteCompany - Function to delete a company
  * @param {Function} params.updateProfile - Function to update organization profile
  * @param {string} params.organizationLogo - Default logo URL for new companies
+ * @param {Function} params.confirm - Confirm dialog function from useDialog
+ * @param {Function} params.toastError - Error toast function from useDialog
  * @returns {Object} Mutation handlers and form state
  */
 export function useCompanyMutations({
@@ -16,7 +18,9 @@ export function useCompanyMutations({
   updateCompany,
   deleteCompany,
   updateProfile,
-  organizationLogo
+  organizationLogo,
+  confirm,
+  toastError
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -55,19 +59,25 @@ export function useCompanyMutations({
 
   // Delete company
   const handleDelete = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete "${name}"? This will also delete all assignments for this company.`)) {
+    const confirmed = await confirm({
+      title: 'Delete Company',
+      message: `Are you sure you want to delete "${name}"? This will also delete all assignments for this company.`,
+      confirmText: 'Delete',
+      variant: 'danger',
+    });
+    if (!confirmed) {
       return;
     }
     const { error } = await deleteCompany(id);
     if (error) {
-      alert(`Error deleting company: ${error}`);
+      toastError(`Error deleting company: ${error}`);
     }
   };
 
   // Create new company
   const handleCreate = async () => {
     if (!newCompanyForm.name.trim()) {
-      alert('Company name is required');
+      toastError('Company name is required');
       return;
     }
 
@@ -81,7 +91,7 @@ export function useCompanyMutations({
         info: ''
       });
     } else {
-      alert(`Error creating company: ${error}`);
+      toastError(`Error creating company: ${error}`);
     }
   };
 

@@ -7,7 +7,7 @@ import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomai
 import { getLogoPath } from '../../utils/getLogoPath';
 import LogoUploader from '../LogoUploader';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
-import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * CompaniesTab - Manage permanent company list
@@ -17,6 +17,7 @@ export default function CompaniesTab() {
   const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies } = useCompanies();
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
+  const { confirm, toastError } = useDialog();
 
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -40,7 +41,9 @@ export default function CompaniesTab() {
     updateCompany,
     deleteCompany,
     updateProfile,
-    organizationLogo
+    organizationLogo,
+    confirm,
+    toastError
   });
 
   // Combine organization profile with companies and filter

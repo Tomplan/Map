@@ -19,8 +19,8 @@ export default function FeedbackForm() {
     setSubmitted(true);
     // Simulate sending or store locally if offline
     if (navigator.onLine) {
-      // Replace with real API call
-      console.log('Feedback submitted:', form);
+      // TODO: Replace with real API call to submit feedback
+      // For now, feedback is only stored when offline
     } else {
       const feedbacks = JSON.parse(localStorage.getItem('feedbacks') || '[]');
       feedbacks.push({ ...form, date: Date.now() });
