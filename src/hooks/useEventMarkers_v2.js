@@ -43,7 +43,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       }
 
       try {
-        // Fetch all data in parallel
+        // Fetch all data in parallel, including defaults for booth markers
         const [coreRes, appearanceRes, contentRes, adminRes, assignmentsRes, subscriptionsRes] = await Promise.all([
           supabase.from('Markers_Core').select('*'),
           supabase.from('Markers_Appearance').select('*'),
@@ -79,6 +79,17 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           if (row && row.id) adminById[row.id] = row;
         }
 
+        // Extract defaults for booth markers (IDs -1 and -2)
+        const assignedDefaults = {
+          appearance: appearanceById[-1] || {},
+          core: (coreRes.data || []).find(row => row.id === -1) || {},
+        };
+
+        const unassignedDefaults = {
+          appearance: appearanceById[-2] || {},
+          core: (coreRes.data || []).find(row => row.id === -2) || {},
+        };
+
         // Build subscriptions lookup by company_id
         const subscriptionByCompany = {};
         for (const sub of subscriptionsRes.data || []) {
@@ -103,8 +114,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           });
         }
 
-        // Merge all data
-        const mergedMarkers = (coreRes.data || []).map((marker) => {
+        // Merge all data (exclude default markers from regular list)
+        const mergedMarkers = (coreRes.data || [])
+          .filter(marker => marker.id > 0) // Exclude defaults (-1, -2)
+          .map((marker) => {
           const appearance = appearanceById[marker.id] || {};
           const content = contentById[marker.id] || {};
           const admin = adminById[marker.id] || {};
@@ -117,6 +130,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           if (marker.id < 1000) {
             // Booth markers: use company assignment data
             const primaryAssignment = assignments[0] || {};
+            const hasAssignment = !!primaryAssignment.companyId;
+
             contentData = {
               name: primaryAssignment.name,
               logo: primaryAssignment.logo,
@@ -126,11 +141,25 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               assignmentId: primaryAssignment.assignmentId,
             };
 
-            // Set icon color based on assignment status
-            const hasAssignment = primaryAssignment.companyId;
-            appearance.iconUrl = hasAssignment
-              ? (appearance.iconUrl || 'glyph-marker-icon-blue.svg')
-              : 'glyph-marker-icon-gray.svg';
+            // Apply global defaults based on assignment status
+            // Defaults are applied first, then individual marker values override them
+            const defaults = hasAssignment ? assignedDefaults : unassignedDefaults;
+
+            // Merge appearance defaults (individual marker values take precedence)
+            const mergedAppearance = {
+              ...defaults.appearance,
+              ...appearance, // Individual marker values override defaults
+            };
+
+            // Merge core defaults (for rectangles, etc.)
+            const mergedCore = {
+              ...defaults.core,
+              ...marker, // Individual marker values override defaults
+            };
+
+            // Update marker with merged defaults
+            Object.assign(marker, mergedCore);
+            Object.assign(appearance, mergedAppearance);
 
             // If this marker has a company assignment, get subscription data for admin fields
             if (primaryAssignment.companyId) {
@@ -246,44 +275,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
             return;
           }
 
-          // Assignment added/updated - fetch company data and update marker
-          if (assignment?.marker_id && assignment?.company_id) {
-              try {
-                const { data: companyData, error: companyError } = await supabase
-                  .from('companies')
-                  .select('id, name, logo, website, info')
-                  .eq('id', assignment.company_id)
-                  .single();
-
-                if (!companyError && companyData) {
-                  setMarkers(prev => prev.map(m =>
-                    m.id === assignment.marker_id
-                      ? {
-                          ...m,
-                          name: companyData.name,
-                          logo: companyData.logo,
-                          website: companyData.website,
-                          info: companyData.info,
-                          companyId: companyData.id,
-                          assignmentId: assignment.id,
-                          iconUrl: 'glyph-marker-icon-blue.svg'
-                        }
-                      : m
-                  ));
-                  // Update localStorage
-                  setMarkers(current => {
-                    localStorage.setItem('eventMarkers', JSON.stringify(current));
-                    return current;
-                  });
-                } else {
-                  // Fallback to full reload if company fetch fails
-                  loadMarkers(true);
-                }
-              } catch (err) {
-                console.error('Error fetching company for granular update:', err);
-                loadMarkers(true);
-              }
-            }
+          // Assignment added/updated - reload all markers to apply correct defaults
+          // (Defaults depend on assignment status, so we need to re-evaluate)
+          loadMarkers(true);
           }
       })
       .subscribe();

@@ -10,7 +10,11 @@ import 'leaflet-search';
 const LeafletSearchControl = ({ map, markerLayer }) => {
   // Inject dynamic style for search button icon using BASE_URL
   useEffect(() => {
-    const searchIconUrl = `${import.meta.env.BASE_URL}assets/icons/map-marker-question-blue.svg`;
+    // Normalize base URL to always have trailing slash
+    const base = import.meta.env.BASE_URL.endsWith('/')
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+    const searchIconUrl = `${base}assets/icons/map-marker-question-blue.svg`;
     const styleId = 'leaflet-search-dynamic-style';
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');

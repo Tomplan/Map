@@ -52,13 +52,19 @@ export function createMarkerIcon({
   // Leaflet default: [12, 41] for [41, 41] shadow, so anchorX = 12/41 ≈ 0.29
   const shadowAnchorX = Math.round((shadowWidth * 12) / 41);
   const shadowAnchorY = shadowHeight;
+
+  // Normalize base URL to always have trailing slash (same as getIconPath)
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+
   return L.icon.glyph({
-    iconUrl: iconUrl || `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
+    iconUrl: iconUrl || `${base}assets/icons/glyph-marker-icon-blue.svg`,
     iconSize: size,
     iconAnchor: [Math.round(size[0] / 2), size[1]],
     popupAnchor: [1, -34],
     tooltipAnchor: [0, 0],
-    shadowUrl: `${import.meta.env.BASE_URL}assets/icons/marker-shadow.png`,
+    shadowUrl: `${base}assets/icons/marker-shadow.png`,
     shadowSize: [shadowWidth, shadowHeight],
     shadowAnchor: [shadowAnchorX, shadowAnchorY],
     prefix: prefix || '', // Material Design Icons

@@ -87,7 +87,9 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/admin"
         element={
           user ? (
-            <AdminLayout />
+            <FavoritesProvider selectedYear={selectedYear}>
+              <AdminLayout selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+            </FavoritesProvider>
           ) : (
             <ErrorBoundary>
               <BrandingBar {...branding} />
@@ -106,6 +108,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
             <MapManagement
               markersState={markersState}
               setMarkersState={setMarkersState}
+              updateMarker={updateMarker}
               selectedYear={selectedYear}
             />
           }

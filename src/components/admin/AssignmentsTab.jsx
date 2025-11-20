@@ -296,47 +296,41 @@ export default function AssignmentsTab({ selectedYear }) {
   }
 
   return (
-    <div className="p-4">
-      {/* Header with controls */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="flex flex-col md:flex-row md:justify-between gap-4">
-          {/* Left side: Archive and Search */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleViewArchived(selectedYear)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-                  title={`View archived assignments for ${selectedYear}`}
-                >
-                  <Icon path={mdiHistory} size={0.8} />
-                  <span>Archive</span>
-                </button>
-                <button
-                  onClick={handleArchive}
-                  className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={assignments.length === 0}
-                  title={`Archive all assignments for ${selectedYear}`}
-                >
-                  <Icon path={mdiArchive} size={0.8} />
-                </button>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Icon path={mdiMagnify} size={1} className="text-gray-500" />
-              <input
-                type="text"
-                placeholder="Search companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-2 border rounded-lg"
-              />
-            </div>
-          </div>
-
-          {/* Right side: Sort and Stats */}
-          <div className="flex flex-col items-start md:items-end gap-2">
-            <div className="flex items-end gap-3">
+    <div className="h-full flex flex-col p-4">
+      {/* Header with search and action buttons */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Icon path={mdiMagnify} size={1} className="text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search companies..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-2 border rounded-lg"
+          />
+          <span className="text-sm text-gray-600">
+            {filteredCompanies.length} of {subscribedCompanies.length}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleViewArchived(selectedYear)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            title={`View archived assignments for ${selectedYear}`}
+          >
+            <Icon path={mdiHistory} size={0.8} />
+            <span>Archive</span>
+          </button>
+          <button
+            onClick={handleArchive}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={assignments.length === 0}
+            title={`Archive all assignments for ${selectedYear}`}
+          >
+            <Icon path={mdiArchive} size={0.8} />
+          </button>
+          {/* Sort Controls */}
+          <div className="flex items-end gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sort Companies</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
@@ -381,15 +375,11 @@ export default function AssignmentsTab({ selectedYear }) {
                 </div>
               </div>
             </div>
-            <div className="text-sm text-gray-600 text-right w-full">
-              {filteredCompanies.length} companies × {markers.length} markers = {assignments.length} assignments
-            </div>
           </div>
         </div>
-      </div>
 
       {/* Assignment Matrix */}
-      <div className="overflow-auto border rounded-lg" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+      <div className="flex-1 overflow-auto border rounded-lg">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-gray-100 text-gray-900">

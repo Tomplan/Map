@@ -69,9 +69,9 @@ export default function CompaniesTab() {
   }
 
   return (
-    <div className="p-4">
+    <div className="h-full flex flex-col p-4">
       {/* Header with search and add button */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
@@ -96,7 +96,7 @@ export default function CompaniesTab() {
 
       {/* Create new company form */}
       {isCreating && (
-        <div className="mb-4 border rounded-lg overflow-hidden">
+        <div className="mb-4 border rounded-lg overflow-hidden flex-shrink-0">
           <div className="p-4 bg-blue-50">
             <h3 className="font-bold mb-3">New Company</h3>
 
@@ -199,7 +199,7 @@ export default function CompaniesTab() {
       )}
 
       {/* Companies table */}
-      <div className="overflow-auto border rounded-lg" style={{ maxHeight: '70vh' }}>
+      <div className="flex-1 overflow-auto border rounded-lg">
         <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             {/* Section headers row */}

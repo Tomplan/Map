@@ -9,7 +9,11 @@ import { getLogoPath } from './getLogoPath';
  */
 export function getDefaultLogoPath(organizationLogo) {
   const logoFile = organizationLogo || BRANDING_CONFIG.DEFAULT_LOGO;
-  return `${import.meta.env.BASE_URL}assets/logos/${logoFile}`;
+  // Normalize base URL to always have trailing slash
+  const base = import.meta.env.BASE_URL.endsWith('/')
+    ? import.meta.env.BASE_URL
+    : `${import.meta.env.BASE_URL}/`;
+  return `${base}assets/logos/${logoFile}`;
 }
 
 /**

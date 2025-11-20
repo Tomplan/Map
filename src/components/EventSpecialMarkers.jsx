@@ -17,9 +17,20 @@ function EventSpecialMarkers({
   isMarkerDraggable,
   selectedYear,
   isAdminView,
+  selectedMarkerId,
+  onMarkerSelect,
 }) {
   const isMobile = useIsMobile('md');
-  const [selectedMarker, setSelectedMarker] = useState(null);
+  const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
+
+  // In admin view with external selection, use selectedMarkerId; otherwise use internal state
+  const selectedMarker = isAdminView && selectedMarkerId !== undefined
+    ? safeMarkers.find(m => m.id === selectedMarkerId)
+    : internalSelectedMarker;
+
+  const setSelectedMarker = isAdminView && onMarkerSelect
+    ? (marker) => onMarkerSelect(marker ? marker.id : null)
+    : setInternalSelectedMarker;
   const { organizationLogo } = useOrganizationLogo();
 
   // Context menu state
