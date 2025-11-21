@@ -122,7 +122,36 @@
     },
     "eventDefaults": {
       "title": "Event Defaults",
-      "description": "Default meal counts, booth sizes, and event preferences"
+      "description": "Default meal counts, booth sizes, and event preferences",
+      "loading": "Loading settings...",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "reset": "Reset",
+      "saveSuccess": "Settings saved successfully",
+      "saveSuccessMessage": "Your changes have been applied.",
+      "error": "Error",
+      "mealDefaults": {
+        "title": "Default Meal Counts",
+        "description": "Set default meal quantities for new event subscriptions. These values will be pre-filled but can be adjusted per subscription.",
+        "breakfast": "Breakfast",
+        "lunch": "Lunch",
+        "bbq": "BBQ",
+        "helperText": "Default per subscription"
+      },
+      "notifications": {
+        "title": "Notification Preferences",
+        "description": "Configure email notifications for event managers",
+        "emailNotifications": "Enable Email Notifications",
+        "emailNotificationsDesc": "Master switch for all email notifications",
+        "newSubscription": "New Subscription Alerts",
+        "newSubscriptionDesc": "Get notified when companies register for the event",
+        "assignmentChange": "Assignment Changes",
+        "assignmentChangeDesc": "Get notified when booth assignments are modified"
+      },
+      "errors": {
+        "loadFailed": "Failed to load settings. Please try again.",
+        "saveFailed": "Failed to save settings. Please check your connection."
+      }
     },
     "advanced": {
       "title": "Advanced Settings",

@@ -12,6 +12,7 @@ import {
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
+import EventDefaults from './EventDefaults';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -57,7 +58,7 @@ export default function Settings() {
       label: t('settings.eventDefaults.title'),
       icon: mdiCog,
       roles: ['super_admin', 'system_manager', 'event_manager'],
-      component: <EventDefaultsPlaceholder />,
+      component: <EventDefaults />,
     },
     {
       id: 'advanced',

@@ -1,0 +1,345 @@
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import Icon from '@mdi/react';
+import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle } from '@mdi/js';
+import { supabase } from '../../supabaseClient';
+
+/**
+ * EventDefaults - Component for managing default event settings
+ * Accessible to: super_admin, system_manager, event_manager
+ * Features:
+ * - Default meal counts (breakfast, lunch, BBQ)
+ * - Notification preferences
+ * - Saved to organization_profile table
+ */
+export default function EventDefaults() {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Meal count defaults
+  const [defaultBreakfast, setDefaultBreakfast] = useState(0);
+  const [defaultLunch, setDefaultLunch] = useState(0);
+  const [defaultBbq, setDefaultBbq] = useState(0);
+
+  // Notification preferences
+  const [emailNotifications, setEmailNotifications] = useState(true);
+  const [newSubscriptionNotify, setNewSubscriptionNotify] = useState(true);
+  const [assignmentChangeNotify, setAssignmentChangeNotify] = useState(true);
+
+  // Load existing settings
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Load from organization_profile table
+      const { data, error: fetchError } = await supabase
+        .from('organization_profile')
+        .select('default_breakfast, default_lunch, default_bbq, notification_settings')
+        .single();
+
+      if (fetchError) {
+        // If no profile exists yet, use defaults
+        if (fetchError.code === 'PGRST116') {
+          console.log('No organization profile found, using defaults');
+        } else {
+          throw fetchError;
+        }
+      } else if (data) {
+        setDefaultBreakfast(data.default_breakfast || 0);
+        setDefaultLunch(data.default_lunch || 0);
+        setDefaultBbq(data.default_bbq || 0);
+
+        // Parse notification settings from JSON
+        const notifSettings = data.notification_settings || {};
+        setEmailNotifications(notifSettings.emailNotifications ?? true);
+        setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
+        setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
+      }
+    } catch (err) {
+      console.error('Failed to load settings:', err);
+      setError(t('settings.eventDefaults.errors.loadFailed'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      // Prepare notification settings object
+      const notificationSettings = {
+        emailNotifications,
+        newSubscriptionNotify,
+        assignmentChangeNotify,
+      };
+
+      // Upsert to organization_profile
+      const { error: upsertError } = await supabase
+        .from('organization_profile')
+        .upsert({
+          id: 1, // Single row for organization
+          default_breakfast: defaultBreakfast,
+          default_lunch: defaultLunch,
+          default_bbq: defaultBbq,
+          notification_settings: notificationSettings,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (upsertError) throw upsertError;
+
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      setError(t('settings.eventDefaults.errors.saveFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+          <span className="ml-3 text-gray-600">{t('settings.eventDefaults.loading')}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('settings.eventDefaults.title')}</h2>
+        <p className="text-sm text-gray-600">{t('settings.eventDefaults.description')}</p>
+      </div>
+
+      {/* Success Message */}
+      {success && (
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex items-start">
+          <Icon path={mdiCheckCircle} size={1} className="text-green-600 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-green-800">{t('settings.eventDefaults.saveSuccess')}</p>
+            <p className="text-sm text-green-700">{t('settings.eventDefaults.saveSuccessMessage')}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg flex items-start">
+          <Icon path={mdiAlertCircle} size={1} className="text-red-600 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-red-800">{t('settings.eventDefaults.error')}</p>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSave} className="space-y-6">
+        {/* Meal Count Defaults Section */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Icon path={mdiFoodDrumstick} size={1} className="text-orange-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('settings.eventDefaults.mealDefaults.title')}
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            {t('settings.eventDefaults.mealDefaults.description')}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Breakfast */}
+            <div>
+              <label htmlFor="breakfast" className="label-base">
+                {t('settings.eventDefaults.mealDefaults.breakfast')}
+              </label>
+              <input
+                type="number"
+                id="breakfast"
+                min="0"
+                max="9999"
+                value={defaultBreakfast}
+                onChange={(e) => setDefaultBreakfast(parseInt(e.target.value) || 0)}
+                className="input-base"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('settings.eventDefaults.mealDefaults.helperText')}
+              </p>
+            </div>
+
+            {/* Lunch */}
+            <div>
+              <label htmlFor="lunch" className="label-base">
+                {t('settings.eventDefaults.mealDefaults.lunch')}
+              </label>
+              <input
+                type="number"
+                id="lunch"
+                min="0"
+                max="9999"
+                value={defaultLunch}
+                onChange={(e) => setDefaultLunch(parseInt(e.target.value) || 0)}
+                className="input-base"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('settings.eventDefaults.mealDefaults.helperText')}
+              </p>
+            </div>
+
+            {/* BBQ */}
+            <div>
+              <label htmlFor="bbq" className="label-base">
+                {t('settings.eventDefaults.mealDefaults.bbq')}
+              </label>
+              <input
+                type="number"
+                id="bbq"
+                min="0"
+                max="9999"
+                value={defaultBbq}
+                onChange={(e) => setDefaultBbq(parseInt(e.target.value) || 0)}
+                className="input-base"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {t('settings.eventDefaults.mealDefaults.helperText')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Notification Preferences Section */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Icon path={mdiBellRing} size={1} className="text-orange-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('settings.eventDefaults.notifications.title')}
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            {t('settings.eventDefaults.notifications.description')}
+          </p>
+
+          <div className="space-y-4">
+            {/* Email Notifications Master Toggle */}
+            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div>
+                <label htmlFor="emailNotifications" className="font-medium text-gray-900">
+                  {t('settings.eventDefaults.notifications.emailNotifications')}
+                </label>
+                <p className="text-sm text-gray-600">
+                  {t('settings.eventDefaults.notifications.emailNotificationsDesc')}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={emailNotifications}
+                onClick={() => setEmailNotifications(!emailNotifications)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                  emailNotifications ? 'bg-orange-600' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    emailNotifications ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* New Subscription Notifications */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div>
+                <label htmlFor="newSubscriptionNotify" className="font-medium text-gray-900">
+                  {t('settings.eventDefaults.notifications.newSubscription')}
+                </label>
+                <p className="text-sm text-gray-600">
+                  {t('settings.eventDefaults.notifications.newSubscriptionDesc')}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={newSubscriptionNotify}
+                onClick={() => setNewSubscriptionNotify(!newSubscriptionNotify)}
+                disabled={!emailNotifications}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                  newSubscriptionNotify && emailNotifications ? 'bg-orange-600' : 'bg-gray-300'
+                } ${!emailNotifications ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    newSubscriptionNotify ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Assignment Change Notifications */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div>
+                <label htmlFor="assignmentChangeNotify" className="font-medium text-gray-900">
+                  {t('settings.eventDefaults.notifications.assignmentChange')}
+                </label>
+                <p className="text-sm text-gray-600">
+                  {t('settings.eventDefaults.notifications.assignmentChangeDesc')}
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={assignmentChangeNotify}
+                onClick={() => setAssignmentChangeNotify(!assignmentChangeNotify)}
+                disabled={!emailNotifications}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 ${
+                  assignmentChangeNotify && emailNotifications ? 'bg-orange-600' : 'bg-gray-300'
+                } ${!emailNotifications ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    assignmentChangeNotify ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex justify-end gap-3 bg-white rounded-lg shadow p-6">
+          <button
+            type="button"
+            onClick={loadSettings}
+            disabled={saving}
+            className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t('settings.eventDefaults.reset')}
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn-primary px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? t('settings.eventDefaults.saving') : t('settings.eventDefaults.save')}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
