@@ -27,35 +27,35 @@
     "loggingIn": "Bezig met inloggen...",
     "rememberMe": "Onthoud mijn e-mail",
     "rememberMeTooltip": "Uw browser zal ook aanbieden om uw wachtwoord veilig op te slaan",
-    \"errors\": {
-      \"invalidCredentials\": \"Ongeldig e-mailadres of wachtwoord\",
-      \"emailRequired\": \"E-mail is verplicht\",
-      \"passwordRequired\": \"Wachtwoord is verplicht\",
-      \"networkError\": \"Netwerkfout. Controleer uw verbinding.\",
-      \"unknownError\": \"Er is een fout opgetreden. Probeer het opnieuw.\",
-      \"resetFailed\": \"Kon reset e-mail niet verzenden. Probeer het opnieuw.\"
+    "errors": {
+      "invalidCredentials": "Ongeldig e-mailadres of wachtwoord",
+      "emailRequired": "E-mail is verplicht",
+      "passwordRequired": "Wachtwoord is verplicht",
+      "networkError": "Netwerkfout. Controleer uw verbinding.",
+      "unknownError": "Er is een fout opgetreden. Probeer het opnieuw.",
+      "resetFailed": "Kon reset e-mail niet verzenden. Probeer het opnieuw."
     }
   },
-  \"resetPassword\": {
-    \"title\": \"Nieuw wachtwoord instellen\",
-    \"instructions\": \"Voer hieronder uw nieuwe wachtwoord in. Maak het veilig!\",
-    \"newPassword\": \"Nieuw wachtwoord\",
-    \"newPasswordPlaceholder\": \"Voer nieuw wachtwoord in\",
-    \"confirmPassword\": \"Bevestig wachtwoord\",
-    \"confirmPasswordPlaceholder\": \"Voer nieuw wachtwoord opnieuw in\",
-    \"showPassword\": \"Toon wachtwoord\",
-    \"hidePassword\": \"Verberg wachtwoord\",
-    \"passwordRequirements\": \"Minimaal 6 tekens\",
-    \"updatePassword\": \"Wachtwoord bijwerken\",
-    \"updating\": \"Aan het bijwerken...\",
-    \"success\": \"Wachtwoord succesvol bijgewerkt!\",
-    \"redirecting\": \"Doorverwijzen naar inlogpagina...\",
-    \"backToLogin\": \"Terug naar inloggen\",
-    \"errors\": {
-      \"invalidToken\": \"Ongeldige of verlopen reset link. Doorverwijzen naar login...\",
-      \"passwordTooShort\": \"Wachtwoord moet minimaal 6 tekens zijn\",
-      \"passwordMismatch\": \"Wachtwoorden komen niet overeen\",
-      \"updateFailed\": \"Kon wachtwoord niet bijwerken. Probeer het opnieuw.\"
+  "resetPassword": {
+    "title": "Nieuw wachtwoord instellen",
+    "instructions": "Voer hieronder uw nieuwe wachtwoord in. Maak het veilig!",
+    "newPassword": "Nieuw wachtwoord",
+    "newPasswordPlaceholder": "Voer nieuw wachtwoord in",
+    "confirmPassword": "Bevestig wachtwoord",
+    "confirmPasswordPlaceholder": "Voer nieuw wachtwoord opnieuw in",
+    "showPassword": "Toon wachtwoord",
+    "hidePassword": "Verberg wachtwoord",
+    "passwordRequirements": "Minimaal 6 tekens",
+    "updatePassword": "Wachtwoord bijwerken",
+    "updating": "Aan het bijwerken...",
+    "success": "Wachtwoord succesvol bijgewerkt!",
+    "redirecting": "Doorverwijzen naar inlogpagina...",
+    "backToLogin": "Terug naar inloggen",
+    "errors": {
+      "invalidToken": "Ongeldige of verlopen reset link. Doorverwijzen naar login...",
+      "passwordTooShort": "Wachtwoord moet minimaal 6 tekens zijn",
+      "passwordMismatch": "Wachtwoorden komen niet overeen",
+      "updateFailed": "Kon wachtwoord niet bijwerken. Probeer het opnieuw."
     }
   }
 }
