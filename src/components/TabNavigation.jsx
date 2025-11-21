@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiHome, mdiMap, mdiFormatListBulleted, mdiCalendarClock } from '@mdi/js';
 
@@ -10,29 +11,30 @@ import { mdiHome, mdiMap, mdiFormatListBulleted, mdiCalendarClock } from '@mdi/j
 export default function TabNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const tabs = [
     {
       id: 'home',
-      label: 'Home',
+      labelKey: 'navigation.home',
       icon: mdiHome,
       path: '/',
     },
     {
       id: 'map',
-      label: 'Map',
+      labelKey: 'navigation.map',
       icon: mdiMap,
       path: '/map',
     },
     {
       id: 'exhibitors',
-      label: 'Exhibitors',
+      labelKey: 'navigation.exhibitors',
       icon: mdiFormatListBulleted,
       path: '/exhibitors',
     },
     {
       id: 'schedule',
-      label: 'Schedule',
+      labelKey: 'navigation.schedule',
       icon: mdiCalendarClock,
       path: '/schedule',
     },
@@ -64,7 +66,7 @@ export default function TabNavigation() {
                 className="mb-1"
               />
               <span className={`text-xs font-medium ${isActive ? 'font-semibold' : ''}`}>
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             </button>
           );

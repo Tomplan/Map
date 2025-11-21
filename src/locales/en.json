@@ -281,5 +281,11 @@
     "comingInFuturePhases": "Coming in future phases:",
     "categoryFiltering": "Category filtering",
     "sortOptions": "Sort options"
+  },
+  "navigation": {
+    "home": "Home",
+    "map": "Map",
+    "exhibitors": "Exhibitors",
+    "schedule": "Schedule"
   }
 }

@@ -167,7 +167,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-gray-900 text-lg truncate">
+                      <h3 className="font-semibold text-gray-900 text-lg break-words">
                         {exhibitor.name}
                       </h3>
 

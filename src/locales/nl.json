@@ -281,5 +281,11 @@
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
     "sortOptions": "Sorteeropties"
+  },
+  "navigation": {
+    "home": "Home",
+    "map": "Plattegrond",
+    "exhibitors": "Standhouders",
+    "schedule": "Programma"
   }
 }
