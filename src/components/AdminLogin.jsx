@@ -130,7 +130,7 @@ export default function AdminLogin({ onLogin, branding }) {
             ) : (
               <form onSubmit={handlePasswordReset} className="space-y-5">
                 <div>
-                  <label htmlFor="reset-email" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="reset-email" className="label-base">
                     {t('adminLogin.email')}
                   </label>
                   <input
@@ -138,7 +138,7 @@ export default function AdminLogin({ onLogin, branding }) {
                     type="email"
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-gray-800"
+                    className="input-base"
                     placeholder={t('adminLogin.emailPlaceholder')}
                     aria-label={t('adminLogin.email')}
                     required
@@ -208,7 +208,7 @@ export default function AdminLogin({ onLogin, branding }) {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="email" className="label-base">
                 {t('adminLogin.email')}
               </label>
               <input
@@ -216,7 +216,7 @@ export default function AdminLogin({ onLogin, branding }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none text-gray-800"
+                className="input-base"
                 placeholder={t('adminLogin.emailPlaceholder')}
                 aria-label={t('adminLogin.email')}
                 aria-required="true"
@@ -225,7 +225,7 @@ export default function AdminLogin({ onLogin, branding }) {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+              <label htmlFor="password" className="label-base">
                 {t('adminLogin.password')}
               </label>
               <div className="relative">
@@ -234,7 +234,7 @@ export default function AdminLogin({ onLogin, branding }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none text-gray-800"
+                  className="input-base pr-20"
                   placeholder={t('adminLogin.passwordPlaceholder')}
                   aria-label={t('adminLogin.password')}
                   aria-required="true"
