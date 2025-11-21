@@ -21,9 +21,9 @@ export default function useEventSubscriptions(eventYear) {
         .from('event_subscriptions')
         .select(`
           *,
-          company:companies(id, name, logo, website, info, contact, phone, email)
+          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
         `)
-        .eq('event_year', eventYear)
+        .eq('event_year', selectedYear);
         .order('id', { ascending: true });
 
       if (fetchError) throw fetchError;
@@ -105,7 +105,7 @@ export default function useEventSubscriptions(eventYear) {
         .eq('id', subscriptionId)
         .select(`
           *,
-          company:companies(id, name, logo, website, info, contact, phone, email)
+          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
         `)
         .single();
 
