@@ -55,7 +55,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   }, [exhibitors, searchTerm, showFavoritesOnly, isFavorite]);
 
   const handleExhibitorClick = (markerId) => {
-    // TODO: Navigate to map and focus on this marker
+    // Navigate to map and focus on this marker (opens popup/bottom sheet)
     navigate(`/map?focus=${markerId}`);
   };
 
@@ -182,11 +182,10 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
         {/* Phase 3 Notice */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
-            📝 <strong>Note:</strong> This is a Phase 1/3 implementation. Coming in future phases:
+            📝 <strong>Note:</strong> Coming in future phases:
             <ul className="list-disc list-inside mt-2">
               <li>Category filtering</li>
-              <li>Favorites system with map integration</li>
-              <li>Tap exhibitor to navigate to map location</li>
+              <li>Sort options</li>
             </ul>
           </p>
         </div>

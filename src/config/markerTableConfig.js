@@ -13,11 +13,11 @@ export const ICON_OPTIONS = [
 export const ICON_PATH_PREFIX = `${import.meta.env.BASE_URL}assets/icons/`;
 
 // Tab definitions
+// Note: ADMIN tab removed - admin data now managed via Event_Subscriptions
 export const TABS = {
   CORE: 'core',
   APPEARANCE: 'appearance',
   CONTENT: 'content',
-  ADMIN: 'admin',
 };
 
 // Field to table mapping
@@ -51,18 +51,8 @@ export const FIELD_TABLE_MAP = {
   info: 'Markers_Content',
   contentLocked: 'Markers_Content',
 
-  // Admin fields
-  contact: 'Markers_Admin',
-  phone: 'Markers_Admin',
-  email: 'Markers_Admin',
-  boothCount: 'Markers_Admin',
-  area: 'Markers_Admin',
-  coins: 'Markers_Admin',
-  breakfast: 'Markers_Admin',
-  lunch: 'Markers_Admin',
-  bbq: 'Markers_Admin',
-  notes: 'Markers_Admin',
-  adminLocked: 'Markers_Admin',
+  // Note: Admin fields (contact, phone, meals, etc.) removed
+  // These are now managed via Event_Subscriptions table
 };
 
 // Column definitions for each tab
@@ -99,20 +89,7 @@ export const COLUMN_CONFIGS = {
     { key: 'info', label: 'Info', type: 'textarea' },
     { key: 'contentLocked', label: 'Locked', type: 'boolean' },
   ],
-  [TABS.ADMIN]: [
-    { key: 'id', label: 'ID', editable: false },
-    { key: 'contact', label: 'Contact' },
-    { key: 'phone', label: 'Phone' },
-    { key: 'email', label: 'Email' },
-    { key: 'boothCount', label: 'Booth Count', type: 'number' },
-    { key: 'area', label: 'Area' },
-    { key: 'coins', label: 'Coins', type: 'boolean' },
-    { key: 'breakfast', label: 'Breakfast', type: 'boolean' },
-    { key: 'lunch', label: 'Lunch', type: 'boolean' },
-    { key: 'bbq', label: 'BBQ', type: 'boolean' },
-    { key: 'notes', label: 'Notes', type: 'textarea' },
-    { key: 'adminLocked', label: 'Locked', type: 'boolean' },
-  ],
+  // Note: ADMIN tab removed - admin data managed via Event_Subscriptions
 };
 
 // Lock field for each tab
@@ -120,8 +97,7 @@ export const TAB_LOCK_FIELDS = {
   [TABS.CORE]: 'coreLocked',
   [TABS.APPEARANCE]: 'appearanceLocked',
   [TABS.CONTENT]: 'contentLocked',
-  [TABS.ADMIN]: 'adminLocked',
 };
 
 // All lock fields
-export const LOCK_FIELDS = ['coreLocked', 'appearanceLocked', 'contentLocked', 'adminLocked'];
+export const LOCK_FIELDS = ['coreLocked', 'appearanceLocked', 'contentLocked'];

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@mdi/react';
 import {
@@ -11,6 +11,7 @@ import {
   mdiGrill,
   mdiCircleMultiple
 } from '@mdi/js';
+import { supabase } from '../../supabaseClient';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 
 /**
@@ -19,6 +20,38 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
  */
 export default function Dashboard({ selectedYear }) {
   const { subscriptions, loading } = useEventSubscriptions(selectedYear);
+  const [counts, setCounts] = useState({
+    markers: null,
+    companies: null,
+    assignments: null,
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  // Fetch counts from Supabase
+  useEffect(() => {
+    async function fetchCounts() {
+      setStatsLoading(true);
+      try {
+        const [markersRes, companiesRes, assignmentsRes] = await Promise.all([
+          supabase.from('Markers_Core').select('id', { count: 'exact', head: true }).gt('id', 0),
+          supabase.from('companies').select('id', { count: 'exact', head: true }),
+          supabase.from('assignments').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
+        ]);
+
+        setCounts({
+          markers: markersRes.count ?? 0,
+          companies: companiesRes.count ?? 0,
+          assignments: assignmentsRes.count ?? 0,
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard counts:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    }
+
+    fetchCounts();
+  }, [selectedYear]);
 
   // Calculate meal and coin totals
   const totals = useMemo(() => {
@@ -39,29 +72,28 @@ export default function Dashboard({ selectedYear }) {
     });
   }, [subscriptions]);
 
-  // TODO: Fetch real stats from Supabase
   const stats = [
     {
       label: 'Total Markers',
-      value: '150',
+      value: statsLoading ? '...' : (counts.markers?.toString() ?? '-'),
       icon: mdiMapMarker,
       color: 'blue',
     },
     {
       label: 'Companies',
-      value: '67',
+      value: statsLoading ? '...' : (counts.companies?.toString() ?? '-'),
       icon: mdiDomain,
       color: 'green',
     },
     {
       label: `${selectedYear} Subscriptions`,
-      value: subscriptions.length.toString(),
+      value: loading ? '...' : subscriptions.length.toString(),
       icon: mdiCalendar,
       color: 'orange',
     },
     {
-      label: 'Booth Assignments',
-      value: '89',
+      label: `${selectedYear} Assignments`,
+      value: statsLoading ? '...' : (counts.assignments?.toString() ?? '-'),
       icon: mdiClipboardCheck,
       color: 'purple',
     },

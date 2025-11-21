@@ -47,6 +47,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const searchControlRef = useRef(null);
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
+  const [focusMarkerId, setFocusMarkerId] = useState(null);
 
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
@@ -213,6 +214,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             animate: true,
             duration: 1,
           });
+          // Set focus marker ID to trigger popup open
+          setFocusMarkerId(markerId);
         }, 300);
 
         // Mark as processed and clear URL parameter
@@ -325,6 +328,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             isAdminView={isAdminView}
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
+            focusMarkerId={focusMarkerId}
+            onFocusHandled={() => setFocusMarkerId(null)}
           />
 
           <EventSpecialMarkers

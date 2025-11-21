@@ -4,8 +4,8 @@ This document tracks deprecated components, tables, and features that should not
 
 ## Deprecated Components
 
-### AdminDashboard.jsx (DEPRECATED - 2025-11)
-**Status**: Replaced by new admin panel architecture
+### AdminDashboard.jsx (REMOVED - 2025-11)
+**Status**: DELETED - File removed from codebase
 **Replacement**: AdminLayout.jsx + individual admin components
 **Reason**:
 - 916-line monolithic component with mixed concerns
@@ -35,8 +35,8 @@ This document tracks deprecated components, tables, and features that should not
 
 ## Deprecated Database Tables
 
-### Markers_Admin (DEPRECATED - Migration in progress)
-**Status**: Data being migrated to Event_Subscriptions
+### Markers_Admin (DEPRECATED - Migration complete)
+**Status**: Code references removed - Table can be dropped from database
 **Fields**: `id`, `contact`, `phone`, `email`, `boothCount`, `area`, `coins`, `breakfast`, `lunch`, `bbq`, `notes`, `adminLocked`
 **Replacement**: Event_Subscriptions table
 **Reason**:
@@ -93,14 +93,15 @@ This document tracks deprecated components, tables, and features that should not
 ## Migration Timeline
 
 - ✅ **Phase 1-4 Complete** (2025-11): New admin architecture implemented
-- 🔄 **In Progress**: Data migration from Markers_Admin to Event_Subscriptions
-- ⏳ **Pending**: Remove AdminDashboard.jsx after confirming all functionality migrated
-- ⏳ **Pending**: Clean up Markers_Content usage for booth markers
+- ✅ **Complete** (2025-11-20): Code migration from Markers_Admin to Event_Subscriptions
+- ✅ **Complete** (2025-11-20): AdminDashboard.jsx removed from codebase
+- ✅ **Complete** (2025-11-20): Old useEventMarkers.js removed (replaced by useEventMarkers_v2.js)
+- ⏳ **Pending**: Drop Markers_Admin table from Supabase (when ready)
 
 ## Notes for Developers
 
-1. **DO NOT** use AdminDashboard.jsx for new features
-2. **DO NOT** write to Markers_Admin table
-3. **DO** use new role-based admin routes (super_admin, system_manager, event_manager)
-4. **DO** use MapManagement.jsx for marker positioning/styling
-5. **DO** use Companies/Event_Subscriptions/Assignments for booth management
+1. **DO NOT** write to Markers_Admin table (deprecated, to be dropped)
+2. **DO** use new role-based admin routes (super_admin, system_manager, event_manager)
+3. **DO** use MapManagement.jsx for marker positioning/styling
+4. **DO** use Companies/Event_Subscriptions/Assignments for booth management
+5. **DO** use useEventMarkers_v2.js for fetching marker data
