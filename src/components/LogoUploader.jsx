@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiUpload, mdiLoading, mdiCheck, mdiAlert, mdiDelete } from '@mdi/js';
-import { uploadLogo, validateLogoFile, deleteLogo, extractStoragePath } from '../services/logoUploadService';
+import { uploadLogo, validateLogoFile } from '../services/logoUploadService';
 import { getLogoPath } from '../utils/getLogoPath';
 
 /**
@@ -163,3 +164,22 @@ export default function LogoUploader({
     </div>
   );
 }
+
+LogoUploader.propTypes = {
+  currentLogo: PropTypes.string,
+  onUploadComplete: PropTypes.func.isRequired,
+  onDelete: PropTypes.func,
+  folder: PropTypes.string,
+  label: PropTypes.string,
+  showPreview: PropTypes.bool,
+  allowDelete: PropTypes.bool,
+};
+
+LogoUploader.defaultProps = {
+  currentLogo: '',
+  onDelete: null,
+  folder: 'companies',
+  label: 'Upload Logo',
+  showPreview: true,
+  allowDelete: false,
+};

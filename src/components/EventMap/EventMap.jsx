@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import PropTypes from 'prop-types';
+import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
@@ -12,6 +14,7 @@ import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../utils/useIsMobile';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
+import { MAP_CONFIG, MAP_LAYERS } from '../../config/mapConfig';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -22,41 +25,6 @@ import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
-// Constants
-const MAP_CONFIG = {
-  DEFAULT_POSITION: [51.898095078807025, 5.772961378097534],
-  DEFAULT_ZOOM: 17,
-  MIN_ZOOM: 14,
-  MAX_ZOOM: 22,
-  SEARCH_ZOOM: 21,
-  ZOOM_DELTA: 0.1,
-  ZOOM_SNAP: 0.1,
-  RECTANGLE_SIZE: [6, 6],
-  MINIMAP: {
-    WIDTH: 120,
-    HEIGHT: 120,
-    ZOOM_LEVEL: 15,
-    AIMING_COLOR: '#1976d2',
-    SHADOW_COLOR: '#90caf9',
-  },
-};
-
-const MAP_LAYERS = [
-  {
-    key: 'carto',
-    name: 'Carto Voyager',
-    attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
-  },
-  {
-    key: 'esri',
-    name: 'Esri World Imagery',
-    attribution:
-      'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  },
-];
-
 // Utility functions
 const createSearchText = (marker) => {
   return [marker.name, marker.glyph, marker.label].filter(Boolean).join(' | ');
@@ -66,7 +34,7 @@ const isMarkerDraggable = (marker, isAdminView) => {
   return isAdminView && marker && marker.coreLocked === false;
 };
 
-function EventMap({ isAdminView, markersState, updateMarker }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect }) {
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
@@ -74,9 +42,12 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [searchLayer, setSearchLayer] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const searchControlRef = useRef(null);
   const rectangleLayerRef = useRef(null);
+  const hasProcessedFocus = useRef(false);
+  const [focusMarkerId, setFocusMarkerId] = useState(null);
 
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
@@ -227,20 +198,57 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
     }
   }, [mapInstance]);
 
+  // Handle focus parameter from URL (navigate from exhibitor list)
+  useEffect(() => {
+    if (!mapInstance || !safeMarkers.length || hasProcessedFocus.current) return;
+
+    const focusId = searchParams.get('focus');
+    if (focusId) {
+      const markerId = parseInt(focusId, 10);
+      const marker = safeMarkers.find((m) => m.id === markerId);
+
+      if (marker && marker.lat && marker.lng) {
+        // Zoom to marker with animation
+        setTimeout(() => {
+          mapInstance.flyTo([marker.lat, marker.lng], MAP_CONFIG.SEARCH_ZOOM, {
+            animate: true,
+            duration: 1,
+          });
+          // Set focus marker ID to trigger popup open
+          setFocusMarkerId(markerId);
+        }, 300);
+
+        // Mark as processed and clear URL parameter
+        hasProcessedFocus.current = true;
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
+
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
     setMapInstance(map);
   };
 
-  const containerStyle = {
-    height: '100svh',
-    width: '100vw',
-    position: 'fixed',
-    inset: 0,
-    zIndex: 0,
-    touchAction: 'pan-x pan-y',
-    overflow: 'hidden',
-  };
+  const containerStyle = isAdminView
+    ? {
+        // Admin view: relative positioning to fit within flex parent
+        height: '100%',
+        width: '100%',
+        position: 'relative',
+        touchAction: 'pan-x pan-y',
+        overflow: 'hidden',
+      }
+    : {
+        // Public view: fixed full-screen positioning
+        height: '100svh',
+        width: '100vw',
+        position: 'fixed',
+        inset: 0,
+        zIndex: 0,
+        touchAction: 'pan-x pan-y',
+        overflow: 'hidden',
+      };
 
   return (
     <div
@@ -274,10 +282,10 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
 
       <div
         id="map-container"
-        className="fixed inset-0 w-full h-full"
+        className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
         style={{
-          zIndex: 1,
-          height: '100svh',
+          zIndex: isAdminView ? 'auto' : 1,
+          height: isAdminView ? '100%' : '100svh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
         }}
@@ -291,7 +299,10 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
           zoomDelta={MAP_CONFIG.ZOOM_DELTA}
           zoomSnap={MAP_CONFIG.ZOOM_SNAP}
           zoomControl={false}
-          style={{ width: '100vw', height: '100svh' }}
+          style={{
+            width: isAdminView ? '100%' : '100vw',
+            height: isAdminView ? '100%' : '100svh'
+          }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
           attributionControl={false}
@@ -313,6 +324,12 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             updateMarker={updateMarker}
             isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
             iconCreateFunction={iconCreateFunction}
+            selectedYear={selectedYear}
+            isAdminView={isAdminView}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerSelect={onMarkerSelect}
+            focusMarkerId={focusMarkerId}
+            onFocusHandled={() => setFocusMarkerId(null)}
           />
 
           <EventSpecialMarkers
@@ -322,11 +339,32 @@ function EventMap({ isAdminView, markersState, updateMarker }) {
             isMobile={isMobile}
             updateMarker={updateMarker}
             isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+            selectedMarkerId={selectedMarkerId}
+            onMarkerSelect={onMarkerSelect}
+            isAdminView={isAdminView}
+            selectedYear={selectedYear}
           />
         </MapContainer>
       </div>
     </div>
   );
 }
+
+EventMap.propTypes = {
+  isAdminView: PropTypes.bool,
+  markersState: PropTypes.array,
+  updateMarker: PropTypes.func.isRequired,
+  selectedYear: PropTypes.number,
+  selectedMarkerId: PropTypes.number,
+  onMarkerSelect: PropTypes.func,
+};
+
+EventMap.defaultProps = {
+  isAdminView: false,
+  markersState: [],
+  selectedYear: new Date().getFullYear(),
+  selectedMarkerId: null,
+  onMarkerSelect: null,
+};
 
 export default EventMap;

@@ -1,5 +1,6 @@
 import { BRANDING_CONFIG } from '../config/mapConfig';
 import { getLogoPath } from './getLogoPath';
+import { getBaseUrl } from './getBaseUrl';
 
 /**
  * Gets the default fallback logo path
@@ -9,7 +10,7 @@ import { getLogoPath } from './getLogoPath';
  */
 export function getDefaultLogoPath(organizationLogo) {
   const logoFile = organizationLogo || BRANDING_CONFIG.DEFAULT_LOGO;
-  return `${import.meta.env.BASE_URL}assets/logos/${logoFile}`;
+  return `${getBaseUrl()}assets/logos/${logoFile}`;
 }
 
 /**

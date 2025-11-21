@@ -90,7 +90,10 @@ export default function useEventSubscriptions(eventYear) {
         .from('event_subscriptions')
         .update(updates)
         .eq('id', subscriptionId)
-        .select()
+        .select(`
+          *,
+          company:companies(id, name, logo, website, info, contact, phone, email)
+        `)
         .single();
 
       if (updateError) throw updateError;

@@ -7,5 +7,33 @@
     "event": "Evenement",
     "parking": "Parkeren",
     "food": "Eten"
+  },
+  "adminLogin": {
+    "title": "Manager Inloggen",
+    "subtitle": "Inloggen om evenementgegevens te beheren",
+    "email": "E-mail",
+    "emailPlaceholder": "Voer uw e-mailadres in",
+    "password": "Wachtwoord",
+    "passwordPlaceholder": "Voer uw wachtwoord in",
+    "show": "Toon",
+    "hide": "Verberg",
+    "forgotPassword": "Wachtwoord vergeten?",
+    "resetPassword": "Wachtwoord Resetten",
+    "backToLogin": "Terug naar inloggen",
+    "sendResetLink": "Verstuur Reset Link",
+    "resetEmailSent": "Wachtwoord reset link is verzonden naar uw e-mail",
+    "resetInstructions": "Voer uw e-mailadres in en we sturen u een link om uw wachtwoord te resetten.",
+    "loginButton": "Inloggen",
+    "loggingIn": "Bezig met inloggen...",
+    "rememberMe": "Onthoud mijn e-mail",
+    "rememberMeTooltip": "Uw browser zal ook aanbieden om uw wachtwoord veilig op te slaan",
+    "errors": {
+      "invalidCredentials": "Ongeldig e-mailadres of wachtwoord",
+      "emailRequired": "E-mail is verplicht",
+      "passwordRequired": "Wachtwoord is verplicht",
+      "networkError": "Netwerkfout. Controleer uw verbinding.",
+      "unknownError": "Er is een fout opgetreden. Probeer het opnieuw.",
+      "resetFailed": "Kon reset e-mail niet verzenden. Probeer het opnieuw."
+    }
   }
 }

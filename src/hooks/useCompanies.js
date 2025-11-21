@@ -107,8 +107,7 @@ export default function useCompanies() {
   useEffect(() => {
     const channel = supabase
       .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
-        console.log('Companies change:', payload);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
         loadCompanies(); // Reload on any change
       })
       .subscribe();

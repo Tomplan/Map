@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet-search';
+import { getBaseUrl } from '../utils/getBaseUrl';
 
 /**
  * LeafletSearchControl
@@ -10,7 +11,7 @@ import 'leaflet-search';
 const LeafletSearchControl = ({ map, markerLayer }) => {
   // Inject dynamic style for search button icon using BASE_URL
   useEffect(() => {
-    const searchIconUrl = `${import.meta.env.BASE_URL}assets/icons/map-marker-question-blue.svg`;
+    const searchIconUrl = `${getBaseUrl()}assets/icons/map-marker-question-blue.svg`;
     const styleId = 'leaflet-search-dynamic-style';
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style');

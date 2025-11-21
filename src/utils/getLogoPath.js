@@ -1,3 +1,5 @@
+import { getBaseUrl } from './getBaseUrl';
+
 // Utility to normalize logo paths for consistent rendering
 export function getLogoPath(logo) {
   if (!logo) return '';
@@ -7,8 +9,10 @@ export function getLogoPath(logo) {
     return logo;
   }
 
+  const base = getBaseUrl();
+
   // Handle local paths
-  if (logo.startsWith('/assets/logos/')) return `${import.meta.env.BASE_URL}${logo.slice(1)}`;
-  if (logo.startsWith('logos/')) return `${import.meta.env.BASE_URL}assets/logos/${logo.slice(6)}`;
-  return `${import.meta.env.BASE_URL}assets/logos/${logo}`;
+  if (logo.startsWith('/assets/logos/')) return `${base}${logo.slice(1)}`;
+  if (logo.startsWith('logos/')) return `${base}assets/logos/${logo.slice(6)}`;
+  return `${base}assets/logos/${logo}`;
 }

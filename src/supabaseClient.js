@@ -1,8 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xtkbvnnkovogqwcwdhkg.supabase.co';
-const supabaseAnonKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0a2J2bm5rb3ZvZ3F3Y3dkaGtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMzg5ODEsImV4cCI6MjA3NjgxNDk4MX0.71MqQy05baMcDaGI5Xq_fUbcjgGvA0rjnNuXtacEwKs';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
+  );
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    // Persist session in localStorage (default, but explicit for clarity)
+    storageKey: 'supabase.auth.token',
+    storage: window.localStorage,
+    // Auto-refresh tokens before they expire
+    autoRefreshToken: true,
+    // Persist session across browser restarts
+    persistSession: true,
+    // Detect session in URL (for password reset, email confirmation)
+    detectSessionInUrl: true,
+  },
+});
