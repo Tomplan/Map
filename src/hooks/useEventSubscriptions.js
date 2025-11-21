@@ -51,16 +51,18 @@ export default function useEventSubscriptions(eventYear) {
         .eq('id', companyId)
         .single();
 
-      // Fetch organization defaults for meal counts
+      // Fetch organization defaults for meal counts (separate Saturday/Sunday)
       const { data: orgProfile } = await supabase
         .from('Organization_Profile')
-        .select('default_breakfast, default_lunch, default_bbq')
+        .select('default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun')
         .eq('id', 1)
         .single();
 
-      const defaultBreakfast = orgProfile?.default_breakfast || 0;
-      const defaultLunch = orgProfile?.default_lunch || 0;
-      const defaultBbq = orgProfile?.default_bbq || 0;
+      const defaultBreakfastSat = orgProfile?.default_breakfast_sat || 0;
+      const defaultLunchSat = orgProfile?.default_lunch_sat || 0;
+      const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
+      const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
+      const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
 
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
@@ -72,11 +74,11 @@ export default function useEventSubscriptions(eventYear) {
           email: subscriptionData.email || company?.email || '',
           booth_count: subscriptionData.booth_count || 1,
           area: subscriptionData.area || '',
-          breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfast,
-          lunch_sat: subscriptionData.lunch_sat ?? defaultLunch,
-          bbq_sat: subscriptionData.bbq_sat ?? defaultBbq,
-          breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfast,
-          lunch_sun: subscriptionData.lunch_sun ?? defaultLunch,
+          breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
+          lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
+          bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
+          breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
+          lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
           coins: subscriptionData.coins || 0,
           notes: subscriptionData.notes || '',
           created_by,
