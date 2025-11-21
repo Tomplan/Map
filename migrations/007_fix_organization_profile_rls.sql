@@ -2,10 +2,10 @@
 -- SECURITY: Use user_roles table instead of user_metadata (which is user-editable)
 -- Requires migration 008 to create user_roles table first
 
--- Drop the old admin write policy
+-- Drop the old admin write policy (if exists)
 DROP POLICY IF EXISTS "Allow admin write access on Organization_Profile" ON "Organization_Profile";
 
--- Create new policy that checks user_roles table (secure)
+-- Create UPDATE policy that checks user_roles table (secure)
 CREATE POLICY "Allow admin write access on Organization_Profile"
 ON "Organization_Profile"
 FOR UPDATE
@@ -23,3 +23,9 @@ WITH CHECK (
     AND role IN ('super_admin', 'system_manager', 'event_manager')
   )
 );
+
+-- Add INSERT policy for upsert operations (needed by EventDefaults)
+CREATE POLICY "Allow authenticated INSERT on Organization_Profile"
+ON "Organization_Profile"
+FOR INSERT
+WITH CHECK (auth.uid() IS NOT NULL);
