@@ -61,3 +61,32 @@ FOR DELETE
 USING (
   public.current_user_role() = 'super_admin'
 );
+
+-- Create a view that joins user_roles with auth.users to get emails
+-- This view is accessible to admins only
+CREATE OR REPLACE VIEW public.user_roles_with_email AS
+SELECT 
+  ur.user_id,
+  ur.role,
+  ur.created_at,
+  ur.updated_at,
+  au.email,
+  au.last_sign_in_at,
+  au.created_at as user_created_at
+FROM public.user_roles ur
+LEFT JOIN auth.users au ON ur.user_id = au.id;
+
+-- Grant access to the view
+GRANT SELECT ON public.user_roles_with_email TO authenticated;
+
+-- Enable RLS on the view
+ALTER VIEW public.user_roles_with_email SET (security_invoker = on);
+
+-- Create policy for the view - same as user_roles table
+CREATE POLICY "Users read own or admins read all emails"
+ON public.user_roles_with_email
+FOR SELECT
+USING (
+  auth.uid() = user_id 
+  OR public.current_user_role() IN ('super_admin', 'system_manager')
+);
