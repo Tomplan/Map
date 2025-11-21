@@ -18,22 +18,26 @@ ON public.user_roles
 FOR SELECT
 USING (auth.uid() = user_id);
 
--- Policy: Only super_admins can insert/update/delete roles
-CREATE POLICY "Super admins can manage roles"
+-- Policy: Authenticated users can insert (needed for first super_admin bootstrap)
+-- After bootstrap, you can restrict this further
+CREATE POLICY "Authenticated users can insert roles"
 ON public.user_roles
-FOR ALL
-USING (
-  EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = auth.uid() AND role = 'super_admin'
-  )
-);
+FOR INSERT
+WITH CHECK (auth.uid() = user_id);
 
--- Migrate existing roles from user_metadata to user_roles table
--- This is a one-time migration - run manually for each user
--- Example: INSERT INTO public.user_roles (user_id, role) VALUES ('user-uuid-here', 'super_admin');
+-- Policy: Only the user themselves or service role can update
+CREATE POLICY "Users can update own role via service"
+ON public.user_roles
+FOR UPDATE
+USING (auth.uid() = user_id OR auth.jwt()->>'role' = 'service_role');
 
--- You'll need to manually insert your super_admin user:
--- Go to Supabase Dashboard > Authentication > Users
--- Copy your user UUID
--- Then run: INSERT INTO public.user_roles (user_id, role) VALUES ('YOUR-UUID-HERE', 'super_admin');
+-- Policy: Only service role can delete
+CREATE POLICY "Service role can delete"
+ON public.user_roles
+FOR DELETE
+USING (auth.jwt()->>'role' = 'service_role');
+
+-- Bootstrap: Insert your super_admin user
+-- IMPORTANT: Replace 'YOUR-UUID-HERE' with your actual user UUID
+-- Get your UUID from: Supabase Dashboard > Authentication > Users
+-- Example: INSERT INTO public.user_roles (user_id, role) VALUES ('8782c8be-50de-4599-a96c-4cd824281ae5', 'super_admin');
