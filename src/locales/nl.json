@@ -122,7 +122,36 @@
     },
     "eventDefaults": {
       "title": "Evenement Standaardinstellingen",
-      "description": "Standaard maaltijdaantallen, standgrootte en evenementvoorkeuren"
+      "description": "Standaard maaltijdaantallen, standgrootte en evenementvoorkeuren",
+      "loading": "Instellingen laden...",
+      "save": "Wijzigingen Opslaan",
+      "saving": "Opslaan...",
+      "reset": "Resetten",
+      "saveSuccess": "Instellingen succesvol opgeslagen",
+      "saveSuccessMessage": "Je wijzigingen zijn toegepast.",
+      "error": "Fout",
+      "mealDefaults": {
+        "title": "Standaard Maaltijdaantallen",
+        "description": "Stel standaard maaltijdhoeveelheden in voor nieuwe evenementinschrijvingen. Deze waarden worden vooraf ingevuld maar kunnen per inschrijving worden aangepast.",
+        "breakfast": "Ontbijt",
+        "lunch": "Lunch",
+        "bbq": "BBQ",
+        "helperText": "Standaard per inschrijving"
+      },
+      "notifications": {
+        "title": "Meldingsvoorkeuren",
+        "description": "Configureer e-mailmeldingen voor evenementmanagers",
+        "emailNotifications": "E-mailmeldingen Inschakelen",
+        "emailNotificationsDesc": "Hoofdschakelaar voor alle e-mailmeldingen",
+        "newSubscription": "Nieuwe Inschrijvingsmeldingen",
+        "newSubscriptionDesc": "Ontvang een melding wanneer bedrijven zich registreren voor het evenement",
+        "assignmentChange": "Toewijzingswijzigingen",
+        "assignmentChangeDesc": "Ontvang een melding wanneer standtoewijzingen worden gewijzigd"
+      },
+      "errors": {
+        "loadFailed": "Kon instellingen niet laden. Probeer het opnieuw.",
+        "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
+      }
     },
     "advanced": {
       "title": "Geavanceerde Instellingen",
