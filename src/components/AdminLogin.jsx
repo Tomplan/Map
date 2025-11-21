@@ -74,13 +74,16 @@ export default function AdminLogin({ onLogin, branding }) {
     setResetLoading(true);
     setError(null);
 
-    // Use production URL for password reset redirect
-    const productionUrl = import.meta.env.PROD 
-      ? `${window.location.origin}${import.meta.env.BASE_URL}#/admin`
-      : 'https://tomplan.github.io/Map/#/admin';
+    // Build redirect URL based on environment
+    // Production uses HashRouter (#/admin), development uses BrowserRouter (/admin)
+    const isProd = import.meta.env.PROD;
+    const base = import.meta.env.BASE_URL || '/';
+    const redirectUrl = isProd 
+      ? `${window.location.origin}${base}#/admin`
+      : `${window.location.origin}${base}admin`;
     
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: productionUrl,
+      redirectTo: redirectUrl,
     });
 
     setResetLoading(false);
