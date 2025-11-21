@@ -2,8 +2,11 @@ import { useCallback } from 'react';
 
 // Simulated analytics event sender (replace with real analytics API)
 function sendAnalyticsEvent(event, data) {
-  // For now, just log to console
-  console.log('Analytics event:', event, data);
+  // TODO: Replace with real analytics API (e.g., Google Analytics, Mixpanel)
+  if (import.meta.env.DEV) {
+    // Only log in development mode
+    // console.log('Analytics event:', event, data);
+  }
 }
 
 export default function useAnalytics() {

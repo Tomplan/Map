@@ -3,6 +3,8 @@ import { Tooltip, Popup } from 'react-leaflet';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../utils/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
+import FavoriteButton from './FavoriteButton';
 
 // --- Tooltip for both cluster + special markers ---
 export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
@@ -42,6 +44,7 @@ export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
 // --- Desktop Popup with scrollable content ---
 export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
 
   return (
     <Popup
@@ -63,7 +66,16 @@ export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
             </div>
           )}
           {marker.name ? (
-            <div className="text-base font-semibold text-gray-900 mb-1">{marker.name}</div>
+            <div className="flex items-center justify-between gap-2 mb-1">
+              <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+              {marker.companyId && (
+                <FavoriteButton
+                  isFavorite={isFavorite(marker.companyId)}
+                  onToggle={() => toggleFavorite(marker.companyId)}
+                  size="sm"
+                />
+              )}
+            </div>
           ) : (
             <div className="text-base font-semibold text-gray-500 italic mb-1">Unassigned Booth</div>
           )}
@@ -147,16 +159,27 @@ export const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
 };
 
 // --- Combined helper ---
-export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => (
-  <>
-    {!isMobile && (
-      <>
-        <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
-          <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
-        </Tooltip>
-        <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
-      </>
-    )}
-    {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
-  </>
-);
+export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => {
+  // Only show tooltip if marker has meaningful content (glyph or name)
+  // This prevents showing empty/incomplete tooltips on first hover
+  const hasTooltipContent = marker && (
+    (marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') ||
+    marker.name
+  );
+
+  return (
+    <>
+      {!isMobile && (
+        <>
+          {hasTooltipContent && (
+            <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
+              <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
+            </Tooltip>
+          )}
+          <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
+        </>
+      )}
+      {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
+    </>
+  );
+};

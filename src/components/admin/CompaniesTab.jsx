@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import useCompanies from '../../hooks/useCompanies';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
+import { useCompanyMutations } from '../../hooks/useCompanyMutations';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
 import LogoUploader from '../LogoUploader';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
-import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * CompaniesTab - Manage permanent company list
@@ -16,16 +17,33 @@ export default function CompaniesTab() {
   const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies } = useCompanies();
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
+  const { confirm, toastError } = useDialog();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null); // Can be company.id or 'organization'
-  const [editForm, setEditForm] = useState({});
-  const [isCreating, setIsCreating] = useState(false);
-  const [newCompanyForm, setNewCompanyForm] = useState({
-    name: '',
-    logo: organizationLogo, // Use organization logo as default
-    website: '',
-    info: ''
+
+  // Use company mutations hook
+  const {
+    editingId,
+    editForm,
+    setEditForm,
+    isCreating,
+    newCompanyForm,
+    setNewCompanyForm,
+    handleEdit,
+    handleSave,
+    handleCancel,
+    handleDelete,
+    handleCreate,
+    handleStartCreate,
+    handleCancelCreate,
+  } = useCompanyMutations({
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    updateProfile,
+    organizationLogo,
+    confirm,
+    toastError
   });
 
   // Combine organization profile with companies and filter
@@ -42,63 +60,6 @@ export default function CompaniesTab() {
     return allItems.filter(item => item.name?.toLowerCase().includes(lowercasedTerm));
   }, [organizationProfile, companies, searchTerm]);
 
-  // Start editing
-  const handleEdit = (item) => {
-    setEditingId(item.id);
-    setEditForm({ ...item });
-  };
-
-  // Save edited item (organization or company)
-  const handleSave = async () => {
-    const id = editingId;
-    if (id === 'organization') {
-      const { name, logo, website, info } = editForm;
-      await updateProfile({ name, logo, website, info });
-    } else {
-      await updateCompany(id, editForm);
-    }
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  // Cancel edit
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
-  };
-
-  // Delete company
-  const handleDelete = async (id, name) => {
-    if (!confirm(`Are you sure you want to delete "${name}"? This will also delete all assignments for this company.`)) {
-      return;
-    }
-    const { error } = await deleteCompany(id);
-    if (error) {
-      alert(`Error deleting company: ${error}`);
-    }
-  };
-
-  // Create new company
-  const handleCreate = async () => {
-    if (!newCompanyForm.name.trim()) {
-      alert('Company name is required');
-      return;
-    }
-
-    const { error } = await createCompany(newCompanyForm);
-    if (!error) {
-      setIsCreating(false);
-      setNewCompanyForm({
-        name: '',
-        logo: organizationLogo, // Use organization logo as default
-        website: '',
-        info: ''
-      });
-    } else {
-      alert(`Error creating company: ${error}`);
-    }
-  };
-
   const loading = loadingCompanies || loadingProfile;
   const error = errorCompanies || errorProfile;
 
@@ -111,9 +72,9 @@ export default function CompaniesTab() {
   }
 
   return (
-    <div className="p-4">
+    <div className="h-full flex flex-col p-4">
       {/* Header with search and add button */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
@@ -128,7 +89,7 @@ export default function CompaniesTab() {
           </span>
         </div>
         <button
-          onClick={() => setIsCreating(true)}
+          onClick={handleStartCreate}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <Icon path={mdiPlus} size={0.8} />
@@ -138,53 +99,88 @@ export default function CompaniesTab() {
 
       {/* Create new company form */}
       {isCreating && (
-        <div className="mb-4 p-4 border rounded-lg bg-blue-50">
-          <h3 className="font-bold mb-3">New Company</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <input
-              type="text"
-              placeholder="Company Name *"
-              value={newCompanyForm.name}
-              onChange={(e) => setNewCompanyForm({ ...newCompanyForm, name: e.target.value })}
-              className="px-3 py-2 border rounded"
-            />
-            <div className="col-span-2">
-  <label className="block text-sm font-medium mb-1">Company Logo</label>
-  <LogoUploader
-    currentLogo={newCompanyForm.logo}
-    onUploadComplete={(url, path) => {
-      setNewCompanyForm({ ...newCompanyForm, logo: url });
-    }}
-    folder="companies"
-    label="Upload Logo"
-    showPreview={true}
-    allowDelete={true}
-    onDelete={() => {
-      setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo });
-    }}
-  />
-  <input
-    type="text"
-    placeholder="Or paste external logo URL"
-    value={newCompanyForm.logo}
-    onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
-    className="px-3 py-2 border rounded mt-2 w-full text-sm"
-  />
-</div>
-            <input
-              type="text"
-              placeholder="Website URL"
-              value={newCompanyForm.website}
-              onChange={(e) => setNewCompanyForm({ ...newCompanyForm, website: e.target.value })}
-              className="px-3 py-2 border rounded"
-            />
-            <textarea
-              placeholder="Info"
-              value={newCompanyForm.info}
-              onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
-              className="px-3 py-2 border rounded"
-              rows={2}
-            />
+        <div className="mb-4 border rounded-lg overflow-hidden flex-shrink-0">
+          <div className="p-4 bg-blue-50">
+            <h3 className="font-bold mb-3">New Company</h3>
+
+            {/* Public Information Section */}
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <h4 className="font-semibold text-sm mb-2 text-blue-800">Public Info (visible to attendees)</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  placeholder="Company Name *"
+                  value={newCompanyForm.name}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, name: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                />
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-1">Company Logo</label>
+                  <LogoUploader
+                    currentLogo={newCompanyForm.logo}
+                    onUploadComplete={(url, path) => {
+                      setNewCompanyForm({ ...newCompanyForm, logo: url });
+                    }}
+                    folder="companies"
+                    label="Upload Logo"
+                    showPreview={true}
+                    allowDelete={true}
+                    onDelete={() => {
+                      setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo });
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Or paste external logo URL"
+                    value={newCompanyForm.logo}
+                    onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
+                    className="px-3 py-2 border rounded mt-2 w-full text-sm"
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Website URL"
+                  value={newCompanyForm.website}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, website: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                />
+                <textarea
+                  placeholder="Info"
+                  value={newCompanyForm.info}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            {/* Manager-Only Information Section */}
+            <div className="p-3 bg-green-50 border border-green-200 rounded">
+              <h4 className="font-semibold text-sm mb-2 text-green-800">Manager-Only Info (default contact info)</h4>
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder="Contact Person"
+                  value={newCompanyForm.contact || ''}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                />
+                <input
+                  type="text"
+                  placeholder="Phone"
+                  value={newCompanyForm.phone || ''}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, phone: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                />
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={newCompanyForm.email || ''}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, email: e.target.value })}
+                  className="px-3 py-2 border rounded"
+                />
+              </div>
+            </div>
           </div>
           <div className="flex gap-2 mt-3">
             <button
@@ -195,15 +191,7 @@ export default function CompaniesTab() {
               Create
             </button>
             <button
-              onClick={() => {
-                setIsCreating(false);
-                setNewCompanyForm({
-                  name: '',
-                  logo: organizationLogo,
-                  website: '',
-                  info: ''
-                });
-              }}
+              onClick={handleCancelCreate}
               className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
             >
               <Icon path={mdiClose} size={0.7} />
@@ -214,27 +202,40 @@ export default function CompaniesTab() {
       )}
 
       {/* Companies table */}
-      <div className="overflow-x-auto">
-        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '12px' }}>
-          <thead>
-            <tr className="bg-gray-100 text-gray-900">
-              <th className="p-2 text-left">Name</th>
-              <th className="p-2 text-left">Logo</th>
-              <th className="p-2 text-left">Website</th>
-              <th className="p-2 text-left">Info</th>
-              <th className="p-2 text-left" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+      <div className="flex-1 overflow-auto border rounded-lg">
+        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '11px' }}>
+          <thead className="sticky top-0 z-10">
+            {/* Section headers row */}
+            <tr>
+              <th className="p-2 text-center bg-blue-100 border-b font-bold text-blue-800" colSpan={4}>
+                Public Info
+              </th>
+              <th className="p-2 text-center bg-green-100 border-b font-bold text-green-800" colSpan={3}>
+                Manager-Only Info
+              </th>
+              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" rowSpan={2} style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+            </tr>
+            {/* Column headers row */}
+            <tr>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
+              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
+              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
             </tr>
           </thead>
           <tbody>
             {filteredItems.map((item) => {
               const isEditing = editingId === item.id;
               const isOrg = item.isOrganization;
-              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900';
+              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 hover:bg-gray-50';
 
               return (
                 <tr key={item.id} className={`${rowClass} border-b`}>
                   {/* Name */}
-                  <td className="py-1 px-3 border-b text-left">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -248,7 +249,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Logo */}
-                  <td className="py-1 px-3 border-b text-left">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
   {isEditing ? (
     <div className="flex flex-col gap-2">
       <LogoUploader
@@ -282,7 +283,7 @@ export default function CompaniesTab() {
 </td>
 
                   {/* Website */}
-                  <td className="py-1 px-3 border-b text-left">
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -301,7 +302,7 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Info */}
-                  <td className="py-1 px-3 border-b text-left max-w-xs">
+                  <td className={`py-1 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
                       <textarea
                         value={editForm.info || ''}
@@ -311,6 +312,51 @@ export default function CompaniesTab() {
                       />
                     ) : (
                       <p className="line-clamp-3 whitespace-pre-wrap">{item.info || <span className="text-gray-400 text-sm italic">Not set</span>}</p>
+                    )}
+                  </td>
+
+                  {/* Contact */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editForm.contact || ''}
+                        onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+                        placeholder="Contact Person"
+                      />
+                    ) : (
+                      <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
+                    )}
+                  </td>
+
+                  {/* Phone */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editForm.phone || ''}
+                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+                        placeholder="Phone"
+                      />
+                    ) : (
+                      <span className="text-xs">{item.phone || <span className="text-gray-400 italic">Not set</span>}</span>
+                    )}
+                  </td>
+
+                  {/* Email */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        value={editForm.email || ''}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+                        placeholder="Email"
+                      />
+                    ) : (
+                      <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
                     )}
                   </td>
 
@@ -352,7 +398,7 @@ export default function CompaniesTab() {
                           </button>
                         )}
                         {isOrg && (
-                          <div className="flex items-center justify-center pt-1 text-gray-400">
+                          <div className="flex items-center justify-center pt-1 text-gray-300">
                             <Icon path={mdiDomain} size={0.8} />
                           </div>
                         )}

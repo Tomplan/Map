@@ -9,9 +9,9 @@ export function createNewMarker({ lat, lng }) {
     // Note: boothNumber removed - now using glyph from Markers_Appearance
     rectangle: [6, 6],
     angle: 0,
-    iconUrl: 'glyph-marker-icon-blue.svg',
+    iconUrl: 'glyph-marker-icon-gray.svg',
     iconSize: [25, 41],
-    iconColor: 'blue',
+    iconColor: 'gray',
     className: 'marker-icon',
     prefix: '',
     glyph: '',

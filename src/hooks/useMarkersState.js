@@ -29,19 +29,7 @@ export default function useMarkersState(markers = []) {
     'appearanceLocked',
   ];
   const contentFields = ['name', 'logo', 'website', 'info', 'contentLocked'];
-  const adminFields = [
-    'contact',
-    'phone',
-    'email',
-    'boothCount',
-    'area',
-    'coins',
-    'breakfast',
-    'lunch',
-    'bbq',
-    'notes',
-    'adminLocked',
-  ];
+  // Note: Admin fields (contact, phone, meals, etc.) now managed via Event_Subscriptions
 
   // Update a marker by id, merging new props and syncing to Supabase
   const updateMarker = useCallback(async (id, newProps) => {
@@ -57,7 +45,6 @@ export default function useMarkersState(markers = []) {
         if (table === 'Markers_Core') row.coreLocked = false;
         if (table === 'Markers_Appearance') row.appearanceLocked = false;
         if (table === 'Markers_Content') row.contentLocked = false;
-        if (table === 'Markers_Admin') row.adminLocked = false;
         await supabase.from(table).insert([row]);
         return true;
       }
@@ -75,7 +62,6 @@ export default function useMarkersState(markers = []) {
         { name: 'Markers_Core', fields: coreFields },
         { name: 'Markers_Appearance', fields: appearanceFields },
         { name: 'Markers_Content', fields: contentFields },
-        { name: 'Markers_Admin', fields: adminFields },
       ];
       for (const { name: table } of tables) {
         await ensureMarkerRow(supabase, table, intId);
@@ -88,9 +74,8 @@ export default function useMarkersState(markers = []) {
           table = 'Markers_Appearance';
         } else if (contentFields.includes(key)) {
           table = 'Markers_Content';
-        } else if (adminFields.includes(key)) {
-          table = 'Markers_Admin';
         }
+        // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin
         if (table) {
           const exists = await ensureMarkerRow(supabase, table, intId);
           if (!exists) continue;

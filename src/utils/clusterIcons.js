@@ -12,9 +12,14 @@ export function createIconCreateFunction(organizationLogo) {
   return function iconCreateFunction(cluster) {
     const logoPath = getDefaultLogoPath(organizationLogo);
 
+    // Normalize base URL to always have trailing slash
+    const base = import.meta.env.BASE_URL.endsWith('/')
+      ? import.meta.env.BASE_URL
+      : `${import.meta.env.BASE_URL}/`;
+
     // Use the organization logo as the glyph
     return createMarkerIcon({
-      iconUrl: `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-orange.svg`,
+      iconUrl: `${base}assets/icons/glyph-marker-icon-orange.svg`,
       iconSize: [50, 82],
       iconAnchor: [25, 41],
       glyph: `<div style='display:flex;align-items:center;justify-content:center;width:100%;height:100%;'>

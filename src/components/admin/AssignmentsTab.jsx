@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiArrowUp, mdiArrowDown } from '@mdi/js';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * AssignmentsTab - Matrix view for managing yearly marker-to-company assignments
@@ -38,8 +40,7 @@ export default function AssignmentsTab({ selectedYear }) {
   const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
   const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'markerId' or 'glyphText'
   const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
-  const [markers, setMarkers] = useState([]); // Array of {id, glyph}
-  const [loadingMarkers, setLoadingMarkers] = useState(true);
+  const { markers, loading: loadingMarkers } = useMarkerGlyphs();
 
   const {
     assignments,
@@ -53,6 +54,9 @@ export default function AssignmentsTab({ selectedYear }) {
 
   // Load subscriptions to filter companies
   const { subscriptions } = useEventSubscriptions(selectedYear);
+
+  // Dialog context
+  const { confirm, toastError, toastSuccess, toastInfo } = useDialog();
 
   // Extract subscribed companies with their info
   const subscribedCompanies = useMemo(() => {
@@ -77,53 +81,6 @@ export default function AssignmentsTab({ selectedYear }) {
       console.error('Error saving sort preferences:', error);
     }
   }, [sortBy, sortDirection, columnSort, columnSortDirection]);
-
-  // Load all markers with glyphText from Markers_Core and Markers_Appearance (only booth markers < 1000)
-  useEffect(() => {
-    async function loadMarkers() {
-      try {
-        setLoadingMarkers(true);
-
-        // Join Markers_Core with Markers_Appearance to get glyphText
-        const { data: coreData, error: coreError } = await supabase
-          .from('Markers_Core')
-          .select('id')
-          .lt('id', 1000) // Only load booth markers (id < 1000)
-          .order('id', { ascending: true });
-
-        if (coreError) throw coreError;
-
-        const { data: appearanceData, error: appearanceError } = await supabase
-          .from('Markers_Appearance')
-          .select('id, glyph')
-          .lt('id', 1000);
-
-        if (appearanceError) throw appearanceError;
-
-        // Create a map of glyph text by marker id
-        const glyphMap = {};
-        (appearanceData || []).forEach(row => {
-          if (row && row.id) {
-            glyphMap[row.id] = row.glyph || '';
-          }
-        });
-
-        // Merge core and appearance data
-        const mergedMarkers = (coreData || []).map(marker => ({
-          id: marker.id,
-          glyph: glyphMap[marker.id] || marker.id.toString() // Fallback to ID if no glyph
-        }));
-
-        setMarkers(mergedMarkers);
-      } catch (err) {
-        console.error('Error loading markers:', err);
-      } finally {
-        setLoadingMarkers(false);
-      }
-    }
-
-    loadMarkers();
-  }, []);
 
   // Count assignments per company (for badge display)
   const companyAssignmentCounts = useMemo(() => {
@@ -264,28 +221,75 @@ export default function AssignmentsTab({ selectedYear }) {
       // Unassign
       const { error } = await unassignCompanyFromMarker(markerId, companyId);
       if (error) {
-        alert(`Error removing assignment: ${error}`);
+        toastError(`Error removing assignment: ${error}`);
       }
     } else {
-      // Assign
+      // Assign - Check if marker already has assignments
+      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+
+      if (existingAssignments.length > 0) {
+        // Get company and marker info
+        const newCompany = subscribedCompanies.find(c => c.id === companyId);
+        const newCompanyName = newCompany?.name || 'this company';
+        const marker = sortedMarkers.find(m => m.id === markerId);
+        const boothLabel = marker?.glyph || markerId;
+
+        // Build warning message
+        let warningMessage;
+        if (existingAssignments.length === 1) {
+          const existingCompany = subscribedCompanies.find(
+            c => c.id === existingAssignments[0].company_id
+          );
+          const existingCompanyName = existingCompany?.name || 'another company';
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
+        } else {
+          const companyNames = existingAssignments
+            .map(a => {
+              const comp = subscribedCompanies.find(c => c.id === a.company_id);
+              return comp?.name;
+            })
+            .filter(Boolean)
+            .join(', ');
+          warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
+        }
+
+        // Show confirmation
+        const confirmed = await confirm({
+          title: 'Multiple Assignments',
+          message: warningMessage,
+          confirmText: 'Assign',
+          variant: 'warning',
+        });
+        if (!confirmed) {
+          return; // User cancelled
+        }
+      }
+
+      // Proceed with assignment
       const { error } = await assignCompanyToMarker(markerId, companyId, null);
       if (error) {
-        alert(`Error creating assignment: ${error}`);
+        toastError(`Error creating assignment: ${error}`);
       }
     }
   };
 
   // Handle archive current year
   const handleArchive = async () => {
-    if (!confirm(`Archive all assignments for ${selectedYear}? This will move them to the archive and clear the current year.`)) {
+    const confirmed = await confirm({
+      title: 'Archive Assignments',
+      message: `Archive all assignments for ${selectedYear}? This will move them to the archive and clear the current year.`,
+      confirmText: 'Archive',
+      variant: 'warning',
+    });
+    if (!confirmed) {
       return;
     }
 
     const { error } = await archiveCurrentYear();
     if (error) {
-      alert(`Error archiving: ${error}`);
+      toastError(`Error archiving: ${error}`);
     } else {
-      alert(`Successfully archived ${assignments.length} assignments for ${selectedYear}`);
+      toastSuccess(`Successfully archived ${assignments.length} assignments for ${selectedYear}`);
     }
   };
 
@@ -293,9 +297,9 @@ export default function AssignmentsTab({ selectedYear }) {
   const handleViewArchived = async (year) => {
     const { error } = await loadArchivedAssignments(year);
     if (error) {
-      alert(`Error loading archived assignments: ${error}`);
+      toastError(`Error loading archived assignments: ${error}`);
     } else {
-      alert(`Archived data loaded for ${year}. Feature coming soon: display in table.`);
+      toastInfo(`Archived data loaded for ${year}. Feature coming soon: display in table.`);
     }
   };
 
@@ -308,49 +312,41 @@ export default function AssignmentsTab({ selectedYear }) {
   }
 
   return (
-    <div className="p-4">
-      {/* Header with controls */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="flex flex-col md:flex-row md:justify-between gap-4">
-          {/* Left side: Archive and Search */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handleViewArchived(selectedYear)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm"
-                  title={`View archived assignments for ${selectedYear}`}
-                >
-                  <Icon path={mdiHistory} size={0.75} />
-                  <span>Archive</span>
-                </button>
-                <button
-                  onClick={handleArchive}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 text-sm"
-                  disabled={assignments.length === 0}
-                  title={`Archive all assignments for ${selectedYear}`}
-                >
-                  <Icon path={mdiArchive} size={0.75} />
-                </button>
-              </div>
-            </div>
-            <div className="relative flex-1 md:min-w-[200px]">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Icon path={mdiMagnify} size={0.8} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-          </div>
-
-          {/* Right side: Sort and Stats */}
-          <div className="flex flex-col items-start md:items-end gap-2">
-            <div className="flex items-end gap-3">
+    <div className="h-full flex flex-col p-4">
+      {/* Header with search and action buttons */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <Icon path={mdiMagnify} size={1} className="text-gray-500" />
+          <input
+            type="text"
+            placeholder="Search companies..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-3 py-2 border rounded-lg"
+          />
+          <span className="text-sm text-gray-600">
+            {filteredCompanies.length} of {subscribedCompanies.length}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => handleViewArchived(selectedYear)}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            title={`View archived assignments for ${selectedYear}`}
+          >
+            <Icon path={mdiHistory} size={0.8} />
+            <span>Archive</span>
+          </button>
+          <button
+            onClick={handleArchive}
+            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={assignments.length === 0}
+            title={`Archive all assignments for ${selectedYear}`}
+          >
+            <Icon path={mdiArchive} size={0.8} />
+          </button>
+          {/* Sort Controls */}
+          <div className="flex items-end gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Sort Companies</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
@@ -395,15 +391,11 @@ export default function AssignmentsTab({ selectedYear }) {
                 </div>
               </div>
             </div>
-            <div className="text-sm text-gray-600 text-right w-full">
-              {filteredCompanies.length} companies × {markers.length} markers = {assignments.length} assignments
-            </div>
           </div>
         </div>
-      </div>
 
       {/* Assignment Matrix */}
-      <div className="overflow-auto border rounded-lg" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+      <div className="flex-1 overflow-auto border rounded-lg">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-gray-100 text-gray-900">

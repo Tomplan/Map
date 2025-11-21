@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMap } from 'react-leaflet';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
+import { useFavoritesContext } from '../contexts/FavoritesContext';
+import FavoriteButton from './FavoriteButton';
 
 const BottomSheet = ({ marker, onClose }) => {
   const map = useMap();
   const { organizationLogo } = useOrganizationLogo();
+  const { isFavorite, toggleFavorite } = useFavoritesContext();
 
   // Lock map dragging while sheet is open
   useEffect(() => {
@@ -59,8 +62,17 @@ const BottomSheet = ({ marker, onClose }) => {
             />
           </div>
 
-          {/* Name and Booth */}
-          <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+          {/* Name, Favorite, and Booth */}
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+            {marker.companyId && (
+              <FavoriteButton
+                isFavorite={isFavorite(marker.companyId)}
+                onToggle={() => toggleFavorite(marker.companyId)}
+                size="md"
+              />
+            )}
+          </div>
           {marker.glyph && (
             <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>
           )}
