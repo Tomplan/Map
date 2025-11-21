@@ -7,5 +7,33 @@
     "event": "Event",
     "parking": "Parking",
     "food": "Food"
+  },
+  "adminLogin": {
+    "title": "Manager Login",
+    "subtitle": "Sign in to manage event data",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "show": "Show",
+    "hide": "Hide",
+    "forgotPassword": "Forgot password?",
+    "resetPassword": "Reset Password",
+    "backToLogin": "Back to login",
+    "sendResetLink": "Send Reset Link",
+    "resetEmailSent": "Password reset link has been sent to your email",
+    "resetInstructions": "Enter your email address and we'll send you a link to reset your password.",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "rememberMe": "Remember my email",
+    "rememberMeTooltip": "Your browser will also offer to save your password securely",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "networkError": "Network error. Please check your connection.",
+      "unknownError": "An error occurred. Please try again.",
+      "resetFailed": "Failed to send reset email. Please try again."
+    }
   }
 }

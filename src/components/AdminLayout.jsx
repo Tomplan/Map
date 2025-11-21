@@ -48,7 +48,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     // Redirect to admin login with proper base URL
     const base = import.meta.env.BASE_URL || '/';
     const isProd = import.meta.env.PROD;
-    window.location.href = isProd ? `${base}#/admin` : `${base}admin`;
+    // Ensure base ends with / before appending path
+    const baseUrl = base.endsWith('/') ? base : `${base}/`;
+    window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
   };
 
   // Navigation items with role-based visibility

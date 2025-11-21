@@ -92,10 +92,8 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
             </FavoritesProvider>
           ) : (
             <ErrorBoundary>
-              <BrandingBar {...branding} />
-              <Suspense fallback={<div>Loading login...</div>}>
-                <FeedbackForm />
-                <AdminLogin onLogin={onLogin} />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+                <AdminLogin onLogin={onLogin} branding={branding} />
               </Suspense>
             </ErrorBoundary>
           )
