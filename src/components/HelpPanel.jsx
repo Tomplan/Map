@@ -59,14 +59,14 @@ export default function HelpPanel({ isOpen, onClose }) {
     <>
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40"
+        className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
       <div 
-        className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-50 flex flex-col"
+        className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-[9999] flex flex-col"
         role="dialog"
         aria-label="Help Panel"
         aria-modal="true"
