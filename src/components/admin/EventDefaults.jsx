@@ -19,10 +19,14 @@ export default function EventDefaults() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
 
-  // Meal count defaults
-  const [defaultBreakfast, setDefaultBreakfast] = useState(0);
-  const [defaultLunch, setDefaultLunch] = useState(0);
-  const [defaultBbq, setDefaultBbq] = useState(0);
+  // Meal count defaults - Saturday
+  const [defaultBreakfastSat, setDefaultBreakfastSat] = useState(0);
+  const [defaultLunchSat, setDefaultLunchSat] = useState(0);
+  const [defaultBbqSat, setDefaultBbqSat] = useState(0);
+  
+  // Meal count defaults - Sunday
+  const [defaultBreakfastSun, setDefaultBreakfastSun] = useState(0);
+  const [defaultLunchSun, setDefaultLunchSun] = useState(0);
 
   // Notification preferences
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -55,10 +59,14 @@ export default function EventDefaults() {
           // Don't throw - just use defaults if columns don't exist
         }
       } else if (data) {
-        // Check if columns exist and have values
-        setDefaultBreakfast(data.default_breakfast ?? 0);
-        setDefaultLunch(data.default_lunch ?? 0);
-        setDefaultBbq(data.default_bbq ?? 0);
+        // Check if columns exist and have values - Saturday
+        setDefaultBreakfastSat(data.default_breakfast_sat ?? 0);
+        setDefaultLunchSat(data.default_lunch_sat ?? 0);
+        setDefaultBbqSat(data.default_bbq_sat ?? 0);
+        
+        // Sunday
+        setDefaultBreakfastSun(data.default_breakfast_sun ?? 0);
+        setDefaultLunchSun(data.default_lunch_sun ?? 0);
 
         // Parse notification settings from JSON (if column exists)
         if (data.notification_settings) {
@@ -110,9 +118,11 @@ export default function EventDefaults() {
         .from('Organization_Profile')
         .upsert({
           id: 1, // Single row for organization
-          default_breakfast: defaultBreakfast,
-          default_lunch: defaultLunch,
-          default_bbq: defaultBbq,
+          default_breakfast_sat: defaultBreakfastSat,
+          default_lunch_sat: defaultLunchSat,
+          default_bbq_sat: defaultBbqSat,
+          default_breakfast_sun: defaultBreakfastSun,
+          default_lunch_sun: defaultLunchSun,
           notification_settings: notificationSettings,
           updated_at: new Date().toISOString(),
         });
@@ -183,62 +193,115 @@ export default function EventDefaults() {
             {t('settings.eventDefaults.mealDefaults.description')}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Breakfast */}
-            <div>
-              <label htmlFor="breakfast" className="label-base">
-                {t('settings.eventDefaults.mealDefaults.breakfast')}
-              </label>
-              <input
-                type="number"
-                id="breakfast"
-                min="0"
-                max="9999"
-                value={defaultBreakfast}
-                onChange={(e) => setDefaultBreakfast(parseInt(e.target.value) || 0)}
-                className="input-base"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {t('settings.eventDefaults.mealDefaults.helperText')}
-              </p>
-            </div>
+          {/* Saturday Meals */}
+          <div className="mb-6">
+            <h4 className="text-md font-semibold text-gray-800 mb-3">
+              {t('settings.eventDefaults.mealDefaults.saturday')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Saturday Breakfast */}
+              <div>
+                <label htmlFor="breakfastSat" className="label-base">
+                  {t('settings.eventDefaults.mealDefaults.breakfast')}
+                </label>
+                <input
+                  type="number"
+                  id="breakfastSat"
+                  min="0"
+                  max="9999"
+                  value={defaultBreakfastSat}
+                  onChange={(e) => setDefaultBreakfastSat(parseInt(e.target.value) || 0)}
+                  className="input-base"
+                />
+              </div>
 
-            {/* Lunch */}
-            <div>
-              <label htmlFor="lunch" className="label-base">
-                {t('settings.eventDefaults.mealDefaults.lunch')}
-              </label>
-              <input
-                type="number"
-                id="lunch"
-                min="0"
-                max="9999"
-                value={defaultLunch}
-                onChange={(e) => setDefaultLunch(parseInt(e.target.value) || 0)}
-                className="input-base"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {t('settings.eventDefaults.mealDefaults.helperText')}
-              </p>
-            </div>
+              {/* Saturday Lunch */}
+              <div>
+                <label htmlFor="lunchSat" className="label-base">
+                  {t('settings.eventDefaults.mealDefaults.lunch')}
+                </label>
+                <input
+                  type="number"
+                  id="lunchSat"
+                  min="0"
+                  max="9999"
+                  value={defaultLunchSat}
+                  onChange={(e) => setDefaultLunchSat(parseInt(e.target.value) || 0)}
+                  className="input-base"
+                />
+              </div>
 
-            {/* BBQ */}
-            <div>
-              <label htmlFor="bbq" className="label-base">
-                {t('settings.eventDefaults.mealDefaults.bbq')}
-              </label>
-              <input
-                type="number"
-                id="bbq"
-                min="0"
-                max="9999"
-                value={defaultBbq}
-                onChange={(e) => setDefaultBbq(parseInt(e.target.value) || 0)}
-                className="input-base"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                {t('settings.eventDefaults.mealDefaults.helperText')}
-              </p>
+              {/* Saturday BBQ */}
+              <div>
+                <label htmlFor="bbqSat" className="label-base">
+                  {t('settings.eventDefaults.mealDefaults.bbq')}
+                </label>
+                <input
+                  type="number"
+                  id="bbqSat"
+                  min="0"
+                  max="9999"
+                  value={defaultBbqSat}
+                  onChange={(e) => setDefaultBbqSat(parseInt(e.target.value) || 0)}
+                  className="input-base"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Sunday Meals */}
+          <div>
+            <h4 className="text-md font-semibold text-gray-800 mb-3">
+              {t('settings.eventDefaults.mealDefaults.sunday')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Sunday Breakfast */}
+              <div>
+                <label htmlFor="breakfastSun" className="label-base">
+                  {t('settings.eventDefaults.mealDefaults.breakfast')}
+                </label>
+                <input
+                  type="number"
+                  id="breakfastSun"
+                  min="0"
+                  max="9999"
+                  value={defaultBreakfastSun}
+                  onChange={(e) => setDefaultBreakfastSun(parseInt(e.target.value) || 0)}
+                  className="input-base"
+                />
+              </div>
+
+              {/* Sunday Lunch */}
+              <div>
+                <label htmlFor="lunchSun" className="label-base">
+                  {t('settings.eventDefaults.mealDefaults.lunch')}
+                </label>
+                <input
+                  type="number"
+                  id="lunchSun"
+                  min="0"
+                  max="9999"
+                  value={defaultLunchSun}
+                  onChange={(e) => setDefaultLunchSun(parseInt(e.target.value) || 0)}
+                  className="input-base"
+                />
+              </div>
+
+              {/* Sunday - no BBQ */}
+              <div className="opacity-50">
+                <label className="label-base text-gray-400">
+                  {t('settings.eventDefaults.mealDefaults.bbq')}
+                </label>
+                <input
+                  type="number"
+                  disabled
+                  value="—"
+                  className="input-base bg-gray-100 cursor-not-allowed"
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  {t('settings.eventDefaults.mealDefaults.sundayNoBbq')}
+                </p>
+              </div>
             </div>
           </div>
         </div>

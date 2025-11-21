@@ -133,10 +133,12 @@
       "mealDefaults": {
         "title": "Default Meal Counts",
         "description": "Set default meal quantities for new event subscriptions. These values will be pre-filled but can be adjusted per subscription.",
+        "saturday": "Saturday",
+        "sunday": "Sunday",
         "breakfast": "Breakfast",
         "lunch": "Lunch",
         "bbq": "BBQ",
-        "helperText": "Default per subscription"
+        "sundayNoBbq": "No BBQ on Sunday"
       },
       "notifications": {
         "title": "Notification Preferences",

@@ -133,10 +133,12 @@
       "mealDefaults": {
         "title": "Standaard Maaltijdaantallen",
         "description": "Stel standaard maaltijdhoeveelheden in voor nieuwe evenementinschrijvingen. Deze waarden worden vooraf ingevuld maar kunnen per inschrijving worden aangepast.",
+        "saturday": "Zaterdag",
+        "sunday": "Zondag",
         "breakfast": "Ontbijt",
         "lunch": "Lunch",
         "bbq": "BBQ",
-        "helperText": "Standaard per inschrijving"
+        "sundayNoBbq": "Geen BBQ op zondag"
       },
       "notifications": {
         "title": "Meldingsvoorkeuren",
