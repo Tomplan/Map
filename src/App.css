@@ -71,6 +71,11 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* Adjust minimap position to be above bottom navigation bar */
+.leaflet-bottom.leaflet-right {
+  bottom: 80px !important; /* Move up to avoid bottom nav (64px + padding) */
+}
+
 /* Hide map controls and overlays during print (global fallback) */
 @media print {
   .leaflet-control,

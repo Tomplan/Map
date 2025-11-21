@@ -34,9 +34,39 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       });
   }, [markersState]);
 
+  // Group exhibitors by company (combine multiple booths)
+  const groupedExhibitors = useMemo(() => {
+    const grouped = {};
+    exhibitors.forEach(marker => {
+      if (marker.companyId) {
+        if (!grouped[marker.companyId]) {
+          grouped[marker.companyId] = {
+            ...marker,
+            boothNumbers: [marker.glyph],
+            markerIds: [marker.id]
+          };
+        } else {
+          grouped[marker.companyId].boothNumbers.push(marker.glyph);
+          grouped[marker.companyId].markerIds.push(marker.id);
+        }
+      }
+    });
+    
+    // Sort booth numbers within each company
+    Object.values(grouped).forEach(company => {
+      company.boothNumbers.sort((a, b) => {
+        const numA = parseInt(a) || 0;
+        const numB = parseInt(b) || 0;
+        return numA - numB;
+      });
+    });
+    
+    return Object.values(grouped);
+  }, [exhibitors]);
+
   // Apply search and favorites filters
   const filteredExhibitors = useMemo(() => {
-    let filtered = exhibitors;
+    let filtered = groupedExhibitors;
 
     // Apply favorites filter
     if (showFavoritesOnly) {
@@ -50,16 +80,16 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       const lowerSearch = searchTerm.toLowerCase();
       filtered = filtered.filter((exhibitor) =>
         exhibitor.name?.toLowerCase().includes(lowerSearch) ||
-        exhibitor.glyph?.toLowerCase().includes(lowerSearch)
+        exhibitor.boothNumbers?.some(booth => booth?.toLowerCase().includes(lowerSearch))
       );
     }
 
     return filtered;
-  }, [exhibitors, searchTerm, showFavoritesOnly, isFavorite]);
+  }, [groupedExhibitors, searchTerm, showFavoritesOnly, isFavorite]);
 
-  const handleExhibitorClick = (markerId) => {
-    // Navigate to map and focus on this marker (opens popup/bottom sheet)
-    navigate(`/map?focus=${markerId}`);
+  const handleExhibitorClick = (markerIds) => {
+    // Navigate to map and focus on first booth marker (opens popup/bottom sheet)
+    navigate(`/map?focus=${markerIds[0]}`);
   };
 
   return (
@@ -120,8 +150,8 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           <div className="space-y-3">
             {filteredExhibitors.map((exhibitor) => (
               <div
-                key={exhibitor.id}
-                onClick={() => handleExhibitorClick(exhibitor.id)}
+                key={exhibitor.companyId || exhibitor.id}
+                onClick={() => handleExhibitorClick(exhibitor.markerIds)}
                 className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4"
               >
                 <div className="flex items-center gap-4">
@@ -152,12 +182,12 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                       )}
                     </div>
 
-                    {/* Booth Number */}
-                    {exhibitor.glyph && (
+                    {/* Booth Number(s) */}
+                    {exhibitor.boothNumbers && exhibitor.boothNumbers.length > 0 && (
                       <div className="flex items-center gap-1 mt-1">
                         <Icon path={mdiMapMarker} size={0.7} className="text-orange-600" />
                         <span className="text-sm font-medium text-orange-600">
-                          {t('exhibitorPage.booth')} {exhibitor.glyph}
+                          {t('exhibitorPage.booth')} {exhibitor.boothNumbers.join(', ')}
                         </span>
                       </div>
                     )}
