@@ -259,9 +259,11 @@
     "days": "Days",
     "viewMap": "View Interactive Map",
     "openingHours": "Opening Hours",
+    "openingHoursInfo": "Saturday 10:00 - 17:00\nSunday 10:00 - 16:00",
     "location": "Location",
+    "locationInfo": "Evenementenlocatie WaterGoed\nTielsestaat 129, 6657 AC Valburg",
     "parking": "Parking",
-    "parkingInfo": "Free parking available on site",
+    "parkingInfo": "Free parking available at Strandpark Slijk-Ewijk",
     "wifi": "WiFi",
     "wifiInfo": "Network: Event-Guest",
     "phaseNote": "<strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities."
