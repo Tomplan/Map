@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath } from '../utils/getLogoPath';
+import LanguageToggle from './LanguageToggle';
 
 /**
  * HomePage - Landing page for event visitors
@@ -25,6 +26,10 @@ export default function HomePage({ selectedYear, branding }) {
       {/* Hero Section */}
       <div className="bg-white shadow-sm">
         <div className="max-w-screen-xl mx-auto px-4 py-8 text-center">
+          {/* Language Toggle - Top Right */}
+          <div className="flex justify-end mb-4">
+            <LanguageToggle />
+          </div>
           {/* Logo */}
           {organizationLogo && (
             <div className="mb-6">
