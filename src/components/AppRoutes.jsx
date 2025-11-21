@@ -4,6 +4,7 @@ import ErrorBoundary from './ErrorBoundary';
 import OfflineStatus from './OfflineStatus';
 import BrandingBar from './BrandingBar';
 import AdminLogin from './AdminLogin';
+import ResetPassword from './ResetPassword';
 import StorageTestPage from './StorageTestPage';
 import TabNavigation from './TabNavigation';
 import HomePage from './HomePage';
@@ -80,6 +81,17 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           <VisitorLayout>
             <EventSchedule selectedYear={selectedYear} />
           </VisitorLayout>
+        }
+      />
+      {/* Password Reset Route - No auth required */}
+      <Route
+        path="/reset-password"
+        element={
+          <ErrorBoundary>
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+              <ResetPassword branding={branding} />
+            </Suspense>
+          </ErrorBoundary>
         }
       />
       {/* Admin Routes - Conditional rendering based on auth */}
