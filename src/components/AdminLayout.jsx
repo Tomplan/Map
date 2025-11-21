@@ -11,9 +11,11 @@ import {
   mdiLogout,
   mdiChevronLeft,
   mdiChevronRight,
+  mdiHelpCircleOutline,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import { supabase } from '../supabaseClient';
+import HelpPanel from './HelpPanel';
 
 /**
  * AdminLayout - Main layout for admin panel with sidebar navigation
@@ -32,6 +34,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     const saved = localStorage.getItem('adminSidebarCollapsed');
     return saved === 'true';
   });
+
+  // Help panel state
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // Persist collapse state
   useEffect(() => {
@@ -175,6 +180,18 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
           )}
         </div>
 
+        {/* Help Button */}
+        <div className="p-2 border-t border-gray-200">
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-blue-600 hover:bg-blue-50 transition-colors font-medium`}
+            title={isCollapsed ? 'Help' : ''}
+          >
+            <Icon path={mdiHelpCircleOutline} size={1} />
+            {!isCollapsed && <span>Help</span>}
+          </button>
+        </div>
+
         {/* Logout */}
         <div className="p-2 border-t border-gray-200">
           <button
@@ -194,6 +211,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
           <Outlet />
         </div>
       </main>
+
+      {/* Help Panel */}
+      <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 }
