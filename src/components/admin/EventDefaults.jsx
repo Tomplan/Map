@@ -39,10 +39,10 @@ export default function EventDefaults() {
     setError(null);
 
     try {
-      // Try to load from organization_profile table
+      // Try to load from Organization_Profile table
       // Note: If columns don't exist yet, this will fail gracefully and use defaults
       const { data, error: fetchError } = await supabase
-        .from('organization_profile')
+        .from('Organization_Profile')
         .select('*')
         .single();
 
@@ -94,7 +94,7 @@ export default function EventDefaults() {
 
       // First, check if the columns exist by trying to select them
       const { error: checkError } = await supabase
-        .from('organization_profile')
+        .from('Organization_Profile')
         .select('default_breakfast')
         .limit(1);
 
@@ -105,9 +105,9 @@ export default function EventDefaults() {
         return;
       }
 
-      // Upsert to organization_profile
+      // Upsert to Organization_Profile
       const { error: upsertError } = await supabase
-        .from('organization_profile')
+        .from('Organization_Profile')
         .upsert({
           id: 1, // Single row for organization
           default_breakfast: defaultBreakfast,
