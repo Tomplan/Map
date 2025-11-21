@@ -44,7 +44,14 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   }, [isCollapsed]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    try {
+      // Use local scope to avoid 403 errors with global logout
+      await supabase.auth.signOut({ scope: 'local' });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Continue with redirect even if signOut fails
+    }
+    
     // Redirect to admin login with proper base URL
     const base = import.meta.env.BASE_URL || '/';
     const isProd = import.meta.env.PROD;
