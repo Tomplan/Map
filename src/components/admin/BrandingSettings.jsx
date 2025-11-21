@@ -119,20 +119,22 @@ export default function BrandingSettings() {
             />
           </div>
           {/* Color preview */}
-          <div className="mt-3 p-4 rounded-lg border-2 border-gray-300">
-            <div className="flex items-center gap-3">
-              <div 
-                className="w-16 h-16 rounded-lg border-2" 
-                style={{ backgroundColor: themeColor, borderColor: themeColor }}
-              />
-              <div>
-                <p className="font-bold" style={{ color: themeColor }}>
-                  Sample Header Text
-                </p>
-                <p className="text-sm text-gray-600">
-                  This is how your theme color will appear
-                </p>
-              </div>
+          <div className="mt-3 space-y-2">
+            <div className="p-4 rounded-lg border-2" style={{ backgroundColor: themeColor, borderColor: themeColor }}>
+              <p className="font-bold text-white text-lg">
+                Preview Text (White on Color)
+              </p>
+              <p className="text-white text-sm opacity-90">
+                The quick brown fox jumps over the lazy dog
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border-2 border-gray-300 bg-white">
+              <p className="font-bold text-lg" style={{ color: themeColor }}>
+                Preview Text (Color on White)
+              </p>
+              <p className="text-sm" style={{ color: themeColor }}>
+                The quick brown fox jumps over the lazy dog
+              </p>
             </div>
           </div>
         </div>
@@ -161,11 +163,11 @@ export default function BrandingSettings() {
             <option value="Impact, sans-serif">Impact</option>
           </select>
           {/* Font preview */}
-          <div className="mt-3 p-4 rounded-lg border border-gray-300 bg-gray-50" style={{ fontFamily }}>
-            <p className="text-lg">
+          <div className="mt-3 p-4 rounded-lg border border-gray-300 bg-white" style={{ fontFamily }}>
+            <p className="text-lg text-gray-900 font-semibold">
               The quick brown fox jumps over the lazy dog
             </p>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-700 mt-1">
               1234567890 !@#$%^&*()
             </p>
           </div>
