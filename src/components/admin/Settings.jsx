@@ -5,7 +5,7 @@ import {
   mdiAccount,
   mdiDomain,
   mdiPalette,
-  mdiMapCog,
+  mdiMapMarker,
   mdiCog,
   mdiAlertCircle,
 } from '@mdi/js';
@@ -47,7 +47,7 @@ export default function Settings() {
     {
       id: 'map-defaults',
       label: t('settings.mapDefaults.title'),
-      icon: mdiMapCog,
+      icon: mdiMapMarker,
       roles: ['super_admin', 'system_manager'],
       component: <MapDefaultsPlaceholder />,
     },
