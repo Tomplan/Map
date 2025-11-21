@@ -13,6 +13,10 @@ DROP POLICY IF EXISTS "Users read own role or admins read all" ON public.user_ro
 DROP POLICY IF EXISTS "Users update own or admins update any" ON public.user_roles;
 DROP POLICY IF EXISTS "Super admins can delete user roles" ON public.user_roles;
 
+-- Drop existing functions if they exist
+DROP FUNCTION IF EXISTS public.get_user_roles_with_email();
+DROP FUNCTION IF EXISTS public.current_user_role();
+
 -- Create a helper function that bypasses RLS to check admin status
 -- SECURITY DEFINER allows it to read user_roles without triggering policies
 CREATE OR REPLACE FUNCTION public.current_user_role()
