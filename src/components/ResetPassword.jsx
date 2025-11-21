@@ -31,11 +31,6 @@ export default function ResetPassword({ branding }) {
   // Check for valid reset token
   useEffect(() => {
     const checkResetToken = async () => {
-      // First, give Supabase time to process the token from URL
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
       // Handle HashRouter double-hash issue: /#/reset-password#access_token=...
       // Need to parse parameters from after the SECOND # symbol
       const fullHash = window.location.hash; // e.g., "#/reset-password#access_token=..."
@@ -51,31 +46,41 @@ export default function ResetPassword({ branding }) {
         urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
       }
       
+      const accessToken = urlParams.get('access_token');
+      const refreshToken = urlParams.get('refresh_token');
       const errorParam = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
       
-      // Debug logging
-      console.log('🔍 Reset Password Debug:', {
-        fullHash,
-        hasSession: !!session,
-        errorParam,
-        errorDescription,
-        accessToken: urlParams.get('access_token')?.substring(0, 20) + '...',
-        expiresAt: urlParams.get('expires_at'),
-      });
-
-      if (errorParam && !session) {
-        // Error in URL and no valid session = expired/invalid token
+      // Check for error parameters first
+      if (errorParam) {
         if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
           setTokenError(t('resetPassword.errors.tokenExpired'));
         } else {
           setTokenError(t('resetPassword.errors.invalidToken'));
         }
-      } else if (!session) {
-        // No error param but also no session = invalid token
+        return;
+      }
+      
+      // If we have tokens in URL, exchange them for a session
+      if (accessToken && refreshToken) {
+        const { data: { session }, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+        
+        if (error || !session) {
+          console.error('Failed to set session:', error);
+          setTokenError(t('resetPassword.errors.invalidToken'));
+        }
+        // If successful, session is now set and form will be shown
+        return;
+      }
+      
+      // No tokens in URL, check if we already have a session from previous page load
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
         setTokenError(t('resetPassword.errors.invalidToken'));
       }
-      // If we have a session, everything is good - show the form
     };
 
     checkResetToken();
