@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath } from '../utils/getLogoPath';
 import LanguageToggle from './LanguageToggle';
@@ -11,6 +12,7 @@ import LanguageToggle from './LanguageToggle';
  */
 export default function HomePage({ selectedYear, branding }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
 
   // Placeholder - will be replaced with real data in Phase 2
@@ -43,7 +45,7 @@ export default function HomePage({ selectedYear, branding }) {
 
           {/* Welcome */}
           <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: branding?.fontFamily }}>
-            Welcome to {eventInfo.name}
+            {t('homePage.welcomeTo')} {eventInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-6">
             {eventInfo.date}
@@ -53,11 +55,11 @@ export default function HomePage({ selectedYear, branding }) {
           <div className="flex justify-center gap-6 mb-8">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">67</div>
-              <div className="text-sm text-gray-600">Exhibitors</div>
+              <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">2</div>
-              <div className="text-sm text-gray-600">Days</div>
+              <div className="text-sm text-gray-600">{t('homePage.days')}</div>
             </div>
           </div>
 
@@ -66,7 +68,7 @@ export default function HomePage({ selectedYear, branding }) {
             onClick={() => navigate('/map')}
             className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-3 rounded-lg text-lg transition-colors"
           >
-            View Interactive Map
+            {t('homePage.viewMap')}
           </button>
         </div>
       </div>
@@ -78,7 +80,7 @@ export default function HomePage({ selectedYear, branding }) {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <span>🕒</span>
-              Opening Hours
+              {t('homePage.openingHours')}
             </h3>
             <p className="text-gray-700">{eventInfo.hours}</p>
           </div>
@@ -87,7 +89,7 @@ export default function HomePage({ selectedYear, branding }) {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <span>📍</span>
-              Location
+              {t('homePage.location')}
             </h3>
             <p className="text-gray-700">{eventInfo.location}</p>
           </div>
@@ -96,26 +98,24 @@ export default function HomePage({ selectedYear, branding }) {
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <span>🅿️</span>
-              Parking
+              {t('homePage.parking')}
             </h3>
-            <p className="text-gray-700">Free parking available on site</p>
+            <p className="text-gray-700">{t('homePage.parkingInfo')}</p>
           </div>
 
           {/* WiFi - Placeholder */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
               <span>📶</span>
-              WiFi
+              {t('homePage.wifi')}
             </h3>
-            <p className="text-gray-700">Network: Event-Guest</p>
+            <p className="text-gray-700">{t('homePage.wifiInfo')}</p>
           </div>
         </div>
 
         {/* Phase 2 Notice */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            📝 <strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities.
-          </p>
+          <p className="text-sm text-blue-800" dangerouslySetInnerHTML={{ __html: `📝 ${t('homePage.phaseNote')}` }} />
         </div>
       </div>
     </div>
