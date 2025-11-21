@@ -51,6 +51,17 @@ export default function useEventSubscriptions(eventYear) {
         .eq('id', companyId)
         .single();
 
+      // Fetch organization defaults for meal counts
+      const { data: orgProfile } = await supabase
+        .from('Organization_Profile')
+        .select('default_breakfast, default_lunch, default_bbq')
+        .eq('id', 1)
+        .single();
+
+      const defaultBreakfast = orgProfile?.default_breakfast || 0;
+      const defaultLunch = orgProfile?.default_lunch || 0;
+      const defaultBbq = orgProfile?.default_bbq || 0;
+
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
         .insert({
@@ -61,11 +72,11 @@ export default function useEventSubscriptions(eventYear) {
           email: subscriptionData.email || company?.email || '',
           booth_count: subscriptionData.booth_count || 1,
           area: subscriptionData.area || '',
-          breakfast_sat: subscriptionData.breakfast_sat || 0,
-          lunch_sat: subscriptionData.lunch_sat || 0,
-          bbq_sat: subscriptionData.bbq_sat || 0,
-          breakfast_sun: subscriptionData.breakfast_sun || 0,
-          lunch_sun: subscriptionData.lunch_sun || 0,
+          breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfast,
+          lunch_sat: subscriptionData.lunch_sat ?? defaultLunch,
+          bbq_sat: subscriptionData.bbq_sat ?? defaultBbq,
+          breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfast,
+          lunch_sun: subscriptionData.lunch_sun ?? defaultLunch,
           coins: subscriptionData.coins || 0,
           notes: subscriptionData.notes || '',
           created_by,
