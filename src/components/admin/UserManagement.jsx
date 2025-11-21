@@ -41,12 +41,10 @@ export default function UserManagement() {
       setLoading(true);
       setError(null);
 
-      // Fetch all users from user_roles_with_email view
-      // This view joins user_roles with auth.users to get emails
+      // Call the function that returns user roles with emails
+      // This function uses SECURITY DEFINER to access auth.users
       const { data: usersData, error: usersError } = await supabase
-        .from('user_roles_with_email')
-        .select('user_id, role, email, created_at, updated_at, last_sign_in_at')
-        .order('created_at', { ascending: false });
+        .rpc('get_user_roles_with_email');
 
       if (usersError) {
         throw usersError;

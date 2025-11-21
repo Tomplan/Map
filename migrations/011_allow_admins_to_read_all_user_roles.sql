@@ -62,31 +62,46 @@ USING (
   public.current_user_role() = 'super_admin'
 );
 
--- Create a view that joins user_roles with auth.users to get emails
--- This view is accessible to admins only
-CREATE OR REPLACE VIEW public.user_roles_with_email AS
-SELECT 
-  ur.user_id,
-  ur.role,
-  ur.created_at,
-  ur.updated_at,
-  au.email,
-  au.last_sign_in_at,
-  au.created_at as user_created_at
-FROM public.user_roles ur
-LEFT JOIN auth.users au ON ur.user_id = au.id;
-
--- Grant access to the view
-GRANT SELECT ON public.user_roles_with_email TO authenticated;
-
--- Enable RLS on the view
-ALTER VIEW public.user_roles_with_email SET (security_invoker = on);
-
--- Create policy for the view - same as user_roles table
-CREATE POLICY "Users read own or admins read all emails"
-ON public.user_roles_with_email
-FOR SELECT
-USING (
-  auth.uid() = user_id 
-  OR public.current_user_role() IN ('super_admin', 'system_manager')
-);
+-- Create a function that returns user roles with emails
+-- SECURITY DEFINER allows it to read auth.users
+CREATE OR REPLACE FUNCTION public.get_user_roles_with_email()
+RETURNS TABLE (
+  user_id UUID,
+  role TEXT,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ,
+  email TEXT,
+  last_sign_in_at TIMESTAMPTZ
+) AS $$
+BEGIN
+  -- Check if user is admin
+  IF public.current_user_role() IN ('super_admin', 'system_manager') THEN
+    -- Return all users with emails
+    RETURN QUERY
+    SELECT 
+      ur.user_id,
+      ur.role,
+      ur.created_at,
+      ur.updated_at,
+      au.email,
+      au.last_sign_in_at
+    FROM public.user_roles ur
+    LEFT JOIN auth.users au ON ur.user_id = au.id
+    ORDER BY ur.created_at DESC;
+  ELSE
+    -- Return only current user's data
+    RETURN QUERY
+    SELECT 
+      ur.user_id,
+      ur.role,
+      ur.created_at,
+      ur.updated_at,
+      au.email,
+      au.last_sign_in_at
+    FROM public.user_roles ur
+    LEFT JOIN auth.users au ON ur.user_id = au.id
+    WHERE ur.user_id = auth.uid();
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public;
