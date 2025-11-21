@@ -27,19 +27,27 @@ export default function ResetPassword({ branding }) {
     }
   }, [error]);
 
-  // Check if user has valid reset token
+  // Check for errors in URL (expired token, etc.)
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
+    const errorParam = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+
+    if (errorParam) {
+      if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
+        setError(t('resetPassword.errors.tokenExpired'));
+      } else {
+        setError(t('resetPassword.errors.invalidToken'));
+      }
+      return;
+    }
+
+    // Check if user has valid reset token
     const checkResetToken = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        // No valid token, redirect to login
+        // No valid token
         setError(t('resetPassword.errors.invalidToken'));
-        setTimeout(() => {
-          const isProd = import.meta.env.PROD;
-          const base = import.meta.env.BASE_URL || '/';
-          const baseUrl = base.endsWith('/') ? base : `${base}/`;
-          window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
-        }, 3000);
       }
     };
 
@@ -118,6 +126,38 @@ export default function ResetPassword({ branding }) {
               </div>
               <p className="text-sm ml-8">{t('resetPassword.redirecting')}</p>
             </div>
+          ) : error ? (
+            <div className="space-y-4">
+              <div
+                ref={errorRef}
+                className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg shadow-sm"
+                role="alert"
+                aria-live="assertive"
+                tabIndex={-1}
+              >
+                <div className="flex items-start">
+                  <span className="text-xl mr-3">⚠</span>
+                  <div className="flex-1">
+                    <p className="font-semibold mb-1">{t('resetPassword.errors.linkExpiredTitle')}</p>
+                    <p className="text-sm">{error}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const isProd = import.meta.env.PROD;
+                    const base = import.meta.env.BASE_URL || '/';
+                    const baseUrl = base.endsWith('/') ? base : `${base}/`;
+                    window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
+                  }}
+                  className="flex-1 btn-primary"
+                >
+                  {t('resetPassword.requestNewLink')}
+                </button>
+              </div>
+            </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
@@ -164,20 +204,7 @@ export default function ResetPassword({ branding }) {
                 />
               </div>
 
-              {error && (
-                <div
-                  ref={errorRef}
-                  className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg shadow-sm"
-                  role="alert"
-                  aria-live="assertive"
-                  tabIndex={-1}
-                >
-                  <div className="flex items-center">
-                    <span className="text-xl mr-3">⚠</span>
-                    <span className="text-sm">{error}</span>
-                  </div>
-                </div>
-              )}
+
 
               <button
                 type="submit"

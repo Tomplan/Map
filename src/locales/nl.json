@@ -51,8 +51,11 @@
     "success": "Wachtwoord succesvol bijgewerkt!",
     "redirecting": "Doorverwijzen naar inlogpagina...",
     "backToLogin": "Terug naar inloggen",
+    "requestNewLink": "Nieuwe Reset Link Aanvragen",
     "errors": {
-      "invalidToken": "Ongeldige of verlopen reset link. Doorverwijzen naar login...",
+      "linkExpiredTitle": "Reset Link Verlopen",
+      "invalidToken": "Deze reset link is ongeldig of verlopen. Vraag een nieuwe aan.",
+      "tokenExpired": "Deze reset link is verlopen. Reset links zijn slechts 60 seconden geldig nadat ze zijn verzonden. Ga terug naar de inlogpagina en vraag een nieuwe reset link aan.",
       "passwordTooShort": "Wachtwoord moet minimaal 6 tekens zijn",
       "passwordMismatch": "Wachtwoorden komen niet overeen",
       "updateFailed": "Kon wachtwoord niet bijwerken. Probeer het opnieuw."

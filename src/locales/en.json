@@ -51,8 +51,11 @@
     "success": "Password updated successfully!",
     "redirecting": "Redirecting to login page...",
     "backToLogin": "Back to login",
+    "requestNewLink": "Request New Reset Link",
     "errors": {
-      "invalidToken": "Invalid or expired reset link. Redirecting to login...",
+      "linkExpiredTitle": "Reset Link Expired",
+      "invalidToken": "This reset link is invalid or has expired. Please request a new one.",
+      "tokenExpired": "This reset link has expired. Reset links are only valid for 60 seconds after being sent. Please go back to the login page and request a new reset link.",
       "passwordTooShort": "Password must be at least 6 characters",
       "passwordMismatch": "Passwords do not match",
       "updateFailed": "Failed to update password. Please try again."
