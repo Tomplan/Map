@@ -119,10 +119,21 @@ export default function BrandingSettings() {
             />
           </div>
           {/* Color preview */}
-          <div className="mt-3 p-4 rounded-lg border-2" style={{ backgroundColor: themeColor, borderColor: themeColor }}>
-            <p className="font-bold" style={{ color: themeColor === '#ffffff' ? '#000' : '#fff' }}>
-              Preview Text
-            </p>
+          <div className="mt-3 p-4 rounded-lg border-2 border-gray-300">
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-16 h-16 rounded-lg border-2" 
+                style={{ backgroundColor: themeColor, borderColor: themeColor }}
+              />
+              <div>
+                <p className="font-bold" style={{ color: themeColor }}>
+                  Sample Header Text
+                </p>
+                <p className="text-sm text-gray-600">
+                  This is how your theme color will appear
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
