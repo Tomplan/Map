@@ -41,29 +41,35 @@ export default function UserManagement() {
       setLoading(true);
       setError(null);
 
-      // Get current user
+      // Fetch all users from user_roles table
+      // This table stores all authenticated users with their roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role, created_at, updated_at')
+        .order('created_at', { ascending: false });
+
+      if (rolesError) {
+        throw rolesError;
+      }
+
+      // Get current user to display their email
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-
-      // Note: Supabase doesn't provide a direct API to list all auth users from client
-      // This would typically require a server-side function or Supabase Admin API
-      // For now, we'll show a message about this limitation
       
-      // Placeholder: In production, you'd call a server function that uses Supabase Admin API
-      // const response = await fetch('/api/admin/users');
-      // const data = await response.json();
-      // setUsers(data);
+      // Build user list with available information
+      const userList = (userRoles || []).map((userRole) => {
+        const isCurrentUser = currentUser?.id === userRole.user_id;
+        
+        return {
+          id: userRole.user_id,
+          email: isCurrentUser ? currentUser.email : `user-${userRole.user_id.substring(0, 8)}...`,
+          role: userRole.role,
+          created_at: userRole.created_at,
+          last_sign_in_at: isCurrentUser ? currentUser.last_sign_in_at : null,
+          isCurrentUser,
+        };
+      });
 
-      // Mock data for demonstration (replace with actual API call)
-      setUsers([
-        {
-          id: currentUser?.id || '1',
-          email: currentUser?.email || 'admin@example.com',
-          role: currentUser?.user_metadata?.role || 'super_admin',
-          created_at: currentUser?.created_at || new Date().toISOString(),
-          last_sign_in_at: currentUser?.last_sign_in_at || new Date().toISOString(),
-        },
-      ]);
-
+      setUsers(userList);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -95,7 +101,7 @@ export default function UserManagement() {
       //   redirectTo: redirectUrl,
       // });
 
-      // Workaround: Create user account and send password reset email
+      // Create user account and send password reset email
       const tempPassword = Math.random().toString(36).slice(-12) + 'A1!'; // Random temp password
       
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -109,6 +115,21 @@ export default function UserManagement() {
 
       if (signUpError) {
         throw signUpError;
+      }
+
+      // Add user to user_roles table
+      if (signUpData?.user?.id) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: signUpData.user.id,
+            role: inviteRole,
+          });
+
+        if (roleError) {
+          console.warn('Failed to add user to user_roles:', roleError);
+          // Don't throw - the user was created successfully
+        }
       }
 
       // Send password reset email so they can set their own password
@@ -142,17 +163,22 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Update user metadata with new role
-      // Note: This requires Supabase Admin API server-side
-      // For now, show limitation message
-      
-      // Proper implementation:
-      // await fetch('/api/admin/users/update-role', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ userId, role: newRole }),
-      // });
+      // Update role in user_roles table
+      const { error: updateError } = await supabase
+        .from('user_roles')
+        .update({ 
+          role: newRole,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
 
-      setError(t('settings.userManagement.errors.requiresServerApi'));
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Refresh user list
+      await fetchUsers();
+      setEditingUser(null);
       
     } catch (err) {
       console.error('Error updating role:', err);
@@ -168,16 +194,19 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Delete user via Supabase Admin API
-      // Note: This requires server-side implementation
-      
-      // Proper implementation:
-      // await fetch('/api/admin/users/delete', {
-      //   method: 'DELETE',
-      //   body: JSON.stringify({ userId }),
-      // });
+      // Delete from user_roles table
+      // This will also trigger auth.users deletion due to ON DELETE CASCADE
+      const { error: deleteError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userId);
 
-      setError(t('settings.userManagement.errors.requiresServerApi'));
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      // Refresh user list
+      await fetchUsers();
 
     } catch (err) {
       console.error('Error deleting user:', err);
