@@ -40,16 +40,23 @@ export default function HomePage({ selectedYear, branding }) {
             </div>
           )}
 
-          {/* Welcome */}
-          <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: branding?.fontFamily }}>
-            {t('homePage.welcomeTo')} {eventInfo.name}
+          {/* Subtitle */}
+          <p className="text-sm text-orange-600 mb-2" style={{ fontFamily: branding?.fontFamily }}>
+            {t('homePage.subtitle')}
+          </p>
+          
+          {/* Main Title */}
+          <h1 className="text-4xl font-bold text-orange-600 mb-4" style={{ fontFamily: branding?.fontFamily }}>
+            {t('homePage.title')}
           </h1>
+          
+          {/* Event Date */}
           <p className="text-lg text-gray-600 mb-6">
             {t('homePage.eventDate')}
           </p>
 
           {/* Quick Stats - Placeholder */}
-          <div className="flex justify-center gap-6 mb-8">
+          <div className="flex justify-center gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">67</div>
               <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
@@ -59,14 +66,6 @@ export default function HomePage({ selectedYear, branding }) {
               <div className="text-sm text-gray-600">{t('homePage.days')}</div>
             </div>
           </div>
-
-          {/* CTA Button */}
-          <button
-            onClick={() => navigate('/map')}
-            className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-3 rounded-lg text-lg transition-colors"
-          >
-            {t('homePage.viewMap')}
-          </button>
         </div>
       </div>
 

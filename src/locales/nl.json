@@ -253,11 +253,11 @@
     }
   },
   "homePage": {
-    "welcomeTo": "Welkom bij",
+    "subtitle": "Jouw Volgende Avontuur Start Hier!",
+    "title": "Dé 4x4 Vakantiebeurs",
     "eventDate": "10-11 oktober 2026",
     "exhibitors": "Exposanten",
     "days": "Dagen",
-    "viewMap": "Bekijk Interactieve Kaart",
     "openingHours": "Openingstijden",
     "openingHoursInfo": "Zaterdag 10:00 - 17:00 uur\nZondag 10:00 - 16:00 uur",
     "location": "Locatie",
