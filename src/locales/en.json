@@ -57,5 +57,33 @@
       "passwordMismatch": "Passwords do not match",
       "updateFailed": "Failed to update password. Please try again."
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage system configuration and preferences",
+    "userManagement": {
+      "title": "User Management",
+      "description": "Manage admin users, roles, and permissions"
+    },
+    "organization": {
+      "title": "Organization Profile",
+      "description": "Organization name, logo, and contact information"
+    },
+    "branding": {
+      "title": "Branding Settings",
+      "description": "Colors, themes, and visual customization"
+    },
+    "mapDefaults": {
+      "title": "Map Defaults",
+      "description": "Default map layers, zoom levels, and map settings"
+    },
+    "eventDefaults": {
+      "title": "Event Defaults",
+      "description": "Default meal counts, booth sizes, and event preferences"
+    },
+    "advanced": {
+      "title": "Advanced Settings",
+      "description": "System maintenance, data management, and danger zone"
+    }
   }
 }

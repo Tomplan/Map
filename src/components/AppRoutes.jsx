@@ -17,6 +17,7 @@ import MapManagement from './admin/MapManagement';
 import CompaniesTab from './admin/CompaniesTab';
 import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import AssignmentsTab from './admin/AssignmentsTab';
+import Settings from './admin/Settings';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
@@ -132,15 +133,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           path="assignments"
           element={<AssignmentsTab selectedYear={selectedYear} />}
         />
-        <Route
-          path="settings"
-          element={
-            <div className="bg-white rounded-lg shadow p-6">
-              <h1 className="text-2xl font-bold mb-4">Settings</h1>
-              <p className="text-gray-600">Settings panel coming soon...</p>
-            </div>
-          }
-        />
+        <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="/storage-test" element={<StorageTestPage />} />
 

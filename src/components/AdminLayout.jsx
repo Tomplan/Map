@@ -89,7 +89,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       path: '/admin/settings',
       label: 'Settings',
       icon: mdiCog,
-      roles: ['super_admin'],
+      roles: ['super_admin', 'system_manager', 'event_manager'],
     },
   ];
 
