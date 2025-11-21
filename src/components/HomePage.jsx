@@ -18,7 +18,6 @@ export default function HomePage({ selectedYear, branding }) {
   // Placeholder - will be replaced with real data in Phase 2
   const eventInfo = {
     name: branding?.eventName || '4x4 Vakantiebeurs',
-    date: 'October 10-11, 2026',
     location: 'WaterGoed, BeNeLux',
     hours: '10:00 - 18:00',
   };
@@ -48,7 +47,7 @@ export default function HomePage({ selectedYear, branding }) {
             {t('homePage.welcomeTo')} {eventInfo.name}
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            {eventInfo.date}
+            {t('homePage.eventDate')}
           </p>
 
           {/* Quick Stats - Placeholder */}
