@@ -125,7 +125,25 @@
     },
     "branding": {
       "title": "Branding Settings",
-      "description": "Colors, themes, and visual customization"
+      "description": "Configure visual branding (colors, fonts)",
+      "note": "Organization name and logo are managed in the Companies tab",
+      "loading": "Loading settings...",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "reset": "Reset to Defaults",
+      "saveSuccess": "Saved!",
+      "themeColor": {
+        "label": "Theme Color",
+        "description": "Primary color used throughout the application"
+      },
+      "fontFamily": {
+        "label": "Font Family",
+        "description": "Font used for headings and text"
+      },
+      "errors": {
+        "loadFailed": "Failed to load settings. Please try again.",
+        "saveFailed": "Failed to save settings. Please check your connection."
+      }
     },
     "mapDefaults": {
       "title": "Map Defaults",
