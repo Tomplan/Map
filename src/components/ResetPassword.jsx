@@ -53,6 +53,16 @@ export default function ResetPassword({ branding }) {
       
       const errorParam = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
+      
+      // Debug logging
+      console.log('🔍 Reset Password Debug:', {
+        fullHash,
+        hasSession: !!session,
+        errorParam,
+        errorDescription,
+        accessToken: urlParams.get('access_token')?.substring(0, 20) + '...',
+        expiresAt: urlParams.get('expires_at'),
+      });
 
       if (errorParam && !session) {
         // Error in URL and no valid session = expired/invalid token
