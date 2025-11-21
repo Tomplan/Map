@@ -51,7 +51,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           supabase.from('Markers_Content').select('*'),
           supabase.from('assignments').select(`
             *,
-            company:companies(id, name, logo, website, info)
+            company:companies(id, name, logo, website, info, company_translations(language_code, info))
           `).eq('event_year', targetYear),
           supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
         ]);

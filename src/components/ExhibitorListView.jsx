@@ -6,6 +6,8 @@ import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
+import { useTranslation } from 'react-i18next';
+import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
 
 /**
  * ExhibitorListView - List view of all exhibitors with favorites
@@ -13,6 +15,7 @@ import FavoriteButton from './FavoriteButton';
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
   const { organizationLogo } = useOrganizationLogo();
+  const { i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
@@ -167,11 +170,18 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                     </div>
 
                     {/* Info Preview */}
-                    {exhibitor.info && (
-                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                        {exhibitor.info}
-                      </p>
-                    )}
+                    {(() => {
+                      const translatedInfo = getTranslatedInfo(
+                        exhibitor.company_translations,
+                        i18n.language,
+                        exhibitor.info
+                      );
+                      return translatedInfo ? (
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                          {translatedInfo}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>

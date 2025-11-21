@@ -5,6 +5,7 @@ import useIsMobile from '../utils/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
+import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 
 // --- Tooltip for both cluster + special markers ---
 export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
@@ -45,6 +46,7 @@ export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
 export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
   const { isFavorite, toggleFavorite } = useFavoritesContext();
+  const translatedInfo = useTranslatedCompanyInfo(marker);
 
   return (
     <Popup
@@ -101,7 +103,7 @@ export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
               </a>
             </div>
           )}
-          {marker.info && (
+          {translatedInfo && (
             <div
               className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200"
               style={{
@@ -110,7 +112,7 @@ export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
                 whiteSpace: 'pre-wrap'
               }}
             >
-              {marker.info}
+              {translatedInfo}
             </div>
           )}
         </div>

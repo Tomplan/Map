@@ -32,7 +32,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           .select(
             `
           *,
-          company:companies(id, name, logo, website, info),
+          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:Markers_Core(id, lat, lng)
         `
           )
@@ -67,7 +67,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           .select(
             `
           *,
-          company:companies(id, name, logo, website, info),
+          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:Markers_Core(id, lat, lng)
         `
           )
@@ -95,7 +95,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info),
+          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:Markers_Core(id, lat, lng)
         `
         )
@@ -207,7 +207,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info)
+          company:companies(id, name, logo, website, info, company_translations(language_code, info))
         `
         )
         .eq('event_year', year)
