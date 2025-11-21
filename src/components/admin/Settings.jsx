@@ -11,6 +11,7 @@ import {
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
+import UserManagement from './UserManagement';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -28,7 +29,7 @@ export default function Settings() {
       label: t('settings.userManagement.title'),
       icon: mdiAccount,
       roles: ['super_admin', 'system_manager'],
-      component: <UserManagementPlaceholder />,
+      component: <UserManagement />,
     },
     {
       id: 'organization',

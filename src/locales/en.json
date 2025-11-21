@@ -63,7 +63,47 @@
     "subtitle": "Manage system configuration and preferences",
     "userManagement": {
       "title": "User Management",
-      "description": "Manage admin users, roles, and permissions"
+      "description": "Manage admin users, roles, and permissions",
+      "loading": "Loading users...",
+      "inviteUser": "Invite User",
+      "emailLabel": "Email Address",
+      "roleLabel": "User Role",
+      "sendInvite": "Send Invite",
+      "sending": "Sending...",
+      "cancel": "Cancel",
+      "editRole": "Edit role",
+      "deleteUser": "Delete user",
+      "confirmDelete": "Are you sure you want to delete {{email}}?",
+      "inviteSuccess": "Invitation sent!",
+      "inviteSuccessMessage": "User will receive an email to set their password.",
+      "table": {
+        "email": "Email",
+        "role": "Role",
+        "created": "Created",
+        "lastLogin": "Last Login",
+        "actions": "Actions"
+      },
+      "roles": {
+        "superAdmin": "Super Admin",
+        "systemManager": "System Manager",
+        "eventManager": "Event Manager"
+      },
+      "roleDescriptions": {
+        "super_admin": "Full access to all features",
+        "system_manager": "Map management and user administration",
+        "event_manager": "Companies, subscriptions, and assignments"
+      },
+      "implementation": {
+        "title": "Server-side API Required",
+        "message": "Full user management requires server-side implementation using Supabase Admin API. Currently showing mock data. Contact your developer to enable edit/delete functionality."
+      },
+      "errors": {
+        "fetchFailed": "Failed to load users",
+        "inviteFailed": "Failed to send invitation",
+        "updateFailed": "Failed to update user role",
+        "deleteFailed": "Failed to delete user",
+        "requiresServerApi": "This action requires server-side API implementation"
+      }
     },
     "organization": {
       "title": "Organization Profile",
