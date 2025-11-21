@@ -39,10 +39,11 @@ export default function EventDefaults() {
     setError(null);
 
     try {
-      // Load from organization_profile table
+      // Try to load from organization_profile table
+      // Note: If columns don't exist yet, this will fail gracefully and use defaults
       const { data, error: fetchError } = await supabase
         .from('organization_profile')
-        .select('default_breakfast, default_lunch, default_bbq, notification_settings')
+        .select('*')
         .single();
 
       if (fetchError) {
@@ -50,22 +51,28 @@ export default function EventDefaults() {
         if (fetchError.code === 'PGRST116') {
           console.log('No organization profile found, using defaults');
         } else {
-          throw fetchError;
+          console.warn('Error loading settings (columns may not exist yet):', fetchError);
+          // Don't throw - just use defaults if columns don't exist
         }
       } else if (data) {
-        setDefaultBreakfast(data.default_breakfast || 0);
-        setDefaultLunch(data.default_lunch || 0);
-        setDefaultBbq(data.default_bbq || 0);
+        // Check if columns exist and have values
+        setDefaultBreakfast(data.default_breakfast ?? 0);
+        setDefaultLunch(data.default_lunch ?? 0);
+        setDefaultBbq(data.default_bbq ?? 0);
 
-        // Parse notification settings from JSON
-        const notifSettings = data.notification_settings || {};
-        setEmailNotifications(notifSettings.emailNotifications ?? true);
-        setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
-        setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
+        // Parse notification settings from JSON (if column exists)
+        if (data.notification_settings) {
+          const notifSettings = typeof data.notification_settings === 'string' 
+            ? JSON.parse(data.notification_settings)
+            : data.notification_settings;
+          setEmailNotifications(notifSettings.emailNotifications ?? true);
+          setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
+          setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
+        }
       }
     } catch (err) {
-      console.error('Failed to load settings:', err);
-      setError(t('settings.eventDefaults.errors.loadFailed'));
+      console.warn('Failed to load settings (columns may not exist yet):', err);
+      // Don't show error to user - just use defaults
     } finally {
       setLoading(false);
     }
@@ -84,6 +91,19 @@ export default function EventDefaults() {
         newSubscriptionNotify,
         assignmentChangeNotify,
       };
+
+      // First, check if the columns exist by trying to select them
+      const { error: checkError } = await supabase
+        .from('organization_profile')
+        .select('default_breakfast')
+        .limit(1);
+
+      if (checkError && checkError.message?.includes('column')) {
+        // Columns don't exist yet - show helpful error
+        setError('Database columns not yet created. Please run the migration: ALTER TABLE organization_profile ADD COLUMN...');
+        console.error('EventDefaults columns missing. Run migration to add: default_breakfast, default_lunch, default_bbq, notification_settings');
+        return;
+      }
 
       // Upsert to organization_profile
       const { error: upsertError } = await supabase
