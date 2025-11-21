@@ -15,11 +15,9 @@ export default function HomePage({ selectedYear, branding }) {
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
 
-  // Placeholder - will be replaced with real data in Phase 2
+  // Event info from actual website
   const eventInfo = {
     name: branding?.eventName || '4x4 Vakantiebeurs',
-    location: 'WaterGoed, BeNeLux',
-    hours: '10:00 - 18:00',
   };
 
   return (
@@ -81,7 +79,7 @@ export default function HomePage({ selectedYear, branding }) {
               <span>🕒</span>
               {t('homePage.openingHours')}
             </h3>
-            <p className="text-gray-700">{eventInfo.hours}</p>
+            <p className="text-gray-700 whitespace-pre-line">{t('homePage.openingHoursInfo')}</p>
           </div>
 
           {/* Location */}
@@ -90,7 +88,7 @@ export default function HomePage({ selectedYear, branding }) {
               <span>📍</span>
               {t('homePage.location')}
             </h3>
-            <p className="text-gray-700">{eventInfo.location}</p>
+            <p className="text-gray-700 whitespace-pre-line">{t('homePage.locationInfo')}</p>
           </div>
 
           {/* Parking - Placeholder */}
