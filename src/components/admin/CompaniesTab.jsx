@@ -1,13 +1,83 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import useCompanies from '../../hooks/useCompanies';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import { useCompanyMutations } from '../../hooks/useCompanyMutations';
+import useCompanyTranslations from '../../hooks/useCompanyTranslations';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
 import LogoUploader from '../LogoUploader';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { useDialog } from '../../contexts/DialogContext';
+import ContentLanguageTabs, { LanguageIndicator } from './ContentLanguageTabs';
+import { useTranslation } from 'react-i18next';
+
+/**
+ * InfoFieldWithTranslations - Multi-language editing with auto-save
+ */
+function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChange }) {
+  const { translations, saveTranslation } = useCompanyTranslations(companyId);
+  const [localValue, setLocalValue] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Update local value when language or translations change
+  useEffect(() => {
+    setLocalValue(translations[editingLanguage] || '');
+  }, [editingLanguage, translations]);
+
+  const handleBlur = async () => {
+    if (localValue !== (translations[editingLanguage] || '')) {
+      setIsSaving(true);
+      try {
+        await saveTranslation(editingLanguage, localValue);
+      } catch (error) {
+        console.error('Failed to save translation:', error);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <ContentLanguageTabs
+        currentLanguage={editingLanguage}
+        onLanguageChange={onLanguageChange}
+        translations={translations}
+        className="mb-2"
+      />
+      <textarea
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        onBlur={handleBlur}
+        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+        rows={4}
+        placeholder={`Enter info in ${editingLanguage === 'nl' ? 'Dutch' : 'English'}...`}
+        disabled={isSaving}
+      />
+      {isSaving && (
+        <span className="text-xs text-gray-500 italic">Saving...</span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * InfoFieldDisplay - Shows translated content with language indicator
+ */
+function InfoFieldDisplay({ companyId, currentLanguage }) {
+  const { translations, getTranslation } = useCompanyTranslations(companyId);
+  const displayText = getTranslation(currentLanguage, 'nl');
+
+  return (
+    <div className="flex items-start gap-2">
+      <p className="line-clamp-3 whitespace-pre-wrap flex-1">
+        {displayText || <span className="text-gray-400 text-sm italic">Not set</span>}
+      </p>
+      <LanguageIndicator translations={translations} />
+    </div>
+  );
+}
 
 /**
  * CompaniesTab - Manage permanent company list
@@ -18,8 +88,10 @@ export default function CompaniesTab() {
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
+  const { i18n } = useTranslation();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
 
   // Use company mutations hook
   const {
@@ -301,17 +373,19 @@ export default function CompaniesTab() {
                     )}
                   </td>
 
-                  {/* Info */}
+                  {/* Info - Multi-language */}
                   <td className={`py-1 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
-                      <textarea
-                        value={editForm.info || ''}
-                        onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                        rows={4}
+                      <InfoFieldWithTranslations
+                        companyId={item.id}
+                        editingLanguage={editingContentLanguage}
+                        onLanguageChange={setEditingContentLanguage}
                       />
                     ) : (
-                      <p className="line-clamp-3 whitespace-pre-wrap">{item.info || <span className="text-gray-400 text-sm italic">Not set</span>}</p>
+                      <InfoFieldDisplay
+                        companyId={item.id}
+                        currentLanguage={i18n.language}
+                      />
                     )}
                   </td>
 
