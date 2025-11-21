@@ -36,8 +36,21 @@ export default function ResetPassword({ branding }) {
       
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Check for error parameters in URL
-      const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
+      // Handle HashRouter double-hash issue: /#/reset-password#access_token=...
+      // Need to parse parameters from after the SECOND # symbol
+      const fullHash = window.location.hash; // e.g., "#/reset-password#access_token=..."
+      const secondHashIndex = fullHash.indexOf('#', 1); // Find second # after the first
+      
+      let urlParams;
+      if (secondHashIndex > 0) {
+        // Parameters are after second # (HashRouter case)
+        const tokenPart = fullHash.substring(secondHashIndex + 1); // "access_token=...&expires_at=..."
+        urlParams = new URLSearchParams(tokenPart);
+      } else {
+        // Fallback: try query string or after first #
+        urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
+      }
+      
       const errorParam = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
 
