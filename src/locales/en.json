@@ -251,5 +251,18 @@
       "title": "Advanced Settings",
       "description": "System maintenance, data management, and danger zone"
     }
+  },
+  "homePage": {
+    "welcomeTo": "Welcome to",
+    "exhibitors": "Exhibitors",
+    "days": "Days",
+    "viewMap": "View Interactive Map",
+    "openingHours": "Opening Hours",
+    "location": "Location",
+    "parking": "Parking",
+    "parkingInfo": "Free parking available on site",
+    "wifi": "WiFi",
+    "wifiInfo": "Network: Event-Guest",
+    "phaseNote": "<strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities."
   }
 }

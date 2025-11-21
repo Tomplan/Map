@@ -251,5 +251,18 @@
       "title": "Geavanceerde Instellingen",
       "description": "Systeemonderhoud, gegevensbeheer en gevarenzone"
     }
+  },
+  "homePage": {
+    "welcomeTo": "Welkom bij",
+    "exhibitors": "Exposanten",
+    "days": "Dagen",
+    "viewMap": "Bekijk Interactieve Kaart",
+    "openingHours": "Openingstijden",
+    "location": "Locatie",
+    "parking": "Parkeren",
+    "parkingInfo": "Gratis parkeren ter plaatse beschikbaar",
+    "wifi": "WiFi",
+    "wifiInfo": "Netwerk: Event-Guest",
+    "phaseNote": "<strong>Let op:</strong> Dit is een Fase 1 tijdelijke versie. In Fase 2 zal deze pagina echte evenementgegevens, welkomstberichten en aankomende activiteiten tonen."
   }
 }
