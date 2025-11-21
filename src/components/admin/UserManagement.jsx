@@ -41,27 +41,43 @@ export default function UserManagement() {
       setLoading(true);
       setError(null);
 
-      // Call the function that returns user roles with emails
-      // This function uses SECURITY DEFINER to access auth.users
-      const { data: usersData, error: usersError } = await supabase
-        .rpc('get_user_roles_with_email');
+      // Try to use the function first (if migration 011 has been run)
+      let usersData;
+      let usersError;
+      
+      try {
+        const result = await supabase.rpc('get_user_roles_with_email');
+        usersData = result.data;
+        usersError = result.error;
+      } catch (rpcError) {
+        // Function doesn't exist yet, fall back to direct table query
+        console.warn('get_user_roles_with_email not available, using fallback');
+        const result = await supabase
+          .from('user_roles')
+          .select('user_id, role, created_at, updated_at')
+          .order('created_at', { ascending: false });
+        
+        usersData = result.data;
+        usersError = result.error;
+      }
 
       if (usersError) {
         throw usersError;
       }
 
-      // Get current user ID to mark current user
+      // Get current user
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      // Build user list with full information
+      // Build user list
       const userList = (usersData || []).map((userData) => {
+        const isCurrentUser = currentUser?.id === userData.user_id;
         return {
           id: userData.user_id,
-          email: userData.email || 'No email',
+          email: userData.email || (isCurrentUser ? currentUser.email : `user-${userData.user_id.substring(0, 8)}...`),
           role: userData.role,
           created_at: userData.created_at,
-          last_sign_in_at: userData.last_sign_in_at,
-          isCurrentUser: currentUser?.id === userData.user_id,
+          last_sign_in_at: userData.last_sign_in_at || (isCurrentUser ? currentUser.last_sign_in_at : null),
+          isCurrentUser,
         };
       });
 
