@@ -99,15 +99,6 @@ export default function HomePage({ selectedYear, branding }) {
             </h3>
             <p className="text-gray-700">{t('homePage.parkingInfo')}</p>
           </div>
-
-          {/* WiFi - Placeholder */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-              <span>📶</span>
-              {t('homePage.wifi')}
-            </h3>
-            <p className="text-gray-700">{t('homePage.wifiInfo')}</p>
-          </div>
         </div>
 
         {/* Phase 2 Notice */}
