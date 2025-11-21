@@ -14,11 +14,12 @@ CREATE TABLE IF NOT EXISTS public.company_translations (
 );
 
 -- Add indexes for performance
-CREATE INDEX idx_company_translations_company_id ON public.company_translations(company_id);
-CREATE INDEX idx_company_translations_language_code ON public.company_translations(language_code);
-CREATE INDEX idx_company_translations_company_language ON public.company_translations(company_id, language_code);
+CREATE INDEX IF NOT EXISTS idx_company_translations_company_id ON public.company_translations(company_id);
+CREATE INDEX IF NOT EXISTS idx_company_translations_language_code ON public.company_translations(language_code);
+CREATE INDEX IF NOT EXISTS idx_company_translations_company_language ON public.company_translations(company_id, language_code);
 
 -- Add trigger for updated_at
+DROP TRIGGER IF EXISTS update_company_translations_updated_at ON public.company_translations;
 CREATE TRIGGER update_company_translations_updated_at 
 BEFORE UPDATE ON public.company_translations 
 FOR EACH ROW
@@ -26,6 +27,10 @@ EXECUTE FUNCTION update_updated_at_column();
 
 -- Enable RLS
 ALTER TABLE public.company_translations ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Authenticated users can read company translations" ON public.company_translations;
+DROP POLICY IF EXISTS "Authenticated users can manage company translations" ON public.company_translations;
 
 -- Policy: Authenticated users can read all translations (for public display)
 CREATE POLICY "Authenticated users can read company translations"
