@@ -41,31 +41,29 @@ export default function UserManagement() {
       setLoading(true);
       setError(null);
 
-      // Fetch all users from user_roles table
-      // This table stores all authenticated users with their roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role, created_at, updated_at')
+      // Fetch all users from user_roles_with_email view
+      // This view joins user_roles with auth.users to get emails
+      const { data: usersData, error: usersError } = await supabase
+        .from('user_roles_with_email')
+        .select('user_id, role, email, created_at, updated_at, last_sign_in_at')
         .order('created_at', { ascending: false });
 
-      if (rolesError) {
-        throw rolesError;
+      if (usersError) {
+        throw usersError;
       }
 
-      // Get current user to display their email
+      // Get current user ID to mark current user
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
-      // Build user list with available information
-      const userList = (userRoles || []).map((userRole) => {
-        const isCurrentUser = currentUser?.id === userRole.user_id;
-        
+      // Build user list with full information
+      const userList = (usersData || []).map((userData) => {
         return {
-          id: userRole.user_id,
-          email: isCurrentUser ? currentUser.email : `user-${userRole.user_id.substring(0, 8)}...`,
-          role: userRole.role,
-          created_at: userRole.created_at,
-          last_sign_in_at: isCurrentUser ? currentUser.last_sign_in_at : null,
-          isCurrentUser,
+          id: userData.user_id,
+          email: userData.email || 'No email',
+          role: userData.role,
+          created_at: userData.created_at,
+          last_sign_in_at: userData.last_sign_in_at,
+          isCurrentUser: currentUser?.id === userData.user_id,
         };
       });
 
