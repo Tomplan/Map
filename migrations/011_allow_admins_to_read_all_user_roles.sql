@@ -6,18 +6,22 @@ DROP POLICY IF EXISTS "Users can read own role" ON public.user_roles;
 DROP POLICY IF EXISTS "Users can update own role via service" ON public.user_roles;
 DROP POLICY IF EXISTS "Service role can delete" ON public.user_roles;
 
--- Create a helper function to check if current user is admin
--- This avoids infinite recursion by using a direct query to the table
-CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
+-- Create a helper function that bypasses RLS to check admin status
+-- SECURITY DEFINER allows it to read user_roles without triggering policies
+CREATE OR REPLACE FUNCTION public.current_user_role()
+RETURNS TEXT AS $$
+DECLARE
+  user_role TEXT;
 BEGIN
-  RETURN EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = auth.uid()
-    AND role IN ('super_admin', 'system_manager')
-  );
+  SELECT role INTO user_role
+  FROM public.user_roles
+  WHERE user_id = auth.uid()
+  LIMIT 1;
+  
+  RETURN user_role;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public;
 
 -- Policy: Users can read their own role OR admins can read all roles
 CREATE POLICY "Users read own role or admins read all"
@@ -25,7 +29,7 @@ ON public.user_roles
 FOR SELECT
 USING (
   auth.uid() = user_id 
-  OR public.is_admin()
+  OR public.current_user_role() IN ('super_admin', 'system_manager')
 );
 
 -- Policy: Users can update their own role OR admins can update any role
@@ -34,7 +38,7 @@ ON public.user_roles
 FOR UPDATE
 USING (
   auth.uid() = user_id 
-  OR public.is_admin()
+  OR public.current_user_role() IN ('super_admin', 'system_manager')
 );
 
 -- Policy: Only super admins can delete user roles
@@ -42,10 +46,5 @@ CREATE POLICY "Super admins can delete user roles"
 ON public.user_roles
 FOR DELETE
 USING (
-  EXISTS (
-    SELECT 1 FROM public.user_roles
-    WHERE user_id = auth.uid()
-    AND role = 'super_admin'
-    LIMIT 1
-  )
+  public.current_user_role() = 'super_admin'
 );
