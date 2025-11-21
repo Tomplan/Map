@@ -23,7 +23,7 @@ export default function useEventSubscriptions(eventYear) {
           *,
           company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
         `)
-        .eq('event_year', selectedYear);
+        .eq('event_year', selectedYear)
         .order('id', { ascending: true });
 
       if (fetchError) throw fetchError;
