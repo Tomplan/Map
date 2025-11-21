@@ -28,28 +28,31 @@ export default function ResetPassword({ branding }) {
     }
   }, [error]);
 
-  // Check for errors in URL (expired token, etc.)
+  // Check for valid reset token
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
-    const errorParam = urlParams.get('error');
-    const errorDescription = urlParams.get('error_description');
-
-    if (errorParam) {
-      if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
-        setTokenError(t('resetPassword.errors.tokenExpired'));
-      } else {
-        setTokenError(t('resetPassword.errors.invalidToken'));
-      }
-      return;
-    }
-
-    // Check if user has valid reset token
     const checkResetToken = async () => {
+      // First, give Supabase time to process the token from URL
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        // No valid token
+      
+      // Check for error parameters in URL
+      const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
+      const errorParam = urlParams.get('error');
+      const errorDescription = urlParams.get('error_description');
+
+      if (errorParam && !session) {
+        // Error in URL and no valid session = expired/invalid token
+        if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
+          setTokenError(t('resetPassword.errors.tokenExpired'));
+        } else {
+          setTokenError(t('resetPassword.errors.invalidToken'));
+        }
+      } else if (!session) {
+        // No error param but also no session = invalid token
         setTokenError(t('resetPassword.errors.invalidToken'));
       }
+      // If we have a session, everything is good - show the form
     };
 
     checkResetToken();
