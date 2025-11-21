@@ -145,6 +145,15 @@
         "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
       }
     },
+    "uiLanguage": {
+      "title": "UI Taal",
+      "description": "Wijzig de taal van knoppen, menu's en interface-elementen",
+      "selectLanguage": "Selecteer je voorkeurstaal",
+      "note": {
+        "title": "Manager Interface Taal",
+        "description": "Dit wijzigt de taal van knoppen, menu's en instellingen. Het heeft GEEN invloed op inhoudvertalingen (bedrijfsinformatie, markeerbeschrijvingen). Inhoudvertalingen worden apart beheerd."
+      }
+    },
     "mapDefaults": {
       "title": "Kaart Standaardinstellingen",
       "description": "Standaard kaartlagen, zoomniveaus en kaartinstellingen"

@@ -145,6 +145,15 @@
         "saveFailed": "Failed to save settings. Please check your connection."
       }
     },
+    "uiLanguage": {
+      "title": "UI Language",
+      "description": "Change the language of buttons, menus, and interface elements",
+      "selectLanguage": "Select your preferred language",
+      "note": {
+        "title": "Manager Interface Language",
+        "description": "This changes the language of buttons, menus, and settings. It does NOT affect content translations (company info, marker descriptions). Content translations are managed separately."
+      }
+    },
     "mapDefaults": {
       "title": "Map Defaults",
       "description": "Default map layers, zoom levels, and map settings"
