@@ -3,6 +3,17 @@
   "welcome": "Welkom op het evenement!",
   "home": "Startpagina",
   "admin": "Admin Dashboard",
+  "common": {
+    "loading": "Laden...",
+    "saving": "Opslaan...",
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "confirmDelete": "Weet je zeker dat je dit wilt verwijderen?",
+    "vote": "Stem",
+    "voted": "Gestemd"
+  },
   "marker": {
     "event": "Evenement",
     "parking": "Parkeren",
@@ -153,6 +164,60 @@
       "errors": {
         "loadFailed": "Kon instellingen niet laden. Probeer het opnieuw.",
         "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
+      }
+    },
+    "feedbackRequests": {
+      "title": "Feedback & Functieverzoeken",
+      "description": "Meld problemen, vraag functies aan en volg voortgang",
+      "tabs": {
+        "all": "Alle Verzoeken",
+        "myRequests": "Mijn Verzoeken",
+        "submit": "Nieuwe Indienen"
+      },
+      "filters": {
+        "title": "Filters",
+        "search": "Zoek verzoeken...",
+        "allTypes": "Alle Types",
+        "allStatuses": "Alle Statussen"
+      },
+      "types": {
+        "issue": "Probleem",
+        "feature": "Functieverzoek"
+      },
+      "statuses": {
+        "open": "Open",
+        "inProgress": "In Behandeling",
+        "completed": "Voltooid",
+        "archived": "Gearchiveerd"
+      },
+      "priorities": {
+        "low": "Lage Prioriteit",
+        "medium": "Gemiddelde Prioriteit",
+        "high": "Hoge Prioriteit"
+      },
+      "submit": {
+        "title": "Nieuw Verzoek Indienen",
+        "type": "Type",
+        "titleLabel": "Titel",
+        "titlePlaceholder": "Korte samenvatting van je verzoek",
+        "description": "Beschrijving",
+        "descriptionPlaceholder": "Geef details over je verzoek...",
+        "duplicateHint": "Controleer de lijst hieronder om te zien of een soortgelijk verzoek al bestaat",
+        "button": "Verzoek Indienen"
+      },
+      "noRequests": "Geen verzoeken gevonden",
+      "detail": {
+        "comments": "Reacties",
+        "addComment": "Voeg reactie toe...",
+        "postComment": "Plaatsen",
+        "noComments": "Nog geen reacties. Wees de eerste die reageert!",
+        "status": "Status",
+        "priority": "Prioriteit",
+        "version": "Versie Uitgerold",
+        "updateStatus": "Status Bijwerken",
+        "setPriority": "Prioriteit Instellen",
+        "markCompleted": "Markeren als Voltooid",
+        "delete": "Verzoek Verwijderen"
       }
     },
     "advanced": {

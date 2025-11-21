@@ -3,6 +3,17 @@
   "welcome": "Welcome to the event!",
   "home": "Home",
   "admin": "Admin Dashboard",
+  "common": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this?",
+    "vote": "Vote",
+    "voted": "Voted"
+  },
   "marker": {
     "event": "Event",
     "parking": "Parking",
@@ -153,6 +164,60 @@
       "errors": {
         "loadFailed": "Failed to load settings. Please try again.",
         "saveFailed": "Failed to save settings. Please check your connection."
+      }
+    },
+    "feedbackRequests": {
+      "title": "Feedback & Feature Requests",
+      "description": "Submit issues, request features, and track progress",
+      "tabs": {
+        "all": "All Requests",
+        "myRequests": "My Requests",
+        "submit": "Submit New"
+      },
+      "filters": {
+        "title": "Filters",
+        "search": "Search requests...",
+        "allTypes": "All Types",
+        "allStatuses": "All Statuses"
+      },
+      "types": {
+        "issue": "Issue",
+        "feature": "Feature Request"
+      },
+      "statuses": {
+        "open": "Open",
+        "inProgress": "In Progress",
+        "completed": "Completed",
+        "archived": "Archived"
+      },
+      "priorities": {
+        "low": "Low Priority",
+        "medium": "Medium Priority",
+        "high": "High Priority"
+      },
+      "submit": {
+        "title": "Submit New Request",
+        "type": "Type",
+        "titleLabel": "Title",
+        "titlePlaceholder": "Brief summary of your request",
+        "description": "Description",
+        "descriptionPlaceholder": "Provide details about your request...",
+        "duplicateHint": "Please check the list below to see if a similar request already exists",
+        "button": "Submit Request"
+      },
+      "noRequests": "No requests found",
+      "detail": {
+        "comments": "Comments",
+        "addComment": "Add comment...",
+        "postComment": "Post",
+        "noComments": "No comments yet. Be the first to comment!",
+        "status": "Status",
+        "priority": "Priority",
+        "version": "Version Deployed",
+        "updateStatus": "Update Status",
+        "setPriority": "Set Priority",
+        "markCompleted": "Mark as Completed",
+        "delete": "Delete Request"
       }
     },
     "advanced": {

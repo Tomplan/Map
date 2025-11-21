@@ -8,11 +8,13 @@ import {
   mdiMapMarker,
   mdiCog,
   mdiAlertCircle,
+  mdiCommentAlertOutline,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
+import FeedbackRequests from './FeedbackRequests';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -59,6 +61,13 @@ export default function Settings() {
       icon: mdiCog,
       roles: ['super_admin', 'system_manager', 'event_manager'],
       component: <EventDefaults />,
+    },
+    {
+      id: 'feedback-requests',
+      label: t('settings.feedbackRequests.title'),
+      icon: mdiCommentAlertOutline,
+      roles: ['super_admin', 'system_manager', 'event_manager'],
+      component: <FeedbackRequests />,
     },
     {
       id: 'advanced',
