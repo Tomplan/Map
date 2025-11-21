@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import {
   mdiAccount,
-  mdiDomain,
   mdiPalette,
   mdiMapMarker,
   mdiCog,
@@ -15,6 +14,7 @@ import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
 import FeedbackRequests from './FeedbackRequests';
+import BrandingSettings from './BrandingSettings';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -35,18 +35,11 @@ export default function Settings() {
       component: <UserManagement />,
     },
     {
-      id: 'organization',
-      label: t('settings.organization.title'),
-      icon: mdiDomain,
-      roles: ['super_admin', 'system_manager'],
-      component: <OrganizationPlaceholder />,
-    },
-    {
       id: 'branding',
       label: t('settings.branding.title'),
       icon: mdiPalette,
       roles: ['super_admin', 'system_manager'],
-      component: <BrandingPlaceholder />,
+      component: <BrandingSettings />,
     },
     {
       id: 'map-defaults',
@@ -146,32 +139,6 @@ function UserManagementPlaceholder() {
       <p className="text-gray-600">{t('settings.userManagement.description')}</p>
       <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">🚧 User Management component coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-function OrganizationPlaceholder() {
-  const { t } = useTranslation();
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">{t('settings.organization.title')}</h2>
-      <p className="text-gray-600">{t('settings.organization.description')}</p>
-      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800">🚧 Organization Profile component coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-function BrandingPlaceholder() {
-  const { t } = useTranslation();
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4">{t('settings.branding.title')}</h2>
-      <p className="text-gray-600">{t('settings.branding.description')}</p>
-      <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-sm text-blue-800">🚧 Branding Settings component coming soon...</p>
       </div>
     </div>
   );

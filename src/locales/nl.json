@@ -125,7 +125,25 @@
     },
     "branding": {
       "title": "Branding Instellingen",
-      "description": "Kleuren, thema's en visuele aanpassing"
+      "description": "Configureer visuele branding (kleuren, lettertypen)",
+      "note": "Organisatienaam en logo worden beheerd in het Bedrijven-tabblad",
+      "loading": "Instellingen laden...",
+      "save": "Wijzigingen Opslaan",
+      "saving": "Opslaan...",
+      "reset": "Standaardinstellingen Herstellen",
+      "saveSuccess": "Opgeslagen!",
+      "themeColor": {
+        "label": "Themakleur",
+        "description": "Primaire kleur gebruikt in de hele applicatie"
+      },
+      "fontFamily": {
+        "label": "Lettertype",
+        "description": "Lettertype gebruikt voor koppen en tekst"
+      },
+      "errors": {
+        "loadFailed": "Kon instellingen niet laden. Probeer het opnieuw.",
+        "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
+      }
     },
     "mapDefaults": {
       "title": "Kaart Standaardinstellingen",
