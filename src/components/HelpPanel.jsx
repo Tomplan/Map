@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import Icon from '@mdi/react';
 import {
   mdiClose,
@@ -163,22 +164,28 @@ export default function HelpPanel({ isOpen, onClose }) {
                 </p>
               </div>
 
-              <div className="prose prose-sm max-w-none">
-                {currentPageHelp.content.split('\n\n').map((paragraph, idx) => {
-                  // Handle bold text (**text**)
-                  const formattedText = paragraph.split(/(\*\*[^*]+\*\*)/).map((part, i) => {
-                    if (part.startsWith('**') && part.endsWith('**')) {
-                      return <strong key={i}>{part.slice(2, -2)}</strong>;
-                    }
-                    return part;
-                  });
-
-                  return (
-                    <p key={idx} className="text-gray-700 leading-relaxed mb-4">
-                      {formattedText}
-                    </p>
-                  );
-                })}
+              <div className="prose prose-sm max-w-none text-gray-700 text-left">
+                <ReactMarkdown
+                  components={{
+                    // Style headings
+                    h1: ({node, ...props}) => <h1 className="text-xl font-bold text-gray-900 mt-4 mb-2 text-left" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-lg font-bold text-gray-900 mt-4 mb-2 text-left" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-base font-bold text-gray-900 mt-3 mb-2 text-left" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-sm font-semibold text-gray-900 mt-3 mb-2 text-left" {...props} />,
+                    // Style paragraphs
+                    p: ({node, ...props}) => <p className="text-gray-700 leading-relaxed mb-4 text-left" {...props} />,
+                    // Style lists
+                    ul: ({node, ...props}) => <ul className="list-disc list-outside mb-4 space-y-2 text-left ml-5" {...props} />,
+                    ol: ({node, ...props}) => <ol className="list-decimal list-outside mb-4 space-y-2 text-left ml-5" {...props} />,
+                    li: ({node, ...props}) => <li className="text-gray-700 text-left pl-2" {...props} />,
+                    // Style code
+                    code: ({node, ...props}) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800" {...props} />,
+                    // Style links
+                    a: ({node, ...props}) => <a className="text-blue-600 hover:text-blue-800 underline" {...props} />,
+                  }}
+                >
+                  {currentPageHelp.content}
+                </ReactMarkdown>
               </div>
 
               {/* Tips Section */}
