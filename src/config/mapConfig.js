@@ -20,7 +20,11 @@ export const MAP_CONFIG = {
 // Default branding configuration
 export const BRANDING_CONFIG = {
   DEFAULT_LOGO: '4x4Vakantiebeurs.png',
-  getDefaultLogoPath: () => `${import.meta.env.BASE_URL}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`,
+  getDefaultLogoPath: () => {
+    const base = import.meta.env.BASE_URL || '/';
+    const baseUrl = base.endsWith('/') ? base : `${base}/`;
+    return `${baseUrl}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`;
+  },
 };
 
 // Available map tile layers
