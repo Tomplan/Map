@@ -19,6 +19,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global Design System - Reusable Component Classes */
+@layer components {
+  /* Input Fields */
+  .input-base {
+    @apply w-full px-4 py-3;
+    @apply border border-input-border rounded-lg;
+    @apply bg-input-bg text-input-text;
+    @apply placeholder:text-input-placeholder;
+    @apply focus:ring-2 focus:ring-input-border-focus focus:border-transparent;
+    @apply transition-all outline-none;
+    @apply disabled:bg-input-bg-disabled disabled:cursor-not-allowed;
+  }
+  
+  /* Textarea */
+  .textarea-base {
+    @apply input-base resize-vertical min-h-[100px];
+  }
+  
+  /* Select Dropdown */
+  .select-base {
+    @apply input-base cursor-pointer;
+  }
+  
+  /* Primary Button */
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-semibold;
+    @apply bg-gradient-to-r from-button-primary to-button-primary-hover;
+    @apply text-white shadow-lg hover:shadow-xl;
+    @apply transition-all transform hover:scale-[1.02] active:scale-[0.98];
+    @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    @apply px-6 py-3 rounded-lg font-semibold;
+    @apply bg-white text-button-secondary border-2 border-button-secondary;
+    @apply hover:bg-button-secondary hover:text-white;
+    @apply transition-all;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  /* Form Label */
+  .label-base {
+    @apply block text-sm font-semibold text-gray-700 mb-2;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
