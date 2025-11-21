@@ -265,8 +265,8 @@ See [DEPRECATED.md](./DEPRECATED.md) for full migration guide.
 - [ ] Implement Settings page (organization profile, branding)
 - [ ] Add user management for Super Admin
 - [ ] Activity logging/audit trail
-- [ ] Complete Markers_Admin → Event_Subscriptions migration
-- [ ] Remove AdminDashboard.jsx after migration complete
+- [x] Complete Markers_Admin → Event_Subscriptions migration (2025-11-20)
+- [x] Remove AdminDashboard.jsx after migration complete (2025-11-20)
 - [ ] Add role management UI for Super Admin
 - [ ] Keyboard shortcuts for common actions
 - [ ] Bulk operations (multi-select markers, batch assign)

@@ -44,11 +44,11 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
       try {
         // Fetch all data in parallel, including defaults for booth markers
-        const [coreRes, appearanceRes, contentRes, adminRes, assignmentsRes, subscriptionsRes] = await Promise.all([
+        // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
+        const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes] = await Promise.all([
           supabase.from('Markers_Core').select('*'),
           supabase.from('Markers_Appearance').select('*'),
           supabase.from('Markers_Content').select('*'),
-          supabase.from('Markers_Admin').select('*'),
           supabase.from('assignments').select(`
             *,
             company:companies(id, name, logo, website, info)
@@ -59,7 +59,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         if (coreRes.error) throw coreRes.error;
         if (appearanceRes.error) throw appearanceRes.error;
         if (contentRes.error) throw contentRes.error;
-        if (adminRes.error) throw adminRes.error;
         if (assignmentsRes.error) throw assignmentsRes.error;
         if (subscriptionsRes.error) throw subscriptionsRes.error;
 
@@ -72,11 +71,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         const contentById = {};
         for (const row of contentRes.data || []) {
           if (row && row.id) contentById[row.id] = row;
-        }
-
-        const adminById = {};
-        for (const row of adminRes.data || []) {
-          if (row && row.id) adminById[row.id] = row;
         }
 
         // Extract defaults for booth markers (IDs -1 and -2)
@@ -120,7 +114,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           .map((marker) => {
           const appearance = appearanceById[marker.id] || {};
           const content = contentById[marker.id] || {};
-          const admin = adminById[marker.id] || {};
           const assignments = assignmentsByMarker[marker.id] || [];
 
           // Determine content source based on marker type
@@ -178,15 +171,15 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               };
             }
           } else {
-            // Special markers: use Markers_Content data
+            // Special markers (ID >= 1000): use Markers_Content data
             contentData = {
               name: content.name,
               logo: content.logo,
               website: content.website,
               info: content.info,
             };
-            // Special markers use Markers_Admin data
-            adminData = admin;
+            // Special markers don't have admin data (no booth logistics)
+            adminData = {};
           }
 
           return {
@@ -253,12 +246,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       })
       .subscribe();
 
-    const adminChannel = supabase
-      .channel('markers-admin-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Admin' }, () => {
-        loadMarkers(true);
-      })
-      .subscribe();
+    // Note: Markers_Admin subscription removed - admin data comes from event_subscriptions
 
     const assignmentsChannel = supabase
       .channel('markers-assignments-changes')
@@ -327,7 +315,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       supabase.removeChannel(coreChannel);
       supabase.removeChannel(appearanceChannel);
       supabase.removeChannel(contentChannel);
-      supabase.removeChannel(adminChannel);
       supabase.removeChannel(assignmentsChannel);
       supabase.removeChannel(companiesChannel);
       supabase.removeChannel(subscriptionsChannel);

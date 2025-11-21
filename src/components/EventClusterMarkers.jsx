@@ -104,7 +104,7 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -292,6 +292,36 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     });
   }, [filteredMarkers]);
 
+  // Handle focus from URL parameter (e.g., from Exhibitor List)
+  useEffect(() => {
+    if (!focusMarkerId) return;
+
+    // Wait for marker ref to be available
+    const checkAndOpenPopup = () => {
+      const markerRef = markerRefs.current[focusMarkerId];
+      if (markerRef?.current) {
+        // For mobile, show bottom sheet instead of popup
+        if (isMobile) {
+          const marker = filteredMarkers.find(m => m.id === focusMarkerId);
+          if (marker) {
+            setInternalSelectedMarker(marker);
+          }
+        } else {
+          // For desktop, open the popup
+          markerRef.current.openPopup();
+        }
+        // Clear focus after handling
+        if (onFocusHandled) {
+          onFocusHandled();
+        }
+      }
+    };
+
+    // Small delay to ensure marker is rendered after flyTo animation
+    const timeout = setTimeout(checkAndOpenPopup, 1200);
+    return () => clearTimeout(timeout);
+  }, [focusMarkerId, isMobile, filteredMarkers, onFocusHandled]);
+
   // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
   if (logoLoading) {
     return null;
@@ -392,6 +422,8 @@ EventClusterMarkers.propTypes = {
   isAdminView: PropTypes.bool,
   selectedMarkerId: PropTypes.number,
   onMarkerSelect: PropTypes.func,
+  focusMarkerId: PropTypes.number,
+  onFocusHandled: PropTypes.func,
 };
 
 EventClusterMarkers.defaultProps = {
@@ -399,6 +431,8 @@ EventClusterMarkers.defaultProps = {
   isAdminView: false,
   selectedMarkerId: null,
   onMarkerSelect: null,
+  focusMarkerId: null,
+  onFocusHandled: null,
 };
 
 export default EventClusterMarkers;

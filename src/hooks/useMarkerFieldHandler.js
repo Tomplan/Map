@@ -10,7 +10,7 @@ import { supabase } from '../supabaseClient';
 export function useMarkerFieldHandler(setMarkersState) {
   const handleFieldChange = useCallback(async (id, key, value) => {
     // Lock fields must always be boolean
-    const lockFields = ['coreLocked', 'appearanceLocked', 'contentLocked', 'adminLocked'];
+    const lockFields = ['coreLocked', 'appearanceLocked', 'contentLocked'];
     let sendValue = value;
 
     if (!lockFields.includes(key)) {
@@ -43,25 +43,12 @@ export function useMarkerFieldHandler(setMarkersState) {
 
     const contentFields = ['name', 'logo', 'website', 'info'];
 
-    const adminFields = [
-      'contact',
-      'phone',
-      'email',
-      'boothCount',
-      'area',
-      'coins',
-      'breakfast',
-      'lunch',
-      'bbq',
-      'notes',
-    ];
+    // Note: Admin fields (contact, phone, meals, etc.) are now managed via Event_Subscriptions
 
     if (appearanceFields.includes(key)) {
       table = 'Markers_Appearance';
     } else if (contentFields.includes(key)) {
       table = 'Markers_Content';
-    } else if (adminFields.includes(key)) {
-      table = 'Markers_Admin';
     }
 
     // Sync to Supabase
