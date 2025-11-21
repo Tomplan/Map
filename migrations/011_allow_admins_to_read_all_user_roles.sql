@@ -70,7 +70,7 @@ RETURNS TABLE (
   role TEXT,
   created_at TIMESTAMPTZ,
   updated_at TIMESTAMPTZ,
-  email TEXT,
+  email VARCHAR(255),
   last_sign_in_at TIMESTAMPTZ
 ) AS $$
 BEGIN
