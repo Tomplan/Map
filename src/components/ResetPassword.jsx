@@ -16,6 +16,7 @@ export default function ResetPassword({ branding }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
+  const [tokenError, setTokenError] = useState(null); // Separate error for invalid/expired tokens
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const errorRef = useRef(null);
@@ -35,9 +36,9 @@ export default function ResetPassword({ branding }) {
 
     if (errorParam) {
       if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
-        setError(t('resetPassword.errors.tokenExpired'));
+        setTokenError(t('resetPassword.errors.tokenExpired'));
       } else {
-        setError(t('resetPassword.errors.invalidToken'));
+        setTokenError(t('resetPassword.errors.invalidToken'));
       }
       return;
     }
@@ -47,7 +48,7 @@ export default function ResetPassword({ branding }) {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         // No valid token
-        setError(t('resetPassword.errors.invalidToken'));
+        setTokenError(t('resetPassword.errors.invalidToken'));
       }
     };
 
@@ -126,7 +127,7 @@ export default function ResetPassword({ branding }) {
               </div>
               <p className="text-sm ml-8">{t('resetPassword.redirecting')}</p>
             </div>
-          ) : error ? (
+          ) : tokenError ? (
             <div className="space-y-4">
               <div
                 ref={errorRef}
@@ -139,7 +140,7 @@ export default function ResetPassword({ branding }) {
                   <span className="text-xl mr-3">⚠</span>
                   <div className="flex-1">
                     <p className="font-semibold mb-1">{t('resetPassword.errors.linkExpiredTitle')}</p>
-                    <p className="text-sm">{error}</p>
+                    <p className="text-sm">{tokenError}</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +205,20 @@ export default function ResetPassword({ branding }) {
                 />
               </div>
 
-
+              {error && (
+                <div
+                  ref={errorRef}
+                  className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg shadow-sm"
+                  role="alert"
+                  aria-live="assertive"
+                  tabIndex={-1}
+                >
+                  <div className="flex items-center">
+                    <span className="text-xl mr-3">⚠</span>
+                    <span className="text-sm">{error}</span>
+                  </div>
+                </div>
+              )}
 
               <button
                 type="submit"
