@@ -35,5 +35,27 @@
       "unknownError": "An error occurred. Please try again.",
       "resetFailed": "Failed to send reset email. Please try again."
     }
+  },
+  "resetPassword": {
+    "title": "Set New Password",
+    "instructions": "Enter your new password below. Make it secure!",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordRequirements": "Minimum 6 characters",
+    "updatePassword": "Update Password",
+    "updating": "Updating...",
+    "success": "Password updated successfully!",
+    "redirecting": "Redirecting to login page...",
+    "backToLogin": "Back to login",
+    "errors": {
+      "invalidToken": "Invalid or expired reset link. Redirecting to login...",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "updateFailed": "Failed to update password. Please try again."
+    }
   }
 }

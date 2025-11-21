@@ -75,12 +75,12 @@ export default function AdminLogin({ onLogin, branding }) {
     setError(null);
 
     // Build redirect URL based on environment
-    // Production uses HashRouter (#/admin), development uses BrowserRouter (/admin)
+    // Production uses HashRouter (#/reset-password), development uses BrowserRouter (/reset-password)
     const isProd = import.meta.env.PROD;
     const base = import.meta.env.BASE_URL || '/';
     const redirectUrl = isProd 
-      ? `${window.location.origin}${base}#/admin`
-      : `${window.location.origin}${base}admin`;
+      ? `${window.location.origin}${base}#/reset-password`
+      : `${window.location.origin}${base}reset-password`;
     
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: redirectUrl,
