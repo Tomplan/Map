@@ -57,5 +57,33 @@
       "passwordMismatch": "Wachtwoorden komen niet overeen",
       "updateFailed": "Kon wachtwoord niet bijwerken. Probeer het opnieuw."
     }
+  },
+  "settings": {
+    "title": "Instellingen",
+    "subtitle": "Beheer systeemconfiguratie en voorkeuren",
+    "userManagement": {
+      "title": "Gebruikersbeheer",
+      "description": "Beheer admin gebruikers, rollen en rechten"
+    },
+    "organization": {
+      "title": "Organisatieprofiel",
+      "description": "Organisatienaam, logo en contactinformatie"
+    },
+    "branding": {
+      "title": "Branding Instellingen",
+      "description": "Kleuren, thema's en visuele aanpassing"
+    },
+    "mapDefaults": {
+      "title": "Kaart Standaardinstellingen",
+      "description": "Standaard kaartlagen, zoomniveaus en kaartinstellingen"
+    },
+    "eventDefaults": {
+      "title": "Evenement Standaardinstellingen",
+      "description": "Standaard maaltijdaantallen, standgrootte en evenementvoorkeuren"
+    },
+    "advanced": {
+      "title": "Geavanceerde Instellingen",
+      "description": "Systeemonderhoud, gegevensbeheer en gevarenzone"
+    }
   }
 }
