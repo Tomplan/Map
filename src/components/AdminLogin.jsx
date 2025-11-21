@@ -106,7 +106,7 @@ export default function AdminLogin({ onLogin, branding }) {
             </div>
             
             <div className="flex flex-col items-center mb-8">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-3 rounded-xl shadow-lg mb-4">
+              <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl shadow-lg mb-4">
                 <img src={logoUrl} alt="Event Logo" className="h-12 w-12 object-contain" />
               </div>
               <h1 className="font-bold text-2xl text-gray-800 mb-1">{eventName}</h1>
@@ -162,7 +162,7 @@ export default function AdminLogin({ onLogin, branding }) {
 
                 <button
                   type="submit"
-                  className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-3 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-orange-800 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={resetLoading}
                 >
                   {resetLoading ? t('adminLogin.loggingIn') : t('adminLogin.sendResetLink')}
@@ -175,7 +175,7 @@ export default function AdminLogin({ onLogin, branding }) {
                     setError(null);
                     setResetEmail('');
                   }}
-                  className="w-full py-2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                  className="w-full py-2 text-orange-600 hover:text-orange-700 font-medium text-sm transition-colors"
                 >
                   ← {t('adminLogin.backToLogin')}
                 </button>
