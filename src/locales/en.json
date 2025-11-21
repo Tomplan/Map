@@ -265,5 +265,21 @@
     "parking": "Parking",
     "parkingInfo": "Free parking available at Strandpark Slijk-Ewijk",
     "phaseNote": "<strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities."
+  },
+  "exhibitorPage": {
+    "title": "Exhibitors",
+    "searchPlaceholder": "Search exhibitors or booth number...",
+    "showing": "Showing",
+    "of": "of",
+    "exhibitors": "exhibitors",
+    "favorited": "favorited",
+    "favoritesOnly": "Favorites Only",
+    "noExhibitors": "No exhibitors found",
+    "booth": "Booth",
+    "categoriesComingSoon": "Coming Soon: Categories",
+    "phaseNote": "Note:",
+    "comingInFuturePhases": "Coming in future phases:",
+    "categoryFiltering": "Category filtering",
+    "sortOptions": "Sort options"
   }
 }

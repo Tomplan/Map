@@ -249,11 +249,19 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     (marker) => {
       const key = `${marker.id}-${isMarkerDraggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}`;
       if (!eventHandlersByMarker.current[key]) {
-        eventHandlersByMarker.current[key] = {
-          dragend: isMarkerDraggable ? handleDragEnd(marker.id) : undefined,
+        const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
-          contextmenu: isAdminView ? handleContextMenu(marker) : undefined,
         };
+        
+        // Only add handlers if they are defined
+        if (isMarkerDraggable) {
+          handlers.dragend = handleDragEnd(marker.id);
+        }
+        if (isAdminView) {
+          handlers.contextmenu = handleContextMenu(marker);
+        }
+        
+        eventHandlersByMarker.current[key] = handlers;
       }
       return eventHandlersByMarker.current[key];
     },

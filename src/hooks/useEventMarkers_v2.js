@@ -132,6 +132,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               info: primaryAssignment.info,
               companyId: primaryAssignment.companyId,
               assignmentId: primaryAssignment.assignmentId,
+              company_translations: primaryAssignment.company_translations,
             };
 
             // Apply global defaults based on assignment status
