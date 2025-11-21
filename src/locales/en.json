@@ -253,11 +253,11 @@
     }
   },
   "homePage": {
-    "welcomeTo": "Welcome to",
+    "subtitle": "Your Next Adventure Starts Here!",
+    "title": "The 4x4 Holiday Fair",
     "eventDate": "October 10-11, 2026",
     "exhibitors": "Exhibitors",
     "days": "Days",
-    "viewMap": "View Interactive Map",
     "openingHours": "Opening Hours",
     "openingHoursInfo": "Saturday 10:00 - 17:00\nSunday 10:00 - 16:00",
     "location": "Location",
