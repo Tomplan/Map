@@ -308,16 +308,9 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     const checkAndOpenPopup = () => {
       const markerRef = markerRefs.current[focusMarkerId];
       if (markerRef?.current) {
-        // For mobile, show bottom sheet instead of popup
-        if (isMobile) {
-          const marker = filteredMarkers.find(m => m.id === focusMarkerId);
-          if (marker) {
-            setInternalSelectedMarker(marker);
-          }
-        } else {
-          // For desktop, open the popup
-          markerRef.current.openPopup();
-        }
+        // Open popup (small popup on both mobile and desktop)
+        markerRef.current.openPopup();
+        
         // Clear focus after handling
         if (onFocusHandled) {
           onFocusHandled();
@@ -328,7 +321,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     // Small delay to ensure marker is rendered after flyTo animation
     const timeout = setTimeout(checkAndOpenPopup, 1200);
     return () => clearTimeout(timeout);
-  }, [focusMarkerId, isMobile, filteredMarkers, onFocusHandled]);
+  }, [focusMarkerId, filteredMarkers, onFocusHandled]);
 
   // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
   if (logoLoading) {

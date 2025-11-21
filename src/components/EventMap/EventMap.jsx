@@ -105,6 +105,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         });
         leafletMarker.feature = { type: 'Feature', properties: { searchText } };
         leafletMarker.bindPopup(marker.name || marker.label || '');
+        // Store marker ID for later reference
+        leafletMarker._markerId = marker.id;
         layerGroup.addLayer(leafletMarker);
       }
     });
@@ -135,9 +137,18 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
     // Handle search result selection
     searchControl.on('search:locationfound', (e) => {
-      if (e?.layer?.getLatLng) {
+      if (e?.layer) {
         const latlng = e.layer.getLatLng();
-        mapInstance.flyTo(latlng, MAP_CONFIG.SEARCH_ZOOM, { animate: true });
+        const markerId = e.layer._markerId;
+        
+        if (markerId) {
+          mapInstance.flyTo(latlng, MAP_CONFIG.SEARCH_ZOOM, { animate: true });
+          
+          // Set focus marker to open popup after animation
+          setTimeout(() => {
+            setFocusMarkerId(markerId);
+          }, 800);
+        }
 
         // Auto-close search box
         if (searchControl._input) searchControl._input.blur();
