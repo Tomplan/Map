@@ -265,5 +265,21 @@
     "parking": "Parkeren",
     "parkingInfo": "Gratis parkeren bij Strandpark Slijk-Ewijk",
     "phaseNote": "<strong>Let op:</strong> Dit is een Fase 1 tijdelijke versie. In Fase 2 zal deze pagina echte evenementgegevens, welkomstberichten en aankomende activiteiten tonen."
+  },
+  "exhibitorPage": {
+    "title": "Exposanten",
+    "searchPlaceholder": "Zoek exposanten of standnummer...",
+    "showing": "Toont",
+    "of": "van",
+    "exhibitors": "exposanten",
+    "favorited": "favoriet",
+    "favoritesOnly": "Alleen Favorieten",
+    "noExhibitors": "Geen exposanten gevonden",
+    "booth": "Stand",
+    "categoriesComingSoon": "Binnenkort: Categorieën",
+    "phaseNote": "Let op:",
+    "comingInFuturePhases": "Binnenkort beschikbaar:",
+    "categoryFiltering": "Filteren op categorie",
+    "sortOptions": "Sorteeropties"
   }
 }

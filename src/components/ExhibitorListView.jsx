@@ -15,7 +15,7 @@ import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
   const { organizationLogo } = useOrganizationLogo();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
@@ -67,7 +67,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Exhibitors</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('exhibitorPage.title')}</h1>
 
           {/* Search Bar */}
           <div className="relative">
@@ -78,7 +78,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
             />
             <input
               type="text"
-              placeholder="Search exhibitors or booth number..."
+              placeholder={t('exhibitorPage.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -88,8 +88,8 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           {/* Filters and Results Count */}
           <div className="mt-3 flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing {filteredExhibitors.length} of {exhibitors.length} exhibitors
-              {favorites.length > 0 && ` • ${favorites.length} favorited`}
+              {t('exhibitorPage.showing')} {filteredExhibitors.length} {t('exhibitorPage.of')} {exhibitors.length} {t('exhibitorPage.exhibitors')}
+              {favorites.length > 0 && ` • ${favorites.length} ${t('exhibitorPage.favorited')}`}
             </div>
 
             {/* Favorites Only Toggle */}
@@ -103,7 +103,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 }`}
               >
                 <Icon path={mdiFilterVariant} size={0.7} />
-                Favorites Only
+                {t('exhibitorPage.favoritesOnly')}
               </button>
             )}
           </div>
@@ -114,7 +114,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       <div className="max-w-screen-xl mx-auto px-4 py-4">
         {filteredExhibitors.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500">No exhibitors found</p>
+            <p className="text-gray-500">{t('exhibitorPage.noExhibitors')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -157,7 +157,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                       <div className="flex items-center gap-1 mt-1">
                         <Icon path={mdiMapMarker} size={0.7} className="text-orange-600" />
                         <span className="text-sm font-medium text-orange-600">
-                          Booth {exhibitor.glyph}
+                          {t('exhibitorPage.booth')} {exhibitor.glyph}
                         </span>
                       </div>
                     )}
@@ -165,7 +165,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                     {/* Category - Placeholder for Phase 5 */}
                     <div className="mt-2">
                       <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                        Coming Soon: Categories
+                        {t('exhibitorPage.categoriesComingSoon')}
                       </span>
                     </div>
 
@@ -191,13 +191,13 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
 
         {/* Phase 3 Notice */}
         <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800">
-            📝 <strong>Note:</strong> Coming in future phases:
+          <div className="text-sm text-blue-800">
+            <p>📝 <strong>{t('exhibitorPage.phaseNote')}</strong> {t('exhibitorPage.comingInFuturePhases')}</p>
             <ul className="list-disc list-inside mt-2">
-              <li>Category filtering</li>
-              <li>Sort options</li>
+              <li>{t('exhibitorPage.categoryFiltering')}</li>
+              <li>{t('exhibitorPage.sortOptions')}</li>
             </ul>
-          </p>
+          </div>
         </div>
       </div>
     </div>
