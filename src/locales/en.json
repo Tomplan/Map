@@ -309,7 +309,8 @@
     "cancel": "Cancel",
     "deleteButton": "Delete",
     "deleting": "Deleting...",
-    "deleteError": "Failed to delete activity"
+    "deleteError": "Failed to delete activity",
+    "reorderError": "Failed to reorder activities"
   },
   "activityForm": {
     "createTitle": "Create Activity",

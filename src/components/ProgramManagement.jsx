@@ -17,6 +17,8 @@ export default function ProgramManagement() {
   const [deleting, setDeleting] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editActivity, setEditActivity] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [reordering, setReordering] = useState(false);
 
   const currentActivities = activities[activeTab] || [];
 
@@ -43,6 +45,75 @@ export default function ProgramManagement() {
       alert(t('programManagement.deleteError') + ': ' + err.message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  /**
+   * Handle drag start
+   */
+  const handleDragStart = (e, activity, index) => {
+    setDraggedItem({ activity, index });
+    e.dataTransfer.effectAllowed = 'move';
+    e.currentTarget.style.opacity = '0.4';
+  };
+
+  /**
+   * Handle drag end
+   */
+  const handleDragEnd = (e) => {
+    e.currentTarget.style.opacity = '1';
+    setDraggedItem(null);
+  };
+
+  /**
+   * Handle drag over
+   */
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  /**
+   * Handle drop - reorder activities
+   */
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+    
+    if (!draggedItem || draggedItem.index === dropIndex) {
+      return;
+    }
+
+    setReordering(true);
+
+    try {
+      // Create new ordered array
+      const items = [...currentActivities];
+      const [draggedActivity] = items.splice(draggedItem.index, 1);
+      items.splice(dropIndex, 0, draggedActivity);
+
+      // Update display_order for all affected items
+      const updates = items.map((activity, index) => ({
+        id: activity.id,
+        display_order: index + 1
+      }));
+
+      // Batch update all display_orders
+      for (const update of updates) {
+        const { error: updateError } = await supabase
+          .from('event_activities')
+          .update({ display_order: update.display_order })
+          .eq('id', update.id);
+
+        if (updateError) throw updateError;
+      }
+
+      // Refetch to show new order
+      await refetch();
+    } catch (err) {
+      console.error('Error reordering activities:', err);
+      alert(t('programManagement.reorderError') + ': ' + err.message);
+    } finally {
+      setReordering(false);
     }
   };
 
@@ -135,13 +206,23 @@ export default function ProgramManagement() {
             return (
               <div
                 key={activity.id}
-                className="px-6 py-4 hover:bg-gray-50 transition-colors"
+                draggable={!reordering}
+                onDragStart={(e) => handleDragStart(e, activity, index)}
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+                  reordering ? 'opacity-50 cursor-wait' : 'cursor-move'
+                }`}
               >
                 <div className="flex items-start gap-4">
                   {/* Drag Handle */}
                   <button
-                    className="mt-1 text-gray-400 hover:text-gray-600 cursor-move"
+                    className={`mt-1 text-gray-400 hover:text-gray-600 ${
+                      reordering ? 'cursor-wait' : 'cursor-move'
+                    }`}
                     title={t('programManagement.dragToReorder')}
+                    disabled={reordering}
                   >
                     <MdDragIndicator className="text-2xl" />
                   </button>
