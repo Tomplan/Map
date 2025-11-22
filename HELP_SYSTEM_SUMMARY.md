@@ -1,7 +1,8 @@
 # In-App Help System - Implementation Summary
 
 **Date Implemented:** November 21, 2025  
-**Status:** ✅ Complete - Ready for Use
+**Last Updated:** November 22, 2025 (Bilingual Support Added)  
+**Status:** ✅ Complete - Fully Bilingual (EN/NL)
 
 ---
 
@@ -29,37 +30,41 @@
 
 ### 2. Configuration Files
 
-#### **helpContent.js** - Structured Help Content
+#### **helpContentBilingual.js** - Bilingual Help Content (EN/NL)
 Contains help content for:
 - Dashboard Overview
 - Map Management
 - Companies Management
 - Event Subscriptions
 - Map Assignments
-- Import Guide (with JWT token instructions)
 - Settings (Super Admin)
+- Program Management (NEW)
 - General/Getting Started
 
 Each section includes:
-- Title
-- Detailed content (markdown-style formatting)
+- Title: `{ en: "...", nl: "..." }`
+- Content: `{ en: "...", nl: "..." }` (markdown-style formatting)
 - Last updated date
-- Quick tips array
-- (Optional) Video URL placeholder
+- Tips array: `{ en: [...], nl: [...] }`
 
 **Helper functions:**
-- `getHelpContent(page)` - Get help by page ID
-- `getHelpContentByRoute(pathname)` - Get help by route
+- `getHelpContent(page, language)` - Get help by page ID with language
+- `getHelpContentByRoute(pathname, language)` - Get help by route with language
 
-#### **whatsNew.js** - Change Log
+**Fallback mechanism:**
+- If Dutch translation missing, falls back to English
+- If section missing, returns 'general' help
+
+#### **whatsNewBilingual.js** - Bilingual Change Log (EN/NL)
 - Date-based change tracking
 - Change types: feature, fix, improvement
+- Bilingual change text: `{ en: "...", nl: "..." }`
 - Shows last 5 updates by default
 
 **Helper functions:**
-- `getRecentChanges(limit)` - Get recent N items
-- `getAllChanges()` - Flat list with dates
-- `getChangesByType(type)` - Filter by change type
+- `getRecentChanges(limit, language)` - Get recent N items with language
+
+**Note:** Old files `helpContent.js` and `whatsNew.js` are deprecated. Use bilingual versions.
 
 ### 3. AdminLayout Integration
 
@@ -149,40 +154,60 @@ Documentation:
 
 ### Adding New Help Content
 
-**Edit `src/config/helpContent.js`:**
+**Edit `src/config/helpContentBilingual.js`:**
 
 ```javascript
-export const helpContent = {
+export const helpContentBilingual = {
   // ... existing content
 
   newPage: {
-    title: "New Page Title",
-    content: `
+    title: {
+      en: "New Page Title",
+      nl: "Nieuwe Pagina Titel"
+    },
+    content: {
+      en: `
 Your help text here.
 
 **Bold Text** for emphasis.
 Use double line breaks for paragraphs.
-    `.trim(),
-    updated: "2025-11-21",
-    tips: [
-      "Tip 1",
-      "Tip 2"
-    ]
+      `.trim(),
+      nl: `
+Je helptekst hier.
+
+**Vetgedrukte Tekst** voor nadruk.
+Gebruik dubbele line breaks voor paragrafen.
+      `.trim()
+    },
+    updated: "2025-11-22",
+    tips: {
+      en: [
+        "Tip 1",
+        "Tip 2"
+      ],
+      nl: [
+        "Tip 1",
+        "Tip 2"
+      ]
+    }
   }
 };
 ```
 
 ### Adding New Changes
 
-**Edit `src/config/whatsNew.js`:**
+**Edit `src/config/whatsNewBilingual.js`:**
 
 ```javascript
-export const whatsNew = [
+export const whatsNewBilingual = [
   {
     date: "2025-11-25", // Add new items at TOP
     changes: [
       {
-        text: "Added new feature X",
+        text: {
+          en: "Added new feature X",
+          nl: "Nieuwe functie X toegevoegd"
+        },
         type: "feature" // or "fix" or "improvement"
       }
     ]
@@ -193,10 +218,10 @@ export const whatsNew = [
 
 ### Updating Route Mapping
 
-If you add a new admin route, update `helpContent.js`:
+If you add a new admin route, update `helpContentBilingual.js`:
 
 ```javascript
-export function getHelpContentByRoute(pathname) {
+export function getHelpContentByRoute(pathname, language = 'en') {
   const routeMap = {
     '/admin': 'dashboard',
     '/admin/map': 'mapManagement',
@@ -209,6 +234,26 @@ export function getHelpContentByRoute(pathname) {
 
 ---
 
+## Language Support
+
+### How It Works
+- HelpPanel uses `useTranslation()` hook from react-i18next
+- Current language extracted via `i18n.language`
+- Language passed to all helper functions
+- Fallback to English if Dutch translation missing
+
+### Switching Languages
+- Users switch language via LanguageToggle in public map
+- Admin panel respects user's language choice
+- Help content automatically updates when language changes
+
+### Adding New Language
+1. Add new language code to all content objects
+2. Update helper functions to support new language
+3. Provide translations for all sections
+
+---
+
 ## Testing Checklist
 
 - [x] Help button appears in AdminLayout
@@ -218,10 +263,13 @@ export function getHelpContentByRoute(pathname) {
 - [x] Help content loads for each route
 - [x] Tooltips work on hover
 - [x] Tooltips work on keyboard focus
+- [x] Help system fully bilingual (EN/NL)
+- [x] Language switching works correctly
+- [x] Fallback to English when translation missing
 - [ ] Mobile responsive (panel full-width)
 - [ ] Tooltips work on touch devices
 - [ ] Help content is accurate for all pages
-- [ ] "What's New" shows recent changes
+- [ ] "What's New" shows recent changes in both languages
 
 ---
 

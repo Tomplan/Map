@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import Icon from '@mdi/react';
 import {
@@ -11,8 +12,8 @@ import {
   mdiBookOpenPageVariant,
   mdiChevronRight
 } from '@mdi/js';
-import { getHelpContentByRoute } from '../config/helpContent';
-import { getRecentChanges } from '../config/whatsNew';
+import { getHelpContentByRoute } from '../config/helpContentBilingual';
+import { getRecentChanges } from '../config/whatsNewBilingual';
 import useUserRole from '../hooks/useUserRole';
 
 /**
@@ -29,13 +30,14 @@ import useUserRole from '../hooks/useUserRole';
  */
 export default function HelpPanel({ isOpen, onClose }) {
   const location = useLocation();
+  const { i18n } = useTranslation();
   const { role } = useUserRole();
   const [activeTab, setActiveTab] = useState('current');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get help content for current page
-  const currentPageHelp = getHelpContentByRoute(location.pathname);
-  const recentChanges = getRecentChanges(5);
+  // Get help content for current page in current language
+  const currentPageHelp = getHelpContentByRoute(location.pathname, i18n.language);
+  const recentChanges = getRecentChanges(5, i18n.language);
 
   // Change type styling
   const getChangeTypeBadge = (type) => {
