@@ -161,7 +161,7 @@ export default function UserManagement() {
         setInviteEmail('');
         setInviteRole('event_manager');
         fetchUsers(); // Refresh user list
-      }, 3000);
+      }, 8000);
 
     } catch (err) {
       console.error('Error inviting user:', err);
