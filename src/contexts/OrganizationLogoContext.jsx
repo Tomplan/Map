@@ -17,7 +17,7 @@ export function OrganizationLogoProvider({ children }) {
     async function fetchOrganizationLogo() {
       try {
         const { data, error } = await supabase
-          .from('Organization_Profile')
+          .from('organization_profile')
           .select('logo')
           .eq('id', 1)
           .single();
@@ -39,7 +39,7 @@ export function OrganizationLogoProvider({ children }) {
 
     fetchOrganizationLogo();
 
-    // Subscribe to changes in Organization_Profile
+    // Subscribe to changes in organization_profile
     const channel = supabase
       .channel('organization-logo-sync')
       .on(
@@ -47,7 +47,7 @@ export function OrganizationLogoProvider({ children }) {
         {
           event: '*',
           schema: 'public',
-          table: 'Organization_Profile',
+          table: 'organization_profile',
           filter: 'id=eq.1',
         },
         (payload) => {
