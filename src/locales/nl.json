@@ -341,5 +341,29 @@
     "save": "Opslaan",
     "saving": "Opslaan...",
     "saveError": "Fout bij opslaan activiteit"
+  },
+  "dashboard": {
+    "totalMarkers": "Totaal Markers",
+    "companies": "Bedrijven",
+    "subscriptions": "Inschrijvingen",
+    "assignments": "Toewijzingen",
+    "eventTotals": "Event Totalen",
+    "saturday": "Zaterdag",
+    "sunday": "Zondag",
+    "breakfast": "Ontbijt",
+    "lunch": "Lunch",
+    "bbq": "BBQ",
+    "noBBQ": "Geen BBQ",
+    "coins": "Munten",
+    "totalCoins": "Totaal Munten",
+    "quickActions": "Snelle Acties",
+    "addNewCompany": "Nieuw Bedrijf Toevoegen",
+    "addNewCompanyDesc": "Registreer een nieuw bedrijf in het systeem",
+    "manageSubscriptions": "Inschrijvingen Beheren",
+    "manageSubscriptionsDesc": "Voeg inschrijvingen toe of werk ze bij",
+    "assignBooths": "Stands Toewijzen",
+    "assignBoothsDesc": "Beheer standtoewijzingen voor bedrijven",
+    "recentActivity": "Recente Activiteit",
+    "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update."
   }
 }

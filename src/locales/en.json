@@ -341,5 +341,29 @@
     "save": "Save",
     "saving": "Saving...",
     "saveError": "Failed to save activity"
+  },
+  "dashboard": {
+    "totalMarkers": "Total Markers",
+    "companies": "Companies",
+    "subscriptions": "Subscriptions",
+    "assignments": "Assignments",
+    "eventTotals": "Event Totals",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "breakfast": "Breakfast",
+    "lunch": "Lunch",
+    "bbq": "BBQ",
+    "noBBQ": "No BBQ",
+    "coins": "Coins",
+    "totalCoins": "Total Coins",
+    "quickActions": "Quick Actions",
+    "addNewCompany": "Add New Company",
+    "addNewCompanyDesc": "Register a new company in the system",
+    "manageSubscriptions": "Manage Subscriptions",
+    "manageSubscriptionsDesc": "Add or update event subscriptions",
+    "assignBooths": "Assign Booths",
+    "assignBoothsDesc": "Manage booth assignments for companies",
+    "recentActivity": "Recent Activity",
+    "recentActivityPlaceholder": "Activity tracking will be added in a future update."
   }
 }
