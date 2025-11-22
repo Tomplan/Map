@@ -206,33 +206,18 @@ If you want users to receive **only the password setup email** (not both emails)
   2. User sets new password → Automatically redirects to `/admin`
   3. User logs in with new password
 
-### ⚠️ Current Supabase URL Configuration
-
-**Site URL**: `https://tomplan.github.io/Map/.`
-
-**Redirect URLs** (one per line):
-```
-https://tomplan.github.io/Map/#/reset-password
-http://localhost:5173/Map/reset-password
-```
-
 ### ⚠️ If Links Go to Wrong Page
 
 If the email link sends users to `https://tomplan.github.io/Map/#` (home page instead of reset page):
 
-**The Problem**: Site URL ends with `/.` but redirect URLs use `/#/` - this mismatch can cause issues.
+**Fix in UserManagement.jsx:**
+The `redirectTo` URL in the code should already be correct. If not, check line 100-105 in:
+`src/components/admin/UserManagement.jsx`
 
 **Fix in Supabase Dashboard:**
 1. Go to: **Authentication → URL Configuration**
-2. Update **"Site URL"** to: `https://tomplan.github.io/Map/#/` (add hash, remove trailing dot)
-   - OR keep as: `https://tomplan.github.io/Map/` (no hash, no trailing dot)
-3. Verify **"Redirect URLs"** includes:
-   - `https://tomplan.github.io/Map/#/reset-password` (production)
-   - `http://localhost:5173/Map/reset-password` (development)
-
-**Note**: The Site URL should match the base of your redirect URLs. Since you're using HashRouter (`#/`), the Site URL should either:
-- Include the hash: `https://tomplan.github.io/Map/#/`
-- Or be just the base: `https://tomplan.github.io/Map/` (without trailing dot)
+2. Check **"Site URL"**: Should be `https://tomplan.github.io/Map/#/`
+3. Check **"Redirect URLs"**: Should include `https://tomplan.github.io/Map/#/reset-password`
 
 ## Notes
 
