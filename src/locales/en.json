@@ -310,5 +310,33 @@
     "deleteButton": "Delete",
     "deleting": "Deleting...",
     "deleteError": "Failed to delete activity"
+  },
+  "activityForm": {
+    "createTitle": "Create Activity",
+    "editTitle": "Edit Activity",
+    "titleNL": "Title (NL)",
+    "titleEN": "Title (EN)",
+    "descriptionNL": "Description (NL)",
+    "descriptionEN": "Description (EN)",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "locationType": "Location Type",
+    "venue": "Venue",
+    "exhibitor": "Exhibitor",
+    "locationNL": "Location (NL)",
+    "locationEN": "Location (EN)",
+    "company": "Company",
+    "selectCompany": "Select a company...",
+    "badgeNL": "Badge (NL)",
+    "badgeEN": "Badge (EN)",
+    "optional": "optional",
+    "displayOrder": "Display Order",
+    "displayOrderHelp": "Lower numbers appear first in the schedule",
+    "isActive": "Active",
+    "isActiveHelp": "Only active activities are shown to visitors",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "saveError": "Failed to save activity"
   }
 }
