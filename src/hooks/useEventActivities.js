@@ -19,7 +19,7 @@ export function useEventActivities() {
       setLoading(true);
       setError(null);
 
-      // Fetch activities with basic company info
+      // Fetch activities with basic company info and badge visibility
       const { data: activitiesData, error: fetchError } = await supabase
         .from('event_activities')
         .select(`

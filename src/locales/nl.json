@@ -334,6 +334,8 @@
     "displayOrderHelp": "Lagere nummers verschijnen eerst in het programma",
     "isActive": "Actief",
     "isActiveHelp": "Alleen actieve activiteiten worden getoond aan bezoekers",
+    "showLocationBadge": "Toon Locatietype Badge",
+    "showLocationBadgeHelp": "Toon \"standhouder\" of \"locatie\" badge in het programma (meestal niet nodig)",
     "cancel": "Annuleren",
     "save": "Opslaan",
     "saving": "Opslaan...",
