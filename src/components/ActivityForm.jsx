@@ -372,6 +372,24 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
                 {t('activityForm.isActiveHelp')}
               </p>
             </div>
+
+            {/* Show Location Type Badge */}
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.show_location_type_badge}
+                  onChange={(e) => handleChange('show_location_type_badge', e.target.checked)}
+                  className="mr-2"
+                />
+                <span className="text-sm font-medium text-gray-700">
+                  {t('activityForm.showLocationBadge')}
+                </span>
+              </label>
+              <p className="mt-1 text-sm text-gray-500">
+                {t('activityForm.showLocationBadgeHelp')}
+              </p>
+            </div>
           </div>
         </form>
 
