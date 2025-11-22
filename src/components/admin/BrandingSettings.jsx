@@ -27,8 +27,8 @@ export default function BrandingSettings() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('Organization_Profile')
-        .select('theme_color, font_family')
+        .from('organization_profile')
+        .select('event_name, theme_color, font_family')
         .eq('id', 1)
         .single();
 
@@ -49,7 +49,7 @@ export default function BrandingSettings() {
     try {
       setSaving(true);
       const { error } = await supabase
-        .from('Organization_Profile')
+        .from('organization_profile')
         .update({
           theme_color: themeColor,
           font_family: fontFamily,

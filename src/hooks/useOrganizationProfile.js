@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient';
 
 /**
  * A hook to manage the organization's profile data.
- * It fetches, updates, and subscribes to real-time changes for the single-row Organization_Profile table.
+ * It fetches, updates, and subscribes to real-time changes for the single-row organization_profile table.
  * Note: Uses 'logo' field to match companies table structure.
  */
 export default function useOrganizationProfile() {
@@ -15,7 +15,7 @@ export default function useOrganizationProfile() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('Organization_Profile')
+        .from('organization_profile')
         .select('*')
         .single(); // We only expect one row
 
@@ -45,10 +45,10 @@ export default function useOrganizationProfile() {
 
     // Subscribe to real-time updates
     const subscription = supabase
-      .channel('public:Organization_Profile')
+      .channel('public:organization_profile')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'Organization_Profile', filter: 'id=eq.1' },
+        { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
         (payload) => {
           if (payload.new) {
             setProfile(payload.new);
@@ -70,7 +70,7 @@ export default function useOrganizationProfile() {
   const updateProfile = async (updates) => {
     try {
       const { data, error } = await supabase
-        .from('Organization_Profile')
+        .from('organization_profile')
         .update(updates)
         .eq('id', 1) // Always update the singleton row
         .select()

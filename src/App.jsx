@@ -38,12 +38,12 @@ function App() {
     eventName: '4x4 Vakantiebeurs',
   });
 
-  // Fetch branding from Organization_Profile and subscribe to changes
+  // Fetch branding from organization_profile and subscribe to changes
   useEffect(() => {
     async function fetchBranding() {
-      const { data, error } = await supabase.from('Organization_Profile').select('*').eq('id', 1).single();
+      const { data, error } = await supabase.from('organization_profile').select('*').eq('id', 1).single();
       if (error) {
-        console.error('Error fetching Organization_Profile:', error);
+        console.error('Error fetching organization_profile:', error);
         // Keep default branding if table doesn't exist or has no data
         return;
       }

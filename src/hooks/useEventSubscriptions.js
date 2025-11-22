@@ -53,7 +53,7 @@ export default function useEventSubscriptions(eventYear) {
 
       // Fetch organization defaults for meal counts (separate Saturday/Sunday)
       const { data: orgProfile } = await supabase
-        .from('Organization_Profile')
+        .from('organization_profile')
         .select('default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun')
         .eq('id', 1)
         .single();
