@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
 import { MdEdit, MdDelete, MdAdd, MdDragIndicator } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
+import ActivityForm from './ActivityForm';
 
 /**
  * ProgramManagement - Admin component for managing event activities
@@ -14,6 +15,8 @@ export default function ProgramManagement() {
   const [activeTab, setActiveTab] = useState('saturday');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
   const [deleting, setDeleting] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editActivity, setEditActivity] = useState(null);
 
   const currentActivities = activities[activeTab] || [];
 
@@ -68,7 +71,13 @@ export default function ProgramManagement() {
           <h2 className="text-xl font-semibold text-gray-900">
             {t('programManagement.title')}
           </h2>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button 
+            onClick={() => {
+              setEditActivity(null);
+              setShowForm(true);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             <MdAdd className="text-xl" />
             <span>{t('programManagement.addActivity')}</span>
           </button>
@@ -106,7 +115,13 @@ export default function ProgramManagement() {
         {currentActivities.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500">{t('programManagement.noActivitiesFound')}</p>
-            <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <button 
+              onClick={() => {
+                setEditActivity(null);
+                setShowForm(true);
+              }}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
               {t('programManagement.addFirstActivity')}
             </button>
           </div>
@@ -179,6 +194,10 @@ export default function ProgramManagement() {
                       {/* Actions */}
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => {
+                            setEditActivity(activity);
+                            setShowForm(true);
+                          }}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title={t('programManagement.edit')}
                         >
@@ -252,6 +271,19 @@ export default function ProgramManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Activity Form Modal */}
+      {showForm && (
+        <ActivityForm
+          activity={editActivity}
+          day={activeTab}
+          onSave={refetch}
+          onClose={() => {
+            setShowForm(false);
+            setEditActivity(null);
+          }}
+        />
       )}
     </div>
   );

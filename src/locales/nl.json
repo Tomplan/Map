@@ -310,5 +310,33 @@
     "deleteButton": "Verwijderen",
     "deleting": "Verwijderen...",
     "deleteError": "Fout bij verwijderen activiteit"
+  },
+  "activityForm": {
+    "createTitle": "Activiteit Aanmaken",
+    "editTitle": "Activiteit Bewerken",
+    "titleNL": "Titel (NL)",
+    "titleEN": "Titel (EN)",
+    "descriptionNL": "Beschrijving (NL)",
+    "descriptionEN": "Beschrijving (EN)",
+    "startTime": "Starttijd",
+    "endTime": "Eindtijd",
+    "locationType": "Locatie Type",
+    "venue": "Locatie",
+    "exhibitor": "Exposant",
+    "locationNL": "Locatie (NL)",
+    "locationEN": "Locatie (EN)",
+    "company": "Bedrijf",
+    "selectCompany": "Selecteer een bedrijf...",
+    "badgeNL": "Badge (NL)",
+    "badgeEN": "Badge (EN)",
+    "optional": "optioneel",
+    "displayOrder": "Volgorde",
+    "displayOrderHelp": "Lagere nummers verschijnen eerst in het programma",
+    "isActive": "Actief",
+    "isActiveHelp": "Alleen actieve activiteiten worden getoond aan bezoekers",
+    "cancel": "Annuleren",
+    "save": "Opslaan",
+    "saving": "Opslaan...",
+    "saveError": "Fout bij opslaan activiteit"
   }
 }
