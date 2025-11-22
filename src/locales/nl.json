@@ -303,6 +303,12 @@
     "dragToReorder": "Sleep om te herschikken",
     "totalActivities": "Totaal Activiteiten",
     "loading": "Activiteiten laden...",
-    "error": "Fout bij laden activiteiten"
+    "error": "Fout bij laden activiteiten",
+    "confirmDelete": "Activiteit Verwijderen",
+    "confirmDeleteMessage": "Weet je zeker dat je deze activiteit wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "cancel": "Annuleren",
+    "deleteButton": "Verwijderen",
+    "deleting": "Verwijderen...",
+    "deleteError": "Fout bij verwijderen activiteit"
   }
 }
