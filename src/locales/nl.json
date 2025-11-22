@@ -3,6 +3,26 @@
   "welcome": "Welkom op het evenement!",
   "home": "Startpagina",
   "admin": "Admin Dashboard",
+  "adminNav": {
+    "adminPanel": "Beheerderspaneel",
+    "dashboard": "Dashboard",
+    "mapManagement": "Kaartbeheer",
+    "companies": "Bedrijven",
+    "eventSubscriptions": "Evenement Inschrijvingen",
+    "programManagement": "Programmabeheer",
+    "assignments": "Toewijzingen",
+    "settings": "Instellingen",
+    "eventYear": "Evenementjaar",
+    "help": "Help",
+    "logout": "Uitloggen",
+    "loading": "Laden...",
+    "roles": {
+      "super_admin": "Super Admin",
+      "system_manager": "Systeembeheerder",
+      "event_manager": "Evenementbeheerder",
+      "content_editor": "Contentbeheerder"
+    }
+  },
   "common": {
     "loading": "Laden...",
     "saving": "Opslaan...",
@@ -89,7 +109,7 @@
       "deleteUser": "Gebruiker verwijderen",
       "confirmDelete": "Weet u zeker dat u {{email}} wilt verwijderen?",
       "inviteSuccess": "Manager uitnodiging verzonden!",
-      "inviteSuccessMessage": "De nieuwe manager ontvangt 2 emails: een bevestigingsmail (kan genegeerd worden) en een wachtwoord reset email voor toegang tot het admin paneel.",
+      "inviteSuccessMessage": "De nieuwe manager ontvangt 2 emails: (1) Bevestigingsmail - NEGEER DEZE, (2) Wachtwoordherstel-mail - GEBRUIK DEZE om wachtwoord in te stellen.",
       "table": {
         "email": "E-mail",
         "role": "Rol",
