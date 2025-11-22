@@ -96,12 +96,12 @@ export default function UserManagement() {
     setError(null);
 
     try {
-      // Build redirect URL for password setup - point to admin area
+      // Build redirect URL for password setup
       const isProd = import.meta.env.PROD;
       const base = import.meta.env.BASE_URL || '/';
       const redirectUrl = isProd 
-        ? `${window.location.origin}${base}#/admin/reset-password`
-        : `${window.location.origin}${base}admin/reset-password`;
+        ? `${window.location.origin}${base}#/reset-password`
+        : `${window.location.origin}${base}reset-password`;
 
       // Use Supabase Admin API to invite user
       // Note: This requires server-side implementation or Supabase service role key

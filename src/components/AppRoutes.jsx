@@ -137,17 +137,6 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         />
         <Route path="settings" element={<Settings />} />
       </Route>
-      {/* Admin password reset - for new managers invited via email */}
-      <Route
-        path="/admin/reset-password"
-        element={
-          <ErrorBoundary>
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-              <ResetPassword branding={branding} />
-            </Suspense>
-          </ErrorBoundary>
-        }
-      />
       <Route path="/storage-test" element={<StorageTestPage />} />
 
     </Routes>
