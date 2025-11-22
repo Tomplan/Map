@@ -277,17 +277,6 @@ export default function UserManagement() {
           </button>
         </div>
 
-        {/* Info Banner */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-start gap-3">
-            <Icon path={mdiAlertCircle} size={0.9} className="text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">{t('settings.userManagement.implementation.title')}</p>
-              <p>{t('settings.userManagement.implementation.message')}</p>
-            </div>
-          </div>
-        </div>
-
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg mb-4">
             <div className="flex items-center">
