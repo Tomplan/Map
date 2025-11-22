@@ -303,6 +303,12 @@
     "dragToReorder": "Drag to reorder",
     "totalActivities": "Total Activities",
     "loading": "Loading activities...",
-    "error": "Error loading activities"
+    "error": "Error loading activities",
+    "confirmDelete": "Delete Activity",
+    "confirmDeleteMessage": "Are you sure you want to delete this activity? This action cannot be undone.",
+    "cancel": "Cancel",
+    "deleteButton": "Delete",
+    "deleting": "Deleting...",
+    "deleteError": "Failed to delete activity"
   }
 }
