@@ -242,6 +242,9 @@ Configure system-wide settings and preferences.
 - **Map Defaults**: Default layers, zoom levels
 - **User Management**: Admin roles and permissions
 - **Marker Defaults**: Default icons, colors, sizes
+- **Event Defaults**: Saturday/Sunday meal options
+- **Branding**: Colors, logo, organization name
+- **Program Management**: Event schedule and activities
 
 **Organization Logo:**
 Upload your organization logo to appear:
@@ -253,16 +256,60 @@ Upload your organization logo to appear:
 - **Super Admin**: Full access to all features
 - **System Manager**: Dashboard + Map Management
 - **Event Manager**: Dashboard + Companies + Subscriptions + Assignments
+- **Content Editor**: Program management access
 
 **Important:**
 Only Super Admins can access settings. Changes affect all users.
     `.trim(),
-    updated: "2025-11-21",
+    updated: "2025-11-22",
     tips: [
       "Only Super Admins see this section",
       "Test logo uploads in staging first",
       "Changes affect all admin users",
       "Keep user count to 5-10 for best performance"
+    ]
+  },
+
+  // Program Management Help
+  programManagement: {
+    title: "Program Management",
+    content: `
+Manage your event schedule and activities dynamically.
+
+**Managing Activities:**
+- **Add Activity**: Click "Add Activity" to create new schedule item
+- **Edit**: Click pencil icon to modify existing activity
+- **Delete**: Click trash icon with confirmation
+- **Reorder**: Drag activities by the ⋮⋮ handle to change order
+
+**Activity Properties:**
+- **Title & Description**: Bilingual content (NL/EN)
+- **Time**: Start and end time for the activity
+- **Location Type**: 
+  - **Exhibitor**: Links to company booth
+  - **Venue**: Static location text
+- **Badge**: Optional label (e.g., "FREE ENTRY!", "Members only")
+- **Display Order**: Controls sort order in schedule
+- **Active Status**: Hide/show activity from public view
+- **Location Badge**: Optional exhibitor/venue indicator
+
+**Day Tabs:**
+Switch between Saturday and Sunday to manage each day separately.
+
+**Tips:**
+- Drag-to-reorder updates display_order automatically
+- Exhibitor activities show company name
+- Venue activities use custom location text
+- Inactive activities hidden from public schedule
+- Location badges help highlight special activities
+    `.trim(),
+    updated: "2025-11-22",
+    tips: [
+      "Drag activities to reorder them visually",
+      "Link exhibitor activities to show booth locations",
+      "Use badges to highlight special activities",
+      "Set activities inactive to hide from public",
+      "Location badges optional - usually not needed"
     ]
   },
 
@@ -276,6 +323,7 @@ Welcome to the Event Map Admin Panel!
 - **Super Admin**: Full access to everything
 - **System Manager**: Map editing and dashboard
 - **Event Manager**: Company and subscription management
+- **Content Editor**: Program management access
 
 **Common Workflows:**
 
@@ -283,28 +331,36 @@ Welcome to the Event Map Admin Panel!
 - Add/update companies in Companies tab
 - Import subscriptions for new year
 - Assign companies to map locations
+- Update event schedule in Program Management
 
 **2. Managing Map:**
 - Place markers for booths, parking, facilities
 - Adjust visibility by zoom level
 - Lock markers before event goes live
 
-**3. Day-of-Event:**
+**3. Managing Event Program:**
+- Add/edit activities in Settings → Program Management
+- Link exhibitor activities to company booths
+- Drag-to-reorder for easy scheduling
+- Set activities active/inactive to control visibility
+
+**4. Day-of-Event:**
 - Lock all markers to prevent accidents
 - Monitor assignments in real-time
-- Public map updates automatically
+- Public map and schedule update automatically
 
 **Need Help?**
 - Hover over (?) icons for quick tips
 - Check "What's New" for recent changes
 - Contact system administrator for access issues
     `.trim(),
-    updated: "2025-11-21",
+    updated: "2025-11-22",
     tips: [
       "Start with dashboard to understand current status",
       "Use year selector to switch between events",
       "Lock markers before going live",
-      "Import data saves time vs manual entry"
+      "Import data saves time vs manual entry",
+      "Program management updates public schedule instantly"
     ]
   }
 };
@@ -331,6 +387,7 @@ export function getHelpContentByRoute(pathname) {
     '/admin/subscriptions': 'subscriptions',
     '/admin/assignments': 'assignments',
     '/admin/settings': 'settings',
+    '/admin/settings/program': 'programManagement',
   };
 
   const page = routeMap[pathname] || 'general';
