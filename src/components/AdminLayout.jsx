@@ -90,16 +90,16 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       roles: ['super_admin', 'event_manager'],
     },
     {
-      path: '/admin/program',
-      label: t('adminNav.programManagement'),
-      icon: mdiCalendarClock,
-      roles: ['super_admin', 'event_manager', 'content_editor'],
-    },
-    {
       path: '/admin/assignments',
       label: t('adminNav.assignments'),
       icon: mdiMapMarkerMultiple,
       roles: ['super_admin', 'event_manager'],
+    },
+    {
+      path: '/admin/program',
+      label: t('adminNav.programManagement'),
+      icon: mdiCalendarClock,
+      roles: ['super_admin', 'event_manager', 'content_editor'],
     },
     {
       path: '/admin/settings',
