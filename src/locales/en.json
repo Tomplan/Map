@@ -287,5 +287,22 @@
     "map": "Map",
     "exhibitors": "Exhibitors",
     "schedule": "Schedule"
+  },
+  "programManagement": {
+    "title": "Program Management",
+    "addActivity": "Add Activity",
+    "addFirstActivity": "Add Your First Activity",
+    "noActivitiesFound": "No activities found for this day",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+    "location": "Location",
+    "exhibitor": "Exhibitor",
+    "venue": "Venue",
+    "edit": "Edit",
+    "delete": "Delete",
+    "dragToReorder": "Drag to reorder",
+    "totalActivities": "Total Activities",
+    "loading": "Loading activities...",
+    "error": "Error loading activities"
   }
 }

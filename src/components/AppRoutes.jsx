@@ -16,6 +16,7 @@ import Dashboard from './admin/Dashboard';
 import MapManagement from './admin/MapManagement';
 import CompaniesTab from './admin/CompaniesTab';
 import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
+import ProgramManagement from './ProgramManagement';
 import AssignmentsTab from './admin/AssignmentsTab';
 import Settings from './admin/Settings';
 
@@ -129,6 +130,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           path="subscriptions"
           element={<EventSubscriptionsTab selectedYear={selectedYear} />}
         />
+        <Route path="program" element={<ProgramManagement />} />
         <Route
           path="assignments"
           element={<AssignmentsTab selectedYear={selectedYear} />}
