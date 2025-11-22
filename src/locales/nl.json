@@ -309,7 +309,8 @@
     "cancel": "Annuleren",
     "deleteButton": "Verwijderen",
     "deleting": "Verwijderen...",
-    "deleteError": "Fout bij verwijderen activiteit"
+    "deleteError": "Fout bij verwijderen activiteit",
+    "reorderError": "Fout bij herschikken activiteiten"
   },
   "activityForm": {
     "createTitle": "Activiteit Aanmaken",
