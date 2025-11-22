@@ -51,6 +51,7 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
         badge_en: activity.badge_en || '',
         display_order: activity.display_order || 1,
         is_active: activity.is_active !== undefined ? activity.is_active : true,
+        show_location_type_badge: activity.show_location_type_badge || false,
       });
     }
   }, [activity]);
