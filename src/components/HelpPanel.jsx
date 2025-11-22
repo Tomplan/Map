@@ -30,7 +30,7 @@ import useUserRole from '../hooks/useUserRole';
  */
 export default function HelpPanel({ isOpen, onClose }) {
   const location = useLocation();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { role } = useUserRole();
   const [activeTab, setActiveTab] = useState('current');
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,13 +47,6 @@ export default function HelpPanel({ isOpen, onClose }) {
       improvement: 'bg-blue-100 text-blue-800'
     };
     return styles[type] || styles.improvement;
-  };
-
-  // Filter role-specific content
-  const roleLabels = {
-    super_admin: 'Super Admin',
-    system_manager: 'System Manager',
-    event_manager: 'Event Manager'
   };
 
   if (!isOpen) return null;
@@ -78,12 +71,12 @@ export default function HelpPanel({ isOpen, onClose }) {
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-blue-100">
           <div className="flex items-center gap-2">
             <Icon path={mdiBookOpenPageVariant} size={1.2} className="text-blue-600" />
-            <h2 className="text-xl font-semibold text-gray-800">Help & Guide</h2>
+            <h2 className="text-xl font-semibold text-gray-800">{t('helpPanel.title')}</h2>
           </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/50 rounded-lg transition-colors"
-            aria-label="Close help panel"
+            aria-label={t('helpPanel.closeHelp')}
           >
             <Icon path={mdiClose} size={1} className="text-gray-600" />
           </button>
@@ -93,7 +86,7 @@ export default function HelpPanel({ isOpen, onClose }) {
         {role && (
           <div className="px-6 py-2 bg-gray-50 border-b border-gray-200">
             <span className="text-sm text-gray-600">
-              Your role: <span className="font-semibold text-blue-600">{roleLabels[role]}</span>
+              {t('helpPanel.yourRole')} <span className="font-semibold text-blue-600">{t(`helpPanel.roles.${role}`, role)}</span>
             </span>
           </div>
         )}
@@ -108,7 +101,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            Current Page
+            {t('helpPanel.tabs.currentPage')}
           </button>
           <button
             onClick={() => setActiveTab('whats-new')}
@@ -118,7 +111,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            What's New
+            {t('helpPanel.tabs.whatsNew')}
           </button>
           <button
             onClick={() => setActiveTab('quick-start')}
@@ -128,7 +121,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                 : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            Quick Start
+            {t('helpPanel.tabs.quickStart')}
           </button>
         </div>
 
@@ -143,7 +136,7 @@ export default function HelpPanel({ isOpen, onClose }) {
               />
               <input
                 type="text"
-                placeholder="Search help content..."
+                placeholder={t('helpPanel.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -162,7 +155,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                   {currentPageHelp.title}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  Last updated: {currentPageHelp.updated}
+                  {t('helpPanel.lastUpdated')} {currentPageHelp.updated}
                 </p>
               </div>
 
@@ -196,7 +189,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                   <div className="flex items-start gap-2">
                     <Icon path={mdiLightbulbOnOutline} size={0.9} className="text-amber-600 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="font-semibold text-amber-900 mb-2">Quick Tips</h4>
+                      <h4 className="font-semibold text-amber-900 mb-2">{t('helpPanel.quickTips')}</h4>
                       <ul className="space-y-1">
                         {currentPageHelp.tips.map((tip, idx) => (
                           <li key={idx} className="text-sm text-amber-800 flex items-start gap-2">
@@ -216,8 +209,8 @@ export default function HelpPanel({ isOpen, onClose }) {
           {activeTab === 'whats-new' && (
             <div className="space-y-4">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">What's New</h3>
-                <p className="text-sm text-gray-600">Recent updates and changes</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('helpPanel.whatsNewTitle')}</h3>
+                <p className="text-sm text-gray-600">{t('helpPanel.whatsNewSubtitle')}</p>
               </div>
 
               <div className="space-y-4">
@@ -226,7 +219,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                     <div className="flex items-center gap-2 mb-2">
                       <Icon path={mdiNewBox} size={0.7} className="text-blue-600" />
                       <span className="text-sm font-semibold text-gray-700">
-                        {new Date(item.date).toLocaleDateString('en-US', { 
+                        {new Date(item.date).toLocaleDateString(i18n.language === 'nl' ? 'nl-NL' : 'en-US', { 
                           year: 'numeric', 
                           month: 'long', 
                           day: 'numeric' 
@@ -237,7 +230,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                       {item.changes.map((change, changeIdx) => (
                         <li key={changeIdx} className="flex items-start gap-2">
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getChangeTypeBadge(change.type)}`}>
-                            {change.type}
+                            {t(`helpPanel.changeTypes.${change.type}`, change.type)}
                           </span>
                           <span className="text-sm text-gray-700 flex-1">{change.text}</span>
                         </li>
@@ -253,50 +246,46 @@ export default function HelpPanel({ isOpen, onClose }) {
           {activeTab === 'quick-start' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">Quick Start Guide</h3>
-                <p className="text-sm text-gray-600">Get started with the admin panel</p>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('helpPanel.quickStartTitle')}</h3>
+                <p className="text-sm text-gray-600">{t('helpPanel.quickStartSubtitle')}</p>
               </div>
 
               <div className="space-y-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 mb-2">1. Understand Your Role</h4>
+                  <h4 className="font-semibold text-blue-900 mb-2">{t('helpPanel.steps.step1Title')}</h4>
                   <p className="text-sm text-blue-800">
-                    Your role ({roleLabels[role] || 'Unknown'}) determines which features you can access. 
-                    Check the navigation menu to see available sections.
+                    {t('helpPanel.steps.step1Text', { role: t(`helpPanel.roles.${role}`, t('helpPanel.roles.unknown')) })}
                   </p>
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-green-900 mb-2">2. Select Event Year</h4>
+                  <h4 className="font-semibold text-green-900 mb-2">{t('helpPanel.steps.step2Title')}</h4>
                   <p className="text-sm text-green-800">
-                    Use the year dropdown in the top navigation to switch between different event years. 
-                    All data (subscriptions, assignments) is year-specific.
+                    {t('helpPanel.steps.step2Text')}
                   </p>
                 </div>
 
                 <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-purple-900 mb-2">3. Explore the Dashboard</h4>
+                  <h4 className="font-semibold text-purple-900 mb-2">{t('helpPanel.steps.step3Title')}</h4>
                   <p className="text-sm text-purple-800">
-                    Start at the Dashboard to see an overview of markers, companies, and event statistics. 
-                    This gives you a quick snapshot of your current data.
+                    {t('helpPanel.steps.step3Text')}
                   </p>
                 </div>
 
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-orange-900 mb-2">4. Common Workflows</h4>
+                  <h4 className="font-semibold text-orange-900 mb-2">{t('helpPanel.steps.step4Title')}</h4>
                   <ul className="text-sm text-orange-800 space-y-1 ml-4 list-disc">
-                    <li>Add companies in the Companies tab</li>
-                    <li>Import subscriptions via Excel/CSV</li>
-                    <li>Assign companies to map locations</li>
-                    <li>Lock markers before event day</li>
+                    <li>{t('helpPanel.steps.step4Item1')}</li>
+                    <li>{t('helpPanel.steps.step4Item2')}</li>
+                    <li>{t('helpPanel.steps.step4Item3')}</li>
+                    <li>{t('helpPanel.steps.step4Item4')}</li>
                   </ul>
                 </div>
 
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <h4 className="font-semibold text-gray-900 mb-2">5. Get Contextual Help</h4>
+                  <h4 className="font-semibold text-gray-900 mb-2">{t('helpPanel.steps.step5Title')}</h4>
                   <p className="text-sm text-gray-700">
-                    Click "Current Page" tab in this help panel to see specific guidance for each section. 
-                    Hover over (?) icons for quick tooltips.
+                    {t('helpPanel.steps.step5Text')}
                   </p>
                 </div>
               </div>
@@ -307,7 +296,7 @@ export default function HelpPanel({ isOpen, onClose }) {
         {/* Footer */}
         <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
           <p className="text-xs text-gray-500 text-center">
-            Need more help? Contact your system administrator
+            {t('helpPanel.footer')}
           </p>
         </div>
       </div>
