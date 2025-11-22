@@ -3,6 +3,26 @@
   "welcome": "Welcome to the event!",
   "home": "Home",
   "admin": "Admin Dashboard",
+  "adminNav": {
+    "adminPanel": "Admin Panel",
+    "dashboard": "Dashboard",
+    "mapManagement": "Map Management",
+    "companies": "Companies",
+    "eventSubscriptions": "Event Subscriptions",
+    "programManagement": "Program Management",
+    "assignments": "Assignments",
+    "settings": "Settings",
+    "eventYear": "Event Year",
+    "help": "Help",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "roles": {
+      "super_admin": "Super Admin",
+      "system_manager": "System Manager",
+      "event_manager": "Event Manager",
+      "content_editor": "Content Editor"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "saving": "Saving...",
@@ -89,7 +109,7 @@
       "deleteUser": "Delete user",
       "confirmDelete": "Are you sure you want to delete {{email}}?",
       "inviteSuccess": "Manager invitation sent!",
-      "inviteSuccessMessage": "The new manager will receive 2 emails: a confirmation email (can be ignored) and a password reset email to access the admin panel.",
+      "inviteSuccessMessage": "The new manager will receive 2 emails: (1) Confirmation email - IGNORE THIS, it will not work. (2) Password reset email - USE THIS to set password and access the admin panel.",
       "table": {
         "email": "Email",
         "role": "Role",

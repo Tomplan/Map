@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import {
   mdiViewDashboard,
@@ -23,6 +24,7 @@ import HelpPanel from './HelpPanel';
  * Desktop-optimized with role-based navigation
  */
 export default function AdminLayout({ selectedYear, setSelectedYear }) {
+  const { t } = useTranslation();
   const location = useLocation();
   const { role, loading, hasAnyRole } = useUserRole();
 
@@ -65,43 +67,43 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const navItems = [
     {
       path: '/admin',
-      label: 'Dashboard',
+      label: t('adminNav.dashboard'),
       icon: mdiViewDashboard,
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },
     {
       path: '/admin/map',
-      label: 'Map Management',
+      label: t('adminNav.mapManagement'),
       icon: mdiMap,
       roles: ['super_admin', 'system_manager'],
     },
     {
       path: '/admin/companies',
-      label: 'Companies',
+      label: t('adminNav.companies'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
     },
     {
       path: '/admin/subscriptions',
-      label: 'Event Subscriptions',
+      label: t('adminNav.eventSubscriptions'),
       icon: mdiCalendarCheck,
       roles: ['super_admin', 'event_manager'],
     },
     {
       path: '/admin/program',
-      label: 'Program Management',
+      label: t('adminNav.programManagement'),
       icon: mdiCalendarClock,
       roles: ['super_admin', 'event_manager', 'content_editor'],
     },
     {
       path: '/admin/assignments',
-      label: 'Assignments',
+      label: t('adminNav.assignments'),
       icon: mdiMapMarkerMultiple,
       roles: ['super_admin', 'event_manager'],
     },
     {
       path: '/admin/settings',
-      label: 'Settings',
+      label: t('adminNav.settings'),
       icon: mdiCog,
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },
@@ -113,7 +115,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600">{t('adminNav.loading')}</div>
       </div>
     );
   }
@@ -126,10 +128,10 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+              <h1 className="text-xl font-bold text-gray-900">{t('adminNav.adminPanel')}</h1>
               {role && (
                 <p className="text-xs text-gray-500 mt-1 capitalize">
-                  {role.replace('_', ' ')}
+                  {t(`adminNav.roles.${role}`)}
                 </p>
               )}
             </div>
@@ -173,7 +175,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         <div className="p-2 border-t border-gray-200">
           {!isCollapsed ? (
             <div className="px-2 py-3">
-              <label className="block text-xs font-medium text-gray-700 mb-2">Event Year</label>
+              <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
               <select
                 value={selectedYear}
                 onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
@@ -204,7 +206,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
             title={isCollapsed ? 'Help' : ''}
           >
             <Icon path={mdiHelpCircleOutline} size={1} />
-            {!isCollapsed && <span>Help</span>}
+            {!isCollapsed && <span>{t('adminNav.help')}</span>}
           </button>
         </div>
 
@@ -216,7 +218,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
             title={isCollapsed ? 'Logout' : ''}
           >
             <Icon path={mdiLogout} size={1} />
-            {!isCollapsed && <span>Logout</span>}
+            {!isCollapsed && <span>{t('adminNav.logout')}</span>}
           </button>
         </div>
       </aside>
