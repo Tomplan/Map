@@ -1,15 +1,14 @@
 /**
  * Help Content Configuration
  * 
- * Structured help content for each admin page.
+ * Bilingual help content for each admin page (EN/NL).
  * No versioning - uses simple date-based updates.
  * 
  * Structure:
- * - title: Page/section title
- * - content: Main help text (supports markdown-style formatting)
+ * - title: { en, nl } - Page/section title
+ * - content: { en, nl } - Main help text (supports markdown-style formatting)
  * - updated: Last update date (YYYY-MM-DD)
- * - tips: Array of quick tips (optional)
- * - videoUrl: Embedded video tutorial URL (optional, for future)
+ * - tips: { en: [], nl: [] } - Quick tips arrays
  */
 
 export const helpContent = {
@@ -368,18 +367,28 @@ Welcome to the Event Map Admin Panel!
 /**
  * Get help content for a specific page
  * @param {string} page - Page identifier (dashboard, mapManagement, etc.)
- * @returns {object} Help content object
+ * @param {string} language - Language code ('en' or 'nl')
+ * @returns {object} Help content object with localized strings
  */
-export function getHelpContent(page) {
-  return helpContent[page] || helpContent.general;
+export function getHelpContent(page, language = 'en') {
+  const content = helpContent[page] || helpContent.general;
+  
+  // Return localized version
+  return {
+    title: content.title?.[language] || content.title?.en || content.title,
+    content: content.content?.[language] || content.content?.en || content.content,
+    updated: content.updated,
+    tips: content.tips?.[language] || content.tips?.en || content.tips
+  };
 }
 
 /**
  * Get help content based on current route
  * @param {string} pathname - Current route pathname
- * @returns {object} Help content object
+ * @param {string} language - Language code ('en' or 'nl')
+ * @returns {object} Help content object with localized strings
  */
-export function getHelpContentByRoute(pathname) {
+export function getHelpContentByRoute(pathname, language = 'en') {
   const routeMap = {
     '/admin': 'dashboard',
     '/admin/map': 'mapManagement',
@@ -391,5 +400,5 @@ export function getHelpContentByRoute(pathname) {
   };
 
   const page = routeMap[pathname] || 'general';
-  return getHelpContent(page);
+  return getHelpContent(page, language);
 }
