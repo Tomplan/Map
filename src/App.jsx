@@ -66,7 +66,7 @@ function App() {
         {
           event: '*',
           schema: 'public',
-          table: 'Organization_Profile',
+          table: 'organization_profile',
           filter: 'id=eq.1',
         },
         (payload) => {
