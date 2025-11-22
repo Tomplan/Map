@@ -6,6 +6,7 @@ import {
   mdiMap,
   mdiDomain,
   mdiCalendarCheck,
+  mdiCalendarClock,
   mdiMapMarkerMultiple,
   mdiCog,
   mdiLogout,
@@ -85,6 +86,12 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       label: 'Event Subscriptions',
       icon: mdiCalendarCheck,
       roles: ['super_admin', 'event_manager'],
+    },
+    {
+      path: '/admin/program',
+      label: 'Program Management',
+      icon: mdiCalendarClock,
+      roles: ['super_admin', 'event_manager', 'content_editor'],
     },
     {
       path: '/admin/assignments',

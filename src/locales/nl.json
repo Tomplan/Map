@@ -287,5 +287,22 @@
     "map": "Plattegrond",
     "exhibitors": "Standhouders",
     "schedule": "Programma"
+  },
+  "programManagement": {
+    "title": "Programma Beheer",
+    "addActivity": "Activiteit Toevoegen",
+    "addFirstActivity": "Voeg Je Eerste Activiteit Toe",
+    "noActivitiesFound": "Geen activiteiten gevonden voor deze dag",
+    "saturday": "Zaterdag",
+    "sunday": "Zondag",
+    "location": "Locatie",
+    "exhibitor": "Exposant",
+    "venue": "Locatie",
+    "edit": "Bewerken",
+    "delete": "Verwijderen",
+    "dragToReorder": "Sleep om te herschikken",
+    "totalActivities": "Totaal Activiteiten",
+    "loading": "Activiteiten laden...",
+    "error": "Fout bij laden activiteiten"
   }
 }
