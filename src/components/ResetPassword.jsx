@@ -121,12 +121,9 @@ export default function ResetPassword({ branding }) {
       setError(t('resetPassword.errors.updateFailed'));
     } else {
       setSuccess(true);
-      // Redirect to login after 3 seconds
+      // Redirect to admin after 3 seconds
       setTimeout(() => {
-        const isProd = import.meta.env.PROD;
-        const base = import.meta.env.BASE_URL || '/';
-        const baseUrl = base.endsWith('/') ? base : `${base}/`;
-        window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
+        navigate('/admin');
       }, 3000);
     }
   };
@@ -185,12 +182,7 @@ export default function ResetPassword({ branding }) {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => {
-                    const isProd = import.meta.env.PROD;
-                    const base = import.meta.env.BASE_URL || '/';
-                    const baseUrl = base.endsWith('/') ? base : `${base}/`;
-                    window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
-                  }}
+                  onClick={() => navigate('/admin')}
                   className="flex-1 btn-primary"
                 >
                   {t('resetPassword.requestNewLink')}
@@ -268,12 +260,7 @@ export default function ResetPassword({ branding }) {
 
               <button
                 type="button"
-                onClick={() => {
-                  const isProd = import.meta.env.PROD;
-                  const base = import.meta.env.BASE_URL || '/';
-                  const baseUrl = base.endsWith('/') ? base : `${base}/`;
-                  window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
-                }}
+                onClick={() => navigate('/admin')}
                 className="w-full py-2 text-orange-600 hover:text-orange-700 font-medium text-sm transition-colors"
               >
                 ← {t('resetPassword.backToLogin')}
