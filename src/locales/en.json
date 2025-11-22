@@ -88,8 +88,8 @@
       "editRole": "Edit role",
       "deleteUser": "Delete user",
       "confirmDelete": "Are you sure you want to delete {{email}}?",
-      "inviteSuccess": "Invitation sent!",
-      "inviteSuccessMessage": "User will receive an email to set their password.",
+      "inviteSuccess": "Manager invitation sent!",
+      "inviteSuccessMessage": "The new manager will receive 2 emails: a confirmation email (can be ignored) and a password reset email to access the admin panel.",
       "table": {
         "email": "Email",
         "role": "Role",

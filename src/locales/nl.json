@@ -88,8 +88,8 @@
       "editRole": "Rol bewerken",
       "deleteUser": "Gebruiker verwijderen",
       "confirmDelete": "Weet u zeker dat u {{email}} wilt verwijderen?",
-      "inviteSuccess": "Uitnodiging verzonden!",
-      "inviteSuccessMessage": "Gebruiker ontvangt een e-mail om wachtwoord in te stellen.",
+      "inviteSuccess": "Manager uitnodiging verzonden!",
+      "inviteSuccessMessage": "De nieuwe manager ontvangt 2 emails: een bevestigingsmail (kan genegeerd worden) en een wachtwoord reset email voor toegang tot het admin paneel.",
       "table": {
         "email": "E-mail",
         "role": "Rol",
