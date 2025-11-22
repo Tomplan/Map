@@ -127,16 +127,11 @@
         "system_manager": "Kaartbeheer en gebruikersadministratie",
         "event_manager": "Bedrijven, inschrijvingen en toewijzingen"
       },
-      "implementation": {
-        "title": "Server-side API vereist",
-        "message": "Volledig gebruikersbeheer vereist server-side implementatie met Supabase Admin API. Momenteel worden mock-gegevens getoond. Neem contact op met uw ontwikkelaar om bewerken/verwijderen functionaliteit in te schakelen."
-      },
       "errors": {
         "fetchFailed": "Kan gebruikers niet laden",
         "inviteFailed": "Kan uitnodiging niet verzenden",
         "updateFailed": "Kan gebruikersrol niet bijwerken",
-        "deleteFailed": "Kan gebruiker niet verwijderen",
-        "requiresServerApi": "Deze actie vereist server-side API implementatie"
+        "deleteFailed": "Kan gebruiker niet verwijderen"
       }
     },
     "organization": {
