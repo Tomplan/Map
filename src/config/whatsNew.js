@@ -12,6 +12,31 @@
 
 export const whatsNew = [
   {
+    date: "2025-11-22",
+    changes: [
+      {
+        text: "Program Management: Manage event schedule with database-driven activities",
+        type: "feature"
+      },
+      {
+        text: "Drag-to-reorder activities within Saturday/Sunday schedules",
+        type: "feature"
+      },
+      {
+        text: "Bilingual activity content (NL/EN) with exhibitor linking",
+        type: "feature"
+      },
+      {
+        text: "Optional location type badges for highlighting special activities",
+        type: "feature"
+      },
+      {
+        text: "Content Editor role added for program management access",
+        type: "improvement"
+      }
+    ]
+  },
+  {
     date: "2025-11-21",
     changes: [
       {
