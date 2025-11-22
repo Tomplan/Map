@@ -365,5 +365,50 @@
     "assignBoothsDesc": "Beheer standtoewijzingen voor bedrijven",
     "recentActivity": "Recente Activiteit",
     "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update."
+  },
+  "helpPanel": {
+    "title": "Hulp & Gids",
+    "closeHelp": "Hulppaneel sluiten",
+    "yourRole": "Jouw rol:",
+    "tabs": {
+      "currentPage": "Huidige Pagina",
+      "whatsNew": "Wat is Nieuw",
+      "quickStart": "Snel Starten"
+    },
+    "searchPlaceholder": "Zoek hulp inhoud...",
+    "lastUpdated": "Laatst bijgewerkt:",
+    "quickTips": "Snelle Tips",
+    "whatsNewTitle": "Wat is Nieuw",
+    "whatsNewSubtitle": "Recente updates en wijzigingen",
+    "changeTypes": {
+      "feature": "functie",
+      "fix": "fix",
+      "improvement": "verbetering"
+    },
+    "quickStartTitle": "Snel Start Gids",
+    "quickStartSubtitle": "Aan de slag met het admin paneel",
+    "steps": {
+      "step1Title": "1. Begrijp je Rol",
+      "step1Text": "Je rol ({role}) bepaalt welke functies je kunt gebruiken. Bekijk het navigatiemenu om beschikbare secties te zien.",
+      "step2Title": "2. Selecteer Evenementjaar",
+      "step2Text": "Gebruik de jaarselector in de topnavigatie om tussen verschillende evenementjaren te wisselen. Alle data (inschrijvingen, toewijzingen) is jaar-specifiek.",
+      "step3Title": "3. Verken het Dashboard",
+      "step3Text": "Start bij het Dashboard om een overzicht te zien van markers, bedrijven en event statistieken. Dit geeft je een snelle momentopname van je huidige data.",
+      "step4Title": "4. Veelvoorkomende Workflows",
+      "step4Item1": "Voeg bedrijven toe in het Bedrijven tabblad",
+      "step4Item2": "Importeer inschrijvingen via Excel/CSV",
+      "step4Item3": "Wijs bedrijven toe aan kaartlocaties",
+      "step4Item4": "Vergrendel markers voor de eventdag",
+      "step5Title": "5. Krijg Contextuele Hulp",
+      "step5Text": "Klik op \"Huidige Pagina\" tabblad in dit hulppaneel om specifieke begeleiding voor elke sectie te zien. Hover over (?) iconen voor snelle tooltips."
+    },
+    "roles": {
+      "super_admin": "Super Admin",
+      "system_manager": "Systeembeheerder",
+      "event_manager": "Eventbeheerder",
+      "content_editor": "Content Editor",
+      "unknown": "Onbekend"
+    },
+    "footer": "Meer hulp nodig? Neem contact op met je systeembeheerder"
   }
 }

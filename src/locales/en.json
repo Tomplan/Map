@@ -365,5 +365,50 @@
     "assignBoothsDesc": "Manage booth assignments for companies",
     "recentActivity": "Recent Activity",
     "recentActivityPlaceholder": "Activity tracking will be added in a future update."
+  },
+  "helpPanel": {
+    "title": "Help & Guide",
+    "closeHelp": "Close help panel",
+    "yourRole": "Your role:",
+    "tabs": {
+      "currentPage": "Current Page",
+      "whatsNew": "What's New",
+      "quickStart": "Quick Start"
+    },
+    "searchPlaceholder": "Search help content...",
+    "lastUpdated": "Last updated:",
+    "quickTips": "Quick Tips",
+    "whatsNewTitle": "What's New",
+    "whatsNewSubtitle": "Recent updates and changes",
+    "changeTypes": {
+      "feature": "feature",
+      "fix": "fix",
+      "improvement": "improvement"
+    },
+    "quickStartTitle": "Quick Start Guide",
+    "quickStartSubtitle": "Get started with the admin panel",
+    "steps": {
+      "step1Title": "1. Understand Your Role",
+      "step1Text": "Your role ({role}) determines which features you can access. Check the navigation menu to see available sections.",
+      "step2Title": "2. Select Event Year",
+      "step2Text": "Use the year dropdown in the top navigation to switch between different event years. All data (subscriptions, assignments) is year-specific.",
+      "step3Title": "3. Explore the Dashboard",
+      "step3Text": "Start at the Dashboard to see an overview of markers, companies, and event statistics. This gives you a quick snapshot of your current data.",
+      "step4Title": "4. Common Workflows",
+      "step4Item1": "Add companies in the Companies tab",
+      "step4Item2": "Import subscriptions via Excel/CSV",
+      "step4Item3": "Assign companies to map locations",
+      "step4Item4": "Lock markers before event day",
+      "step5Title": "5. Get Contextual Help",
+      "step5Text": "Click \"Current Page\" tab in this help panel to see specific guidance for each section. Hover over (?) icons for quick tooltips."
+    },
+    "roles": {
+      "super_admin": "Super Admin",
+      "system_manager": "System Manager",
+      "event_manager": "Event Manager",
+      "content_editor": "Content Editor",
+      "unknown": "Unknown"
+    },
+    "footer": "Need more help? Contact your system administrator"
   }
 }
