@@ -127,16 +127,11 @@
         "system_manager": "Map management and user administration",
         "event_manager": "Companies, subscriptions, and assignments"
       },
-      "implementation": {
-        "title": "Server-side API Required",
-        "message": "Full user management requires server-side implementation using Supabase Admin API. Currently showing mock data. Contact your developer to enable edit/delete functionality."
-      },
       "errors": {
         "fetchFailed": "Failed to load users",
         "inviteFailed": "Failed to send invitation",
         "updateFailed": "Failed to update user role",
-        "deleteFailed": "Failed to delete user",
-        "requiresServerApi": "This action requires server-side API implementation"
+        "deleteFailed": "Failed to delete user"
       }
     },
     "organization": {
