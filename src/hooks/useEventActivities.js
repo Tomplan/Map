@@ -89,3 +89,5 @@ export function useEventActivities() {
     refetch: fetchActivities,
   };
 }
+
+export default useEventActivities;
