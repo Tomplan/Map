@@ -181,13 +181,15 @@ export default function ProgramManagement() {
                           <span className="font-medium text-gray-700">
                             {location.text}
                           </span>
-                          <span className={`px-2 py-0.5 text-xs rounded ${
-                            activity.location_type === 'exhibitor'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {activity.location_type === 'exhibitor' ? t('programManagement.exhibitor') : t('programManagement.venue')}
-                          </span>
+                          {activity.show_location_type_badge && (
+                            <span className={`px-2 py-0.5 text-xs rounded ${
+                              activity.location_type === 'exhibitor'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {activity.location_type === 'exhibitor' ? t('programManagement.exhibitor') : t('programManagement.venue')}
+                            </span>
+                          )}
                         </div>
                       </div>
 

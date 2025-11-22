@@ -30,6 +30,7 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
     badge_en: '',
     display_order: 1,
     is_active: true,
+    show_location_type_badge: false,
   });
 
   // Load form data for editing
