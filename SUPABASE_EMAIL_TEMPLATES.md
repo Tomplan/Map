@@ -104,6 +104,8 @@ This link expires in 24 hours.
 After setting your password, you can log in at:
 https://tomplan.github.io/Map/#/admin
 
+Note: The link above will take you directly to the password reset page, then redirect to admin login.
+
 Best regards,
 4x4 Vakantiebeurs Team
 ```
@@ -125,6 +127,8 @@ Deze link verloopt over 24 uur.
 
 Na het instellen van je wachtwoord kun je inloggen op:
 https://tomplan.github.io/Map/#/admin
+
+Let op: De bovenstaande link brengt je naar de wachtwoord reset pagina en stuurt je daarna door naar admin login.
 
 Met vriendelijke groet,
 4x4 Vakantiebeurs Team
@@ -189,6 +193,31 @@ If you want users to receive **only the password setup email** (not both emails)
 3. Only the password reset email will be sent
 
 ---
+
+## Important: How Email Links Work
+
+### The `{{ .ConfirmationURL }}` Variable
+
+- **What it is**: Supabase automatically generates this URL with a secure token
+- **Where it goes**: Points to the URL specified in `redirectTo` parameter when calling `resetPasswordForEmail()`
+- **Current setting**: Should be `https://tomplan.github.io/Map/#/reset-password`
+- **What happens**: 
+  1. User clicks link → Goes to `/reset-password` page with token in URL
+  2. User sets new password → Automatically redirects to `/admin`
+  3. User logs in with new password
+
+### ⚠️ If Links Go to Wrong Page
+
+If the email link sends users to `https://tomplan.github.io/Map/#` (home page instead of reset page):
+
+**Fix in UserManagement.jsx:**
+The `redirectTo` URL in the code should already be correct. If not, check line 100-105 in:
+`src/components/admin/UserManagement.jsx`
+
+**Fix in Supabase Dashboard:**
+1. Go to: **Authentication → URL Configuration**
+2. Check **"Site URL"**: Should be `https://tomplan.github.io/Map/#/`
+3. Check **"Redirect URLs"**: Should include `https://tomplan.github.io/Map/#/reset-password`
 
 ## Notes
 
