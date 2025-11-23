@@ -3,8 +3,9 @@ import useCompanies from '../../hooks/useCompanies';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import { useCompanyMutations } from '../../hooks/useCompanyMutations';
 import useCompanyTranslations from '../../hooks/useCompanyTranslations';
+import useCategories from '../../hooks/useCategories';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain } from '@mdi/js';
+import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain, mdiTag } from '@mdi/js';
 import { getLogoPath } from '../../utils/getLogoPath';
 import LogoUploader from '../LogoUploader';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -88,10 +89,14 @@ export default function CompaniesTab() {
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
+  const { categories, getCompanyCategories, assignCategoriesToCompany } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
+  const [activeTab, setActiveTab] = useState('public');
+  const [companyCategories, setCompanyCategories] = useState({});
+  const [editingCategories, setEditingCategories] = useState([]);
 
   // Use company mutations hook
   const {
@@ -117,6 +122,40 @@ export default function CompaniesTab() {
     confirm,
     toastError
   });
+
+  // Load categories when editing a company
+  useEffect(() => {
+    const loadCompanyCategories = async () => {
+      if (editingId && editingId !== 'organization') {
+        const cats = await getCompanyCategories(editingId);
+        setEditingCategories(cats.map(c => c.id));
+      }
+    };
+    loadCompanyCategories();
+  }, [editingId, getCompanyCategories]);
+
+  // Load categories for all companies when manager tab is active
+  useEffect(() => {
+    const loadAllCategories = async () => {
+      if (activeTab === 'manager') {
+        const categoriesMap = {};
+        for (const company of companies) {
+          const cats = await getCompanyCategories(company.id);
+          categoriesMap[company.id] = cats;
+        }
+        setCompanyCategories(categoriesMap);
+      }
+    };
+    loadAllCategories();
+  }, [activeTab, companies, getCompanyCategories]);
+
+  // Save categories when exiting edit mode
+  const handleSaveWithCategories = async () => {
+    await handleSave();
+    if (editingId && editingId !== 'organization') {
+      await assignCategoriesToCompany(editingId, editingCategories);
+    }
+  };
 
   // Combine organization profile with companies and filter
   const filteredItems = useMemo(() => {
@@ -166,6 +205,30 @@ export default function CompaniesTab() {
         >
           <Icon path={mdiPlus} size={0.8} />
           Add Company
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-4 border-b flex-shrink-0">
+        <button
+          onClick={() => setActiveTab('public')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'public'
+              ? 'text-blue-600 border-b-2 border-blue-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          {t('admin.companies.publicInfoTab', 'Public Info')}
+        </button>
+        <button
+          onClick={() => setActiveTab('manager')}
+          className={`px-4 py-2 font-medium transition-colors ${
+            activeTab === 'manager'
+              ? 'text-green-600 border-b-2 border-green-600'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          {t('admin.companies.managerSettingsTab', 'Manager Settings')}
         </button>
       </div>
 
@@ -277,25 +340,24 @@ export default function CompaniesTab() {
       <div className="flex-1 overflow-auto border rounded-lg">
         <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
-            {/* Section headers row */}
             <tr>
-              <th className="p-2 text-center bg-blue-100 border-b font-bold text-blue-800" colSpan={4}>
-                Public Info
-              </th>
-              <th className="p-2 text-center bg-green-100 border-b font-bold text-green-800" colSpan={3}>
-                Manager-Only Info
-              </th>
-              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" rowSpan={2} style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
-            </tr>
-            {/* Column headers row */}
-            <tr>
-              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
-              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
-              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
-              <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
-              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
-              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
-              <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
+              {activeTab === 'public' ? (
+                <>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
+                </>
+              ) : (
+                <>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Name</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Categories</th>
+                </>
+              )}
+              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -303,11 +365,12 @@ export default function CompaniesTab() {
               const isEditing = editingId === item.id;
               const isOrg = item.isOrganization;
               const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 hover:bg-gray-50';
+              const bgColor = activeTab === 'public' ? 'bg-blue-50' : 'bg-green-50';
 
               return (
                 <tr key={item.id} className={`${rowClass} border-b`}>
-                  {/* Name */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                  {/* Name - always shown */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? bgColor : ''}`}>
                     {isEditing ? (
                       <input
                         type="text"
@@ -320,6 +383,8 @@ export default function CompaniesTab() {
                     )}
                   </td>
 
+                  {activeTab === 'public' ? (
+                    <>
                   {/* Logo */}
                   <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
   {isEditing ? (
@@ -388,7 +453,9 @@ export default function CompaniesTab() {
                       />
                     )}
                   </td>
-
+                    </>
+                  ) : (
+                    <>
                   {/* Contact */}
                   <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
                     {isEditing ? (
@@ -434,12 +501,49 @@ export default function CompaniesTab() {
                     )}
                   </td>
 
+                  {/* Categories */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    {isEditing && !isOrg ? (
+                      <select
+                        multiple
+                        value={editingCategories}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          setEditingCategories(selected);
+                        }}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
+                        size={3}
+                      >
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : isOrg ? (
+                      <span className="text-gray-400 text-xs italic">N/A</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {(companyCategories[item.id] || []).map(cat => (
+                          <span key={cat.id} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: cat.color + '20', color: cat.color }}>
+                            {cat.name}
+                          </span>
+                        ))}
+                        {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
+                          <span className="text-gray-400 text-xs italic">None</span>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                    </>
+                  )}
+
                   {/* Actions */}
                   <td className="py-1 px-3 border-b text-left">
                     {isEditing ? (
                       <div className="flex gap-1 justify-center">
                         <button
-                          onClick={handleSave}
+                          onClick={handleSaveWithCategories}
                           className="p-1.5 bg-green-600 text-white rounded hover:bg-green-700"
                           title="Save"
                         >

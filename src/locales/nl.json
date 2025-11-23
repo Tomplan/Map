@@ -442,6 +442,11 @@
       "unknown": "Onbekend"
     },
     "footer": "Meer hulp nodig? Neem contact op met je systeembeheerder",
+    "companies": {
+      "publicInfoTab": "Publieke Info",
+      "managerSettingsTab": "Manager Instellingen",
+      "categoriesLabel": "Categorieën"
+    },
     "categories": {
       "title": "Categoriebeheer",
       "description": "Beheer exposantencategorieën voor filtering en organisatie",
