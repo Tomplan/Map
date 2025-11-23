@@ -398,7 +398,7 @@ export default function AssignmentsTab({ selectedYear }) {
 
       {/* Assignment Matrix */}
       <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
-        <table className="w-full" style={{ fontSize: '11px' }}>
+        <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-gray-100 text-gray-900">
               <th
