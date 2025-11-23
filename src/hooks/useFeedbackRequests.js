@@ -257,18 +257,48 @@ export default function useFeedbackRequests() {
 
   // Set up real-time subscription for requests
   useEffect(() => {
-    const channel = supabase
+    const requestsChannel = supabase
       .channel('feedback_requests_changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'feedback_requests' },
-        () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_requests' }, () => {
+        loadRequests();
+      })
+      .subscribe();
+
+    const votesChannel = supabase
+      .channel('feedback_votes_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_votes' }, (payload) => {
+        // Optimistically adjust vote counts without full reload
+        if (payload?.new || payload?.old) {
+          setRequests(prev => {
+            const next = [...prev];
+            const id = (payload.new?.request_id) || (payload.old?.request_id);
+            const idx = next.findIndex(r => r.id === id);
+            if (idx !== -1) {
+              // Recompute by counting votes for that request? Simpler: trigger full reload.
+              // For now just trigger reload to ensure integrity.
+              loadRequests();
+            }
+            return next;
+          });
+        }
+      })
+      .subscribe();
+
+    const commentsChannel = supabase
+      .channel('feedback_comments_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_comments' }, (payload) => {
+        if (payload?.new || payload?.old) {
+          const id = (payload.new?.request_id) || (payload.old?.request_id);
+          setRequests(prev => prev.map(r => r.id === id ? { ...r } : r));
           loadRequests();
         }
-      )
+      })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(requestsChannel);
+      supabase.removeChannel(votesChannel);
+      supabase.removeChannel(commentsChannel);
     };
   }, [loadRequests]);
 

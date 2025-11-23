@@ -233,6 +233,7 @@
         "archived": "Gearchiveerd"
       },
       "priorities": {
+        "none": "Geen Prioriteit",
         "low": "Lage Prioriteit",
         "medium": "Gemiddelde Prioriteit",
         "high": "Hoge Prioriteit"
@@ -254,7 +255,10 @@
         "postComment": "Plaatsen",
         "noComments": "Nog geen reacties. Wees de eerste die reageert!",
         "status": "Status",
+        "statusCurrent": "Huidige Status",
+        "statusAriaEdit": "Status bewerken",
         "priority": "Prioriteit",
+        "priorityAriaEdit": "Prioriteit bewerken",
         "version": "Versie Uitgerold",
         "updateStatus": "Status Bijwerken",
         "setPriority": "Prioriteit Instellen",
@@ -289,13 +293,22 @@
     "exhibitors": "exposanten",
     "favorited": "favoriet",
     "favoritesOnly": "Alleen Favorieten",
+    "sortBy": "Sorteren op",
+    "sortNameAsc": "Naam (A–Z)",
+    "sortNameDesc": "Naam (Z–A)",
+    "sortBoothAsc": "Stand (Laag→Hoog)",
+    "sortBoothDesc": "Stand (Hoog→Laag)",
+    "sortFavorites": "Favorieten Eerst",
+    "sortName": "Naam",
+    "sortBooth": "Stand",
+    "sortFavoritesBase": "Favorieten",
     "noExhibitors": "Geen exposanten gevonden",
     "booth": "Stand",
     "categoriesComingSoon": "Binnenkort: Categorieën",
     "phaseNote": "Let op:",
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
-    "sortOptions": "Sorteeropties"
+      "sortOptions": "Sorteeropties"
   },
   "navigation": {
     "home": "Home",

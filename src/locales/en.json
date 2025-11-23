@@ -233,6 +233,7 @@
         "archived": "Archived"
       },
       "priorities": {
+        "none": "No Priority",
         "low": "Low Priority",
         "medium": "Medium Priority",
         "high": "High Priority"
@@ -254,7 +255,10 @@
         "postComment": "Post",
         "noComments": "No comments yet. Be the first to comment!",
         "status": "Status",
+        "statusCurrent": "Status",
+        "statusAriaEdit": "Edit status",
         "priority": "Priority",
+        "priorityAriaEdit": "Edit priority",
         "version": "Version Deployed",
         "updateStatus": "Update Status",
         "setPriority": "Set Priority",
@@ -289,13 +293,22 @@
     "exhibitors": "exhibitors",
     "favorited": "favorited",
     "favoritesOnly": "Favorites Only",
+    "sortBy": "Sort by",
+    "sortNameAsc": "Name (A–Z)",
+    "sortNameDesc": "Name (Z–A)",
+    "sortBoothAsc": "Booth (Low→High)",
+    "sortBoothDesc": "Booth (High→Low)",
+    "sortFavorites": "Favorites First",
+    "sortName": "Name",
+    "sortBooth": "Booth",
+    "sortFavoritesBase": "Favorites",
     "noExhibitors": "No exhibitors found",
     "booth": "Booth",
     "categoriesComingSoon": "Coming Soon: Categories",
     "phaseNote": "Note:",
     "comingInFuturePhases": "Coming in future phases:",
     "categoryFiltering": "Category filtering",
-    "sortOptions": "Sort options"
+      "sortOptions": "Sort options"
   },
   "navigation": {
     "home": "Home",

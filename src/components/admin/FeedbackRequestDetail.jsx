@@ -44,6 +44,15 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   const [editPriority, setEditPriority] = useState(request.priority || '');
   const [editVersion, setEditVersion] = useState(request.version_completed || '');
   const [saving, setSaving] = useState(false);
+  // Local live counts to reflect immediate interactions
+  const [localVotes, setLocalVotes] = useState(request.votes);
+  const [localCommentsCount, setLocalCommentsCount] = useState(request.comments_count || 0);
+
+  // Sync local counts if parent passes a different request (e.g., after reload)
+  useEffect(() => {
+    setLocalVotes(request.votes);
+    setLocalCommentsCount(request.comments_count || 0);
+  }, [request.id, request.votes, request.comments_count]);
 
   // Load comments on mount
   useEffect(() => {
@@ -59,9 +68,11 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   // Handle vote toggle
   const handleVoteToggle = async () => {
     if (userVotes.has(request.id)) {
-      await removeVote(request.id);
+      const { error } = await removeVote(request.id);
+      if (!error) setLocalVotes(v => Math.max(0, v - 1));
     } else {
-      await addVote(request.id);
+      const { error } = await addVote(request.id);
+      if (!error) setLocalVotes(v => v + 1);
     }
   };
 
@@ -76,6 +87,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
     if (!error && data) {
       setComments([...comments, data]);
       setNewComment('');
+      setLocalCommentsCount(c => c + 1);
     }
     setPosting(false);
   };
@@ -87,6 +99,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
     const { error } = await deleteComment(commentId, request.id);
     if (!error) {
       setComments(comments.filter(c => c.id !== commentId));
+      setLocalCommentsCount(c => Math.max(0, c - 1));
     }
   };
 
@@ -105,16 +118,35 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
       updates.completed_by = currentUserId;
     }
 
-    const { error } = await updateRequest(request.id, updates);
+    const { error, data: updated } = await updateRequest(request.id, updates);
     
     if (!error) {
       setIsEditing(false);
-      if (onUpdate) onUpdate();
+      if (onUpdate) onUpdate(updated);
     }
     setSaving(false);
   };
 
+  const normalizeStatusKey = (status) => {
+    if (!status) return 'open';
+    const s = status.toLowerCase();
+    switch (s) {
+      case 'in_progress':
+      case 'inprogress':
+      case 'in progress':
+        return 'in_progress';
+      case 'completed':
+        return 'completed';
+      case 'archived':
+        return 'archived';
+      case 'open':
+      default:
+        return 'open';
+    }
+  };
+
   const getStatusIcon = (status) => {
+    const s = normalizeStatusKey(status);
     switch (status) {
       case 'completed': return mdiCheckCircle;
       case 'in_progress': return mdiProgressClock;
@@ -124,7 +156,8 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
+    const s = normalizeStatusKey(status);
+    switch (s) {
       case 'completed': return 'text-green-600';
       case 'in_progress': return 'text-blue-600';
       case 'archived': return 'text-gray-400';
@@ -149,24 +182,6 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
                 />
                 {t(`settings.feedbackRequests.types.${request.type}`)}
               </span>
-              
-              {isEditing ? (
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value)}
-                  className="text-sm px-2 py-1 border border-gray-300 rounded"
-                >
-                  <option value="open">{t('settings.feedbackRequests.statuses.open')}</option>
-                  <option value="in_progress">{t('settings.feedbackRequests.statuses.inProgress')}</option>
-                  <option value="completed">{t('settings.feedbackRequests.statuses.completed')}</option>
-                  <option value="archived">{t('settings.feedbackRequests.statuses.archived')}</option>
-                </select>
-              ) : (
-                <span className={`inline-flex items-center gap-1 text-sm ${getStatusColor(request.status)}`}>
-                  <Icon path={getStatusIcon(request.status)} size={0.6} />
-                  {t(`settings.feedbackRequests.statuses.${request.status.replace('_', '')}`)}
-                </span>
-              )}
             </div>
             
             <h2 className="text-xl font-bold text-gray-900">{request.title}</h2>
@@ -201,7 +216,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
 
           {/* Admin controls */}
           {isSuperAdmin && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left flex flex-col">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-blue-900">
                   {t('settings.feedbackRequests.detail.status')}
@@ -232,42 +247,98 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
                 )}
               </div>
 
-              {isEditing && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+              {/* Unified Status & Priority Block */}
+              {(() => { 
+                const uiStatusKeyMap = { open:'open', in_progress:'inProgress', completed:'completed', archived:'archived' };
+                const normalized = normalizeStatusKey(request.status);
+                const translationKey = uiStatusKeyMap[normalized] || 'open';
+                return (
+                <div className="mt-2 space-y-4">
+                  {/* Status */}
+                  <div className="flex flex-col">
+                    <label htmlFor="feedback-status-select" className="text-sm font-medium text-gray-700 mb-1">
+                      {t('settings.feedbackRequests.detail.statusCurrent') || t('settings.feedbackRequests.detail.status') || 'Status'}
+                    </label>
+                    {isEditing ? (
+                      <select
+                        id="feedback-status-select"
+                        aria-label={t('settings.feedbackRequests.detail.statusAriaEdit') || 'Edit status'}
+                        value={editStatus}
+                        onChange={(e) => setEditStatus(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      >
+                        <option value="open">{t('settings.feedbackRequests.statuses.open')}</option>
+                        <option value="in_progress">{t('settings.feedbackRequests.statuses.inProgress')}</option>
+                        <option value="completed">{t('settings.feedbackRequests.statuses.completed')}</option>
+                        <option value="archived">{t('settings.feedbackRequests.statuses.archived')}</option>
+                      </select>
+                    ) : (
+                      <span
+                        role="status"
+                        data-testid="feedback-status-badge"
+                        aria-label={`Current status: ${t(`settings.feedbackRequests.statuses.${translationKey}`)}`}
+                        className={`inline-flex items-center gap-2 px-2 py-1 rounded-md border text-sm font-medium ${getStatusColor(normalized)}`}
+                      >
+                        <Icon path={getStatusIcon(normalized)} size={0.8} />
+                        {t(`settings.feedbackRequests.statuses.${translationKey}`)}
+                      </span>
+                    )}
+                  </div>
+                  {/* Priority */}
+                  <div className="flex flex-col">
+                    <label className="text-sm font-medium text-gray-700 mb-1">
                       {t('settings.feedbackRequests.detail.priority')}
                     </label>
-                    <select
-                      value={editPriority}
-                      onChange={(e) => setEditPriority(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">No priority</option>
-                      <option value="low">{t('settings.feedbackRequests.priorities.low')}</option>
-                      <option value="medium">{t('settings.feedbackRequests.priorities.medium')}</option>
-                      <option value="high">{t('settings.feedbackRequests.priorities.high')}</option>
-                    </select>
+                    {isEditing ? (
+                      <select
+                        value={editPriority}
+                        onChange={(e) => setEditPriority(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        aria-label={t('settings.feedbackRequests.detail.priorityAriaEdit') || 'Edit priority'}
+                      >
+                        <option value="">{t('settings.feedbackRequests.priorities.none') || 'No priority'}</option>
+                        <option value="low">{t('settings.feedbackRequests.priorities.low')}</option>
+                        <option value="medium">{t('settings.feedbackRequests.priorities.medium')}</option>
+                        <option value="high">{t('settings.feedbackRequests.priorities.high')}</option>
+                      </select>
+                    ) : (
+                      <span
+                        className={`inline-flex items-center gap-2 px-2 py-1 rounded-md border text-sm font-medium ${
+                          request.priority === 'high' ? 'border-red-300 bg-red-50 text-red-700' :
+                          request.priority === 'medium' ? 'border-yellow-300 bg-yellow-50 text-yellow-700' :
+                          request.priority === 'low' ? 'border-green-300 bg-green-50 text-green-700' : 'border-gray-300 bg-white text-gray-600'
+                        }`}
+                        data-testid="feedback-priority-badge"
+                        role="status"
+                        aria-label={`Current priority: ${request.priority ? t(`settings.feedbackRequests.priorities.${request.priority}`) : (t('settings.feedbackRequests.priorities.none') || 'No priority')}`}
+                      >
+                        {request.priority
+                          ? t(`settings.feedbackRequests.priorities.${request.priority}`)
+                          : (t('settings.feedbackRequests.priorities.none') || 'No priority')}
+                      </span>
+                    )}
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('settings.feedbackRequests.detail.version')}
-                    </label>
-                    <input
-                      type="text"
-                      value={editVersion}
-                      onChange={(e) => setEditVersion(e.target.value)}
-                      placeholder="e.g., 1.2.0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
+                  {/* Version (edit only) */}
+                  {isEditing && (
+                    <div className="flex flex-col">
+                      <label className="text-sm font-medium text-gray-700 mb-1">
+                        {t('settings.feedbackRequests.detail.version')}
+                      </label>
+                      <input
+                        type="text"
+                        value={editVersion}
+                        onChange={(e) => setEditVersion(e.target.value)}
+                        placeholder="e.g., 1.2.0"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              ); })()}
             </div>
           )}
 
-          {/* Vote button */}
+          {/* Vote & counts */}
           <div className="mb-6">
             <button
               onClick={handleVoteToggle}
@@ -281,7 +352,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
               <span className="font-medium">
                 {userVotes.has(request.id) ? t('common.voted') : t('common.vote')}
               </span>
-              <span className="text-sm">({request.votes})</span>
+              <span className="text-sm" aria-label={`Total votes: ${localVotes}`}>({localVotes})</span>
             </button>
           </div>
 
@@ -289,7 +360,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
           <div>
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
               <Icon path={mdiComment} size={0.8} />
-              {t('settings.feedbackRequests.detail.comments')} ({comments.length})
+              {t('settings.feedbackRequests.detail.comments')} ({localCommentsCount})
             </h3>
 
             {loadingComments ? (
