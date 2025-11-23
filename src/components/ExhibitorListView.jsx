@@ -32,7 +32,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const { favorites, isFavorite, toggleFavorite } = useFavoritesContext();
   
   // Categories
-  const { categories, loading: categoriesLoading, getCompanyCategories } = useCategories(i18n.language);
+  const { categories, loading: categoriesLoading, getAllCompanyCategories } = useCategories(i18n.language);
 
   // Raw exhibitors subset
   const exhibitors = useMemo(() => markersState.filter(m => m.id < 1000 && m.name), [markersState]);
@@ -61,30 +61,37 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     return Object.values(grouped);
   }, [exhibitors]);
 
-  // Load categories for each company
+  // Load categories for all companies in one query
   const [exhibitorsWithCategories, setExhibitorsWithCategories] = useState([]);
+  const [categoriesLoaded, setCategoriesLoaded] = useState(false);
   
   useEffect(() => {
-    if (categoriesLoading || groupedExhibitors.length === 0) {
-      setExhibitorsWithCategories(groupedExhibitors);
+    if (categoriesLoading) {
       return;
     }
     
+    if (groupedExhibitors.length === 0) {
+      setExhibitorsWithCategories([]);
+      setCategoriesLoaded(false);
+      return;
+    }
+    
+    // Only load once per language change or when groupedExhibitors change
     const loadCategories = async () => {
-      const withCategories = await Promise.all(
-        groupedExhibitors.map(async (exhibitor) => {
-          const companyCats = await getCompanyCategories(exhibitor.companyId);
-          return {
-            ...exhibitor,
-            categories: companyCats || []
-          };
-        })
-      );
+      const companyIds = groupedExhibitors.map(ex => ex.companyId);
+      const categoryMap = await getAllCompanyCategories(companyIds);
+      
+      const withCategories = groupedExhibitors.map(exhibitor => ({
+        ...exhibitor,
+        categories: categoryMap[exhibitor.companyId] || []
+      }));
+      
       setExhibitorsWithCategories(withCategories);
+      setCategoriesLoaded(true);
     };
     
     loadCategories();
-  }, [groupedExhibitors, categoriesLoading, getCompanyCategories]);
+  }, [groupedExhibitors, categoriesLoading, getAllCompanyCategories, i18n.language]);
 
   // Outside click close
   useEffect(() => {

@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS category_translations (
 
 -- Company-Category junction table (many-to-many)
 CREATE TABLE IF NOT EXISTS company_categories (
-  company_id UUID REFERENCES companies(id) ON DELETE CASCADE,
+  company_id BIGINT REFERENCES companies(id) ON DELETE CASCADE,
   category_id UUID REFERENCES categories(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   PRIMARY KEY (company_id, category_id)
