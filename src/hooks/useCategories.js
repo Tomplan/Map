@@ -243,7 +243,8 @@ export function useCategories(language = 'nl') {
         return {
           id: cat.id,
           slug: cat.slug,
-          icon: cat.icon,
+          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+          iconName: cat.icon,
           color: cat.color,
           name: translation?.name || cat.slug
         };
@@ -253,6 +254,52 @@ export function useCategories(language = 'nl') {
       return [];
     }
   };
+
+  // Get all company categories in one query (optimized for bulk loading)
+  const getAllCompanyCategories = useCallback(async (companyIds) => {
+    try {
+      const { data, error } = await supabase
+        .from('company_categories')
+        .select(`
+          company_id,
+          category_id,
+          categories(
+            id,
+            slug,
+            icon,
+            color,
+            category_translations(language, name)
+          )
+        `)
+        .in('company_id', companyIds);
+
+      if (error) throw error;
+
+      // Group by company_id
+      const grouped = {};
+      data.forEach(cc => {
+        if (!grouped[cc.company_id]) {
+          grouped[cc.company_id] = [];
+        }
+        const cat = cc.categories;
+        const translation = cat.category_translations.find(t => t.language === language) ||
+                          cat.category_translations[0];
+        grouped[cc.company_id].push({
+          id: cat.id,
+          slug: cat.slug,
+          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+          iconName: cat.icon,
+          color: cat.color,
+          name: translation?.name || cat.slug
+        });
+      });
+
+      return grouped;
+    } catch (err) {
+      console.error('Error fetching all company categories:', err);
+      return {};
+    }
+  }, [language]);
 
   // Assign categories to company
   const assignCategoriesToCompany = async (companyId, categoryIds) => {
@@ -322,6 +369,7 @@ export function useCategories(language = 'nl') {
     updateCategory,
     deleteCategory,
     getCompanyCategories,
+    getAllCompanyCategories,
     assignCategoriesToCompany,
     getCategoryStats,
     refetch: loadCategories
