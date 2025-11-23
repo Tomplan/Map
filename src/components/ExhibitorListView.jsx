@@ -216,7 +216,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
             </div>
             <div className="flex flex-wrap gap-2 items-center relative">
               {/* Single sort dropdown button */}
-              <div className="relative flex items-center gap-1" onKeyDown={(e) => {
+              <div className="relative flex items-center gap-0" onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   setShowSortMenu(false);
                   const btn = sortButtonRef.current;
@@ -227,7 +227,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   type="button"
                   ref={sortButtonRef}
                   onClick={() => setShowSortMenu(!showSortMenu)}
-                  className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1 select-none transition-colors ${
+                  className={`px-3 py-1.5 rounded-l-lg border border-r-0 text-sm flex items-center select-none transition-colors ${
                     'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
                   }`}
                   aria-haspopup="listbox"
@@ -240,7 +240,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   type="button"
                   onClick={(e) => { e.stopPropagation(); setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); }}
                   aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
-                  className="px-2 py-1.5 rounded-lg border text-sm flex items-center justify-center transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
+                  className="px-2 py-1.5 rounded-r-lg border border-l-0 text-sm flex items-center justify-center transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
                 >
                   <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
                 </button>

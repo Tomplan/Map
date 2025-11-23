@@ -220,7 +220,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
               >
                 <option value="id-asc">ID: Low to High</option>
                 <option value="id-desc">ID: High to Low</option>
