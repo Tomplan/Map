@@ -245,7 +245,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('companies.publicInfoTab', 'Public Info')}
+          {t('helpPanel.companies.publicInfoTab', 'Public Info')}
         </button>
         <button
           onClick={() => setActiveTab('manager')}
@@ -255,7 +255,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('companies.privateInfoTab', 'Private Info')}
+          {t('helpPanel.companies.privateInfoTab', 'Private Info')}
         </button>
       </div>
 
