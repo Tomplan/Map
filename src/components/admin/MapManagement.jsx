@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiSort } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
@@ -15,6 +16,7 @@ import { useDialog } from '../../contexts/DialogContext';
  * Features: Marker list, interactive map, and detail/edit panel
  */
 export default function MapManagement({ markersState, setMarkersState, updateMarker, selectedYear }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -201,7 +203,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               />
               <input
                 type="text"
-                placeholder="Search by ID, booth label, or name..."
+                placeholder={t('mapManagement.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -304,7 +306,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
           <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
             {!selectedMarker ? (
               <div className="flex items-center justify-center h-full text-gray-500">
-                Select a marker to view details
+                {t('mapManagement.selectMarker')}
               </div>
             ) : (
               <div>

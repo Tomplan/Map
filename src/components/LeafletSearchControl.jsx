@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import L from 'leaflet';
 import 'leaflet-search';
 import { getBaseUrl } from '../utils/getBaseUrl';
@@ -9,6 +10,7 @@ import { getBaseUrl } from '../utils/getBaseUrl';
  * Usage: <LeafletSearchControl map={mapInstance} markerLayer={layerGroup} />
  */
 const LeafletSearchControl = ({ map, markerLayer }) => {
+  const { t } = useTranslation();
   // Inject dynamic style for search button icon using BASE_URL
   useEffect(() => {
     const searchIconUrl = `${getBaseUrl()}assets/icons/map-marker-question-blue.svg`;
@@ -42,7 +44,7 @@ const LeafletSearchControl = ({ map, markerLayer }) => {
       initial: false,
       zoom: 20,
       marker: false,
-      textPlaceholder: 'Search for a marker...',
+      textPlaceholder: t('map.searchPlaceholder'),
       position: 'topright',
     });
 
@@ -52,7 +54,7 @@ const LeafletSearchControl = ({ map, markerLayer }) => {
     return () => {
       map.removeControl(searchControl);
     };
-  }, [map, markerLayer]);
+  }, [map, markerLayer, t]);
 
   return null;
 };

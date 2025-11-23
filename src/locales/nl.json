@@ -307,12 +307,31 @@
     "booth": "Stand",
     "categoriesComingSoon": "Binnenkort: Categorieën",
     "categories": "Categorieën",
+    "allCategories": "Alle Categorieën",
+    "filterByCategory": "Filteren op categorie",
     "clearFilters": "Filters wissen",
     "noCategoryMatch": "Geen exposanten komen overeen met de geselecteerde categorieën.",
     "phaseNote": "Let op:",
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
       "sortOptions": "Sorteeropties"
+  },
+  "map": {
+    "searchPlaceholder": "Zoek naar een marker...",
+    "ariaLabel": "Interactieve evenementenkaart"
+  },
+  "mapManagement": {
+    "addMarker": "Marker toevoegen",
+    "addMarkerTooltipActive": "Klik op de kaart om marker te plaatsen",
+    "addMarkerTooltip": "Marker toevoegen",
+    "enterMarkerId": "Voer Marker ID in",
+    "markerIdPlaceholder": "Marker ID (geheel getal)",
+    "confirm": "Bevestigen",
+    "cancel": "Annuleren",
+    "errorInvalidId": "Voer een geldig numeriek ID in.",
+    "errorIdExists": "ID bestaat al. Kies een ander ID.",
+    "searchPlaceholder": "Zoek op ID, standlabel of naam...",
+    "selectMarker": "Selecteer een marker om details te bekijken"
   },
   "navigation": {
     "home": "Home",
@@ -379,7 +398,7 @@
     "companies": "Bedrijven",
     "subscriptions": "Inschrijvingen",
     "assignments": "Toewijzingen",
-    "eventTotals": "Event Totalen",
+    "eventTotals": "Evenement Totalen",
     "saturday": "Zaterdag",
     "sunday": "Zondag",
     "breakfast": "Ontbijt",
@@ -442,11 +461,6 @@
       "unknown": "Onbekend"
     },
     "footer": "Meer hulp nodig? Neem contact op met je systeembeheerder",
-    "companies": {
-      "publicInfoTab": "Publieke Info",
-      "managerSettingsTab": "Manager Instellingen",
-      "categoriesLabel": "Categorieën"
-    },
     "categories": {
       "title": "Categoriebeheer",
       "description": "Beheer exposantencategorieën voor filtering en organisatie",
@@ -472,6 +486,65 @@
       "deleteSuccess": "Categorie succesvol verwijderd",
       "deleteError": "Kan categorie niet verwijderen: {{error}}",
       "saveError": "Kan categorie niet opslaan: {{error}}"
+    },
+    "subscriptions": {
+      "searchPlaceholder": "Zoek ingeschreven bedrijven...",
+      "booths": "Stands",
+      "company": "Bedrijf",
+      "contact": "Contact",
+      "phone": "Telefoon",
+      "email": "E-mail",
+      "boothCount": "Aantal Stands",
+      "area": "Gebied",
+      "saturday": "Zaterdag",
+      "sunday": "Zondag",
+      "coins": "Munten",
+      "notes": "Notities",
+      "actions": "Acties",
+      "breakfast": "Ontbijt",
+      "lunch": "Lunch",
+      "bbq": "BBQ",
+      "areaPlaceholder": "groot veld, klein veld..."
+    },
+    "assignments": {
+      "searchPlaceholder": "Zoek bedrijven...",
+      "archive": "Archief",
+      "sortCompanies": "Sorteer Bedrijven",
+      "sortMarkers": "Sorteer Markers",
+      "byMarker": "Marker",
+      "unassignedFirst": "Niet toegewezen",
+      "markerId": "ID",
+      "glyphText": "Label",
+      "assigned": "Toegewezen",
+      "notAssigned": "Niet toegewezen"
+    },
+    "companies": {
+      "publicInfoTab": "Publieke Info",
+      "privateInfoTab": "Privé Info",
+      "categoriesLabel": "Categorieën",
+      "searchPlaceholder": "Zoek bedrijven...",
+      "newCompany": "Nieuw Bedrijf",
+      "companyNamePlaceholder": "Bedrijfsnaam *",
+      "companyLogo": "Bedrijfslogo",
+      "logoUrlPlaceholder": "Of plak externe logo URL",
+      "websiteUrlPlaceholder": "Website URL",
+      "infoPlaceholder": "Info",
+      "contactPlaceholder": "Contactpersoon",
+      "phonePlaceholder": "Telefoon",
+      "emailPlaceholder": "E-mail",
+      "name": "Naam",
+      "logo": "Logo",
+      "website": "Website",
+      "info": "Info",
+      "categories": "Categorieën",
+      "contact": "Contact",
+      "phone": "Telefoon",
+      "email": "E-mail",
+      "actions": "Acties",
+      "notSet": "Niet ingesteld",
+      "none": "Geen",
+      "orPasteUrl": "Of plak URL",
+      "organizationInfo": "Organisatie info"
     }
   }
 }

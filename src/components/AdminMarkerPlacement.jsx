@@ -23,12 +23,12 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
   // Handler for modal confirm
   const handleIdModalConfirm = async () => {
     if (!pendingMarkerId || isNaN(Number(pendingMarkerId))) {
-      setIdError('Please enter a valid numeric ID.');
+      setIdError(t('mapManagement.errorInvalidId'));
       return;
     }
     const exists = await checkMarkerIdExists(pendingMarkerId);
     if (exists) {
-      setIdError('ID already exists. Please choose another.');
+      setIdError(t('mapManagement.errorIdExists'));
       return;
     }
     setShowIdModal(false);
@@ -103,7 +103,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
           cursor: isPlacingMarker ? 'crosshair' : 'pointer',
           background: isPlacingMarker ? '#e3f2fd' : 'white',
         }}
-        title={isPlacingMarker ? 'Click on map to place marker' : 'Add marker'}
+        title={isPlacingMarker ? t('mapManagement.addMarkerTooltipActive') : t('mapManagement.addMarkerTooltip')}
       >
         <Icon
           path={mdiMapMarkerPlus}
@@ -112,7 +112,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
           aria-hidden="true"
           style={{ width: '42px', height: '42px' }}
         />
-        <span className="sr-only">Add marker</span>
+        <span className="sr-only">{t('mapManagement.addMarker')}</span>
       </button>
       {/* Modal for marker ID entry */}
       {showIdModal && (
@@ -142,7 +142,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
               alignItems: 'center',
             }}
           >
-            <h2 style={{ color: '#1976d2', fontWeight: 700, marginBottom: 16 }}>Enter Marker ID</h2>
+            <h2 style={{ color: '#1976d2', fontWeight: 700, marginBottom: 16 }}>{t('mapManagement.enterMarkerId')}</h2>
             <input
               type="number"
               value={pendingMarkerId}
@@ -155,7 +155,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
                 marginBottom: 12,
                 width: '100%',
               }}
-              placeholder="Marker ID (integer)"
+              placeholder={t('mapManagement.markerIdPlaceholder')}
               min={1}
             />
             {idError && <div style={{ color: 'red', marginBottom: 8 }}>{idError}</div>}
@@ -172,7 +172,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
                   cursor: 'pointer',
                 }}
               >
-                Confirm
+                {t('mapManagement.confirm')}
               </button>
               <button
                 onClick={handleIdModalCancel}
@@ -186,7 +186,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
                   cursor: 'pointer',
                 }}
               >
-                Cancel
+                {t('mapManagement.cancel')}
               </button>
             </div>
           </div>

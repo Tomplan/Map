@@ -111,30 +111,30 @@ export default function Dashboard({ selectedYear }) {
 
   return (
     <div>
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className={`p-6 rounded-lg border-2 ${colorClasses[stat.color]}`}
-          >
-            <div className="flex items-center gap-4">
-              <Icon path={stat.icon} size={2} />
-              <div>
-                <div className="text-3xl font-bold">{stat.value}</div>
-                <div className="text-sm font-medium mt-1">{stat.label}</div>
+      {/* Event Totals - Combined Stats and Meal/Coin Data */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">
+          {selectedYear} {t('dashboard.eventTotals')}
+          {(loading || statsLoading) && <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>}
+        </h2>
+
+        {/* Stats Grid - Inside Event Totals */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={`p-4 rounded-lg border-2 ${colorClasses[stat.color]}`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon path={stat.icon} size={1.5} />
+                <div>
+                  <div className="text-2xl font-bold">{stat.value}</div>
+                  <div className="text-sm font-medium mt-1">{stat.label}</div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Daily Meal & Coin Totals */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">
-          {selectedYear} {t('dashboard.eventTotals')}
-          {loading && <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>}
-        </h2>
+          ))}
+        </div>
 
         {/* Saturday Totals */}
         <div className="mb-4">

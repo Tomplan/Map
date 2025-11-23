@@ -90,7 +90,7 @@ export default function CompaniesTab() {
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
   const { i18n, t } = useTranslation();
-  const { categories, getCompanyCategories, assignCategoriesToCompany } = useCategories();
+  const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
@@ -142,21 +142,19 @@ export default function CompaniesTab() {
   // Load categories for all companies when public tab is active
   useEffect(() => {
     const loadAllCategories = async () => {
-      if (activeTab === 'public' && companies.length > 0) {
-        const categoriesMap = {};
-        for (const company of companies) {
-          const cats = await getCompanyCategories(company.id);
-          categoriesMap[company.id] = cats;
-        }
+      if (companies.length > 0) {
+        const companyIds = companies.map(c => c.id);
+        const categoriesMap = await getAllCompanyCategories(companyIds);
         setCompanyCategories(categoriesMap);
       }
     };
     
-    // Only load once when switching to public tab or companies change
-    if (activeTab === 'public' && Object.keys(companyCategories).length === 0) {
+    // Load when public tab is active and companies are available
+    if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
     }
-  }, [activeTab]); // Remove companies and getCompanyCategories from deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, companies.length]); // Use companies.length for stable dependency
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
@@ -219,7 +217,7 @@ export default function CompaniesTab() {
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
             type="text"
-            placeholder="Search companies..."
+            placeholder={t('helpPanel.companies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 border rounded-lg"
@@ -247,7 +245,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('admin.companies.publicInfoTab', 'Public Info')}
+          {t('companies.publicInfoTab', 'Public Info')}
         </button>
         <button
           onClick={() => setActiveTab('manager')}
@@ -257,7 +255,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('admin.companies.managerSettingsTab', 'Manager Settings')}
+          {t('companies.privateInfoTab', 'Private Info')}
         </button>
       </div>
 
@@ -265,7 +263,7 @@ export default function CompaniesTab() {
       {isCreating && (
         <div className="mb-4 border rounded-lg overflow-hidden flex-shrink-0">
           <div className="p-4 bg-blue-50">
-            <h3 className="font-bold mb-3">New Company</h3>
+            <h3 className="font-bold mb-3">{t('helpPanel.companies.newCompany')}</h3>
 
             {/* Public Information Section */}
             <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
@@ -273,13 +271,13 @@ export default function CompaniesTab() {
               <div className="grid grid-cols-2 gap-3">
                 <input
                   type="text"
-                  placeholder="Company Name *"
+                  placeholder={t('helpPanel.companies.companyNamePlaceholder')}
                   value={newCompanyForm.name}
                   onChange={(e) => setNewCompanyForm({ ...newCompanyForm, name: e.target.value })}
                   className="px-3 py-2 border rounded"
                 />
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">Company Logo</label>
+                  <label className="block text-sm font-medium mb-1">{t('helpPanel.companies.companyLogo')}</label>
                   <LogoUploader
                     currentLogo={newCompanyForm.logo}
                     onUploadComplete={(url, path) => {
@@ -295,7 +293,7 @@ export default function CompaniesTab() {
                   />
                   <input
                     type="text"
-                    placeholder="Or paste external logo URL"
+                    placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
                     value={newCompanyForm.logo}
                     onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
                     className="px-3 py-2 border rounded mt-2 w-full text-sm"
@@ -309,7 +307,7 @@ export default function CompaniesTab() {
                   className="px-3 py-2 border rounded"
                 />
                 <textarea
-                  placeholder="Info"
+                  placeholder={t('helpPanel.companies.infoPlaceholder')}
                   value={newCompanyForm.info}
                   onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
                   className="px-3 py-2 border rounded"

@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
@@ -15,6 +16,7 @@ import { useDialog } from '../../contexts/DialogContext';
 const SORT_STORAGE_KEY = 'assignmentsTab_sortPreferences';
 
 export default function AssignmentsTab({ selectedYear }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Load sort preferences from localStorage on mount
@@ -319,7 +321,7 @@ export default function AssignmentsTab({ selectedYear }) {
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
             type="text"
-            placeholder="Search companies..."
+            placeholder={t('helpPanel.assignments.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 border rounded-lg"
@@ -335,7 +337,7 @@ export default function AssignmentsTab({ selectedYear }) {
             title={`View archived assignments for ${selectedYear}`}
           >
             <Icon path={mdiHistory} size={0.8} />
-            <span>Archive</span>
+            <span>{t('helpPanel.assignments.archive')}</span>
           </button>
           <button
             onClick={handleArchive}
@@ -348,7 +350,7 @@ export default function AssignmentsTab({ selectedYear }) {
           {/* Sort Controls */}
           <div className="flex items-end gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Companies</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortCompanies')}</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
                   <select
                     value={sortBy}
@@ -357,8 +359,8 @@ export default function AssignmentsTab({ selectedYear }) {
                     title="Sort table rows"
                   >
                     <option value="alphabetic">A-Z</option>
-                    <option value="byMarker">Marker</option>
-                    <option value="unassignedFirst">Unassigned</option>
+                    <option value="byMarker">{t('helpPanel.assignments.byMarker')}</option>
+                    <option value="unassignedFirst">{t('helpPanel.assignments.unassignedFirst')}</option>
                   </select>
                   <button
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
@@ -370,7 +372,7 @@ export default function AssignmentsTab({ selectedYear }) {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sort Markers</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortMarkers')}</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
                   <select
                     value={columnSort}
@@ -378,8 +380,8 @@ export default function AssignmentsTab({ selectedYear }) {
                     className="pl-3 pr-8 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0"
                     title="Sort table columns"
                   >
-                    <option value="markerId">ID</option>
-                    <option value="glyphText">Label</option>
+                    <option value="markerId">{t('helpPanel.assignments.markerId')}</option>
+                    <option value="glyphText">{t('helpPanel.assignments.glyphText')}</option>
                   </select>
                   <button
                     onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
@@ -484,11 +486,11 @@ export default function AssignmentsTab({ selectedYear }) {
             <div className="w-6 h-6 bg-green-100 border border-green-200 rounded flex items-center justify-center">
               <Icon path={mdiCheck} size={0.5} className="text-green-700" />
             </div>
-            <span className="font-medium">Assigned</span>
+            <span className="font-medium">{t('helpPanel.assignments.assigned')}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 bg-white border border-gray-300 rounded"></div>
-            <span className="font-medium">Not assigned</span>
+            <div className="w-6 h-6 border-2 border-gray-300 bg-white rounded"></div>
+            <span className="font-medium">{t('helpPanel.assignments.notAssigned')}</span>
           </div>
         </div>
         <div className="text-sm text-gray-900">
