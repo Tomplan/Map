@@ -87,6 +87,11 @@ export function useCategories(language = 'nl') {
     } catch (err) {
       console.error('Error loading categories:', err);
       setError(err.message);
+      // If table doesn't exist, set empty array
+      if (err.message?.includes('does not exist') || err.code === '42P01') {
+        console.warn('Categories table not found. Please run migration 007.');
+        setCategories([]);
+      }
     } finally {
       setLoading(false);
     }

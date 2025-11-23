@@ -137,7 +137,7 @@ export default function CompaniesTab() {
   // Load categories for all companies when public tab is active
   useEffect(() => {
     const loadAllCategories = async () => {
-      if (activeTab === 'public') {
+      if (activeTab === 'public' && companies.length > 0) {
         const categoriesMap = {};
         for (const company of companies) {
           const cats = await getCompanyCategories(company.id);
@@ -146,15 +146,32 @@ export default function CompaniesTab() {
         setCompanyCategories(categoriesMap);
       }
     };
-    loadAllCategories();
-  }, [activeTab, companies, getCompanyCategories]);
+    
+    // Only load once when switching to public tab or companies change
+    if (activeTab === 'public' && Object.keys(companyCategories).length === 0) {
+      loadAllCategories();
+    }
+  }, [activeTab]); // Remove companies and getCompanyCategories from deps
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
+    console.log('Saving company with categories:', { editingId, editingCategories });
     await handleSave();
     if (editingId && editingId !== 'organization') {
-      await assignCategoriesToCompany(editingId, editingCategories);
+      const result = await assignCategoriesToCompany(editingId, editingCategories);
+      console.log('Category assignment result:', result);
+      if (!result.success) {
+        console.error('Failed to assign categories:', result.error);
+        alert('Failed to save categories: ' + result.error);
+      }
     }
+    setEditingCategories([]);
+  };
+
+  // Wrap handleCancel to reset category state
+  const handleCancelWithCategories = () => {
+    handleCancel();
+    setEditingCategories([]);
   };
 
   // Combine organization profile with companies and filter
@@ -441,38 +458,61 @@ export default function CompaniesTab() {
                   {/* Info - Multi-language */}
                   <td className={`py-1 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing ? (
-                      <InfoFieldWithTranslations
-                        companyId={item.id}
-                        editingLanguage={editingContentLanguage}
-                        onLanguageChange={setEditingContentLanguage}
-                      />
+                      isOrg ? (
+                        <textarea
+                          value={editForm.info || ''}
+                          onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
+                          className="w-full bg-white text-gray-900 border rounded px-2 py-1"
+                          rows={4}
+                          placeholder="Organization info"
+                        />
+                      ) : (
+                        <InfoFieldWithTranslations
+                          companyId={item.id}
+                          editingLanguage={editingContentLanguage}
+                          onLanguageChange={setEditingContentLanguage}
+                        />
+                      )
                     ) : (
-                      <InfoFieldDisplay
-                        companyId={item.id}
-                        currentLanguage={i18n.language}
-                      />
+                      isOrg ? (
+                        <p className="line-clamp-3 whitespace-pre-wrap">
+                          {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
+                        </p>
+                      ) : (
+                        <InfoFieldDisplay
+                          companyId={item.id}
+                          currentLanguage={i18n.language}
+                        />
+                      )
                     )}
                   </td>
 
                   {/* Categories */}
                   <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isEditing && !isOrg ? (
-                      <select
-                        multiple
-                        value={editingCategories}
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions, option => option.value);
-                          setEditingCategories(selected);
-                        }}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
-                        size={3}
-                      >
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
+                      categories.length > 0 ? (
+                        <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
+                          {categories.map(cat => (
+                            <label key={cat.id} className="flex items-center gap-1 cursor-pointer hover:bg-blue-50 px-1 rounded">
+                              <input
+                                type="checkbox"
+                                checked={editingCategories.includes(cat.id)}
+                                onChange={(e) => {
+                                  const newCategories = e.target.checked
+                                    ? [...editingCategories, cat.id]
+                                    : editingCategories.filter(id => id !== cat.id);
+                                  console.log('Category toggle:', cat.name, 'checked:', e.target.checked, 'new array:', newCategories);
+                                  setEditingCategories(newCategories);
+                                }}
+                                className="cursor-pointer"
+                              />
+                              <span className="text-xs">{cat.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-red-500 text-xs italic">Run migration 007</span>
+                      )
                     ) : isOrg ? (
                       <span className="text-gray-400 text-xs italic">N/A</span>
                     ) : (
@@ -550,7 +590,7 @@ export default function CompaniesTab() {
                           <Icon path={mdiCheck} size={0.8} />
                         </button>
                         <button
-                          onClick={handleCancel}
+                          onClick={handleCancelWithCategories}
                           className="p-1.5 bg-gray-500 text-white rounded hover:bg-gray-600"
                           title="Cancel"
                         >
