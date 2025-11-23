@@ -132,9 +132,9 @@ export default function CategoryManagement() {
     if (result.success) {
       setShowModal(false);
       resetForm();
-      alert(editingCategory ? t('admin.categories.updateSuccess') : t('admin.categories.createSuccess'));
+      alert(editingCategory ? t('categories.updateSuccess') : t('categories.createSuccess'));
     } else {
-      alert(t('admin.categories.saveError', { error: result.error }));
+      alert(t('categories.saveError', { error: result.error }));
     }
   };
 
@@ -159,15 +159,15 @@ export default function CategoryManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{t('admin.categories.title')}</h2>
-          <p className="text-gray-600 mt-1">{t('admin.categories.description')}</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h2>
+          <p className="text-gray-600 mt-1">{t('categories.description')}</p>
         </div>
         <button
           onClick={handleCreate}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Icon path={mdiPlus} size={0.8} />
-          {t('admin.categories.createNew')}
+          {t('categories.createNew')}
         </button>
       </div>
 
@@ -177,7 +177,7 @@ export default function CategoryManagement() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('admin.categories.order')}
+                {t('categories.order')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('admin.categories.category')}
