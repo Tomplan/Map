@@ -397,12 +397,13 @@ export default function AssignmentsTab({ selectedYear }) {
         </div>
 
       {/* Assignment Matrix */}
-      <div className="flex-1 overflow-auto border rounded-lg">
+      <div className="flex-1 overflow-auto border rounded-lg relative">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="sticky top-0 z-10">
             <tr className="bg-gray-100 text-gray-900">
               <th className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 z-20" style={{ minWidth: '200px' }}>
-                Company
+                {/* Make sticky both left and top */}
+                <span className="sticky left-0 top-0 z-20 bg-gray-200 block">Company</span>
               </th>
               {sortedMarkers.map(marker => {
                 const hasAssignment = isMarkerAssigned(marker.id);
