@@ -80,7 +80,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     },
     {
       path: '/admin/companies',
-      label: t('adminNav.companies'),
+      label: t('adminNav.companiesNav'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
     },
