@@ -134,10 +134,10 @@ export default function CompaniesTab() {
     loadCompanyCategories();
   }, [editingId, getCompanyCategories]);
 
-  // Load categories for all companies when manager tab is active
+  // Load categories for all companies when public tab is active
   useEffect(() => {
     const loadAllCategories = async () => {
-      if (activeTab === 'manager') {
+      if (activeTab === 'public') {
         const categoriesMap = {};
         for (const company of companies) {
           const cats = await getCompanyCategories(company.id);
@@ -347,6 +347,7 @@ export default function CompaniesTab() {
                   <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
                   <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
                   <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Categories</th>
                 </>
               ) : (
                 <>
@@ -354,7 +355,6 @@ export default function CompaniesTab() {
                   <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
                   <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
                   <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Categories</th>
                 </>
               )}
               <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
@@ -453,6 +453,41 @@ export default function CompaniesTab() {
                       />
                     )}
                   </td>
+
+                  {/* Categories */}
+                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                    {isEditing && !isOrg ? (
+                      <select
+                        multiple
+                        value={editingCategories}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          setEditingCategories(selected);
+                        }}
+                        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
+                        size={3}
+                      >
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : isOrg ? (
+                      <span className="text-gray-400 text-xs italic">N/A</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {(companyCategories[item.id] || []).map(cat => (
+                          <span key={cat.id} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: cat.color + '20', color: cat.color }}>
+                            {cat.name}
+                          </span>
+                        ))}
+                        {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
+                          <span className="text-gray-400 text-xs italic">None</span>
+                        )}
+                      </div>
+                    )}
+                  </td>
                     </>
                   ) : (
                     <>
@@ -498,41 +533,6 @@ export default function CompaniesTab() {
                       />
                     ) : (
                       <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
-                    )}
-                  </td>
-
-                  {/* Categories */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    {isEditing && !isOrg ? (
-                      <select
-                        multiple
-                        value={editingCategories}
-                        onChange={(e) => {
-                          const selected = Array.from(e.target.selectedOptions, option => option.value);
-                          setEditingCategories(selected);
-                        }}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
-                        size={3}
-                      >
-                        {categories.map(cat => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : isOrg ? (
-                      <span className="text-gray-400 text-xs italic">N/A</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {(companyCategories[item.id] || []).map(cat => (
-                          <span key={cat.id} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: cat.color + '20', color: cat.color }}>
-                            {cat.name}
-                          </span>
-                        ))}
-                        {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
-                          <span className="text-gray-400 text-xs italic">None</span>
-                        )}
-                      </div>
                     )}
                   </td>
                     </>
