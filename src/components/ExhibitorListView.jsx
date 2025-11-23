@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiMapMarker, mdiFilterVariant, mdiChevronUp, mdiChevronDown } from '@mdi/js';
+import { mdiMagnify, mdiMapMarker, mdiFilterVariant, mdiChevronUp, mdiChevronDown, mdiClose, mdiTag } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
+import useCategories from '../hooks/useCategories';
 
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
   const [showSortMenu, setShowSortMenu] = useState(false);
@@ -28,6 +30,9 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
 
   // Favorites context
   const { favorites, isFavorite, toggleFavorite } = useFavoritesContext();
+  
+  // Categories
+  const { categories, loading: categoriesLoading, getCompanyCategories } = useCategories(i18n.language);
 
   // Raw exhibitors subset
   const exhibitors = useMemo(() => markersState.filter(m => m.id < 1000 && m.name), [markersState]);
@@ -41,7 +46,8 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           grouped[marker.companyId] = {
             ...marker,
             boothNumbers: [marker.glyph],
-            markerIds: [marker.id]
+            markerIds: [marker.id],
+            categories: [] // Will be populated via useEffect
           };
         } else {
           grouped[marker.companyId].boothNumbers.push(marker.glyph);
@@ -54,6 +60,31 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     });
     return Object.values(grouped);
   }, [exhibitors]);
+
+  // Load categories for each company
+  const [exhibitorsWithCategories, setExhibitorsWithCategories] = useState([]);
+  
+  useEffect(() => {
+    if (categoriesLoading || groupedExhibitors.length === 0) {
+      setExhibitorsWithCategories(groupedExhibitors);
+      return;
+    }
+    
+    const loadCategories = async () => {
+      const withCategories = await Promise.all(
+        groupedExhibitors.map(async (exhibitor) => {
+          const companyCats = await getCompanyCategories(exhibitor.companyId);
+          return {
+            ...exhibitor,
+            categories: companyCats || []
+          };
+        })
+      );
+      setExhibitorsWithCategories(withCategories);
+    };
+    
+    loadCategories();
+  }, [groupedExhibitors, categoriesLoading, getCompanyCategories]);
 
   // Outside click close
   useEffect(() => {
@@ -73,8 +104,14 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
 
   // Filters
   const filteredExhibitors = useMemo(() => {
-    let list = groupedExhibitors;
+    let list = exhibitorsWithCategories;
     if (showFavoritesOnly) list = list.filter(ex => ex.companyId && isFavorite(ex.companyId));
+    if (selectedCategories.length > 0) {
+      list = list.filter(ex => {
+        if (!ex.categories || ex.categories.length === 0) return false;
+        return ex.categories.some(cat => selectedCategories.includes(cat.id));
+      });
+    }
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       list = list.filter(ex =>
@@ -83,7 +120,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       );
     }
     return list;
-  }, [groupedExhibitors, showFavoritesOnly, searchTerm, isFavorite]);
+  }, [exhibitorsWithCategories, showFavoritesOnly, selectedCategories, searchTerm, isFavorite]);
 
   // Sorting
   const sortedExhibitors = useMemo(() => {
@@ -236,6 +273,67 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
               )}
             </div>
           </div>
+
+          {/* Category Filter Chips */}
+          {!categoriesLoading && categories.length > 0 && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon path={mdiTag} size={0.8} className="text-gray-600" />
+                <span className="text-sm font-medium text-gray-700">{t('exhibitorPage.categories')}</span>
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="ml-auto text-xs text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    {t('exhibitorPage.clearFilters')}
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                {categories.map(category => {
+                  const isSelected = selectedCategories.includes(category.id);
+                  const exhibitorCount = exhibitorsWithCategories.filter(ex => 
+                    ex.categories?.some(cat => cat.id === category.id)
+                  ).length;
+                  
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => {
+                        setSelectedCategories(prev => 
+                          isSelected 
+                            ? prev.filter(id => id !== category.id)
+                            : [...prev, category.id]
+                        );
+                      }}
+                      disabled={exhibitorCount === 0}
+                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'text-white shadow-md'
+                          : exhibitorCount > 0
+                          ? 'bg-white border-2 text-gray-700 hover:shadow-md'
+                          : 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                      style={{
+                        backgroundColor: isSelected ? category.color : undefined,
+                        borderColor: isSelected ? category.color : undefined
+                      }}
+                    >
+                      <Icon path={category.icon} size={0.6} />
+                      <span>{category.name}</span>
+                      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
+                        isSelected 
+                          ? 'bg-white/30 text-white' 
+                          : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {exhibitorCount}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -291,12 +389,22 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                       </div>
                     )}
 
-                    {/* Category - Placeholder for Phase 5 */}
-                    <div className="mt-2">
-                      <span className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                        {t('exhibitorPage.categoriesComingSoon')}
-                      </span>
-                    </div>
+                    {/* Category Badges */}
+                    {exhibitor.categories && exhibitor.categories.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {exhibitor.categories.map(category => (
+                          <span
+                            key={category.id}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
+                            style={{ backgroundColor: category.color }}
+                            title={category.name}
+                          >
+                            <Icon path={category.icon} size={0.5} />
+                            {category.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Info Preview */}
                     {(() => {
