@@ -11,6 +11,7 @@
     "eventSubscriptions": "Inschrijvingen",
     "programManagement": "Programmabeheer",
     "assignments": "Toewijzingen",
+    "categories": "Categorieën",
     "settings": "Instellingen",
     "eventYear": "Evenementjaar",
     "help": "Help",
@@ -440,6 +441,32 @@
       "content_editor": "Content Editor",
       "unknown": "Onbekend"
     },
-    "footer": "Meer hulp nodig? Neem contact op met je systeembeheerder"
+    "footer": "Meer hulp nodig? Neem contact op met je systeembeheerder",
+    "categories": {
+      "title": "Categoriebeheer",
+      "description": "Beheer exposantencategorieën voor filtering en organisatie",
+      "createNew": "Categorie Aanmaken",
+      "editCategory": "Categorie Bewerken",
+      "createCategory": "Categorie Aanmaken",
+      "order": "Volgorde",
+      "category": "Categorie",
+      "slug": "Slug",
+      "exhibitors": "Exposanten",
+      "icon": "Icoon",
+      "color": "Kleur",
+      "sortOrder": "Sorteervolgorde",
+      "translations": "Vertalingen",
+      "name": "Naam",
+      "description": "Beschrijving",
+      "slugHelp": "Unieke identificatie (kleine letters, geen spaties, gebruik streepjes)",
+      "noCategories": "Nog geen categorieën. Maak je eerste categorie aan om te beginnen.",
+      "confirmDelete": "Weet je zeker dat je \"{{name}}\" wilt verwijderen?",
+      "cannotDelete": "Kan categorie met toegewezen exposanten niet verwijderen",
+      "createSuccess": "Categorie succesvol aangemaakt",
+      "updateSuccess": "Categorie succesvol bijgewerkt",
+      "deleteSuccess": "Categorie succesvol verwijderd",
+      "deleteError": "Kan categorie niet verwijderen: {{error}}",
+      "saveError": "Kan categorie niet opslaan: {{error}}"
+    }
   }
 }

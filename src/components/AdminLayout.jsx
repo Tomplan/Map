@@ -9,6 +9,7 @@ import {
   mdiCalendarCheck,
   mdiCalendarClock,
   mdiMapMarkerMultiple,
+  mdiTag,
   mdiCog,
   mdiLogout,
   mdiChevronLeft,
@@ -100,6 +101,12 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       label: t('adminNav.programManagement'),
       icon: mdiCalendarClock,
       roles: ['super_admin', 'event_manager', 'content_editor'],
+    },
+    {
+      path: '/admin/categories',
+      label: t('adminNav.categories'),
+      icon: mdiTag,
+      roles: ['super_admin', 'event_manager'],
     },
     {
       path: '/admin/settings',
