@@ -123,16 +123,21 @@ export default function CompaniesTab() {
     toastError
   });
 
-  // Load categories when editing a company
+  // Load categories when editing a company (only when editingId changes)
   useEffect(() => {
     const loadCompanyCategories = async () => {
       if (editingId && editingId !== 'organization') {
         const cats = await getCompanyCategories(editingId);
-        setEditingCategories(cats.map(c => c.id));
+        const categoryIds = cats.map(c => c.id);
+        console.log('Loading initial categories for company:', editingId, categoryIds);
+        setEditingCategories(categoryIds);
+      } else if (!editingId) {
+        // Clear when not editing
+        setEditingCategories([]);
       }
     };
     loadCompanyCategories();
-  }, [editingId, getCompanyCategories]);
+  }, [editingId]); // Only depend on editingId, not getCompanyCategories
 
   // Load categories for all companies when public tab is active
   useEffect(() => {
@@ -163,6 +168,13 @@ export default function CompaniesTab() {
       if (!result.success) {
         console.error('Failed to assign categories:', result.error);
         alert('Failed to save categories: ' + result.error);
+      } else {
+        // Reload categories for this company to update display
+        const updatedCats = await getCompanyCategories(editingId);
+        setCompanyCategories(prev => ({
+          ...prev,
+          [editingId]: updatedCats
+        }));
       }
     }
     setEditingCategories([]);

@@ -203,70 +203,48 @@ ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE category_translations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE company_categories ENABLE ROW LEVEL SECURITY;
 
--- Public read access (idempotent)
-DO $$ BEGIN
-  CREATE POLICY "Categories are viewable by everyone" ON categories FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- Drop existing policies to ensure clean slate
+DROP POLICY IF EXISTS "Categories are viewable by everyone" ON categories;
+DROP POLICY IF EXISTS "Category translations are viewable by everyone" ON category_translations;
+DROP POLICY IF EXISTS "Company categories are viewable by everyone" ON company_categories;
+DROP POLICY IF EXISTS "Admins can insert categories" ON categories;
+DROP POLICY IF EXISTS "Admins can update categories" ON categories;
+DROP POLICY IF EXISTS "Admins can delete categories" ON categories;
+DROP POLICY IF EXISTS "Admins can insert category translations" ON category_translations;
+DROP POLICY IF EXISTS "Admins can update category translations" ON category_translations;
+DROP POLICY IF EXISTS "Admins can delete category translations" ON category_translations;
+DROP POLICY IF EXISTS "Admins can insert company categories" ON company_categories;
+DROP POLICY IF EXISTS "Admins can delete company categories" ON company_categories;
 
-DO $$ BEGIN
-  CREATE POLICY "Category translations are viewable by everyone" ON category_translations FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- Public read access
+CREATE POLICY "Categories are viewable by everyone" ON categories FOR SELECT USING (true);
+CREATE POLICY "Category translations are viewable by everyone" ON category_translations FOR SELECT USING (true);
+CREATE POLICY "Company categories are viewable by everyone" ON company_categories FOR SELECT USING (true);
 
-DO $$ BEGIN
-  CREATE POLICY "Company categories are viewable by everyone" ON company_categories FOR SELECT USING (true);
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+-- Admin write access
+CREATE POLICY "Admins can insert categories" ON categories FOR INSERT 
+  WITH CHECK (auth.role() = 'authenticated');
 
--- Admin write access (idempotent)
-DO $$ BEGIN
-  CREATE POLICY "Admins can insert categories" ON categories FOR INSERT 
-    WITH CHECK (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can update categories" ON categories FOR UPDATE 
+  USING (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can update categories" ON categories FOR UPDATE 
-    USING (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can delete categories" ON categories FOR DELETE 
+  USING (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can delete categories" ON categories FOR DELETE 
-    USING (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can insert category translations" ON category_translations FOR INSERT 
+  WITH CHECK (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can insert category translations" ON category_translations FOR INSERT 
-    WITH CHECK (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can update category translations" ON category_translations FOR UPDATE 
+  USING (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can update category translations" ON category_translations FOR UPDATE 
-    USING (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can delete category translations" ON category_translations FOR DELETE 
+  USING (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can delete category translations" ON category_translations FOR DELETE 
-    USING (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can insert company categories" ON company_categories FOR INSERT 
+  WITH CHECK (auth.role() = 'authenticated');
 
-DO $$ BEGIN
-  CREATE POLICY "Admins can insert company categories" ON company_categories FOR INSERT 
-    WITH CHECK (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
-
-DO $$ BEGIN
-  CREATE POLICY "Admins can delete company categories" ON company_categories FOR DELETE 
-    USING (auth.jwt() ->> 'role' = 'admin');
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+CREATE POLICY "Admins can delete company categories" ON company_categories FOR DELETE 
+  USING (auth.role() = 'authenticated');
 
 COMMENT ON TABLE categories IS 'Core category definitions for organizing exhibitors';
 COMMENT ON TABLE category_translations IS 'Localized category names and descriptions';
