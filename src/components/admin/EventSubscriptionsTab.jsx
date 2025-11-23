@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
@@ -15,6 +16,7 @@ import { useDialog } from '../../contexts/DialogContext';
  * Shows subscribed companies for the selected year with contact info, booth requirements, and meal counts
  */
 export default function EventSubscriptionsTab({ selectedYear }) {
+  const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
   const {
     subscriptions,
@@ -262,7 +264,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
             type="text"
-            placeholder="Search subscribed companies..."
+            placeholder={t('helpPanel.subscriptions.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 border rounded-lg"
@@ -380,29 +382,29 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Contact</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Phone</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Email</th>
-              <th className="p-2 text-center border-b bg-gray-100">Booth Count</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Area</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.contact')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.phone')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.email')}</th>
+              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.boothCount')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.area')}</th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
-                <span className="font-bold text-blue-700">Saturday</span>
+                <span className="font-bold text-blue-700">{t('helpPanel.subscriptions.saturday')}</span>
               </th>
-              <th className="p-2 text-center border-b bg-green-50" colSpan={2}>
-                <span className="font-bold text-green-700">Sunday</span>
+              <th className="p-2 text-center border-b bg-gray-100" colSpan={2}>
+                <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
               </th>
-              <th className="p-2 text-center border-b bg-gray-100">Coins</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>Notes</th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>Actions</th>
+              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.notes')}</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>{t('helpPanel.subscriptions.actions')}</th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
               <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>Breakfast</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>Lunch</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>BBQ</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>Breakfast</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>Lunch</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.bbq')}</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
               <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
             </tr>
             {/* Totals row */}
@@ -508,7 +510,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         value={editForm.area || ''}
                         onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
                         className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
-                        placeholder="large field, small field..."
+                        placeholder={t('helpPanel.subscriptions.areaPlaceholder')}
                       />
                     ) : (
                       <span className="text-xs text-gray-700">{subscription.area || '-'}</span>

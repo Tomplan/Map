@@ -16,12 +16,15 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null); // Single category filter
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false);
   const sortButtonRef = useRef(null);
   const sortMenuRef = useRef(null);
+  const categoryButtonRef = useRef(null);
+  const categoryMenuRef = useRef(null);
   const sortFieldLabels = {
     name: t('exhibitorPage.sortName') || 'Name',
     booth: t('exhibitorPage.sortBooth') || 'Booth',
@@ -109,14 +112,30 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     return () => document.removeEventListener('mousedown', onDocClick);
   }, [showSortMenu]);
 
+  // Outside click close for category dropdown
+  useEffect(() => {
+    if (!showCategoryMenu) return;
+    const onDocClick = (e) => {
+      const btn = categoryButtonRef.current;
+      const menu = categoryMenuRef.current;
+      if (!btn || !menu) return;
+      if (!btn.contains(e.target) && !menu.contains(e.target)) {
+        setShowCategoryMenu(false);
+        setTimeout(() => btn && btn.focus(), 0);
+      }
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [showCategoryMenu]);
+
   // Filters
   const filteredExhibitors = useMemo(() => {
     let list = exhibitorsWithCategories;
     if (showFavoritesOnly) list = list.filter(ex => ex.companyId && isFavorite(ex.companyId));
-    if (selectedCategories.length > 0) {
+    if (selectedCategory) {
       list = list.filter(ex => {
         if (!ex.categories || ex.categories.length === 0) return false;
-        return ex.categories.some(cat => selectedCategories.includes(cat.id));
+        return ex.categories.some(cat => cat.id === selectedCategory);
       });
     }
     if (searchTerm) {
@@ -127,7 +146,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
       );
     }
     return list;
-  }, [exhibitorsWithCategories, showFavoritesOnly, selectedCategories, searchTerm, isFavorite]);
+  }, [exhibitorsWithCategories, showFavoritesOnly, selectedCategory, searchTerm, isFavorite]);
 
   // Sorting
   const sortedExhibitors = useMemo(() => {
@@ -264,6 +283,90 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   </ul>
                 )}
               </div>
+              
+              {/* Category Filter Dropdown */}
+              {!categoriesLoading && categories.length > 0 && (
+                <div className="relative flex items-center gap-1" onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setShowCategoryMenu(false);
+                    const btn = categoryButtonRef.current;
+                    if (btn) btn.focus();
+                  }
+                }}>
+                  <button
+                    type="button"
+                    ref={categoryButtonRef}
+                    onClick={() => setShowCategoryMenu(!showCategoryMenu)}
+                    className={`px-3 py-1.5 rounded-lg border text-sm flex items-center gap-1.5 select-none transition-colors ${
+                      selectedCategory
+                        ? 'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100'
+                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
+                    }`}
+                    aria-haspopup="listbox"
+                    aria-expanded={showCategoryMenu}
+                    aria-label={t('exhibitorPage.filterByCategory')}
+                  >
+                    <Icon path={mdiTag} size={0.7} />
+                    <span className="font-medium">
+                      {selectedCategory 
+                        ? categories.find(c => c.id === selectedCategory)?.name 
+                        : t('exhibitorPage.allCategories')}
+                    </span>
+                  </button>
+                  {selectedCategory && (
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(null); }}
+                      aria-label={t('exhibitorPage.clearFilters')}
+                      className="px-2 py-1.5 rounded-lg border text-sm flex items-center justify-center transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
+                    >
+                      <Icon path={mdiClose} size={0.6} />
+                    </button>
+                  )}
+                  {showCategoryMenu && (
+                    <ul
+                      role="listbox"
+                      ref={categoryMenuRef}
+                      tabIndex={-1}
+                      className="absolute left-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-1 max-h-80 overflow-y-auto"
+                      style={{ top: '100%' }}
+                    >
+                      <li>
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={!selectedCategory}
+                          onClick={() => { setSelectedCategory(null); setShowCategoryMenu(false); }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${!selectedCategory ? 'font-semibold text-blue-700 bg-blue-50' : 'text-gray-700'}`}
+                        >
+                          <Icon path={mdiTag} size={0.7} className="opacity-50" />
+                          {t('exhibitorPage.allCategories')}
+                        </button>
+                      </li>
+                      <div className="border-t border-gray-200 my-1"></div>
+                      {categories.map(category => (
+                        <li key={category.id}>
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={selectedCategory === category.id}
+                            onClick={() => { setSelectedCategory(category.id); setShowCategoryMenu(false); }}
+                            className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${selectedCategory === category.id ? 'font-semibold text-blue-700 bg-blue-50' : 'text-gray-700'}`}
+                          >
+                            <Icon 
+                              path={category.icon} 
+                              size={0.7} 
+                              style={{ color: category.color }}
+                            />
+                            {category.name}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              
               {/* Favorites Only Toggle */}
               {favorites.length > 0 && (
                 <button
@@ -281,66 +384,13 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
             </div>
           </div>
 
-          {/* Category Filter Chips */}
-          {!categoriesLoading && categories.length > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon path={mdiTag} size={0.8} className="text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">{t('exhibitorPage.categories')}</span>
-                {selectedCategories.length > 0 && (
-                  <button
-                    onClick={() => setSelectedCategories([])}
-                    className="ml-auto text-xs text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    {t('exhibitorPage.clearFilters')}
-                  </button>
-                )}
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                {categories.map(category => {
-                  const isSelected = selectedCategories.includes(category.id);
-                  const exhibitorCount = exhibitorsWithCategories.filter(ex => 
-                    ex.categories?.some(cat => cat.id === category.id)
-                  ).length;
-                  
-                  return (
-                    <button
-                      key={category.id}
-                      onClick={() => {
-                        setSelectedCategories(prev => 
-                          isSelected 
-                            ? prev.filter(id => id !== category.id)
-                            : [...prev, category.id]
-                        );
-                      }}
-                      disabled={exhibitorCount === 0}
-                      className={`flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
-                        isSelected
-                          ? 'text-white shadow-md'
-                          : exhibitorCount > 0
-                          ? 'bg-white border-2 text-gray-700 hover:shadow-md'
-                          : 'bg-gray-100 border-2 border-gray-200 text-gray-400 cursor-not-allowed'
-                      }`}
-                      style={{
-                        backgroundColor: isSelected ? category.color : undefined,
-                        borderColor: isSelected ? category.color : undefined
-                      }}
-                    >
-                      <Icon path={category.icon} size={0.6} />
-                      <span>{category.name}</span>
-                      <span className={`ml-1 px-1.5 py-0.5 rounded-full text-xs ${
-                        isSelected 
-                          ? 'bg-white/30 text-white' 
-                          : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {exhibitorCount}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+          {/* No results message for category filter */}
+          {!categoriesLoading && selectedCategory && filteredExhibitors.length === 0 && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg text-center text-sm text-gray-600">
+              {t('exhibitorPage.noCategoryMatch')}
             </div>
           )}
+
         </div>
       </div>
 

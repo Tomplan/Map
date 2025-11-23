@@ -307,12 +307,31 @@
     "booth": "Booth",
     "categoriesComingSoon": "Coming Soon: Categories",
     "categories": "Categories",
+    "allCategories": "All Categories",
+    "filterByCategory": "Filter by category",
     "clearFilters": "Clear filters",
     "noCategoryMatch": "No exhibitors match the selected categories.",
     "phaseNote": "Note:",
     "comingInFuturePhases": "Coming in future phases:",
     "categoryFiltering": "Category filtering",
       "sortOptions": "Sort options"
+  },
+  "map": {
+    "searchPlaceholder": "Search for a marker...",
+    "ariaLabel": "Interactive event map"
+  },
+  "mapManagement": {
+    "addMarker": "Add marker",
+    "addMarkerTooltipActive": "Click on map to place marker",
+    "addMarkerTooltip": "Add marker",
+    "enterMarkerId": "Enter Marker ID",
+    "markerIdPlaceholder": "Marker ID (integer)",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "errorInvalidId": "Please enter a valid numeric ID.",
+    "errorIdExists": "ID already exists. Please choose another.",
+    "searchPlaceholder": "Search by ID, booth label, or name...",
+    "selectMarker": "Select a marker to view details"
   },
   "navigation": {
     "home": "Home",
@@ -442,11 +461,6 @@
       "unknown": "Unknown"
     },
     "footer": "Need more help? Contact your system administrator",
-    "companies": {
-      "publicInfoTab": "Public Info",
-      "managerSettingsTab": "Manager Settings",
-      "categoriesLabel": "Categories"
-    },
     "categories": {
       "title": "Category Management",
       "description": "Manage exhibitor categories for filtering and organization",
@@ -472,6 +486,65 @@
       "deleteSuccess": "Category deleted successfully",
       "deleteError": "Failed to delete category: {{error}}",
       "saveError": "Failed to save category: {{error}}"
+    },
+    "subscriptions": {
+      "searchPlaceholder": "Search subscribed companies...",
+      "booths": "Booths",
+      "company": "Company",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "boothCount": "Booth Count",
+      "area": "Area",
+      "saturday": "Saturday",
+      "sunday": "Sunday",
+      "coins": "Coins",
+      "notes": "Notes",
+      "actions": "Actions",
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "bbq": "BBQ",
+      "areaPlaceholder": "large field, small field..."
+    },
+    "assignments": {
+      "searchPlaceholder": "Search companies...",
+      "archive": "Archive",
+      "sortCompanies": "Sort Companies",
+      "sortMarkers": "Sort Markers",
+      "byMarker": "Marker",
+      "unassignedFirst": "Unassigned",
+      "markerId": "ID",
+      "glyphText": "Label",
+      "assigned": "Assigned",
+      "notAssigned": "Not assigned"
+    },
+    "companies": {
+      "publicInfoTab": "Public Info",
+      "privateInfoTab": "Private Info",
+      "categoriesLabel": "Categories",
+      "searchPlaceholder": "Search companies...",
+      "newCompany": "New Company",
+      "companyNamePlaceholder": "Company Name *",
+      "companyLogo": "Company Logo",
+      "logoUrlPlaceholder": "Or paste external logo URL",
+      "websiteUrlPlaceholder": "Website URL",
+      "infoPlaceholder": "Info",
+      "contactPlaceholder": "Contact Person",
+      "phonePlaceholder": "Phone",
+      "emailPlaceholder": "Email",
+      "name": "Name",
+      "logo": "Logo",
+      "website": "Website",
+      "info": "Info",
+      "categories": "Categories",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "actions": "Actions",
+      "notSet": "Not set",
+      "none": "None",
+      "orPasteUrl": "Or paste URL",
+      "organizationInfo": "Organization info"
     }
   }
 }
