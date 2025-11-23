@@ -11,6 +11,7 @@
     "eventSubscriptions": "Subscriptions",
     "programManagement": "Program Management",
     "assignments": "Assignments",
+    "categories": "Categories",
     "settings": "Settings",
     "eventYear": "Event Year",
     "help": "Help",
@@ -440,6 +441,32 @@
       "content_editor": "Content Editor",
       "unknown": "Unknown"
     },
-    "footer": "Need more help? Contact your system administrator"
+    "footer": "Need more help? Contact your system administrator",
+    "categories": {
+      "title": "Category Management",
+      "description": "Manage exhibitor categories for filtering and organization",
+      "createNew": "Create Category",
+      "editCategory": "Edit Category",
+      "createCategory": "Create Category",
+      "order": "Order",
+      "category": "Category",
+      "slug": "Slug",
+      "exhibitors": "Exhibitors",
+      "icon": "Icon",
+      "color": "Color",
+      "sortOrder": "Sort Order",
+      "translations": "Translations",
+      "name": "Name",
+      "description": "Description",
+      "slugHelp": "Unique identifier (lowercase, no spaces, use hyphens)",
+      "noCategories": "No categories yet. Create your first category to get started.",
+      "confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
+      "cannotDelete": "Cannot delete category with assigned exhibitors",
+      "createSuccess": "Category created successfully",
+      "updateSuccess": "Category updated successfully",
+      "deleteSuccess": "Category deleted successfully",
+      "deleteError": "Failed to delete category: {{error}}",
+      "saveError": "Failed to save category: {{error}}"
+    }
   }
 }

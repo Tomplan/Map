@@ -18,6 +18,7 @@ import CompaniesTab from './admin/CompaniesTab';
 import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
 import ProgramManagement from './ProgramManagement';
 import AssignmentsTab from './admin/AssignmentsTab';
+import CategoryManagement from './admin/CategoryManagement';
 import Settings from './admin/Settings';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
@@ -135,6 +136,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           path="assignments"
           element={<AssignmentsTab selectedYear={selectedYear} />}
         />
+        <Route path="categories" element={<CategoryManagement />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="/storage-test" element={<StorageTestPage />} />
