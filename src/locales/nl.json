@@ -42,6 +42,11 @@
   },
   "adminLogin": {
     "title": "Manager Inloggen",
+        "mapManagement": {
+          "sortId": "ID",
+          "sortName": "Naam",
+          "sortType": "Type"
+          },
     "subtitle": "Inloggen om evenementgegevens te beheren",
     "email": "E-mail",
     "emailPlaceholder": "Voer uw e-mailadres in",
@@ -322,6 +327,9 @@
   },
   "mapManagement": {
     "addMarker": "Marker toevoegen",
+    "sortId": "ID",
+    "sortName": "Naam",
+    "sortType": "Type",
     "addMarkerTooltipActive": "Klik op de kaart om marker te plaatsen",
     "addMarkerTooltip": "Marker toevoegen",
     "enterMarkerId": "Voer Marker ID in",

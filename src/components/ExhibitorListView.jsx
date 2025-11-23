@@ -19,10 +19,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const [selectedCategory, setSelectedCategory] = useState(null); // Single category filter
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
-  const [showSortMenu, setShowSortMenu] = useState(false);
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
-  const sortButtonRef = useRef(null);
-  const sortMenuRef = useRef(null);
   const categoryButtonRef = useRef(null);
   const categoryMenuRef = useRef(null);
   const sortFieldLabels = {
@@ -96,21 +93,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     loadCategories();
   }, [groupedExhibitors, categoriesLoading, getAllCompanyCategories, i18n.language]);
 
-  // Outside click close
-  useEffect(() => {
-    if (!showSortMenu) return;
-    const onDocClick = (e) => {
-      const btn = sortButtonRef.current;
-      const menu = sortMenuRef.current;
-      if (!btn || !menu) return;
-      if (!btn.contains(e.target) && !menu.contains(e.target)) {
-        setShowSortMenu(false);
-        setTimeout(() => btn && btn.focus(), 0);
-      }
-    };
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
-  }, [showSortMenu]);
+
 
   // Outside click close for category dropdown
   useEffect(() => {
@@ -215,73 +198,28 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
               {favorites.length > 0 && ` • ${favorites.length} ${t('exhibitorPage.favorited')}`}
             </div>
             <div className="flex flex-wrap gap-2 items-center relative">
-              {/* Single sort dropdown button */}
-              <div className="relative flex items-center gap-0" onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setShowSortMenu(false);
-                  const btn = sortButtonRef.current;
-                  if (btn) btn.focus();
-                }
-              }}>
-                <button
-                  type="button"
-                  ref={sortButtonRef}
-                  onClick={() => setShowSortMenu(!showSortMenu)}
-                  className={`px-3 py-1.5 rounded-l-lg border border-r-0 text-sm flex items-center select-none transition-colors ${
-                    'bg-white border-gray-300 text-gray-700 hover:bg-gray-100'
-                  }`}
-                  aria-haspopup="listbox"
-                  aria-expanded={showSortMenu}
-                  aria-label={`${t('exhibitorPage.sortBy')} ${sortFieldLabels[sortField]}`}
+              {/* Sort control with select + arrow button */}
+              <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                <select
+                  value={sortField}
+                  onChange={(e) => setSortField(e.target.value)}
+                  className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
+                  aria-label={t('exhibitorPage.sortBy')}
                 >
-                  <span className="font-medium">{sortFieldLabels[sortField]}</span>
-                </button>
+                  <option value="name">{sortFieldLabels.name}</option>
+                  <option value="booth">{sortFieldLabels.booth}</option>
+                  {favorites.length > 0 && (
+                    <option value="favorites">{sortFieldLabels.favorites}</option>
+                  )}
+                </select>
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc'); }}
+                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
                   aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
-                  className="px-2 py-1.5 rounded-r-lg border border-l-0 text-sm flex items-center justify-center transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
+                  className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                 >
-                  <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
+                  <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
                 </button>
-                {showSortMenu && (
-                  <ul
-                    role="listbox"
-                    ref={sortMenuRef}
-                    tabIndex={-1}
-                    className="absolute left-0 mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow z-20 py-1"
-                  >
-                    <li>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={sortField === 'name'}
-                        onClick={() => { setSortField('name'); setShowSortMenu(false); }}
-                        className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 ${sortField === 'name' ? 'font-semibold text-blue-700' : 'text-gray-700'}`}
-                      >{sortFieldLabels.name}</button>
-                    </li>
-                    <li>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={sortField === 'booth'}
-                        onClick={() => { setSortField('booth'); setShowSortMenu(false); }}
-                        className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 ${sortField === 'booth' ? 'font-semibold text-blue-700' : 'text-gray-700'}`}
-                      >{sortFieldLabels.booth}</button>
-                    </li>
-                    {favorites.length > 0 && (
-                      <li>
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={sortField === 'favorites'}
-                          onClick={() => { setSortField('favorites'); setShowSortMenu(false); }}
-                          className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 ${sortField === 'favorites' ? 'font-semibold text-blue-700' : 'text-gray-700'}`}
-                        >{sortFieldLabels.favorites}</button>
-                      </li>
-                    )}
-                  </ul>
-                )}
               </div>
               
               {/* Category Filter Dropdown */}

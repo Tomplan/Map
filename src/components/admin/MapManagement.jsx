@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiSort } from '@mdi/js';
+import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
 import { getLogoPath } from '../../utils/getLogoPath';
@@ -21,7 +21,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState(null);
-  const [sortBy, setSortBy] = useState('id-asc'); // id-asc, id-desc, name-asc, name-desc, type
+    const [sortBy, setSortBy] = useState('id'); // id, name, type
+    const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
   const { toastError } = useDialog();
 
@@ -67,27 +68,29 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
       );
     });
 
-    // Sort regular markers
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'id-asc':
-          return a.id - b.id;
-        case 'id-desc':
-          return b.id - a.id;
-        case 'name-asc':
-          return (a.glyph || a.name || '').localeCompare(b.glyph || b.name || '');
-        case 'name-desc':
-          return (b.glyph || b.name || '').localeCompare(a.glyph || a.name || '');
-        case 'type':
-          // Special markers (>= 1000) first, then booths
-          if ((a.id >= 1000) !== (b.id >= 1000)) {
-            return a.id >= 1000 ? -1 : 1;
-          }
-          return a.id - b.id;
-        default:
-          return 0;
-      }
-    });
+      // Sort regular markers
+      const sorted = [...filtered].sort((a, b) => {
+        let result = 0;
+        switch (sortBy) {
+          case 'id':
+            result = a.id - b.id;
+            break;
+          case 'name':
+            result = (a.glyph || a.name || '').localeCompare(b.glyph || b.name || '');
+            break;
+          case 'type':
+            // Special markers (>= 1000) first, then booths
+            if ((a.id >= 1000) !== (b.id >= 1000)) {
+              result = a.id >= 1000 ? -1 : 1;
+            } else {
+              result = a.id - b.id;
+            }
+            break;
+          default:
+            result = a.id - b.id;
+        }
+        return sortDirection === 'desc' ? -result : result;
+      });
 
     // If no search term, prepend defaults at the top (sorted by ID descending: -1, -2)
     if (!searchTerm) {
@@ -210,24 +213,26 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               />
             </div>
 
-            {/* Sort */}
-            <div className="relative w-64">
-              <Icon
-                path={mdiSort}
-                size={0.9}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              />
+            {/* Sort - new layout */}
+            <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white w-64">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white appearance-none"
+                className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
+                aria-label={t('mapManagement.sortBy')}
               >
-                <option value="id-asc">ID: Low to High</option>
-                <option value="id-desc">ID: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-                <option value="name-desc">Name: Z to A</option>
-                <option value="type">Type (Special First)</option>
+                <option value="id">{t('admin.mapManagement.sortId') || 'ID'}</option>
+                <option value="name">{t('admin.mapManagement.sortName') || 'Name'}</option>
+                <option value="type">{t('admin.mapManagement.sortType') || 'Type'}</option>
               </select>
+              <button
+                type="button"
+                onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+              >
+                <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
+              </button>
             </div>
           </div>
         </div>

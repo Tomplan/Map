@@ -97,7 +97,11 @@
     "title": "Settings",
     "subtitle": "Manage system configuration and preferences",
     "userManagement": {
-      "title": "User Management",
+        "sortId": "ID",
+        "sortName": "Name",
+        "sortType": "Type"
+        ,
+        "title": "User Management",
       "description": "Manage admin users, roles, and permissions",
       "loading": "Loading users...",
       "inviteUser": "Invite User",
@@ -321,6 +325,9 @@
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
+      "sortId": "ID",
+      "sortName": "Name",
+      "sortType": "Type",
     "addMarker": "Add marker",
     "addMarkerTooltipActive": "Click on map to place marker",
     "addMarkerTooltip": "Add marker",
