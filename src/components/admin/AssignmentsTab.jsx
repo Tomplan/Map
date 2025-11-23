@@ -349,13 +349,13 @@ export default function AssignmentsTab({ selectedYear }) {
           </button>
           {/* Sort Controls */}
           <div className="flex items-end gap-3">
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortCompanies')}</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="pl-3 pr-8 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0"
+                    className="pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                     title="Sort table rows"
                   >
                     <option value="alphabetic">A-Z</option>
@@ -364,20 +364,20 @@ export default function AssignmentsTab({ selectedYear }) {
                   </select>
                   <button
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="p-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                    className="w-10 flex items-center justify-center py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                     title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
                   >
                     <Icon path={sortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} />
                   </button>
                 </div>
               </div>
-              <div>
+              <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortMarkers')}</label>
                 <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
                   <select
                     value={columnSort}
                     onChange={(e) => setColumnSort(e.target.value)}
-                    className="pl-3 pr-8 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0"
+                    className="pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                     title="Sort table columns"
                   >
                     <option value="markerId">{t('helpPanel.assignments.markerId')}</option>
@@ -385,7 +385,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   </select>
                   <button
                     onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="p-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                    className="w-10 flex items-center justify-center py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                     title={columnSortDirection === 'asc' ? 'Ascending' : 'Descending'}
                   >
                     <Icon path={columnSortDirection === 'asc' ? mdiArrowUp : mdiArrowDown} size={0.8} />
