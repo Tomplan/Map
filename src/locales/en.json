@@ -442,6 +442,11 @@
       "unknown": "Unknown"
     },
     "footer": "Need more help? Contact your system administrator",
+    "companies": {
+      "publicInfoTab": "Public Info",
+      "managerSettingsTab": "Manager Settings",
+      "categoriesLabel": "Categories"
+    },
     "categories": {
       "title": "Category Management",
       "description": "Manage exhibitor categories for filtering and organization",
