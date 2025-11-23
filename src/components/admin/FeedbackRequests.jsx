@@ -117,6 +117,16 @@ export default function FeedbackRequests() {
     }
   };
 
+  // Normalize status -> translation key segment
+  const statusTranslationKey = (status) => {
+    if (!status) return 'open';
+    const s = status.toLowerCase();
+    if (s === 'in_progress' || s === 'inprogress' || s === 'in progress') return 'inProgress';
+    if (s === 'completed') return 'completed';
+    if (s === 'archived') return 'archived';
+    return 'open';
+  };
+
   // Get type badge color
   const getTypeBadgeColor = (type) => {
     return type === 'issue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800';
@@ -342,9 +352,14 @@ export default function FeedbackRequests() {
                         />
                         {t(`settings.feedbackRequests.types.${request.type}`)}
                       </span>
-                      <span className={`inline-flex items-center gap-1 text-sm ${getStatusColor(request.status)}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 text-sm ${getStatusColor(request.status)}`}
+                        role="status"
+                        data-testid="feedback-status-list-badge"
+                        aria-label={`Status: ${t(`settings.feedbackRequests.statuses.${statusTranslationKey(request.status)}`)}`}
+                      >
                         <Icon path={getStatusIcon(request.status)} size={0.6} />
-                        {t(`settings.feedbackRequests.statuses.${request.status.replace('_', '')}`)}
+                        {t(`settings.feedbackRequests.statuses.${statusTranslationKey(request.status)}`)}
                       </span>
                       {request.priority && isSuperAdmin && (
                         <span className="text-xs text-gray-500">
@@ -411,8 +426,17 @@ export default function FeedbackRequests() {
         <FeedbackRequestDetail
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
-          onUpdate={() => {
+          onUpdate={(updated) => {
+            // Optimistically merge updated record into local list
+            if (updated) {
+              // Create shallow copy with merged values
+              const idx = requests.findIndex(r => r.id === updated.id);
+              if (idx !== -1) {
+                requests[idx] = { ...requests[idx], ...updated };
+              }
+            }
             setSelectedRequest(null);
+            // Background refresh to ensure consistency
             loadRequests();
           }}
         />
