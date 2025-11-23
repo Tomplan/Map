@@ -100,10 +100,6 @@ export default function HomePage({ selectedYear, branding }) {
           </div>
         </div>
 
-        {/* Phase 2 Notice */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-800" dangerouslySetInnerHTML={{ __html: `📝 ${t('homePage.phaseNote')}` }} />
-        </div>
       </div>
     </div>
   );
