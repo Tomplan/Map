@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import YearScopeBadge from './YearScopeBadge';
+import Icon from '@mdi/react';
+import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
@@ -63,20 +65,35 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
       </div>
 
       <div className="space-y-2">
-        <div className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between">
-          <div>{tSafe('admin.yearScope.subscriptions', 'Subscriptions')}</div>
+        <a href="/admin/subscriptions" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}>
+          <div className="flex items-center gap-2">
+            <Icon path={mdiCalendarCheck} size={0.9} />
+            <div className="leading-tight">
+              <div className="text-xs text-gray-500">{tSafe('adminNav.eventSubscriptions','Subscriptions')}</div>
+            </div>
+          </div>
           <div className="font-semibold">{loading ? '...' : counts.subscriptions}</div>
-        </div>
+        </a>
 
-        <div className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between">
-          <div>{tSafe('admin.yearScope.assignments', 'Assignments')}</div>
+        <a href="/admin/assignments" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}>
+          <div className="flex items-center gap-2">
+            <Icon path={mdiMapMarkerMultiple} size={0.9} />
+            <div className="leading-tight">
+              <div className="text-xs text-gray-500">{tSafe('adminNav.assignments','Assignments')}</div>
+            </div>
+          </div>
           <div className="font-semibold">{loading ? '...' : counts.assignments}</div>
-        </div>
+        </a>
 
-        <div className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between">
-          <div>{tSafe('admin.yearScope.program', 'Program')}</div>
+        <a href="/admin/program" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.programManagement','Program')} ${loading ? '...' : counts.program}`}>
+          <div className="flex items-center gap-2">
+            <Icon path={mdiCalendarClock} size={0.9} />
+            <div className="leading-tight">
+              <div className="text-xs text-gray-500">{tSafe('adminNav.programManagement','Program Management')}</div>
+            </div>
+          </div>
           <div className="font-semibold">{loading ? '...' : counts.program}</div>
-        </div>
+        </a>
       </div>
     </div>
   );

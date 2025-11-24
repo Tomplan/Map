@@ -6,11 +6,11 @@ import '@testing-library/jest-dom';
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => {
     const map = {
-      'admin.yearScope.title': 'Year-scoped data',
-      'admin.yearScope.viewingYear': 'Viewing year',
-      'admin.yearScope.subscriptions': 'Subscriptions',
-      'admin.yearScope.assignments': 'Assignments',
-      'admin.yearScope.program': 'Program',
+      'admin.yearScope.title': 'Evenement-specifieke gegevens',
+      'admin.yearScope.viewingYear': 'Geselecteerd jaar',
+      'adminNav.eventSubscriptions': 'Inschrijvingen',
+      'adminNav.assignments': 'Toewijzingen',
+      'adminNav.programManagement': 'Programmabeheer',
     };
     return map[k] || k;
   } })
@@ -20,25 +20,31 @@ jest.mock('react-i18next', () => ({
 jest.mock('../../supabaseClient', () => ({
   supabase: {
     from: (table) => ({
-      select: () => ({ eq: () => Promise.resolve({ count: table === 'assignments' ? 12 : (table === 'event_subscriptions' ? 63 : 0) }) }),
+      select: () => ({ eq: () => Promise.resolve({ count: table === 'assignments' ? 99 : (table === 'event_subscriptions' ? 63 : 0) }) }),
     }),
   },
 }));
 
 import YearScopeSidebar from './YearScopeSidebar';
 
-describe('YearScopeSidebar', () => {
-  it('renders counts and handles year selection', async () => {
+describe('YearScopeSidebar (icon + labels)', () => {
+  it('renders nav-like items with correct labels and icons', async () => {
     const onYearChange = jest.fn();
-    const { findByText } = render(<YearScopeSidebar selectedYear={2025} onYearChange={onYearChange} />);
+    render(<YearScopeSidebar selectedYear={2025} onYearChange={onYearChange} />);
 
-    // ensure labels render
-    expect(await findByText(/Year-scoped data/)).toBeInTheDocument();
-    expect(screen.getByText(/Subscriptions/)).toBeInTheDocument();
+    // items should render with nav text
+    expect(await screen.findByText(/Inschrijvingen/)).toBeInTheDocument();
+    expect(screen.getByText(/Toewijzingen/)).toBeInTheDocument();
+    expect(screen.getByText(/Programmabeheer/)).toBeInTheDocument();
 
-    // select a different year and assert callback
+    // there should be links with the expected href
+    const subLink = screen.getByRole('link', { name: /Inschrijvingen/i });
+    expect(subLink).toHaveAttribute('href', '/admin/subscriptions');
+
+    // year select should call onYearChange
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: '2024' } });
     expect(onYearChange).toHaveBeenCalledWith(2024);
   });
 });
+// (Tests for YearScopeSidebar - single combined test file)
