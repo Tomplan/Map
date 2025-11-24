@@ -9,6 +9,7 @@ import {
   mdiAlertCircle,
   mdiCommentAlertOutline,
   mdiTranslate,
+  mdiTag,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -17,6 +18,7 @@ import EventDefaults from './EventDefaults';
 import FeedbackRequests from './FeedbackRequests';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
+import CategorySettings from './CategorySettings';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -35,6 +37,13 @@ export default function Settings() {
       icon: mdiAccount,
       roles: ['super_admin', 'system_manager'],
       component: <UserManagement />,
+    },
+    {
+      id: 'category-settings',
+      label: t('settings.categoryManagement.title'),
+      icon: mdiTag,
+      roles: ['super_admin', 'system_manager'],
+      component: <CategorySettings />,
     },
     {
       id: 'branding',
