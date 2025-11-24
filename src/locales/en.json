@@ -412,7 +412,13 @@
   "admin": {
     "yearScope": {
       "global": "Global (all years)",
-      "eventSpecific": "Event-specific (changes with year)"
+      "eventSpecific": "Event-specific (changes with year)",
+      "title": "Year-scoped data",
+      "viewingYear": "Viewing year",
+      "subscriptions": "Subscriptions",
+      "assignments": "Assignments",
+      "program": "Program",
+      "preview": "Preview changes"
     },
     "yearSwitcher": {
       "bannerBold": "Note:",

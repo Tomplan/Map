@@ -405,7 +405,13 @@
   "admin": {
     "yearScope": {
       "global": "Globaal (alle jaren)",
-      "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)"
+      "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)",
+      "title": "Evenement-specifieke gegevens",
+      "viewingYear": "Geselecteerd jaar",
+      "subscriptions": "Inschrijvingen",
+      "assignments": "Toewijzingen",
+      "program": "Programma",
+      "preview": "Voorvertoning"
     },
     "yearSwitcher": {
       "bannerBold": "Opmerking:",

@@ -406,7 +406,13 @@
   "admin": {
     "yearScope": {
       "global": "Global (alle Jahre)",
-      "eventSpecific": "Ereignis-spezifisch (ändert sich mit Jahr)"
+      "eventSpecific": "Ereignis-spezifisch (ändert sich mit Jahr)",
+      "title": "Jahresbezogene Daten",
+      "viewingYear": "Anzeigjahr",
+      "subscriptions": "Anmeldungen",
+      "assignments": "Zuweisungen",
+      "program": "Programm",
+      "preview": "Vorschau"
     },
     "yearSwitcher": {
       "bannerBold": "Hinweis:",
