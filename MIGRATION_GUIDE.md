@@ -27,14 +27,14 @@ This migration separates **Companies** (permanent, reusable) from **Markers** (p
 ### **Step 1: Run SQL Migrations in Supabase**
 
 1. Go to Supabase Dashboard → SQL Editor
-2. Run `migrations/001_create_companies_and_assignments.sql`
+2. Run `migrations/04_create_companies_and_assignments.sql`
    - Creates Companies table
    - Creates Assignments table
    - Creates Assignments_Archive table
    - Sets up RLS policies
    - Creates helper functions
 
-3. Run `migrations/002_migrate_data.sql`
+3. Run `migrations/17_migrate_data.sql`
    - Migrates existing Markers_Content → Companies
    - Creates Assignments for 2025
    - Verifies data integrity

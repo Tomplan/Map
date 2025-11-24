@@ -1,10 +1,4 @@
--- Migration: Migrate data from Markers_Content to Companies and Assignments
--- Purpose: Populate new tables with existing data
--- Created: 2025-01-10
--- IMPORTANT: Run this AFTER 001_create_companies_and_assignments.sql
-
--- ============================================
--- 1. Migrate Companies from Markers_Content
+-- IMPORTANT: Run this AFTER 04_create_companies_and_assignments.sql
 -- ============================================
 
 -- Insert unique companies from Markers_Content

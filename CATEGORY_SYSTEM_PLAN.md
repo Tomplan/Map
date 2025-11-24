@@ -88,7 +88,7 @@ Multi-category system for 4x4 Vakantiebeurs exhibitors with full localization (N
 ```
 
 ## Migration Instructions
-1. Run migration: `007_create_categories_system.sql` in Supabase SQL editor
+1. Run migration: `12_create_categories_system.sql` in Supabase SQL editor
 2. Verify tables created successfully
 3. Test RLS policies work correctly
 4. Confirm initial 10 categories seeded

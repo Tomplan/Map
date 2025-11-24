@@ -81,7 +81,7 @@ CREATE INDEX idx_assignments_archive_marker ON public.Assignments_Archive(marker
 -- 4. Migrate existing Markers_Content to Companies
 -- ============================================
 -- This will be run separately after table creation
--- See migration script 002_migrate_data.sql
+-- See migration script 17_migrate_data.sql
 
 -- ============================================
 -- 5. Enable Row Level Security (RLS)

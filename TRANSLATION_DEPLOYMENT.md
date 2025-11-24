@@ -27,7 +27,7 @@
 ### 1. Run Migration 012 in Supabase
 ```sql
 -- Open Supabase SQL Editor and run:
--- /migrations/012_create_company_translations.sql
+-- /migrations/05_create_company_translations.sql
 ```
 
 This migration will:
@@ -68,7 +68,7 @@ This migration will:
 - ✅ Migration 001-009: Already run (existing system)
 - ⏳ Migration 010: Branding columns (pending)
 - ⏳ Migration 011: User roles RLS (pending)
-- ⏳ Migration 012: Company translations (pending) **← RUN THIS**
+- ⏳ Migration 05: Company translations (pending) **← RUN THIS**
 
 ### Code Status
 - ✅ All code committed to feature/development
