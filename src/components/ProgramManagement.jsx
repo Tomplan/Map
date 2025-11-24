@@ -200,9 +200,10 @@ export default function ProgramManagement() {
         ) : (
           currentActivities.map((activity, index) => {
             const location = getActivityLocation(activity, i18n.language);
-            const title = i18n.language === 'nl' ? activity.title_nl : activity.title_en;
-            const description = i18n.language === 'nl' ? activity.description_nl : activity.description_en;
-            const badge = i18n.language === 'nl' ? activity.badge_nl : activity.badge_en;
+            const lang = i18n.language || 'en';
+            const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
+            const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
+            const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
 
             return (
               <div

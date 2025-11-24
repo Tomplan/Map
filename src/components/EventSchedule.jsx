@@ -12,7 +12,7 @@ import { useEventActivities } from '../hooks/useEventActivities';
 export default function EventSchedule({ selectedYear }) {
   const { t, i18n } = useTranslation();
   const [selectedDay, setSelectedDay] = useState('saturday');
-  const isEnglish = i18n.language === 'en';
+  const lang = i18n.language || 'en';
   
   // Load activities from database
   const { activities: activityData, loading, error, getActivityLocation } = useEventActivities();
@@ -415,22 +415,22 @@ export default function EventSchedule({ selectedYear }) {
                       {activity.start_time} - {activity.end_time}
                     </span>
                   </div>
-                  {(activity.badge_nl || activity.badge_en) && (
+                  {(activity.badge_nl || activity.badge_en || activity.badge_de) && (
                     <span className="inline-block px-2 py-1 bg-orange-600 text-white text-xs font-semibold rounded">
-                      {isEnglish ? activity.badge_en : activity.badge_nl}
+                      {lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en}
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {isEnglish ? activity.title_en : activity.title_nl}
+                  {lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en}
                 </h3>
 
                 {/* Description */}
-                {(activity.description_nl || activity.description_en) && (
+                {(activity.description_nl || activity.description_en || activity.description_de) && (
                   <p className="text-gray-700 mb-3">
-                    {isEnglish ? activity.description_en : activity.description_nl}
+                    {lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en}
                   </p>
                 )}
 

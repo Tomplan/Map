@@ -12,104 +12,119 @@ import Modal from './common/Modal';
  * @param {Function} props.onClose - Callback to close modal
  */
 export default function ActivityForm({ activity, day, onSave, onClose }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState([]);
   const [formData, setFormData] = useState({
     title_nl: '',
+    title_de: '',
     title_en: '',
     description_nl: '',
+    // Admin UI labels should remain EN/NL only: map any non-nl to 'en'
+    const adminLang = (i18n && i18n.language === 'nl') ? 'nl' : 'en';
+
+    const [tab, setTab] = useState('nl'); // 'nl' | 'en' | 'de'
+
+    return (
     description_en: '',
     start_time: '',
     end_time: '',
     location_type: 'venue',
     location_nl: '',
-    location_en: '',
-    company_id: null,
-    badge_nl: '',
-    badge_en: '',
-    display_order: 1,
-    is_active: true,
-    show_location_type_badge: false,
-  });
+    location_de: '',
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="px-6 py-4">
+            <div className="space-y-6">
+              {/* Language Tabs for content fields - keeps admin labels EN/NL only */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <button type="button" onClick={() => setTab('nl')} className={`px-3 py-1 rounded ${tab==='nl'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>NL</button>
+                  <button type="button" onClick={() => setTab('en')} className={`px-3 py-1 rounded ${tab==='en'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>EN</button>
+                  <button type="button" onClick={() => setTab('de')} className={`px-3 py-1 rounded ${tab==='de'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>DE</button>
+                </div>
 
-  // Load form data for editing
-  useEffect(() => {
-    if (activity) {
-      setFormData({
-        title_nl: activity.title_nl || '',
-        title_en: activity.title_en || '',
-        description_nl: activity.description_nl || '',
-        description_en: activity.description_en || '',
-        start_time: activity.start_time || '',
-        end_time: activity.end_time || '',
-        location_type: activity.location_type || 'venue',
-        location_nl: activity.location_nl || '',
-        location_en: activity.location_en || '',
-        company_id: activity.company_id || null,
-        badge_nl: activity.badge_nl || '',
-        badge_en: activity.badge_en || '',
-        display_order: activity.display_order || 1,
-        is_active: activity.is_active !== undefined ? activity.is_active : true,
-        show_location_type_badge: activity.show_location_type_badge || false,
-      });
-    }
-  }, [activity]);
+                {/* Content fields per language */}
+                {tab === 'nl' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.titleNL', { lng: adminLang })} <span className="text-red-500">*</span>
+                      </label>
+                      <input type="text" required value={formData.title_nl} onChange={(e)=>handleChange('title_nl', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Nederlandse titel" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.descriptionNL', { lng: adminLang })} <span className="text-red-500">*</span>
+                      </label>
+                      <textarea rows={4} required value={formData.description_nl} onChange={(e)=>handleChange('description_nl', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Nederlandse beschrijving" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.badgeNL', { lng: adminLang })} <span className="text-gray-500">({t('activityForm.optional', { lng: adminLang })})</span>
+                      </label>
+                      <input type="text" value={formData.badge_nl} onChange={(e)=>handleChange('badge_nl', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Bijv. GRATIS ENTREE!" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.locationNL', { lng: adminLang })}
+                      </label>
+                      <input type="text" value={formData.location_nl} onChange={(e)=>handleChange('location_nl', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Nederlandse locatie" />
+                    </div>
+                  </div>
+                )}
 
-  // Load companies for exhibitor dropdown
-  useEffect(() => {
-    const fetchCompanies = async () => {
-      const { data } = await supabase
-        .from('companies')
-        .select('id, name')
-        .order('name');
-      setCompanies(data || []);
-    };
-    fetchCompanies();
-  }, []);
+                {tab === 'en' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.titleEN', { lng: adminLang })} <span className="text-red-500">*</span>
+                      </label>
+                      <input type="text" required value={formData.title_en} onChange={(e)=>handleChange('title_en', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="English title" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.descriptionEN', { lng: adminLang })} <span className="text-red-500">*</span>
+                      </label>
+                      <textarea rows={4} required value={formData.description_en} onChange={(e)=>handleChange('description_en', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="English description" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.badgeEN', { lng: adminLang })} <span className="text-gray-500">({t('activityForm.optional', { lng: adminLang })})</span>
+                      </label>
+                      <input type="text" value={formData.badge_en} onChange={(e)=>handleChange('badge_en', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="E.g. FREE ENTRY!" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        {t('activityForm.locationEN', { lng: adminLang })}
+                      </label>
+                      <input type="text" value={formData.location_en} onChange={(e)=>handleChange('location_en', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="English location" />
+                    </div>
+                  </div>
+                )}
 
-  const handleChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
+                {tab === 'de' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.titleDE')}</label>
+                      <input type="text" value={formData.title_de} onChange={(e)=>handleChange('title_de', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Deutsche Titel" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.descriptionDE')}</label>
+                      <textarea rows={4} value={formData.description_de} onChange={(e)=>handleChange('description_de', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Deutsche Beschreibung" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.badgeDE')}</label>
+                      <input type="text" value={formData.badge_de} onChange={(e)=>handleChange('badge_de', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="B.v. GRATIS TOEGANG" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.locationDE')}</label>
+                      <input type="text" value={formData.location_de} onChange={(e)=>handleChange('location_de', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Deutsche locatie" />
+                    </div>
+                  </div>
+                )}
+              </div>
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      // Get organization_id
-      const { data: org } = await supabase
-        .from('organization_profile')
-        .select('id')
-        .limit(1)
-        .single();
-
-      if (!org) throw new Error('Organization not found');
-
-      const dataToSave = {
-        ...formData,
-        organization_id: org.id,
-        day,
-        // Clear location fields based on type
-        location_nl: formData.location_type === 'venue' ? formData.location_nl : null,
-        location_en: formData.location_type === 'venue' ? formData.location_en : null,
-        company_id: formData.location_type === 'exhibitor' ? formData.company_id : null,
-      };
-
-      if (activity) {
-        // Update existing activity
-        const { error } = await supabase
-          .from('event_activities')
-          .update(dataToSave)
-          .eq('id', activity.id);
-
-        if (error) throw error;
-      } else {
-        // Create new activity
-        const { error } = await supabase
-          .from('event_activities')
-          .insert([dataToSave]);
-
+              {/* Time Fields */}
         if (error) throw error;
       }
 
@@ -161,6 +176,34 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
                   placeholder="English title"
                 />
               </div>
+            </div>
+
+            {/* German Description (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('activityForm.descriptionDE')}
+              </label>
+              <textarea
+                rows={4}
+                value={formData.description_de}
+                onChange={(e) => handleChange('description_de', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Deutsche Beschreibung"
+              />
+            </div>
+ 
+            {/* German Title (optional) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('activityForm.titleDE')}
+              </label>
+              <input
+                type="text"
+                value={formData.title_de}
+                onChange={(e) => handleChange('title_de', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Deutsche Titel"
+              />
             </div>
 
             {/* Description Fields */}
@@ -280,6 +323,21 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
                   />
                 </div>
               </div>
+              </div>
+
+              {/* German location (optional) */}
+              <div className="mt-3">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('activityForm.locationDE')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.location_de}
+                  onChange={(e) => handleChange('location_de', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Deutsche locatie"
+                />
+              </div>
             ) : (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -327,6 +385,20 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
                   placeholder="E.g. FREE ENTRY!"
                 />
               </div>
+            </div>
+
+            {/* German Badge (optional) */}
+            <div className="mt-3">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('activityForm.badgeDE')} <span className="text-gray-500">({t('activityForm.optional')})</span>
+              </label>
+              <input
+                type="text"
+                value={formData.badge_de}
+                onChange={(e) => handleChange('badge_de', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="B.v. GRATIS TOEGANG"
+              />
             </div>
 
             {/* Display Order */}

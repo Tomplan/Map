@@ -75,7 +75,7 @@ export function useEventActivities() {
 
     // Venue location - use static text
     return {
-      text: language === 'nl' ? activity.location_nl : activity.location_en,
+      text: language === 'nl' ? activity.location_nl : language === 'de' ? activity.location_de : activity.location_en,
       boothNumber: null,
       companyId: null,
     };
