@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
-import { HashRouter, BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
 import AppRoutes from './components/AppRoutes';
@@ -102,21 +102,10 @@ function App() {
     };
   }, []);
 
-  const isProd = import.meta.env.PROD;
-  const safeBase =
-    import.meta.env.BASE_URL &&
-    import.meta.env.BASE_URL !== '/' &&
-    import.meta.env.BASE_URL !== '/./'
-      ? import.meta.env.BASE_URL
-      : undefined;
-
-  const Router = isProd ? HashRouter : BrowserRouter;
-  const routerProps = isProd ? {} : { basename: safeBase };
-
   return (
     <DialogProvider>
       <OrganizationLogoProvider>
-        <Router {...routerProps}>
+        <HashRouter>
           <AppRoutes
             branding={branding}
             user={user}
@@ -127,7 +116,7 @@ function App() {
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
           />
-        </Router>
+        </HashRouter>
       </OrganizationLogoProvider>
     </DialogProvider>
   );
