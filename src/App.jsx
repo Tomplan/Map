@@ -3,7 +3,7 @@ import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
 import { HashRouter, BrowserRouter } from 'react-router-dom';
 import useMarkersState from './hooks/useMarkersState';
-import useEventMarkers from './hooks/useEventMarkers_v2';
+import useEventMarkers from './hooks/useEventMarkers';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';

@@ -11,8 +11,9 @@ import MapControls from './MapControls';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
+import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';
-import useIsMobile from '../../utils/useIsMobile';
+import useIsMobile from '../../hooks/useIsMobile';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { MAP_CONFIG, MAP_LAYERS } from '../../config/mapConfig';
 
@@ -24,15 +25,6 @@ import 'leaflet-search';
 import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
-
-// Utility functions
-const createSearchText = (marker) => {
-  return [marker.name, marker.glyph, marker.label].filter(Boolean).join(' | ');
-};
-
-const isMarkerDraggable = (marker, isAdminView) => {
-  return isAdminView && marker && marker.coreLocked === false;
-};
 
 function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect }) {
   const [infoButtonToggled, setInfoButtonToggled] = useState({});

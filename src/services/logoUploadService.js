@@ -61,30 +61,6 @@ export async function uploadLogo(file, folder = 'companies') {
 }
 
 /**
- * Delete a logo from Supabase Storage
- * @param {string} filePath - The storage path of the file to delete
- * @returns {Promise<{success: boolean, error: null}|{error: string}>}
- */
-export async function deleteLogo(filePath) {
-  try {
-    const { error } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .remove([filePath]);
-
-    if (error) {
-      console.error('Delete error:', error);
-      return { error: `Delete failed: ${error.message}` };
-    }
-
-    return { success: true, error: null };
-
-  } catch (err) {
-    console.error('Delete service error:', err);
-    return { error: `Delete failed: ${err.message}` };
-  }
-}
-
-/**
  * Validate logo file before upload
  * @param {File} file - The file to validate
  * @returns {{valid: boolean, error: string|null}}
@@ -111,39 +87,6 @@ export function validateLogoFile(file) {
   }
 
   return { valid: true, error: null };
-}
-
-/**
- * Get the storage path from a full URL
- * Useful for extracting the path to delete a file
- * @param {string} url - The full URL of the logo
- * @returns {string|null} - The storage path or null
- */
-export function extractStoragePath(url) {
-  if (!url) return null;
-  
-  try {
-    // Check if it's a Supabase storage URL
-    if (url.includes('/storage/v1/object/public/')) {
-      const parts = url.split('/storage/v1/object/public/');
-      if (parts[1]) {
-        // Remove bucket name and return path
-        const pathParts = parts[1].split('/');
-        pathParts.shift(); // Remove bucket name
-        return pathParts.join('/');
-      }
-    }
-    
-    // If it's just a filename or relative path, return as-is
-    if (!url.startsWith('http')) {
-      return url;
-    }
-    
-    return null;
-  } catch (err) {
-    console.error('Error extracting storage path:', err);
-    return null;
-  }
 }
 
 /**

@@ -5,7 +5,7 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import L from 'leaflet';
 import { getIconPath } from '../utils/getIconPath';
 import { createMarkerIcon } from '../utils/markerIcons';
-import useIsMobile from '../utils/useIsMobile';
+import useIsMobile from '../hooks/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';

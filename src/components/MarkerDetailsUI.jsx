@@ -1,14 +1,14 @@
 import React from 'react';
 import { Tooltip, Popup } from 'react-leaflet';
 import BottomSheet from './MobileBottomSheet';
-import useIsMobile from '../utils/useIsMobile';
+import useIsMobile from '../hooks/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 
 // --- Tooltip for both cluster + special markers ---
-export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
+const MarkerTooltipContent = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
@@ -43,7 +43,7 @@ export const MarkerTooltipContent = ({ marker, organizationLogo }) => {
 };
 
 // --- Desktop Popup with scrollable content ---
-export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
+const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const translatedInfo = useTranslatedCompanyInfo(marker);
@@ -122,7 +122,7 @@ export const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
 };
 
 // --- Mobile Popup + Bottom Sheet pair ---
-export const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
+const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
