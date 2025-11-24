@@ -96,6 +96,10 @@
   "settings": {
     "title": "Instellingen",
     "subtitle": "Beheer systeemconfiguratie en voorkeuren",
+    "categoryManagement": {
+      "title": "Categoriebeheer",
+      "description": "Beheer exposantcategorieën voor filtering en organisatie"
+    },
     "userManagement": {
       "title": "Gebruikersbeheer",
       "description": "Beheer admin gebruikers, rollen en rechten",
@@ -394,7 +398,9 @@
     "cancel": "Annuleren",
     "save": "Opslaan",
     "saving": "Opslaan...",
-    "saveError": "Fout bij opslaan activiteit"
+    "saveError": "Fout bij opslaan activiteit",
+    "saveSuccess": "Activiteit opgeslagen",
+    "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
   },
   "dashboard": {
     "totalMarkers": "Totaal Markers",
@@ -479,7 +485,6 @@
       "sortOrder": "Sorteervolgorde",
       "translations": "Vertalingen",
       "name": "Naam",
-      "description": "Beschrijving",
       "slugHelp": "Unieke identificatie (kleine letters, geen spaties, gebruik streepjes)",
       "noCategories": "Nog geen categorieën. Maak je eerste categorie aan om te beginnen.",
       "confirmDelete": "Weet je zeker dat je \"{{name}}\" wilt verwijderen?",

@@ -12,7 +12,7 @@ import { useEventActivities } from '../hooks/useEventActivities';
 export default function EventSchedule({ selectedYear }) {
   const { t, i18n } = useTranslation();
   const [selectedDay, setSelectedDay] = useState('saturday');
-  const isEnglish = i18n.language === 'en';
+  const lang = i18n.language || 'en';
   
   // Load activities from database
   const { activities: activityData, loading, error, getActivityLocation } = useEventActivities();
@@ -26,7 +26,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
-          <p className="text-gray-600">{isEnglish ? 'Loading schedule...' : 'Programma laden...'}</p>
+          <p className="text-gray-600">{lang === 'en' ? 'Loading schedule...' : 'Programma laden...'}</p>
         </div>
       </div>
     );
@@ -38,8 +38,8 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <Icon path={mdiAlert} size={2} className="text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {isEnglish ? 'Unable to load schedule' : 'Kan programma niet laden'}
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            {lang === 'en' ? 'Unable to load schedule' : 'Kan programma niet laden'}
           </h2>
           <p className="text-gray-600">{error}</p>
         </div>
@@ -350,7 +350,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="bg-white border-b">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            {isEnglish ? 'Program' : 'Programma'}
+            {lang === 'en' ? 'Program' : 'Programma'}
           </h1>
 
           {/* Warning Banner for Managers */}
@@ -359,10 +359,10 @@ export default function EventSchedule({ selectedYear }) {
               <Icon path={mdiAlert} size={1} className="text-yellow-600 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold text-yellow-800 mb-1">
-                  {isEnglish ? 'Note for Managers' : 'Let op!'}
+                  {lang === 'en' ? 'Note for Managers' : 'Let op!'}
                 </p>
                 <p className="text-sm text-yellow-700">
-                  {isEnglish 
+                  {lang === 'en'
                     ? 'This schedule shows 2025 program data (October 11-12, 2025). Please update for the 2026 event (October 10-11, 2026).'
                     : 'Dit programma toont 2025 gegevens (11-12 oktober 2025). Gelieve bij te werken voor het 2026 evenement (10-11 oktober 2026).'}
                 </p>
@@ -380,7 +380,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {isEnglish ? 'Saturday October 10' : 'Zaterdag 10 oktober'}
+              {lang === 'en' ? 'Saturday October 10' : 'Zaterdag 10 oktober'}
             </button>
             <button
               onClick={() => setSelectedDay('sunday')}
@@ -390,7 +390,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {isEnglish ? 'Sunday October 11' : 'Zondag 11 oktober'}
+              {lang === 'en' ? 'Sunday October 11' : 'Zondag 11 oktober'}
             </button>
           </div>
         </div>
@@ -415,22 +415,22 @@ export default function EventSchedule({ selectedYear }) {
                       {activity.start_time} - {activity.end_time}
                     </span>
                   </div>
-                  {(activity.badge_nl || activity.badge_en) && (
+                  {(activity.badge_nl || activity.badge_en || activity.badge_de) && (
                     <span className="inline-block px-2 py-1 bg-orange-600 text-white text-xs font-semibold rounded">
-                      {isEnglish ? activity.badge_en : activity.badge_nl}
+                      {lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en}
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {isEnglish ? activity.title_en : activity.title_nl}
+                  {lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en}
                 </h3>
 
                 {/* Description */}
-                {(activity.description_nl || activity.description_en) && (
+                {(activity.description_nl || activity.description_en || activity.description_de) && (
                   <p className="text-gray-700 mb-3">
-                    {isEnglish ? activity.description_en : activity.description_nl}
+                    {lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en}
                   </p>
                 )}
 
@@ -447,10 +447,10 @@ export default function EventSchedule({ selectedYear }) {
                         ? 'bg-green-100 text-green-700'
                         : 'bg-gray-100 text-gray-700'
                     }`}>
-                      {activity.location_type === 'exhibitor' 
-                        ? t('programManagement.exhibitor')
-                        : t('programManagement.venue')
-                      }
+                      {(activity.location_type === 'exhibitor' || activity.location_type === 'company')
+                            ? t('programManagement.exhibitor')
+                            : t('programManagement.venue')
+                          }
                     </span>
                   )}
                 </div>

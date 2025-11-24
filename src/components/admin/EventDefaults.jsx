@@ -292,12 +292,7 @@ export default function EventDefaults() {
                 <label className="label-base text-gray-400">
                   {t('settings.eventDefaults.mealDefaults.bbq')}
                 </label>
-                <input
-                  type="number"
-                  disabled
-                  value="—"
-                  className="input-base bg-gray-100 cursor-not-allowed"
-                />
+                <span className="input-base bg-gray-100 cursor-not-allowed block w-full h-[2.5rem] rounded text-center text-gray-400" aria-disabled="true">—</span>
                 <p className="text-xs text-gray-400 mt-1">
                   {t('settings.eventDefaults.mealDefaults.sundayNoBbq')}
                 </p>

@@ -200,9 +200,10 @@ export default function ProgramManagement() {
         ) : (
           currentActivities.map((activity, index) => {
             const location = getActivityLocation(activity, i18n.language);
-            const title = i18n.language === 'nl' ? activity.title_nl : activity.title_en;
-            const description = i18n.language === 'nl' ? activity.description_nl : activity.description_en;
-            const badge = i18n.language === 'nl' ? activity.badge_nl : activity.badge_en;
+            const lang = i18n.language || 'en';
+            const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
+            const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
+            const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
 
             return (
               <div
@@ -265,11 +266,11 @@ export default function ProgramManagement() {
                           </span>
                           {activity.show_location_type_badge && (
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              activity.location_type === 'exhibitor'
+                              (activity.location_type === 'exhibitor' || activity.location_type === 'company')
                                 ? 'bg-green-100 text-green-700'
                                 : 'bg-gray-100 text-gray-700'
                             }`}>
-                              {activity.location_type === 'exhibitor' ? t('programManagement.exhibitor') : t('programManagement.venue')}
+                              {(activity.location_type === 'exhibitor' || activity.location_type === 'company') ? t('programManagement.exhibitor') : t('programManagement.venue')}
                             </span>
                           )}
                         </div>

@@ -12,6 +12,10 @@ export function useEventActivities() {
 
   useEffect(() => {
     fetchActivities();
+    // Listen for broadcasts from admin UI when activities change and refetch across the app
+    const handleBroadcast = () => fetchActivities();
+    window.addEventListener('eventActivitiesUpdated', handleBroadcast);
+    return () => window.removeEventListener('eventActivitiesUpdated', handleBroadcast);
   }, []);
 
   async function fetchActivities() {
@@ -75,7 +79,7 @@ export function useEventActivities() {
 
     // Venue location - use static text
     return {
-      text: language === 'nl' ? activity.location_nl : activity.location_en,
+      text: language === 'nl' ? activity.location_nl : language === 'de' ? activity.location_de : activity.location_en,
       boothNumber: null,
       companyId: null,
     };

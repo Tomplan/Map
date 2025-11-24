@@ -87,6 +87,26 @@ A mobile-first web application designed for event navigation, providing an inter
     ```
     The application will be available at `http://localhost:5173`.
 
+6.  **Stop dev servers cleanly:**
+        We added a small helper script to stop `vite`/`node`/`npm` processes that belong to this repository.
+
+        - Convenience (one-liner):
+            ```bash
+            npm run kill:dev
+            ```
+
+        - More options:
+            ```bash
+            # graceful stop (TERM then KILL if needed)
+            bash scripts/kill-dev-servers.sh
+
+            # force kill immediately
+            bash scripts/kill-dev-servers.sh --force
+
+            # target a specific port (default 5173)
+            bash scripts/kill-dev-servers.sh --port 5173
+            ```
+
 6.  **Build for production:**
     ```bash
     npm run build

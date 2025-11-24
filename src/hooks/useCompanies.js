@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import normalizePhone from '../utils/phone';
 
 /**
  * Hook to manage Companies data
@@ -35,6 +36,10 @@ export default function useCompanies() {
   // Create new company
   const createCompany = useCallback(async (companyData) => {
     try {
+      // Normalize phone number when provided
+      if (companyData?.phone) companyData.phone = normalizePhone(companyData.phone);
+      // Normalize email to lowercase
+      if (companyData?.email) companyData.email = companyData.email.toLowerCase().trim();
       const { data, error: insertError } = await supabase
         .from('companies')
         .insert([companyData])
@@ -54,6 +59,10 @@ export default function useCompanies() {
   // Update existing company
   const updateCompany = useCallback(async (id, updates) => {
     try {
+      // Normalize phone number when provided
+      if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
+      // Normalize email to lowercase
+      if (updates?.email) updates.email = updates.email.toLowerCase().trim();
       const { data, error: updateError } = await supabase
         .from('companies')
         .update(updates)

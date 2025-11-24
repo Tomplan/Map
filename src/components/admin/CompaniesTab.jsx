@@ -13,6 +13,8 @@ import { useDialog } from '../../contexts/DialogContext';
 import ContentLanguageTabs, { LanguageIndicator } from './ContentLanguageTabs';
 import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
+import PhoneInput from '../common/PhoneInput';
+import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 
 /**
  * InfoFieldWithTranslations - Multi-language editing with auto-save
@@ -406,24 +408,24 @@ export default function CompaniesTab() {
                     }
                     className="px-3 py-2 border rounded bg-white text-gray-900"
                   />
-                  <input
-                    type="text"
-                    placeholder="Phone"
+                  <PhoneInput
                     value={isCreating ? (newCompanyForm.phone || '') : (editForm.phone || '')}
-                    onChange={(e) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, phone: e.target.value })
-                      : setEditForm({ ...editForm, phone: e.target.value })
+                    onChange={(value) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, phone: value })
+                      : setEditForm({ ...editForm, phone: value })
                     }
-                    className="px-3 py-2 border rounded bg-white text-gray-900"
+                    placeholder="Phone (e.g., +31612345678)"
                   />
                   <input
                     type="email"
                     placeholder="Email"
                     value={isCreating ? (newCompanyForm.email || '') : (editForm.email || '')}
-                    onChange={(e) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, email: e.target.value })
-                      : setEditForm({ ...editForm, email: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const email = e.target.value.toLowerCase();
+                      isCreating
+                        ? setNewCompanyForm({ ...newCompanyForm, email })
+                        : setEditForm({ ...editForm, email });
+                    }}
                     className="px-3 py-2 border rounded bg-white text-gray-900"
                   />
                 </div>
@@ -515,7 +517,12 @@ export default function CompaniesTab() {
                     ) : (
                       <InfoFieldDisplay
                         companyId={item.id}
-                        currentLanguage={i18n.language}
+                        /*
+                          Show Dutch (nl) in the admin list when row is NOT being edited.
+                          When the row is opened for editing the modal controls editingLanguage
+                          so the textarea there remains language-aware.
+                        */
+                        currentLanguage={editingId === item.id ? i18n.language : 'nl'}
                       />
                     )}
                   </td>
@@ -552,7 +559,14 @@ export default function CompaniesTab() {
 
                   {/* Phone */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.phone || <span className="text-gray-400 italic">Not set</span>}</span>
+                    {item.phone ? (
+                      <span className="text-xs flex items-center gap-1">
+                        <span>{getPhoneFlag(item.phone)}</span>
+                        <span>{formatPhoneForDisplay(item.phone)}</span>
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 italic text-xs">Not set</span>
+                    )}
                   </td>
 
                   {/* Email */}

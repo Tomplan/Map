@@ -10,6 +10,8 @@ import { getLogoPath } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
+import PhoneInput from '../common/PhoneInput';
+import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
@@ -469,14 +471,19 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   {/* Phone */}
                   <td className="p-2 text-left">
                     {isEditing ? (
-                      <input
-                        type="text"
+                      <PhoneInput
                         value={editForm.phone || ''}
-                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
+                        onChange={(value) => setEditForm({ ...editForm, phone: value })}
+                        placeholder="+31612345678"
+                        className="text-xs"
                       />
+                    ) : subscription.phone ? (
+                      <span className="text-xs text-gray-700 flex items-center gap-1">
+                        <span>{getPhoneFlag(subscription.phone)}</span>
+                        <span>{formatPhoneForDisplay(subscription.phone)}</span>
+                      </span>
                     ) : (
-                      <span className="text-xs text-gray-700">{subscription.phone || '-'}</span>
+                      <span className="text-xs text-gray-400">-</span>
                     )}
                   </td>
 
@@ -486,7 +493,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <input
                         type="email"
                         value={editForm.email || ''}
-                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value.toLowerCase() })}
                         className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
                       />
                     ) : (

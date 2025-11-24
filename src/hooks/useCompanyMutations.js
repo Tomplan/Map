@@ -42,8 +42,8 @@ export function useCompanyMutations({
   const handleSave = async () => {
     const id = editingId;
     if (id === 'organization') {
-      const { name, logo, website, info } = editForm;
-      await updateProfile({ name, logo, website, info });
+      const { name, logo, website, info, contact, phone, email } = editForm;
+      await updateProfile({ name, logo, website, info, contact, phone, email });
     } else {
       await updateCompany(id, editForm);
     }
