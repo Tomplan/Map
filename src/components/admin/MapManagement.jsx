@@ -99,7 +99,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     }
 
     return sorted;
-  }, [markersState, defaultMarkers, searchTerm, sortBy]);
+  }, [markersState, defaultMarkers, searchTerm, sortBy, sortDirection]);
 
   // Get selected marker (check both regular markers and defaults)
   const selectedMarker = useMemo(() => {
@@ -221,9 +221,9 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                 aria-label={t('mapManagement.sortBy')}
               >
-                <option value="id">{t('admin.mapManagement.sortId') || 'ID'}</option>
-                <option value="name">{t('admin.mapManagement.sortName') || 'Name'}</option>
-                <option value="type">{t('admin.mapManagement.sortType') || 'Type'}</option>
+                <option value="id">{t('mapManagement.sortId')}</option>
+                <option value="name">{t('mapManagement.sortName')}</option>
+                <option value="type">{t('mapManagement.sortType')}</option>
               </select>
               <button
                 type="button"

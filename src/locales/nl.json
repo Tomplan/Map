@@ -42,11 +42,6 @@
   },
   "adminLogin": {
     "title": "Manager Inloggen",
-        "mapManagement": {
-          "sortId": "ID",
-          "sortName": "Naam",
-          "sortType": "Type"
-          },
     "subtitle": "Inloggen om evenementgegevens te beheren",
     "email": "E-mail",
     "emailPlaceholder": "Voer uw e-mailadres in",
