@@ -5,8 +5,10 @@ import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/j
 
 export default function CollapsedShortcuts({ selectedYear, t }) {
   return (
-    <div className="flex items-center justify-center gap-3 px-3 py-3">
-      <div className="text-gray-700 text-sm font-medium" title={`Event Year: ${selectedYear}`}>
+    // Panel is narrow when collapsed, so stack year above the icons in a small column
+    <div className="w-full px-2 py-3 flex flex-col items-center">
+      {/* Year above the icons — static text in collapsed mode */}
+      <div className="text-gray-700 text-base font-medium mb-2" title={`Event Year: ${selectedYear}`}>
         {selectedYear}
       </div>
 

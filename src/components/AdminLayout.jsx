@@ -183,18 +183,10 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               <div className="mt-3 border-t pt-3" />
             </div>
           ) : (
-            <div className="flex items-center justify-center gap-3 px-3 py-3">
-              {/* Compact collapsed view: show the selected year plus small icon links
-                  so users can still reach Subscriptions / Assignments / Program
-                  when the sidebar is collapsed. These are intentionally compact
-                  (icon-only) to fit the narrow collapsed width. */}
-              <div className="text-gray-700 text-sm font-medium" title={`Event Year: ${selectedYear}`}>
-                {selectedYear}
-              </div>
-
-              {/* Collapsed shortcuts moved into a small component for easier testing */}
-              <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-            </div>
+            // Use the component which stacks the year above the icons to ensure
+            // the year appears above the internal compact icons in the collapsed panel.
+            <CollapsedShortcuts selectedYear={selectedYear} t={t} />
+            )}
           )}
         </div>
 
