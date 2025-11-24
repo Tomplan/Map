@@ -6,11 +6,12 @@ import {
   mdiDelete,
   mdiDragVertical,
   mdiCheck,
-  mdiClose,
   mdiChartBar
 } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
+import Modal from '../common/Modal';
+import { useDialog } from '../../contexts/DialogContext';
 
 // Available Material Design icons for categories
 const AVAILABLE_ICONS = [
@@ -36,6 +37,7 @@ const PRESET_COLORS = [
 export default function CategoryManagement() {
   const { t, i18n } = useTranslation();
   const { categories, loading, error, createCategory, updateCategory, deleteCategory, getCategoryStats } = useCategories(i18n.language);
+  const { confirm, toastSuccess, toastError } = useDialog();
   
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
@@ -101,13 +103,19 @@ export default function CategoryManagement() {
   };
 
   const handleDelete = async (categoryId, categoryName) => {
-    if (!confirm(t('admin.categories.confirmDelete', { name: categoryName }))) return;
-    
+    const confirmed = await confirm({
+      title: t('admin.categories.deleteCategory'),
+      message: t('admin.categories.confirmDelete', { name: categoryName }),
+      confirmText: t('common.delete'),
+      variant: 'danger'
+    });
+    if (!confirmed) return;
+
     const result = await deleteCategory(categoryId);
     if (result.success) {
-      alert(t('admin.categories.deleteSuccess'));
+      toastSuccess(t('admin.categories.deleteSuccess'));
     } else {
-      alert(t('admin.categories.deleteError', { error: result.error }));
+      toastError(t('admin.categories.deleteError', { error: result.error }));
     }
   };
 
@@ -254,22 +262,13 @@ export default function CategoryManagement() {
       </div>
 
       {/* Create/Edit Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">
-                {editingCategory ? t('admin.categories.editCategory') : t('admin.categories.createCategory')}
-              </h3>
-              <button
-                onClick={() => { setShowModal(false); resetForm(); }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <Icon path={mdiClose} size={1} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+      <Modal
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); resetForm(); }}
+        title={editingCategory ? t('admin.categories.editCategory') : t('admin.categories.createCategory')}
+        size="lg"
+      >
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Basic Info */}
               <div className="space-y-4">
                 <div>
@@ -396,27 +395,25 @@ export default function CategoryManagement() {
                 ))}
               </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <button
-                  type="button"
-                  onClick={() => { setShowModal(false); resetForm(); }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  <Icon path={mdiCheck} size={0.8} />
-                  {editingCategory ? t('common.save') : t('common.create')}
-                </button>
-              </div>
-            </form>
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <button
+              type="button"
+              onClick={() => { setShowModal(false); resetForm(); }}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              type="submit"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <Icon path={mdiCheck} size={0.8} />
+              {editingCategory ? t('common.save') : t('common.create')}
+            </button>
           </div>
-        </div>
-      )}
+        </form>
+      </Modal>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { useDialog } from '../../contexts/DialogContext';
 import ContentLanguageTabs, { LanguageIndicator } from './ContentLanguageTabs';
 import { useTranslation } from 'react-i18next';
+import Modal from '../common/Modal';
 
 /**
  * InfoFieldWithTranslations - Multi-language editing with auto-save
@@ -260,13 +261,13 @@ export default function CompaniesTab() {
       </div>
 
       {/* Modal for Create/Edit */}
-      {(isCreating || editingId) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h3 className="text-lg font-bold mb-4">
-                {isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
-              </h3>
+      <Modal
+        isOpen={isCreating || !!editingId}
+        onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
+        title={isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
+        size="lg"
+      >
+        <div className="p-6">
 
               {/* Public Information Section */}
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -280,10 +281,10 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
                       : setEditForm({ ...editForm, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   <div>
-                    <label className="block text-sm font-medium mb-1">{t('helpPanel.companies.companyLogo')}</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-900">{t('helpPanel.companies.companyLogo')}</label>
                     <LogoUploader
                       currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
                       onUploadComplete={(url, path) => {
@@ -309,7 +310,7 @@ export default function CompaniesTab() {
                         ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
                         : setEditForm({ ...editForm, logo: e.target.value })
                       }
-                      className="w-full px-3 py-2 border rounded mt-2 text-sm"
+                      className="w-full px-3 py-2 border rounded mt-2 text-sm bg-white text-gray-900"
                     />
                   </div>
                   <input
@@ -320,7 +321,7 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
                       : setEditForm({ ...editForm, website: e.target.value })
                     }
-                    className="w-full px-3 py-2 border rounded"
+                    className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   {editingId === 'organization' ? (
                     <textarea
@@ -330,12 +331,12 @@ export default function CompaniesTab() {
                         ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
                         : setEditForm({ ...editForm, info: e.target.value })
                       }
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                       rows={3}
                     />
                   ) : !isCreating ? (
                     <div>
-                      <label className="block text-sm font-medium mb-1">Info (Multi-language)</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-900">Info (Multi-language)</label>
                       <InfoFieldWithTranslations
                         companyId={editingId}
                         editingLanguage={editingContentLanguage}
@@ -347,18 +348,26 @@ export default function CompaniesTab() {
                       placeholder={t('helpPanel.companies.infoPlaceholder')}
                       value={newCompanyForm.info}
                       onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
-                      className="w-full px-3 py-2 border rounded"
+                      className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                       rows={3}
                     />
                   )}
                   {/* Categories - only for companies, not organization */}
                   {!isCreating && editingId !== 'organization' && (
                     <div>
-                      <label className="block text-sm font-medium mb-2">Categories</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">Categories</label>
                       {categories.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-col gap-1.5">
                           {categories.map(cat => (
-                            <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border hover:bg-gray-50">
+                            <label
+                              key={cat.id}
+                              className="inline-flex items-center gap-2 cursor-pointer px-2.5 py-1.5 rounded text-sm"
+                              style={{
+                                backgroundColor: editingCategories.includes(cat.id) ? cat.color + '30' : cat.color + '15',
+                                color: cat.color,
+                                border: `1px solid ${cat.color}40`
+                              }}
+                            >
                               <input
                                 type="checkbox"
                                 checked={editingCategories.includes(cat.id)}
@@ -370,7 +379,8 @@ export default function CompaniesTab() {
                                 }}
                                 className="cursor-pointer"
                               />
-                              <span className="text-sm">{cat.name}</span>
+                              {cat.icon && <Icon path={cat.icon} size={0.6} />}
+                              {cat.name}
                             </label>
                           ))}
                         </div>
@@ -394,7 +404,7 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
                       : setEditForm({ ...editForm, contact: e.target.value })
                     }
-                    className="px-3 py-2 border rounded"
+                    className="px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   <input
                     type="text"
@@ -404,7 +414,7 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, phone: e.target.value })
                       : setEditForm({ ...editForm, phone: e.target.value })
                     }
-                    className="px-3 py-2 border rounded"
+                    className="px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   <input
                     type="email"
@@ -414,30 +424,28 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, email: e.target.value })
                       : setEditForm({ ...editForm, email: e.target.value })
                     }
-                    className="px-3 py-2 border rounded"
+                    className="px-3 py-2 border rounded bg-white text-gray-900"
                   />
                 </div>
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-3 mt-6 justify-end">
-                <button
-                  onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={isCreating ? handleCreate : handleSaveWithCategories}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  {isCreating ? 'Create' : 'Save'}
-                </button>
-              </div>
-            </div>
+          {/* Action buttons */}
+          <div className="flex gap-3 mt-6 justify-end">
+            <button
+              onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={isCreating ? handleCreate : handleSaveWithCategories}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              {isCreating ? 'Create' : 'Save'}
+            </button>
           </div>
         </div>
-      )}
+      </Modal>
 
       {/* Companies table */}
       <div className="flex-1 overflow-auto border rounded-lg">
@@ -519,7 +527,12 @@ export default function CompaniesTab() {
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {(companyCategories[item.id] || []).map(cat => (
-                          <span key={cat.id} className="text-xs px-1.5 py-0.5 rounded" style={{ backgroundColor: cat.color + '20', color: cat.color }}>
+                          <span
+                            key={cat.id}
+                            className="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                            style={{ backgroundColor: cat.color + '20', color: cat.color }}
+                          >
+                            {cat.icon && <Icon path={cat.icon} size={0.5} />}
                             {cat.name}
                           </span>
                         ))}

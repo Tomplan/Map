@@ -19,6 +19,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global form field styling - ensure white backgrounds */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  background-color: white !important;
+  color: #111827 !important; /* text-gray-900 */
+}
+
+/* Prevent double borders on focus */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+}
+
 /* Global Design System - Reusable Component Classes */
 @layer components {
   /* Input Fields */

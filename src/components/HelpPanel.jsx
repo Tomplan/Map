@@ -54,8 +54,8 @@ export default function HelpPanel({ isOpen, onClose }) {
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-[9998]"
+      <div
+        className="fixed inset-0 bg-slate-900/40 z-[9998]"
         onClick={onClose}
         aria-hidden="true"
       />

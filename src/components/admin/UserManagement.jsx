@@ -7,12 +7,13 @@ import {
   mdiPencil,
   mdiDelete,
   mdiEmail,
-  mdiClose,
   mdiCheck,
   mdiAlertCircle,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import useUserRole from '../../hooks/useUserRole';
+import Modal from '../common/Modal';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * UserManagement - Manage admin users, roles, and permissions
@@ -21,6 +22,7 @@ import useUserRole from '../../hooks/useUserRole';
 export default function UserManagement() {
   const { t } = useTranslation();
   const { isSuperAdmin } = useUserRole();
+  const { confirm } = useDialog();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -207,9 +209,13 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (userId, userEmail) => {
-    if (!confirm(t('settings.userManagement.confirmDelete', { email: userEmail }))) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: t('settings.userManagement.deleteUser'),
+      message: t('settings.userManagement.confirmDelete', { email: userEmail }),
+      confirmText: t('common.delete'),
+      variant: 'danger'
+    });
+    if (!confirmed) return;
 
     try {
       setError(null);
@@ -356,20 +362,14 @@ export default function UserManagement() {
       </div>
 
       {/* Invite User Modal */}
-      {showInviteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">{t('settings.userManagement.inviteUser')}</h3>
-              <button
-                onClick={() => setShowInviteModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <Icon path={mdiClose} size={0.8} />
-              </button>
-            </div>
-
-            {inviteSuccess ? (
+      <Modal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        title={t('settings.userManagement.inviteUser')}
+        size="md"
+      >
+        <div className="p-6">
+          {inviteSuccess ? (
               <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg">
                 <div className="flex items-center">
                   <Icon path={mdiCheck} size={0.8} className="mr-2" />
@@ -415,27 +415,26 @@ export default function UserManagement() {
                   </p>
                 </div>
 
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowInviteModal(false)}
-                    className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                  >
-                    {t('settings.userManagement.cancel')}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={inviteLoading}
-                    className="flex-1 btn-primary"
-                  >
-                    {inviteLoading ? t('settings.userManagement.sending') : t('settings.userManagement.sendInvite')}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowInviteModal(false)}
+                  className="flex-1 py-2 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  {t('settings.userManagement.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  disabled={inviteLoading}
+                  className="flex-1 btn-primary"
+                >
+                  {inviteLoading ? t('settings.userManagement.sending') : t('settings.userManagement.sendInvite')}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

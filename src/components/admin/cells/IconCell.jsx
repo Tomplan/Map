@@ -1,5 +1,6 @@
 import React from 'react';
 import { getIconPath } from '../../../utils/getIconPath';
+import Modal from '../../common/Modal';
 
 /**
  * Cell for displaying and selecting marker icons
@@ -23,18 +24,14 @@ export function IconCell({ value, markerId, onIconClick }) {
  * Icon selector modal/popover component
  */
 export function IconSelectorModal({ isOpen, onClose, onSelect, options, currentValue }) {
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-      onClick={onClose}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Select Icon"
+      size="md"
     >
-      <div
-        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold mb-4">Select Icon</h3>
+      <div className="p-6">
         <div className="grid grid-cols-4 gap-4">
           {options.map((iconFile) => {
             const iconPath = getIconPath(iconFile);
@@ -64,6 +61,6 @@ export function IconSelectorModal({ isOpen, onClose, onSelect, options, currentV
           Cancel
         </button>
       </div>
-    </div>
+    </Modal>
   );
 }

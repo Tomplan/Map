@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { 
-  mdiClose, 
-  mdiThumbUp, 
+import {
+  mdiThumbUp,
   mdiComment,
   mdiSend,
   mdiBug,
@@ -16,10 +15,13 @@ import {
 } from '@mdi/js';
 import useFeedbackRequests from '../../hooks/useFeedbackRequests';
 import useUserRole from '../../hooks/useUserRole';
+import Modal from '../common/Modal';
+import { useDialog } from '../../contexts/DialogContext';
 
 export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   const { t } = useTranslation();
   const { role } = useUserRole();
+  const { confirm } = useDialog();
   const isSuperAdmin = role === 'super_admin';
 
   const {
@@ -94,8 +96,14 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
 
   // Handle delete comment
   const handleDeleteComment = async (commentId) => {
-    if (!confirm(t('common.confirmDelete'))) return;
-    
+    const confirmed = await confirm({
+      title: t('settings.feedbackRequests.detail.deleteComment'),
+      message: t('common.confirmDelete'),
+      confirmText: t('common.delete'),
+      variant: 'danger'
+    });
+    if (!confirmed) return;
+
     const { error } = await deleteComment(commentId, request.id);
     if (!error) {
       setComments(comments.filter(c => c.id !== commentId));
@@ -166,47 +174,44 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-                request.type === 'issue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-              }`}>
-                <Icon 
-                  path={request.type === 'issue' ? mdiBug : mdiLightbulbOn} 
-                  size={0.5} 
-                  className="mr-1"
-                />
-                {t(`settings.feedbackRequests.types.${request.type}`)}
-              </span>
-            </div>
-            
-            <h2 className="text-xl font-bold text-gray-900">{request.title}</h2>
-            
-            <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
-              <span>{request.user_email}</span>
-              <span>{new Date(request.created_at).toLocaleDateString()}</span>
-              {request.version_completed && !isEditing && (
-                <span className="text-green-600 font-medium">
-                  v{request.version_completed}
-                </span>
-              )}
-            </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      size="lg"
+      showCloseButton={false}
+    >
+      {/* Custom Header */}
+      <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+              request.type === 'issue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+            }`}>
+              <Icon
+                path={request.type === 'issue' ? mdiBug : mdiLightbulbOn}
+                size={0.5}
+                className="mr-1"
+              />
+              {t(`settings.feedbackRequests.types.${request.type}`)}
+            </span>
           </div>
 
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 ml-4"
-          >
-            <Icon path={mdiClose} size={1} />
-          </button>
-        </div>
+          <h2 className="text-xl font-bold text-gray-900">{request.title}</h2>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="flex items-center gap-4 text-xs text-gray-500 mt-2">
+            <span>{request.user_email}</span>
+            <span>{new Date(request.created_at).toLocaleDateString()}</span>
+            {request.version_completed && !isEditing && (
+              <span className="text-green-600 font-medium">
+                v{request.version_completed}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-4">
           {/* Description */}
           {request.description && (
             <div className="mb-6">
@@ -417,7 +422,6 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
             </form>
           </div>
         </div>
-      </div>
-    </div>
+      </Modal>
   );
 }

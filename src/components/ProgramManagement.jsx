@@ -4,6 +4,7 @@ import useEventActivities from '../hooks/useEventActivities';
 import { MdEdit, MdDelete, MdAdd, MdDragIndicator } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
+import Modal from './common/Modal';
 
 /**
  * ProgramManagement - Admin component for managing event activities
@@ -313,48 +314,44 @@ export default function ProgramManagement() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                {t('programManagement.confirmDelete')}
-              </h3>
-            </div>
-            <div className="px-6 py-4">
-              <p className="text-gray-700">
-                {t('programManagement.confirmDeleteMessage')}
-              </p>
-              <p className="mt-2 font-medium text-gray-900">
-                "{deleteConfirm.title}"
-              </p>
-            </div>
-            <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteConfirm(null)}
-                disabled={deleting}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-              >
-                {t('programManagement.cancel')}
-              </button>
-              <button
-                onClick={() => handleDelete(deleteConfirm.id)}
-                disabled={deleting}
-                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-              >
-                {deleting ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    {t('programManagement.deleting')}
-                  </>
-                ) : (
-                  t('programManagement.deleteButton')
-                )}
-              </button>
-            </div>
-          </div>
+      <Modal
+        isOpen={!!deleteConfirm}
+        onClose={() => setDeleteConfirm(null)}
+        title={t('programManagement.confirmDelete')}
+        size="md"
+      >
+        <div className="p-6">
+          <p className="text-gray-700">
+            {t('programManagement.confirmDeleteMessage')}
+          </p>
+          <p className="mt-2 font-medium text-gray-900">
+            "{deleteConfirm?.title}"
+          </p>
         </div>
-      )}
+        <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
+          <button
+            onClick={() => setDeleteConfirm(null)}
+            disabled={deleting}
+            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {t('programManagement.cancel')}
+          </button>
+          <button
+            onClick={() => handleDelete(deleteConfirm?.id)}
+            disabled={deleting}
+            className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {deleting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                {t('programManagement.deleting')}
+              </>
+            ) : (
+              t('programManagement.deleteButton')
+            )}
+          </button>
+        </div>
+      </Modal>
 
       {/* Activity Form Modal */}
       {showForm && (

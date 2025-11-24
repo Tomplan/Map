@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MdClose } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
+import Modal from './common/Modal';
 
 /**
  * ActivityForm - Modal form for creating/editing event activities
@@ -124,23 +124,14 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 my-8">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {activity ? t('activityForm.editTitle') : t('activityForm.createTitle')}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <MdClose className="text-2xl" />
-          </button>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="px-6 py-4 max-h-[calc(100vh-200px)] overflow-y-auto">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={activity ? t('activityForm.editTitle') : t('activityForm.createTitle')}
+      size="xl"
+    >
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="px-6 py-4">
           <div className="space-y-6">
             {/* Title Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,32 +385,31 @@ export default function ActivityForm({ activity, day, onSave, onClose }) {
           </div>
         </form>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end gap-3 border-t border-gray-200">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-          >
-            {t('activityForm.cancel')}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {loading ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                {t('activityForm.saving')}
-              </>
-            ) : (
-              t('activityForm.save')
-            )}
-          </button>
-        </div>
+      {/* Footer */}
+      <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={loading}
+          className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          {t('activityForm.cancel')}
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              {t('activityForm.saving')}
+            </>
+          ) : (
+            t('activityForm.save')
+          )}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }

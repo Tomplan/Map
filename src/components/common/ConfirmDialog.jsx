@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Modal from './Modal';
 
 /**
  * Reusable confirmation dialog component
@@ -15,8 +16,6 @@ function ConfirmDialog({
   onCancel,
   variant,
 }) {
-  if (!isOpen) return null;
-
   const variantStyles = {
     danger: 'bg-red-600 hover:bg-red-700',
     warning: 'bg-yellow-600 hover:bg-yellow-700',
@@ -26,25 +25,13 @@ function ConfirmDialog({
   const buttonStyle = variantStyles[variant] || variantStyles.default;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={onCancel}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
+    <Modal
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={title}
+      size="md"
     >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {title && (
-          <h2
-            id="confirm-dialog-title"
-            className="text-lg font-semibold text-gray-900 mb-2"
-          >
-            {title}
-          </h2>
-        )}
+      <div className="p-6">
         <p className="text-gray-600 mb-6 whitespace-pre-wrap">{message}</p>
         <div className="flex justify-end gap-3">
           <button
@@ -62,7 +49,7 @@ function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

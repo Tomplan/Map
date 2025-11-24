@@ -227,12 +227,19 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   // Copy from previous year
   const handleCopyFromPreviousYear = async () => {
     const previousYear = selectedYear - 1;
-    if (!confirm(`Copy all subscriptions from ${previousYear} to ${selectedYear}?`)) {
-      return;
-    }
+    const confirmed = await confirm({
+      title: 'Copy Subscriptions',
+      message: `Copy all subscriptions from ${previousYear} to ${selectedYear}?`,
+      confirmText: 'Copy',
+      variant: 'default'
+    });
+    if (!confirmed) return;
+
     const { error } = await copyFromPreviousYear(previousYear);
     if (error) {
-      alert(`Error copying subscriptions: ${error}`);
+      toastError(`Error copying subscriptions: ${error}`);
+    } else {
+      toastSuccess(`Subscriptions copied from ${previousYear} to ${selectedYear}`);
     }
   };
 
