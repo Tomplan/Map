@@ -21,7 +21,7 @@ import YearScopeBadge from './YearScopeBadge';
  * Dashboard - Overview page for admin panel
  * Shows key metrics and recent activity
  */
-export default function Dashboard({ selectedYear }) {
+export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { subscriptions, loading } = useEventSubscriptions(selectedYear);
   const [counts, setCounts] = useState({
@@ -30,6 +30,7 @@ export default function Dashboard({ selectedYear }) {
     assignments: null,
   });
   const [showYearModal, setShowYearModal] = useState(false);
+  const [pendingYear, setPendingYear] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Fetch counts from Supabase
@@ -114,19 +115,7 @@ export default function Dashboard({ selectedYear }) {
 
   return (
     <div>
-      {/* Top: Year explanation banner */}
-      <div className="mb-4">
-        <div className="rounded-md bg-yellow-50 border border-yellow-100 p-3 text-sm text-yellow-900 flex items-center justify-between">
-          <div>
-            <strong>{t('admin.yearSwitcher.bannerBold')}</strong> {t('admin.yearSwitcher.bannerText')}
-          </div>
-          <div className="flex items-center gap-2">
-            <YearScopeBadge scope="global" />
-            <button className="px-2 py-1 text-sm underline" onClick={() => setShowYearModal(true)}>{t('admin.yearSwitcher.bannerLink')}</button>
-          </div>
-        </div>
-        <YearChangeModal isOpen={showYearModal} newYear={selectedYear} onClose={() => setShowYearModal(false)} onConfirm={() => setShowYearModal(false)} />
-      </div>
+      {/* Year-scoped UI is handled in the admin sidebar (AdminLayout) — removed inline Dashboard card */}
       {/* Event Totals - Combined Stats and Meal/Coin Data */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">

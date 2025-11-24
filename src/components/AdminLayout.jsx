@@ -20,6 +20,7 @@ import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
+import YearScopeSidebar from './admin/YearScopeSidebar';
 
 /**
  * AdminLayout - Main layout for admin panel with sidebar navigation
@@ -177,28 +178,24 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
           </ul>
         </nav>
 
-        {/* Year Selector */}
+        {/* Year Selector + compact year-scope summary */}
         <div className="p-2 border-t border-gray-200">
           {!isCollapsed ? (
             <div className="px-2 py-3">
               <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => {
-                  const newY = parseInt(e.target.value, 10);
-                  // If the value is the same, do nothing
+              <YearScopeSidebar
+                selectedYear={selectedYear}
+                onYearChange={(newY) => {
                   if (newY === selectedYear) return;
                   setPendingYear(newY);
                   setShowYearModal(true);
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              >
-                {yearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+              />
+              {/* compact year scoped summary under the selector */}
+              <div className="mt-3 border-t pt-3">
+                {/* lazy-load the sidebar item to avoid heavy queries on collapsed */}
+                <YearScopeSidebar selectedYear={selectedYear} />
+              </div>
             </div>
           ) : (
             <div

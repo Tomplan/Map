@@ -11,7 +11,12 @@ export default function YearScopeBadge({ scope = 'global' }) {
   const color = scope === 'global' ? 'bg-green-100 text-green-800' : 'bg-blue-50 text-blue-800';
 
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color} border border-transparent`} aria-hidden>
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${color} border border-transparent`}
+      role="status"
+      aria-label={label}
+      title={label}
+    >
       {label}
     </span>
   );
