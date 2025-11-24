@@ -56,12 +56,12 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       // Continue with redirect even if signOut fails
     }
     
-    // Redirect to admin login with proper base URL
+    // Redirect to admin login using hash route (app uses HashRouter)
     const base = import.meta.env.BASE_URL || '/';
-    const isProd = import.meta.env.PROD;
     // Ensure base ends with / before appending path
     const baseUrl = base.endsWith('/') ? base : `${base}/`;
-    window.location.href = isProd ? `${baseUrl}#/admin` : `${baseUrl}admin`;
+    // App uses HashRouter in `App.jsx`, so always navigate to the hash route
+    window.location.href = `${baseUrl}#/admin`;
   };
 
   // Navigation items with role-based visibility
@@ -102,12 +102,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       icon: mdiCalendarClock,
       roles: ['super_admin', 'event_manager', 'content_editor'],
     },
-    {
-      path: '/admin/categories',
-      label: t('adminNav.categories'),
-      icon: mdiTag,
-      roles: ['super_admin', 'event_manager'],
-    },
+    // Categories menu removed from main admin nav. Now in settings for system managers only.
     {
       path: '/admin/settings',
       label: t('adminNav.settings'),

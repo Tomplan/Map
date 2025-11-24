@@ -336,27 +336,22 @@ export function useCategories(language = 'nl') {
     }
   };
 
-  // Get category statistics
+  // Get category statistics (indexed by category_id)
   const getCategoryStats = async () => {
     try {
       const { data, error } = await supabase
         .from('company_categories')
-        .select('category_id, categories(slug, category_translations(language, name))');
+        .select('category_id');
 
       if (error) throw error;
 
+      // Count occurrences by category_id
       const stats = {};
       data.forEach(cc => {
-        const slug = cc.categories.slug;
-        if (!stats[slug]) {
-          const translation = cc.categories.category_translations.find(t => t.language === language) ||
-                            cc.categories.category_translations[0];
-          stats[slug] = {
-            name: translation?.name || slug,
-            count: 0
-          };
+        if (!stats[cc.category_id]) {
+          stats[cc.category_id] = 0;
         }
-        stats[slug].count++;
+        stats[cc.category_id]++;
       });
 
       return stats;

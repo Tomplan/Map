@@ -1,50 +1,50 @@
 {
-  "appTitle": "Event Map App",
-  "welcome": "Welcome to the event!",
-  "home": "Home",
+  "appTitle": "Event Map App (DE)",
+  "welcome": "Willkommen zum Event!",
+  "home": "Startseite",
   "admin": "Admin Dashboard",
   "adminNav": {
     "adminPanel": "Admin Panel",
     "dashboard": "Dashboard",
-    "mapManagement": "Map Management",
-    "companiesNav": "Companies",
-    "eventSubscriptions": "Subscriptions",
-    "programManagement": "Program Management",
-    "assignments": "Assignments",
-    "categories": "Categories",
-    "settings": "Settings",
-    "eventYear": "Event Year",
-    "help": "Help",
-    "logout": "Logout",
-    "loading": "Loading...",
+    "mapManagement": "Kartenverwaltung",
+    "companiesNav": "Unternehmen",
+    "eventSubscriptions": "Abonnements",
+    "programManagement": "Programmverwaltung",
+    "assignments": "Zuweisungen",
+    "categories": "Kategorien",
+    "settings": "Einstellungen",
+    "eventYear": "Eventjahr",
+    "help": "Hilfe",
+    "logout": "Abmelden",
+    "loading": "Laden...",
     "roles": {
       "super_admin": "Super Admin",
-      "system_manager": "System Manager",
-      "event_manager": "Event Manager",
-      "content_editor": "Content Editor"
+      "system_manager": "Systemmanager",
+      "event_manager": "Eventmanager",
+      "content_editor": "Inhaltseditor"
     }
   },
   "navigation": {
-    "home": "Home",
-    "map": "Map",
-    "exhibitors": "Exhibitors",
-    "schedule": "Schedule"
+    "home": "Startseite",
+    "map": "Karte",
+    "exhibitors": "Aussteller",
+    "schedule": "Programm"
   },
   "common": {
-    "loading": "Loading...",
-    "saving": "Saving...",
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "confirmDelete": "Are you sure you want to delete this?",
-    "vote": "Vote",
-    "voted": "Voted"
+    "loading": "Laden...",
+    "saving": "Speichern...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "confirmDelete": "Sind Sie sicher, dass Sie dies löschen möchten?",
+    "vote": "Abstimmen",
+    "voted": "Abgestimmt"
   },
   "marker": {
     "event": "Event",
-    "parking": "Parking",
-    "food": "Food"
+    "parking": "Parken",
+    "food": "Essen"
   },
   "adminLogin": {
     "title": "Manager Login",
@@ -100,15 +100,15 @@
     }
   },
   "settings": {
-    "title": "Settings",
-    "subtitle": "Manage system configuration and preferences",
+    "title": "Einstellungen",
+    "subtitle": "Systemkonfiguration und Einstellungen verwalten",
     "categoryManagement": {
-      "title": "Category Management",
-      "description": "Manage exhibitor categories for filtering and organization"
+      "title": "Kategorienverwaltung",
+      "description": "Verwalten Sie Ausstellerkategorien für Filterung und Organisation"
     },
     "userManagement": {
-      "title": "User Management",
-      "description": "Manage admin users, roles, and permissions",
+      "title": "Benutzerverwaltung",
+      "description": "Admin-Benutzer, Rollen und Berechtigungen verwalten",
       "loading": "Loading users...",
       "inviteUser": "Invite User",
       "emailLabel": "Email Address",
@@ -150,8 +150,8 @@
       "description": "Organization name, logo, and contact information"
     },
     "branding": {
-      "title": "Branding Settings",
-      "description": "Configure visual branding (colors, fonts)",
+      "title": "Branding-Einstellungen",
+      "description": "Visuelles Branding konfigurieren (Farben, Schriftarten)",
       "note": "Organization name and logo are managed in the Companies tab",
       "loading": "Loading settings...",
       "save": "Save Changes",
@@ -172,8 +172,8 @@
       }
     },
     "uiLanguage": {
-      "title": "UI Language",
-      "description": "Change the language of buttons, menus, and interface elements",
+      "title": "UI-Sprache",
+      "description": "Sprache der Benutzeroberfläche ändern",
       "selectLanguage": "Select your preferred language",
       "note": {
         "title": "Manager Interface Language",
@@ -181,12 +181,12 @@
       }
     },
     "mapDefaults": {
-      "title": "Map Defaults",
-      "description": "Default map layers, zoom levels, and map settings"
+      "title": "Karten-Standardeinstellungen",
+      "description": "Standard-Kartenebenen, Zoomstufen und Einstellungen"
     },
     "eventDefaults": {
-      "title": "Event Defaults",
-      "description": "Default meal counts, booth sizes, and event preferences",
+      "title": "Event-Standardeinstellungen",
+      "description": "Standardwerte für Mahlzeiten, Standgrößen und Eventpräferenzen",
       "loading": "Loading settings...",
       "save": "Save Changes",
       "saving": "Saving...",
@@ -220,8 +220,8 @@
       }
     },
     "feedbackRequests": {
-      "title": "Feedback & Feature Requests",
-      "description": "Submit issues, request features, and track progress",
+      "title": "Feedback & Feature-Anfragen",
+      "description": "Probleme melden, Features anfragen und Fortschritt verfolgen",
       "tabs": {
         "all": "All Requests",
         "myRequests": "My Requests",
@@ -278,23 +278,23 @@
       }
     },
     "advanced": {
-      "title": "Advanced Settings",
-      "description": "System maintenance, data management, and danger zone"
+      "title": "Erweiterte Einstellungen",
+      "description": "Systemwartung, Datenverwaltung und Gefahrenzone"
     }
   },
   "homePage": {
-    "subtitle": "Your Next Adventure Starts Here!",
-    "title": "The 4x4 Holiday Fair",
-    "eventDate": "October 10-11, 2026",
-    "exhibitors": "Exhibitors",
-    "days": "Days",
-    "openingHours": "Opening Hours",
-    "openingHoursInfo": "Saturday 10:00 - 17:00\nSunday 10:00 - 16:00",
-    "location": "Location",
-    "locationInfo": "Evenementenlocatie WaterGoed\nTielsestaat 129, 6657 AC Valburg",
-    "parking": "Parking",
-    "parkingInfo": "Free parking available at Strandpark Slijk-Ewijk",
-    "phaseNote": "<strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities."
+    "subtitle": "Dein nächstes Abenteuer beginnt hier!",
+    "title": "Die 4x4 Ferienmesse",
+    "eventDate": "10.-11. Oktober 2026",
+    "exhibitors": "Aussteller",
+    "days": "Tage",
+    "openingHours": "Öffnungszeiten",
+    "openingHoursInfo": "Samstag 10:00 - 17:00\nSonntag 10:00 - 16:00",
+    "location": "Veranstaltungsort",
+    "locationInfo": "Eventlocation WaterGoed\nTielsestaat 129, 6657 AC Valburg",
+    "parking": "Parken",
+    "parkingInfo": "Kostenlose Parkplätze am Strandpark Slijk-Ewijk verfügbar",
+    "phaseNote": "<strong>Hinweis:</strong> Dies ist eine Phase-1-Vorabversion. In Phase 2 werden hier echte Eventdaten, Willkommensnachrichten und kommende Aktivitäten angezeigt."
   },
   "exhibitorPage": {
     "title": "Exhibitors",
@@ -324,16 +324,16 @@
     "phaseNote": "Note:",
     "comingInFuturePhases": "Coming in future phases:",
     "categoryFiltering": "Category filtering",
-      "sortOptions": "Sort options"
+    "sortOptions": "Sort options"
   },
   "map": {
     "searchPlaceholder": "Search for a marker...",
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
-      "sortId": "ID",
-      "sortName": "Name",
-      "sortType": "Type",
+    "sortId": "ID",
+    "sortName": "Name",
+    "sortType": "Type",
     "addMarker": "Add marker",
     "addMarkerTooltipActive": "Click on map to place marker",
     "addMarkerTooltip": "Add marker",
@@ -345,12 +345,6 @@
     "errorIdExists": "ID already exists. Please choose another.",
     "searchPlaceholder": "Search by ID, booth label, or name...",
     "selectMarker": "Select a marker to view details"
-  },
-  "navigation": {
-    "home": "Home",
-    "map": "Map",
-    "exhibitors": "Exhibitors",
-    "schedule": "Schedule"
   },
   "programManagement": {
     "title": "Program Management",
@@ -475,30 +469,29 @@
     },
     "footer": "Need more help? Contact your system administrator",
     "categories": {
-      "title": "Category Management",
-      "description": "Manage exhibitor categories for filtering and organization",
-      "createNew": "Create Category",
-      "editCategory": "Edit Category",
-      "createCategory": "Create Category",
-      "order": "Order",
-      "category": "Category",
+      "title": "Kategorienverwaltung",
+      "description": "Ausstellerkategorien für Filterung und Organisation verwalten",
+      "createNew": "Kategorie erstellen",
+      "editCategory": "Kategorie bearbeiten",
+      "createCategory": "Kategorie erstellen",
+      "order": "Reihenfolge",
+      "category": "Kategorie",
       "slug": "Slug",
-      "exhibitors": "Exhibitors",
+      "exhibitors": "Aussteller",
       "icon": "Icon",
-      "color": "Color",
-      "sortOrder": "Sort Order",
-      "translations": "Translations",
+      "color": "Farbe",
+      "sortOrder": "Sortierreihenfolge",
+      "translations": "Übersetzungen",
       "name": "Name",
-      "description": "Description",
-      "slugHelp": "Unique identifier (lowercase, no spaces, use hyphens)",
-      "noCategories": "No categories yet. Create your first category to get started.",
-      "confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
-      "cannotDelete": "Cannot delete category with assigned exhibitors",
-      "createSuccess": "Category created successfully",
-      "updateSuccess": "Category updated successfully",
-      "deleteSuccess": "Category deleted successfully",
-      "deleteError": "Failed to delete category: {{error}}",
-      "saveError": "Failed to save category: {{error}}"
+      "slugHelp": "Eindeutiger Bezeichner (Kleinbuchstaben, keine Leerzeichen, Bindestriche verwenden)",
+      "noCategories": "Noch keine Kategorien. Erstellen Sie Ihre erste Kategorie, um zu beginnen.",
+      "confirmDelete": "Sind Sie sicher, dass Sie \"{{name}}\" löschen möchten?",
+      "cannotDelete": "Kategorie mit zugewiesenen Ausstellern kann nicht gelöscht werden",
+      "createSuccess": "Kategorie erfolgreich erstellt",
+      "updateSuccess": "Kategorie erfolgreich aktualisiert",
+      "deleteSuccess": "Kategorie erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen der Kategorie: {{error}}",
+      "saveError": "Fehler beim Speichern der Kategorie: {{error}}"
     },
     "subscriptions": {
       "searchPlaceholder": "Search subscribed companies...",
@@ -562,5 +555,10 @@
       "orPasteUrl": "Or paste URL",
       "organizationInfo": "Organization info"
     }
+  },
+  "language": {
+    "nl": "Niederländisch",
+    "en": "Englisch",
+    "de": "Deutsch"
   }
 }

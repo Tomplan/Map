@@ -88,24 +88,39 @@ export default function CategoryManagement() {
 
   const handleEdit = (category) => {
     setEditingCategory(category);
+
+    // Convert translations array to object format
+    // category.translations is an array like [{ language: 'nl', name: '...', description: '...' }, ...]
+    const translationsObj = { nl: {}, en: {}, de: {} };
+    if (Array.isArray(category.translations)) {
+      category.translations.forEach(t => {
+        if (translationsObj[t.language]) {
+          translationsObj[t.language] = { name: t.name || '', description: t.description || '' };
+        }
+      });
+    }
+
+    // Fill in any missing languages with current display values
+    ['nl', 'en', 'de'].forEach(lang => {
+      if (!translationsObj[lang].name) {
+        translationsObj[lang] = { name: category.name || '', description: category.description || '' };
+      }
+    });
+
     setFormData({
       slug: category.slug,
       icon: category.iconName,
       color: category.color,
       sort_order: category.sort_order,
-      translations: {
-        nl: { name: '', description: '' },
-        en: { name: '', description: '' },
-        de: { name: '', description: '' }
-      }
+      translations: translationsObj
     });
     setShowModal(true);
   };
 
   const handleDelete = async (categoryId, categoryName) => {
     const confirmed = await confirm({
-      title: t('admin.categories.deleteCategory'),
-      message: t('admin.categories.confirmDelete', { name: categoryName }),
+      title: t('helpPanel.categories.deleteCategory'),
+      message: t('helpPanel.categories.confirmDelete', { name: categoryName }),
       confirmText: t('common.delete'),
       variant: 'danger'
     });
@@ -113,9 +128,9 @@ export default function CategoryManagement() {
 
     const result = await deleteCategory(categoryId);
     if (result.success) {
-      toastSuccess(t('admin.categories.deleteSuccess'));
+      toastSuccess(t('helpPanel.categories.deleteSuccess'));
     } else {
-      toastError(t('admin.categories.deleteError', { error: result.error }));
+      toastError(t('helpPanel.categories.deleteError', { error: result.error }));
     }
   };
 
@@ -140,9 +155,9 @@ export default function CategoryManagement() {
     if (result.success) {
       setShowModal(false);
       resetForm();
-      alert(editingCategory ? t('categories.updateSuccess') : t('categories.createSuccess'));
+      toastSuccess(editingCategory ? t('helpPanel.categories.updateSuccess') : t('helpPanel.categories.createSuccess'));
     } else {
-      alert(t('categories.saveError', { error: result.error }));
+      toastError(t('helpPanel.categories.saveError', { error: result.error }));
     }
   };
 
@@ -167,15 +182,15 @@ export default function CategoryManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{t('categories.title')}</h2>
-          <p className="text-gray-600 mt-1">{t('categories.description')}</p>
+          <h2 className="text-2xl font-bold text-gray-900">{t('helpPanel.categories.title')}</h2>
+          <p className="text-gray-600 mt-1">{t('helpPanel.categories.description')}</p>
         </div>
         <button
           onClick={handleCreate}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Icon path={mdiPlus} size={0.8} />
-          {t('categories.createNew')}
+          {t('helpPanel.categories.createNew')}
         </button>
       </div>
 
@@ -185,16 +200,19 @@ export default function CategoryManagement() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('categories.order')}
+                {t('helpPanel.categories.order')}
+              </th>
+              <th className="px-3 py-3 w-12">
+                {/* Icon column */}
+              </th>
+              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('helpPanel.categories.category')}
+              </th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('helpPanel.categories.slug')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('admin.categories.category')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('admin.categories.slug')}
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {t('admin.categories.exhibitors')}
+                {t('helpPanel.categories.exhibitors')}
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('common.actions')}
@@ -210,22 +228,22 @@ export default function CategoryManagement() {
                     <span className="font-medium">{category.sort_order}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: category.color }}
-                    >
-                      <Icon path={category.icon} size={0.8} className="text-white" />
-                    </div>
-                    <div>
-                      <div className="font-medium text-gray-900">{category.name}</div>
-                      <div className="text-sm text-gray-500">{category.description}</div>
-                    </div>
+                <td className="px-3 py-4 whitespace-nowrap w-12">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: category.color }}
+                  >
+                    <Icon path={category.icon} size={0.7} className="text-white" />
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">{category.slug}</code>
+                <td className="px-3 py-4 whitespace-nowrap text-left">
+                  <div className="font-medium text-gray-900 truncate">{category.name}</div>
+                  {category.description && (
+                    <div className="text-xs text-gray-500 truncate">{category.description}</div>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <code className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">{category.slug}</code>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
@@ -244,7 +262,7 @@ export default function CategoryManagement() {
                     onClick={() => handleDelete(category.id, category.name)}
                     className="text-red-600 hover:text-red-900"
                     disabled={stats[category.id] > 0}
-                    title={stats[category.id] > 0 ? t('admin.categories.cannotDelete') : ''}
+                    title={stats[category.id] > 0 ? t('helpPanel.categories.cannotDelete') : ''}
                   >
                     <Icon path={mdiDelete} size={0.8} />
                   </button>
@@ -256,7 +274,7 @@ export default function CategoryManagement() {
 
         {categories.length === 0 && (
           <div className="text-center py-12 text-gray-500">
-            {t('admin.categories.noCategories')}
+            {t('helpPanel.categories.noCategories')}
           </div>
         )}
       </div>
@@ -265,135 +283,135 @@ export default function CategoryManagement() {
       <Modal
         isOpen={showModal}
         onClose={() => { setShowModal(false); resetForm(); }}
-        title={editingCategory ? t('admin.categories.editCategory') : t('admin.categories.createCategory')}
+        title={editingCategory ? t('helpPanel.categories.editCategory') : t('helpPanel.categories.createCategory')}
         size="lg"
       >
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              {/* Basic Info */}
-              <div className="space-y-4">
+          {/* Basic Info */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('helpPanel.categories.slug')} *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                placeholder="vehicles-dealers"
+              />
+              <p className="text-xs text-gray-500 mt-1">{t('helpPanel.categories.slugHelp')}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('helpPanel.categories.icon')}
+                </label>
+                <select
+                  value={formData.icon}
+                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  {AVAILABLE_ICONS.map(icon => (
+                    <option key={icon.name} value={icon.name}>{icon.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t('helpPanel.categories.color')}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="#1976d2"
+                  />
+                </div>
+                <div className="flex gap-1 mt-2">
+                  {PRESET_COLORS.map(color => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, color })}
+                      className="w-6 h-6 rounded border-2 border-gray-200 hover:border-gray-400"
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('helpPanel.categories.sortOrder')}
+              </label>
+              <input
+                type="number"
+                value={formData.sort_order}
+                onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          {/* Translations */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-gray-900">{t('helpPanel.categories.translations')}</h4>
+
+            {['nl', 'en', 'de'].map(lang => (
+              <div key={lang} className="border border-gray-200 rounded-lg p-4 space-y-3">
+                <h5 className="font-medium text-gray-700 uppercase">{lang}</h5>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('admin.categories.slug')} *
+                    {t('helpPanel.categories.name')} ({lang}) *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    value={formData.translations[lang].name}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      translations: {
+                        ...formData.translations,
+                        [lang]: { ...formData.translations[lang], name: e.target.value }
+                      }
+                    })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="vehicles-dealers"
                   />
-                  <p className="text-xs text-gray-500 mt-1">{t('admin.categories.slugHelp')}</p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('admin.categories.icon')}
-                    </label>
-                    <select
-                      value={formData.icon}
-                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                    >
-                      {AVAILABLE_ICONS.map(icon => (
-                        <option key={icon.name} value={icon.name}>{icon.label}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('admin.categories.color')}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="color"
-                        value={formData.color}
-                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                        className="w-16 h-10 border border-gray-300 rounded cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={formData.color}
-                        onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                        placeholder="#1976d2"
-                      />
-                    </div>
-                    <div className="flex gap-1 mt-2">
-                      {PRESET_COLORS.map(color => (
-                        <button
-                          key={color}
-                          type="button"
-                          onClick={() => setFormData({ ...formData, color })}
-                          className="w-6 h-6 rounded border-2 border-gray-200 hover:border-gray-400"
-                          style={{ backgroundColor: color }}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('admin.categories.sortOrder')}
+                    {t('helpPanel.categories.description')} ({lang})
                   </label>
-                  <input
-                    type="number"
-                    value={formData.sort_order}
-                    onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) })}
+                  <textarea
+                    value={formData.translations[lang].description}
+                    onChange={(e) => setFormData({
+                      ...formData,
+                      translations: {
+                        ...formData.translations,
+                        [lang]: { ...formData.translations[lang], description: e.target.value }
+                      }
+                    })}
+                    rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
-
-              {/* Translations */}
-              <div className="space-y-4">
-                <h4 className="font-medium text-gray-900">{t('admin.categories.translations')}</h4>
-                
-                {['nl', 'en', 'de'].map(lang => (
-                  <div key={lang} className="border border-gray-200 rounded-lg p-4 space-y-3">
-                    <h5 className="font-medium text-gray-700 uppercase">{lang}</h5>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t('admin.categories.name')} ({lang}) *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.translations[lang].name}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          translations: {
-                            ...formData.translations,
-                            [lang]: { ...formData.translations[lang], name: e.target.value }
-                          }
-                        })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        {t('admin.categories.description')} ({lang})
-                      </label>
-                      <textarea
-                        value={formData.translations[lang].description}
-                        onChange={(e) => setFormData({
-                          ...formData,
-                          translations: {
-                            ...formData.translations,
-                            [lang]: { ...formData.translations[lang], description: e.target.value }
-                          }
-                        })}
-                        rows={2}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+            ))}
+          </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
