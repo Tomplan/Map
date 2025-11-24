@@ -201,33 +201,6 @@
       "notifications": {
         "title": "Meldingsvoorkeuren",
         "description": "Configureer e-mailmeldingen voor evenementmanagers",
-      "admin": {
-        "yearScope": {
-          "global": "Globaal (alle jaren)",
-          "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)"
-        },
-        "yearSwitcher": {
-          "bannerBold": "Opmerking:",
-          "bannerText": "Bedrijven worden gedeeld over alle jaren. Inschrijvingen, toewijzingen en het programma zijn gekoppeld aan het geselecteerde jaar — het wisselen van jaar verandert deze gegevens.",
-          "bannerLink": "Wat verandert er als ik het jaar wijzig?",
-          "modalTitle": "Overschakelen naar {{year}}?",
-          "modalIntro": "Weet u zeker dat u de beheerdersweergave wilt overschakelen naar <strong>{{year}}</strong>? De volgende gegevens worden bijgewerkt voor het geselecteerde jaar:",
-          "willChange": {
-            "subscriptions": "Inschrijvingen",
-            "subscriptionsDesc": "registraties en maaltijd/coin keuzes voor dat evenementjaar",
-            "assignments": "Toewijzingen",
-            "assignmentsDesc": "standtoewijzingen en marker→bedrijf koppelingen voor dat jaar",
-            "program": "Programmabeheer",
-            "programDesc": "het schema / activiteiten voor het geselecteerde jaar"
-          },
-          "wontChangeIntro": "De volgende gegevens worden niet gewijzigd bij het wisselen van jaar:",
-          "wontChange": {
-            "companies": "Bedrijven",
-            "companiesDesc": "Bedrijfsprofielen en masterdata blijven globaal en gelijk voor alle jaren"
-          },
-          "switchButton": "Overschakelen naar {{year}}"
-        }
-      },
         "emailNotifications": "E-mailmeldingen Inschakelen",
         "emailNotificationsDesc": "Hoofdschakelaar voor alle e-mailmeldingen",
         "newSubscription": "Nieuwe Inschrijvingsmeldingen",
@@ -428,6 +401,33 @@
     "saveError": "Fout bij opslaan activiteit",
     "saveSuccess": "Activiteit opgeslagen",
     "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
+  },
+  "admin": {
+    "yearScope": {
+      "global": "Globaal (alle jaren)",
+      "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)"
+    },
+    "yearSwitcher": {
+      "bannerBold": "Opmerking:",
+      "bannerText": "Bedrijven worden gedeeld over alle jaren. Inschrijvingen, toewijzingen en het programma zijn gekoppeld aan het geselecteerde jaar — het wisselen van jaar verandert deze gegevens.",
+      "bannerLink": "Wat verandert er als ik het jaar wijzig?",
+      "modalTitle": "Overschakelen naar {{year}}?",
+      "modalIntro": "Weet u zeker dat u de beheerdersweergave wilt overschakelen naar <strong>{{year}}</strong>? De volgende gegevens worden bijgewerkt voor het geselecteerde jaar:",
+      "willChange": {
+        "subscriptions": "Inschrijvingen",
+        "subscriptionsDesc": "registraties en maaltijd/coin keuzes voor dat evenementjaar",
+        "assignments": "Toewijzingen",
+        "assignmentsDesc": "standtoewijzingen en marker→bedrijf koppelingen voor dat jaar",
+        "program": "Programmabeheer",
+        "programDesc": "het schema / activiteiten voor het geselecteerde jaar"
+      },
+      "wontChangeIntro": "De volgende gegevens worden niet gewijzigd bij het wisselen van jaar:",
+      "wontChange": {
+        "companies": "Bedrijven",
+        "companiesDesc": "Bedrijfsprofielen en masterdata blijven globaal en gelijk voor alle jaren"
+      },
+      "switchButton": "Overschakelen naar {{year}}"
+    }
   },
   "dashboard": {
     "totalMarkers": "Totaal Markers",

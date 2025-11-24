@@ -19,6 +19,12 @@ jest.mock('react-i18next', () => ({
     }[k] || k;
     return k;
   } })
+ ,
+  Trans: ({ i18nKey, values }) => {
+    // Simple test stub for Trans: return plain text with interpolated year
+    if (i18nKey === 'admin.yearSwitcher.modalIntro') return `Are you sure you want to switch to ${values?.year || ''}?`;
+    return i18nKey;
+  }
 }));
 
 describe('Admin year selector flow (isolated)', () => {

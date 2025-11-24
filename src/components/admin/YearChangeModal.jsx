@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import Modal from '../common/Modal';
 
 /**
@@ -13,7 +13,7 @@ export default function YearChangeModal({ isOpen, onClose, newYear, onConfirm })
     <Modal isOpen={isOpen} onClose={onClose} title={t('admin.yearSwitcher.modalTitle', { year: newYear })} size="md">
       <div className="px-6 py-4 space-y-4 text-sm text-gray-700">
         <p>
-          {t('admin.yearSwitcher.modalIntro', { year: newYear })}
+          <Trans i18nKey="admin.yearSwitcher.modalIntro" values={{ year: newYear }} components={{ strong: <strong /> }} />
         </p>
 
         <ul className="list-disc list-inside text-sm">
