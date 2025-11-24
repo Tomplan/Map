@@ -21,6 +21,7 @@ import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
 import YearScopeSidebar from './admin/YearScopeSidebar';
+import CollapsedShortcuts from './admin/CollapsedShortcuts';
 
 /**
  * AdminLayout - Main layout for admin panel with sidebar navigation
@@ -191,17 +192,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 {selectedYear}
               </div>
 
-              <div className="flex flex-col items-center space-y-3">
-                <Link to="/admin/subscriptions" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
-                  <Icon path={mdiCalendarCheck} size={1} />
-                </Link>
-                <Link to="/admin/assignments" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
-                  <Icon path={mdiMapMarkerMultiple} size={1} />
-                </Link>
-                <Link to="/admin/program" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
-                  <Icon path={mdiCalendarClock} size={1} />
-                </Link>
-              </div>
+              {/* Collapsed shortcuts moved into a small component for easier testing */}
+              <CollapsedShortcuts selectedYear={selectedYear} t={t} />
             </div>
           )}
         </div>

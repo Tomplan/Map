@@ -36,12 +36,13 @@ describe('AdminLayout (collapsed sidebar code presence)', () => {
   it('contains collapsed icon links for the year-scoped pages in source', () => {
     const fs = require('fs');
     const path = require('path');
-    const file = fs.readFileSync(path.resolve(__dirname, './AdminLayout.jsx'), 'utf8');
+    const file = fs.readFileSync(path.resolve(__dirname, './admin/CollapsedShortcuts.jsx'), 'utf8');
 
+    // verify collapsed shortcuts file contains the compact links and expected classes
     expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
     expect(file).toMatch(/to=\"\/admin\/assignments\"/);
     expect(file).toMatch(/to=\"\/admin\/program\"/);
-    // collapsed icon markup should use compact spacing and size=1 for icons
+    // collapsed icon markup should use compact spacing and use size=1 for icons
     expect(file).toMatch(/py-3 px-3/);
     expect(file).toMatch(/size=\{1\}/);
   });
