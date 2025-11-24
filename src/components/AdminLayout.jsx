@@ -182,11 +182,26 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               <div className="mt-3 border-t pt-3" />
             </div>
           ) : (
-            <div
-              className="flex justify-center px-3 py-3 text-gray-700 text-sm font-medium"
-              title={`Event Year: ${selectedYear}`}
-            >
-              {selectedYear}
+            <div className="flex items-center justify-center gap-3 px-3 py-3">
+              {/* Compact collapsed view: show the selected year plus small icon links
+                  so users can still reach Subscriptions / Assignments / Program
+                  when the sidebar is collapsed. These are intentionally compact
+                  (icon-only) to fit the narrow collapsed width. */}
+              <div className="text-gray-700 text-sm font-medium" title={`Event Year: ${selectedYear}`}>
+                {selectedYear}
+              </div>
+
+              <div className="flex flex-col items-center gap-1">
+                <Link to="/admin/subscriptions" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}> 
+                  <Icon path={mdiCalendarCheck} size={0.9} />
+                </Link>
+                <Link to="/admin/assignments" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
+                  <Icon path={mdiMapMarkerMultiple} size={0.9} />
+                </Link>
+                <Link to="/admin/program" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
+                  <Icon path={mdiCalendarClock} size={0.9} />
+                </Link>
+              </div>
             </div>
           )}
         </div>
