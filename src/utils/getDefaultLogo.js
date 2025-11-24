@@ -10,6 +10,12 @@ import { getBaseUrl } from './getBaseUrl';
  */
 export function getDefaultLogoPath(organizationLogo) {
   const logoFile = organizationLogo || BRANDING_CONFIG.DEFAULT_LOGO;
+
+  // If it's a full URL (Supabase storage), return as-is
+  if (logoFile.startsWith('http://') || logoFile.startsWith('https://')) {
+    return logoFile;
+  }
+
   return `${getBaseUrl()}assets/logos/${logoFile}`;
 }
 
