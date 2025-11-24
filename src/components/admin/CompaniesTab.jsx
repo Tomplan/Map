@@ -231,7 +231,7 @@ export default function CompaniesTab() {
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
           <Icon path={mdiPlus} size={0.8} />
-          Add Company
+          {t('helpPanel.companies.addCompany')}
         </button>
       </div>
 
@@ -259,106 +259,182 @@ export default function CompaniesTab() {
         </button>
       </div>
 
-      {/* Create new company form */}
-      {isCreating && (
-        <div className="mb-4 border rounded-lg overflow-hidden flex-shrink-0">
-          <div className="p-4 bg-blue-50">
-            <h3 className="font-bold mb-3">{t('helpPanel.companies.newCompany')}</h3>
+      {/* Modal for Create/Edit */}
+      {(isCreating || editingId) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-lg font-bold mb-4">
+                {isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
+              </h3>
 
-            {/* Public Information Section */}
-            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-              <h4 className="font-semibold text-sm mb-2 text-blue-800">Public Info (visible to attendees)</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder={t('helpPanel.companies.companyNamePlaceholder')}
-                  value={newCompanyForm.name}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, name: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                />
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1">{t('helpPanel.companies.companyLogo')}</label>
-                  <LogoUploader
-                    currentLogo={newCompanyForm.logo}
-                    onUploadComplete={(url, path) => {
-                      setNewCompanyForm({ ...newCompanyForm, logo: url });
-                    }}
-                    folder="companies"
-                    label="Upload Logo"
-                    showPreview={true}
-                    allowDelete={true}
-                    onDelete={() => {
-                      setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo });
-                    }}
+              {/* Public Information Section */}
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="font-semibold text-sm mb-3 text-blue-800">Public Info (visible to attendees)</h4>
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    placeholder={t('helpPanel.companies.companyNamePlaceholder')}
+                    value={isCreating ? newCompanyForm.name : editForm.name}
+                    onChange={(e) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
+                      : setEditForm({ ...editForm, name: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('helpPanel.companies.companyLogo')}</label>
+                    <LogoUploader
+                      currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
+                      onUploadComplete={(url, path) => {
+                        isCreating
+                          ? setNewCompanyForm({ ...newCompanyForm, logo: url })
+                          : setEditForm({ ...editForm, logo: url });
+                      }}
+                      folder={editingId === 'organization' ? "organization" : "companies"}
+                      label="Upload Logo"
+                      showPreview={true}
+                      allowDelete={true}
+                      onDelete={() => {
+                        isCreating
+                          ? setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo })
+                          : setEditForm({ ...editForm, logo: organizationLogo });
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
+                      value={isCreating ? newCompanyForm.logo : (editForm.logo || '')}
+                      onChange={(e) => isCreating
+                        ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
+                        : setEditForm({ ...editForm, logo: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border rounded mt-2 text-sm"
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Website URL"
+                    value={isCreating ? newCompanyForm.website : (editForm.website || '')}
+                    onChange={(e) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
+                      : setEditForm({ ...editForm, website: e.target.value })
+                    }
+                    className="w-full px-3 py-2 border rounded"
+                  />
+                  {editingId === 'organization' ? (
+                    <textarea
+                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      value={isCreating ? newCompanyForm.info : (editForm.info || '')}
+                      onChange={(e) => isCreating
+                        ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
+                        : setEditForm({ ...editForm, info: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border rounded"
+                      rows={3}
+                    />
+                  ) : !isCreating ? (
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Info (Multi-language)</label>
+                      <InfoFieldWithTranslations
+                        companyId={editingId}
+                        editingLanguage={editingContentLanguage}
+                        onLanguageChange={setEditingContentLanguage}
+                      />
+                    </div>
+                  ) : (
+                    <textarea
+                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      value={newCompanyForm.info}
+                      onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
+                      className="w-full px-3 py-2 border rounded"
+                      rows={3}
+                    />
+                  )}
+                  {/* Categories - only for companies, not organization */}
+                  {!isCreating && editingId !== 'organization' && (
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Categories</label>
+                      {categories.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                          {categories.map(cat => (
+                            <label key={cat.id} className="flex items-center gap-1.5 cursor-pointer bg-white px-2 py-1 rounded border hover:bg-gray-50">
+                              <input
+                                type="checkbox"
+                                checked={editingCategories.includes(cat.id)}
+                                onChange={(e) => {
+                                  const newCategories = e.target.checked
+                                    ? [...editingCategories, cat.id]
+                                    : editingCategories.filter(id => id !== cat.id);
+                                  setEditingCategories(newCategories);
+                                }}
+                                className="cursor-pointer"
+                              />
+                              <span className="text-sm">{cat.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-red-500 text-sm italic">No categories available</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Manager-Only Information Section */}
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <h4 className="font-semibold text-sm mb-3 text-green-800">Manager-Only Info (default contact info)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Contact Person"
+                    value={isCreating ? (newCompanyForm.contact || '') : (editForm.contact || '')}
+                    onChange={(e) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
+                      : setEditForm({ ...editForm, contact: e.target.value })
+                    }
+                    className="px-3 py-2 border rounded"
                   />
                   <input
                     type="text"
-                    placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
-                    value={newCompanyForm.logo}
-                    onChange={(e) => setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })}
-                    className="px-3 py-2 border rounded mt-2 w-full text-sm"
+                    placeholder="Phone"
+                    value={isCreating ? (newCompanyForm.phone || '') : (editForm.phone || '')}
+                    onChange={(e) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, phone: e.target.value })
+                      : setEditForm({ ...editForm, phone: e.target.value })
+                    }
+                    className="px-3 py-2 border rounded"
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={isCreating ? (newCompanyForm.email || '') : (editForm.email || '')}
+                    onChange={(e) => isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, email: e.target.value })
+                      : setEditForm({ ...editForm, email: e.target.value })
+                    }
+                    className="px-3 py-2 border rounded"
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder="Website URL"
-                  value={newCompanyForm.website}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, website: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                />
-                <textarea
-                  placeholder={t('helpPanel.companies.infoPlaceholder')}
-                  value={newCompanyForm.info}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                  rows={2}
-                />
               </div>
-            </div>
 
-            {/* Manager-Only Information Section */}
-            <div className="p-3 bg-green-50 border border-green-200 rounded">
-              <h4 className="font-semibold text-sm mb-2 text-green-800">Manager-Only Info (default contact info)</h4>
-              <div className="grid grid-cols-3 gap-3">
-                <input
-                  type="text"
-                  placeholder="Contact Person"
-                  value={newCompanyForm.contact || ''}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Phone"
-                  value={newCompanyForm.phone || ''}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, phone: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={newCompanyForm.email || ''}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, email: e.target.value })}
-                  className="px-3 py-2 border rounded"
-                />
+              {/* Action buttons */}
+              <div className="flex gap-3 mt-6 justify-end">
+                <button
+                  onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={isCreating ? handleCreate : handleSaveWithCategories}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {isCreating ? 'Create' : 'Save'}
+                </button>
               </div>
             </div>
-          </div>
-          <div className="flex gap-2 mt-3">
-            <button
-              onClick={handleCreate}
-              className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              <Icon path={mdiCheck} size={0.7} />
-              Create
-            </button>
-            <button
-              onClick={handleCancelCreate}
-              className="flex items-center gap-1 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-            >
-              <Icon path={mdiClose} size={0.7} />
-              Cancel
-            </button>
           </div>
         </div>
       )}
@@ -389,7 +465,6 @@ export default function CompaniesTab() {
           </thead>
           <tbody>
             {filteredItems.map((item) => {
-              const isEditing = editingId === item.id;
               const isOrg = item.isOrganization;
               const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 hover:bg-gray-50';
               const bgColor = activeTab === 'public' ? 'bg-blue-50' : 'bg-green-50';
@@ -397,66 +472,24 @@ export default function CompaniesTab() {
               return (
                 <tr key={item.id} className={`${rowClass} border-b`}>
                   {/* Name - always shown */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? bgColor : ''}`}>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                      />
-                    ) : (
-                      <span className="font-semibold">{item.name}</span>
-                    )}
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? bgColor : ''}`}>
+                    <span className="font-semibold">{item.name}</span>
                   </td>
 
                   {activeTab === 'public' ? (
                     <>
                   {/* Logo */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-  {isEditing ? (
-    <div className="flex flex-col gap-2">
-      <LogoUploader
-        currentLogo={editForm.logo}
-        onUploadComplete={(url, path) => {
-          setEditForm({ ...editForm, logo: url });
-        }}
-        folder={isOrg ? "organization" : "companies"}
-        label="Upload"
-        showPreview={true}
-        allowDelete={true}
-        onDelete={() => {
-          setEditForm({ ...editForm, logo: organizationLogo });
-        }}
-      />
-      <input
-        type="text"
-        value={editForm.logo || ''}
-        onChange={(e) => setEditForm({ ...editForm, logo: e.target.value })}
-        className="w-full bg-white text-gray-900 border rounded px-2 py-1 text-xs"
-        placeholder="Or paste URL"
-      />
-    </div>
-  ) : (
-    <img
-      src={getLogoPath((item.logo && item.logo.trim() !== '') ? item.logo : organizationLogo)}
-      alt={item.name}
-      className="h-8 object-contain"
-    />
-  )}
-</td>
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                    <img
+                      src={getLogoPath((item.logo && item.logo.trim() !== '') ? item.logo : organizationLogo)}
+                      alt={item.name}
+                      className="h-8 object-contain"
+                    />
+                  </td>
 
                   {/* Website */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.website || ''}
-                        onChange={(e) => setEditForm({ ...editForm, website: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                        placeholder="Website URL"
-                      />
-                    ) : item.website ? (
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                    {item.website ? (
                       <a href={item.website.startsWith('http') ? item.website : `https://${item.website}`} target="_blank" rel="noopener noreferrer" className={isOrg ? "text-blue-300 hover:underline" : "text-blue-600 hover:underline"}>
                         {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
                       </a>
@@ -466,64 +499,22 @@ export default function CompaniesTab() {
                   </td>
 
                   {/* Info - Multi-language */}
-                  <td className={`py-1 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {isEditing ? (
-                      isOrg ? (
-                        <textarea
-                          value={editForm.info || ''}
-                          onChange={(e) => setEditForm({ ...editForm, info: e.target.value })}
-                          className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                          rows={4}
-                          placeholder="Organization info"
-                        />
-                      ) : (
-                        <InfoFieldWithTranslations
-                          companyId={item.id}
-                          editingLanguage={editingContentLanguage}
-                          onLanguageChange={setEditingContentLanguage}
-                        />
-                      )
+                  <td className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
+                    {isOrg ? (
+                      <p className="line-clamp-3 whitespace-pre-wrap">
+                        {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
+                      </p>
                     ) : (
-                      isOrg ? (
-                        <p className="line-clamp-3 whitespace-pre-wrap">
-                          {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
-                        </p>
-                      ) : (
-                        <InfoFieldDisplay
-                          companyId={item.id}
-                          currentLanguage={i18n.language}
-                        />
-                      )
+                      <InfoFieldDisplay
+                        companyId={item.id}
+                        currentLanguage={i18n.language}
+                      />
                     )}
                   </td>
 
                   {/* Categories */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {isEditing && !isOrg ? (
-                      categories.length > 0 ? (
-                        <div className="flex flex-col gap-1 max-h-32 overflow-y-auto">
-                          {categories.map(cat => (
-                            <label key={cat.id} className="flex items-center gap-1 cursor-pointer hover:bg-blue-50 px-1 rounded">
-                              <input
-                                type="checkbox"
-                                checked={editingCategories.includes(cat.id)}
-                                onChange={(e) => {
-                                  const newCategories = e.target.checked
-                                    ? [...editingCategories, cat.id]
-                                    : editingCategories.filter(id => id !== cat.id);
-                                  console.log('Category toggle:', cat.name, 'checked:', e.target.checked, 'new array:', newCategories);
-                                  setEditingCategories(newCategories);
-                                }}
-                                className="cursor-pointer"
-                              />
-                              <span className="text-xs">{cat.name}</span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-red-500 text-xs italic">Run migration 007</span>
-                      )
-                    ) : isOrg ? (
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                    {isOrg ? (
                       <span className="text-gray-400 text-xs italic">N/A</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
@@ -542,96 +533,47 @@ export default function CompaniesTab() {
                   ) : (
                     <>
                   {/* Contact */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.contact || ''}
-                        onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                        placeholder="Contact Person"
-                      />
-                    ) : (
-                      <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
-                    )}
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
                   </td>
 
                   {/* Phone */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.phone || ''}
-                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                        placeholder="Phone"
-                      />
-                    ) : (
-                      <span className="text-xs">{item.phone || <span className="text-gray-400 italic">Not set</span>}</span>
-                    )}
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    <span className="text-xs">{item.phone || <span className="text-gray-400 italic">Not set</span>}</span>
                   </td>
 
                   {/* Email */}
-                  <td className={`py-1 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={editForm.email || ''}
-                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                        className="w-full bg-white text-gray-900 border rounded px-2 py-1"
-                        placeholder="Email"
-                      />
-                    ) : (
-                      <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
-                    )}
+                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
                   </td>
                     </>
                   )}
 
                   {/* Actions */}
-                  <td className="py-1 px-3 border-b text-left">
-                    {isEditing ? (
-                      <div className="flex gap-1 justify-center">
+                  <td className="py-2 px-3 border-b text-left">
+                    <div className="flex gap-1 justify-center">
+                      <button
+                        onClick={() => handleEdit(item)}
+                        className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        title="Edit"
+                      >
+                        <Icon path={mdiPencil} size={0.8} />
+                      </button>
+                      {!isOrg && (
                         <button
-                          onClick={handleSaveWithCategories}
-                          className="p-1.5 bg-green-600 text-white rounded hover:bg-green-700"
-                          title="Save"
+                          onClick={() => handleDelete(item.id, item.name)}
+                          className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
+                          title="Delete"
                         >
-                          <Icon path={mdiCheck} size={0.8} />
+                          <Icon path={mdiDelete} size={0.8} />
                         </button>
-                        <button
-                          onClick={handleCancelWithCategories}
-                          className="p-1.5 bg-gray-500 text-white rounded hover:bg-gray-600"
-                          title="Cancel"
-                        >
-                          <Icon path={mdiClose} size={0.8} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
-                          title="Edit"
-                        >
-                          <Icon path={mdiPencil} size={0.8} />
-                        </button>
-                        {!isOrg && (
-                          <button
-                            onClick={() => handleDelete(item.id, item.name)}
-                            className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                            title="Delete"
-                          >
-                            <Icon path={mdiDelete} size={0.8} />
-                          </button>
-                        )}
-                        {isOrg && (
-                          <div className="flex items-center justify-center pt-1 text-gray-300">
-                            <Icon path={mdiDomain} size={0.8} />
-                          </div>
-                        )}
-                      </div>
-                    )}
+                      )}
+                      {isOrg && (
+                        <div className="flex items-center justify-center pt-1 text-gray-300">
+                          <Icon path={mdiDomain} size={0.8} />
+                        </div>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -641,7 +583,7 @@ export default function CompaniesTab() {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm ? 'No items found matching your search' : 'No companies yet. Click "Add Company" to create one.'}
+            {searchTerm ? t('helpPanel.companies.noResults') : t('helpPanel.companies.noCompanies')}
           </div>
         )}
       </div>
