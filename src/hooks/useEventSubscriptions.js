@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import normalizePhone from '../utils/phone';
 
 /**
  * Hook for managing event subscriptions (year-specific company participation)
@@ -64,13 +65,16 @@ export default function useEventSubscriptions(eventYear) {
       const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
       const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
 
+      // Normalize phone before inserting
+      const phoneToInsert = subscriptionData.phone ? normalizePhone(subscriptionData.phone) : (company?.phone ? normalizePhone(company.phone) : '');
+
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
         .insert({
           company_id: companyId,
           event_year: eventYear,
           contact: subscriptionData.contact || company?.contact || '',
-          phone: subscriptionData.phone || company?.phone || '',
+          phone: phoneToInsert,
           email: subscriptionData.email || company?.email || '',
           booth_count: subscriptionData.booth_count || 1,
           area: subscriptionData.area || '',
@@ -99,6 +103,9 @@ export default function useEventSubscriptions(eventYear) {
   // Update a subscription
   const updateSubscription = async (subscriptionId, updates) => {
     try {
+      // Normalize phone before updating
+      if (typeof updates.phone !== 'undefined') updates.phone = normalizePhone(updates.phone);
+
       const { data, error: updateError } = await supabase
         .from('event_subscriptions')
         .update(updates)

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import normalizePhone from './src/utils/phone.js';
 import XLSX from 'xlsx';
 
 // Supabase credentials
@@ -95,7 +96,7 @@ async function importSubscriptions() {
       companyUpdates.contact = row['Volledige naam'].toString().trim();
     }
     if (row['telefoon nr']) {
-      companyUpdates.phone = row['telefoon nr'].toString().trim();
+      companyUpdates.phone = normalizePhone(row['telefoon nr'].toString().trim());
     }
     if (row['e-mail']) {
       companyUpdates.email = row['e-mail'].toString().trim();
@@ -133,7 +134,7 @@ async function importSubscriptions() {
     }
 
     if (row['telefoon nr']) {
-      updates.phone = row['telefoon nr'].toString().trim();
+      updates.phone = normalizePhone(row['telefoon nr'].toString().trim());
     }
 
     if (row['e-mail']) {
