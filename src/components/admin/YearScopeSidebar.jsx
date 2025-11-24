@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import YearScopeBadge from './YearScopeBadge';
 import Icon from '@mdi/react';
 import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
+import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
@@ -65,35 +66,51 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
       </div>
 
       <div className="space-y-2">
-        <a href="/admin/subscriptions" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}>
-          <div className="flex items-center gap-2">
-            <Icon path={mdiCalendarCheck} size={0.9} />
+        {/* Use the same compact nav tile styles as the main sidebar nav, but reduced for the sidebar section */}
+        <Link
+          to="/admin/subscriptions"
+          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          aria-label={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
+        >
+          <div className="flex items-center gap-3">
+            <Icon path={mdiCalendarCheck} size={1} />
             <div className="leading-tight">
               <div className="text-xs text-gray-500">{tSafe('adminNav.eventSubscriptions','Subscriptions')}</div>
+              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.subscriptions}</div>
             </div>
           </div>
-          <div className="font-semibold">{loading ? '...' : counts.subscriptions}</div>
-        </a>
+          <div className="text-xs text-gray-400">›</div>
+        </Link>
 
-        <a href="/admin/assignments" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}>
-          <div className="flex items-center gap-2">
-            <Icon path={mdiMapMarkerMultiple} size={0.9} />
+        <Link
+          to="/admin/assignments"
+          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          aria-label={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
+        >
+          <div className="flex items-center gap-3">
+            <Icon path={mdiMapMarkerMultiple} size={1} />
             <div className="leading-tight">
               <div className="text-xs text-gray-500">{tSafe('adminNav.assignments','Assignments')}</div>
+              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.assignments}</div>
             </div>
           </div>
-          <div className="font-semibold">{loading ? '...' : counts.assignments}</div>
-        </a>
+          <div className="text-xs text-gray-400">›</div>
+        </Link>
 
-        <a href="/admin/program" className="p-2 bg-white border rounded text-xs text-gray-700 flex items-center justify-between hover:bg-gray-50" aria-label={`${tSafe('adminNav.programManagement','Program')} ${loading ? '...' : counts.program}`}>
-          <div className="flex items-center gap-2">
-            <Icon path={mdiCalendarClock} size={0.9} />
+        <Link
+          to="/admin/program"
+          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          aria-label={`${tSafe('adminNav.programManagement','Program')} ${loading ? '...' : counts.program}`}
+        >
+          <div className="flex items-center gap-3">
+            <Icon path={mdiCalendarClock} size={1} />
             <div className="leading-tight">
               <div className="text-xs text-gray-500">{tSafe('adminNav.programManagement','Program Management')}</div>
+              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.program}</div>
             </div>
           </div>
-          <div className="font-semibold">{loading ? '...' : counts.program}</div>
-        </a>
+          <div className="text-xs text-gray-400">›</div>
+        </Link>
       </div>
     </div>
   );

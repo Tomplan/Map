@@ -25,6 +25,23 @@ jest.mock('../../supabaseClient', () => ({
   },
 }));
 
+// Mock react-router-dom the same way other admin tests do so we avoid pulling
+// in router implementation (TextEncoder issues in jest env) and keep Link simple
+jest.mock('react-router-dom', () => {
+  const React = require('react');
+  return {
+    Link: ({ children, to }) => React.createElement('a', { href: to }, children),
+  };
+});
+
+// TextEncoder/Decoder polyfill for Node test env
+if (typeof TextEncoder === 'undefined') {
+  // eslint-disable-next-line global-require
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
 import YearScopeSidebar from './YearScopeSidebar';
 
 describe('YearScopeSidebar (icon + labels)', () => {
@@ -32,10 +49,14 @@ describe('YearScopeSidebar (icon + labels)', () => {
     const onYearChange = jest.fn();
     render(<YearScopeSidebar selectedYear={2025} onYearChange={onYearChange} />);
 
-    // items should render with nav text
+    // items should render with nav text and counts
     expect(await screen.findByText(/Inschrijvingen/)).toBeInTheDocument();
     expect(screen.getByText(/Toewijzingen/)).toBeInTheDocument();
     expect(screen.getByText(/Programmabeheer/)).toBeInTheDocument();
+
+    // counts from mocked supabase should be visible
+    expect(await screen.findByText('63')).toBeInTheDocument();
+    expect(screen.getByText('99')).toBeInTheDocument();
 
     // there should be links with the expected href
     const subLink = screen.getByRole('link', { name: /Inschrijvingen/i });
