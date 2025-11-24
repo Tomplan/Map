@@ -24,12 +24,6 @@
       "content_editor": "Content Editor"
     }
   },
-  "navigation": {
-    "home": "Home",
-    "map": "Map",
-    "exhibitors": "Exhibitors",
-    "schedule": "Schedule"
-  },
   "common": {
     "loading": "Loading...",
     "saving": "Saving...",
@@ -102,10 +96,6 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage system configuration and preferences",
-    "categoryManagement": {
-      "title": "Category Management",
-      "description": "Manage exhibitor categories for filtering and organization"
-    },
     "userManagement": {
       "title": "User Management",
       "description": "Manage admin users, roles, and permissions",

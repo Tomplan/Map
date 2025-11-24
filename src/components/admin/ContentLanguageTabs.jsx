@@ -9,7 +9,6 @@ import { mdiCheck, mdiPlus } from '@mdi/js';
 const AVAILABLE_LANGUAGES = [
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
   { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ];
 
 export default function ContentLanguageTabs({
@@ -23,6 +22,7 @@ export default function ContentLanguageTabs({
       {AVAILABLE_LANGUAGES.map((lang) => {
         const isActive = currentLanguage === lang.code;
         const hasContent = translations[lang.code] && translations[lang.code].trim() !== '';
+
         return (
           <button
             key={lang.code}
@@ -35,7 +35,7 @@ export default function ContentLanguageTabs({
             }`}
           >
             <span>{lang.flag}</span>
-            <span>{lang.label}</span>
+            <span>{lang.code.toUpperCase()}</span>
             {hasContent && !isActive && (
               <Icon path={mdiCheck} size={0.5} className="text-green-600" />
             )}
