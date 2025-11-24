@@ -191,11 +191,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   setShowYearModal(true);
                 }}
               />
-              {/* compact year scoped summary under the selector */}
-              <div className="mt-3 border-t pt-3">
-                {/* lazy-load the sidebar item to avoid heavy queries on collapsed */}
-                <YearScopeSidebar selectedYear={selectedYear} />
-              </div>
+              {/* divider — single YearScopeSidebar rendered above; keeping space for any future compact summary */}
+              <div className="mt-3 border-t pt-3" />
             </div>
           ) : (
             <div
