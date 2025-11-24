@@ -67,6 +67,8 @@ export default function useEventSubscriptions(eventYear) {
 
       // Normalize phone before inserting
       const phoneToInsert = subscriptionData.phone ? normalizePhone(subscriptionData.phone) : (company?.phone ? normalizePhone(company.phone) : '');
+      // Normalize email to lowercase
+      const emailToInsert = (subscriptionData.email || company?.email || '').toLowerCase().trim();
 
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
@@ -75,7 +77,7 @@ export default function useEventSubscriptions(eventYear) {
           event_year: eventYear,
           contact: subscriptionData.contact || company?.contact || '',
           phone: phoneToInsert,
-          email: subscriptionData.email || company?.email || '',
+          email: emailToInsert,
           booth_count: subscriptionData.booth_count || 1,
           area: subscriptionData.area || '',
           breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
@@ -105,6 +107,8 @@ export default function useEventSubscriptions(eventYear) {
     try {
       // Normalize phone before updating
       if (typeof updates.phone !== 'undefined') updates.phone = normalizePhone(updates.phone);
+      // Normalize email to lowercase
+      if (updates.email) updates.email = updates.email.toLowerCase().trim();
 
       const { data, error: updateError } = await supabase
         .from('event_subscriptions')

@@ -16,10 +16,13 @@ const { parsePhoneNumberFromString } = require('libphonenumber-js');
 
 dotenv.config();
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+// Support both VITE_ prefixed and non-prefixed environment variables
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ||
+                     process.env.SUPABASE_KEY ||
+                     process.env.VITE_SUPABASE_ANON_KEY;
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) in your environment.');
+  console.error('Please set SUPABASE_URL and SUPABASE_KEY (or VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) in your environment.');
   process.exit(1);
 }
 

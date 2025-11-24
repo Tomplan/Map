@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
+import normalizePhone from '../utils/phone';
 
 /**
  * A hook to manage the organization's profile data.
@@ -69,6 +70,11 @@ export default function useOrganizationProfile() {
    */
   const updateProfile = async (updates) => {
     try {
+      // Normalize phone number when provided
+      if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
+      // Normalize email to lowercase
+      if (updates?.email) updates.email = updates.email.toLowerCase().trim();
+
       const { data, error } = await supabase
         .from('organization_profile')
         .update(updates)
