@@ -14,6 +14,8 @@ import {
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import YearChangeModal from './YearChangeModal';
+import YearScopeBadge from './YearScopeBadge';
 
 /**
  * Dashboard - Overview page for admin panel
@@ -27,6 +29,7 @@ export default function Dashboard({ selectedYear }) {
     companies: null,
     assignments: null,
   });
+  const [showYearModal, setShowYearModal] = useState(false);
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Fetch counts from Supabase
@@ -111,6 +114,19 @@ export default function Dashboard({ selectedYear }) {
 
   return (
     <div>
+      {/* Top: Year explanation banner */}
+      <div className="mb-4">
+        <div className="rounded-md bg-yellow-50 border border-yellow-100 p-3 text-sm text-yellow-900 flex items-center justify-between">
+          <div>
+            <strong>Note:</strong> Companies are shared across all years. Subscriptions, assignments and the program schedule are scoped to the selected year — switching the year will change those datasets.
+          </div>
+          <div className="flex items-center gap-2">
+            <YearScopeBadge scope="global" />
+            <button className="px-2 py-1 text-sm underline" onClick={() => setShowYearModal(true)}>What changes when I switch the year?</button>
+          </div>
+        </div>
+        <YearChangeModal isOpen={showYearModal} newYear={selectedYear} onClose={() => setShowYearModal(false)} onConfirm={() => setShowYearModal(false)} />
+      </div>
       {/* Event Totals - Combined Stats and Meal/Coin Data */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">

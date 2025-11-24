@@ -397,6 +397,7 @@
     "optional": "optional",
     "displayOrder": "Display Order",
     "displayOrderHelp": "Lower numbers appear first in the schedule",
+    "companyScopeHint": "Companies are shared across all years — selecting a company links the activity to that company across events."
     "isActive": "Active",
     "isActiveHelp": "Inactive activities won't be shown to visitors",
     "showLocationBadge": "Show Location Type Badge",

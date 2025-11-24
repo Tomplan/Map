@@ -4,6 +4,7 @@ import Modal from './common/Modal';
 import { useDialog } from '../contexts/DialogContext';
 import { supabase } from '../supabaseClient';
 import useCompanies from '../hooks/useCompanies';
+import YearScopeBadge from './admin/YearScopeBadge';
 
 export default function ActivityForm({ activity = null, day = 'saturday', onSave = () => {}, onClose = () => {} }) {
   const { t, i18n } = useTranslation();
@@ -322,13 +323,17 @@ export default function ActivityForm({ activity = null, day = 'saturday', onSave
             </div>
 
             <div>
-              <label htmlFor={`company-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.company')}</label>
+              <div className="flex items-center justify-between">
+                <label htmlFor={`company-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.company')}</label>
+                <div className="ml-2"><YearScopeBadge scope="global" /></div>
+              </div>
               <select id={`company-${uid}`} className="w-full px-3 py-2 border rounded" value={companyId || ''} onChange={(e) => setCompanyId(e.target.value || null)}>
                 <option value="">{t('activityForm.selectCompany')}</option>
                 {companies.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+              <p className="text-xs text-gray-400 mt-2">{t('activityForm.companyScopeHint')}</p>
             </div>
 
             <div>
