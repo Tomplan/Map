@@ -398,7 +398,9 @@
     "cancel": "Annuleren",
     "save": "Opslaan",
     "saving": "Opslaan...",
-    "saveError": "Fout bij opslaan activiteit"
+    "saveError": "Fout bij opslaan activiteit",
+    "saveSuccess": "Activiteit opgeslagen",
+    "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
   },
   "dashboard": {
     "totalMarkers": "Totaal Markers",

@@ -398,7 +398,8 @@
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
-    "saveError": "Failed to save activity"
+    "saveError": "Failed to save activity",
+    "savePersistMismatch": "Gespeichert, aber der Badge-Wert wurde nicht übernommen — Sie haben möglicherweise keine Berechtigung. Bitte überprüfen Sie Ihre Rolle oder kontaktieren Sie den Administrator."
   },
   "dashboard": {
     "totalMarkers": "Total Markers",

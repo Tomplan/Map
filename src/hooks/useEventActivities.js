@@ -12,6 +12,10 @@ export function useEventActivities() {
 
   useEffect(() => {
     fetchActivities();
+    // Listen for broadcasts from admin UI when activities change and refetch across the app
+    const handleBroadcast = () => fetchActivities();
+    window.addEventListener('eventActivitiesUpdated', handleBroadcast);
+    return () => window.removeEventListener('eventActivitiesUpdated', handleBroadcast);
   }, []);
 
   async function fetchActivities() {

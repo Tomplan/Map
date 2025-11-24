@@ -404,7 +404,9 @@
     "cancel": "Cancel",
     "save": "Save",
     "saving": "Saving...",
-    "saveError": "Failed to save activity"
+    "saveError": "Failed to save activity",
+    "saveSuccess": "Activity saved",
+    "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
   },
   "dashboard": {
     "totalMarkers": "Total Markers",

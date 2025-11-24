@@ -515,7 +515,12 @@ export default function CompaniesTab() {
                     ) : (
                       <InfoFieldDisplay
                         companyId={item.id}
-                        currentLanguage={i18n.language}
+                        /*
+                          Show Dutch (nl) in the admin list when row is NOT being edited.
+                          When the row is opened for editing the modal controls editingLanguage
+                          so the textarea there remains language-aware.
+                        */
+                        currentLanguage={editingId === item.id ? i18n.language : 'nl'}
                       />
                     )}
                   </td>
