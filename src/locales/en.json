@@ -397,7 +397,7 @@
     "optional": "optional",
     "displayOrder": "Display Order",
     "displayOrderHelp": "Lower numbers appear first in the schedule",
-    "companyScopeHint": "Companies are shared across all years — selecting a company links the activity to that company across events."
+    "companyScopeHint": "Companies are shared across all years — selecting a company links the activity to that company across events.",
     "isActive": "Active",
     "isActiveHelp": "Inactive activities won't be shown to visitors",
     "showLocationBadge": "Show Location Type Badge",
@@ -408,6 +408,33 @@
     "saveError": "Failed to save activity",
     "saveSuccess": "Activity saved",
     "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
+  },
+  "admin": {
+    "yearScope": {
+      "global": "Global (all years)",
+      "eventSpecific": "Event-specific (changes with year)"
+    },
+    "yearSwitcher": {
+      "bannerBold": "Note:",
+      "bannerText": "Companies are shared across all years. Subscriptions, assignments and the program schedule are scoped to the selected year — switching the year will change those datasets.",
+      "bannerLink": "What changes when I switch the year?",
+      "modalTitle": "Switch to {{year}}?",
+      "modalIntro": "Are you sure you want to switch the admin view to <strong>{{year}}</strong>? The following data will update to reflect the selected year:",
+      "willChange": {
+        "subscriptions": "Subscriptions",
+        "subscriptionsDesc": "registrations and meal/coin selections for that event year",
+        "assignments": "Assignments",
+        "assignmentsDesc": "booth assignments and marker-to-company mappings for that year",
+        "program": "Program Management",
+        "programDesc": "the schedule / activities for the selected year"
+      },
+      "wontChangeIntro": "The following data is not affected when switching years:",
+      "wontChange": {
+        "companies": "Companies",
+        "companiesDesc": "company profiles and master data are global and shared across years"
+      },
+      "switchButton": "Switch to {{year}}"
+    }
   },
   "dashboard": {
     "totalMarkers": "Total Markers",

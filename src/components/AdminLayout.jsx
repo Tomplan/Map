@@ -17,6 +17,7 @@ import {
   mdiHelpCircleOutline,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
+import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
 
@@ -41,6 +42,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
   // Help panel state
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  // Year change confirmation state
+  const [pendingYear, setPendingYear] = useState(null);
+  const [showYearModal, setShowYearModal] = useState(false);
 
   // Persist collapse state
   useEffect(() => {
@@ -180,7 +184,13 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
               <select
                 value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+                onChange={(e) => {
+                  const newY = parseInt(e.target.value, 10);
+                  // If the value is the same, do nothing
+                  if (newY === selectedYear) return;
+                  setPendingYear(newY);
+                  setShowYearModal(true);
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
               >
                 {yearOptions.map((year) => (
@@ -234,6 +244,20 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
       {/* Help Panel */}
       <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      {/* Year change confirmation modal (prevent surprising context switches) */}
+      <YearChangeModal
+        isOpen={showYearModal}
+        newYear={pendingYear || selectedYear}
+        onClose={() => {
+          setPendingYear(null);
+          setShowYearModal(false);
+        }}
+        onConfirm={() => {
+          if (pendingYear) setSelectedYear(pendingYear);
+          setPendingYear(null);
+          setShowYearModal(false);
+        }}
+      />
     </div>
   );
 }
