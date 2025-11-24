@@ -89,24 +89,11 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
     },
-    {
-      path: '/admin/subscriptions',
-      label: t('adminNav.eventSubscriptions'),
-      icon: mdiCalendarCheck,
-      roles: ['super_admin', 'event_manager'],
-    },
-    {
-      path: '/admin/assignments',
-      label: t('adminNav.assignments'),
-      icon: mdiMapMarkerMultiple,
-      roles: ['super_admin', 'event_manager'],
-    },
-    {
-      path: '/admin/program',
-      label: t('adminNav.programManagement'),
-      icon: mdiCalendarClock,
-      roles: ['super_admin', 'event_manager', 'content_editor'],
-    },
+    // Subscriptions, Assignments, and Program management are now surfaced
+    // in the compact YearScopeSidebar (per recent UX changes). Keep these
+    // pages available, but they are intentionally *not* duplicated in the
+    // main admin nav to avoid confusion. Users can still reach them via
+    // the YearScopeSidebar tiles or links elsewhere in the UI.
     // Categories menu removed from main admin nav. Now in settings for system managers only.
     {
       path: '/admin/settings',
