@@ -30,7 +30,7 @@ jest.mock('../../supabaseClient', () => ({
 jest.mock('react-router-dom', () => {
   const React = require('react');
   return {
-    Link: ({ children, to }) => React.createElement('a', { href: to }, children),
+    Link: ({ children, to, ...props }) => React.createElement('a', { href: to, ...props }, children),
   };
 });
 
@@ -57,6 +57,12 @@ describe('YearScopeSidebar (icon + labels)', () => {
     // counts from mocked supabase should be visible
     expect(await screen.findByText('63')).toBeInTheDocument();
     expect(screen.getByText('99')).toBeInTheDocument();
+
+    // each tile should use the same rounded/nav styling as the main nav (px-4, rounded-lg)
+    const links = screen.getAllByRole('link');
+    const sub = links.find((el) => el.getAttribute('href') === '/admin/subscriptions');
+    expect(sub).toHaveClass('rounded-lg');
+    expect(sub).toHaveClass('px-4');
 
     // there should be links with the expected href
     const subLink = screen.getByRole('link', { name: /Inschrijvingen/i });

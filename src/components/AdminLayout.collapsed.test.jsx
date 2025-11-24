@@ -41,5 +41,8 @@ describe('AdminLayout (collapsed sidebar code presence)', () => {
     expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
     expect(file).toMatch(/to=\"\/admin\/assignments\"/);
     expect(file).toMatch(/to=\"\/admin\/program\"/);
+    // collapsed icon markup should use compact spacing and size=1 for icons
+    expect(file).toMatch(/py-3 px-3/);
+    expect(file).toMatch(/size=\{1\}/);
   });
 });

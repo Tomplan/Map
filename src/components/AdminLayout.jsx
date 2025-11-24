@@ -191,15 +191,15 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 {selectedYear}
               </div>
 
-              <div className="flex flex-col items-center gap-1">
-                <Link to="/admin/subscriptions" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}> 
-                  <Icon path={mdiCalendarCheck} size={0.9} />
+              <div className="flex flex-col items-center space-y-3">
+                <Link to="/admin/subscriptions" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
+                  <Icon path={mdiCalendarCheck} size={1} />
                 </Link>
-                <Link to="/admin/assignments" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
-                  <Icon path={mdiMapMarkerMultiple} size={0.9} />
+                <Link to="/admin/assignments" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
+                  <Icon path={mdiMapMarkerMultiple} size={1} />
                 </Link>
-                <Link to="/admin/program" className="p-2 rounded-full hover:bg-gray-100 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
-                  <Icon path={mdiCalendarClock} size={0.9} />
+                <Link to="/admin/program" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
+                  <Icon path={mdiCalendarClock} size={1} />
                 </Link>
               </div>
             </div>

@@ -69,47 +69,32 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
         {/* Use the same compact nav tile styles as the main sidebar nav, but reduced for the sidebar section */}
         <Link
           to="/admin/subscriptions"
-          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
           aria-label={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
         >
-          <div className="flex items-center gap-3">
-            <Icon path={mdiCalendarCheck} size={1} />
-            <div className="leading-tight">
-              <div className="text-xs text-gray-500">{tSafe('adminNav.eventSubscriptions','Subscriptions')}</div>
-              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.subscriptions}</div>
-            </div>
-          </div>
-          <div className="text-xs text-gray-400">›</div>
+          <Icon path={mdiCalendarCheck} size={1} />
+          <span className="flex-1">{tSafe('adminNav.eventSubscriptions','Subscriptions')}</span>
+          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.subscriptions}</div>
         </Link>
 
         <Link
           to="/admin/assignments"
-          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
           aria-label={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
         >
-          <div className="flex items-center gap-3">
-            <Icon path={mdiMapMarkerMultiple} size={1} />
-            <div className="leading-tight">
-              <div className="text-xs text-gray-500">{tSafe('adminNav.assignments','Assignments')}</div>
-              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.assignments}</div>
-            </div>
-          </div>
-          <div className="text-xs text-gray-400">›</div>
+          <Icon path={mdiMapMarkerMultiple} size={1} />
+          <span className="flex-1">{tSafe('adminNav.assignments','Assignments')}</span>
+          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.assignments}</div>
         </Link>
 
         <Link
           to="/admin/program"
-          className="flex items-center justify-between gap-3 p-3 rounded-lg border bg-white text-sm text-gray-700 hover:bg-gray-50 shadow-sm"
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
           aria-label={`${tSafe('adminNav.programManagement','Program')} ${loading ? '...' : counts.program}`}
         >
-          <div className="flex items-center gap-3">
-            <Icon path={mdiCalendarClock} size={1} />
-            <div className="leading-tight">
-              <div className="text-xs text-gray-500">{tSafe('adminNav.programManagement','Program Management')}</div>
-              <div className="text-sm font-medium text-gray-800 -mt-0.5">{loading ? '...' : counts.program}</div>
-            </div>
-          </div>
-          <div className="text-xs text-gray-400">›</div>
+          <Icon path={mdiCalendarClock} size={1} />
+          <span className="flex-1">{tSafe('adminNav.programManagement','Program Management')}</span>
+          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.program}</div>
         </Link>
       </div>
     </div>
