@@ -90,11 +90,10 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
         <Link
           to="/admin/program"
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
-          aria-label={`${tSafe('adminNav.programManagement','Program')} ${loading ? '...' : counts.program}`}
+          aria-label={tSafe('adminNav.programManagement','Program Management')}
         >
           <Icon path={mdiCalendarClock} size={1} />
           <span className="flex-1">{tSafe('adminNav.programManagement','Program Management')}</span>
-          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.program}</div>
         </Link>
       </div>
     </div>
