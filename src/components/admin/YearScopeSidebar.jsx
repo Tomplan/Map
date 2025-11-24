@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import YearScopeBadge from './YearScopeBadge';
 import Icon from '@mdi/react';
 import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
 import { Link } from 'react-router-dom';
@@ -48,16 +47,13 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
 
   return (
     <div className="px-2 py-3">
-      <div className="flex items-center gap-2 mb-3">
-        <div className="flex-1 text-xs text-gray-600">{tSafe('admin.yearScope.title', 'Year-scoped data')}</div>
-        <div><YearScopeBadge scope="year" /></div>
-      </div>
+      {/* Compact sidebar: explanatory header removed per UX decision */}
 
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-        <div>{tSafe('admin.yearScope.viewingYear', 'Viewing year')}</div>
+      <div className="mb-2">
+        {/* visually remove the label (it's clear in the UI) but keep an sr-only label for screen readers */}
+        <label htmlFor="sidebar-year-select" className="sr-only">{tSafe('admin.yearScope.viewingYear', 'Viewing year')}</label>
         <div className="text-sm">
-          <label htmlFor="sidebar-year-select" className="sr-only">{tSafe('admin.yearScope.viewingYear', 'Viewing year')}</label>
-          <select id="sidebar-year-select" value={selectedYear} onChange={(e) => onYearChange?.(parseInt(e.target.value, 10))} className="text-sm px-2 py-1 border rounded">
+          <select id="sidebar-year-select" value={selectedYear} onChange={(e) => onYearChange?.(parseInt(e.target.value, 10))} className="text-base font-semibold px-3 py-1 border rounded">
             {yearOptions.map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}

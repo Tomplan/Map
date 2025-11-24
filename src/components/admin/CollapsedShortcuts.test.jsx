@@ -22,5 +22,11 @@ describe('CollapsedShortcuts', () => {
 
     const prog = screen.getByRole('link', { name: /adminNav.programManagement/i });
     expect(prog).toHaveAttribute('href', '/admin/program');
+
+      const map = screen.getByRole('link', { name: /adminNav.mapManagement/i });
+      expect(map).toHaveAttribute('href', '/admin/map');
+
+      const settings = screen.getByRole('link', { name: /adminNav.settings/i });
+      expect(settings).toHaveAttribute('href', '/admin/settings');
   });
 });

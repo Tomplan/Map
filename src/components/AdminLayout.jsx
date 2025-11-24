@@ -79,12 +79,6 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },
     {
-      path: '/admin/map',
-      label: t('adminNav.mapManagement'),
-      icon: mdiMap,
-      roles: ['super_admin', 'system_manager'],
-    },
-    {
       path: '/admin/companies',
       label: t('adminNav.companiesNav'),
       icon: mdiDomain,
@@ -96,12 +90,10 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     // main admin nav to avoid confusion. Users can still reach them via
     // the YearScopeSidebar tiles or links elsewhere in the UI.
     // Categories menu removed from main admin nav. Now in settings for system managers only.
-    {
-      path: '/admin/settings',
-      label: t('adminNav.settings'),
-      icon: mdiCog,
-      roles: ['super_admin', 'system_manager', 'event_manager'],
-    },
+    // Map Management and Settings intentionally moved out of the primary nav
+    // so they are displayed below the YearScopeSidebar to emphasize year-scoped
+    // controls are grouped together. They will still be shown if the user has
+    // matching roles later in the sidebar below the card.
   ];
 
   // Filter nav items by user role
@@ -181,12 +173,28 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               />
               {/* divider — single YearScopeSidebar rendered above; keeping space for any future compact summary */}
               <div className="mt-3 border-t pt-3" />
+
+              {/* Add Map Management + Settings below the YearScope card (expanded view) */}
+              <div className="mt-3 space-y-2">
+                {hasAnyRole(['super_admin','system_manager']) && (
+                  <Link to="/admin/map" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
+                    <Icon path={mdiMap} size={1} />
+                    <span>{t('adminNav.mapManagement')}</span>
+                  </Link>
+                )}
+
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                  <Link to="/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
+                    <Icon path={mdiCog} size={1} />
+                    <span>{t('adminNav.settings')}</span>
+                  </Link>
+                )}
+              </div>
             </div>
           ) : (
             // Use the component which stacks the year above the icons to ensure
             // the year appears above the internal compact icons in the collapsed panel.
             <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-            )}
           )}
         </div>
 
