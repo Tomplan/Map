@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle } from '@mdi/js';
-import { supabase } from '../../supabaseClient';
+import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 
 /**
  * EventDefaults - Component for managing default event settings
@@ -10,11 +10,12 @@ import { supabase } from '../../supabaseClient';
  * Features:
  * - Default meal counts (breakfast, lunch, BBQ)
  * - Notification preferences
- * - Saved to organization_profile table
+ * - Saved to organization_settings table
  */
 export default function EventDefaults() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
+  const { settings, loading, error: loadError, updateSettings } = useOrganizationSettings();
+
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -23,7 +24,7 @@ export default function EventDefaults() {
   const [defaultBreakfastSat, setDefaultBreakfastSat] = useState(0);
   const [defaultLunchSat, setDefaultLunchSat] = useState(0);
   const [defaultBbqSat, setDefaultBbqSat] = useState(0);
-  
+
   // Meal count defaults - Sunday
   const [defaultBreakfastSun, setDefaultBreakfastSun] = useState(0);
   const [defaultLunchSun, setDefaultLunchSun] = useState(0);
@@ -33,58 +34,26 @@ export default function EventDefaults() {
   const [newSubscriptionNotify, setNewSubscriptionNotify] = useState(true);
   const [assignmentChangeNotify, setAssignmentChangeNotify] = useState(true);
 
-  // Load existing settings
+  // Sync local state with organization settings when they load
   useEffect(() => {
-    loadSettings();
-  }, []);
+    if (settings) {
+      setDefaultBreakfastSat(settings.default_breakfast_sat ?? 0);
+      setDefaultLunchSat(settings.default_lunch_sat ?? 0);
+      setDefaultBbqSat(settings.default_bbq_sat ?? 0);
+      setDefaultBreakfastSun(settings.default_breakfast_sun ?? 0);
+      setDefaultLunchSun(settings.default_lunch_sun ?? 0);
 
-  const loadSettings = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      // Try to load from organization_profile table
-      // Note: If columns don't exist yet, this will fail gracefully and use defaults
-      const { data, error: fetchError } = await supabase
-        .from('organization_profile')
-        .select('*')
-        .single();
-
-      if (fetchError) {
-        // If no profile exists yet, use defaults
-        if (fetchError.code === 'PGRST116') {
-          console.log('No organization profile found, using defaults');
-        } else {
-          console.warn('Error loading settings (columns may not exist yet):', fetchError);
-          // Don't throw - just use defaults if columns don't exist
-        }
-      } else if (data) {
-        // Check if columns exist and have values - Saturday
-        setDefaultBreakfastSat(data.default_breakfast_sat ?? 0);
-        setDefaultLunchSat(data.default_lunch_sat ?? 0);
-        setDefaultBbqSat(data.default_bbq_sat ?? 0);
-        
-        // Sunday
-        setDefaultBreakfastSun(data.default_breakfast_sun ?? 0);
-        setDefaultLunchSun(data.default_lunch_sun ?? 0);
-
-        // Parse notification settings from JSON (if column exists)
-        if (data.notification_settings) {
-          const notifSettings = typeof data.notification_settings === 'string' 
-            ? JSON.parse(data.notification_settings)
-            : data.notification_settings;
-          setEmailNotifications(notifSettings.emailNotifications ?? true);
-          setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
-          setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
-        }
+      // Parse notification settings from JSONB
+      if (settings.notification_settings) {
+        const notifSettings = typeof settings.notification_settings === 'string'
+          ? JSON.parse(settings.notification_settings)
+          : settings.notification_settings;
+        setEmailNotifications(notifSettings.emailNotifications ?? true);
+        setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
+        setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
       }
-    } catch (err) {
-      console.warn('Failed to load settings (columns may not exist yet):', err);
-      // Don't show error to user - just use defaults
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [settings]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -100,34 +69,19 @@ export default function EventDefaults() {
         assignmentChangeNotify,
       };
 
-      // First, check if the columns exist by trying to select them
-      const { error: checkError } = await supabase
-        .from('organization_profile')
-        .select('default_breakfast')
-        .limit(1);
+      // Update organization settings using the hook
+      const result = await updateSettings({
+        default_breakfast_sat: defaultBreakfastSat,
+        default_lunch_sat: defaultLunchSat,
+        default_bbq_sat: defaultBbqSat,
+        default_breakfast_sun: defaultBreakfastSun,
+        default_lunch_sun: defaultLunchSun,
+        notification_settings: notificationSettings,
+      });
 
-      if (checkError && checkError.message?.includes('column')) {
-        // Columns don't exist yet - show helpful error
-        setError('Database columns not yet created. Please run the migration: ALTER TABLE organization_profile ADD COLUMN...');
-        console.error('EventDefaults columns missing. Run migration to add: default_breakfast, default_lunch, default_bbq, notification_settings');
-        return;
+      if (!result) {
+        throw new Error('Failed to update settings');
       }
-
-      // Upsert to organization_profile
-      const { error: upsertError } = await supabase
-        .from('organization_profile')
-        .upsert({
-          id: 1, // Single row for organization
-          default_breakfast_sat: defaultBreakfastSat,
-          default_lunch_sat: defaultLunchSat,
-          default_bbq_sat: defaultBbqSat,
-          default_breakfast_sun: defaultBreakfastSun,
-          default_lunch_sun: defaultLunchSun,
-          notification_settings: notificationSettings,
-          updated_at: new Date().toISOString(),
-        });
-
-      if (upsertError) throw upsertError;
 
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
@@ -136,6 +90,26 @@ export default function EventDefaults() {
       setError(t('settings.eventDefaults.errors.saveFailed'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    // Reset to current settings from database
+    if (settings) {
+      setDefaultBreakfastSat(settings.default_breakfast_sat ?? 0);
+      setDefaultLunchSat(settings.default_lunch_sat ?? 0);
+      setDefaultBbqSat(settings.default_bbq_sat ?? 0);
+      setDefaultBreakfastSun(settings.default_breakfast_sun ?? 0);
+      setDefaultLunchSun(settings.default_lunch_sun ?? 0);
+
+      if (settings.notification_settings) {
+        const notifSettings = typeof settings.notification_settings === 'string'
+          ? JSON.parse(settings.notification_settings)
+          : settings.notification_settings;
+        setEmailNotifications(notifSettings.emailNotifications ?? true);
+        setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
+        setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
+      }
     }
   };
 
@@ -403,7 +377,7 @@ export default function EventDefaults() {
         <div className="flex justify-end gap-3 bg-white rounded-lg shadow p-6">
           <button
             type="button"
-            onClick={loadSettings}
+            onClick={handleReset}
             disabled={saving}
             className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
