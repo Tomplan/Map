@@ -19,6 +19,7 @@ import FeedbackRequests from './FeedbackRequests';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
+import MapDefaults from './MapDefaults';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -64,7 +65,7 @@ export default function Settings() {
       label: t('settings.mapDefaults.title'),
       icon: mdiMapMarker,
       roles: ['super_admin', 'system_manager'],
-      component: <MapDefaultsPlaceholder />,
+      component: <MapDefaults />,
     },
     {
       id: 'event-defaults',
