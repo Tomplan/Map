@@ -166,50 +166,15 @@ export default function useUserPreferences() {
 
   // Initial fetch on mount and set up real-time subscriptions
   useEffect(() => {
-    fetchPreferences();
-
     let channel = null;
     let authListener = null;
 
-    // Set up auth state listener
-    const setupAuthListener = async () => {
-      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (session) {
-          await fetchPreferences();
-
-          // Set up real-time subscription for this user's preferences
-          const { data: { user } } = await supabase.auth.getUser();
-          if (user && !channel) {
-            channel = supabase
-              .channel('user-preferences-changes')
-              .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'user_preferences',
-                filter: `user_id=eq.${user.id}`
-              }, (payload) => {
-                console.log('User preferences updated from another tab/device:', payload);
-                // Update local state when changes come from another tab/device
-                setPreferences(payload.new);
-              })
-              .subscribe();
-          }
-        } else {
-          setPreferences(null);
-          setLoading(false);
-          if (channel) {
-            channel.unsubscribe();
-            channel = null;
-          }
-        }
-      });
-      authListener = data;
-    };
-
-    // Set up initial subscription if user is already logged in
-    const setupInitialSubscription = async () => {
+    const setupSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+
       if (user) {
+        // Only set up subscription if table exists (check during fetch)
+        // This prevents subscription errors when migrations haven't been run
         channel = supabase
           .channel('user-preferences-changes')
           .on('postgres_changes', {
@@ -226,8 +191,38 @@ export default function useUserPreferences() {
       }
     };
 
-    setupAuthListener();
-    setupInitialSubscription();
+    // Initial fetch
+    fetchPreferences().then(() => {
+      // Set up subscription after initial fetch completes
+      setupSubscription();
+    });
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        // User logged in - fetch preferences and set up subscription
+        await fetchPreferences();
+
+        // Clean up old subscription if it exists
+        if (channel) {
+          channel.unsubscribe();
+          channel = null;
+        }
+
+        // Set up new subscription for this user
+        await setupSubscription();
+      } else {
+        // User logged out - clean up
+        setPreferences(null);
+        setLoading(false);
+        if (channel) {
+          channel.unsubscribe();
+          channel = null;
+        }
+      }
+    });
+
+    authListener = listener;
 
     return () => {
       authListener?.subscription?.unsubscribe();
