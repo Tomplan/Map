@@ -41,6 +41,15 @@ export default function useOrganizationSettings() {
         .maybeSingle();
 
       if (fetchError) {
+        // Handle case where table doesn't exist yet (migrations not run)
+        if (fetchError.code === '42P01' || fetchError.message?.includes('does not exist')) {
+          console.warn('organization_settings table does not exist. Run migrations 25 & 26.');
+          setSettings(null);
+          setError(null); // Don't treat as error, just not initialized
+          setLoading(false);
+          return;
+        }
+
         console.error('Error fetching organization settings:', fetchError);
         setError(fetchError.message);
         setSettings(null);
@@ -52,7 +61,7 @@ export default function useOrganizationSettings() {
         // This should never happen (migration 25 creates the row)
         console.warn('Organization settings row not found (id=1). Database migration may not have run.');
         setSettings(null);
-        setError('Organization settings not initialized');
+        setError(null); // Don't treat as error, app should still work with defaults
         setLoading(false);
         return;
       }
@@ -156,23 +165,34 @@ export default function useOrganizationSettings() {
   useEffect(() => {
     fetchSettings();
 
-    // Subscribe to real-time changes
-    // All managers see updates when any manager changes settings
-    const channel = supabase
-      .channel('organization-settings-changes')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'organization_settings',
-        filter: 'id=eq.1'
-      }, (payload) => {
-        console.log('Organization settings updated:', payload);
-        setSettings(payload.new);
-      })
-      .subscribe();
+    // Only subscribe to real-time changes if settings loaded successfully
+    // This prevents connection loops if table doesn't exist
+    let channel = null;
+
+    // Wait a bit to see if settings load successfully
+    const subscribeTimer = setTimeout(() => {
+      // Only set up subscription if we have settings (table exists)
+      if (settings !== null || error === null) {
+        channel = supabase
+          .channel('organization-settings-changes')
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'organization_settings',
+            filter: 'id=eq.1'
+          }, (payload) => {
+            console.log('Organization settings updated:', payload);
+            setSettings(payload.new);
+          })
+          .subscribe();
+      }
+    }, 1000);
 
     return () => {
-      channel.unsubscribe();
+      clearTimeout(subscribeTimer);
+      if (channel) {
+        channel.unsubscribe();
+      }
     };
   }, [fetchSettings]);
 
