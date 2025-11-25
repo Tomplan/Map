@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
 import { HashRouter } from 'react-router-dom';
@@ -23,6 +23,10 @@ function App() {
   // Load user preferences from database
   const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
 
+  // Track if we're syncing from database to prevent feedback loops
+  const syncingYearFromDbRef = useRef(false);
+  const syncingLanguageFromDbRef = useRef(false);
+
   // Initialize selected year from preferences or fallback to localStorage/current year
   const [selectedYear, setSelectedYear] = useState(() => {
     // Fallback to localStorage for backwards compatibility during migration
@@ -32,8 +36,13 @@ function App() {
 
   // Sync selectedYear with database preferences when they load
   useEffect(() => {
-    if (!preferencesLoading && preferences?.default_year) {
+    if (!preferencesLoading && preferences?.default_year && preferences.default_year !== selectedYear) {
+      syncingYearFromDbRef.current = true;
       setSelectedYear(preferences.default_year);
+      // Reset flag after state update completes
+      setTimeout(() => {
+        syncingYearFromDbRef.current = false;
+      }, 0);
     }
   }, [preferencesLoading, preferences?.default_year]);
 
@@ -42,8 +51,8 @@ function App() {
     // Update localStorage for backwards compatibility
     localStorage.setItem('selectedEventYear', selectedYear.toString());
 
-    // Update database if preferences are loaded and year is different
-    if (!preferencesLoading && preferences && preferences.default_year !== selectedYear) {
+    // Only update database if this is a user-initiated change (not from sync)
+    if (!preferencesLoading && preferences && preferences.default_year !== selectedYear && !syncingYearFromDbRef.current) {
       updatePreference('default_year', selectedYear);
     }
   }, [selectedYear, preferencesLoading, preferences, updatePreference]);
@@ -53,7 +62,12 @@ function App() {
     if (!preferencesLoading && preferences?.preferred_language) {
       // Only change language if it's different from current
       if (i18n.language !== preferences.preferred_language) {
+        syncingLanguageFromDbRef.current = true;
         i18n.changeLanguage(preferences.preferred_language);
+        // Reset flag after language change completes
+        setTimeout(() => {
+          syncingLanguageFromDbRef.current = false;
+        }, 0);
       }
     }
   }, [preferencesLoading, preferences?.preferred_language, i18n]);
@@ -61,8 +75,8 @@ function App() {
   // Update database when language changes in i18n (also syncs with i18next's localStorage)
   useEffect(() => {
     const handleLanguageChange = (lng) => {
-      // Update database if preferences are loaded and language is different
-      if (!preferencesLoading && preferences && preferences.preferred_language !== lng) {
+      // Only update database if this is a user-initiated change (not from sync)
+      if (!preferencesLoading && preferences && preferences.preferred_language !== lng && !syncingLanguageFromDbRef.current) {
         updatePreference('preferred_language', lng);
       }
     };

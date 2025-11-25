@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -22,6 +22,9 @@ export default function AssignmentsTab({ selectedYear }) {
 
   // Load user preferences from database
   const { preferences, loading: preferencesLoading, updatePreferences } = useUserPreferences();
+
+  // Track if we're syncing from database to prevent feedback loops
+  const syncingFromDbRef = useRef(false);
 
   // Load sort preferences from localStorage (fallback for backwards compatibility)
   const loadSortPreferences = () => {
@@ -50,10 +53,15 @@ export default function AssignmentsTab({ selectedYear }) {
   // Sync with database preferences when they load
   useEffect(() => {
     if (!preferencesLoading && preferences) {
+      syncingFromDbRef.current = true;
       setSortBy(preferences.assignments_sort_by || 'alphabetic');
       setSortDirection(preferences.assignments_sort_direction || 'asc');
       setColumnSort(preferences.assignments_column_sort || 'markerId');
       setColumnSortDirection(preferences.assignments_column_sort_direction || 'asc');
+      // Reset flag after state updates complete
+      setTimeout(() => {
+        syncingFromDbRef.current = false;
+      }, 0);
     }
   }, [preferencesLoading, preferences]);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs();
@@ -98,8 +106,8 @@ export default function AssignmentsTab({ selectedYear }) {
       console.error('Error saving sort preferences to localStorage:', error);
     }
 
-    // Update database if preferences are loaded
-    if (!preferencesLoading && preferences) {
+    // Only update database if this is a user-initiated change (not from sync)
+    if (!preferencesLoading && preferences && !syncingFromDbRef.current) {
       const dbUpdates = {
         assignments_sort_by: sortBy,
         assignments_sort_direction: sortDirection,

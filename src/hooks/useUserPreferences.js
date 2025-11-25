@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient';
  * useUserPreferences Hook
  *
  * Manages user-specific preferences stored in Supabase database.
- * Preferences sync across devices/browsers.
+ * Preferences sync across devices/browsers via real-time subscriptions.
  *
  * For device-specific settings (like sidebar collapsed state), continue using localStorage.
  *
@@ -164,22 +164,76 @@ export default function useUserPreferences() {
     }
   }, []);
 
-  // Initial fetch on mount
+  // Initial fetch on mount and set up real-time subscriptions
   useEffect(() => {
     fetchPreferences();
 
-    // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        fetchPreferences();
-      } else {
-        setPreferences(null);
-        setLoading(false);
+    let channel = null;
+    let authListener = null;
+
+    // Set up auth state listener
+    const setupAuthListener = async () => {
+      const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session) {
+          await fetchPreferences();
+
+          // Set up real-time subscription for this user's preferences
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user && !channel) {
+            channel = supabase
+              .channel('user-preferences-changes')
+              .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'user_preferences',
+                filter: `user_id=eq.${user.id}`
+              }, (payload) => {
+                console.log('User preferences updated from another tab/device:', payload);
+                // Update local state when changes come from another tab/device
+                setPreferences(payload.new);
+              })
+              .subscribe();
+          }
+        } else {
+          setPreferences(null);
+          setLoading(false);
+          if (channel) {
+            channel.unsubscribe();
+            channel = null;
+          }
+        }
+      });
+      authListener = data;
+    };
+
+    // Set up initial subscription if user is already logged in
+    const setupInitialSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        channel = supabase
+          .channel('user-preferences-changes')
+          .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_preferences',
+            filter: `user_id=eq.${user.id}`
+          }, (payload) => {
+            console.log('User preferences updated from another tab/device:', payload);
+            // Update local state when changes come from another tab/device
+            setPreferences(payload.new);
+          })
+          .subscribe();
       }
-    });
+    };
+
+    setupAuthListener();
+    setupInitialSubscription();
 
     return () => {
-      listener?.subscription?.unsubscribe();
+      authListener?.subscription?.unsubscribe();
+      if (channel) {
+        channel.unsubscribe();
+      }
     };
   }, [fetchPreferences]);
 
