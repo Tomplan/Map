@@ -15,7 +15,7 @@ import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../hooks/useIsMobile';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
-import { MAP_CONFIG, MAP_LAYERS } from '../../config/mapConfig';
+import useMapConfig from '../../hooks/useMapConfig';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -27,6 +27,9 @@ import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
 function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect }) {
+  // Load map configuration from database (with fallback to hard-coded defaults)
+  const { MAP_CONFIG, MAP_LAYERS } = useMapConfig();
+
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
