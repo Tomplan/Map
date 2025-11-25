@@ -129,32 +129,32 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-2">
-          <ul className="space-y-1">
-            {visibleNavItems.map((item) => {
-              const isActive = location.pathname === item.path;
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Navigation */}
+          <nav className="p-2">
+            <ul className="space-y-1">
+              {visibleNavItems.map((item) => {
+                const isActive = location.pathname === item.path;
 
-              return (
-                <li key={item.path}>
-                  <SidebarTile
-                    to={item.path}
-                    icon={item.icon}
-                    label={item.label}
-                    isActive={isActive}
-                    isCollapsed={isCollapsed}
-                  />
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+                return (
+                  <li key={item.path}>
+                    <SidebarTile
+                      to={item.path}
+                      icon={item.icon}
+                      label={item.label}
+                      isActive={isActive}
+                      isCollapsed={isCollapsed}
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-        {/* Year Selector + compact year-scope summary */}
-        <div className="p-2 border-t border-gray-200">
-          {!isCollapsed ? (
-            <div className="py-3">
-              <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
+          {/* Year-Scoped Operations - Moved up for better workflow visibility */}
+          <div className="p-2 border-t border-gray-200">
+            {!isCollapsed ? (
               <YearScopeSidebar
                 selectedYear={selectedYear}
                 onYearChange={(newY) => {
@@ -163,11 +163,16 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   setShowYearModal(true);
                 }}
               />
-              {/* divider — single YearScopeSidebar rendered above; keeping space for any future compact summary */}
-              <div className="mt-3 border-t pt-3" />
+            ) : (
+              // Year selector and year-scoped tiles in collapsed state
+              <CollapsedShortcuts selectedYear={selectedYear} t={t} />
+            )}
+          </div>
 
-              {/* Add Map Management + Settings below the YearScope card (expanded view) */}
-              <div className="mt-3 space-y-2">
+          {/* Map Management + Settings - System Administration */}
+          <div className="p-2 border-t border-gray-200">
+            {!isCollapsed ? (
+              <div className="py-3 space-y-2">
                 {hasAnyRole(['super_admin','system_manager']) && (
                   <SidebarTile
                     to="/admin/map"
@@ -184,12 +189,29 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   />
                 )}
               </div>
-            </div>
-          ) : (
-            // Use the component which stacks the year above the icons to ensure
-            // the year appears above the internal compact icons in the collapsed panel.
-            <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-          )}
+            ) : (
+              // Collapsed state: show icons for Map and Settings
+              <div className="space-y-1">
+                {hasAnyRole(['super_admin','system_manager']) && (
+                  <SidebarTile
+                    to="/admin/map"
+                    icon={mdiMap}
+                    label={t('adminNav.mapManagement')}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
+
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                  <SidebarTile
+                    to="/admin/settings"
+                    icon={mdiCog}
+                    label={t('adminNav.settings')}
+                    isCollapsed={isCollapsed}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Help Button */}
