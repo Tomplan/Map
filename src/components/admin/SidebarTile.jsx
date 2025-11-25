@@ -28,15 +28,15 @@ export default function SidebarTile({
 }) {
   // Handle collapsed state (icon-only, centered)
   if (isCollapsed) {
-    const collapsedClasses = "flex items-center justify-center px-3 py-3 rounded-lg transition-colors";
+    const collapsedClasses = "flex items-center justify-center px-3 py-3 rounded-lg transition-all duration-300 border";
     const collapsedStateClasses = isActive
-      ? "bg-blue-50 text-blue-700 font-semibold"
-      : "text-gray-700 hover:bg-gray-50";
+      ? "bg-blue-50 text-blue-700 font-semibold border-blue-200"
+      : "text-gray-700 hover:bg-gray-50 border-transparent";
 
     const collapsedClassName = `${collapsedClasses} ${collapsedStateClasses}`;
 
     const collapsedContent = (
-      <Icon path={icon} size={1} />
+      <Icon path={icon} size={1} className="transition-all duration-300" />
     );
 
     if (to) {
@@ -65,7 +65,7 @@ export default function SidebarTile({
   }
 
   // Expanded state (full tile)
-  const baseClasses = "flex items-center gap-3 px-4 w-full py-3 rounded-lg transition-colors border bg-white";
+  const baseClasses = "flex items-center gap-3 px-4 w-full py-3 rounded-lg transition-all duration-300 border bg-white";
   const stateClasses = isActive
     ? "bg-blue-50 text-blue-700 font-semibold border-blue-200"
     : "text-gray-700 hover:bg-gray-50 border-gray-200";
@@ -74,12 +74,12 @@ export default function SidebarTile({
 
   const content = (
     <>
-      <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600">
+      <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600 transition-all duration-300">
         <Icon path={icon} size={1.1} />
       </span>
-      <span className="flex-1">{label}</span>
+      <span className="flex-1 transition-opacity duration-300">{label}</span>
       {badge !== undefined && badge !== null && (
-        <div className="text-sm font-semibold text-gray-800">{badge}</div>
+        <div className="text-sm font-semibold text-gray-800 transition-opacity duration-300">{badge}</div>
       )}
     </>
   );

@@ -107,11 +107,11 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300`}>
+      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
         {/* Header */}
         <div className="p-4 border-b border-gray-200 flex items-center justify-between">
           {!isCollapsed && (
-            <div className="flex-1">
+            <div className="flex-1 transition-opacity duration-300">
               <h1 className="text-xl font-bold text-gray-900">{t('adminNav.adminPanel')}</h1>
               {role && (
                 <p className="text-xs text-gray-500 mt-1 capitalize">
@@ -191,7 +191,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               </div>
             ) : (
               // Collapsed state: show icons for Map and Settings
-              <div className="space-y-1">
+              <div className="py-3 space-y-2">
                 {hasAnyRole(['super_admin','system_manager']) && (
                   <SidebarTile
                     to="/admin/map"
@@ -218,11 +218,11 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         <div className="p-2 border-t border-gray-200">
           <button
             onClick={() => setIsHelpOpen(true)}
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-blue-600 hover:bg-blue-50 transition-colors font-medium`}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium`}
             title={isCollapsed ? 'Help' : ''}
           >
-            <Icon path={mdiHelpCircleOutline} size={1} />
-            {!isCollapsed && <span>{t('adminNav.help')}</span>}
+            <Icon path={mdiHelpCircleOutline} size={1} className="transition-all duration-300" />
+            {!isCollapsed && <span className="transition-opacity duration-300">{t('adminNav.help')}</span>}
           </button>
         </div>
 
@@ -230,11 +230,11 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         <div className="p-2 border-t border-gray-200">
           <button
             onClick={handleLogout}
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition-colors`}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-300`}
             title={isCollapsed ? 'Logout' : ''}
           >
-            <Icon path={mdiLogout} size={1} />
-            {!isCollapsed && <span>{t('adminNav.logout')}</span>}
+            <Icon path={mdiLogout} size={1} className="transition-all duration-300" />
+            {!isCollapsed && <span className="transition-opacity duration-300">{t('adminNav.logout')}</span>}
           </button>
         </div>
       </aside>
