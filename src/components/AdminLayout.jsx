@@ -142,7 +142,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 <li key={item.path}>
                   <Link
                     to={item.path}
-                    className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4 w-full border bg-white'} py-3 rounded-lg transition-colors ${
                       isActive
                         ? 'bg-blue-50 text-blue-700 font-semibold'
                         : 'text-gray-700 hover:bg-gray-50'
