@@ -4,6 +4,7 @@ import useEventActivities from '../hooks/useEventActivities';
 import { MdEdit, MdDelete, MdAdd, MdDragIndicator } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
+import YearScopeBadge from './admin/YearScopeBadge';
 import Modal from './common/Modal';
 
 /**
@@ -140,9 +141,12 @@ export default function ProgramManagement() {
       {/* Header */}
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {t('programManagement.title')}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {t('programManagement.title')}
+            </h2>
+            <div><YearScopeBadge scope="year" /></div>
+          </div>
           <button 
             onClick={() => {
               setEditActivity(null);

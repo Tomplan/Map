@@ -391,6 +391,8 @@
     "optional": "optional",
     "displayOrder": "Display Order",
     "displayOrderHelp": "Lower numbers appear first in the schedule",
+    "companyScopeHint": "Unternehmen werden über alle Jahre geteilt — die Auswahl eines Unternehmens verknüpft die Aktivität mit diesem Unternehmen über Ereignisse hinweg.",
+ 
     "isActive": "Active",
     "isActiveHelp": "Inactive activities won't be shown to visitors",
     "showLocationBadge": "Show Location Type Badge",
@@ -400,6 +402,39 @@
     "saving": "Saving...",
     "saveError": "Failed to save activity",
     "savePersistMismatch": "Gespeichert, aber der Badge-Wert wurde nicht übernommen — Sie haben möglicherweise keine Berechtigung. Bitte überprüfen Sie Ihre Rolle oder kontaktieren Sie den Administrator."
+  },
+  "admin": {
+    "yearScope": {
+      "global": "Global (alle Jahre)",
+      "eventSpecific": "Ereignis-spezifisch (ändert sich mit Jahr)",
+      "title": "Jahresbezogene Daten",
+      "viewingYear": "Anzeigjahr",
+      "subscriptions": "Anmeldungen",
+      "assignments": "Zuweisungen",
+      "program": "Programm",
+      "preview": "Vorschau"
+    },
+    "yearSwitcher": {
+      "bannerBold": "Hinweis:",
+      "bannerText": "Unternehmen werden für alle Jahre geteilt. Abonnements, Zuweisungen und das Programm sind an das ausgewählte Jahr gebunden — ein Wechsel des Jahres ändert diese Daten.",
+      "bannerLink": "Was ändert sich, wenn ich das Jahr wechsle?",
+      "modalTitle": "Zu {{year}} wechseln?",
+      "modalIntro": "Möchten Sie die Admin-Ansicht auf <strong>{{year}}</strong> ändern? Folgende Daten werden für das ausgewählte Jahr aktualisiert:",
+      "willChange": {
+        "subscriptions": "Abonnements",
+        "subscriptionsDesc": "Registrierungen und Mahlzeiten/Münzen-Auswahlen für dieses Eventjahr",
+        "assignments": "Zuweisungen",
+        "assignmentsDesc": "Standzuweisungen und Marker→Unternehmen Verknüpfungen für dieses Jahr",
+        "program": "Programmverwaltung",
+        "programDesc": "Der Zeitplan / Aktivitäten für das ausgewählte Jahr"
+      },
+      "wontChangeIntro": "Die folgenden Daten sind beim Wechsel des Jahres nicht betroffen:",
+      "wontChange": {
+        "companies": "Unternehmen",
+        "companiesDesc": "Unternehmensprofile und Stammdaten sind global und über Jahre gleich"
+      },
+      "switchButton": "Zu {{year}} wechseln"
+    }
   },
   "dashboard": {
     "totalMarkers": "Total Markers",

@@ -1,0 +1,139 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`YearScopeCard renders with counts and selector 1`] = `
+<DocumentFragment>
+  <section
+    aria-labelledby="year-scope-title"
+    class="bg-white rounded-lg shadow p-4 mb-6"
+  >
+    <div
+      class="flex items-center justify-between mb-3"
+    >
+      <div
+        class="flex items-center gap-3"
+      >
+        <h3
+          class="text-lg font-semibold text-gray-900"
+          id="year-scope-title"
+        >
+          Year-scoped data
+        </h3>
+        <div>
+          <span
+            aria-label="Event-specific (changes with year)"
+            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800 border border-transparent"
+            role="status"
+            title="Event-specific (changes with year)"
+          >
+            Event-specific (changes with year)
+          </span>
+        </div>
+      </div>
+      <div
+        class="flex items-center gap-2"
+      >
+        <label
+          class="text-sm text-gray-600 mr-2"
+          for="year-scope-select"
+        >
+          Viewing year
+        </label>
+        <select
+          aria-label="Viewing year"
+          class="px-3 py-2 border rounded-lg text-sm"
+          id="year-scope-select"
+        >
+          <option
+            value="2023"
+          >
+            2023
+          </option>
+          <option
+            value="2024"
+          >
+            2024
+          </option>
+          <option
+            value="2025"
+          >
+            2025
+          </option>
+          <option
+            value="2026"
+          >
+            2026
+          </option>
+          <option
+            value="2027"
+          >
+            2027
+          </option>
+        </select>
+      </div>
+    </div>
+    <div
+      class="grid grid-cols-1 md:grid-cols-3 gap-4"
+    >
+      <a
+        aria-label="Subscriptions 42"
+        class="p-3 border rounded-lg hover:bg-blue-50 transition-colors"
+        href="/admin/subscriptions"
+      >
+        <div
+          class="text-sm text-gray-500"
+        >
+          Subscriptions
+        </div>
+        <div
+          class="text-2xl font-bold text-gray-900 mt-1"
+        >
+          42
+        </div>
+      </a>
+      <a
+        aria-label="Assignments 12"
+        class="p-3 border rounded-lg hover:bg-blue-50 transition-colors"
+        href="/admin/assignments"
+      >
+        <div
+          class="text-sm text-gray-500"
+        >
+          Assignments
+        </div>
+        <div
+          class="text-2xl font-bold text-gray-900 mt-1"
+        >
+          12
+        </div>
+      </a>
+      <a
+        aria-label="Program 3"
+        class="p-3 border rounded-lg hover:bg-blue-50 transition-colors"
+        href="/admin/program"
+      >
+        <div
+          class="text-sm text-gray-500"
+        >
+          Program
+        </div>
+        <div
+          class="text-2xl font-bold text-gray-900 mt-1"
+        >
+          3
+        </div>
+      </a>
+    </div>
+    <div
+      class="mt-4 text-sm text-gray-600 flex items-center justify-end"
+    >
+      <button
+        aria-controls="year-change-preview"
+        class="px-3 py-1.5 bg-white border rounded hover:bg-gray-50"
+        id="year-scope-preview"
+      >
+        Preview changes
+      </button>
+    </div>
+  </section>
+</DocumentFragment>
+`;

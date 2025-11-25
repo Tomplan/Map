@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import {
   mdiViewDashboard,
   mdiMap,
   mdiDomain,
-  mdiCalendarCheck,
-  mdiCalendarClock,
-  mdiMapMarkerMultiple,
-  mdiTag,
   mdiCog,
   mdiLogout,
   mdiChevronLeft,
@@ -17,8 +13,12 @@ import {
   mdiHelpCircleOutline,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
+import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
+import YearScopeSidebar from './admin/YearScopeSidebar';
+import CollapsedShortcuts from './admin/CollapsedShortcuts';
+import SidebarTile from './admin/SidebarTile';
 
 /**
  * AdminLayout - Main layout for admin panel with sidebar navigation
@@ -41,6 +41,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
   // Help panel state
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  // Year change confirmation state
+  const [pendingYear, setPendingYear] = useState(null);
+  const [showYearModal, setShowYearModal] = useState(false);
 
   // Persist collapse state
   useEffect(() => {
@@ -73,42 +76,21 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },
     {
-      path: '/admin/map',
-      label: t('adminNav.mapManagement'),
-      icon: mdiMap,
-      roles: ['super_admin', 'system_manager'],
-    },
-    {
       path: '/admin/companies',
       label: t('adminNav.companiesNav'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
     },
-    {
-      path: '/admin/subscriptions',
-      label: t('adminNav.eventSubscriptions'),
-      icon: mdiCalendarCheck,
-      roles: ['super_admin', 'event_manager'],
-    },
-    {
-      path: '/admin/assignments',
-      label: t('adminNav.assignments'),
-      icon: mdiMapMarkerMultiple,
-      roles: ['super_admin', 'event_manager'],
-    },
-    {
-      path: '/admin/program',
-      label: t('adminNav.programManagement'),
-      icon: mdiCalendarClock,
-      roles: ['super_admin', 'event_manager', 'content_editor'],
-    },
+    // Subscriptions, Assignments, and Program management are now surfaced
+    // in the compact YearScopeSidebar (per recent UX changes). Keep these
+    // pages available, but they are intentionally *not* duplicated in the
+    // main admin nav to avoid confusion. Users can still reach them via
+    // the YearScopeSidebar tiles or links elsewhere in the UI.
     // Categories menu removed from main admin nav. Now in settings for system managers only.
-    {
-      path: '/admin/settings',
-      label: t('adminNav.settings'),
-      icon: mdiCog,
-      roles: ['super_admin', 'system_manager', 'event_manager'],
-    },
+    // Map Management and Settings intentionally moved out of the primary nav
+    // so they are displayed below the YearScopeSidebar to emphasize year-scoped
+    // controls are grouped together. They will still be shown if the user has
+    // matching roles later in the sidebar below the card.
   ];
 
   // Filter nav items by user role
@@ -155,48 +137,58 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
               return (
                 <li key={item.path}>
-                  <Link
+                  <SidebarTile
                     to={item.path}
-                    className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                    title={isCollapsed ? item.label : ''}
-                  >
-                    <Icon path={item.icon} size={1} />
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </Link>
+                    icon={item.icon}
+                    label={item.label}
+                    isActive={isActive}
+                    isCollapsed={isCollapsed}
+                  />
                 </li>
               );
             })}
           </ul>
         </nav>
 
-        {/* Year Selector */}
+        {/* Year Selector + compact year-scope summary */}
         <div className="p-2 border-t border-gray-200">
           {!isCollapsed ? (
-            <div className="px-2 py-3">
+            <div className="py-3">
               <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900 text-sm"
-              >
-                {yearOptions.map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
+              <YearScopeSidebar
+                selectedYear={selectedYear}
+                onYearChange={(newY) => {
+                  if (newY === selectedYear) return;
+                  setPendingYear(newY);
+                  setShowYearModal(true);
+                }}
+              />
+              {/* divider — single YearScopeSidebar rendered above; keeping space for any future compact summary */}
+              <div className="mt-3 border-t pt-3" />
+
+              {/* Add Map Management + Settings below the YearScope card (expanded view) */}
+              <div className="mt-3 space-y-2">
+                {hasAnyRole(['super_admin','system_manager']) && (
+                  <SidebarTile
+                    to="/admin/map"
+                    icon={mdiMap}
+                    label={t('adminNav.mapManagement')}
+                  />
+                )}
+
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                  <SidebarTile
+                    to="/admin/settings"
+                    icon={mdiCog}
+                    label={t('adminNav.settings')}
+                  />
+                )}
+              </div>
             </div>
           ) : (
-            <div
-              className="flex justify-center px-3 py-3 text-gray-700 text-sm font-medium"
-              title={`Event Year: ${selectedYear}`}
-            >
-              {selectedYear}
-            </div>
+            // Use the component which stacks the year above the icons to ensure
+            // the year appears above the internal compact icons in the collapsed panel.
+            <CollapsedShortcuts selectedYear={selectedYear} t={t} />
           )}
         </div>
 
@@ -234,6 +226,20 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
       {/* Help Panel */}
       <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      {/* Year change confirmation modal (prevent surprising context switches) */}
+      <YearChangeModal
+        isOpen={showYearModal}
+        newYear={pendingYear || selectedYear}
+        onClose={() => {
+          setPendingYear(null);
+          setShowYearModal(false);
+        }}
+        onConfirm={() => {
+          if (pendingYear) setSelectedYear(pendingYear);
+          setPendingYear(null);
+          setShowYearModal(false);
+        }}
+      />
     </div>
   );
 }

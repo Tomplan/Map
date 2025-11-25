@@ -14,12 +14,14 @@ import {
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import YearChangeModal from './YearChangeModal';
+import YearScopeBadge from './YearScopeBadge';
 
 /**
  * Dashboard - Overview page for admin panel
  * Shows key metrics and recent activity
  */
-export default function Dashboard({ selectedYear }) {
+export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { subscriptions, loading } = useEventSubscriptions(selectedYear);
   const [counts, setCounts] = useState({
@@ -27,6 +29,8 @@ export default function Dashboard({ selectedYear }) {
     companies: null,
     assignments: null,
   });
+  const [showYearModal, setShowYearModal] = useState(false);
+  const [pendingYear, setPendingYear] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
   // Fetch counts from Supabase
@@ -111,6 +115,7 @@ export default function Dashboard({ selectedYear }) {
 
   return (
     <div>
+      {/* Year-scoped UI is handled in the admin sidebar (AdminLayout) — removed inline Dashboard card */}
       {/* Event Totals - Combined Stats and Meal/Coin Data */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">

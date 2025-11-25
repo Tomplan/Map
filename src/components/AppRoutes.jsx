@@ -114,7 +114,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           )
         }
       >
-        <Route index element={<Dashboard selectedYear={selectedYear} />} />
+        <Route index element={<Dashboard selectedYear={selectedYear} setSelectedYear={setSelectedYear} />} />
         <Route
           path="map"
           element={
