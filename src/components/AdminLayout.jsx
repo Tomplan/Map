@@ -27,7 +27,7 @@ import SidebarTile from './admin/SidebarTile';
 export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const location = useLocation();
-  const { role, loading, hasAnyRole } = useUserRole();
+  const { role, loading, hasAnyRole, userInfo } = useUserRole();
 
   // Generate year options (current year ± 2 years)
   const currentYear = new Date().getFullYear();
@@ -107,25 +107,38 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <aside className={`${isCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 flex flex-col transition-all duration-300 overflow-hidden`}>
+      {/*
+        Use a flexible expanded width (min width) instead of a strict fixed
+        w-64. This allows the sidebar to grow to fit longer content such as a
+        full email address on a single line while still keeping the compact
+        collapsed state at w-16.
+      */}
+      <aside className={`${isCollapsed ? 'w-[66px]' : 'w-[340px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="flex-1 transition-opacity duration-300">
-              <h1 className="text-xl font-bold text-gray-900">{t('adminNav.adminPanel')}</h1>
-              {role && (
-                <p className="text-xs text-gray-500 mt-1 capitalize">
-                  {t(`adminNav.roles.${role}`)}
-                </p>
-              )}
-            </div>
-          )}
+        <div className={`p-4 border-b border-gray-200 flex items-center h-[88px] ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+          <div className={`${isCollapsed ? 'opacity-0 w-0 h-0 overflow-hidden' : 'opacity-100 flex-1 min-w-0'}`}>
+            <h1 className="text-xl font-bold text-gray-900 truncate">{t('adminNav.adminPanel')}</h1>
+            {(userInfo?.name || userInfo?.email) && (
+              // Keep the small/collapsed behavior unchanged (truncate). When
+              // expanded, prefer a single-line email so it stays readable on
+              // one line: `whitespace-nowrap` ensures no wrap and relies on the
+              // expanded (now flexible) sidebar width to display the full text.
+              <p className={`text-sm text-gray-700 mt-1 font-medium ${isCollapsed ? 'truncate' : 'whitespace-nowrap'}`}>
+                {userInfo.name || userInfo.email}
+              </p>
+            )}
+            {role && (
+              <p className="text-xs text-gray-500 mt-0.5 capitalize truncate">
+                {t(`adminNav.roles.${role}`)}
+              </p>
+            )}
+          </div>
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className={`p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <Icon path={isCollapsed ? mdiChevronRight : mdiChevronLeft} size={0.9} className="text-gray-600" />
+            <Icon path={isCollapsed ? mdiChevronRight : mdiChevronLeft} size={1} className="text-gray-700" />
           </button>
         </div>
 
@@ -145,6 +158,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                       label={item.label}
                       isActive={isActive}
                       isCollapsed={isCollapsed}
+                      // keep Dashboard exactly aligned: force icon & label wrappers
+                      {...(item.path === '/admin' ? { iconClass: 'w-8 h-8', labelClass: 'text-sm font-medium text-left' } : {})}
                     />
                   </li>
                 );
@@ -154,19 +169,22 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
           {/* Year-Scoped Operations - Moved up for better workflow visibility */}
           <div className="p-2 border-t border-gray-200">
-            {!isCollapsed ? (
-              <YearScopeSidebar
-                selectedYear={selectedYear}
-                onYearChange={(newY) => {
-                  if (newY === selectedYear) return;
-                  setPendingYear(newY);
-                  setShowYearModal(true);
-                }}
-              />
-            ) : (
-              // Year selector and year-scoped tiles in collapsed state
-              <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-            )}
+              {/* keep both mounted and toggle visibility with CSS so we avoid
+                  mount/dismount flicker during the sidebar expand animation */}
+              <div className={`${isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'}`}>
+                <YearScopeSidebar
+                  selectedYear={selectedYear}
+                  onYearChange={(newY) => {
+                    if (newY === selectedYear) return;
+                    setPendingYear(newY);
+                    setShowYearModal(true);
+                  }}
+                />
+              </div>
+
+              <div className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}>
+                <CollapsedShortcuts selectedYear={selectedYear} t={t} />
+              </div>
           </div>
 
           {/* Map Management + Settings - System Administration */}
@@ -178,6 +196,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     to="/admin/map"
                     icon={mdiMap}
                     label={t('adminNav.mapManagement')}
+                    isActive={location.pathname === '/admin/map'}
                   />
                 )}
 
@@ -186,6 +205,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     to="/admin/settings"
                     icon={mdiCog}
                     label={t('adminNav.settings')}
+                    isActive={location.pathname === '/admin/settings'}
                   />
                 )}
               </div>
@@ -198,6 +218,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     icon={mdiMap}
                     label={t('adminNav.mapManagement')}
                     isCollapsed={isCollapsed}
+                    isActive={location.pathname === '/admin/map'}
                   />
                 )}
 
@@ -207,6 +228,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     icon={mdiCog}
                     label={t('adminNav.settings')}
                     isCollapsed={isCollapsed}
+                    isActive={location.pathname === '/admin/settings'}
                   />
                 )}
               </div>
@@ -216,26 +238,24 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
         {/* Help Button */}
         <div className="p-2 border-t border-gray-200">
-          <button
+          <SidebarTile
             onClick={() => setIsHelpOpen(true)}
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-blue-600 hover:bg-blue-50 transition-all duration-300 font-medium`}
-            title={isCollapsed ? 'Help' : ''}
-          >
-            <Icon path={mdiHelpCircleOutline} size={1} className="transition-all duration-300" />
-            {!isCollapsed && <span className="transition-opacity duration-300">{t('adminNav.help')}</span>}
-          </button>
+            icon={mdiHelpCircleOutline}
+            label={t('adminNav.help')}
+            isCollapsed={isCollapsed}
+            ariaLabel="Help"
+          />
         </div>
 
         {/* Logout */}
         <div className="p-2 border-t border-gray-200">
-          <button
+          <SidebarTile
             onClick={handleLogout}
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4'} py-3 w-full rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-300`}
-            title={isCollapsed ? 'Logout' : ''}
-          >
-            <Icon path={mdiLogout} size={1} className="transition-all duration-300" />
-            {!isCollapsed && <span className="transition-opacity duration-300">{t('adminNav.logout')}</span>}
-          </button>
+            icon={mdiLogout}
+            label={t('adminNav.logout')}
+            isCollapsed={isCollapsed}
+            ariaLabel="Logout"
+          />
         </div>
       </aside>
 
