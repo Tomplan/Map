@@ -23,8 +23,8 @@ export default function AssignmentsTab({ selectedYear }) {
   // Load user preferences from database
   const { preferences, loading: preferencesLoading, updatePreferences } = useUserPreferences();
 
-  // Track if we're syncing from database to prevent feedback loops
-  const syncingFromDbRef = useRef(false);
+  // Track the last values we synced from database to prevent feedback loops
+  const lastSyncedPrefsRef = useRef(null);
 
   // Load sort preferences from localStorage (fallback for backwards compatibility)
   const loadSortPreferences = () => {
@@ -53,15 +53,23 @@ export default function AssignmentsTab({ selectedYear }) {
   // Sync with database preferences when they load
   useEffect(() => {
     if (!preferencesLoading && preferences) {
-      syncingFromDbRef.current = true;
-      setSortBy(preferences.assignments_sort_by || 'alphabetic');
-      setSortDirection(preferences.assignments_sort_direction || 'asc');
-      setColumnSort(preferences.assignments_column_sort || 'markerId');
-      setColumnSortDirection(preferences.assignments_column_sort_direction || 'asc');
-      // Reset flag after state updates complete
-      setTimeout(() => {
-        syncingFromDbRef.current = false;
-      }, 0);
+      const dbSortBy = preferences.assignments_sort_by || 'alphabetic';
+      const dbSortDirection = preferences.assignments_sort_direction || 'asc';
+      const dbColumnSort = preferences.assignments_column_sort || 'markerId';
+      const dbColumnSortDirection = preferences.assignments_column_sort_direction || 'asc';
+
+      // Track what we synced from database
+      lastSyncedPrefsRef.current = {
+        sortBy: dbSortBy,
+        sortDirection: dbSortDirection,
+        columnSort: dbColumnSort,
+        columnSortDirection: dbColumnSortDirection
+      };
+
+      setSortBy(dbSortBy);
+      setSortDirection(dbSortDirection);
+      setColumnSort(dbColumnSort);
+      setColumnSortDirection(dbColumnSortDirection);
     }
   }, [preferencesLoading, preferences]);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs();
@@ -93,7 +101,7 @@ export default function AssignmentsTab({ selectedYear }) {
 
   // Save sort preferences to database and localStorage whenever they change
   useEffect(() => {
-    // Save to localStorage for backwards compatibility
+    // Always save to localStorage for backwards compatibility
     try {
       const localPrefs = {
         sortBy,
@@ -106,22 +114,32 @@ export default function AssignmentsTab({ selectedYear }) {
       console.error('Error saving sort preferences to localStorage:', error);
     }
 
-    // Only update database if this is a user-initiated change (not from sync)
-    if (!preferencesLoading && preferences && !syncingFromDbRef.current) {
-      const dbUpdates = {
-        assignments_sort_by: sortBy,
-        assignments_sort_direction: sortDirection,
-        assignments_column_sort: columnSort,
-        assignments_column_sort_direction: columnSortDirection
-      };
-
-      // Only update if values have changed
-      if (
+    // Only update database if:
+    // 1. Preferences are loaded
+    // 2. Values are different from database
+    // 3. These aren't the values we just synced FROM the database
+    if (!preferencesLoading && preferences) {
+      const valuesChanged = (
         preferences.assignments_sort_by !== sortBy ||
         preferences.assignments_sort_direction !== sortDirection ||
         preferences.assignments_column_sort !== columnSort ||
         preferences.assignments_column_sort_direction !== columnSortDirection
-      ) {
+      );
+
+      const notFromSync = !lastSyncedPrefsRef.current || (
+        lastSyncedPrefsRef.current.sortBy !== sortBy ||
+        lastSyncedPrefsRef.current.sortDirection !== sortDirection ||
+        lastSyncedPrefsRef.current.columnSort !== columnSort ||
+        lastSyncedPrefsRef.current.columnSortDirection !== columnSortDirection
+      );
+
+      if (valuesChanged && notFromSync) {
+        const dbUpdates = {
+          assignments_sort_by: sortBy,
+          assignments_sort_direction: sortDirection,
+          assignments_column_sort: columnSort,
+          assignments_column_sort_direction: columnSortDirection
+        };
         updatePreferences(dbUpdates);
       }
     }
