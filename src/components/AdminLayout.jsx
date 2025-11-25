@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { useLocation, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import {
   mdiViewDashboard,
   mdiMap,
   mdiDomain,
-  mdiCalendarCheck,
-  mdiCalendarClock,
-  mdiMapMarkerMultiple,
-  mdiTag,
   mdiCog,
   mdiLogout,
   mdiChevronLeft,
@@ -22,6 +18,7 @@ import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
 import YearScopeSidebar from './admin/YearScopeSidebar';
 import CollapsedShortcuts from './admin/CollapsedShortcuts';
+import SidebarTile from './admin/SidebarTile';
 
 /**
  * AdminLayout - Main layout for admin panel with sidebar navigation
@@ -140,18 +137,13 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
               return (
                 <li key={item.path}>
-                  <Link
+                  <SidebarTile
                     to={item.path}
-                    className={`flex items-center gap-3 ${isCollapsed ? 'justify-center px-3' : 'px-4 w-full border bg-white'} py-3 rounded-lg transition-colors ${
-                      isActive
-                        ? 'bg-blue-50 text-blue-700 font-semibold'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                    title={isCollapsed ? item.label : ''}
-                  >
-                    <Icon path={item.icon} size={1} />
-                    {!isCollapsed && <span>{item.label}</span>}
-                  </Link>
+                    icon={item.icon}
+                    label={item.label}
+                    isActive={isActive}
+                    isCollapsed={isCollapsed}
+                  />
                 </li>
               );
             })}
@@ -161,7 +153,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         {/* Year Selector + compact year-scope summary */}
         <div className="p-2 border-t border-gray-200">
           {!isCollapsed ? (
-            <div className="px-2 py-3">
+            <div className="py-3">
               <label className="block text-xs font-medium text-gray-700 mb-2">{t('adminNav.eventYear')}</label>
               <YearScopeSidebar
                 selectedYear={selectedYear}
@@ -177,17 +169,19 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               {/* Add Map Management + Settings below the YearScope card (expanded view) */}
               <div className="mt-3 space-y-2">
                 {hasAnyRole(['super_admin','system_manager']) && (
-                  <Link to="/admin/map" className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
-                    <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiMap} size={1.1} /></span>
-                    <span className="flex-1">{t('adminNav.mapManagement')}</span>
-                  </Link>
+                  <SidebarTile
+                    to="/admin/map"
+                    icon={mdiMap}
+                    label={t('adminNav.mapManagement')}
+                  />
                 )}
 
                 {hasAnyRole(['super_admin','system_manager','event_manager']) && (
-                  <Link to="/admin/settings" className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
-                    <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiCog} size={1.1} /></span>
-                    <span className="flex-1">{t('adminNav.settings')}</span>
-                  </Link>
+                  <SidebarTile
+                    to="/admin/settings"
+                    icon={mdiCog}
+                    label={t('adminNav.settings')}
+                  />
                 )}
               </div>
             </div>

@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Icon from '@mdi/react';
 import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
-import { Link } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import SidebarTile from './SidebarTile';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   const { t } = useTranslation();
@@ -62,35 +61,27 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
       </div>
 
       <div className="space-y-2">
-        {/* Use the same compact nav tile styles as the main sidebar nav, but reduced for the sidebar section */}
-        <Link
+        <SidebarTile
           to="/admin/subscriptions"
-          className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
-          aria-label={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
-        >
-          <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiCalendarCheck} size={1.1} /></span>
-          <span className="flex-1">{tSafe('adminNav.eventSubscriptions','Subscriptions')}</span>
-          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.subscriptions}</div>
-        </Link>
+          icon={mdiCalendarCheck}
+          label={tSafe('adminNav.eventSubscriptions','Subscriptions')}
+          badge={loading ? '...' : counts.subscriptions}
+          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
+        />
 
-        <Link
+        <SidebarTile
           to="/admin/assignments"
-          className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
-          aria-label={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
-        >
-          <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiMapMarkerMultiple} size={1.1} /></span>
-          <span className="flex-1">{tSafe('adminNav.assignments','Assignments')}</span>
-          <div className="text-sm font-semibold text-gray-800">{loading ? '...' : counts.assignments}</div>
-        </Link>
+          icon={mdiMapMarkerMultiple}
+          label={tSafe('adminNav.assignments','Assignments')}
+          badge={loading ? '...' : counts.assignments}
+          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
+        />
 
-        <Link
+        <SidebarTile
           to="/admin/program"
-          className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white"
-          aria-label={tSafe('adminNav.programManagement','Program Management')}
-        >
-          <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiCalendarClock} size={1.1} /></span>
-          <span className="flex-1">{tSafe('adminNav.programManagement','Program Management')}</span>
-        </Link>
+          icon={mdiCalendarClock}
+          label={tSafe('adminNav.programManagement','Program Management')}
+        />
       </div>
     </div>
   );
