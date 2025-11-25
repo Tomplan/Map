@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
 import { HashRouter } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
+import useUserPreferences from './hooks/useUserPreferences';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -15,16 +17,63 @@ function App() {
   // Global year selector for filtering markers by event year
   const currentYear = new Date().getFullYear();
 
-  // Load selected year from localStorage or default to current year
+  // i18n hook for language management
+  const { i18n } = useTranslation();
+
+  // Load user preferences from database
+  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+
+  // Initialize selected year from preferences or fallback to localStorage/current year
   const [selectedYear, setSelectedYear] = useState(() => {
+    // Fallback to localStorage for backwards compatibility during migration
     const stored = localStorage.getItem('selectedEventYear');
     return stored ? parseInt(stored, 10) : currentYear;
   });
 
-  // Persist selected year to localStorage whenever it changes
+  // Sync selectedYear with database preferences when they load
   useEffect(() => {
+    if (!preferencesLoading && preferences?.default_year) {
+      setSelectedYear(preferences.default_year);
+    }
+  }, [preferencesLoading, preferences?.default_year]);
+
+  // Update database when selectedYear changes (also keep localStorage for backwards compatibility)
+  useEffect(() => {
+    // Update localStorage for backwards compatibility
     localStorage.setItem('selectedEventYear', selectedYear.toString());
-  }, [selectedYear]);
+
+    // Update database if preferences are loaded and year is different
+    if (!preferencesLoading && preferences && preferences.default_year !== selectedYear) {
+      updatePreference('default_year', selectedYear);
+    }
+  }, [selectedYear, preferencesLoading, preferences, updatePreference]);
+
+  // Sync language preference with database when preferences load
+  useEffect(() => {
+    if (!preferencesLoading && preferences?.preferred_language) {
+      // Only change language if it's different from current
+      if (i18n.language !== preferences.preferred_language) {
+        i18n.changeLanguage(preferences.preferred_language);
+      }
+    }
+  }, [preferencesLoading, preferences?.preferred_language, i18n]);
+
+  // Update database when language changes in i18n (also syncs with i18next's localStorage)
+  useEffect(() => {
+    const handleLanguageChange = (lng) => {
+      // Update database if preferences are loaded and language is different
+      if (!preferencesLoading && preferences && preferences.preferred_language !== lng) {
+        updatePreference('preferred_language', lng);
+      }
+    };
+
+    // Listen for language changes from i18next
+    i18n.on('languageChanged', handleLanguageChange);
+
+    return () => {
+      i18n.off('languageChanged', handleLanguageChange);
+    };
+  }, [i18n, preferencesLoading, preferences, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
