@@ -177,16 +177,16 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               {/* Add Map Management + Settings below the YearScope card (expanded view) */}
               <div className="mt-3 space-y-2">
                 {hasAnyRole(['super_admin','system_manager']) && (
-                  <Link to="/admin/map" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
-                    <Icon path={mdiMap} size={1} />
-                    <span>{t('adminNav.mapManagement')}</span>
+                  <Link to="/admin/map" className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
+                    <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiMap} size={1.1} /></span>
+                    <span className="flex-1">{t('adminNav.mapManagement')}</span>
                   </Link>
                 )}
 
                 {hasAnyRole(['super_admin','system_manager','event_manager']) && (
-                  <Link to="/admin/settings" className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
-                    <Icon path={mdiCog} size={1} />
-                    <span>{t('adminNav.settings')}</span>
+                  <Link to="/admin/settings" className="flex items-center gap-3 px-4 w-full py-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors border bg-white">
+                    <span className="flex-none w-5 h-5 flex items-center justify-center text-gray-600"><Icon path={mdiCog} size={1.1} /></span>
+                    <span className="flex-1">{t('adminNav.settings')}</span>
                   </Link>
                 )}
               </div>

@@ -13,19 +13,19 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
       </div>
 
       <div className="flex flex-col items-center space-y-3">
-        <Link to="/admin/subscriptions" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
+        <Link to="/admin/subscriptions" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
           <Icon path={mdiCalendarCheck} size={1} />
         </Link>
-        <Link to="/admin/assignments" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
+        <Link to="/admin/assignments" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
           <Icon path={mdiMapMarkerMultiple} size={1} />
         </Link>
-        <Link to="/admin/program" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
+        <Link to="/admin/program" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
           <Icon path={mdiCalendarClock} size={1} />
         </Link>
-        <Link to="/admin/map" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.mapManagement')} aria-label={t('adminNav.mapManagement')}>
+        <Link to="/admin/map" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.mapManagement')} aria-label={t('adminNav.mapManagement')}>
           <Icon path={mdiMap} size={1} />
         </Link>
-        <Link to="/admin/settings" className="py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.settings')} aria-label={t('adminNav.settings')}>
+        <Link to="/admin/settings" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.settings')} aria-label={t('adminNav.settings')}>
           <Icon path={mdiCog} size={1} />
         </Link>
       </div>
