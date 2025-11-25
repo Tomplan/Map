@@ -7,21 +7,21 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
   return (
     // Panel is narrow when collapsed, so stack year above the icons in a small column
     // Year-scoped operations only (Map and Settings are in a separate section)
-    <div className="w-full px-2 py-3 flex flex-col items-center">
+    <div className="w-full py-3 flex flex-col items-center">
       {/* Year above the icons — static text in collapsed mode */}
-      <div className="text-gray-700 text-base font-medium mb-2" title={`Event Year: ${selectedYear}`}>
+      <div className="text-gray-700 text-base font-medium mb-2 transition-all duration-300" title={`Event Year: ${selectedYear}`}>
         {selectedYear}
       </div>
 
-      <div className="flex flex-col items-center space-y-3">
-        <Link to="/admin/subscriptions" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
-          <Icon path={mdiCalendarCheck} size={1} />
+      <div className="flex flex-col items-center space-y-2">
+        <Link to="/admin/subscriptions" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600 transition-all duration-300 border border-transparent" title={t('adminNav.eventSubscriptions')} aria-label={t('adminNav.eventSubscriptions')}>
+          <Icon path={mdiCalendarCheck} size={1} className="transition-all duration-300" />
         </Link>
-        <Link to="/admin/assignments" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
-          <Icon path={mdiMapMarkerMultiple} size={1} />
+        <Link to="/admin/assignments" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600 transition-all duration-300 border border-transparent" title={t('adminNav.assignments')} aria-label={t('adminNav.assignments')}>
+          <Icon path={mdiMapMarkerMultiple} size={1} className="transition-all duration-300" />
         </Link>
-        <Link to="/admin/program" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
-          <Icon path={mdiCalendarClock} size={1} />
+        <Link to="/admin/program" className="flex items-center justify-center py-3 px-3 rounded-lg hover:bg-gray-50 text-gray-600 transition-all duration-300 border border-transparent" title={t('adminNav.programManagement')} aria-label={t('adminNav.programManagement')}>
+          <Icon path={mdiCalendarClock} size={1} className="transition-all duration-300" />
         </Link>
       </div>
     </div>
