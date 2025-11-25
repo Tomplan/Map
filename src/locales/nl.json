@@ -176,7 +176,42 @@
     },
     "mapDefaults": {
       "title": "Kaart Standaardinstellingen",
-      "description": "Standaard kaartlagen, zoomniveaus en kaartinstellingen"
+      "description": "Standaard kaartlagen, zoomniveaus en kaartinstellingen",
+      "loading": "Kaartinstellingen laden...",
+      "save": "Wijzigingen Opslaan",
+      "saving": "Opslaan...",
+      "reset": "Resetten",
+      "saveSuccess": "Kaartinstellingen succesvol opgeslagen",
+      "saveSuccessMessage": "Je kaartconfiguratie is bijgewerkt.",
+      "error": "Fout",
+      "mapCenter": {
+        "title": "Kaart Middelpunt",
+        "description": "Stel het standaard middelpunt van de kaart in wanneer deze wordt geladen",
+        "latitude": "Breedtegraad",
+        "longitude": "Lengtegraad",
+        "latitudeRange": "Bereik: -90 tot 90",
+        "longitudeRange": "Bereik: -180 tot 180",
+        "hint": "💡 Tip: Je kunt coördinaten vinden door met de rechtermuisknop op Google Maps te klikken en de coördinaten te selecteren."
+      },
+      "zoomLevels": {
+        "title": "Zoomniveaus",
+        "description": "Configureer standaard en toegestane zoomniveaus voor de kaart",
+        "defaultZoom": "Standaard Zoom",
+        "defaultZoomDesc": "Initieel zoomniveau wanneer de kaart wordt geladen",
+        "searchZoom": "Zoek Zoom",
+        "searchZoomDesc": "Zoomniveau bij het bekijken van zoekresultaten",
+        "minZoom": "Minimale Zoom",
+        "minZoomDesc": "Gebruikers kunnen niet verder uitzoomen dan dit niveau",
+        "maxZoom": "Maximale Zoom",
+        "maxZoomDesc": "Gebruikers kunnen niet verder inzoomen dan dit niveau",
+        "constraint": "Beperking",
+        "constraintDesc": "Min Zoom ≤ Standaard Zoom ≤ Max Zoom, en Zoek Zoom moet binnen bereik liggen"
+      },
+      "errors": {
+        "invalidZoomLevels": "Ongeldige zoomniveaus: Min ≤ Standaard ≤ Max vereist",
+        "invalidSearchZoom": "Zoek zoom moet binnen min/max bereik liggen",
+        "saveFailed": "Kan kaartinstellingen niet opslaan. Controleer je verbinding."
+      }
     },
     "eventDefaults": {
       "title": "Evenement Standaardinstellingen",
