@@ -26,14 +26,17 @@ export default function useUserPreferences() {
    */
   const fetchPreferences = useCallback(async () => {
     try {
+      console.log('[useUserPreferences] Fetching preferences...');
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
+        console.log('[useUserPreferences] No user, setting loading=false');
         setPreferences(null);
         setLoading(false);
         return;
       }
 
+      console.log('[useUserPreferences] User found, querying preferences...');
       // Try to fetch existing preferences
       const { data, error } = await supabase
         .from('user_preferences')
@@ -45,17 +48,20 @@ export default function useUserPreferences() {
       if (error) {
         if (error.code === 'PGRST116') {
           // No preferences found - this is okay, we'll create them
+          console.log('[useUserPreferences] No preferences found (PGRST116), will create defaults');
         } else if (error.code === '42P01' || error.message?.includes('does not exist')) {
           // Table doesn't exist (migrations not run)
-          console.warn('user_preferences table does not exist. Run migration 24.');
+          console.warn('[useUserPreferences] user_preferences table does not exist. Run migration 24.');
           setPreferences(null);
           setLoading(false);
+          console.log('[useUserPreferences] Set loading=false (table missing)');
           return;
         } else {
           // Other error
-          console.error('Error fetching preferences:', error);
+          console.error('[useUserPreferences] Error fetching preferences:', error);
           setPreferences(null);
           setLoading(false);
+          console.log('[useUserPreferences] Set loading=false (error)');
           return;
         }
       }
@@ -98,11 +104,13 @@ export default function useUserPreferences() {
         setPreferences(data);
       }
 
+      console.log('[useUserPreferences] Preferences loaded successfully, setting loading=false');
       setLoading(false);
     } catch (error) {
-      console.error('Error in fetchPreferences:', error);
+      console.error('[useUserPreferences] Caught error in fetchPreferences:', error);
       setPreferences(null);
       setLoading(false);
+      console.log('[useUserPreferences] Set loading=false (caught error)');
     }
   }, []);
 
