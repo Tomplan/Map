@@ -27,7 +27,10 @@ export default function useUserPreferences() {
   const fetchPreferences = useCallback(async () => {
     try {
       console.log('[useUserPreferences] Fetching preferences...');
-      const { data: { user } } = await supabase.auth.getUser();
+      console.log('[useUserPreferences] Calling supabase.auth.getUser()...');
+      const userResult = await supabase.auth.getUser();
+      console.log('[useUserPreferences] getUser() completed:', userResult);
+      const { data: { user } } = userResult;
 
       if (!user) {
         console.log('[useUserPreferences] No user, setting loading=false');
