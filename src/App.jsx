@@ -51,7 +51,18 @@ function AppContent() {
   });
 
   // Track if we're currently syncing FROM database to prevent feedback loops
+  // This flag prevents the TO database effect from firing when we update selectedYear from a DB sync
   const syncingFromDbRef = useRef(false);
+
+  /**
+   * Bidirectional year sync with feedback loop prevention
+   *
+   * Pattern:
+   * - FROM database: When preferences.default_year changes, update selectedYear (and set flag)
+   * - TO database: When selectedYear changes locally, write to database (unless flag is set)
+   * - Flag prevents: DB update → state update → DB write loop
+   * - Real-time updates: row_version dependency triggers fresh sync from other devices
+   */
 
   // Sync selectedYear FROM database when preferences load (one-way: DB → state)
   useEffect(() => {
@@ -74,12 +85,10 @@ function AppContent() {
     if (!preferencesLoading && preferences && selectedYear !== preferences.default_year) {
       // Skip write if we're currently syncing FROM database
       if (syncingFromDbRef.current) {
-        console.log('Skipping year write - syncing from database');
         syncingFromDbRef.current = false; // Reset flag
         return;
       }
 
-      console.log('Writing year to database:', selectedYear);
       updatePreference('default_year', selectedYear);
       localStorage.setItem('selectedEventYear', selectedYear.toString());
     }

@@ -4,14 +4,26 @@ import { supabase } from '../supabaseClient';
 /**
  * useUserPreferences Hook
  *
- * Manages user-specific preferences stored in Supabase database.
- * Preferences sync across devices/browsers via real-time subscriptions.
+ * Manages user-specific preferences stored in Supabase database with cross-device synchronization.
+ *
+ * ARCHITECTURE:
+ * - Single source of truth: Database is authoritative, localStorage is cache
+ * - Optimistic concurrency control prevents data loss from concurrent edits
+ * - Real-time subscriptions sync changes across all user sessions
  *
  * IMPLEMENTATION PATTERN:
- * - Follows official Supabase React pattern (no timeout, simple ignore flag)
- * - Uses optimistic concurrency control via row_version column
- * - Provides conflict detection for multi-device updates
- * - Real-time subscriptions with version checking
+ * - Follows official Supabase React pattern (getSession + onAuthStateChange, no timeout)
+ * - Uses row_version column for optimistic locking
+ * - Detects conflicts when multiple devices update simultaneously
+ * - Auto-reloads on conflict, throws user-friendly error
+ * - Version checking in realtime prevents race conditions
+ *
+ * OPTIMISTIC CONCURRENCY:
+ * When updating, we:
+ *   1. Read current row_version
+ *   2. Increment it and write with WHERE row_version = old_value
+ *   3. If no rows updated, another device changed it first
+ *   4. Reload fresh data and ask user to retry
  *
  * @returns {Object} Hook state and methods
  * @property {Object|null} preferences - User preferences object or null if not loaded
@@ -138,12 +150,11 @@ export default function useUserPreferences() {
 
       if (!data) {
         // No rows updated = conflict detected
-        console.warn('Preference update conflict detected - reloading preferences');
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           await loadPreferences(user);
         }
-        throw new Error('Preference update conflict - another device updated first');
+        throw new Error('Your preferences were updated from another device. Please try again.');
       }
 
       setPreferences(data);
@@ -189,12 +200,11 @@ export default function useUserPreferences() {
 
       if (!data) {
         // No rows updated = conflict detected
-        console.warn('Preferences update conflict detected - reloading preferences');
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           await loadPreferences(user);
         }
-        throw new Error('Preferences update conflict - another device updated first');
+        throw new Error('Your preferences were updated from another device. Please try again.');
       }
 
       setPreferences(data);
@@ -267,7 +277,6 @@ export default function useUserPreferences() {
       }, (payload) => {
         // Only apply update if newer version (prevents race conditions)
         if (payload.new.row_version > (preferences.row_version || 0)) {
-          console.log('Preferences updated from another device:', payload.new);
           setPreferences(payload.new);
         }
       })
