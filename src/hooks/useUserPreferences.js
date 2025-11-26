@@ -183,30 +183,61 @@ export default function useUserPreferences() {
     }
   }, []);
 
-  // Set up auth state listener - NO initial getSession() call to avoid hangs
+  // Set up auth state listener and initial load
   useEffect(() => {
     let isMounted = true;
 
-    // Listen for auth state changes - this provides session directly
+    // Get initial session and load preferences
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!isMounted) return;
+
+      const user = data?.session?.user;
+      if (user) {
+        await loadPreferencesForUser(user);
+
+        // Set up real-time subscription for cross-browser sync
+        if (isMounted && channelRef.current) {
+          channelRef.current.unsubscribe();
+          channelRef.current = null;
+        }
+
+        if (isMounted) {
+          channelRef.current = supabase
+            .channel('user-preferences-changes')
+            .on('postgres_changes', {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'user_preferences',
+              filter: `user_id=eq.${user.id}`
+            }, (payload) => {
+              if (isMounted) {
+                console.log('User preferences updated from another tab/device:', payload);
+                setPreferences(payload.new);
+              }
+            })
+            .subscribe();
+        }
+      } else {
+        setPreferences(null);
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!isMounted) return;
 
       if (session) {
-        // User logged in - session provided directly, no need for getSession()
         const user = session.user;
-
-        // Load preferences for this user
         await loadPreferencesForUser(user);
 
-        // Set up real-time subscription for cross-browser sync
-        if (isMounted) {
-          // Clean up existing subscription first
-          if (channelRef.current) {
-            channelRef.current.unsubscribe();
-            channelRef.current = null;
-          }
+        // Set up real-time subscription
+        if (isMounted && channelRef.current) {
+          channelRef.current.unsubscribe();
+          channelRef.current = null;
+        }
 
-          // Create new subscription
+        if (isMounted) {
           channelRef.current = supabase
             .channel('user-preferences-changes')
             .on('postgres_changes', {
