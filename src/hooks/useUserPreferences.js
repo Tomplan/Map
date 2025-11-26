@@ -26,27 +26,21 @@ export default function useUserPreferences() {
    */
   const fetchPreferences = useCallback(async () => {
     try {
-      console.log('[useUserPreferences] Fetching preferences...');
-      console.log('[useUserPreferences] Getting session...');
-
-      // Add timeout to prevent hanging
+      // Add timeout to prevent hanging during Supabase auth initialization
+      // Note: getSession() hangs due to _recoverAndRefresh in Supabase auth client
       const sessionPromise = supabase.auth.getSession();
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(() => reject(new Error('getSession timeout')), 3000)
       );
 
       const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-      console.log('[useUserPreferences] Session:', session);
 
       const user = session?.user;
       if (!user) {
-        console.log('[useUserPreferences] No user, setting loading=false');
         setPreferences(null);
         setLoading(false);
         return;
       }
-
-      console.log('[useUserPreferences] User found, querying preferences...');
       // Try to fetch existing preferences
       const { data, error } = await supabase
         .from('user_preferences')
@@ -58,20 +52,17 @@ export default function useUserPreferences() {
       if (error) {
         if (error.code === 'PGRST116') {
           // No preferences found - this is okay, we'll create them
-          console.log('[useUserPreferences] No preferences found (PGRST116), will create defaults');
         } else if (error.code === '42P01' || error.message?.includes('does not exist')) {
           // Table doesn't exist (migrations not run)
-          console.warn('[useUserPreferences] user_preferences table does not exist. Run migration 24.');
+          console.warn('user_preferences table does not exist. Run migration 24.');
           setPreferences(null);
           setLoading(false);
-          console.log('[useUserPreferences] Set loading=false (table missing)');
           return;
         } else {
           // Other error
-          console.error('[useUserPreferences] Error fetching preferences:', error);
+          console.error('Error fetching preferences:', error);
           setPreferences(null);
           setLoading(false);
-          console.log('[useUserPreferences] Set loading=false (error)');
           return;
         }
       }
@@ -114,13 +105,12 @@ export default function useUserPreferences() {
         setPreferences(data);
       }
 
-      console.log('[useUserPreferences] Preferences loaded successfully, setting loading=false');
       setLoading(false);
     } catch (error) {
-      console.error('[useUserPreferences] Caught error in fetchPreferences:', error);
+      // Timeout or other error - set loading false to allow app to continue
+      console.warn('fetchPreferences failed (likely auth timeout):', error.message);
       setPreferences(null);
       setLoading(false);
-      console.log('[useUserPreferences] Set loading=false (caught error)');
     }
   }, []);
 
