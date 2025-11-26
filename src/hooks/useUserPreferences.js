@@ -257,14 +257,59 @@ export default function useUserPreferences() {
       if (!isMounted) return;
 
       if (session) {
-        // User logged in - fetch preferences and set up subscription
+        // User logged in - we already have the session, so use it directly
+        // instead of calling fetchPreferences/setupSubscription which would
+        // call getSession() again and hang on _recoverAndRefresh
         try {
-          await fetchPreferences();
+          const user = session.user;
+          if (!user) return;
+
+          // Fetch user preferences using the session we already have
+          const { data, error } = await supabase
+            .from('user_preferences')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching preferences after login:', error);
+            setPreferences(null);
+            setLoading(false);
+            return;
+          }
+
+          if (data) {
+            setPreferences(data);
+          } else {
+            setPreferences(null);
+          }
+
+          setLoading(false);
+
+          // Set up subscription using the session we already have
+          if (isMounted && channelRef.current) {
+            channelRef.current.unsubscribe();
+            channelRef.current = null;
+          }
+
           if (isMounted) {
-            await setupSubscription();
+            channelRef.current = supabase
+              .channel('user-preferences-changes')
+              .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'user_preferences',
+                filter: `user_id=eq.${user.id}`
+              }, (payload) => {
+                if (isMounted) {
+                  console.log('User preferences updated from another tab/device:', payload);
+                  setPreferences(payload.new);
+                }
+              })
+              .subscribe();
           }
         } catch (error) {
-          console.error('Error during login fetch:', error);
+          console.error('Error during login:', error);
           if (isMounted) {
             setLoading(false);
           }
