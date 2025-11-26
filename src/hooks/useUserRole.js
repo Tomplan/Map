@@ -23,14 +23,6 @@ export default function useUserRole() {
       const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
       const userEmail = user?.email || null;
 
-      console.log('useUserRole onAuthStateChange:', {
-        event: _event,
-        hasUser: !!user,
-        userRole,
-        userName,
-        userEmail
-      });
-
       setRole(userRole);
       setUserInfo({ email: userEmail, name: userName });
       setLoading(false);
