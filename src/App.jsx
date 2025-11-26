@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getLogoPath } from './utils/getLogoPath';
 import { supabase } from './supabaseClient';
 import { HashRouter } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
+import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -11,20 +13,78 @@ import { getDefaultLogoPath } from './utils/getDefaultLogo';
 import './i18n';
 import './App.css';
 
-function App() {
+function AppContent() {
   // Global year selector for filtering markers by event year
   const currentYear = new Date().getFullYear();
 
-  // Load selected year from localStorage or default to current year
+  // i18n hook for language management
+  const { i18n } = useTranslation();
+
+  // Load user preferences from context (single source of truth)
+  const { preferences, loading: preferencesLoading, updatePreference } = usePreferences();
+
+  // Load language from localStorage on mount (instant feedback while DB loads)
+  useEffect(() => {
+    const storedLang = localStorage.getItem('preferredLanguage');
+    if (storedLang && i18n.language !== storedLang) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, [i18n]);
+
+  // Sync language from preferences to i18n (DB is source of truth)
+  useEffect(() => {
+    if (!preferencesLoading && preferences?.preferred_language) {
+      const currentLang = i18n.language;
+      const prefLang = preferences.preferred_language;
+
+      if (currentLang !== prefLang) {
+        i18n.changeLanguage(prefLang);
+        localStorage.setItem('preferredLanguage', prefLang);
+      }
+    }
+  }, [preferencesLoading, preferences?.preferred_language, i18n]);
+
+  // Initialize selected year from localStorage (will sync with DB when preferences load)
   const [selectedYear, setSelectedYear] = useState(() => {
     const stored = localStorage.getItem('selectedEventYear');
     return stored ? parseInt(stored, 10) : currentYear;
   });
 
-  // Persist selected year to localStorage whenever it changes
+  // Track if we're currently syncing FROM database to prevent feedback loops
+  const syncingFromDbRef = useRef(false);
+
+  // Sync selectedYear FROM database when preferences load (one-way: DB → state)
   useEffect(() => {
-    localStorage.setItem('selectedEventYear', selectedYear.toString());
-  }, [selectedYear]);
+    if (!preferencesLoading && preferences?.default_year) {
+      const dbYear = preferences.default_year;
+
+      if (dbYear !== selectedYear) {
+        // Set flag to prevent write-back in the next effect
+        syncingFromDbRef.current = true;
+        setSelectedYear(dbYear);
+        localStorage.setItem('selectedEventYear', dbYear.toString());
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferencesLoading, preferences?.default_year, preferences?.row_version]);
+
+  // Sync selectedYear TO database when changed locally
+  // Only write if this is a LOCAL change, not a sync FROM database
+  useEffect(() => {
+    if (!preferencesLoading && preferences && selectedYear !== preferences.default_year) {
+      // Skip write if we're currently syncing FROM database
+      if (syncingFromDbRef.current) {
+        console.log('Skipping year write - syncing from database');
+        syncingFromDbRef.current = false; // Reset flag
+        return;
+      }
+
+      console.log('Writing year to database:', selectedYear);
+      updatePreference('default_year', selectedYear);
+      localStorage.setItem('selectedEventYear', selectedYear.toString());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, preferencesLoading, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
@@ -91,12 +151,16 @@ function App() {
   // Track Supabase auth state
   const [user, setUser] = useState(null);
   useEffect(() => {
+    // Get initial session (this is the ONLY getSession call in the app)
     supabase.auth.getSession().then(({ data }) => {
       setUser(data?.session?.user || null);
     });
+
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
+
     return () => {
       listener?.subscription?.unsubscribe();
     };
@@ -119,6 +183,15 @@ function App() {
         </HashRouter>
       </OrganizationLogoProvider>
     </DialogProvider>
+  );
+}
+
+// Wrap AppContent with PreferencesProvider for single source of truth
+function App() {
+  return (
+    <PreferencesProvider>
+      <AppContent />
+    </PreferencesProvider>
   );
 }
 

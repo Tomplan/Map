@@ -49,20 +49,22 @@ export default function HelpPanel({ isOpen, onClose }) {
     return styles[type] || styles.improvement;
   };
 
-  if (!isOpen) return null;
-
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/40 z-[9998]"
+        className={`fixed inset-0 bg-slate-900/40 z-[9998] transition-opacity duration-300 ${
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Panel */}
-      <div 
-        className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-[9999] flex flex-col"
+      <div
+        className={`fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-[9999] flex flex-col transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
+        }`}
         role="dialog"
         aria-label="Help Panel"
         aria-modal="true"

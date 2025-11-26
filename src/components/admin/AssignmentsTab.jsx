@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
+import useUserPreferences from '../../hooks/useUserPreferences';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiChevronUp, mdiChevronDown } from '@mdi/js';
@@ -19,7 +20,13 @@ export default function AssignmentsTab({ selectedYear }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Load sort preferences from localStorage on mount
+  // Load user preferences from database
+  const { preferences, loading: preferencesLoading, updatePreferences } = useUserPreferences();
+
+  // Track the last values we synced from database to prevent feedback loops
+  const lastSyncedPrefsRef = useRef(null);
+
+  // Load sort preferences from localStorage (fallback for backwards compatibility)
   const loadSortPreferences = () => {
     try {
       const stored = localStorage.getItem(SORT_STORAGE_KEY);
@@ -42,6 +49,29 @@ export default function AssignmentsTab({ selectedYear }) {
   const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
   const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'markerId' or 'glyphText'
   const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
+
+  // Sync with database preferences when they load
+  useEffect(() => {
+    if (!preferencesLoading && preferences) {
+      const dbSortBy = preferences.assignments_sort_by || 'alphabetic';
+      const dbSortDirection = preferences.assignments_sort_direction || 'asc';
+      const dbColumnSort = preferences.assignments_column_sort || 'markerId';
+      const dbColumnSortDirection = preferences.assignments_column_sort_direction || 'asc';
+
+      // Track what we synced from database
+      lastSyncedPrefsRef.current = {
+        sortBy: dbSortBy,
+        sortDirection: dbSortDirection,
+        columnSort: dbColumnSort,
+        columnSortDirection: dbColumnSortDirection
+      };
+
+      setSortBy(dbSortBy);
+      setSortDirection(dbSortDirection);
+      setColumnSort(dbColumnSort);
+      setColumnSortDirection(dbColumnSortDirection);
+    }
+  }, [preferencesLoading, preferences]);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs();
 
   const {
@@ -69,20 +99,51 @@ export default function AssignmentsTab({ selectedYear }) {
     }));
   }, [subscriptions]);
 
-  // Save sort preferences to localStorage whenever they change
+  // Save sort preferences to database and localStorage whenever they change
   useEffect(() => {
+    // Always save to localStorage for backwards compatibility
     try {
-      const preferences = {
+      const localPrefs = {
         sortBy,
         sortDirection,
         columnSort,
         columnSortDirection
       };
-      localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(preferences));
+      localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(localPrefs));
     } catch (error) {
-      console.error('Error saving sort preferences:', error);
+      console.error('Error saving sort preferences to localStorage:', error);
     }
-  }, [sortBy, sortDirection, columnSort, columnSortDirection]);
+
+    // Only update database if:
+    // 1. Preferences are loaded
+    // 2. Values are different from database
+    // 3. These aren't the values we just synced FROM the database
+    if (!preferencesLoading && preferences) {
+      const valuesChanged = (
+        preferences.assignments_sort_by !== sortBy ||
+        preferences.assignments_sort_direction !== sortDirection ||
+        preferences.assignments_column_sort !== columnSort ||
+        preferences.assignments_column_sort_direction !== columnSortDirection
+      );
+
+      const notFromSync = !lastSyncedPrefsRef.current || (
+        lastSyncedPrefsRef.current.sortBy !== sortBy ||
+        lastSyncedPrefsRef.current.sortDirection !== sortDirection ||
+        lastSyncedPrefsRef.current.columnSort !== columnSort ||
+        lastSyncedPrefsRef.current.columnSortDirection !== columnSortDirection
+      );
+
+      if (valuesChanged && notFromSync) {
+        const dbUpdates = {
+          assignments_sort_by: sortBy,
+          assignments_sort_direction: sortDirection,
+          assignments_column_sort: columnSort,
+          assignments_column_sort_direction: columnSortDirection
+        };
+        updatePreferences(dbUpdates);
+      }
+    }
+  }, [sortBy, sortDirection, columnSort, columnSortDirection, preferencesLoading, preferences, updatePreferences]);
 
   // Count assignments per company (for badge display)
   const companyAssignmentCounts = useMemo(() => {

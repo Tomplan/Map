@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
 import { mdiPalette, mdiCheckCircle } from '@mdi/js';
+import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 
 /**
  * BrandingSettings - Visual branding configuration (colors, fonts)
@@ -10,53 +10,34 @@ import { mdiPalette, mdiCheckCircle } from '@mdi/js';
  */
 export default function BrandingSettings() {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(true);
+  const { settings, loading, updateSettings } = useOrganizationSettings();
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  
+
   // Branding state
-  const [themeColor, setThemeColor] = useState('#ffffff');
-  const [fontFamily, setFontFamily] = useState('Arvo, Sans-serif');
+  const [themeColor, setThemeColor] = useState('#3b82f6');
+  const [fontFamily, setFontFamily] = useState('Arvo, serif');
 
-  // Load settings
+  // Sync local state with organization settings when they load
   useEffect(() => {
-    loadSettings();
-  }, []);
-
-  const loadSettings = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('organization_profile')
-        .select('event_name, theme_color, font_family')
-        .eq('id', 1)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setThemeColor(data.theme_color || '#ffffff');
-        setFontFamily(data.font_family || 'Arvo, Sans-serif');
-      }
-    } catch (err) {
-      console.error('Error loading branding settings:', err);
-    } finally {
-      setLoading(false);
+    if (settings) {
+      setThemeColor(settings.theme_color || '#3b82f6');
+      setFontFamily(settings.font_family || 'Arvo, serif');
     }
-  };
+  }, [settings]);
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      const { error } = await supabase
-        .from('organization_profile')
-        .update({
-          theme_color: themeColor,
-          font_family: fontFamily,
-        })
-        .eq('id', 1);
 
-      if (error) throw error;
+      const result = await updateSettings({
+        theme_color: themeColor,
+        font_family: fontFamily,
+      });
+
+      if (!result) {
+        throw new Error('Failed to update branding settings');
+      }
 
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -65,6 +46,14 @@ export default function BrandingSettings() {
       alert(t('settings.branding.errors.saveFailed'));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    // Reset to current settings from database
+    if (settings) {
+      setThemeColor(settings.theme_color || '#3b82f6');
+      setFontFamily(settings.font_family || 'Arvo, serif');
     }
   };
 
@@ -177,10 +166,7 @@ export default function BrandingSettings() {
       {/* Actions */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => {
-            setThemeColor('#ffffff');
-            setFontFamily('Arvo, Sans-serif');
-          }}
+          onClick={handleReset}
           className="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
         >
           {t('settings.branding.reset')}

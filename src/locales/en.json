@@ -182,7 +182,42 @@
     },
     "mapDefaults": {
       "title": "Map Defaults",
-      "description": "Default map layers, zoom levels, and map settings"
+      "description": "Default map layers, zoom levels, and map settings",
+      "loading": "Loading map settings...",
+      "save": "Save Changes",
+      "saving": "Saving...",
+      "reset": "Reset",
+      "saveSuccess": "Map settings saved successfully",
+      "saveSuccessMessage": "Your map configuration has been updated.",
+      "error": "Error",
+      "mapCenter": {
+        "title": "Map Center",
+        "description": "Set the default center point for the map when it loads",
+        "latitude": "Latitude",
+        "longitude": "Longitude",
+        "latitudeRange": "Range: -90 to 90",
+        "longitudeRange": "Range: -180 to 180",
+        "hint": "💡 Tip: You can find coordinates by right-clicking on Google Maps and selecting the coordinates."
+      },
+      "zoomLevels": {
+        "title": "Zoom Levels",
+        "description": "Configure default and allowed zoom levels for the map",
+        "defaultZoom": "Default Zoom",
+        "defaultZoomDesc": "Initial zoom level when map loads",
+        "searchZoom": "Search Zoom",
+        "searchZoomDesc": "Zoom level when viewing search results",
+        "minZoom": "Minimum Zoom",
+        "minZoomDesc": "Users cannot zoom out beyond this level",
+        "maxZoom": "Maximum Zoom",
+        "maxZoomDesc": "Users cannot zoom in beyond this level",
+        "constraint": "Constraint",
+        "constraintDesc": "Min Zoom ≤ Default Zoom ≤ Max Zoom, and Search Zoom must be within range"
+      },
+      "errors": {
+        "invalidZoomLevels": "Invalid zoom levels: Min ≤ Default ≤ Max required",
+        "invalidSearchZoom": "Search zoom must be within min/max range",
+        "saveFailed": "Failed to save map settings. Please check your connection."
+      }
     },
     "eventDefaults": {
       "title": "Event Defaults",

@@ -182,7 +182,42 @@
     },
     "mapDefaults": {
       "title": "Karten-Standardeinstellungen",
-      "description": "Standard-Kartenebenen, Zoomstufen und Einstellungen"
+      "description": "Standard-Kartenebenen, Zoomstufen und Einstellungen",
+      "loading": "Karteneinstellungen laden...",
+      "save": "Änderungen Speichern",
+      "saving": "Speichern...",
+      "reset": "Zurücksetzen",
+      "saveSuccess": "Karteneinstellungen erfolgreich gespeichert",
+      "saveSuccessMessage": "Ihre Kartenkonfiguration wurde aktualisiert.",
+      "error": "Fehler",
+      "mapCenter": {
+        "title": "Kartenmittelpunkt",
+        "description": "Legen Sie den Standard-Mittelpunkt der Karte beim Laden fest",
+        "latitude": "Breitengrad",
+        "longitude": "Längengrad",
+        "latitudeRange": "Bereich: -90 bis 90",
+        "longitudeRange": "Bereich: -180 bis 180",
+        "hint": "💡 Tipp: Sie können Koordinaten finden, indem Sie mit der rechten Maustaste auf Google Maps klicken und die Koordinaten auswählen."
+      },
+      "zoomLevels": {
+        "title": "Zoomstufen",
+        "description": "Konfigurieren Sie Standard- und erlaubte Zoomstufen für die Karte",
+        "defaultZoom": "Standard-Zoom",
+        "defaultZoomDesc": "Anfängliche Zoomstufe beim Laden der Karte",
+        "searchZoom": "Such-Zoom",
+        "searchZoomDesc": "Zoomstufe beim Anzeigen von Suchergebnissen",
+        "minZoom": "Minimaler Zoom",
+        "minZoomDesc": "Benutzer können nicht weiter herauszoomen als diese Stufe",
+        "maxZoom": "Maximaler Zoom",
+        "maxZoomDesc": "Benutzer können nicht weiter hineinzoomen als diese Stufe",
+        "constraint": "Einschränkung",
+        "constraintDesc": "Min. Zoom ≤ Standard-Zoom ≤ Max. Zoom, und Such-Zoom muss im Bereich liegen"
+      },
+      "errors": {
+        "invalidZoomLevels": "Ungültige Zoomstufen: Min. ≤ Standard ≤ Max. erforderlich",
+        "invalidSearchZoom": "Such-Zoom muss im Min./Max.-Bereich liegen",
+        "saveFailed": "Karteneinstellungen konnten nicht gespeichert werden. Bitte überprüfen Sie Ihre Verbindung."
+      }
     },
     "eventDefaults": {
       "title": "Event-Standardeinstellungen",
