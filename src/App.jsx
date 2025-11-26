@@ -156,9 +156,21 @@ function App() {
   // Track Supabase auth state
   const [user, setUser] = useState(null);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data?.session?.user || null);
-    });
+    // Add timeout protection for getSession (same issue as useUserPreferences)
+    const sessionPromise = supabase.auth.getSession();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('App getSession timeout')), 3000)
+    );
+
+    Promise.race([sessionPromise, timeoutPromise])
+      .then(({ data }) => {
+        setUser(data?.session?.user || null);
+      })
+      .catch((error) => {
+        console.warn('App getSession failed (likely auth timeout):', error.message);
+        setUser(null); // Set to null so app can render
+      });
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
