@@ -7,6 +7,9 @@ import { supabase } from '../supabaseClient';
  * Manages user-specific preferences stored in Supabase database.
  * Preferences sync across devices/browsers via real-time subscriptions.
  *
+ * IMPORTANT: This hook uses ONLY onAuthStateChange to avoid getSession() hangs.
+ * No initial getSession() calls are made - everything waits for auth state callback.
+ *
  * For device-specific settings (like sidebar collapsed state), continue using localStorage.
  *
  * @returns {Object} Hook state and methods
@@ -14,7 +17,6 @@ import { supabase } from '../supabaseClient';
  * @property {boolean} loading - Whether preferences are being loaded
  * @property {Function} updatePreference - Update a single preference
  * @property {Function} updatePreferences - Update multiple preferences at once
- * @property {Function} refreshPreferences - Manually refresh preferences from database
  */
 export default function useUserPreferences() {
   const [preferences, setPreferences] = useState(null);
@@ -22,25 +24,17 @@ export default function useUserPreferences() {
   const channelRef = useRef(null);
 
   /**
-   * Fetch user preferences from database
+   * Fetch/create user preferences from database for a given user
+   * This is called from onAuthStateChange with the session's user object
    */
-  const fetchPreferences = useCallback(async () => {
+  const loadPreferencesForUser = useCallback(async (user) => {
     try {
-      // Add timeout to prevent hanging during Supabase auth initialization
-      // Note: getSession() hangs due to _recoverAndRefresh in Supabase auth client
-      const sessionPromise = supabase.auth.getSession();
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('getSession timeout')), 3000)
-      );
-
-      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-
-      const user = session?.user;
       if (!user) {
         setPreferences(null);
         setLoading(false);
         return;
       }
+
       // Try to fetch existing preferences
       const { data, error } = await supabase
         .from('user_preferences')
@@ -107,8 +101,8 @@ export default function useUserPreferences() {
 
       setLoading(false);
     } catch (error) {
-      // Timeout or other error - set loading false to allow app to continue
-      console.warn('fetchPreferences failed (likely auth timeout):', error.message);
+      // Error loading preferences - set loading false to allow app to continue
+      console.warn('loadPreferencesForUser failed:', error.message);
       setPreferences(null);
       setLoading(false);
     }
@@ -189,130 +183,44 @@ export default function useUserPreferences() {
     }
   }, []);
 
-  // Initial fetch on mount and set up real-time subscriptions
+  // Set up auth state listener - NO initial getSession() call to avoid hangs
   useEffect(() => {
-    let authListener = null;
     let isMounted = true;
 
-    const setupSubscription = async () => {
-      try {
-        if (!isMounted) return;
-
-        // Add timeout protection for getSession (same issue as fetchPreferences)
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('setupSubscription getSession timeout')), 3000)
-        );
-
-        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
-        const user = session?.user;
-        if (!user) return;
-
-        // Clean up existing subscription before creating new one
-        if (channelRef.current) {
-          channelRef.current.unsubscribe();
-          channelRef.current = null;
-        }
-
-        // Try to set up real-time subscription for cross-browser sync
-        // If table doesn't exist, this will fail silently (caught below)
-        channelRef.current = supabase
-          .channel('user-preferences-changes')
-          .on('postgres_changes', {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'user_preferences',
-            filter: `user_id=eq.${user.id}`
-          }, (payload) => {
-            if (isMounted) {
-              console.log('User preferences updated from another tab/device:', payload);
-              setPreferences(payload.new);
-            }
-          })
-          .subscribe();
-      } catch (error) {
-        console.error('Error setting up subscription:', error);
-      }
-    };
-
-    // Initial fetch with error handling
-    fetchPreferences()
-      .then(() => {
-        if (isMounted) {
-          // Set up subscription after initial fetch completes (don't await to avoid blocking)
-          setupSubscription().catch((error) => {
-            console.warn('setupSubscription failed (likely auth timeout):', error.message);
-          });
-        }
-      })
-      .catch((error) => {
-        console.error('Error during initial fetch:', error);
-        if (isMounted) {
-          setLoading(false);
-        }
-      });
-
-    // Listen for auth state changes
+    // Listen for auth state changes - this provides session directly
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!isMounted) return;
 
       if (session) {
-        // User logged in - we already have the session, so use it directly
-        // instead of calling fetchPreferences/setupSubscription which would
-        // call getSession() again and hang on _recoverAndRefresh
-        try {
-          const user = session.user;
-          if (!user) return;
+        // User logged in - session provided directly, no need for getSession()
+        const user = session.user;
 
-          // Fetch user preferences using the session we already have
-          const { data, error } = await supabase
-            .from('user_preferences')
-            .select('*')
-            .eq('user_id', user.id)
-            .maybeSingle();
+        // Load preferences for this user
+        await loadPreferencesForUser(user);
 
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching preferences after login:', error);
-            setPreferences(null);
-            setLoading(false);
-            return;
-          }
-
-          if (data) {
-            setPreferences(data);
-          } else {
-            setPreferences(null);
-          }
-
-          setLoading(false);
-
-          // Set up subscription using the session we already have
-          if (isMounted && channelRef.current) {
+        // Set up real-time subscription for cross-browser sync
+        if (isMounted) {
+          // Clean up existing subscription first
+          if (channelRef.current) {
             channelRef.current.unsubscribe();
             channelRef.current = null;
           }
 
-          if (isMounted) {
-            channelRef.current = supabase
-              .channel('user-preferences-changes')
-              .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'user_preferences',
-                filter: `user_id=eq.${user.id}`
-              }, (payload) => {
-                if (isMounted) {
-                  console.log('User preferences updated from another tab/device:', payload);
-                  setPreferences(payload.new);
-                }
-              })
-              .subscribe();
-          }
-        } catch (error) {
-          console.error('Error during login:', error);
-          if (isMounted) {
-            setLoading(false);
-          }
+          // Create new subscription
+          channelRef.current = supabase
+            .channel('user-preferences-changes')
+            .on('postgres_changes', {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'user_preferences',
+              filter: `user_id=eq.${user.id}`
+            }, (payload) => {
+              if (isMounted) {
+                console.log('User preferences updated from another tab/device:', payload);
+                setPreferences(payload.new);
+              }
+            })
+            .subscribe();
         }
       } else {
         // User logged out - clean up
@@ -325,23 +233,20 @@ export default function useUserPreferences() {
       }
     });
 
-    authListener = listener;
-
     return () => {
       isMounted = false;
-      authListener?.subscription?.unsubscribe();
+      listener?.subscription?.unsubscribe();
       if (channelRef.current) {
         channelRef.current.unsubscribe();
         channelRef.current = null;
       }
     };
-  }, [fetchPreferences]);
+  }, [loadPreferencesForUser]);
 
   return {
     preferences,
     loading,
     updatePreference,
     updatePreferences,
-    refreshPreferences: fetchPreferences,
   };
 }
