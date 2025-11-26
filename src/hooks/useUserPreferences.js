@@ -184,19 +184,14 @@ export default function useUserPreferences() {
   // Initial fetch on mount and set up real-time subscriptions
   useEffect(() => {
     let authListener = null;
+    let isMounted = true;
 
     const setupSubscription = async () => {
       try {
+        if (!isMounted) return;
+
         const { data: { user } } = await supabase.auth.getUser();
-
         if (!user) return;
-
-        // Don't set up subscription if preferences is null (table doesn't exist)
-        // Check the current preferences state to see if table exists
-        if (preferences === null) {
-          console.log('Skipping subscription setup: user_preferences table may not exist');
-          return;
-        }
 
         // Clean up existing subscription before creating new one
         if (channelRef.current) {
@@ -204,7 +199,8 @@ export default function useUserPreferences() {
           channelRef.current = null;
         }
 
-        // Set up real-time subscription for cross-browser sync
+        // Try to set up real-time subscription for cross-browser sync
+        // If table doesn't exist, this will fail silently (caught below)
         channelRef.current = supabase
           .channel('user-preferences-changes')
           .on('postgres_changes', {
@@ -213,9 +209,10 @@ export default function useUserPreferences() {
             table: 'user_preferences',
             filter: `user_id=eq.${user.id}`
           }, (payload) => {
-            console.log('User preferences updated from another tab/device:', payload);
-            // Update local state when changes come from another tab/device
-            setPreferences(payload.new);
+            if (isMounted) {
+              console.log('User preferences updated from another tab/device:', payload);
+              setPreferences(payload.new);
+            }
           })
           .subscribe();
       } catch (error) {
@@ -226,24 +223,34 @@ export default function useUserPreferences() {
     // Initial fetch with error handling
     fetchPreferences()
       .then(() => {
-        // Set up subscription after initial fetch completes
-        setupSubscription();
+        if (isMounted) {
+          // Set up subscription after initial fetch completes
+          setupSubscription();
+        }
       })
       .catch((error) => {
         console.error('Error during initial fetch:', error);
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       });
 
     // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!isMounted) return;
+
       if (session) {
         // User logged in - fetch preferences and set up subscription
         try {
           await fetchPreferences();
-          await setupSubscription();
+          if (isMounted) {
+            await setupSubscription();
+          }
         } catch (error) {
           console.error('Error during login fetch:', error);
-          setLoading(false);
+          if (isMounted) {
+            setLoading(false);
+          }
         }
       } else {
         // User logged out - clean up
@@ -259,6 +266,7 @@ export default function useUserPreferences() {
     authListener = listener;
 
     return () => {
+      isMounted = false;
       authListener?.subscription?.unsubscribe();
       if (channelRef.current) {
         channelRef.current.unsubscribe();
