@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 /**
@@ -19,6 +19,7 @@ import { supabase } from '../supabaseClient';
 export default function useUserPreferences() {
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
+  const channelRef = useRef(null);
 
   /**
    * Fetch user preferences from database
@@ -166,16 +167,23 @@ export default function useUserPreferences() {
 
   // Initial fetch on mount and set up real-time subscriptions
   useEffect(() => {
-    let channel = null;
     let authListener = null;
 
     const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-      if (user) {
+        if (!user) return;
+
+        // Clean up existing subscription before creating new one
+        if (channelRef.current) {
+          channelRef.current.unsubscribe();
+          channelRef.current = null;
+        }
+
         // Only set up subscription if table exists (check during fetch)
         // This prevents subscription errors when migrations haven't been run
-        channel = supabase
+        channelRef.current = supabase
           .channel('user-preferences-changes')
           .on('postgres_changes', {
             event: 'UPDATE',
@@ -188,36 +196,40 @@ export default function useUserPreferences() {
             setPreferences(payload.new);
           })
           .subscribe();
+      } catch (error) {
+        console.error('Error setting up subscription:', error);
       }
     };
 
-    // Initial fetch
-    fetchPreferences().then(() => {
-      // Set up subscription after initial fetch completes
-      setupSubscription();
-    });
+    // Initial fetch with error handling
+    fetchPreferences()
+      .then(() => {
+        // Set up subscription after initial fetch completes
+        setupSubscription();
+      })
+      .catch((error) => {
+        console.error('Error during initial fetch:', error);
+        setLoading(false);
+      });
 
     // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
         // User logged in - fetch preferences and set up subscription
-        await fetchPreferences();
-
-        // Clean up old subscription if it exists
-        if (channel) {
-          channel.unsubscribe();
-          channel = null;
+        try {
+          await fetchPreferences();
+          await setupSubscription();
+        } catch (error) {
+          console.error('Error during login fetch:', error);
+          setLoading(false);
         }
-
-        // Set up new subscription for this user
-        await setupSubscription();
       } else {
         // User logged out - clean up
         setPreferences(null);
         setLoading(false);
-        if (channel) {
-          channel.unsubscribe();
-          channel = null;
+        if (channelRef.current) {
+          channelRef.current.unsubscribe();
+          channelRef.current = null;
         }
       }
     });
@@ -226,8 +238,9 @@ export default function useUserPreferences() {
 
     return () => {
       authListener?.subscription?.unsubscribe();
-      if (channel) {
-        channel.unsubscribe();
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+        channelRef.current = null;
       }
     };
   }, [fetchPreferences]);
