@@ -16,36 +16,22 @@ export default function useUserRole() {
   const [userInfo, setUserInfo] = useState({ email: null, name: null });
 
   useEffect(() => {
-    // Get initial session with timeout protection
-    const sessionPromise = supabase.auth.getSession();
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('useUserRole getSession timeout')), 3000)
-    );
-
-    Promise.race([sessionPromise, timeoutPromise])
-      .then(({ data }) => {
-        const user = data?.session?.user;
-        const userRole = user?.user_metadata?.role || null;
-        const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
-        const userEmail = user?.email || null;
-
-        setRole(userRole);
-        setUserInfo({ email: userEmail, name: userName });
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.warn('useUserRole getSession failed (likely auth timeout):', error.message);
-        setRole(null);
-        setUserInfo({ email: null, name: null });
-        setLoading(false);
-      });
-
-    // Listen for auth state changes
+    // Listen for auth state changes - NO getSession() call to avoid hangs
+    // Session is provided directly by the callback
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user;
       const userRole = user?.user_metadata?.role || null;
       const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
       const userEmail = user?.email || null;
+
+      console.log('useUserRole onAuthStateChange:', {
+        event: _event,
+        hasUser: !!user,
+        userRole,
+        userName,
+        userEmail,
+        metadata: user?.user_metadata
+      });
 
       setRole(userRole);
       setUserInfo({ email: userEmail, name: userName });
