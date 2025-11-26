@@ -166,13 +166,28 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
           prev.map(m => (m.id === editData.id ? { ...m, ...editData } : m))
         );
       } else {
+        // Calculate only changed fields
+        const changes = {};
+        Object.keys(editData).forEach(key => {
+          if (editData[key] !== selectedMarker[key]) {
+            changes[key] = editData[key];
+          }
+        });
+
+        // If no changes, just exit edit mode
+        if (Object.keys(changes).length === 0) {
+          setEditMode(false);
+          setEditData(null);
+          return;
+        }
+
         // Save regular marker to local state
         setMarkersState((prev) =>
           prev.map((m) => (m.id === editData.id ? { ...m, ...editData } : m))
         );
 
-        // Save to Supabase using updateMarker (automatically routes to correct tables)
-        await updateMarker(editData.id, editData);
+        // Save only changed fields to Supabase (batched by table for performance)
+        await updateMarker(editData.id, changes);
       }
 
       setEditMode(false);
@@ -541,12 +556,15 @@ function Field({ label, value, children }) {
 }
 
 function InputField({ label, value, onChange, type = 'text', ...props }) {
+  // For color inputs, default to black if no value (HTML5 color input requires valid hex)
+  const inputValue = type === 'color' && !value ? '#000000' : (value || '');
+
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
       <input
         type={type}
-        value={value || ''}
+        value={inputValue}
         onChange={(e) => onChange(e.target.value)}
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         {...props}

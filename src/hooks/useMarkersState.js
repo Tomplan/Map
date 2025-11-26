@@ -66,24 +66,31 @@ export default function useMarkersState(markers = []) {
       for (const { name: table } of tables) {
         await ensureMarkerRow(supabase, table, intId);
       }
+      // Group fields by table for batched updates
+      const coreUpdates = {};
+      const appearanceUpdates = {};
+      const contentUpdates = {};
+
       for (const [key, value] of Object.entries(newProps)) {
-        let table = null;
         if (coreFields.includes(key)) {
-          table = 'Markers_Core';
+          coreUpdates[key] = value;
         } else if (appearanceFields.includes(key)) {
-          table = 'Markers_Appearance';
+          appearanceUpdates[key] = value;
         } else if (contentFields.includes(key)) {
-          table = 'Markers_Content';
+          contentUpdates[key] = value;
         }
         // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin
-        if (table) {
-          const exists = await ensureMarkerRow(supabase, table, intId);
-          if (!exists) continue;
-          await supabase
-            .from(table)
-            .update({ [key]: value })
-            .eq('id', intId);
-        }
+      }
+
+      // Batch update each table once (instead of per-field)
+      if (Object.keys(coreUpdates).length > 0) {
+        await supabase.from('Markers_Core').update(coreUpdates).eq('id', intId);
+      }
+      if (Object.keys(appearanceUpdates).length > 0) {
+        await supabase.from('Markers_Appearance').update(appearanceUpdates).eq('id', intId);
+      }
+      if (Object.keys(contentUpdates).length > 0) {
+        await supabase.from('Markers_Content').update(contentUpdates).eq('id', intId);
       }
     } catch (err) {
       // Silently ignore errors in production
