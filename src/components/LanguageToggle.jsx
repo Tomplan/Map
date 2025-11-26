@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePreferences } from '../contexts/PreferencesContext';
+import { useDialog } from '../contexts/DialogContext';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -11,6 +12,7 @@ const LANGUAGES = [
 export default function LanguageToggle({ className = '' }) {
   const { i18n } = useTranslation();
   const { updatePreference } = usePreferences();
+  const { toastError, toastWarning } = useDialog();
   const current = i18n.language;
 
   const handleLanguageChange = async (langCode) => {
@@ -18,8 +20,18 @@ export default function LanguageToggle({ className = '' }) {
     i18n.changeLanguage(langCode);
     // Save to localStorage for instant persistence on refresh
     localStorage.setItem('preferredLanguage', langCode);
+
     // Save to database for cross-device sync
-    await updatePreference('preferred_language', langCode);
+    try {
+      await updatePreference('preferred_language', langCode);
+    } catch (error) {
+      // Check if it's a conflict error
+      if (error.message.includes('updated from another device')) {
+        toastWarning(error.message);
+      } else {
+        toastError('Failed to save language preference. Please try again.');
+      }
+    }
   };
 
   return (
