@@ -7,10 +7,11 @@ import { supabase } from '../supabaseClient';
  * Manages user-specific preferences stored in Supabase database.
  * Preferences sync across devices/browsers via real-time subscriptions.
  *
- * IMPORTANT: This hook uses ONLY onAuthStateChange to avoid getSession() hangs.
- * No initial getSession() calls are made - everything waits for auth state callback.
- *
- * For device-specific settings (like sidebar collapsed state), continue using localStorage.
+ * IMPLEMENTATION PATTERN:
+ * - Follows official Supabase React pattern (no timeout, simple ignore flag)
+ * - Uses optimistic concurrency control via row_version column
+ * - Provides conflict detection for multi-device updates
+ * - Real-time subscriptions with version checking
  *
  * @returns {Object} Hook state and methods
  * @property {Object|null} preferences - User preferences object or null if not loaded
@@ -21,83 +22,51 @@ import { supabase } from '../supabaseClient';
 export default function useUserPreferences() {
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
   const channelRef = useRef(null);
-  const lastLoadedUserIdRef = useRef(null); // Track last loaded user to prevent duplicate loads
 
   /**
-   * Fetch/create user preferences from database for a given user
-   * This is called from onAuthStateChange with the session's user object
+   * Load user preferences from database
+   * Creates default preferences if none exist
    */
-  const loadPreferencesForUser = useCallback(async (user) => {
+  const loadPreferences = useCallback(async (user) => {
+    if (!user) {
+      setPreferences(null);
+      setLoading(false);
+      setUserId(null);
+      return;
+    }
+
     try {
-      if (!user) {
-        console.log('loadPreferencesForUser: No user, setting loading false');
-        setPreferences(null);
-        setLoading(false);
-        lastLoadedUserIdRef.current = null;
-        return;
-      }
+      setUserId(user.id);
 
-      // Deduplicate: Skip if we already loaded preferences for this user
-      if (lastLoadedUserIdRef.current === user.id) {
-        console.log('loadPreferencesForUser: Already loaded for this user, skipping');
-        return;
-      }
-
-      console.log('loadPreferencesForUser: Fetching preferences for user:', user.id);
-      lastLoadedUserIdRef.current = user.id;
-
-      // Try to fetch existing preferences with timeout to prevent hanging
-      const queryPromise = supabase
+      // Fetch existing preferences (official pattern - no timeout)
+      const { data, error } = await supabase
         .from('user_preferences')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .single();
 
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000)
-      );
-
-      let data, error;
-      try {
-        const result = await Promise.race([queryPromise, timeoutPromise]);
-        data = result.data;
-        error = result.error;
-      } catch (timeoutError) {
-        console.warn('Preferences query timed out, falling back to localStorage');
+      if (error && error.code !== 'PGRST116') {
+        // Error other than "not found"
+        console.error('Error fetching preferences:', error);
         setPreferences(null);
         setLoading(false);
         return;
-      }
-
-      console.log('loadPreferencesForUser: Query complete. Data:', data, 'Error:', error);
-
-      // Handle errors (including table not existing)
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // No preferences found - this is okay, we'll create them
-        } else if (error.code === '42P01' || error.message?.includes('does not exist')) {
-          // Table doesn't exist (migrations not run)
-          console.warn('user_preferences table does not exist. Run migration 24.');
-          setPreferences(null);
-          setLoading(false);
-          return;
-        } else {
-          // Other error
-          console.error('Error fetching preferences:', error);
-          setPreferences(null);
-          setLoading(false);
-          return;
-        }
       }
 
       // If no preferences exist, create defaults
       if (!data) {
         const currentYear = new Date().getFullYear();
+
+        // Check if user selected language on login page (stored in localStorage)
+        const storedLanguage = localStorage.getItem('preferredLanguage');
+        const preferredLanguage = storedLanguage || 'nl'; // Default to 'nl' if not set
+
         const defaults = {
           user_id: user.id,
           default_year: currentYear,
-          preferred_language: 'nl',
+          preferred_language: preferredLanguage,
           assignments_sort_by: 'alphabetic',
           assignments_sort_direction: 'asc',
           assignments_column_sort: 'markerId',
@@ -105,22 +74,18 @@ export default function useUserPreferences() {
           dashboard_visible_cards: ['stats', 'recent', 'actions'],
           default_rows_per_page: 25,
           email_notifications: true,
+          row_version: 1,
+          updated_by: user.id,
         };
 
         const { data: newPrefs, error: insertError } = await supabase
           .from('user_preferences')
           .insert(defaults)
           .select()
-          .maybeSingle();
+          .single();
 
         if (insertError) {
-          // Table might not exist, or other insert error
-          if (insertError.code === '42P01' || insertError.message?.includes('does not exist')) {
-            console.warn('Cannot create preferences: table does not exist. Run migration 24.');
-          } else {
-            console.error('Error creating default preferences:', insertError);
-          }
-          // Set preferences to null and continue - app will work with localStorage
+          console.error('Error creating default preferences:', insertError);
           setPreferences(null);
         } else {
           setPreferences(newPrefs);
@@ -129,131 +94,141 @@ export default function useUserPreferences() {
         setPreferences(data);
       }
 
-      console.log('loadPreferencesForUser: Setting loading to false');
       setLoading(false);
     } catch (error) {
-      // Error loading preferences - set loading false to allow app to continue
-      console.warn('loadPreferencesForUser failed:', error.message);
+      console.error('Error loading preferences:', error);
       setPreferences(null);
       setLoading(false);
     }
   }, []);
 
   /**
-   * Update a single preference
+   * Update a single preference with optimistic concurrency control
    * @param {string} key - Preference key to update
    * @param {any} value - New value for the preference
    * @returns {Promise<boolean>} Success status
+   * @throws {Error} If conflict detected (another update happened)
    */
   const updatePreference = useCallback(async (key, value) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('Cannot update preference: No user logged in');
-        return false;
-      }
+    if (!userId || !preferences) {
+      console.error('Cannot update preference: No user or preferences loaded');
+      return false;
+    }
 
+    try {
+      const currentVersion = preferences.row_version || 0;
+
+      // Optimistic concurrency: increment version and check old version matches
       const { data, error } = await supabase
         .from('user_preferences')
-        .update({ [key]: value })
-        .eq('user_id', user.id)
+        .update({
+          [key]: value,
+          row_version: currentVersion + 1,
+          updated_by: userId,
+        })
+        .eq('user_id', userId)
+        .eq('row_version', currentVersion) // Only update if version matches
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error(`Error updating preference ${key}:`, error);
         return false;
       }
 
-      if (data) {
-        setPreferences(data);
-        return true;
+      if (!data) {
+        // No rows updated = conflict detected
+        console.warn('Preference update conflict detected - reloading preferences');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await loadPreferences(user);
+        }
+        throw new Error('Preference update conflict - another device updated first');
       }
 
-      return false;
+      setPreferences(data);
+      return true;
     } catch (error) {
       console.error('Error in updatePreference:', error);
-      return false;
+      throw error;
     }
-  }, []);
+  }, [userId, preferences, loadPreferences]);
 
   /**
-   * Update multiple preferences at once
+   * Update multiple preferences at once with optimistic concurrency control
    * @param {Object} updates - Object with key-value pairs to update
    * @returns {Promise<boolean>} Success status
+   * @throws {Error} If conflict detected (another update happened)
    */
   const updatePreferences = useCallback(async (updates) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('Cannot update preferences: No user logged in');
-        return false;
-      }
+    if (!userId || !preferences) {
+      console.error('Cannot update preferences: No user or preferences loaded');
+      return false;
+    }
 
+    try {
+      const currentVersion = preferences.row_version || 0;
+
+      // Optimistic concurrency: increment version and check old version matches
       const { data, error } = await supabase
         .from('user_preferences')
-        .update(updates)
-        .eq('user_id', user.id)
+        .update({
+          ...updates,
+          row_version: currentVersion + 1,
+          updated_by: userId,
+        })
+        .eq('user_id', userId)
+        .eq('row_version', currentVersion) // Only update if version matches
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error updating preferences:', error);
         return false;
       }
 
-      if (data) {
-        setPreferences(data);
-        return true;
+      if (!data) {
+        // No rows updated = conflict detected
+        console.warn('Preferences update conflict detected - reloading preferences');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await loadPreferences(user);
+        }
+        throw new Error('Preferences update conflict - another device updated first');
       }
 
-      return false;
+      setPreferences(data);
+      return true;
     } catch (error) {
       console.error('Error in updatePreferences:', error);
-      return false;
+      throw error;
     }
-  }, []);
+  }, [userId, preferences, loadPreferences]);
 
-  // Set up auth state listener and initial load
+  // Set up auth state listener and initial session load
   useEffect(() => {
-    let isMounted = true;
+    let ignore = false;
 
-    // Listen for auth state changes (following official Supabase pattern - no event filtering)
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (!isMounted) return;
+    // Get initial session (official pattern)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!ignore && session) {
+        loadPreferences(session.user);
+      } else if (!ignore) {
+        setLoading(false);
+      }
+    });
 
-      console.log('useUserPreferences onAuthStateChange:', _event);
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (ignore) return;
 
       if (session) {
-        const user = session.user;
-        await loadPreferencesForUser(user);
-
-        // Set up real-time subscription
-        if (isMounted && channelRef.current) {
-          channelRef.current.unsubscribe();
-          channelRef.current = null;
-        }
-
-        if (isMounted) {
-          channelRef.current = supabase
-            .channel('user-preferences-changes')
-            .on('postgres_changes', {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'user_preferences',
-              filter: `user_id=eq.${user.id}`
-            }, (payload) => {
-              if (isMounted) {
-                console.log('User preferences updated from another tab/device:', payload);
-                setPreferences(payload.new);
-              }
-            })
-            .subscribe();
-        }
+        loadPreferences(session.user);
       } else {
         // User logged out - clean up
         setPreferences(null);
         setLoading(false);
+        setUserId(null);
         if (channelRef.current) {
           channelRef.current.unsubscribe();
           channelRef.current = null;
@@ -262,14 +237,49 @@ export default function useUserPreferences() {
     });
 
     return () => {
-      isMounted = false;
-      listener?.subscription?.unsubscribe();
+      ignore = true;
+      subscription?.unsubscribe();
       if (channelRef.current) {
         channelRef.current.unsubscribe();
         channelRef.current = null;
       }
     };
-  }, [loadPreferencesForUser]);
+  }, [loadPreferences]);
+
+  // Set up real-time subscription for cross-device sync
+  useEffect(() => {
+    if (!userId || !preferences) return;
+
+    // Clean up existing subscription
+    if (channelRef.current) {
+      channelRef.current.unsubscribe();
+      channelRef.current = null;
+    }
+
+    // Subscribe to preference changes with version checking
+    channelRef.current = supabase
+      .channel(`user-preferences-${userId}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'user_preferences',
+        filter: `user_id=eq.${userId}`
+      }, (payload) => {
+        // Only apply update if newer version (prevents race conditions)
+        if (payload.new.row_version > (preferences.row_version || 0)) {
+          console.log('Preferences updated from another device:', payload.new);
+          setPreferences(payload.new);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+        channelRef.current = null;
+      }
+    };
+  }, [userId, preferences?.row_version]);
 
   return {
     preferences,

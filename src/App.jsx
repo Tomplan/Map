@@ -50,52 +50,41 @@ function AppContent() {
     return stored ? parseInt(stored, 10) : currentYear;
   });
 
-  // Ref to track the last synced year from database (prevents feedback loops)
-  const lastSyncedYearRef = useRef(null);
-  // Ref to track the last processed default_year value (prevents flipping from object reference changes)
-  // Initialize to localStorage value to prevent unnecessary updates when DB matches localStorage
-  const lastProcessedYearRef = useRef(
-    (() => {
-      const stored = localStorage.getItem('selectedEventYear');
-      return stored ? parseInt(stored, 10) : currentYear;
-    })()
-  );
+  // Track if we're currently syncing FROM database to prevent feedback loops
+  const syncingFromDbRef = useRef(false);
 
   // Sync selectedYear FROM database when preferences load (one-way: DB → state)
   useEffect(() => {
     if (!preferencesLoading && preferences?.default_year) {
       const dbYear = preferences.default_year;
 
-      // Skip if we already processed this exact year value (prevents flipping from real-time updates)
-      if (dbYear === lastProcessedYearRef.current) {
-        return;
-      }
-
-      lastProcessedYearRef.current = dbYear;
-
       if (dbYear !== selectedYear) {
-        lastSyncedYearRef.current = dbYear;
+        // Set flag to prevent write-back in the next effect
+        syncingFromDbRef.current = true;
         setSelectedYear(dbYear);
         localStorage.setItem('selectedEventYear', dbYear.toString());
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preferencesLoading, preferences?.default_year]); // Only fire when DB preferences change
+  }, [preferencesLoading, preferences?.default_year, preferences?.row_version]);
 
-  // Sync selectedYear TO database when changed locally (with loop prevention)
+  // Sync selectedYear TO database when changed locally
+  // Only write if this is a LOCAL change, not a sync FROM database
   useEffect(() => {
-    if (!preferencesLoading && preferences) {
-      const dbYear = preferences.default_year || currentYear;
-      const yearChanged = selectedYear !== dbYear;
-      const notFromSync = selectedYear !== lastSyncedYearRef.current;
-
-      if (yearChanged && notFromSync) {
-        updatePreference('default_year', selectedYear);
-        localStorage.setItem('selectedEventYear', selectedYear.toString());
+    if (!preferencesLoading && preferences && selectedYear !== preferences.default_year) {
+      // Skip write if we're currently syncing FROM database
+      if (syncingFromDbRef.current) {
+        console.log('Skipping year write - syncing from database');
+        syncingFromDbRef.current = false; // Reset flag
+        return;
       }
+
+      console.log('Writing year to database:', selectedYear);
+      updatePreference('default_year', selectedYear);
+      localStorage.setItem('selectedEventYear', selectedYear.toString());
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedYear, preferencesLoading, updatePreference]); // Removed 'preferences' - only sync when selectedYear changes locally
+  }, [selectedYear, preferencesLoading, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
