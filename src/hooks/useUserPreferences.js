@@ -27,11 +27,11 @@ export default function useUserPreferences() {
   const fetchPreferences = useCallback(async () => {
     try {
       console.log('[useUserPreferences] Fetching preferences...');
-      console.log('[useUserPreferences] Calling supabase.auth.getUser()...');
-      const userResult = await supabase.auth.getUser();
-      console.log('[useUserPreferences] getUser() completed:', userResult);
-      const { data: { user } } = userResult;
+      console.log('[useUserPreferences] Getting session...');
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('[useUserPreferences] Session:', session);
 
+      const user = session?.user;
       if (!user) {
         console.log('[useUserPreferences] No user, setting loading=false');
         setPreferences(null);
@@ -201,7 +201,8 @@ export default function useUserPreferences() {
       try {
         if (!isMounted) return;
 
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
         if (!user) return;
 
         // Clean up existing subscription before creating new one
