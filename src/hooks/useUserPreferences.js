@@ -198,7 +198,13 @@ export default function useUserPreferences() {
       try {
         if (!isMounted) return;
 
-        const { data: { session } } = await supabase.auth.getSession();
+        // Add timeout protection for getSession (same issue as fetchPreferences)
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('setupSubscription getSession timeout')), 3000)
+        );
+
+        const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
         const user = session?.user;
         if (!user) return;
 
@@ -233,8 +239,10 @@ export default function useUserPreferences() {
     fetchPreferences()
       .then(() => {
         if (isMounted) {
-          // Set up subscription after initial fetch completes
-          setupSubscription();
+          // Set up subscription after initial fetch completes (don't await to avoid blocking)
+          setupSubscription().catch((error) => {
+            console.warn('setupSubscription failed (likely auth timeout):', error.message);
+          });
         }
       })
       .catch((error) => {
