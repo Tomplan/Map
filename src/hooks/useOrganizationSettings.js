@@ -137,7 +137,7 @@ export default function useOrganizationSettings() {
           throw new Error('Permission denied. Only super_admin or system_manager can update organization settings.');
         }
         console.error(`Error updating setting ${key}:`, updateError);
-        return false;
+        throw new Error(updateError.message || `Failed to update setting: ${key}`);
       }
 
       if (!data) {
@@ -194,7 +194,7 @@ export default function useOrganizationSettings() {
           throw new Error('Permission denied. Only super_admin or system_manager can update organization settings.');
         }
         console.error('Error updating settings:', updateError);
-        return false;
+        throw new Error(updateError.message || 'Failed to update organization settings');
       }
 
       if (!data) {
