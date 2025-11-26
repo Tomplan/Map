@@ -120,10 +120,15 @@ function App() {
     };
   }, []);
 
-  // Track Supabase auth state - NO getSession() call to avoid hangs
+  // Track Supabase auth state
   const [user, setUser] = useState(null);
   useEffect(() => {
-    // Listen for auth state changes - session provided directly by callback
+    // Get initial session (this is the ONLY getSession call in the app)
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user || null);
+    });
+
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
