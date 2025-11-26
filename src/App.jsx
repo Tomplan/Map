@@ -5,7 +5,7 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
-import useUserPreferences from './hooks/useUserPreferences';
+// TEMPORARILY DISABLED: import useUserPreferences from './hooks/useUserPreferences';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -20,76 +20,19 @@ function App() {
   // i18n hook for language management
   const { i18n } = useTranslation();
 
-  // Load user preferences from database
-  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+  // TEMPORARILY DISABLED: Load user preferences from database
+  // const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
 
-  // Track the last value we synced from database to prevent feedback loops
-  const lastSyncedYearRef = useRef(null);
-  const lastSyncedLanguageRef = useRef(null);
-
-  // Initialize selected year from preferences or fallback to localStorage/current year
+  // Initialize selected year from localStorage only (reverted to original simple approach)
   const [selectedYear, setSelectedYear] = useState(() => {
-    // Fallback to localStorage for backwards compatibility during migration
     const stored = localStorage.getItem('selectedEventYear');
     return stored ? parseInt(stored, 10) : currentYear;
   });
 
-  // Sync selectedYear with database preferences when they load
+  // Update localStorage when selectedYear changes (simple approach, no database sync)
   useEffect(() => {
-    if (!preferencesLoading && preferences?.default_year && preferences.default_year !== selectedYear) {
-      lastSyncedYearRef.current = preferences.default_year;
-      setSelectedYear(preferences.default_year);
-    }
-  }, [preferencesLoading, preferences?.default_year, selectedYear]);
-
-  // Update database when selectedYear changes (also keep localStorage for backwards compatibility)
-  useEffect(() => {
-    // Always update localStorage for backwards compatibility
     localStorage.setItem('selectedEventYear', selectedYear.toString());
-
-    // Only update database if:
-    // 1. Preferences are loaded
-    // 2. Value is different from database
-    // 3. This isn't the value we just synced FROM the database
-    if (!preferencesLoading && preferences &&
-        preferences.default_year !== selectedYear &&
-        lastSyncedYearRef.current !== selectedYear) {
-      updatePreference('default_year', selectedYear);
-    }
-  }, [selectedYear, preferencesLoading, preferences, updatePreference]);
-
-  // Sync language preference with database when preferences load
-  useEffect(() => {
-    if (!preferencesLoading && preferences?.preferred_language) {
-      // Only change language if it's different from current
-      if (i18n.language !== preferences.preferred_language) {
-        lastSyncedLanguageRef.current = preferences.preferred_language;
-        i18n.changeLanguage(preferences.preferred_language);
-      }
-    }
-  }, [preferencesLoading, preferences?.preferred_language, i18n]);
-
-  // Update database when language changes in i18n (also syncs with i18next's localStorage)
-  useEffect(() => {
-    const handleLanguageChange = (lng) => {
-      // Only update database if:
-      // 1. Preferences are loaded
-      // 2. Value is different from database
-      // 3. This isn't the value we just synced FROM the database
-      if (!preferencesLoading && preferences &&
-          preferences.preferred_language !== lng &&
-          lastSyncedLanguageRef.current !== lng) {
-        updatePreference('preferred_language', lng);
-      }
-    };
-
-    // Listen for language changes from i18next
-    i18n.on('languageChanged', handleLanguageChange);
-
-    return () => {
-      i18n.off('languageChanged', handleLanguageChange);
-    };
-  }, [i18n, preferencesLoading, preferences, updatePreference]);
+  }, [selectedYear]);
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
@@ -153,27 +96,19 @@ function App() {
     };
   }, []);
 
-  // Track Supabase auth state
+  // Track Supabase auth state (SIMPLIFIED - removed timeout workarounds)
   const [user, setUser] = useState(null);
   useEffect(() => {
-    // Add timeout protection for getSession (same issue as useUserPreferences)
-    const sessionPromise = supabase.auth.getSession();
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('App getSession timeout')), 3000)
-    );
+    // Get initial session - let it complete naturally
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user || null);
+    });
 
-    Promise.race([sessionPromise, timeoutPromise])
-      .then(({ data }) => {
-        setUser(data?.session?.user || null);
-      })
-      .catch((error) => {
-        console.warn('App getSession failed (likely auth timeout):', error.message);
-        setUser(null); // Set to null so app can render
-      });
-
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
     });
+
     return () => {
       listener?.subscription?.unsubscribe();
     };
