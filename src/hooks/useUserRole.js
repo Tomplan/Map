@@ -16,26 +16,7 @@ export default function useUserRole() {
   const [userInfo, setUserInfo] = useState({ email: null, name: null });
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data }) => {
-      const user = data?.session?.user;
-      const userRole = user?.user_metadata?.role || null;
-      const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
-      const userEmail = user?.email || null;
-
-      console.log('useUserRole initial session:', {
-        hasUser: !!user,
-        userRole,
-        userName,
-        userEmail
-      });
-
-      setRole(userRole);
-      setUserInfo({ email: userEmail, name: userName });
-      setLoading(false);
-    });
-
-    // Listen for auth state changes
+    // Listen for auth state changes (INITIAL_SESSION event will fire from App.jsx's getSession call)
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const user = session?.user;
       const userRole = user?.user_metadata?.role || null;

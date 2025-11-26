@@ -5,7 +5,7 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
-import useUserPreferences from './hooks/useUserPreferences';
+import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -13,15 +13,36 @@ import { getDefaultLogoPath } from './utils/getDefaultLogo';
 import './i18n';
 import './App.css';
 
-function App() {
+function AppContent() {
   // Global year selector for filtering markers by event year
   const currentYear = new Date().getFullYear();
 
   // i18n hook for language management
   const { i18n } = useTranslation();
 
-  // Load user preferences from database with cross-device sync
-  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+  // Load user preferences from context (single source of truth)
+  const { preferences, loading: preferencesLoading, updatePreference } = usePreferences();
+
+  // Load language from localStorage on mount (instant feedback while DB loads)
+  useEffect(() => {
+    const storedLang = localStorage.getItem('preferredLanguage');
+    if (storedLang && i18n.language !== storedLang) {
+      i18n.changeLanguage(storedLang);
+    }
+  }, [i18n]);
+
+  // Sync language from preferences to i18n (DB is source of truth)
+  useEffect(() => {
+    if (!preferencesLoading && preferences?.preferred_language) {
+      const currentLang = i18n.language;
+      const prefLang = preferences.preferred_language;
+
+      if (currentLang !== prefLang) {
+        i18n.changeLanguage(prefLang);
+        localStorage.setItem('preferredLanguage', prefLang);
+      }
+    }
+  }, [preferencesLoading, preferences?.preferred_language, i18n]);
 
   // Initialize selected year from localStorage (will sync with DB when preferences load)
   const [selectedYear, setSelectedYear] = useState(() => {
@@ -31,18 +52,35 @@ function App() {
 
   // Ref to track the last synced year from database (prevents feedback loops)
   const lastSyncedYearRef = useRef(null);
+  // Ref to track the last processed default_year value (prevents flipping from object reference changes)
+  // Initialize to localStorage value to prevent unnecessary updates when DB matches localStorage
+  const lastProcessedYearRef = useRef(
+    (() => {
+      const stored = localStorage.getItem('selectedEventYear');
+      return stored ? parseInt(stored, 10) : currentYear;
+    })()
+  );
 
-  // Sync selectedYear FROM database when preferences load
+  // Sync selectedYear FROM database when preferences load (one-way: DB → state)
   useEffect(() => {
     if (!preferencesLoading && preferences?.default_year) {
       const dbYear = preferences.default_year;
+
+      // Skip if we already processed this exact year value (prevents flipping from real-time updates)
+      if (dbYear === lastProcessedYearRef.current) {
+        return;
+      }
+
+      lastProcessedYearRef.current = dbYear;
+
       if (dbYear !== selectedYear) {
         lastSyncedYearRef.current = dbYear;
         setSelectedYear(dbYear);
         localStorage.setItem('selectedEventYear', dbYear.toString());
       }
     }
-  }, [preferencesLoading, preferences?.default_year, selectedYear]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preferencesLoading, preferences?.default_year]); // Only fire when DB preferences change
 
   // Sync selectedYear TO database when changed locally (with loop prevention)
   useEffect(() => {
@@ -56,7 +94,8 @@ function App() {
         localStorage.setItem('selectedEventYear', selectedYear.toString());
       }
     }
-  }, [selectedYear, preferencesLoading, preferences, updatePreference, currentYear]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedYear, preferencesLoading, updatePreference]); // Removed 'preferences' - only sync when selectedYear changes locally
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
@@ -155,6 +194,15 @@ function App() {
         </HashRouter>
       </OrganizationLogoProvider>
     </DialogProvider>
+  );
+}
+
+// Wrap AppContent with PreferencesProvider for single source of truth
+function App() {
+  return (
+    <PreferencesProvider>
+      <AppContent />
+    </PreferencesProvider>
   );
 }
 

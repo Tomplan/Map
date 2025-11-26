@@ -22,6 +22,7 @@ export default function useUserPreferences() {
   const [preferences, setPreferences] = useState(null);
   const [loading, setLoading] = useState(true);
   const channelRef = useRef(null);
+  const lastLoadedUserIdRef = useRef(null); // Track last loaded user to prevent duplicate loads
 
   /**
    * Fetch/create user preferences from database for a given user
@@ -30,17 +31,46 @@ export default function useUserPreferences() {
   const loadPreferencesForUser = useCallback(async (user) => {
     try {
       if (!user) {
+        console.log('loadPreferencesForUser: No user, setting loading false');
+        setPreferences(null);
+        setLoading(false);
+        lastLoadedUserIdRef.current = null;
+        return;
+      }
+
+      // Deduplicate: Skip if we already loaded preferences for this user
+      if (lastLoadedUserIdRef.current === user.id) {
+        console.log('loadPreferencesForUser: Already loaded for this user, skipping');
+        return;
+      }
+
+      console.log('loadPreferencesForUser: Fetching preferences for user:', user.id);
+      lastLoadedUserIdRef.current = user.id;
+
+      // Try to fetch existing preferences with timeout to prevent hanging
+      const queryPromise = supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Query timeout after 10 seconds')), 10000)
+      );
+
+      let data, error;
+      try {
+        const result = await Promise.race([queryPromise, timeoutPromise]);
+        data = result.data;
+        error = result.error;
+      } catch (timeoutError) {
+        console.warn('Preferences query timed out, falling back to localStorage');
         setPreferences(null);
         setLoading(false);
         return;
       }
 
-      // Try to fetch existing preferences
-      const { data, error } = await supabase
-        .from('user_preferences')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      console.log('loadPreferencesForUser: Query complete. Data:', data, 'Error:', error);
 
       // Handle errors (including table not existing)
       if (error) {
@@ -99,6 +129,7 @@ export default function useUserPreferences() {
         setPreferences(data);
       }
 
+      console.log('loadPreferencesForUser: Setting loading to false');
       setLoading(false);
     } catch (error) {
       // Error loading preferences - set loading false to allow app to continue
@@ -187,45 +218,11 @@ export default function useUserPreferences() {
   useEffect(() => {
     let isMounted = true;
 
-    // Get initial session and load preferences
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!isMounted) return;
-
-      const user = data?.session?.user;
-      if (user) {
-        await loadPreferencesForUser(user);
-
-        // Set up real-time subscription for cross-browser sync
-        if (isMounted && channelRef.current) {
-          channelRef.current.unsubscribe();
-          channelRef.current = null;
-        }
-
-        if (isMounted) {
-          channelRef.current = supabase
-            .channel('user-preferences-changes')
-            .on('postgres_changes', {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'user_preferences',
-              filter: `user_id=eq.${user.id}`
-            }, (payload) => {
-              if (isMounted) {
-                console.log('User preferences updated from another tab/device:', payload);
-                setPreferences(payload.new);
-              }
-            })
-            .subscribe();
-        }
-      } else {
-        setPreferences(null);
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth state changes
+    // Listen for auth state changes (following official Supabase pattern - no event filtering)
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!isMounted) return;
+
+      console.log('useUserPreferences onAuthStateChange:', _event);
 
       if (session) {
         const user = session.user;
