@@ -41,12 +41,23 @@ export default function useUserPreferences() {
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        // PGRST116 is "not found" error, which is expected for new users
-        console.error('Error fetching preferences:', error);
-        setPreferences(null);
-        setLoading(false);
-        return;
+      // Handle errors (including table not existing)
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No preferences found - this is okay, we'll create them
+        } else if (error.code === '42P01' || error.message?.includes('does not exist')) {
+          // Table doesn't exist (migrations not run)
+          console.warn('user_preferences table does not exist. Run migration 24.');
+          setPreferences(null);
+          setLoading(false);
+          return;
+        } else {
+          // Other error
+          console.error('Error fetching preferences:', error);
+          setPreferences(null);
+          setLoading(false);
+          return;
+        }
       }
 
       // If no preferences exist, create defaults
@@ -72,9 +83,14 @@ export default function useUserPreferences() {
           .maybeSingle();
 
         if (insertError) {
-          console.error('Error creating default preferences:', insertError);
-          // Still set defaults locally even if insert fails
-          setPreferences(defaults);
+          // Table might not exist, or other insert error
+          if (insertError.code === '42P01' || insertError.message?.includes('does not exist')) {
+            console.warn('Cannot create preferences: table does not exist. Run migration 24.');
+          } else {
+            console.error('Error creating default preferences:', insertError);
+          }
+          // Set preferences to null and continue - app will work with localStorage
+          setPreferences(null);
         } else {
           setPreferences(newPrefs);
         }
@@ -175,14 +191,20 @@ export default function useUserPreferences() {
 
         if (!user) return;
 
+        // Don't set up subscription if preferences is null (table doesn't exist)
+        // Check the current preferences state to see if table exists
+        if (preferences === null) {
+          console.log('Skipping subscription setup: user_preferences table may not exist');
+          return;
+        }
+
         // Clean up existing subscription before creating new one
         if (channelRef.current) {
           channelRef.current.unsubscribe();
           channelRef.current = null;
         }
 
-        // Only set up subscription if table exists (check during fetch)
-        // This prevents subscription errors when migrations haven't been run
+        // Set up real-time subscription for cross-browser sync
         channelRef.current = supabase
           .channel('user-preferences-changes')
           .on('postgres_changes', {
