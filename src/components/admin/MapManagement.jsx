@@ -166,12 +166,13 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
           prev.map(m => (m.id === editData.id ? { ...m, ...editData } : m))
         );
       } else {
-        // Save regular marker (existing logic)
+        // Save regular marker to local state
         setMarkersState((prev) =>
           prev.map((m) => (m.id === editData.id ? { ...m, ...editData } : m))
         );
 
-        // TODO: Save regular markers to Supabase
+        // Save to Supabase using updateMarker (automatically routes to correct tables)
+        await updateMarker(editData.id, editData);
       }
 
       setEditMode(false);
