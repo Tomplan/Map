@@ -5,7 +5,7 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
-import useUserPreferences from './hooks/useUserPreferences';
+// DISABLED - causing issues: import useUserPreferences from './hooks/useUserPreferences';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -20,43 +20,16 @@ function App() {
   // i18n hook for language management
   const { i18n } = useTranslation();
 
-  // Load user preferences from database with cross-device sync
-  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
-
-  // Initialize selected year from localStorage (will be synced with DB when preferences load)
+  // Simple year selection with localStorage only (database sync disabled)
   const [selectedYear, setSelectedYear] = useState(() => {
     const stored = localStorage.getItem('selectedEventYear');
     return stored ? parseInt(stored, 10) : currentYear;
   });
 
-  // Ref to track the last synced year from database (prevents feedback loops)
-  const lastSyncedYearRef = useRef(null);
-
-  // Sync selectedYear FROM database when preferences load
+  // Update localStorage when selectedYear changes
   useEffect(() => {
-    if (!preferencesLoading && preferences?.default_year) {
-      const dbYear = preferences.default_year;
-      if (dbYear !== selectedYear) {
-        lastSyncedYearRef.current = dbYear;
-        setSelectedYear(dbYear);
-        localStorage.setItem('selectedEventYear', dbYear.toString());
-      }
-    }
-  }, [preferencesLoading, preferences?.default_year]);
-
-  // Sync selectedYear TO database when changed locally (with loop prevention)
-  useEffect(() => {
-    if (!preferencesLoading && preferences) {
-      const dbYear = preferences.default_year || currentYear;
-      const yearChanged = selectedYear !== dbYear;
-      const notFromSync = selectedYear !== lastSyncedYearRef.current;
-
-      if (yearChanged && notFromSync) {
-        updatePreference('default_year', selectedYear);
-        localStorage.setItem('selectedEventYear', selectedYear.toString());
-      }
-    }
-  }, [selectedYear, preferencesLoading, preferences, updatePreference, currentYear]);
+    localStorage.setItem('selectedEventYear', selectedYear.toString());
+  }, [selectedYear]);
 
   // Fetch marker data from Supabase filtered by selected year
   const { markers } = useEventMarkers(selectedYear);
