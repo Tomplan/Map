@@ -16,24 +16,27 @@ export default function useUserRole() {
   const [userInfo, setUserInfo] = useState({ email: null, name: null });
 
   useEffect(() => {
-    let isMounted = true;
+    // Get initial session
+    supabase.auth.getSession().then(({ data }) => {
+      const user = data?.session?.user;
+      const userRole = user?.user_metadata?.role || null;
+      const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+      const userEmail = user?.email || null;
 
-    // Safety timeout: if no auth callback within 2 seconds, stop loading
-    const safetyTimeout = setTimeout(() => {
-      if (isMounted) {
-        console.warn('useUserRole: No auth state callback within 2s, stopping loading state');
-        setLoading(false);
-      }
-    }, 2000);
+      console.log('useUserRole initial session:', {
+        hasUser: !!user,
+        userRole,
+        userName,
+        userEmail
+      });
 
-    // Listen for auth state changes - NO getSession() call to avoid hangs
-    // Session is provided directly by the callback
+      setRole(userRole);
+      setUserInfo({ email: userEmail, name: userName });
+      setLoading(false);
+    });
+
+    // Listen for auth state changes
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return;
-
-      // Clear safety timeout since callback fired
-      clearTimeout(safetyTimeout);
-
       const user = session?.user;
       const userRole = user?.user_metadata?.role || null;
       const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || null;
@@ -44,8 +47,7 @@ export default function useUserRole() {
         hasUser: !!user,
         userRole,
         userName,
-        userEmail,
-        metadata: user?.user_metadata
+        userEmail
       });
 
       setRole(userRole);
@@ -54,8 +56,6 @@ export default function useUserRole() {
     });
 
     return () => {
-      isMounted = false;
-      clearTimeout(safetyTimeout);
       listener?.subscription?.unsubscribe();
     };
   }, []);
