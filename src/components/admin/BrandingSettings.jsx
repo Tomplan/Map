@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiPalette, mdiCheckCircle } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * BrandingSettings - Visual branding configuration (colors, fonts)
@@ -11,6 +12,7 @@ import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 export default function BrandingSettings() {
   const { t } = useTranslation();
   const { settings, loading, updateSettings } = useOrganizationSettings();
+  const { toastError, toastWarning } = useDialog();
   const [saving, setSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -43,7 +45,12 @@ export default function BrandingSettings() {
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err) {
       console.error('Error saving branding settings:', err);
-      alert(t('settings.branding.errors.saveFailed'));
+      // Check if it's a conflict error
+      if (err.message?.includes('updated by another admin')) {
+        toastWarning(err.message);
+      } else {
+        toastError(err.message || t('settings.branding.errors.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }

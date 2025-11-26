@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * EventDefaults - Component for managing default event settings
@@ -15,6 +16,7 @@ import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 export default function EventDefaults() {
   const { t } = useTranslation();
   const { settings, loading, error: loadError, updateSettings } = useOrganizationSettings();
+  const { toastError, toastWarning } = useDialog();
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -87,7 +89,14 @@ export default function EventDefaults() {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to save settings:', err);
-      setError(t('settings.eventDefaults.errors.saveFailed'));
+      // Check if it's a conflict error
+      if (err.message?.includes('updated by another admin')) {
+        toastWarning(err.message);
+        setError(t('settings.eventDefaults.errors.saveFailed'));
+      } else {
+        toastError(err.message || t('settings.eventDefaults.errors.saveFailed'));
+        setError(err.message || t('settings.eventDefaults.errors.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }

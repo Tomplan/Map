@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiMapMarker, mdiCheckCircle, mdiAlertCircle, mdiInformation } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
+import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * MapDefaults - Component for managing default map settings
@@ -16,6 +17,7 @@ import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 export default function MapDefaults() {
   const { t } = useTranslation();
   const { settings, loading, error: loadError, updateSettings } = useOrganizationSettings();
+  const { toastError, toastWarning } = useDialog();
 
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -75,7 +77,14 @@ export default function MapDefaults() {
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to save map settings:', err);
-      setError(err.message || t('settings.mapDefaults.errors.saveFailed'));
+      // Check if it's a conflict error
+      if (err.message?.includes('updated by another admin')) {
+        toastWarning(err.message);
+        setError(t('settings.mapDefaults.errors.saveFailed'));
+      } else {
+        toastError(err.message || t('settings.mapDefaults.errors.saveFailed'));
+        setError(err.message || t('settings.mapDefaults.errors.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }
