@@ -28,7 +28,14 @@ export default function useUserPreferences() {
     try {
       console.log('[useUserPreferences] Fetching preferences...');
       console.log('[useUserPreferences] Getting session...');
-      const { data: { session } } = await supabase.auth.getSession();
+
+      // Add timeout to prevent hanging
+      const sessionPromise = supabase.auth.getSession();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('getSession timeout')), 3000)
+      );
+
+      const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
       console.log('[useUserPreferences] Session:', session);
 
       const user = session?.user;
