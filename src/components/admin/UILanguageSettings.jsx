@@ -1,23 +1,30 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiTranslate } from '@mdi/js';
+import { mdiTranslate, mdiAccountCircle } from '@mdi/js';
 import LanguageToggle from '../LanguageToggle';
 
 /**
  * UILanguageSettings - Manage the manager's interface language
  * This is separate from content translations (companies info)
+ * SCOPE: Personal (affects only the current user)
  */
 export default function UILanguageSettings() {
   const { t } = useTranslation();
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <Icon path={mdiTranslate} size={1.2} className="text-blue-600" />
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">{t('settings.uiLanguage.title')}</h2>
-          <p className="text-sm text-gray-600 mt-1">{t('settings.uiLanguage.description')}</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Icon path={mdiTranslate} size={1.2} className="text-blue-600" />
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{t('settings.uiLanguage.title')}</h2>
+            <p className="text-sm text-gray-600 mt-1">{t('settings.uiLanguage.description')}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
+          <Icon path={mdiAccountCircle} size={0.6} className="text-blue-600" />
+          <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Personal Setting</span>
         </div>
       </div>
 

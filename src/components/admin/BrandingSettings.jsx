@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiPalette, mdiCheckCircle } from '@mdi/js';
+import { mdiPalette, mdiCheckCircle, mdiDomain } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
 /**
  * BrandingSettings - Visual branding configuration (colors, fonts)
  * Note: Organization name and logo are managed in the Companies tab
+ * SCOPE: Organization-wide (affects all users)
  */
 export default function BrandingSettings() {
   const { t } = useTranslation();
@@ -75,15 +76,21 @@ export default function BrandingSettings() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-          <Icon path={mdiPalette} size={1} />
-          {t('settings.branding.title')}
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Icon path={mdiPalette} size={1} className="text-orange-600" />
+            <h2 className="text-xl font-bold text-gray-900">{t('settings.branding.title')}</h2>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+            <Icon path={mdiDomain} size={0.6} className="text-orange-600" />
+            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Organization Setting</span>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600">
           {t('settings.branding.description')}
         </p>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-gray-500">
           💡 {t('settings.branding.note')}
         </p>
       </div>

@@ -10,6 +10,8 @@ import {
   mdiCommentAlertOutline,
   mdiTranslate,
   mdiTag,
+  mdiAccountCircle,
+  mdiDomain,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -30,14 +32,28 @@ export default function Settings() {
   const { role, isSuperAdmin, isSystemManager, isEventManager } = useUserRole();
   const [activeSection, setActiveSection] = useState('user-management');
 
-  // Define sections with role requirements
+  // Define sections with role requirements and scope (personal vs organization)
   const sections = [
+    // Personal Settings (affect only the current user)
+    {
+      id: 'ui-language',
+      label: t('settings.uiLanguage.title'),
+      icon: mdiTranslate,
+      roles: ['super_admin', 'system_manager', 'event_manager'],
+      component: <UILanguageSettings />,
+      scope: 'personal',
+      description: 'Your personal language preference',
+    },
+
+    // Organization Settings (affect all users)
     {
       id: 'user-management',
       label: t('settings.userManagement.title'),
       icon: mdiAccount,
       roles: ['super_admin', 'system_manager'],
       component: <UserManagement />,
+      scope: 'organization',
+      description: 'Manage user accounts and roles',
     },
     {
       id: 'category-settings',
@@ -45,6 +61,8 @@ export default function Settings() {
       icon: mdiTag,
       roles: ['super_admin', 'system_manager'],
       component: <CategorySettings />,
+      scope: 'organization',
+      description: 'Company categories for all users',
     },
     {
       id: 'branding',
@@ -52,13 +70,8 @@ export default function Settings() {
       icon: mdiPalette,
       roles: ['super_admin', 'system_manager'],
       component: <BrandingSettings />,
-    },
-    {
-      id: 'ui-language',
-      label: t('settings.uiLanguage.title'),
-      icon: mdiTranslate,
-      roles: ['super_admin', 'system_manager', 'event_manager'],
-      component: <UILanguageSettings />,
+      scope: 'organization',
+      description: 'Logo, colors, and app name',
     },
     {
       id: 'map-defaults',
@@ -66,6 +79,8 @@ export default function Settings() {
       icon: mdiMapMarker,
       roles: ['super_admin', 'system_manager'],
       component: <MapDefaults />,
+      scope: 'organization',
+      description: 'Default map position and zoom',
     },
     {
       id: 'event-defaults',
@@ -73,6 +88,8 @@ export default function Settings() {
       icon: mdiCog,
       roles: ['super_admin', 'system_manager', 'event_manager'],
       component: <EventDefaults />,
+      scope: 'organization',
+      description: 'Default meal counts for events',
     },
     {
       id: 'feedback-requests',
@@ -80,6 +97,8 @@ export default function Settings() {
       icon: mdiCommentAlertOutline,
       roles: ['super_admin', 'system_manager', 'event_manager'],
       component: <FeedbackRequests />,
+      scope: 'organization',
+      description: 'Company feedback submissions',
     },
     {
       id: 'advanced',
@@ -87,6 +106,8 @@ export default function Settings() {
       icon: mdiAlertCircle,
       roles: ['super_admin'],
       component: <AdvancedPlaceholder />,
+      scope: 'organization',
+      description: 'System configuration (danger zone)',
     },
   ];
 
@@ -122,21 +143,74 @@ export default function Settings() {
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Section Navigation */}
         <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
-          <nav className="p-4 space-y-1">
-            {visibleSections.map(section => (
-              <button
-                key={section.id}
-                onClick={() => setActiveSection(section.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                  activeSection === section.id
-                    ? 'bg-orange-50 text-orange-700 font-medium'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <Icon path={section.icon} size={0.9} />
-                <span>{section.label}</span>
-              </button>
-            ))}
+          <nav className="p-4 space-y-4">
+            {/* Personal Settings Group */}
+            {visibleSections.filter(s => s.scope === 'personal').length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 px-4 py-2 mb-1">
+                  <Icon path={mdiAccountCircle} size={0.7} className="text-blue-600" />
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Personal Settings
+                  </h3>
+                </div>
+                <div className="space-y-1">
+                  {visibleSections
+                    .filter(s => s.scope === 'personal')
+                    .map(section => (
+                      <button
+                        key={section.id}
+                        onClick={() => setActiveSection(section.id)}
+                        className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                          activeSection === section.id
+                            ? 'bg-blue-50 text-blue-700 font-medium'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                        title={section.description}
+                      >
+                        <Icon path={section.icon} size={0.9} className="flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium">{section.label}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{section.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Organization Settings Group */}
+            {visibleSections.filter(s => s.scope === 'organization').length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 px-4 py-2 mb-1">
+                  <Icon path={mdiDomain} size={0.7} className="text-orange-600" />
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    Organization Settings
+                  </h3>
+                </div>
+                <div className="space-y-1">
+                  {visibleSections
+                    .filter(s => s.scope === 'organization')
+                    .map(section => (
+                      <button
+                        key={section.id}
+                        onClick={() => setActiveSection(section.id)}
+                        className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                          activeSection === section.id
+                            ? 'bg-orange-50 text-orange-700 font-medium'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                        title={section.description}
+                      >
+                        <Icon path={section.icon} size={0.9} className="flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium">{section.label}</div>
+                          <div className="text-xs text-gray-500 mt-0.5">{section.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+            )}
           </nav>
         </aside>
 

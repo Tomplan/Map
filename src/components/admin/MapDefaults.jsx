@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMapMarker, mdiCheckCircle, mdiAlertCircle, mdiInformation } from '@mdi/js';
+import { mdiMapMarker, mdiCheckCircle, mdiAlertCircle, mdiInformation, mdiDomain } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
@@ -13,6 +13,7 @@ import { useDialog } from '../../contexts/DialogContext';
  * - Default/min/max zoom levels
  * - Enabled tile layers
  * - Saved to organization_settings table
+ * SCOPE: Organization-wide (affects all users)
  */
 export default function MapDefaults() {
   const { t } = useTranslation();
@@ -117,7 +118,13 @@ export default function MapDefaults() {
     <div className="space-y-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">{t('settings.mapDefaults.title')}</h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-xl font-bold text-gray-900">{t('settings.mapDefaults.title')}</h2>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+            <Icon path={mdiDomain} size={0.6} className="text-orange-600" />
+            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Organization Setting</span>
+          </div>
+        </div>
         <p className="text-sm text-gray-600">{t('settings.mapDefaults.description')}</p>
       </div>
 
