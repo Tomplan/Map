@@ -21,14 +21,14 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 });
 
 async function importSubscriptions() {
-  console.log('Starting import for 2025...\n');
+  process.stdout.write('Starting import for 2025...\n');
 
   // Read Excel file
   const workbook = XLSX.readFile('/Users/tom/Downloads/lijst standhouders update 27-9-25.xlsx');
   const worksheet = workbook.Sheets[workbook.SheetNames[0]];
   const excelData = XLSX.utils.sheet_to_json(worksheet);
 
-  console.log(`Found ${excelData.length} rows in Excel\n`);
+  process.stdout.write(`Found ${excelData.length} rows in Excel\n`);
 
   // Fetch all companies
   const { data: companies, error: companiesError } = await supabase
@@ -63,8 +63,8 @@ async function importSubscriptions() {
     subscriptionMap[sub.company_id] = sub.id;
   });
 
-  console.log(`Found ${companies.length} companies in database`);
-  console.log(`Found ${existingSubscriptions.length} existing subscriptions for 2025\n`);
+  process.stdout.write(`Found ${companies.length} companies in database\n`);
+  process.stdout.write(`Found ${existingSubscriptions.length} existing subscriptions for 2025\n`);
 
   let updated = 0;
   let skipped = 0;
@@ -77,7 +77,7 @@ async function importSubscriptions() {
     const companyName = row['Bedrijfsnaam']?.toString().trim();
 
     if (!companyName) {
-      console.log(`Row ${i + 1}: No company name, skipping`);
+      // row has no company name - skipping
       skipped++;
       continue;
     }
@@ -85,7 +85,7 @@ async function importSubscriptions() {
     // Find company ID
     const companyId = companyMap[companyName.toLowerCase()];
     if (!companyId) {
-      console.log(`Row ${i + 1}: Company "${companyName}" not found in database`);
+      // company not found in database
       errors++;
       continue;
     }
@@ -112,7 +112,7 @@ async function importSubscriptions() {
       if (companyUpdateError) {
         console.error(`Row ${i + 1}: Error updating company "${companyName}":`, companyUpdateError.message);
       } else {
-        console.log(`✓ Row ${i + 1}: Updated company "${companyName}" (${Object.keys(companyUpdates).join(', ')})`);
+        process.stdout.write(`Row ${i + 1}: Updated company "${companyName}" (${Object.keys(companyUpdates).join(', ')})\n`);
         companiesUpdated++;
       }
     }
@@ -120,7 +120,7 @@ async function importSubscriptions() {
     // Check if subscription exists
     const subscriptionId = subscriptionMap[companyId];
     if (!subscriptionId) {
-      console.log(`Row ${i + 1}: Company "${companyName}" not subscribed to 2025, skipping subscription update`);
+      // company not subscribed to 2025
       skipped++;
       continue;
     }
@@ -169,7 +169,7 @@ async function importSubscriptions() {
 
     // Only update if there are changes
     if (Object.keys(updates).length === 0) {
-      console.log(`Row ${i + 1}: No subscription data to update for "${companyName}"`);
+      // no subscription data to update
       skipped++;
       continue;
     }
@@ -184,17 +184,17 @@ async function importSubscriptions() {
       console.error(`Row ${i + 1}: Error updating subscription for "${companyName}":`, updateError.message);
       errors++;
     } else {
-      console.log(`✓ Row ${i + 1}: Updated subscription for "${companyName}" (${Object.keys(updates).join(', ')})`);
+      process.stdout.write(`Row ${i + 1}: Updated subscription for "${companyName}" (${Object.keys(updates).join(', ')})\n`);
       updated++;
     }
   }
 
-  console.log('\n=== Import Complete ===');
-  console.log(`✓ Companies Updated: ${companiesUpdated}`);
-  console.log(`✓ Subscriptions Updated: ${updated}`);
-  console.log(`⊘ Skipped: ${skipped}`);
-  console.log(`✗ Errors: ${errors}`);
-  console.log(`Total processed: ${excelData.length}`);
+  process.stdout.write('\n=== Import Complete ===\n');
+  process.stdout.write(`Companies Updated: ${companiesUpdated}\n`);
+  process.stdout.write(`Subscriptions Updated: ${updated}\n`);
+  process.stdout.write(`Skipped: ${skipped}\n`);
+  process.stdout.write(`Errors: ${errors}\n`);
+  process.stdout.write(`Total processed: ${excelData.length}\n`);
 }
 
 // Run the import

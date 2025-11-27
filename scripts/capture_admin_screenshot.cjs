@@ -57,13 +57,13 @@ async function waitForServer(u, timeout = 20000) {
     const page = await browser.newPage();
     await page.setViewport({ width: 1280, height: 900 });
 
-    console.log('Loading:', url);
+    // loading URL
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
     // small pause for rendering final layout
     await new Promise((r) => setTimeout(r, 800));
 
     await page.screenshot({ path: out, fullPage: true });
-    console.log('Saved screenshot to', out);
+    // saved screenshot
     await browser.close();
     process.exit(0);
   } catch (err) {

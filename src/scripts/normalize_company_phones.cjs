@@ -53,8 +53,8 @@ async function main() {
   const dryRun = args.includes('--dry-run') || args.length === 0;
   const doApply = args.includes('--apply');
 
-  console.log('Phone normalization script');
-  console.log('Mode:', dryRun ? 'DRY RUN (default)' : doApply ? 'APPLY' : 'DRY RUN');
+  process.stdout.write('Phone normalization script\n');
+  process.stdout.write('Mode: ' + (dryRun ? 'DRY RUN (default)' : doApply ? 'APPLY' : 'DRY RUN') + '\n');
 
   // Gather targets
   const companies = await fetchAll('companies', 'id,phone,name');
@@ -76,32 +76,32 @@ async function main() {
     }
   }
 
-  console.log(`Found ${companyChanges.length} companies with phone changes`);
-  console.log(`Found ${subscriptionChanges.length} subscriptions with phone changes`);
+  process.stdout.write(`Found ${companyChanges.length} companies with phone changes\n`);
+  process.stdout.write(`Found ${subscriptionChanges.length} subscriptions with phone changes\n`);
 
   if (dryRun && !doApply) {
-    console.log('\n--- DRY RUN RESULTS ---');
-    console.log('Companies to change:');
-    companyChanges.slice(0, 200).forEach(c => console.log(`${c.id}: ${c.name} — "${c.from}" -> "${c.to}"`));
-    console.log('\nSubscriptions to change:');
-    subscriptionChanges.slice(0, 200).forEach(s => console.log(`${s.id}: company ${s.company_id} — "${s.from}" -> "${s.to}"`));
-    console.log('\nTo apply changes: run with --apply');
+    process.stdout.write('\n--- DRY RUN RESULTS ---\n');
+    process.stdout.write('Companies to change:\n');
+    companyChanges.slice(0, 200).forEach(c => process.stdout.write(`${c.id}: ${c.name} — "${c.from}" -> "${c.to}"\n`));
+    process.stdout.write('\nSubscriptions to change:\n');
+    subscriptionChanges.slice(0, 200).forEach(s => process.stdout.write(`${s.id}: company ${s.company_id} — "${s.from}" -> "${s.to}"\n`));
+    process.stdout.write('\nTo apply changes: run with --apply\n');
     return;
   }
 
   if (doApply) {
-    console.log('\nApplying changes...');
+    process.stdout.write('\nApplying changes...\n');
     for (const c of companyChanges) {
       const { error } = await client.from('companies').update({ phone: c.to }).eq('id', c.id);
       if (error) console.error('Failed to update company', c.id, error.message);
-      else console.log('Updated company', c.id, c.name, '->', c.to);
+      else process.stdout.write('Updated company ' + c.id + ' ' + c.name + ' -> ' + c.to + '\n');
     }
     for (const s of subscriptionChanges) {
       const { error } = await client.from('event_subscriptions').update({ phone: s.to }).eq('id', s.id);
       if (error) console.error('Failed to update subscription', s.id, error.message);
-      else console.log('Updated subscription', s.id, 'company', s.company_id, '->', s.to);
+      else process.stdout.write('Updated subscription ' + s.id + ' company ' + s.company_id + ' -> ' + s.to + '\n');
     }
-    console.log('Done applying phone normalizations.');
+    process.stdout.write('Done applying phone normalizations.\n');
   }
 }
 

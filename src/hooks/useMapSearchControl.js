@@ -6,21 +6,30 @@ import { createSearchText } from '../utils/mapHelpers';
 /**
  * Custom hook to manage Leaflet search control
  * @param {Object} mapInstance - Leaflet map instance
- * @param {Array} markers - Array of marker objects
+ * @param {Array|L.LayerGroup} markersOrLayer - Array of marker objects OR a Leaflet LayerGroup
  * @returns {Object} Search control reference
  */
-export function useMapSearchControl(mapInstance, markers) {
+export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
   const searchControlRef = useRef(null);
   const [searchLayer, setSearchLayer] = useState(null);
 
-  // Create search layer with invisible markers for searching
+  // Create (or accept) search layer with invisible markers for searching.
+  // markersOrLayer may be a Leaflet LayerGroup (then we reuse it), or an array
+  // of marker objects (then we create and populate a LayerGroup).
   useEffect(() => {
     if (!mapInstance) return;
 
+    // If caller passed a LayerGroup or similar object with addLayer, use it
+    if (markersOrLayer && typeof markersOrLayer.addLayer === 'function') {
+      setSearchLayer(markersOrLayer);
+      return;
+    }
+
     const layerGroup = L.layerGroup();
+    const markers = Array.isArray(markersOrLayer) ? markersOrLayer : [];
 
     markers.forEach((marker) => {
-      if (marker.lat && marker.lng) {
+      if (marker && marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0,
@@ -33,13 +42,14 @@ export function useMapSearchControl(mapInstance, markers) {
     });
 
     setSearchLayer(layerGroup);
-  }, [mapInstance, markers]);
+  }, [mapInstance, markersOrLayer]);
 
-  // Setup search control once layer is ready
+  // Setup search control once layer is ready. Accept caller options and
+  // merge with sensible defaults so components can centralize config.
   useEffect(() => {
     if (!mapInstance || !searchLayer) return;
 
-    const searchControl = new L.Control.Search({
+    const defaultOptions = {
       layer: searchLayer,
       propertyName: 'searchText',
       initial: false,
@@ -47,21 +57,66 @@ export function useMapSearchControl(mapInstance, markers) {
       marker: {
         icon: false,
         animate: true,
+        circle: { radius: 8, color: '#d32f2fff', weight: 2, fillOpacity: 0.15 },
       },
       textPlaceholder: 'Search for name or booth...',
       position: 'topleft',
-    });
+    };
+
+    const searchConfig = Object.assign({}, defaultOptions, options || {});
+
+    // Deep-merge marker sub-object if provided
+    if (options && options.marker) {
+      searchConfig.marker = Object.assign({}, defaultOptions.marker, options.marker);
+      if (options.marker.circle) {
+        searchConfig.marker.circle = Object.assign({}, defaultOptions.marker.circle, options.marker.circle);
+      }
+    }
+
+    const searchControl = new L.Control.Search(searchConfig);
 
     mapInstance.addControl(searchControl);
     searchControlRef.current = searchControl;
 
-    // Handle search result selection
+    // Forward locationfound events to the map (same behavior as before)
     searchControl.on('search:locationfound', (e) => {
       if (e?.layer?.getLatLng) {
         const latlng = e.layer.getLatLng();
-        mapInstance.flyTo(latlng, MAP_CONFIG.SEARCH_ZOOM, { animate: true });
+        mapInstance.flyTo(latlng, searchConfig.zoom, { animate: true });
 
-        // Auto-close search box
+        // After the map finishes moving / zooming remove the temporary
+        // search highlight (the plugin's marker/circle). The plugin stores
+        // the transient highlight in different internal properties depending
+        // on version/option names. Try to remove the commonly used ones.
+        const removeHighlight = () => {
+          try {
+            // L.Control.Search uses _markerSearch (and older variants may
+            // use _marker) to hold the transient marker/circle.
+            if (searchControl._markerSearch) {
+              if (mapInstance.hasLayer && mapInstance.hasLayer(searchControl._markerSearch)) {
+                mapInstance.removeLayer(searchControl._markerSearch);
+              } else if (typeof searchControl._markerSearch.remove === 'function') {
+                searchControl._markerSearch.remove();
+              }
+            } else if (searchControl._marker) {
+              if (mapInstance.hasLayer && mapInstance.hasLayer(searchControl._marker)) {
+                mapInstance.removeLayer(searchControl._marker);
+              } else if (typeof searchControl._marker.remove === 'function') {
+                searchControl._marker.remove();
+              }
+            }
+          } catch (err) {
+            // best-effort cleanup; don't blow up if internals are different
+          }
+        };
+
+        // Keep the plugin's highlight visible after the search flyTo completes
+        // (so the user sees the marker circle). Only remove the highlight when
+        // the user manually starts another zoom action — that was your
+        // requested behaviour.
+        const zoomStartHandler = () => removeHighlight();
+        mapInstance.on && mapInstance.on('zoomstart', zoomStartHandler);
+
         if (searchControl._input) searchControl._input.blur();
         if (searchControl.hideAlert) searchControl.hideAlert();
         if (searchControl.collapse) searchControl.collapse();
@@ -69,12 +124,20 @@ export function useMapSearchControl(mapInstance, markers) {
     });
 
     return () => {
+      try {
+        if (mapInstance && typeof mapInstance.off === 'function') {
+          mapInstance.off('zoomstart', zoomStartHandler);
+        }
+      } catch (err) {
+        // ignore
+      }
+
       if (mapInstance && searchControl) {
         mapInstance.removeControl(searchControl);
         searchControlRef.current = null;
       }
     };
-  }, [mapInstance, searchLayer]);
+  }, [mapInstance, searchLayer, JSON.stringify(options)]);
 
   return searchControlRef;
 }

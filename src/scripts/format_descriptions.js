@@ -34,4 +34,4 @@ for (const c of arr) {
 
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, rows.join('\n'), 'utf8');
-console.log('Wrote', outFile, 'rows=', rows.length - 1);
+process.stdout.write('Wrote ' + outFile + ' rows=' + (rows.length - 1) + '\n');

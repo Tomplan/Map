@@ -161,7 +161,7 @@ async function fetchUrl(url, timeout = 10000) {
     return await response.text();
   } catch (error) {
     if (error.name === 'AbortError') {
-      console.log(`  ⏱️  Timeout fetching ${url}`);
+      // timeout fetching
     }
     return null;
   }
@@ -209,31 +209,31 @@ async function findCompanyEmail(company) {
   }
 
   const baseDomain = getBaseDomain(websiteUrl);
-  console.log(`\n🔍 Checking: ${company.name} (${websiteUrl})`);
+  // checking company
 
   let allEmails = new Set();
 
   // 1. Try homepage
-  console.log('  📄 Fetching homepage...');
+  // fetching homepage
   const homepageHtml = await fetchUrl(websiteUrl);
   if (homepageHtml) {
     const emails = extractEmails(homepageHtml, baseDomain);
     emails.forEach(e => allEmails.add(e));
 
     if (emails.length > 0) {
-      console.log(`  ✅ Found ${emails.length} email(s) on homepage:`, emails);
+      process.stdout.write(`  Found ${emails.length} email(s) on homepage: ` + JSON.stringify(emails) + '\n');
     }
 
     // 2. Try to find contact page from links
     const contactPageUrl = findContactPageUrl(homepageHtml, websiteUrl);
     if (contactPageUrl && contactPageUrl !== websiteUrl) {
-      console.log(`  📄 Found contact page: ${contactPageUrl}`);
+      // found contact page
       const contactHtml = await fetchUrl(contactPageUrl);
       if (contactHtml) {
         const contactEmails = extractEmails(contactHtml, baseDomain);
         contactEmails.forEach(e => allEmails.add(e));
         if (contactEmails.length > 0) {
-          console.log(`  ✅ Found ${contactEmails.length} email(s) on contact page:`, contactEmails);
+          process.stdout.write(`  Found ${contactEmails.length} email(s) on contact page: ` + JSON.stringify(contactEmails) + '\n');
         }
       }
     }
@@ -246,7 +246,7 @@ async function findCompanyEmail(company) {
     if (html) {
       const emails = extractEmails(html, baseDomain);
       if (emails.length > 0) {
-        console.log(`  ✅ Found ${emails.length} email(s) at ${path}:`, emails);
+      process.stdout.write(`  Found ${emails.length} email(s) at ${path}: ` + JSON.stringify(emails) + '\n');
         emails.forEach(e => allEmails.add(e));
         break; // Stop after first successful contact page
       }
@@ -271,11 +271,10 @@ async function main() {
   const args = process.argv.slice(2);
   const applyChanges = args.includes('--apply');
 
-  console.log('🚀 Company Email Scraper');
-  console.log('========================\n');
+  // Company Email Scraper
 
   // Fetch all companies with websites but no email
-  console.log('📊 Fetching companies from database...');
+  // fetching companies from database
   const { data: companies, error } = await supabase
     .from('companies')
     .select('id, name, website, email')
@@ -287,11 +286,11 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`✅ Found ${companies.length} companies with websites\n`);
+  process.stdout.write(`Found ${companies.length} companies with websites\n`);
 
   // Filter to only companies without email
   const companiesWithoutEmail = companies.filter(c => !c.email || c.email.trim() === '');
-  console.log(`📧 ${companiesWithoutEmail.length} companies need email addresses\n`);
+  process.stdout.write(`${companiesWithoutEmail.length} companies need email addresses\n`);
 
   const results = [];
   let successCount = 0;
@@ -303,20 +302,20 @@ async function main() {
       if (email) {
         results.push({ id: company.id, name: company.name, email });
         successCount++;
-        console.log(`  ✨ Selected email: ${email}`);
+        process.stdout.write(`  Selected email: ${email}\n`);
       } else {
-        console.log(`  ❌ No email found`);
+        // no email found
       }
     } catch (error) {
-      console.log(`  ❌ Error: ${error.message}`);
+      process.stderr.write(`  Error: ${error.message}\n`);
     }
 
     // Small delay to be polite to servers
     await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  console.log('\n' + '='.repeat(60));
-  console.log(`\n📊 Summary: Found emails for ${successCount}/${companiesWithoutEmail.length} companies\n`);
+  process.stdout.write('\n' + '='.repeat(60) + '\n');
+  process.stdout.write(`\nSummary: Found emails for ${successCount}/${companiesWithoutEmail.length} companies\n`);
 
   // Generate SQL
   if (results.length > 0) {
@@ -334,10 +333,10 @@ async function main() {
 
     const filename = 'update_company_emails.sql';
     fs.writeFileSync(filename, sql);
-    console.log(`✅ SQL script saved to: ${filename}\n`);
+    process.stdout.write(`SQL script saved to: ${filename}\n`);
 
     if (applyChanges) {
-      console.log('🔄 Applying changes to database...');
+      process.stdout.write('Applying changes to database...\n');
       for (const { id, name, email } of results) {
         const { error } = await supabase
           .from('companies')
@@ -347,16 +346,16 @@ async function main() {
         if (error) {
           console.error(`❌ Failed to update ${name}:`, error.message);
         } else {
-          console.log(`✅ Updated ${name}`);
+          process.stdout.write(`Updated ${name}\n`);
         }
       }
-      console.log('\n✨ Done!');
+      process.stdout.write('\nDone!\n');
     } else {
-      console.log('ℹ️  Run with --apply to update the database');
-      console.log(`ℹ️  Or run the SQL script manually: ${filename}`);
+      process.stdout.write('Run with --apply to update the database\n');
+      process.stdout.write(`Or run the SQL script manually: ${filename}\n`);
     }
   } else {
-    console.log('ℹ️  No emails found to update');
+    process.stdout.write('No emails found to update\n');
   }
 }
 

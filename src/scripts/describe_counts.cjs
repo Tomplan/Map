@@ -9,4 +9,4 @@ for (const c of a) {
   if (c.picked && c.picked.en && c.picked.en.text) counts.en++;
   if (c.picked && c.picked.de && c.picked.de.text) counts.de++;
 }
-console.log(JSON.stringify(counts, null, 2));
+process.stdout.write(JSON.stringify(counts, null, 2) + '\n');

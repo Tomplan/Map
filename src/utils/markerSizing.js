@@ -11,14 +11,12 @@ import { MAP_CONFIG } from '../config/mapConfig';
 export function getIconSizeForZoom(zoom, baseSize, isSpecial = false, isAdminView = false) {
   const config = MAP_CONFIG.MARKER_SIZING;
 
-  // Debug logging
-  console.log('[markerSizing] Input:', { zoom, baseSize, isSpecial, isAdminView });
-  console.log('[markerSizing] Config:', config);
+  // Debug logging removed — only keep errors in production code
 
   // If feature disabled or in admin view, return base size
   if (!config || !config.ENABLED || (isAdminView && !config.APPLY_IN_ADMIN)) {
     const fallback = baseSize || (config ? config.DEFAULT_SIZE : [25, 41]);
-    console.log('[markerSizing] Feature disabled, returning:', fallback);
+    // feature disabled: returning fallback
     return fallback;
   }
 
@@ -27,7 +25,7 @@ export function getIconSizeForZoom(zoom, baseSize, isSpecial = false, isAdminVie
     (b) => zoom >= b.minZoom && zoom <= b.maxZoom
   );
 
-  console.log('[markerSizing] Found bucket:', bucket);
+  // found bucket (debug logging removed)
 
   // Fallback to default size if no bucket matches
   let size = bucket ? bucket.size : config.DEFAULT_SIZE;
@@ -54,7 +52,7 @@ export function getIconSizeForZoom(zoom, baseSize, isSpecial = false, isAdminVie
     ];
   }
 
-  console.log('[markerSizing] Returning size:', size);
+  // returning size
   return size;
 }
 
