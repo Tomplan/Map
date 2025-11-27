@@ -109,6 +109,34 @@ L.Icon.Glyph = L.Icon.extend({
       div.style.width = size.x + 'px';
       div.style.height = size.y + 'px';
     }
+
+    // If the icon has child glyph spans (created in createIcon), update their
+    // inline styles so that in-place icon updates (Leaflet setIcon) reflect
+    // the latest glyph sizing/color/anchor without needing to recreate the
+    // DOM element.
+    try {
+      const glyphSpans = div.querySelectorAll && div.querySelectorAll('span');
+      if (glyphSpans && glyphSpans.length) {
+        glyphSpans.forEach((span) => {
+          // Keep existing behavior but ensure properties reflect current options
+          span.style.fontSize = options.glyphSize || span.style.fontSize || '';
+          span.style.color = options.glyphColor || span.style.color || '';
+          // width/lineHeight should always match icon size
+          if (options.iconSize) {
+            span.style.width = options.iconSize[0] + 'px';
+            span.style.lineHeight = options.iconSize[1] + 'px';
+          }
+          // glyphAnchor is optional
+          if (options.glyphAnchor && options.glyphAnchor.length >= 2) {
+            span.style.left = options.glyphAnchor[0] + 'px';
+            span.style.top = options.glyphAnchor[1] + 'px';
+          }
+        });
+      }
+    } catch (err) {
+      // Fail silently to avoid breaking Leaflet rendering if DOM operations fail
+      console.warn('Failed to update glyph span styles in-place', err);
+    }
   },
 });
 

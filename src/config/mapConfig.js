@@ -15,6 +15,18 @@ export const MAP_CONFIG = {
     AIMING_COLOR: '#1976d2',
     SHADOW_COLOR: '#90caf9',
   },
+  MARKER_SIZING: {
+    ENABLED: true, // Enable zoom-based marker sizing
+    APPLY_IN_ADMIN: false, // Disable in admin view for precise placement
+    SPECIAL_MARKER_MULTIPLIER: 1.2, // Special markers 20% larger than regular
+    // Discrete zoom buckets with icon sizes [width, height]
+    ZOOM_BUCKETS: [
+      { minZoom: 14.0, maxZoom: 18.49, size: [8, 13.33] }, // Original size at default zoom 17
+      { minZoom: 18.5, maxZoom: 19.49, size: [15, 25] }, // Reference size (bigger)
+      { minZoom: 19.5, maxZoom: 22.0, size: [20, 33.33] }, // Even larger when zoomed in
+    ],
+    DEFAULT_SIZE: [25, 41], // Fallback size
+  },
 };
 
 // Default branding configuration

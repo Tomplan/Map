@@ -3,7 +3,10 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
-jest.mock('react-router-dom', () => ({ Link: ({ children, to, ...props }) => require('react').createElement('a', { href: to, ...props }, children) }));
+jest.mock('react-router-dom', () => ({
+  Link: ({ children, to, ...props }) => require('react').createElement('a', { href: to, ...props }, children),
+  useLocation: () => ({ pathname: '/admin/assignments' }),
+}));
 jest.mock('@mdi/react', () => ({ __esModule: true, default: (props) => require('react').createElement('svg', null, props.children) }));
 
 import CollapsedShortcuts from './CollapsedShortcuts';
@@ -23,10 +26,6 @@ describe('CollapsedShortcuts', () => {
     const prog = screen.getByRole('link', { name: /adminNav.programManagement/i });
     expect(prog).toHaveAttribute('href', '/admin/program');
 
-      const map = screen.getByRole('link', { name: /adminNav.mapManagement/i });
-      expect(map).toHaveAttribute('href', '/admin/map');
-
-      const settings = screen.getByRole('link', { name: /adminNav.settings/i });
-      expect(settings).toHaveAttribute('href', '/admin/settings');
+      // CollapsedShortcuts only contains the year-scoped shortcuts (subscriptions, assignments, program)
   });
 });

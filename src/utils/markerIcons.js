@@ -37,10 +37,13 @@ export function createMarkerIcon({
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
   if (typeof safeGlyphSize === 'number') {
-    safeGlyphSize = `${safeGlyphSize}px`;
+    // format to two decimals for consistent rendering
+    safeGlyphSize = `${safeGlyphSize.toFixed(2)}px`;
   } else if (typeof safeGlyphSize === 'string' && !safeGlyphSize.endsWith('px')) {
-    // If it's a string but missing px, add it
-    safeGlyphSize = `${safeGlyphSize}px`;
+    // If it's a string, try to normalize numeric values to 2-decimal px strings
+    const parsed = parseFloat(safeGlyphSize.replace(/[^0-9.-]/g, ''));
+    if (Number.isFinite(parsed)) safeGlyphSize = `${parsed.toFixed(2)}px`;
+    else safeGlyphSize = `${safeGlyphSize}px`;
   } else if (!safeGlyphSize) {
     safeGlyphSize = '8px';
   }

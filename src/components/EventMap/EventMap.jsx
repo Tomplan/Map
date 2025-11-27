@@ -28,7 +28,7 @@ import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig();
 
@@ -41,6 +41,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const { organizationLogo } = useOrganizationLogo();
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(MAP_CONFIG.DEFAULT_ZOOM);
 
   // Favorites context (only available in visitor view)
   let favoritesContext = null;
@@ -91,6 +92,26 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       }
     });
   }, [safeMarkers]);
+
+  // Track zoom changes for dynamic marker sizing
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    const handleZoomEnd = () => {
+      const zoom = mapInstance.getZoom();
+      setCurrentZoom(zoom);
+    };
+
+    // Set initial zoom
+    setCurrentZoom(mapInstance.getZoom());
+
+    // Subscribe to zoom events
+    mapInstance.on('zoomend', handleZoomEnd);
+
+    return () => {
+      mapInstance.off('zoomend', handleZoomEnd);
+    };
+  }, [mapInstance]);
 
   // Sync rectangles/handles
   useEffect(() => {
@@ -363,10 +384,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
+            applyVisitorSizing={previewUseVisitorSizing}
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             focusMarkerId={focusMarkerId}
             onFocusHandled={() => setFocusMarkerId(null)}
+            currentZoom={currentZoom}
           />
 
           <EventSpecialMarkers
@@ -379,7 +402,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}
+            applyVisitorSizing={previewUseVisitorSizing}
             selectedYear={selectedYear}
+            currentZoom={currentZoom}
           />
         </MapContainer>
       </div>
@@ -389,6 +414,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
 EventMap.propTypes = {
   isAdminView: PropTypes.bool,
+  previewUseVisitorSizing: PropTypes.bool,
   markersState: PropTypes.array,
   updateMarker: PropTypes.func.isRequired,
   selectedYear: PropTypes.number,
@@ -402,6 +428,7 @@ EventMap.defaultProps = {
   selectedYear: new Date().getFullYear(),
   selectedMarkerId: null,
   onMarkerSelect: null,
+  previewUseVisitorSizing: false,
 };
 
 export default EventMap;
