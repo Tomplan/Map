@@ -16,6 +16,7 @@ import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../hooks/useIsMobile';
+import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 
@@ -53,7 +54,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const favorites = favoritesContext?.favorites || [];
   const isFavorite = favoritesContext?.isFavorite || (() => false);
 
-  const searchControlRef = useRef(null);
+  const searchControlRef = useMapSearchControl(mapInstance, searchLayer);
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
@@ -153,56 +154,34 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     setSearchLayer(layerGroup);
   }, [mapInstance, safeMarkers]);
 
-  // Setup search control once search layer is ready
+  // Attach EventMap-specific behavior to the centralized search control:
+  // - Set focusMarkerId so the UI opens the marker popup after the search fly-to.
   useEffect(() => {
-    if (!mapInstance || !searchLayer) return;
+    const control = searchControlRef && searchControlRef.current;
+    if (!mapInstance || !searchLayer || !control) return;
 
-    // Setup search control
-    const searchControl = new L.Control.Search({
-      layer: searchLayer,
-      propertyName: 'searchText',
-      initial: false,
-      zoom: MAP_CONFIG.SEARCH_ZOOM,
-      marker: {
-        icon: false,
-        animate: true,
-      },
-      textPlaceholder: 'Search for name or booth...',
-      position: 'topleft',
-    });
-
-    mapInstance.addControl(searchControl);
-    searchControlRef.current = searchControl;
-
-    // Handle search result selection
-    searchControl.on('search:locationfound', (e) => {
+    const handleFound = (e) => {
       if (e?.layer) {
-        const latlng = e.layer.getLatLng();
         const markerId = e.layer._markerId;
-        
+
         if (markerId) {
-          mapInstance.flyTo(latlng, MAP_CONFIG.SEARCH_ZOOM, { animate: true });
-          
-          // Set focus marker to open popup after animation
-          setTimeout(() => {
-            setFocusMarkerId(markerId);
-          }, 800);
+          // Delay popup opening slightly so the map can finish the flyTo animation
+          setTimeout(() => setFocusMarkerId(markerId), 800);
         }
 
-        // Auto-close search box
-        if (searchControl._input) searchControl._input.blur();
-        if (searchControl.hideAlert) searchControl.hideAlert();
-        if (searchControl.collapse) searchControl.collapse();
-      }
-    });
-
-    return () => {
-      if (mapInstance && searchControl) {
-        mapInstance.removeControl(searchControl);
-        searchControlRef.current = null;
+        // Ensure control UI is collapsed/blurred (hook also does this; idempotent)
+        if (control._input) control._input.blur();
+        if (control.hideAlert) control.hideAlert();
+        if (control.collapse) control.collapse();
       }
     };
-  }, [mapInstance, searchLayer]);
+
+    control.on('search:locationfound', handleFound);
+
+    return () => {
+      control.off('search:locationfound', handleFound);
+    };
+  }, [mapInstance, searchLayer, /* track when control instance becomes available */ Boolean(searchControlRef && searchControlRef.current)]);
 
   // Setup minimap control
   useEffect(() => {
