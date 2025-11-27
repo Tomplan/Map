@@ -8,6 +8,8 @@ import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
 import MapControls from './MapControls';
+import FavoritesFilterButton from './FavoritesFilterButton';
+import { useFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
@@ -38,6 +40,17 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const [searchLayer, setSearchLayer] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Favorites context (only available in visitor view)
+  let favoritesContext = null;
+  try {
+    favoritesContext = useFavoritesContext();
+  } catch (e) {
+    // Context not available in admin view, ignore
+  }
+  const favorites = favoritesContext?.favorites || [];
+  const isFavorite = favoritesContext?.isFavorite || (() => false);
 
   const searchControlRef = useRef(null);
   const rectangleLayerRef = useRef(null);
@@ -58,6 +71,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     () => (Array.isArray(markersState) ? markersState : []),
     [markersState]
   );
+
+  // Filter markers based on favorites toggle
+  const filteredMarkers = useMemo(() => {
+    if (!showFavoritesOnly || favorites.length === 0) {
+      return safeMarkers;
+    }
+    return safeMarkers.filter((marker) => {
+      return marker.companyId && isFavorite(marker.companyId);
+    });
+  }, [safeMarkers, showFavoritesOnly, favorites, isFavorite]);
 
   // Preload marker logos
   useEffect(() => {
@@ -286,6 +309,14 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         />
       )}
 
+      {!isAdminView && favorites.length > 0 && (
+        <FavoritesFilterButton
+          isActive={showFavoritesOnly}
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          favoritesCount={favorites.length}
+        />
+      )}
+
       <div
         id="map-container"
         className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
@@ -323,7 +354,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           ))}
 
           <EventClusterMarkers
-            safeMarkers={safeMarkers}
+            safeMarkers={filteredMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
