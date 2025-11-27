@@ -18,6 +18,7 @@ A mobile-first web application designed for event navigation, providing an inter
 - **Secure Login**: A secure, role-based admin panel to manage all event data.
 - **Dashboard**: Get an overview of key event metrics, including total markers, companies, subscriptions, and assignments.
 - **Map Management**: Easily add, edit, and delete map markers. Drag-and-drop functionality for precise positioning.
+    - Per-marker sizing: admins can set per-marker `iconSize`, `glyphSize` and `shadowScale` to tune how each marker and glyph scales across zoom levels. (Legacy fields `iconBaseSize` / `glyphBaseSize` are present in the DB for backfill/verification and are not used by the UI.)
 - **Company Management**: Add and manage companies, logos, and contact details.
 - **Booth Assignments**: Assign companies to specific booth locations on the map.
 - **Event Subscriptions**: Manage event subscriptions, including meal counts, booth numbers, and special requirements.
@@ -172,6 +173,7 @@ The admin dashboard provides a comprehensive set of tools for event management:
 -   **Role-Based Access Control**: Different user roles (Super Admin, System Manager, Event Manager) with varying levels of access.
 -   **Dashboard**: An overview page with key statistics and quick actions.
 -   **Map Management**: Add, edit, and delete markers. Drag markers to reposition them and rotate booth rectangles. Lock marker positions to prevent changes before the event.
+    - Per-marker base sizing (new): set `iconBaseSize`, `glyphBaseSize`, and `shadowScale` per marker to control initial sizes and scaling behavior across zoom buckets.
 -   **Company Management**: View, add, and edit company information, including logos, websites, and descriptions.
 -   **Event Subscriptions**: Manage company registrations, including booth counts, meal preferences, and special requirements.
 -   **Booth Assignments**: Assign companies to specific map markers (booths) and manage these assignments.

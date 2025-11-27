@@ -5,6 +5,8 @@ import MarkerClusterGroup from 'react-leaflet-markercluster';
 import L from 'leaflet';
 import { getIconPath } from '../utils/getIconPath';
 import { createMarkerIcon } from '../utils/markerIcons';
+import { getIconSizeForZoom, getZoomBucket } from '../utils/markerSizing';
+import { normalizeIconSize } from '../utils/iconSizeHelpers';
 import useIsMobile from '../hooks/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
@@ -43,20 +45,75 @@ const getIconFile = (marker, isFavorited = false) => {
   return marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
 };
 
-const createIcon = (marker, isActive = false, isFavorited = false) => {
+const createIcon = (marker, isActive = false, isFavorited = false, currentZoom = 17, isAdminView = false) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
   if (isActive) className += ' marker-active';
   if (isFavorited) className += ' marker-favorited';
+
+  // Use marker.iconSize as the single source of truth for base sizes; fall back to default
+  // Ensure iconSize is normalized - if height missing derive it from width
+  const baseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+
+  // Calculate size based on zoom (disabled in admin view)
+  const iconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
 
   return createMarkerIcon({
     className,
     prefix: marker.prefix,
     iconUrl: getIconFile(marker, isFavorited),
-    iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
+    iconSize,
     glyph: marker.glyph || '',
     glyphColor: marker.glyphColor || DEFAULT_ICON.GLYPH_COLOR,
-    glyphSize: marker.glyphSize || DEFAULT_ICON.GLYPH_SIZE,
-    glyphAnchor: marker.glyphAnchor || DEFAULT_ICON.GLYPH_ANCHOR,
+    // If glyphSize explicitly configured on marker, use it. Otherwise compute as a proportion
+    // of the final icon height (no glyphBaseSize usage — glyphSize is the single source of truth).
+    glyphSize: (() => {
+      // If glyphSize explicitly configured on marker, treat it as a base pixel size
+      // and scale it proportionally based on current icon height vs marker's stored iconSize.
+      if (marker.glyphSize) {
+        // parse numeric px value
+        let baseGlyphPx = null;
+        if (typeof marker.glyphSize === 'number') baseGlyphPx = marker.glyphSize;
+        else if (typeof marker.glyphSize === 'string') baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
+
+        // Determine marker's stored base icon height
+        const markerBaseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+        const baseIconHeight = markerBaseSize && markerBaseSize[1] ? markerBaseSize[1] : DEFAULT_ICON.SIZE[1];
+
+        if (baseGlyphPx && baseIconHeight) {
+          const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
+          return `${scaled.toFixed(2)}px`;
+        }
+
+        // If parsing fails, fall back to returning provided glyphSize string (normalize to 2 decimals when possible)
+        if (typeof marker.glyphSize === 'number') return `${marker.glyphSize.toFixed(2)}px`;
+        if (typeof marker.glyphSize === 'string') {
+          const parsed = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
+          return Number.isFinite(parsed) ? `${parsed.toFixed(2)}px` : marker.glyphSize;
+        }
+        return '';
+      }
+
+      // fallback proportion of the final icon height if glyphSize not provided
+      return `${Math.round(iconSize[1] * 0.33)}px`;
+    })(),
+    glyphAnchor: (() => {
+      // Scale glyphAnchor (x,y) proportional to marker's stored iconSize -> current iconSize.
+      const baseMarkerSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+      const baseW = baseMarkerSize[0] || DEFAULT_ICON.SIZE[0];
+      const baseH = baseMarkerSize[1] || DEFAULT_ICON.SIZE[1];
+
+      const scaleX = baseW ? iconSize[0] / baseW : 1;
+      const scaleY = baseH ? iconSize[1] / baseH : 1;
+
+      if (Array.isArray(marker.glyphAnchor) && marker.glyphAnchor.length >= 2) {
+        const ax = parseFloat(marker.glyphAnchor[0]) || 0;
+        const ay = parseFloat(marker.glyphAnchor[1]) || 0;
+        return [parseFloat((ax * scaleX).toFixed(2)), parseFloat((ay * scaleY).toFixed(2))];
+      }
+
+      // default anchor scales with current icon size proportionally
+      return [parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[0] * scaleX).toFixed(2)), parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[1] * scaleY).toFixed(2))];
+    })(),
   });
 };
 
@@ -110,7 +167,7 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, applyVisitorSizing = false }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -278,12 +335,14 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   const iconsByMarker = useRef({});
   const getIcon = useCallback((marker, isSelected) => {
     const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
-    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}`;
+    const zoomBucket = getZoomBucket(currentZoom);
+    const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
+    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize||DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}`;
     if (!iconsByMarker.current[key]) {
-      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited);
+      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited, currentZoom, effectiveAdminSizing);
     }
     return iconsByMarker.current[key];
-  }, [isFavorite]);
+  }, [isFavorite, currentZoom, isAdminView, applyVisitorSizing]);
 
   // Clean up stale cache entries when markers change to prevent memory leaks
   useEffect(() => {
@@ -412,7 +471,7 @@ EventClusterMarkers.propTypes = {
       iconSize: PropTypes.arrayOf(PropTypes.number),
       glyph: PropTypes.string,
       glyphColor: PropTypes.string,
-      glyphSize: PropTypes.string,
+      glyphSize: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       glyphAnchor: PropTypes.arrayOf(PropTypes.number),
       prefix: PropTypes.string,
       name: PropTypes.string,
@@ -431,6 +490,8 @@ EventClusterMarkers.propTypes = {
   onMarkerSelect: PropTypes.func,
   focusMarkerId: PropTypes.number,
   onFocusHandled: PropTypes.func,
+  currentZoom: PropTypes.number,
+  applyVisitorSizing: PropTypes.bool,
 };
 
 EventClusterMarkers.defaultProps = {
@@ -440,6 +501,8 @@ EventClusterMarkers.defaultProps = {
   onMarkerSelect: null,
   focusMarkerId: null,
   onFocusHandled: null,
+  currentZoom: 17,
+  applyVisitorSizing: false,
 };
 
 export default EventClusterMarkers;

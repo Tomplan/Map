@@ -71,6 +71,16 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
+/* Smooth scaling transitions for markers when bucket sizes change */
+.leaflet-glyph-icon, .marker-icon {
+  transition: width 160ms ease, height 160ms ease, transform 180ms ease;
+  will-change: width, height, transform;
+}
+.leaflet-glyph-icon span {
+  transition: font-size 160ms ease, line-height 160ms ease;
+  will-change: font-size, line-height;
+}
+
 /* Adjust minimap position to be above bottom navigation bar */
 .leaflet-bottom.leaflet-right {
   bottom: 80px !important; /* Move up to avoid bottom nav (64px + padding) */

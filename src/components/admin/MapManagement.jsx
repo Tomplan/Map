@@ -150,6 +150,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
           iconSize: editData.iconSize,
           glyphColor: editData.glyphColor,
           glyphSize: editData.glyphSize,
+          shadowScale: editData.shadowScale,
         };
 
         // Update both tables
@@ -311,6 +312,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
             <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-500">Loading map...</div>}>
               <EventMap
                 isAdminView={true}
+                previewUseVisitorSizing={true}
                 markersState={markersState}
                 updateMarker={updateMarker}
                 selectedYear={selectedYear}
@@ -417,6 +419,8 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker }) {
         {!isDefaultMarker && <Field label="Glyph (Booth Label)" value={marker.glyph} />}
         <Field label="Glyph Color" value={marker.glyphColor} />
         <Field label="Glyph Size" value={marker.glyphSize} />
+        <Field label="Glyph Anchor" value={marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : '—'} />
+        <Field label="Shadow Scale" value={marker.shadowScale ?? '1.0'} />
         {isDefaultMarker && (
           <>
             <Field label="Rectangle Width" value={marker.rectWidth} />
@@ -488,7 +492,42 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, on
         </div>
         {!isDefaultMarker && <InputField label="Glyph (Booth Label)" value={marker.glyph} onChange={(v) => onChange('glyph', v)} />}
         <InputField label="Glyph Color" type="color" value={marker.glyphColor} onChange={(v) => onChange('glyphColor', v)} />
-        <InputField label="Glyph Size" type="number" step="1" value={marker.glyphSize} onChange={(v) => onChange('glyphSize', parseFloat(v))} />
+        <InputField label="Glyph Size" type="number" step="0.01" value={marker.glyphSize} onChange={(v) => onChange('glyphSize', parseFloat(v))} />
+        <div className="grid grid-cols-2 gap-2">
+          <InputField
+            label="Glyph Anchor X"
+            type="number"
+            step="0.01"
+            value={marker.glyphAnchor ? marker.glyphAnchor[0] : ''}
+            onChange={(v) => onChange('glyphAnchor', [parseFloat(v) || 0, marker.glyphAnchor ? marker.glyphAnchor[1] || 0 : 0])}
+          />
+          <InputField
+            label="Glyph Anchor Y"
+            type="number"
+            step="0.01"
+            value={marker.glyphAnchor ? marker.glyphAnchor[1] : ''}
+            onChange={(v) => onChange('glyphAnchor', [marker.glyphAnchor ? marker.glyphAnchor[0] || 0 : 0, parseFloat(v) || 0])}
+          />
+        </div>
+        {/* New per-marker base sizing fields */}
+        <div className="grid grid-cols-2 gap-2">
+          <InputField
+            label="Icon Width"
+            type="number"
+            step="0.01"
+            value={marker.iconSize ? marker.iconSize[0] : ''}
+            onChange={(v) => onChange('iconSize', [parseFloat(v) || null, marker.iconSize ? marker.iconSize[1] : null])}
+          />
+          <InputField
+            label="Icon Height"
+            type="number"
+            step="0.01"
+            value={marker.iconSize ? marker.iconSize[1] : ''}
+            onChange={(v) => onChange('iconSize', [marker.iconSize ? marker.iconSize[0] : null, parseFloat(v) || null])}
+          />
+        </div>
+
+        <InputField label="Shadow Scale" type="number" step="0.01" value={marker.shadowScale ?? 1.0} onChange={(v) => onChange('shadowScale', parseFloat(v))} />
         {isDefaultMarker && (
           <>
             <InputField label="Rectangle Width" type="number" step="1" value={marker.rectWidth} onChange={(v) => onChange('rectWidth', parseFloat(v))} />

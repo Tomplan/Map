@@ -39,13 +39,17 @@ describe('AdminLayout (collapsed sidebar code presence)', () => {
     const file = fs.readFileSync(path.resolve(__dirname, './admin/CollapsedShortcuts.jsx'), 'utf8');
 
     // verify collapsed shortcuts file contains the compact links and expected classes
-    expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
-    expect(file).toMatch(/to=\"\/admin\/assignments\"/);
-    expect(file).toMatch(/to=\"\/admin\/program\"/);
-    expect(file).toMatch(/to=\"\/admin\/map\"/);
-    expect(file).toMatch(/to=\"\/admin\/settings\"/);
-    // collapsed icon markup should use compact spacing and use size=1 for icons
-    expect(file).toMatch(/py-3 px-3/);
-    expect(file).toMatch(/size=\{1\}/);
+      // CollapsedShortcuts includes the year-scoped shortcuts (subscriptions, assignments, program)
+      expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
+      expect(file).toMatch(/to=\"\/admin\/assignments\"/);
+      expect(file).toMatch(/to=\"\/admin\/program\"/);
+    // collapsed component should use vertical padding at the container level (px handled inside tiles)
+    expect(file).toMatch(/py-3/);
+    // compact mode triggers `isCollapsed={true}` on the tiles (icons size controlled in SidebarTile)
+    expect(file).toMatch(/isCollapsed=\{true\}/);
+
+    // Icon size is set inside the SidebarTile implementation; ensure that file contains the icon size override
+    const sideFile = fs.readFileSync(path.resolve(__dirname, './admin/SidebarTile.jsx'), 'utf8');
+    expect(sideFile).toMatch(/size=\{1\}/);
   });
 });

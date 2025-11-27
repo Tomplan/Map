@@ -40,6 +40,8 @@ export const FIELD_TABLE_MAP = {
   glyph: 'Markers_Appearance',
   glyphColor: 'Markers_Appearance',
   glyphSize: 'Markers_Appearance',
+  // Per-marker sizing fields - single source of truth
+  shadowScale: 'Markers_Appearance',
   glyphAnchor: 'Markers_Appearance',
   appearanceLocked: 'Markers_Appearance',
 
@@ -77,6 +79,8 @@ export const COLUMN_CONFIGS = {
     { key: 'glyph', label: 'Glyph' },
     { key: 'glyphColor', label: 'Glyph Color' },
     { key: 'glyphSize', label: 'Glyph Size' },
+    { key: 'iconSize', label: 'Icon Size', type: 'array' },
+    { key: 'shadowScale', label: 'Shadow Scale', type: 'number' },
     { key: 'glyphAnchor', label: 'Glyph Anchor', type: 'array' },
     { key: 'appearanceLocked', label: 'Locked', type: 'boolean' },
   ],

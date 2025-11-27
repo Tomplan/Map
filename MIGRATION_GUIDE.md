@@ -17,6 +17,7 @@ This migration separates **Companies** (permanent, reusable) from **Markers** (p
 - `Companies` - Permanent list of companies (grows over time)
 - `Markers_Core` - Physical booth locations (unchanged)
 - `Markers_Appearance` - Visual styling (unchanged)
+   - Note: Recent migration added per-marker sizing fields to `Markers_Appearance`. The new approach consolidates sizing around the existing `iconSize` and `glyphSize` columns: a backfill-only migration copies values from `iconBaseSize`/`glyphBaseSize` into `iconSize`/`glyphSize` for rows where those fields were empty. Legacy `iconBaseSize`/`glyphBaseSize` columns remain in the DB until you confirm removal.
 - `Assignments` - Yearly mapping of Companies → Markers
 - `Assignments_Archive` - Historical data for previous years
 

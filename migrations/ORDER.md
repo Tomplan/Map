@@ -1,3 +1,8 @@
+
+29. `29_add_marker_base_sizes.sql`
+    - Adds per-marker sizing fields to `Markers_Appearance`: `iconBaseSize`, `glyphBaseSize`, and `shadowScale`.
+    - Backfills default values for existing default records (-1/-2) and sets sensible defaults for existing markers.
+    - Run this migration to enable admin-editable per-marker base sizes used by the map sizing engine.
 Canonical run order (recommended)
 ---------------------------------
 Run these scripts in staging first. Run only ONE of the composite/variant scripts (see notes) and prefer the numbered scripts below.

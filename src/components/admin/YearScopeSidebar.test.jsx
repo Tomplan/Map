@@ -31,6 +31,8 @@ jest.mock('react-router-dom', () => {
   const React = require('react');
   return {
     Link: ({ children, to, ...props }) => React.createElement('a', { href: to, ...props }, children),
+    // many components in admin tests assume a simple useLocation shape — provide a lightweight mock
+    useLocation: () => ({ pathname: '/admin/subscriptions' }),
   };
 });
 
@@ -62,7 +64,8 @@ describe('YearScopeSidebar (icon + labels)', () => {
     const links = screen.getAllByRole('link');
     const sub = links.find((el) => el.getAttribute('href') === '/admin/subscriptions');
     expect(sub).toHaveClass('rounded-lg');
-    expect(sub).toHaveClass('px-4');
+    // SidebarTile styling for compact mode uses smaller horizontal padding
+    expect(sub).toHaveClass('px-2');
 
     // there should be links with the expected href
     const subLink = screen.getByRole('link', { name: /Inschrijvingen/i });

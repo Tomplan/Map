@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`EventClusterMarkers snapshots (visual regression style) renders a compact DOM tree for zoom=16 1`] = `
+<div>
+  <div
+    data-testid="cluster"
+  >
+    <div
+      data-testid="marker"
+    />
+  </div>
+</div>
+`;
+
+exports[`EventClusterMarkers snapshots (visual regression style) renders a slightly different DOM tree for zoom=19 1`] = `
+<div>
+  <div
+    data-testid="cluster"
+  >
+    <div
+      data-testid="marker"
+    />
+  </div>
+</div>
+`;

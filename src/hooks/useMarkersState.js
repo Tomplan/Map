@@ -25,6 +25,7 @@ export default function useMarkersState(markers = []) {
     'glyph',
     'glyphColor',
     'glyphSize',
+    'shadowScale',
     'glyphAnchor',
     'appearanceLocked',
   ];
