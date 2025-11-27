@@ -10,7 +10,7 @@
  * window.location.reload()
  */
 export function clearSupabaseAuth() {
-  console.log('Clearing Supabase auth data...');
+  // Clearing Supabase auth data
 
   // Clear all Supabase auth keys
   const keysToRemove = [];
@@ -22,11 +22,11 @@ export function clearSupabaseAuth() {
   }
 
   keysToRemove.forEach(key => {
-    console.log(`Removing: ${key}`);
+    // remove key
     localStorage.removeItem(key);
   });
 
-  console.log('Auth data cleared. Reloading page...');
+  // auth data cleared; reloading page
   window.location.reload();
 }
 

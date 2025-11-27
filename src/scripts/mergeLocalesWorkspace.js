@@ -24,4 +24,4 @@ function merge(enObj, deObj){
 }
 const merged = merge(en,de);
 fs.writeFileSync(path.join(root,'de.merged.json'), JSON.stringify(merged, null, 2), 'utf8');
-console.log('Wrote', path.join(root,'de.merged.json'));
+process.stdout.write('Wrote ' + path.join(root, 'de.merged.json') + '\n');

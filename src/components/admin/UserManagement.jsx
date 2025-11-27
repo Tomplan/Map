@@ -131,13 +131,7 @@ export default function UserManagement() {
         throw signUpError;
       }
 
-      // Debug: Check if email was auto-confirmed
-      console.log('SignUp Response:', {
-        userId: signUpData?.user?.id,
-        email: signUpData?.user?.email,
-        emailConfirmedAt: signUpData?.user?.email_confirmed_at,
-        identities: signUpData?.user?.identities?.length,
-      });
+      // Debug: check if email was auto-confirmed (no console output in production)
 
       // Add user to user_roles table
       if (signUpData?.user?.id) {

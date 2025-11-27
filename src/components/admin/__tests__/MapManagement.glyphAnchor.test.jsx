@@ -17,7 +17,13 @@ jest.mock('../../../supabaseClient', () => ({
 }));
 
 // Mock hooks that rely on auth/session
-jest.mock('../../../hooks/useUserRole', () => () => ({ role: 'system_manager', loading: false, userInfo: {} }));
+jest.mock('../../../hooks/useUserRole', () => () => ({
+  role: 'system_manager',
+  loading: false,
+  userInfo: {},
+  hasRole: (r) => r === 'system_manager',
+  hasAnyRole: (roles) => Array.isArray(roles) && roles.includes('system_manager'),
+}));
 
 jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }) }));
 

@@ -31,7 +31,7 @@ async function main() {
   const raw = fs.readFileSync(inPath, 'utf8');
   const companies = JSON.parse(raw);
 
-  console.log(`Loaded ${companies.length} companies from ${inPath}`);
+  process.stdout.write(`Loaded ${companies.length} companies from ${inPath}\n`);
 
   let stats = { inserted: 0, updated: 0, skipped: 0, errors: 0 };
 
@@ -66,7 +66,7 @@ async function main() {
       const row = { company_id: id, language_code: lang, info };
 
       if (dryRun) {
-        console.log('DRY:', JSON.stringify(row));
+        process.stdout.write('DRY: ' + JSON.stringify(row) + '\n');
         continue;
       }
 
@@ -98,7 +98,7 @@ async function main() {
             console.error('Insert error', id, lang, insertErr.message || insertErr);
             stats.errors++;
           } else {
-            console.log('Inserted', id, lang);
+            process.stdout.write('Inserted ' + id + ' ' + lang + '\n');
             stats.inserted++;
           }
         } else {
@@ -112,7 +112,7 @@ async function main() {
             console.error('Update error', id, lang, updErr.message || updErr);
             stats.errors++;
           } else {
-            console.log('Updated', id, lang);
+            process.stdout.write('Updated ' + id + ' ' + lang + '\n');
             stats.updated++;
           }
         }
@@ -123,7 +123,7 @@ async function main() {
     }
   }
 
-  console.log('Done. Stats:', stats);
+  process.stdout.write('Done. Stats: ' + JSON.stringify(stats) + '\n');
 }
 
 main().then(()=>process.exit(0)).catch(err=>{console.error(err); process.exit(1);});

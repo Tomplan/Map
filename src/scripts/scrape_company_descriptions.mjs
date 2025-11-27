@@ -105,7 +105,7 @@ async function main(argv) {
   } else if (SUPABASE_URL && SUPABASE_KEY) {
     const { createClient } = await import('@supabase/supabase-js');
     const client = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
-    console.log('Loading companies from Supabase...');
+    // loading companies from Supabase
     const { data, error } = await client.from('companies').select('id,name,website').order('name', { ascending: true });
     if (error) {
       console.error('Supabase error:', error.message || error);
@@ -117,7 +117,7 @@ async function main(argv) {
     process.exit(1);
   }
 
-  console.log(`Found ${companies.length} companies — probing websites (this may take a while)`);
+  process.stdout.write(`Found ${companies.length} companies — probing websites (this may take a while)\n`);
 
   const results = [];
   for (const c of companies) {
@@ -125,7 +125,7 @@ async function main(argv) {
       results.push({ id: c.id, name: c.name, website: c.website || null, error: 'no website' });
       continue;
     }
-    console.log('Probing', c.website);
+    // probing website
     const r = await probeSite(c.website);
     const picked = chooseByLanguage(r);
     results.push({ id: c.id, name: c.name, website: c.website, sources: r, picked });
@@ -136,8 +136,8 @@ async function main(argv) {
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(results, null, 2), 'utf8');
 
-  console.log('Done — results written to', outPath);
-  if (opts.dry) console.log('Dry run: no database writes were performed');
+  process.stdout.write('Done — results written to ' + outPath + '\n');
+  if (opts.dry) process.stdout.write('Dry run: no database writes were performed\n');
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || !import.meta.url.startsWith('file:')) {

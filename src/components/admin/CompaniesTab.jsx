@@ -132,7 +132,6 @@ export default function CompaniesTab() {
       if (editingId && editingId !== 'organization') {
         const cats = await getCompanyCategories(editingId);
         const categoryIds = cats.map(c => c.id);
-        console.log('Loading initial categories for company:', editingId, categoryIds);
         setEditingCategories(categoryIds);
       } else if (!editingId) {
         // Clear when not editing
@@ -161,11 +160,11 @@ export default function CompaniesTab() {
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
-    console.log('Saving company with categories:', { editingId, editingCategories });
+    // saving company categories
     await handleSave();
     if (editingId && editingId !== 'organization') {
       const result = await assignCategoriesToCompany(editingId, editingCategories);
-      console.log('Category assignment result:', result);
+      // category assignment result
       if (!result.success) {
         console.error('Failed to assign categories:', result.error);
         alert('Failed to save categories: ' + result.error);

@@ -27,7 +27,7 @@ async function main() {
   const raw = fs.readFileSync(filePath, 'utf8');
   const entries = JSON.parse(raw);
 
-  console.log(`Loaded ${entries.length} entries from de_schedule.json`);
+  process.stdout.write(`Loaded ${entries.length} entries from de_schedule.json\n`);
 
   for (const [idx, e] of entries.entries()) {
     // Map JSON keys to DB columns
@@ -56,7 +56,7 @@ async function main() {
     };
 
     if (dryRun) {
-      console.log('DRY:', JSON.stringify(row, null, 2));
+      process.stdout.write('DRY: ' + JSON.stringify(row, null, 2) + '\n');
       continue;
     }
 
@@ -71,7 +71,7 @@ async function main() {
         .limit(1);
 
       if (existing && existing.length > 0) {
-        console.log('Skipping existing entry:', row.title_de);
+        // skipping existing entry
         continue;
       }
 
@@ -79,7 +79,7 @@ async function main() {
       if (error) {
         console.error('Error inserting row:', error.message || error);
       } else {
-        console.log('Inserted:', row.title_de || row.title_en || 'untitled');
+        process.stdout.write('Inserted: ' + (row.title_de || row.title_en || 'untitled') + '\n');
       }
     } catch (err) {
       console.error('Unexpected error:', err.message || err);
@@ -87,4 +87,4 @@ async function main() {
   }
 }
 
-main().then(()=>console.log('Done')).catch(err=>{console.error(err); process.exit(1);});
+main().then(()=>process.stdout.write('Done\n')).catch(err=>{console.error(err); process.exit(1);});

@@ -110,7 +110,7 @@ async function fetchWebsiteContent(url) {
       url = 'https://' + url;
     }
 
-    console.log(`  Fetching: ${url}`);
+    // fetching URL
     
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
@@ -125,7 +125,7 @@ async function fetchWebsiteContent(url) {
     clearTimeout(timeout);
 
     if (!response.ok) {
-      console.log(`  ⚠️  HTTP ${response.status}`);
+      // non-OK HTTP status returned
       return '';
     }
 
@@ -139,11 +139,11 @@ async function fetchWebsiteContent(url) {
       .replace(/\s+/g, ' ')
       .toLowerCase();
 
-    console.log(`  ✓ Fetched ${text.length} chars`);
+    // fetched content
     return text;
 
   } catch (error) {
-    console.log(`  ⚠️  ${error.message}`);
+    // fetch error
     return '';
   }
 }
@@ -177,10 +177,10 @@ function analyzeContent(text, companyName, companyInfo) {
 
 // Main function
 async function main() {
-  console.log('🔍 Starting auto-categorization...\n');
+  // Auto-categorization started
 
   // Authenticate as admin
-  console.log('🔐 Authenticating...');
+  // Authenticating
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: adminEmail,
     password: adminPassword
@@ -191,8 +191,7 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('✓ Authenticated as:', authData.user.email);
-  console.log('');
+  // authenticated
 
   // Get all categories
   const { data: categories, error: catError } = await supabase
@@ -220,16 +219,16 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`📋 Found ${companies.length} companies\n`);
+  // companies loaded
 
   let processed = 0;
   let skipped = 0;
 
   for (const company of companies) {
-    console.log(`\n[${processed + skipped + 1}/${companies.length}] ${company.name}`);
+    // processing company
 
     if (!company.website) {
-      console.log('  ⏭️  No website - skipping');
+      // no website - skipping
       skipped++;
       continue;
     }
@@ -242,7 +241,7 @@ async function main() {
     const matches = analyzeContent(websiteText, company.name, companyInfo);
 
     if (matches.length === 0) {
-      console.log('  ❓ No category matches found');
+      // no category matches found
       // Assign "Other" category
       const otherId = categoryMap['other'];
       if (otherId) {
@@ -252,16 +251,16 @@ async function main() {
           .select();
         
         if (error && error.code !== '23505') { // Ignore duplicate key errors
-          console.log(`  ⚠️  Failed to assign Other: ${error.message}`);
+          // failed to assign Other
         } else {
-          console.log('  ✓ Assigned: Overig');
+          // assigned Other
         }
       }
     } else {
-      console.log(`  🎯 Matched ${matches.length} categories:`);
+      // matched categories
       
       for (const match of matches) {
-        console.log(`     - ${match.name} (score: ${match.score})`);
+        // matched category: ${match.name} (score: ${match.score})
         
         const categoryId = categoryMap[match.slug];
         if (categoryId) {
@@ -271,9 +270,9 @@ async function main() {
             .select();
           
           if (error && error.code !== '23505') { // Ignore duplicate key errors
-            console.log(`       ⚠️  Failed to assign: ${error.message}`);
+            // failed to assign: ${error.message}
           } else {
-            console.log(`       ✓ Assigned`);
+            // assigned
           }
         }
       }
@@ -285,7 +284,7 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  console.log(`\n✅ Complete! Processed: ${processed}, Skipped: ${skipped}`);
+  process.stdout.write('\nComplete! Processed: ' + processed + ', Skipped: ' + skipped + '\n');
 }
 
 main().catch(console.error);

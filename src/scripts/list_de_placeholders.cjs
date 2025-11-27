@@ -22,22 +22,22 @@ const dek=flatten(de);
 const allKeys = Object.keys(enk).sort();
 const missingInDe = allKeys.filter(k=> !(k in dek));
 const placeholders = allKeys.filter(k=> dek[k] === enk[k]);
-console.log('EN keys:', allKeys.length);
-console.log('DE keys (leaf count):', Object.keys(dek).length);
-console.log('Missing in DE (count):', missingInDe.length);
-console.log('Placeholders (de == en) count:', placeholders.length);
+process.stdout.write('EN keys: ' + allKeys.length + '\n');
+process.stdout.write('DE keys (leaf count): ' + Object.keys(dek).length + '\n');
+process.stdout.write('Missing in DE (count): ' + missingInDe.length + '\n');
+process.stdout.write('Placeholders (de == en) count: ' + placeholders.length + '\n');
 if(missingInDe.length>0){
-  console.log('\n--- Missing keys (present in en.json but not in de.json) ---');
-  missingInDe.forEach(k=>console.log(k));
+  process.stdout.write('\n--- Missing keys (present in en.json but not in de.json) ---\n');
+  missingInDe.forEach(k=>process.stdout.write(k + '\n'));
 }
 if(placeholders.length>0){
-  console.log('\n--- Placeholder keys (de value equals en value) ---');
-  placeholders.slice(0,200).forEach(k=>console.log(k));
-  if(placeholders.length>200) console.log('...plus',placeholders.length-200,'more');
+  process.stdout.write('\n--- Placeholder keys (de value equals en value) ---\n');
+  placeholders.slice(0,200).forEach(k=>process.stdout.write(k + '\n'));
+  if(placeholders.length>200) process.stdout.write('...plus ' + (placeholders.length-200) + ' more\n');
 }
 
 // print a small sample of values for verification
-console.log('\n--- Sample values ---');
+process.stdout.write('\n--- Sample values ---\n');
 ['navigation.home','homePage.title','adminLogin.title','mapManagement.addMarker'].forEach(key=>{
-  console.log(key+':', dek[key]);
+  process.stdout.write(key + ': ' + dek[key] + '\n');
 });
