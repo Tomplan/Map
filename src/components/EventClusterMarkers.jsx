@@ -34,8 +34,14 @@ const DEFAULT_ICON = {
   GLYPH_ANCHOR: [0, -4],
 };
 
-const getIconFile = (marker) =>
-  marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
+const getIconFile = (marker, isFavorited = false) => {
+  // If favorited, always use yellow marker
+  if (isFavorited) {
+    return getIconPath('glyph-marker-icon-yellow.svg');
+  }
+  // Otherwise use custom iconUrl or type-based icon
+  return marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
+};
 
 const createIcon = (marker, isActive = false, isFavorited = false) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
@@ -45,7 +51,7 @@ const createIcon = (marker, isActive = false, isFavorited = false) => {
   return createMarkerIcon({
     className,
     prefix: marker.prefix,
-    iconUrl: getIconFile(marker),
+    iconUrl: getIconFile(marker, isFavorited),
     iconSize: Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
     glyph: marker.glyph || '',
     glyphColor: marker.glyphColor || DEFAULT_ICON.GLYPH_COLOR,

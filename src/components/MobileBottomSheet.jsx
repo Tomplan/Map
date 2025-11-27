@@ -1,16 +1,22 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Icon from '@mdi/react';
 import { useMap } from 'react-leaflet';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
+import { useCategories } from '../hooks/useCategories';
+import { useTranslation } from 'react-i18next';
 
 const BottomSheet = ({ marker, onClose }) => {
   const map = useMap();
   const { organizationLogo } = useOrganizationLogo();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
+  const { i18n } = useTranslation();
+  const { getCompanyCategories } = useCategories(i18n.language);
+  const [categories, setCategories] = useState([]);
 
   // Lock map dragging while sheet is open
   useEffect(() => {
@@ -19,6 +25,15 @@ const BottomSheet = ({ marker, onClose }) => {
       if (map) map.dragging.enable();
     };
   }, [map]);
+
+  // Fetch categories when marker.companyId changes
+  useEffect(() => {
+    if (marker?.companyId) {
+      getCompanyCategories(marker.companyId).then(setCategories);
+    } else {
+      setCategories([]);
+    }
+  }, [marker?.companyId, getCompanyCategories]);
 
   if (!marker) return null;
 
@@ -75,6 +90,23 @@ const BottomSheet = ({ marker, onClose }) => {
           </div>
           {marker.glyph && (
             <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>
+          )}
+
+          {/* Category Badges */}
+          {categories && categories.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {categories.map(category => (
+                <span
+                  key={category.id}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
+                  style={{ backgroundColor: category.color }}
+                  title={category.name}
+                >
+                  <Icon path={category.icon} size={0.5} />
+                  {category.name}
+                </span>
+              ))}
+            </div>
           )}
 
           {/* Website */}

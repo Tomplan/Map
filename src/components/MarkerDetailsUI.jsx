@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tooltip, Popup } from 'react-leaflet';
+import Icon from '@mdi/react';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../hooks/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
+import { useCategories } from '../hooks/useCategories';
+import { useTranslation } from 'react-i18next';
 
 // --- Tooltip for both cluster + special markers ---
 const MarkerTooltipContent = ({ marker, organizationLogo }) => {
@@ -47,6 +50,18 @@ const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
   const hasCompanyData = marker.name || marker.companyId;
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const translatedInfo = useTranslatedCompanyInfo(marker);
+  const { i18n } = useTranslation();
+  const { getCompanyCategories } = useCategories(i18n.language);
+  const [categories, setCategories] = useState([]);
+
+  // Fetch categories when marker.companyId changes
+  useEffect(() => {
+    if (marker.companyId) {
+      getCompanyCategories(marker.companyId).then(setCategories);
+    } else {
+      setCategories([]);
+    }
+  }, [marker.companyId, getCompanyCategories]);
 
   return (
     <Popup
@@ -84,6 +99,22 @@ const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
           {marker.glyph && (
             <div className="text-sm text-gray-700 mb-2">
               Booth {marker.glyph}
+            </div>
+          )}
+          {/* Category Badges */}
+          {categories && categories.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {categories.map(category => (
+                <span
+                  key={category.id}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
+                  style={{ backgroundColor: category.color }}
+                  title={category.name}
+                >
+                  <Icon path={category.icon} size={0.5} />
+                  {category.name}
+                </span>
+              ))}
             </div>
           )}
           {marker.website && (

@@ -223,7 +223,7 @@ export function useCategories(language = 'nl') {
   };
 
   // Get company categories
-  const getCompanyCategories = async (companyId) => {
+  const getCompanyCategories = useCallback(async (companyId) => {
     try {
       const { data, error } = await supabase
         .from('company_categories')
@@ -258,7 +258,7 @@ export function useCategories(language = 'nl') {
       console.error('Error fetching company categories:', err);
       return [];
     }
-  };
+  }, [language]);
 
   // Get all company categories in one query (optimized for bulk loading)
   const getAllCompanyCategories = useCallback(async (companyIds) => {
