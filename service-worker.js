@@ -1,6 +1,24 @@
 // Simple service worker for offline map tile caching
-self.addEventListener('install', () => {
+const PRECACHE_NAME = 'static-assets-v1';
+const PRECACHE_ASSETS = [
+  '/assets/icons/glyph-marker-icon-blue.svg',
+  '/assets/icons/glyph-marker-icon-gray.svg',
+  '/assets/icons/glyph-marker-icon-green.svg',
+  '/assets/icons/glyph-marker-icon-orange.svg',
+  '/assets/icons/glyph-marker-icon-purple.svg',
+  '/assets/icons/glyph-marker-icon-red.svg',
+  '/assets/icons/glyph-marker-icon-yellow.svg',
+  '/assets/icons/glyph-marker-icon-black.svg',
+  '/assets/icons/marker-shadow.png',
+  '/assets/logos/4x4Vakantiebeurs.png',
+];
+
+self.addEventListener('install', (event) => {
   self.skipWaiting();
+  // Pre-cache essential icons and logo assets for offline/stable loading
+  event.waitUntil(
+    caches.open(PRECACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {}))
+  );
 });
 self.addEventListener('activate', () => {
   self.clients.claim();
@@ -60,4 +78,14 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+});
+
+// Cleanup old caches on activate (basic housekeeping)
+self.addEventListener('activate', (event) => {
+  const keep = [PRECACHE_NAME, 'map-assets', 'map-tiles'];
+  event.waitUntil(
+    caches.keys().then((keys) => Promise.all(
+      keys.map((k) => (keep.includes(k) ? null : caches.delete(k)))
+    ))
+  );
 });
