@@ -24,7 +24,6 @@ function EventSpecialMarkers({
   selectedMarkerId,
   onMarkerSelect,
   currentZoom,
-  zoomAnimating = null,
   applyVisitorSizing = false,
 }) {
   const isMobile = useIsMobile('md');
@@ -47,14 +46,6 @@ function EventSpecialMarkers({
     marker: null,
   });
   const [contextMenuLoading, setContextMenuLoading] = useState(false);
-
-  // Refs for marker DOM instances so we can apply smooth transforms during zoom animations
-  const specialMarkerRefs = React.useRef({});
-
-  const getSpecialRef = (id) => {
-    if (!specialMarkerRefs.current[id]) specialMarkerRefs.current[id] = React.createRef();
-    return specialMarkerRefs.current[id];
-  };
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
@@ -153,46 +144,6 @@ function EventSpecialMarkers({
     [unassignCompanyFromMarker]
   );
 
-  // Smooth scaling for special markers during zoom animation
-  React.useEffect(() => {
-    // Short-circuit if no anim value
-    if (!zoomAnimating) {
-      Object.values(specialMarkerRefs.current).forEach((r) => {
-        try {
-          const el = r?.current?._icon;
-          if (el && el.style) {
-            el.style.transform = '';
-            el.style.transformOrigin = '';
-          }
-        } catch (err) {}
-      });
-      return;
-    }
-
-    Object.keys(specialMarkerRefs.current).forEach((key) => {
-      try {
-        const id = parseInt(key, 10);
-        const marker = safeMarkers.find((m) => m.id === id);
-        if (!marker) return;
-        const ref = specialMarkerRefs.current[key];
-        const el = ref?.current?._icon;
-        if (!el) return;
-
-        const baseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28], [17, 28]);
-        const committed = getIconSizeForZoom(currentZoom, baseSize, true, isAdminView);
-        const animSize = getIconSizeForZoom(zoomAnimating, baseSize, true, isAdminView);
-        const committedW = committed && committed[0] ? committed[0] : 1;
-        const animW = animSize && animSize[0] ? animSize[0] : committedW;
-        const scale = committedW > 0 ? animW / committedW : 1;
-        el.style.transformOrigin = '50% 100%';
-        el.style.transform = `translate(-50%, -100%) scale(${scale})`;
-      } catch (err) {
-        // ignore
-      }
-    });
-
-  }, [zoomAnimating, safeMarkers, currentZoom, isAdminView]);
-
   return (
     <>
       {safeMarkers
@@ -271,7 +222,6 @@ function EventSpecialMarkers({
           return (
             <Marker
               key={marker.id}
-              ref={getSpecialRef(marker.id)}
               position={position}
               icon={icon}
               draggable={isDraggable}
