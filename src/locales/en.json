@@ -364,7 +364,7 @@
       "sortOptions": "Sort options"
   },
   "map": {
-    "searchPlaceholder": "Search for a marker...",
+    "searchPlaceholder": "Search for name or booth...",
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {

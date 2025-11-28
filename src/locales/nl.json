@@ -358,7 +358,7 @@
       "sortOptions": "Sorteeropties"
   },
   "map": {
-    "searchPlaceholder": "Zoek naar een marker...",
+    "searchPlaceholder": "Zoek op naam of standnummer...",
     "ariaLabel": "Interactieve evenementenkaart"
   },
   "mapManagement": {
