@@ -7,7 +7,6 @@ import {
   mdiMapMarker,
   mdiCog,
   mdiAlertCircle,
-  mdiCommentAlertOutline,
   mdiTranslate,
   mdiTag,
   mdiAccountCircle,
@@ -17,7 +16,6 @@ import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
-import FeedbackRequests from './FeedbackRequests';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
@@ -90,15 +88,6 @@ export default function Settings() {
       component: <EventDefaults />,
       scope: 'organization',
       description: 'Default meal counts for events',
-    },
-    {
-      id: 'feedback-requests',
-      label: t('settings.feedbackRequests.title'),
-      icon: mdiCommentAlertOutline,
-      roles: ['super_admin', 'system_manager', 'event_manager'],
-      component: <FeedbackRequests />,
-      scope: 'organization',
-      description: 'Company feedback submissions',
     },
     {
       id: 'advanced',

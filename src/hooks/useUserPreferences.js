@@ -36,6 +36,7 @@ export default function useUserPreferences() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const channelRef = useRef(null);
+  const currentVersionRef = useRef(0);
 
   /**
    * Load user preferences from database
@@ -86,6 +87,9 @@ export default function useUserPreferences() {
           dashboard_visible_cards: ['stats', 'recent', 'actions'],
           default_rows_per_page: 25,
           email_notifications: true,
+          feedback_active_tab: 'all',
+          feedback_filter_types: [],
+          feedback_filter_statuses: [],
           row_version: 1,
           updated_by: user.id,
         };
@@ -100,9 +104,11 @@ export default function useUserPreferences() {
           console.error('Error creating default preferences:', insertError);
           setPreferences(null);
         } else {
+          currentVersionRef.current = newPrefs.row_version;
           setPreferences(newPrefs);
         }
       } else {
+        currentVersionRef.current = data.row_version;
         setPreferences(data);
       }
 
@@ -115,22 +121,36 @@ export default function useUserPreferences() {
   }, []);
 
   /**
-   * Update a single preference with optimistic concurrency control
+   * Update a single preference with optimistic concurrency control and retry on conflict
    * @param {string} key - Preference key to update
    * @param {any} value - New value for the preference
+   * @param {number} retryCount - Internal: number of retries attempted (max 3)
    * @returns {Promise<boolean>} Success status
-   * @throws {Error} If conflict detected (another update happened)
+   * @throws {Error} If conflict persists after retries
    */
-  const updatePreference = useCallback(async (key, value) => {
-    if (!userId || !preferences) {
-      console.error('Cannot update preference: No user or preferences loaded');
+  const updatePreference = useCallback(async (key, value, retryCount = 0) => {
+    if (!userId) {
+      console.error('Cannot update preference: No user logged in');
       return false;
     }
 
     try {
-      const currentVersion = preferences.row_version || 0;
+      // Fetch current preferences to get the latest row_version
+      const { data: currentPrefs, error: fetchError } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      // Optimistic concurrency: increment version and check old version matches
+      if (fetchError) {
+        console.error('Error fetching current preferences:', fetchError);
+        return false;
+      }
+
+      const currentVersion = currentPrefs?.row_version || 0;
+      console.log(`useUserPreferences: Fetched current version for ${key}:`, currentVersion, 'currentPrefs:', currentPrefs);
+
+      // Update with version check to avoid conflicts from concurrent debounced saves
       const { data, error } = await supabase
         .from('user_preferences')
         .update({
@@ -144,43 +164,70 @@ export default function useUserPreferences() {
         .single();
 
       if (error) {
-        console.error(`Error updating preference ${key}:`, error);
-        return false;
-      }
-
-      if (!data) {
-        // No rows updated = conflict detected
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await loadPreferences(user);
+        // Check if this is a conflict (version mismatch causing 0 rows updated)
+        if (error.code === 'PGRST116') {
+          // Conflict detected - another update happened concurrently
+          if (retryCount < 3) {
+            console.log(`useUserPreferences: Conflict detected for ${key}, retrying (${retryCount + 1}/3)...`);
+            // Wait a bit before retrying to avoid tight loops
+            await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
+            return updatePreference(key, value, retryCount + 1);
+          } else {
+            console.error(`useUserPreferences: Failed to update ${key} after 3 retries`);
+            // Reload preferences to sync with latest state
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await loadPreferences(user);
+            }
+            throw new Error('Your preferences were updated from another device. Please try again.');
+          }
+        } else {
+          console.error(`Error updating preference ${key}:`, error);
+          return false;
         }
-        throw new Error('Your preferences were updated from another device. Please try again.');
       }
 
+      console.log(`useUserPreferences: Successfully updated ${key} to`, value, 'new data:', data);
+      currentVersionRef.current = data.row_version;
       setPreferences(data);
       return true;
     } catch (error) {
       console.error('Error in updatePreference:', error);
       throw error;
     }
-  }, [userId, preferences, loadPreferences]);
+  }, [userId, loadPreferences]);
 
   /**
-   * Update multiple preferences at once with optimistic concurrency control
+   * Update multiple preferences at once with optimistic concurrency control and retry on conflict
    * @param {Object} updates - Object with key-value pairs to update
+   * @param {number} retryCount - Internal: number of retries attempted (max 3)
    * @returns {Promise<boolean>} Success status
-   * @throws {Error} If conflict detected (another update happened)
+   * @throws {Error} If conflict persists after retries
    */
-  const updatePreferences = useCallback(async (updates) => {
-    if (!userId || !preferences) {
-      console.error('Cannot update preferences: No user or preferences loaded');
+  const updatePreferences = useCallback(async (updates, retryCount = 0) => {
+    if (!userId) {
+      console.error('Cannot update preferences: No user logged in');
       return false;
     }
 
     try {
-      const currentVersion = preferences.row_version || 0;
+      // Fetch current preferences to get the latest row_version
+      const { data: currentPrefs, error: fetchError } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
 
-      // Optimistic concurrency: increment version and check old version matches
+      if (fetchError) {
+        console.error('Error fetching current preferences:', fetchError);
+        return false;
+      }
+
+      const currentVersion = currentPrefs?.row_version || 0;
+      console.log(`useUserPreferences: Fetched current version for updates:`, currentVersion, 'currentPrefs:', currentPrefs);
+
+      // Update with version check
+      console.log(`useUserPreferences: Attempting updates with version ${currentVersion} -> ${currentVersion + 1}`);
       const { data, error } = await supabase
         .from('user_preferences')
         .update({
@@ -194,26 +241,37 @@ export default function useUserPreferences() {
         .single();
 
       if (error) {
-        console.error('Error updating preferences:', error);
-        return false;
-      }
-
-      if (!data) {
-        // No rows updated = conflict detected
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await loadPreferences(user);
+        // Check if this is a conflict (version mismatch causing 0 rows updated)
+        if (error.code === 'PGRST116') {
+          // Conflict detected - another update happened concurrently
+          if (retryCount < 3) {
+            console.log(`useUserPreferences: Conflict detected for updates, retrying (${retryCount + 1}/3)...`);
+            // Wait a bit before retrying
+            await new Promise(resolve => setTimeout(resolve, 100 * (retryCount + 1)));
+            return updatePreferences(updates, retryCount + 1);
+          } else {
+            console.error(`useUserPreferences: Failed to update preferences after 3 retries`);
+            // Reload preferences to sync with latest state
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await loadPreferences(user);
+            }
+            throw new Error('Your preferences were updated from another device. Please try again.');
+          }
+        } else {
+          console.error('Error updating preferences:', error);
+          return false;
         }
-        throw new Error('Your preferences were updated from another device. Please try again.');
       }
 
+      currentVersionRef.current = data.row_version;
       setPreferences(data);
       return true;
     } catch (error) {
       console.error('Error in updatePreferences:', error);
       throw error;
     }
-  }, [userId, preferences, loadPreferences]);
+  }, [userId, loadPreferences]);
 
   // Set up auth state listener and initial session load
   useEffect(() => {
@@ -258,7 +316,7 @@ export default function useUserPreferences() {
 
   // Set up real-time subscription for cross-device sync
   useEffect(() => {
-    if (!userId || !preferences) return;
+    if (!userId) return;
 
     // Clean up existing subscription
     if (channelRef.current) {
@@ -266,18 +324,21 @@ export default function useUserPreferences() {
       channelRef.current = null;
     }
 
-    // Subscribe to preference changes with version checking
+    // Subscribe to all preference changes, filter in callback
     channelRef.current = supabase
       .channel(`user-preferences-${userId}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
-        table: 'user_preferences',
-        filter: `user_id=eq.${userId}`
+        table: 'user_preferences'
       }, (payload) => {
-        // Only apply update if newer version (prevents race conditions)
-        if (payload.new.row_version > (preferences.row_version || 0)) {
+        // Filter for this user only
+        if (payload.new?.user_id === userId) {
+          console.log('useUserPreferences: Real-time update received for user', userId, payload.new);
+          currentVersionRef.current = payload.new.row_version;
           setPreferences(payload.new);
+        } else {
+          console.log('useUserPreferences: Ignored realtime event for user', payload.new?.user_id);
         }
       })
       .subscribe();
@@ -288,7 +349,7 @@ export default function useUserPreferences() {
         channelRef.current = null;
       }
     };
-  }, [userId, preferences?.row_version]);
+  }, [userId]);
 
   return {
     preferences,

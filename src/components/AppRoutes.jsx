@@ -20,6 +20,7 @@ import ProgramManagement from './ProgramManagement';
 import AssignmentsTab from './admin/AssignmentsTab';
 import CategoryManagement from './admin/CategoryManagement';
 import Settings from './admin/Settings';
+import FeedbackRequests from './admin/FeedbackRequests';
 
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
@@ -138,6 +139,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         />
         <Route path="categories" element={<CategoryManagement />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="feedback" element={<FeedbackRequests />} />
       </Route>
       <Route path="/storage-test" element={<StorageTestPage />} />
 

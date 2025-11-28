@@ -266,7 +266,9 @@
         "title": "Filters",
         "search": "Search requests...",
         "allTypes": "All Types",
-        "allStatuses": "All Statuses"
+        "allStatuses": "All Statuses",
+        "selectedStatuses": "selected statuses",
+        "selectedTypes": "selected types"
       },
       "types": {
         "issue": "Issue",
