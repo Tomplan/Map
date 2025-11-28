@@ -1,6 +1,8 @@
 // Simple service worker for offline map tile caching
 const PRECACHE_NAME = 'static-assets-v1';
 const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
   '/assets/icons/glyph-marker-icon-blue.svg',
   '/assets/icons/glyph-marker-icon-gray.svg',
   '/assets/icons/glyph-marker-icon-green.svg',
