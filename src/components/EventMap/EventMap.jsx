@@ -144,6 +144,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     const handleZoomEnd = () => {
       const zoom = mapInstance.getZoom();
       setCurrentZoom(zoom);
+      // Development-only: log zoom level for debugging
+      try {
+        if (process.env.NODE_ENV !== 'production') {
+          /* eslint-disable no-console */
+          console.debug(`[Map] zoom: ${zoom}`);
+          /* eslint-enable no-console */
+        }
+      } catch (err) {
+        // safe fallback if console isn't available
+      }
     };
 
     // Set initial zoom
