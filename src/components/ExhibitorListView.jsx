@@ -463,16 +463,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           </div>
         )}
 
-        {/* Phase 3 Notice */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-sm text-blue-800">
-            <p>📝 <strong>{t('exhibitorPage.phaseNote')}</strong> {t('exhibitorPage.comingInFuturePhases')}</p>
-            <ul className="list-disc list-inside mt-2">
-              <li>{t('exhibitorPage.categoryFiltering')}</li>
-              <li>{t('exhibitorPage.sortOptions')}</li>
-            </ul>
-          </div>
-        </div>
+        {/* Note removed from public exhibitor list per UX request */}
       </div>
     </div>
   );
