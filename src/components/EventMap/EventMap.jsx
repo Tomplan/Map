@@ -41,7 +41,15 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const [searchLayer, setSearchLayer] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  // Persist favorites-only toggle per-event-year in localStorage (keeps map & list aligned)
+  const favoritesStorageKey = `exhibitors_showFavoritesOnly_${selectedYear}`;
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
+    try {
+      return localStorage.getItem(favoritesStorageKey) === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
   const [currentZoom, setCurrentZoom] = useState(MAP_CONFIG.DEFAULT_ZOOM);
 
   // Favorites context (only available in visitor view)
@@ -93,6 +101,25 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       }
     });
   }, [safeMarkers]);
+
+  // Persist favorites-only toggle across page navigation / refresh per event year
+  useEffect(() => {
+    try {
+      localStorage.setItem(favoritesStorageKey, showFavoritesOnly ? 'true' : 'false');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey, showFavoritesOnly]);
+
+  // When selectedYear changes, reload stored value
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(favoritesStorageKey);
+      setShowFavoritesOnly(stored === 'true');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey]);
 
   // Track zoom changes for dynamic marker sizing
   useEffect(() => {

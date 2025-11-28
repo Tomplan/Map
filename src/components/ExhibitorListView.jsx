@@ -15,7 +15,16 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const { organizationLogo } = useOrganizationLogo();
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  // Persist favorites-only toggle per-event-year in localStorage
+  const favoritesStorageKey = `exhibitors_showFavoritesOnly_${selectedYear}`;
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
+    try {
+      return localStorage.getItem(favoritesStorageKey) === 'true';
+    } catch (e) {
+      // localStorage might not be available in some environments
+      return false;
+    }
+  });
   const [selectedCategory, setSelectedCategory] = useState(null); // Single category filter
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
@@ -130,6 +139,24 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     }
     return list;
   }, [exhibitorsWithCategories, showFavoritesOnly, selectedCategory, searchTerm, isFavorite]);
+
+  // Persist the toggle to localStorage and reload per-year value when year changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(favoritesStorageKey, showFavoritesOnly ? 'true' : 'false');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey, showFavoritesOnly]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(favoritesStorageKey);
+      setShowFavoritesOnly(stored === 'true');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey]);
 
   // Sorting
   const sortedExhibitors = useMemo(() => {
