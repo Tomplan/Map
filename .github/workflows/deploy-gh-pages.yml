@@ -3,6 +3,13 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
+  # Allow manual (on-demand) deployments from the Actions UI
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Optional label to describe this manual deploy (for logs)'
+        required: false
+        default: 'manual'
 
 jobs:
   build_and_deploy:
