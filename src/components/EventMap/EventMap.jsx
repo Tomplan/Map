@@ -62,8 +62,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const favorites = favoritesContext?.favorites || [];
   const isFavorite = favoritesContext?.isFavorite || (() => false);
 
+  const { t } = useTranslation();
+
   const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
-    textPlaceholder: t('map.searchPlaceholder')
+    textPlaceholder: t('map.searchPlaceholder'),
   });
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
@@ -75,7 +77,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     [organizationLogo]
   );
   
-  const { t } = useTranslation();
+  
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
