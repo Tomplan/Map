@@ -149,6 +149,21 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     }
   }, [favoritesStorageKey, showFavoritesOnly]);
 
+  // If there are no favorites at all, make sure the "favorites only" toggle is disabled
+  // and the stored value doesn't keep hiding the list. This can happen when the toggle
+  // was enabled in a different session/tab but there are currently zero favorites.
+  useEffect(() => {
+    if (favorites && favorites.length === 0 && showFavoritesOnly) {
+      // reset the toggle and storage so the UI is visible
+      try {
+        localStorage.setItem(favoritesStorageKey, 'false');
+      } catch (e) {
+        // ignore
+      }
+      setShowFavoritesOnly(false);
+    }
+  }, [favorites, favoritesStorageKey, showFavoritesOnly]);
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem(favoritesStorageKey);

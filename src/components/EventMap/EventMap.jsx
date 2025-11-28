@@ -121,6 +121,18 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }
   }, [favoritesStorageKey]);
 
+  // If there are no favorites configured, ensure favorites-only is disabled
+  useEffect(() => {
+    if (favorites && favorites.length === 0 && showFavoritesOnly) {
+      try {
+        localStorage.setItem(favoritesStorageKey, 'false');
+      } catch (e) {
+        // ignore
+      }
+      setShowFavoritesOnly(false);
+    }
+  }, [favorites, favoritesStorageKey, showFavoritesOnly]);
+
   // Track zoom changes for dynamic marker sizing
   useEffect(() => {
     if (!mapInstance) return;
