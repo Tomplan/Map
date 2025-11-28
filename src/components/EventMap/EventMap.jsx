@@ -62,7 +62,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const favorites = favoritesContext?.favorites || [];
   const isFavorite = favoritesContext?.isFavorite || (() => false);
 
-  const searchControlRef = useMapSearchControl(mapInstance, searchLayer);
+  const { t } = useTranslation();
+
+  const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
+    textPlaceholder: t('map.searchPlaceholder'),
+  });
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
@@ -73,7 +77,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     [organizationLogo]
   );
   
-  const { t } = useTranslation();
+  
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
@@ -140,6 +144,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     const handleZoomEnd = () => {
       const zoom = mapInstance.getZoom();
       setCurrentZoom(zoom);
+      // Development-only: log zoom level for debugging
+      try {
+        if (process.env.NODE_ENV !== 'production') {
+          /* eslint-disable no-console */
+          console.debug(`[Map] zoom: ${zoom}`);
+          /* eslint-enable no-console */
+        }
+      } catch (err) {
+        // safe fallback if console isn't available
+      }
     };
 
     // Set initial zoom

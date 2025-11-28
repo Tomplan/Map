@@ -13,20 +13,21 @@ const mockLayerGroup = jest.fn(() => ({
   addLayer: jest.fn(),
 }));
 
-const controlMock = {
-  on: (event, cb) => { controlHandlers[event] = cb; },
-  off: jest.fn(),
-  _input: { blur: jest.fn() },
-  hideAlert: jest.fn(),
-  collapse: jest.fn(),
-  _markerSearch: { remove: jest.fn() },
-};
-
 jest.mock('leaflet', () => ({
   marker: (latlng, opts) => mockMarker(latlng, opts),
   layerGroup: () => mockLayerGroup(),
-  Control: { Search: jest.fn((opts) => controlMock) },
+  Control: { Search: jest.fn((opts) => ({
+    on: (event, cb) => { controlHandlers[event] = cb; },
+    off: jest.fn(),
+    _input: { blur: jest.fn() },
+    hideAlert: jest.fn(),
+    collapse: jest.fn(),
+    _markerSearch: { remove: jest.fn() },
+  })) },
 }));
+
+// Prevent importing import.meta env usage in test environment by mocking config
+jest.mock('../../config/mapConfig', () => ({ MAP_CONFIG: { SEARCH_ZOOM: 16 } }));
 
 import { useMapSearchControl } from '../useMapSearchControl';
 
@@ -77,9 +78,11 @@ describe('useMapSearchControl', () => {
     expect(mapInstance.flyTo).toHaveBeenCalled();
 
     // UI helpers on the control should have been called
-    expect(controlMock._input.blur).toHaveBeenCalled();
-    expect(controlMock.hideAlert).toHaveBeenCalled();
-    expect(controlMock.collapse).toHaveBeenCalled();
+    const leaflet = require('leaflet');
+    const controlInstance = leaflet.Control.Search.mock.results[0].value;
+    expect(controlInstance._input.blur).toHaveBeenCalled();
+    expect(controlInstance.hideAlert).toHaveBeenCalled();
+    expect(controlInstance.collapse).toHaveBeenCalled();
 
     // If moveend/zoomend happens after the flyTo, the highlight should still be
     // visible — we only remove when a user manually zooms again.
@@ -123,6 +126,8 @@ describe('useMapSearchControl', () => {
       listeners.zoomstart?.();
     });
 
-    expect(mapInstance.removeLayer).toHaveBeenCalledWith(controlMock._markerSearch);
+    const leaflet = require('leaflet');
+    const controlInstance = leaflet.Control.Search.mock.results[0].value;
+    expect(mapInstance.removeLayer).toHaveBeenCalledWith(controlInstance._markerSearch);
   });
 });

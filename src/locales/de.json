@@ -362,7 +362,7 @@
     "sortOptions": "Sort options"
   },
   "map": {
-    "searchPlaceholder": "Search for a marker...",
+    "searchPlaceholder": "Suche nach Name oder Standnummer...",
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
