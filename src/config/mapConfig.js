@@ -18,6 +18,12 @@ export const MAP_CONFIG = {
   MARKER_SIZING: {
     ENABLED: true, // Enable zoom-based marker sizing
     APPLY_IN_ADMIN: true, // Disable in admin view for precise placement
+    // Smooth animation settings: when enabled we apply GPU transform scaling during
+    // map zoom animations and finalize sizes on zoomend.
+    SMOOTH_ANIMATION: true,
+    // If the number of visible markers exceeds this threshold we may avoid per-marker
+    // transforms for performance (0 = always enable)
+    SMOOTH_TRANSFORM_MARKER_THRESHOLD: 2000,
     SPECIAL_MARKER_MULTIPLIER: 1.1, // Special markers 20% larger than regular
     // Discrete zoom buckets with icon sizes [width, height]
     ZOOM_BUCKETS: [

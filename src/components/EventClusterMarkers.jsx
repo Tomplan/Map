@@ -167,7 +167,7 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, applyVisitorSizing = false }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, zoomAnimating = null, applyVisitorSizing = false }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -387,6 +387,72 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     const timeout = setTimeout(checkAndOpenPopup, 1200);
     return () => clearTimeout(timeout);
   }, [focusMarkerId, filteredMarkers, onFocusHandled]);
+
+  // Prefer reading runtime settings when available (window.MAP_CONFIG); fallback to local defaults
+  const runtimeMapConfig = (typeof window !== 'undefined' && window.MAP_CONFIG) || null;
+  const MAP_CONFIG = runtimeMapConfig || { MARKER_SIZING: { SMOOTH_ANIMATION: true, SMOOTH_TRANSFORM_MARKER_THRESHOLD: 2000 } };
+
+  // Smooth zoom animation transforms: apply temporary CSS scaling to marker DOM nodes
+  useEffect(() => {
+    // Performance guard: if not enabled or too many markers, avoid transforms
+    const config = MAP_CONFIG || null;
+    const smoothingEnabled = config?.MARKER_SIZING?.SMOOTH_ANIMATION !== false;
+    const threshold = config?.MARKER_SIZING?.SMOOTH_TRANSFORM_MARKER_THRESHOLD || 0;
+
+    if (!smoothingEnabled) return;
+    if (threshold > 0 && filteredMarkers.length > threshold) {
+      // too many markers — keep transforms off for performance
+      return;
+    }
+
+    if (!zoomAnimating) {
+      // Clear any transforms applied during animation
+      Object.values(markerRefs.current).forEach((ref) => {
+        try {
+          const markerInstance = ref?.current;
+          const el = markerInstance?._icon;
+          if (el && el.style) {
+            el.style.transform = '';
+            el.style.transformOrigin = '';
+          }
+        } catch (err) {
+          // ignore
+        }
+      });
+      return;
+    }
+
+    // Apply transform scaling to each marker based on its icon sizes at currentZoom and zoomAnimating
+    Object.keys(markerRefs.current).forEach((key) => {
+      try {
+        const id = parseInt(key, 10);
+        const marker = filteredMarkers.find((m) => m.id === id);
+        if (!marker) return;
+        const ref = markerRefs.current[key];
+        const markerInstance = ref?.current;
+        const el = markerInstance?._icon;
+        if (!el) return;
+
+        // Compute sizes for the committed zoom and current anim zoom
+        const baseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+        const committed = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
+        const animSize = getIconSizeForZoom(zoomAnimating, baseSize, false, isAdminView);
+
+        const committedW = committed && committed[0] ? committed[0] : 1;
+        const animW = animSize && animSize[0] ? animSize[0] : committedW;
+        const scale = committedW > 0 ? animW / committedW : 1;
+
+        // Ensure transform-origin centered at bottom so marker anchors stay in place
+        el.style.transformOrigin = '50% 100%';
+        // Leaflet default icons use translate to position; include typical translate to avoid layout shift
+        el.style.transform = `translate(-50%, -100%) scale(${scale})`;
+      } catch (err) {
+        // ignore individual marker failures
+      }
+    });
+
+    // No cleanup necessary; transforms cleared on next zoomAnimating update or zoomend
+  }, [zoomAnimating, filteredMarkers, currentZoom, isAdminView]);
 
   // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
   if (logoLoading) {

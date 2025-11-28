@@ -51,6 +51,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }
   });
   const [currentZoom, setCurrentZoom] = useState(MAP_CONFIG.DEFAULT_ZOOM);
+  // Fractional zoom while the map is animating (null when idle) — used for smooth marker scaling
+  const [zoomAnimating, setZoomAnimating] = useState(null);
 
   // Favorites context (only available in visitor view)
   let favoritesContext = null;
@@ -140,9 +142,25 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   // Track zoom changes for dynamic marker sizing
   useEffect(() => {
     if (!mapInstance) return;
+    // Throttle updates via requestAnimationFrame to avoid flooding DOM
+    let raf = null;
+
+    const handleZoomFrame = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        try {
+          const z = mapInstance.getZoom();
+          setZoomAnimating(z);
+        } catch (err) {
+          // ignore
+        }
+      });
+    };
 
     const handleZoomEnd = () => {
       const zoom = mapInstance.getZoom();
+      // Clear animating value and commit the final zoom to state
+      setZoomAnimating(null);
       setCurrentZoom(zoom);
       // Development-only: log zoom level for debugging
       try {
@@ -159,10 +177,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     // Set initial zoom
     setCurrentZoom(mapInstance.getZoom());
 
-    // Subscribe to zoom events
+    // Subscribe to continuous/animated zoom events to update transforms smoothly
+    mapInstance.on('zoom', handleZoomFrame);
+    mapInstance.on('zoomanim', handleZoomFrame);
+    // On end commit final sizes
     mapInstance.on('zoomend', handleZoomEnd);
 
     return () => {
+      if (raf) cancelAnimationFrame(raf);
+      mapInstance.off('zoom', handleZoomFrame);
+      mapInstance.off('zoomanim', handleZoomFrame);
       mapInstance.off('zoomend', handleZoomEnd);
     };
   }, [mapInstance]);
@@ -422,6 +446,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             focusMarkerId={focusMarkerId}
             onFocusHandled={() => setFocusMarkerId(null)}
             currentZoom={currentZoom}
+            zoomAnimating={zoomAnimating}
           />
 
           <EventSpecialMarkers
@@ -437,6 +462,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             applyVisitorSizing={previewUseVisitorSizing}
             selectedYear={selectedYear}
             currentZoom={currentZoom}
+            zoomAnimating={zoomAnimating}
           />
         </MapContainer>
       </div>

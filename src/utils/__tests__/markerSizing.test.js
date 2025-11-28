@@ -1,4 +1,4 @@
-import { getIconSizeForZoom } from '../markerSizing';
+import { getIconSizeForZoom, getScaleBetweenZooms } from '../markerSizing';
 
 // Mock the config import which uses import.meta and can break jest's parsing
 jest.mock('../../config/mapConfig', () => ({
@@ -34,5 +34,14 @@ describe('getIconSizeForZoom', () => {
     // scale factor = 82 / 41 = 2
     // scaled size = [16, 26.66] -> rounded to [16, 27]
     expect(size).toEqual([16, 27]);
+  });
+
+  test('getScaleBetweenZooms returns ratio between widths', () => {
+    const baseZoom = 16; // bucket 1
+    const targetZoom = 18.5; // bucket 2
+    const baseSize = [25, 41];
+    const ratio = getScaleBetweenZooms(baseZoom, targetZoom, baseSize, false, false);
+    // bucket widths: at baseZoom=16 => 8; at targetZoom=18.5 => 15
+    expect(ratio).toBeCloseTo(15 / 8, 5);
   });
 });

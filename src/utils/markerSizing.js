@@ -74,3 +74,19 @@ export function getZoomBucket(zoom) {
 
   return bucket ? `${bucket.minZoom}-${bucket.maxZoom}` : 'default';
 }
+
+/**
+ * Compute a scale factor between two zooms for a given base icon size.
+ * Returns the ratio of icon width at targetZoom to icon width at baseZoom.
+ */
+export function getScaleBetweenZooms(baseZoom, targetZoom, baseSize, isSpecial = false, isAdminView = false) {
+  try {
+    const base = getIconSizeForZoom(baseZoom, baseSize, isSpecial, isAdminView);
+    const target = getIconSizeForZoom(targetZoom, baseSize, isSpecial, isAdminView);
+    const baseW = (base && base[0]) || 1;
+    const targetW = (target && target[0]) || baseW;
+    return baseW > 0 ? targetW / baseW : 1;
+  } catch (err) {
+    return 1;
+  }
+}
