@@ -18,15 +18,17 @@ export const MAP_CONFIG = {
   MARKER_SIZING: {
     ENABLED: true, // Enable zoom-based marker sizing
     APPLY_IN_ADMIN: true, // Disable in admin view for precise placement
-    SPECIAL_MARKER_MULTIPLIER: 1.2, // Special markers 20% larger than regular
+    SPECIAL_MARKER_MULTIPLIER: 1.1, // Special markers 20% larger than regular
     // Discrete zoom buckets with icon sizes [width, height]
     ZOOM_BUCKETS: [
       { minZoom: 14.0, maxZoom: 16.99, size: [6, 10] }, 
       { minZoom: 17.0, maxZoom: 17.49, size: [8, 13.33] }, 
       { minZoom: 17.5, maxZoom: 17.99, size: [12, 20] }, 
-      { minZoom: 18.0, maxZoom: 18.49, size: [15, 25] }, 
-      { minZoom: 18.5, maxZoom: 18.99, size: [20, 33.33] }, 
-      { minZoom: 19.0, maxZoom: 22.0, size: [25, 41] }, 
+      { minZoom: 18.0, maxZoom: 18.49, size: [16, 26.66] }, 
+      { minZoom: 18.5, maxZoom: 18.99, size: [22, 36.66] }, 
+      { minZoom: 19.0, maxZoom: 19.49, size: [30, 50] }, 
+      { minZoom: 19.5, maxZoom: 22.0, size: [38, 63.33] }, 
+
     ],
     DEFAULT_SIZE: [25, 41], // Fallback size
   },
