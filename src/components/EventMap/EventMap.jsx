@@ -62,7 +62,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const favorites = favoritesContext?.favorites || [];
   const isFavorite = favoritesContext?.isFavorite || (() => false);
 
-  const searchControlRef = useMapSearchControl(mapInstance, searchLayer);
+  const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
+    textPlaceholder: t('map.searchPlaceholder')
+  });
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
