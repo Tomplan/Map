@@ -260,7 +260,9 @@
         "title": "Filters",
         "search": "Zoek verzoeken...",
         "allTypes": "Alle Types",
-        "allStatuses": "Alle Statussen"
+        "allStatuses": "Alle Statussen",
+        "selectedStatuses": "geselecteerde statussen",
+        "selectedTypes": "geselecteerde types"
       },
       "types": {
         "issue": "Probleem",

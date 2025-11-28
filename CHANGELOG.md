@@ -10,3 +10,4 @@ All notable changes to this project will be documented in this file.
 - Offline: Service worker precaches common marker assets and default logos to reduce runtime requests.
 - Tests: New unit & integration tests for marker sizing and snapshots (EventClusterMarkers + markerSizing tests).
 - Docs: rollout and QA documentation added: docs/ZOOM_MARKER_SIZE_ROLLOUT.md
+- Fix: Persist "Favorites Only" toggle across navigation in visitor views (Exhibitor list + Map) — saved per event year in localStorage

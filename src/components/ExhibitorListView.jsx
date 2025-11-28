@@ -15,7 +15,16 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const { organizationLogo } = useOrganizationLogo();
   const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  // Persist favorites-only toggle per-event-year in localStorage
+  const favoritesStorageKey = `exhibitors_showFavoritesOnly_${selectedYear}`;
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
+    try {
+      return localStorage.getItem(favoritesStorageKey) === 'true';
+    } catch (e) {
+      // localStorage might not be available in some environments
+      return false;
+    }
+  });
   const [selectedCategory, setSelectedCategory] = useState(null); // Single category filter
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
@@ -130,6 +139,39 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     }
     return list;
   }, [exhibitorsWithCategories, showFavoritesOnly, selectedCategory, searchTerm, isFavorite]);
+
+  // Persist the toggle to localStorage and reload per-year value when year changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(favoritesStorageKey, showFavoritesOnly ? 'true' : 'false');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey, showFavoritesOnly]);
+
+  // If there are no favorites at all, make sure the "favorites only" toggle is disabled
+  // and the stored value doesn't keep hiding the list. This can happen when the toggle
+  // was enabled in a different session/tab but there are currently zero favorites.
+  useEffect(() => {
+    if (favorites && favorites.length === 0 && showFavoritesOnly) {
+      // reset the toggle and storage so the UI is visible
+      try {
+        localStorage.setItem(favoritesStorageKey, 'false');
+      } catch (e) {
+        // ignore
+      }
+      setShowFavoritesOnly(false);
+    }
+  }, [favorites, favoritesStorageKey, showFavoritesOnly]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(favoritesStorageKey);
+      setShowFavoritesOnly(stored === 'true');
+    } catch (e) {
+      // ignore
+    }
+  }, [favoritesStorageKey]);
 
   // Sorting
   const sortedExhibitors = useMemo(() => {
@@ -421,16 +463,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           </div>
         )}
 
-        {/* Phase 3 Notice */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-sm text-blue-800">
-            <p>📝 <strong>{t('exhibitorPage.phaseNote')}</strong> {t('exhibitorPage.comingInFuturePhases')}</p>
-            <ul className="list-disc list-inside mt-2">
-              <li>{t('exhibitorPage.categoryFiltering')}</li>
-              <li>{t('exhibitorPage.sortOptions')}</li>
-            </ul>
-          </div>
-        </div>
+        {/* Note removed from public exhibitor list per UX request */}
       </div>
     </div>
   );

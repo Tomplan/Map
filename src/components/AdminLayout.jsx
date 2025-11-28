@@ -11,6 +11,7 @@ import {
   mdiChevronLeft,
   mdiChevronRight,
   mdiHelpCircleOutline,
+  mdiCommentAlertOutline,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
@@ -208,6 +209,15 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     isActive={location.pathname === '/admin/settings'}
                   />
                 )}
+
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                  <SidebarTile
+                    to="/admin/feedback"
+                    icon={mdiCommentAlertOutline}
+                    label={t('settings.feedbackRequests.title')}
+                    isActive={location.pathname === '/admin/feedback'}
+                  />
+                )}
               </div>
             ) : (
               // Collapsed state: show icons for Map and Settings
@@ -229,6 +239,16 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     label={t('adminNav.settings')}
                     isCollapsed={isCollapsed}
                     isActive={location.pathname === '/admin/settings'}
+                  />
+                )}
+
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                  <SidebarTile
+                    to="/admin/feedback"
+                    icon={mdiCommentAlertOutline}
+                    label={t('settings.feedbackRequests.title')}
+                    isCollapsed={isCollapsed}
+                    isActive={location.pathname === '/admin/feedback'}
                   />
                 )}
               </div>

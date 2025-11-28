@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useFeedbackRequests from '../../hooks/useFeedbackRequests';
 import useUserRole from '../../hooks/useUserRole';
+import useUserPreferences from '../../hooks/useUserPreferences';
 import FeedbackRequestDetail from './FeedbackRequestDetail';
 import { 
   mdiBug, 
@@ -22,6 +23,8 @@ export default function FeedbackRequests() {
   const { role } = useUserRole();
   const isSuperAdmin = role === 'super_admin';
 
+  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+
   const {
     requests,
     loading,
@@ -35,11 +38,44 @@ export default function FeedbackRequests() {
     removeVote,
   } = useFeedbackRequests();
 
-  const [activeTab, setActiveTab] = useState('all'); // all, my, submit
-  const [filterType, setFilterType] = useState(''); // '', 'issue', 'feature'
-  const [filterStatus, setFilterStatus] = useState(''); // '', 'open', 'in_progress', 'completed', 'archived'
+  // Initialize state with defaults, then update from preferences when loaded
+  const [activeTab, setActiveTab] = useState('all');
+  const [filterTypes, setFilterTypes] = useState([]);
+  const [filterStatuses, setFilterStatuses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showTypeDropdown, setShowTypeDropdown] = useState(false);
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const typeDropdownRef = useRef(null);
+  const statusDropdownRef = useRef(null);
+
+  const [hasInitializedFromPreferences, setHasInitializedFromPreferences] = useState(false);
+
+  // Always sync local state with preferences after real-time updates
+  useEffect(() => {
+    if (preferences && !preferencesLoading) {
+      setActiveTab(preferences.feedback_active_tab || 'all');
+      setFilterTypes(preferences.feedback_filter_types || []);
+      setFilterStatuses(preferences.feedback_filter_statuses || []);
+      setHasInitializedFromPreferences(true);
+      console.log('FeedbackRequests: Preferences loaded and applied (sync)');
+    }
+  }, [preferences, preferencesLoading]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (typeDropdownRef.current && !typeDropdownRef.current.contains(event.target)) {
+        setShowTypeDropdown(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target)) {
+        setShowStatusDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Form state for new request
   const [newRequestType, setNewRequestType] = useState('feature');
@@ -50,22 +86,71 @@ export default function FeedbackRequests() {
   // Load requests on mount and when filters change
   useEffect(() => {
     const filters = {};
-    if (filterType) filters.type = filterType;
-    if (filterStatus) filters.status = filterStatus;
+    // Remove type and status filters from server-side filtering - we'll filter client-side for multiple selections
     if (activeTab === 'my' && currentUserId) filters.userId = currentUserId;
     
     loadRequests(filters);
-  }, [filterType, filterStatus, activeTab, currentUserId, loadRequests]);
+  }, [activeTab, currentUserId, loadRequests]);
 
-  // Filter requests by search query
+  // Save preferences when they change (only after preferences are loaded)
+  useEffect(() => {
+    if (preferences && !preferencesLoading && hasInitializedFromPreferences && activeTab !== preferences.feedback_active_tab) {
+      console.log('FeedbackRequests: Saving activeTab', activeTab);
+      const timer = setTimeout(() => {
+        updatePreference('feedback_active_tab', activeTab);
+        console.log('FeedbackRequests: activeTab saved');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
+
+  useEffect(() => {
+    if (preferences && !preferencesLoading && hasInitializedFromPreferences && JSON.stringify(filterTypes) !== JSON.stringify(preferences.feedback_filter_types)) {
+      console.log('FeedbackRequests: Saving filterTypes', filterTypes);
+      const timer = setTimeout(() => {
+        updatePreference('feedback_filter_types', filterTypes);
+        console.log('FeedbackRequests: filterTypes saved');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [filterTypes, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
+
+  useEffect(() => {
+    if (preferences && !preferencesLoading && hasInitializedFromPreferences && JSON.stringify(filterStatuses) !== JSON.stringify(preferences.feedback_filter_statuses)) {
+      console.log('FeedbackRequests: Saving filterStatuses', filterStatuses);
+      const timer = setTimeout(() => {
+        updatePreference('feedback_filter_statuses', filterStatuses);
+        console.log('FeedbackRequests: filterStatuses saved');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [filterStatuses, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
+
+  // Filter requests by search query, type, and status
   const filteredRequests = requests.filter(req => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    return (
-      req.title.toLowerCase().includes(query) ||
-      req.description?.toLowerCase().includes(query) ||
-      req.user_email.toLowerCase().includes(query)
-    );
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = (
+        req.title.toLowerCase().includes(query) ||
+        req.description?.toLowerCase().includes(query) ||
+        req.user_email.toLowerCase().includes(query)
+      );
+      if (!matchesSearch) return false;
+    }
+    
+    // Type filter - if types are selected, only show requests with those types
+    if (filterTypes.length > 0) {
+      if (!filterTypes.includes(req.type)) return false;
+    }
+    
+    // Status filter - if statuses are selected, only show requests with those statuses
+    if (filterStatuses.length > 0) {
+      const requestStatus = req.status || 'open';
+      if (!filterStatuses.includes(requestStatus)) return false;
+    }
+    
+    return true;
   });
 
   // Handle vote toggle
@@ -207,29 +292,119 @@ export default function FeedbackRequests() {
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Type filter */}
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">{t('settings.feedbackRequests.filters.allTypes')}</option>
-              <option value="issue">{t('settings.feedbackRequests.types.issue')}</option>
-              <option value="feature">{t('settings.feedbackRequests.types.feature')}</option>
-            </select>
+            {/* Type filter - Multi-select with checkboxes */}
+            <div className="relative" ref={typeDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setShowTypeDropdown(!showTypeDropdown)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
+              >
+                <span className="text-sm text-gray-900">
+                  {filterTypes.length === 0 
+                    ? t('settings.feedbackRequests.filters.allTypes')
+                    : filterTypes.length === 1
+                    ? t(`settings.feedbackRequests.types.${filterTypes[0]}`)
+                    : `${filterTypes.length} ${t('settings.feedbackRequests.filters.selectedTypes') || 'selected types'}`
+                  }
+                </span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {showTypeDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="p-2 space-y-1">
+                    {/* All types option */}
+                    <label className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filterTypes.length === 0}
+                        onChange={() => setFilterTypes([])}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-900">{t('settings.feedbackRequests.filters.allTypes')}</span>
+                    </label>
+                    
+                    {/* Individual type options */}
+                    {['issue', 'feature'].map(type => (
+                      <label key={type} className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filterTypes.includes(type)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFilterTypes([...filterTypes, type]);
+                            } else {
+                              setFilterTypes(filterTypes.filter(t => t !== type));
+                            }
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-900">{t(`settings.feedbackRequests.types.${type}`)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Status filter */}
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">{t('settings.feedbackRequests.filters.allStatuses')}</option>
-              <option value="open">{t('settings.feedbackRequests.statuses.open')}</option>
-              <option value="in_progress">{t('settings.feedbackRequests.statuses.inProgress')}</option>
-              <option value="completed">{t('settings.feedbackRequests.statuses.completed')}</option>
-              <option value="archived">{t('settings.feedbackRequests.statuses.archived')}</option>
-            </select>
+            {/* Status filter - Multi-select with checkboxes */}
+            <div className="relative" ref={statusDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
+              >
+                <span className="text-sm text-gray-900">
+                  {filterStatuses.length === 0 
+                    ? t('settings.feedbackRequests.filters.allStatuses')
+                    : filterStatuses.length === 1
+                    ? t(`settings.feedbackRequests.statuses.${statusTranslationKey(filterStatuses[0])}`)
+                    : `${filterStatuses.length} ${t('settings.feedbackRequests.filters.selectedStatuses')}`
+                  }
+                </span>
+                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {showStatusDropdown && (
+                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
+                  <div className="p-2 space-y-1">
+                    {/* All statuses option */}
+                    <label className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={filterStatuses.length === 0}
+                        onChange={() => setFilterStatuses([])}
+                        className="mr-2"
+                      />
+                      <span className="text-sm text-gray-900">{t('settings.feedbackRequests.filters.allStatuses')}</span>
+                    </label>
+                    
+                    {/* Individual status options */}
+                    {['open', 'in_progress', 'completed', 'archived'].map(status => (
+                      <label key={status} className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={filterStatuses.includes(status)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setFilterStatuses([...filterStatuses, status]);
+                            } else {
+                              setFilterStatuses(filterStatuses.filter(s => s !== status));
+                            }
+                          }}
+                          className="mr-2"
+                        />
+                        <span className="text-sm text-gray-900">{t(`settings.feedbackRequests.statuses.${statusTranslationKey(status)}`)}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
