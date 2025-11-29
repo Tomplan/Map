@@ -17,6 +17,7 @@ export default function FavoritesFilterButton({
   isActive,
   onClick,
   favoritesCount,
+  isAdminView
 }) {
   return (
     <button
@@ -32,9 +33,9 @@ export default function FavoritesFilterButton({
       `}
       style={{
         position: 'absolute',
-        top: '64px', // Search control height (44px) + gap (10px) + top margin (10px)
+        top: isAdminView ? '110px' : '60px', // Search control height (44px) + gap (10px) + top margin (10px)
         left: '10px',
-        zIndex: 1000,
+        zIndex: 1002,
         width: '44px',
         height: '44px',
       }}

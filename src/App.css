@@ -88,11 +88,31 @@ body {
 
 /* Hide map controls and overlays during print (global fallback) */
 @media print {
-  .leaflet-control,
+   .leaflet-control,
   .leaflet-top,
   .leaflet-bottom,
   .leaflet-bar,
   .leaflet-control-container,
+  .leaflet-tile,
+  .leaflet-marker-icon {
+    position: absolute !important;
+    z-index: 100 !important;
+  },
+  .leaflet-glyph-icon,
+  .leaflet-pane {
+    display: block !important;
+    background: inherit !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .leaflet-marker-icon svg {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   .map-control-button,
   .branding-bar,
   .admin-panel,

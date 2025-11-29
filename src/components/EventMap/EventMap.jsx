@@ -304,6 +304,47 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }
   }, [mapInstance]);
 
+  // Setup browser print control for map-only export
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    // Setup browser print control only once
+    if (!mapInstance._printControl) {
+      // Check if BrowserPrint is available
+      if (window.L && window.L.Control && window.L.Control.BrowserPrint) {
+        const BrowserPrint = window.L.Control.BrowserPrint;
+        
+        const printControl = new BrowserPrint({
+          position: 'topleft',
+          closePopupsOnPrint: false,
+          printModes: [
+            new BrowserPrint.Mode('MapOnly', {
+              title: 'Map Only',
+              pageSize: 'A4',
+              orientation: 'landscape',
+              mapOnly: true,
+              customArea: true,
+            })
+          ]
+        });
+
+        printControl.addTo(mapInstance);
+        mapInstance._printControl = printControl;
+        mapInstance.printControl = printControl; // Make it accessible to PrintButton
+
+        // Set map view to hard-coded default before printing
+        printControl.on('beforePrint', () => {
+          mapInstance.setView(
+            MAP_CONFIG.DEFAULT_POSITION,
+            MAP_CONFIG.DEFAULT_ZOOM
+          );
+        });
+      } else {
+        console.warn('BrowserPrint not available, print button will use fallback');
+      }
+    }
+  }, [mapInstance]);
+
   // Handle focus parameter from URL (navigate from exhibitor list)
   useEffect(() => {
     if (!mapInstance || !safeMarkers.length || hasProcessedFocus.current) return;
@@ -376,6 +417,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         showRectanglesAndHandles={showRectanglesAndHandles}
         setShowRectanglesAndHandles={setShowRectanglesAndHandles}
         MAP_LAYERS={MAP_LAYERS}
+        markersState={safeMarkers}
       />
 
       {isAdminView && (
@@ -386,11 +428,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         />
       )}
 
-      {!isAdminView && favorites.length > 0 && (
+      {favorites.length > 0 && (
         <FavoritesFilterButton
           isActive={showFavoritesOnly}
           onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
           favoritesCount={favorites.length}
+          isAdminView={isAdminView}
         />
       )}
 
@@ -406,8 +449,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         aria-label={t('map.ariaLabel')}
       >
         <MapContainer
-          center={MAP_CONFIG.DEFAULT_POSITION}
-          zoom={MAP_CONFIG.DEFAULT_ZOOM}
+          center={isAdminView ? MAP_CONFIG.ADMIN_DEFAULT_POSITION : MAP_CONFIG.DEFAULT_POSITION}
+          zoom={isAdminView ? MAP_CONFIG.ADMIN_DEFAULT_ZOOM : MAP_CONFIG.DEFAULT_ZOOM}
           minZoom={MAP_CONFIG.MIN_ZOOM}
           maxZoom={MAP_CONFIG.MAX_ZOOM}
           zoomDelta={MAP_CONFIG.ZOOM_DELTA}
