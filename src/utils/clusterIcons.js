@@ -20,13 +20,14 @@ export function createIconCreateFunction(organizationLogo) {
     // Use the organization logo as the glyph
     return createMarkerIcon({
       iconUrl: `${base}assets/icons/glyph-marker-icon-orange.svg`,
-      iconSize: [50, 82],
+      iconSize: [25, 41],
       iconAnchor: [25, 41],
       glyph: `<div style='display:flex;align-items:center;justify-content:center;width:100%;height:100%;'>
-  <img src='${logoPath}' alt='logo' style='width:40px;height:40px;object-fit:contain;display:block;margin:auto;position:relative;left:1px;top:10px;' />
+  <img src='${logoPath}' alt='logo' style='width:20px;height:20px;object-fit:contain;display:block;margin:auto;position:relative;left:1px;top:10px;' />
       </div>`,
       glyphColor: 'white',
-      glyphSize: '40px',
+      glyphSize: '20px',
+      glyphAnchor: [-1, -7],
       className: 'custom-cluster-icon',
     });
   };
