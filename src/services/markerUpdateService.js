@@ -46,9 +46,10 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
       // For special markers (>= 1000), content fields go directly to Markers_Content
       if (COMPANY_FIELDS.includes(key) || ASSIGNMENT_FIELDS.includes(key)) {
         const { error } = await supabase
-          .from('Markers_Content')
+          .from('markers_content')
           .update({ [key]: sendValue })
-          .eq('id', id);
+          .eq('id', id)
+          .eq('event_year', eventYear);
 
         if (error) {
           console.error(`Failed to update ${key} for special marker ${id}:`, error);
@@ -60,10 +61,10 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
     }
 
     // For other fields (Core, Appearance, Admin), use original table mapping
-    const table = FIELD_TABLE_MAP[key] || 'Markers_Core';
+    const table = FIELD_TABLE_MAP[key] || 'markers_core';
 
     // Sync to Supabase
-    const { error } = await supabase.from(table).update({ [key]: sendValue }).eq('id', id);
+    const { error } = await supabase.from(table).update({ [key]: sendValue }).eq('id', id).eq('event_year', eventYear);
 
     if (error) {
       console.error(`Failed to update ${key} for marker ${id}:`, error);
@@ -163,16 +164,18 @@ export async function toggleMarkerLock(id, lockField, currentValue) {
  * @param {Array<number>} markerIds - Array of marker IDs
  * @param {string} lockField - Lock field name
  * @param {boolean} locked - New lock status
+ * @param {number} eventYear - Event year for the markers
  * @returns {Promise<{error: Error | null}>}
  */
-export async function batchUpdateLocks(markerIds, lockField, locked) {
+export async function batchUpdateLocks(markerIds, lockField, locked, eventYear = new Date().getFullYear()) {
   try {
-    const table = FIELD_TABLE_MAP[lockField] || 'Markers_Core';
+    const table = FIELD_TABLE_MAP[lockField] || 'markers_core';
 
     const { error } = await supabase
       .from(table)
       .update({ [lockField]: locked })
-      .in('id', markerIds);
+      .in('id', markerIds)
+      .eq('event_year', eventYear);
 
     if (error) {
       console.error(`Failed to batch update ${lockField}:`, error);

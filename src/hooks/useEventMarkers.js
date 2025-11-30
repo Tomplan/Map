@@ -46,8 +46,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         // Fetch all data in parallel, including defaults for booth markers
         // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
         const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes] = await Promise.all([
-          supabase.from('markers_core').select('*').eq('event_year', targetYear),
-          supabase.from('markers_appearance').select('*').eq('event_year', targetYear),
+          supabase.from('markers_core').select('*').or(`event_year.eq.${targetYear},event_year.eq.0`),
+          supabase.from('markers_appearance').select('*').or(`event_year.eq.${targetYear},event_year.eq.0`),
           supabase.from('markers_content').select('*').eq('event_year', targetYear),
           supabase.from('assignments').select(`
             *,

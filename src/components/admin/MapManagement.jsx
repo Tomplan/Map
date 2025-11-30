@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown } from '@mdi/js';
+import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
 import { getLogoPath } from '../../utils/getLogoPath';
@@ -15,7 +15,7 @@ import { useDialog } from '../../contexts/DialogContext';
  * System Managers only - merges Core/Appearance/Content tabs
  * Features: Marker list, interactive map, and detail/edit panel
  */
-export default function MapManagement({ markersState, setMarkersState, updateMarker, selectedYear }) {
+export default function MapManagement({ markersState, setMarkersState, updateMarker, selectedYear, archiveMarkers, copyMarkers }) {
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
@@ -24,16 +24,16 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     const [sortBy, setSortBy] = useState('id'); // id, name, type
     const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
-  const { toastError } = useDialog();
+  const { confirm, toastError, toastSuccess } = useDialog();
 
   // Fetch default markers on mount
   useEffect(() => {
     async function fetchDefaults() {
       try {
-        // Fetch both Core and Appearance data for defaults
+        // Fetch both Core and Appearance data for defaults (defaults use event_year = 0)
         const [coreRes, appearanceRes] = await Promise.all([
-          supabase.from('Markers_Core').select('*').in('id', [-1, -2]),
-          supabase.from('Markers_Appearance').select('*').in('id', [-1, -2]),
+          supabase.from('markers_core').select('*').in('id', [-1, -2]).eq('event_year', 0),
+          supabase.from('markers_appearance').select('*').in('id', [-1, -2]).eq('event_year', 0),
         ]);
 
         if (coreRes.error) throw coreRes.error;
@@ -153,10 +153,10 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
           shadowScale: editData.shadowScale,
         };
 
-        // Update both tables
+        // Update both tables (defaults use event_year = 0)
         const [coreRes, appearanceRes] = await Promise.all([
-          supabase.from('Markers_Core').update(coreFields).eq('id', editData.id),
-          supabase.from('Markers_Appearance').update(appearanceFields).eq('id', editData.id),
+          supabase.from('markers_core').update(coreFields).eq('id', editData.id).eq('event_year', 0),
+          supabase.from('markers_appearance').update(appearanceFields).eq('id', editData.id).eq('event_year', 0),
         ]);
 
         if (coreRes.error) throw coreRes.error;
@@ -204,6 +204,43 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Handle archive current year
+  const handleArchive = async () => {
+    const confirmed = await confirm({
+      title: 'Archive Markers',
+      message: `Archive all markers for ${selectedYear}? This will move them to the archive and clear the current year.`,
+      confirmText: 'Archive',
+      variant: 'warning',
+    });
+    if (!confirmed) return;
+
+    const { error } = await archiveMarkers();
+    if (error) {
+      toastError(`Error archiving markers: ${error}`);
+    } else {
+      toastSuccess(`Successfully archived markers for ${selectedYear}`);
+    }
+  };
+
+  // Handle copy from previous year
+  const handleCopyFromPreviousYear = async () => {
+    const previousYear = selectedYear - 1;
+    const confirmed = await confirm({
+      title: 'Copy Markers',
+      message: `Copy all markers from ${previousYear} to ${selectedYear}?`,
+      confirmText: 'Copy',
+      variant: 'default'
+    });
+    if (!confirmed) return;
+
+    const { error } = await copyMarkers(previousYear);
+    if (error) {
+      toastError(`Error copying markers: ${error}`);
+    } else {
+      toastSuccess(`Markers copied from ${previousYear} to ${selectedYear}`);
+    }
+  };
+
   const isDefaultMarker = selectedMarker && (selectedMarker.id === -1 || selectedMarker.id === -2);
   const isSpecialMarker = selectedMarker && selectedMarker.id >= 1000;
   const isBoothMarker = selectedMarker && selectedMarker.id > 0 && selectedMarker.id < 1000;
@@ -212,6 +249,55 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     <ProtectedSection requiredRole={['super_admin', 'system_manager']}>
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
+          {/* Header with year info and actions */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-semibold text-gray-900">
+                {t('mapManagement.title')}
+              </h1>
+              <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                {selectedYear}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleCopyFromPreviousYear}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                title={`Copy markers from ${selectedYear - 1}`}
+              >
+                <Icon path={mdiContentCopy} size={0.8} />
+                Copy from {selectedYear - 1}
+              </button>
+              <button
+                onClick={handleArchive}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={(markersState?.length || 0) === 0}
+                title={`Archive all markers for ${selectedYear}`}
+              >
+                <Icon path={mdiArchive} size={0.8} />
+                Archive {selectedYear}
+              </button>
+            </div>
+          </div>
+
+          {/* Empty state for no markers */}
+          {filteredMarkers.length === 0 && !searchTerm && (
+            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 mb-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-blue-900 mb-2">No Markers Found for {selectedYear}</h3>
+                <p className="text-blue-700 mb-4">
+                  There are no markers configured for {selectedYear}. You can copy markers from the previous year or create new ones.
+                </p>
+                <button
+                  onClick={handleCopyFromPreviousYear}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Copy from {selectedYear - 1}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Search and Sort */}
           <div className="flex gap-4">
             {/* Search */}
@@ -317,9 +403,20 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 updateMarker={updateMarker}
                 selectedYear={selectedYear}
                 selectedMarkerId={selectedMarkerId}
+                editMode={editMode}
                 onMarkerSelect={(id) => {
                   setSelectedMarkerId(id);
                   setEditMode(false);
+                }}
+                onMarkerDrag={(id, newLat, newLng) => {
+                  // Update coordinates in edit data when marker is dragged
+                  if (editMode && selectedMarkerId === id) {
+                    setEditData(prev => ({
+                      ...prev,
+                      lat: newLat,
+                      lng: newLng
+                    }));
+                  }
                 }}
               />
             </Suspense>
