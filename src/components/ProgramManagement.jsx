@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
-import { MdEdit, MdDelete, MdAdd, MdDragIndicator } from 'react-icons/md';
+import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
 import YearScopeBadge from './admin/YearScopeBadge';
 import Modal from './common/Modal';
+import { useDialog } from '../contexts/DialogContext';
 
 /**
- * ProgramManagement - Admin component for managing event activities
- * Allows admins to view, add, edit, delete, and reorder activities
+ * ProgramManagement - Admin component for managing year-specific event activities
+ * Allows admins to view, add, edit, delete, and reorder activities per year
  */
-export default function ProgramManagement() {
+export default function ProgramManagement({ selectedYear }) {
   const { t, i18n } = useTranslation();
-  const { activities, loading, error, getActivityLocation, refetch } = useEventActivities();
+  const { confirm, toastError, toastSuccess, toastInfo } = useDialog();
+  const {
+    activities,
+    loading,
+    error,
+    getActivityLocation,
+    createActivity,
+    updateActivity,
+    deleteActivity,
+    archiveCurrentYear,
+    copyFromPreviousYear,
+    refetch
+  } = useEventActivities(selectedYear);
   const [activeTab, setActiveTab] = useState('saturday');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
   const [deleting, setDeleting] = useState(false);
@@ -32,21 +45,56 @@ export default function ProgramManagement() {
 
     setDeleting(true);
     try {
-      const { error: deleteError } = await supabase
-        .from('event_activities')
-        .delete()
-        .eq('id', activityId);
+      const { error } = await deleteActivity(activityId);
+      if (error) throw new Error(error);
 
-      if (deleteError) throw deleteError;
-
-      // Refetch activities to update the list
-      await refetch();
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Error deleting activity:', err);
-      alert(t('programManagement.deleteError') + ': ' + err.message);
+      toastError(t('programManagement.deleteError') + ': ' + err.message);
     } finally {
       setDeleting(false);
+    }
+  };
+
+  /**
+   * Handle archive current year
+   */
+  const handleArchive = async () => {
+    const confirmed = await confirm({
+      title: 'Archive Activities',
+      message: `Archive all activities for ${selectedYear}? This will move them to the archive and clear the current year.`,
+      confirmText: 'Archive',
+      variant: 'warning',
+    });
+    if (!confirmed) return;
+
+    const { error } = await archiveCurrentYear();
+    if (error) {
+      toastError(`Error archiving: ${error}`);
+    } else {
+      toastSuccess(`Successfully archived activities for ${selectedYear}`);
+    }
+  };
+
+  /**
+   * Handle copy from previous year
+   */
+  const handleCopyFromPreviousYear = async () => {
+    const previousYear = selectedYear - 1;
+    const confirmed = await confirm({
+      title: 'Copy Activities',
+      message: `Copy all activities from ${previousYear} to ${selectedYear}?`,
+      confirmText: 'Copy',
+      variant: 'default'
+    });
+    if (!confirmed) return;
+
+    const { error } = await copyFromPreviousYear(previousYear);
+    if (error) {
+      toastError(`Error copying activities: ${error}`);
+    } else {
+      toastSuccess(`Activities copied from ${previousYear} to ${selectedYear}`);
     }
   };
 
@@ -145,18 +193,37 @@ export default function ProgramManagement() {
             <h2 className="text-xl font-semibold text-gray-900">
               {t('programManagement.title')}
             </h2>
-            <div><YearScopeBadge scope="year" /></div>
+            <div><YearScopeBadge scope="year" year={selectedYear} /></div>
           </div>
-          <button 
-            onClick={() => {
-              setEditActivity(null);
-              setShowForm(true);
-            }}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <MdAdd className="text-xl" />
-            <span>{t('programManagement.addActivity')}</span>
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleCopyFromPreviousYear}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+              title={`Copy from ${selectedYear - 1}`}
+            >
+              <MdContentCopy className="text-lg" />
+              Copy from {selectedYear - 1}
+            </button>
+            <button
+              onClick={handleArchive}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={(activities.saturday?.length || 0) + (activities.sunday?.length || 0) === 0}
+              title={`Archive all activities for ${selectedYear}`}
+            >
+              <MdArchive className="text-lg" />
+              Archive {selectedYear}
+            </button>
+            <button
+              onClick={() => {
+                setEditActivity(null);
+                setShowForm(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <MdAdd className="text-xl" />
+              <span>{t('programManagement.addActivity')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -363,6 +430,7 @@ export default function ProgramManagement() {
         <ActivityForm
           activity={editActivity}
           day={activeTab}
+          year={selectedYear}
           onSave={refetch}
           onClose={() => {
             setShowForm(false);

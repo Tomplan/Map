@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import useCompanies from '../hooks/useCompanies';
 import YearScopeBadge from './admin/YearScopeBadge';
 
-export default function ActivityForm({ activity = null, day = 'saturday', onSave = () => {}, onClose = () => {} }) {
+export default function ActivityForm({ activity = null, day = 'saturday', year = new Date().getFullYear(), onSave = () => {}, onClose = () => {} }) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState('nl');
   const adminLang = (i18n && i18n.language === 'nl') ? 'nl' : 'en';
@@ -100,6 +100,10 @@ export default function ActivityForm({ activity = null, day = 'saturday', onSave
       is_active: !!isActive,
       show_location_type_badge: !!showLocationTypeBadge,
     };
+
+    // TODO: Remove this after event_year column migration is complete
+    // For now, always include event_year (will be ignored if column doesn't exist)
+    payload.event_year = year;
 
       try {
         // debug payload in case of unexpected server-side errors during save

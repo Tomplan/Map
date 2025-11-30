@@ -159,7 +159,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         />
         <Route path="program" element={
           <Suspense fallback={<div className="p-4">Loading program...</div>}>
-            <ProgramManagement />
+            <ProgramManagement selectedYear={selectedYear} />
           </Suspense>
         } />
         <Route
