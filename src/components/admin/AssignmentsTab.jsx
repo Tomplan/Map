@@ -460,29 +460,29 @@ export default function AssignmentsTab({ selectedYear }) {
       {/* Assignment Matrix */}
       <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
-          <thead className="sticky top-0 z-10 bg-gray-100">
+          <thead className="bg-gray-100">
             <tr className="text-gray-900">
               <th
-                className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 z-20"
+                className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 top-0 z-30"
                 style={{ minWidth: '200px', background: '#f3f4f6' }}
               >
                 Company
               </th>
               {sortedMarkers.map(marker => {
-                const hasAssignment = isMarkerAssigned(marker.id);
-                return (
-                  <th
-                    key={marker.id}
-                    className={`p-1 text-center border-b ${hasAssignment ? '' : 'bg-gray-200'}`}
-                    style={{ minWidth: '45px', maxWidth: '45px' }}
-                    title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}${hasAssignment ? '' : ' (Unassigned)'}`}
-                  >
-                    <div className={`font-semibold ${hasAssignment ? '' : 'text-gray-500'}`}>
-                      {marker.glyph}
-                    </div>
-                  </th>
-                );
-              })}
+                 const hasAssignment = isMarkerAssigned(marker.id);
+                 return (
+                   <th
+                     key={marker.id}
+                     className={`p-1 text-center border-b sticky top-0 z-20 ${hasAssignment ? '' : 'bg-gray-200'}`}
+                     style={{ minWidth: '45px', maxWidth: '45px', background: hasAssignment ? '#f9fafb' : '#f3f4f6' }}
+                     title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}${hasAssignment ? '' : ' (Unassigned)'}`}
+                   >
+                     <div className={`font-semibold ${hasAssignment ? '' : 'text-gray-500'}`}>
+                       {marker.glyph}
+                     </div>
+                   </th>
+                 );
+               })}
             </tr>
           </thead>
           <tbody>
