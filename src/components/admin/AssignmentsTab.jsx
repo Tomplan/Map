@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useAssignments from '../../hooks/useAssignments';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';

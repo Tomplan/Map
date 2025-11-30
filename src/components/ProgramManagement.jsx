@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
 import { MdEdit, MdDelete, MdAdd, MdDragIndicator } from 'react-icons/md';
