@@ -334,12 +334,6 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
             </div>
           </div>
 
-          {/* Display Order */}
-          <div>
-            <label htmlFor={`display-order-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.displayOrder')}</label>
-            <input id={`display-order-${uid}`} type="number" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={displayOrder || 0} onChange={(e) => setDisplayOrder(Number(e.target.value))} aria-describedby={`display-order-help-${uid}`} />
-            <p id={`display-order-help-${uid}`} className="text-xs text-gray-500 mt-1">{t('activityForm.displayOrderHelp')}</p>
-          </div>
 
         </div>
 
