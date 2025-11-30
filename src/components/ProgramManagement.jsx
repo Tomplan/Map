@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
-import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy } from 'react-icons/md';
+import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy, MdContentPaste } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
 import YearScopeBadge from './admin/YearScopeBadge';
@@ -34,6 +34,7 @@ export default function ProgramManagement({ selectedYear }) {
   const [editActivity, setEditActivity] = useState(null);
   const [draggedItem, setDraggedItem] = useState(null);
   const [reordering, setReordering] = useState(false);
+  const [copiedActivity, setCopiedActivity] = useState(null); // Store copied activity data
 
   const currentActivities = activities[activeTab] || [];
 
@@ -96,6 +97,46 @@ export default function ProgramManagement({ selectedYear }) {
     } else {
       toastSuccess(`Activities copied from ${previousYear} to ${selectedYear}`);
     }
+  };
+
+  /**
+   * Handle copy activity
+   */
+  const handleCopyActivity = (activity) => {
+    // Store the activity data for pasting (exclude id and timestamps)
+    const activityData = {
+      start_time: activity.start_time,
+      end_time: activity.end_time,
+      display_order: activity.display_order,
+      title_nl: activity.title_nl,
+      title_en: activity.title_en,
+      title_de: activity.title_de,
+      description_nl: activity.description_nl,
+      description_en: activity.description_en,
+      description_de: activity.description_de,
+      location_type: activity.location_type,
+      company_id: activity.company_id,
+      location_nl: activity.location_nl,
+      location_en: activity.location_en,
+      location_de: activity.location_de,
+      badge_nl: activity.badge_nl,
+      badge_en: activity.badge_en,
+      badge_de: activity.badge_de,
+      is_active: activity.is_active,
+      show_location_type_badge: activity.show_location_type_badge,
+    };
+    setCopiedActivity(activityData);
+    toastInfo('Activity copied! Click "Paste" to create a duplicate.');
+  };
+
+  /**
+   * Handle paste activity
+   */
+  const handlePasteActivity = () => {
+    if (!copiedActivity) return;
+
+    setEditActivity(null); // Ensure we're creating a new activity
+    setShowForm(true);
   };
 
   /**
@@ -213,9 +254,20 @@ export default function ProgramManagement({ selectedYear }) {
               <MdArchive className="text-lg" />
               Archive {selectedYear}
             </button>
+            {copiedActivity && (
+              <button
+                onClick={handlePasteActivity}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                title="Paste copied activity"
+              >
+                <MdContentPaste className="text-lg" />
+                Paste Activity
+              </button>
+            )}
             <button
               onClick={() => {
                 setEditActivity(null);
+                setCopiedActivity(null); // Clear any copied data when adding new activity
                 setShowForm(true);
               }}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -258,9 +310,10 @@ export default function ProgramManagement({ selectedYear }) {
         {currentActivities.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500">{t('programManagement.noActivitiesFound')}</p>
-            <button 
+            <button
               onClick={() => {
                 setEditActivity(null);
+                setCopiedActivity(null); // Clear any copied data when adding new activity
                 setShowForm(true);
               }}
               className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -350,6 +403,13 @@ export default function ProgramManagement({ selectedYear }) {
                       {/* Actions */}
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => handleCopyActivity(activity)}
+                          className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                          title="Copy activity"
+                        >
+                          <MdContentCopy className="text-xl" />
+                        </button>
+                        <button
                           onClick={() => {
                             setEditActivity(activity);
                             setShowForm(true);
@@ -431,7 +491,13 @@ export default function ProgramManagement({ selectedYear }) {
           activity={editActivity}
           day={activeTab}
           year={selectedYear}
-          onSave={refetch}
+          initialActivityData={editActivity ? null : copiedActivity}
+          onSave={() => {
+            refetch();
+            if (copiedActivity) {
+              setCopiedActivity(null); // Clear copied data after successful paste
+            }
+          }}
           onClose={() => {
             setShowForm(false);
             setEditActivity(null);

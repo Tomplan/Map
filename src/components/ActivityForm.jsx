@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import useCompanies from '../hooks/useCompanies';
 import YearScopeBadge from './admin/YearScopeBadge';
 
-export default function ActivityForm({ activity = null, day = 'saturday', year = new Date().getFullYear(), onSave = () => {}, onClose = () => {} }) {
+export default function ActivityForm({ activity = null, day = 'saturday', year = new Date().getFullYear(), initialActivityData = null, onSave = () => {}, onClose = () => {} }) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState('nl');
   const adminLang = (i18n && i18n.language === 'nl') ? 'nl' : 'en';
@@ -43,32 +43,87 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
 
   const { companies } = useCompanies();
 
-  // Keep fields in sync if `activity` changes (edit different item)
+  // Keep fields in sync if `activity` or `initialActivityData` changes
   useEffect(() => {
-    setTitleNl(activity?.title_nl || '');
-    setTitleEn(activity?.title_en || '');
-    setTitleDe(activity?.title_de || '');
+    // If editing an existing activity, use its data
+    if (activity) {
+      setTitleNl(activity.title_nl || '');
+      setTitleEn(activity.title_en || '');
+      setTitleDe(activity.title_de || '');
 
-    setDescriptionNl(activity?.description_nl || '');
-    setDescriptionEn(activity?.description_en || '');
-    setDescriptionDe(activity?.description_de || '');
+      setDescriptionNl(activity.description_nl || '');
+      setDescriptionEn(activity.description_en || '');
+      setDescriptionDe(activity.description_de || '');
 
-    setLocationNl(activity?.location_nl || '');
-    setLocationEn(activity?.location_en || '');
-    setLocationDe(activity?.location_de || '');
+      setLocationNl(activity.location_nl || '');
+      setLocationEn(activity.location_en || '');
+      setLocationDe(activity.location_de || '');
 
-    setBadgeNl(activity?.badge_nl || '');
-    setBadgeEn(activity?.badge_en || '');
-    setBadgeDe(activity?.badge_de || '');
+      setBadgeNl(activity.badge_nl || '');
+      setBadgeEn(activity.badge_en || '');
+      setBadgeDe(activity.badge_de || '');
 
-    setStartTime(activity?.start_time || '');
-    setEndTime(activity?.end_time || '');
-    setDisplayOrder(activity?.display_order || 0);
-    setIsActive(activity?.is_active ?? true);
-    setShowLocationTypeBadge(activity?.show_location_type_badge ?? false);
-    setLocationType(activity?.location_type || (activity?.company_id ? 'company' : 'venue'));
-    setCompanyId(activity?.company_id || null);
-  }, [activity]);
+      setStartTime(activity.start_time || '');
+      setEndTime(activity.end_time || '');
+      setDisplayOrder(activity.display_order || 0);
+      setIsActive(activity.is_active ?? true);
+      setShowLocationTypeBadge(activity.show_location_type_badge ?? false);
+      setLocationType(activity.location_type || (activity.company_id ? 'company' : 'venue'));
+      setCompanyId(activity.company_id || null);
+    }
+    // If pasting copied data (creating new activity), use the copied data
+    else if (initialActivityData) {
+      setTitleNl(initialActivityData.title_nl || '');
+      setTitleEn(initialActivityData.title_en || '');
+      setTitleDe(initialActivityData.title_de || '');
+
+      setDescriptionNl(initialActivityData.description_nl || '');
+      setDescriptionEn(initialActivityData.description_en || '');
+      setDescriptionDe(initialActivityData.description_de || '');
+
+      setLocationNl(initialActivityData.location_nl || '');
+      setLocationEn(initialActivityData.location_en || '');
+      setLocationDe(initialActivityData.location_de || '');
+
+      setBadgeNl(initialActivityData.badge_nl || '');
+      setBadgeEn(initialActivityData.badge_en || '');
+      setBadgeDe(initialActivityData.badge_de || '');
+
+      setStartTime(initialActivityData.start_time || '');
+      setEndTime(initialActivityData.end_time || '');
+      setDisplayOrder(initialActivityData.display_order || 0);
+      setIsActive(initialActivityData.is_active ?? true);
+      setShowLocationTypeBadge(initialActivityData.show_location_type_badge ?? false);
+      setLocationType(initialActivityData.location_type || (initialActivityData.company_id ? 'company' : 'venue'));
+      setCompanyId(initialActivityData.company_id || null);
+    }
+    // If creating a new activity from scratch, reset to defaults
+    else {
+      setTitleNl('');
+      setTitleEn('');
+      setTitleDe('');
+
+      setDescriptionNl('');
+      setDescriptionEn('');
+      setDescriptionDe('');
+
+      setLocationNl('');
+      setLocationEn('');
+      setLocationDe('');
+
+      setBadgeNl('');
+      setBadgeEn('');
+      setBadgeDe('');
+
+      setStartTime('');
+      setEndTime('');
+      setDisplayOrder(0);
+      setIsActive(true);
+      setShowLocationTypeBadge(false);
+      setLocationType('venue');
+      setCompanyId(null);
+    }
+  }, [activity, initialActivityData]);
 
   const handleSave = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
