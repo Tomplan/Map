@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-11-30T12-50-54-073Z",
+  "total_tables": 17,
+  "tables": [
+    "companies",
+    "event_subscriptions",
+    "assignments",
+    "assignments_archive",
+    "Markers_Core",
+    "Markers_Appearance",
+    "Markers_Content",
+    "organization_profile",
+    "user_roles",
+    "categories",
+    "category_translations",
+    "company_categories",
+    "event_activities",
+    "feedback_requests",
+    "organization_settings",
+    "company_translations",
+    "marker_defaults"
+  ],
+  "source": "configuration"
+}

@@ -1,0 +1,247 @@
+{
+  "table": "category_translations",
+  "timestamp": "2025-11-30T12-49-09-085Z",
+  "recordCount": 30,
+  "data": [
+    {
+      "id": "6f7b6f5f-5336-4b6d-9226-829966cf8f60",
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "language": "nl",
+      "name": "Voertuigen & Dealers",
+      "description": "Autodealers, importeurs en gespecialiseerde 4x4 merken",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "777f45d9-82d4-4883-a53f-8a7f5cd3d11a",
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "language": "nl",
+      "name": "Kampeermiddelen & Trailers",
+      "description": "Caravans, tenttrailers, daktenten en kampeeruitrusting",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "0a825c0d-1a65-4c2d-9148-d2fda6ec9217",
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "language": "en",
+      "name": "Camping Equipment & Trailers",
+      "description": "Caravans, tent trailers, roof tents and camping gear",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "8f24eb62-6b96-4e6d-af91-279a29ca989f",
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "language": "de",
+      "name": "Campingausrüstung & Anhänger",
+      "description": "Wohnwagen, Zeltanhänger, Dachzelte und Campingausrüstung",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "62376bd8-48f8-430b-be5d-0c01b9641c3e",
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "language": "nl",
+      "name": "Aanhangwagens & Uitrusting",
+      "description": "Aanhangwagenfabrikanten en trekhaak accessoires",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "101bd9e1-4fc9-4fa7-877e-88526d384978",
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "language": "en",
+      "name": "Trailers & Towing Equipment",
+      "description": "Trailer manufacturers and towing accessories",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "c1c3a77b-d1eb-4abb-b5b3-b6d92a9cfde2",
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "language": "de",
+      "name": "Anhänger & Anhängerzubehör",
+      "description": "Anhängerhersteller und Anhängerzubehör",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "5f27584c-fc9a-4d31-b942-8344a609e8cb",
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "language": "nl",
+      "name": "Onderdelen & Accessoires",
+      "description": "Voertuigonderdelen, modificaties en technische accessoires",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "dbef8c75-1b38-47db-bd01-2fd39310162f",
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "language": "en",
+      "name": "Parts & Accessories",
+      "description": "Vehicle parts, modifications and technical accessories",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "b7f79ce1-d3bd-4720-ae3e-0ec9f210a88d",
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "language": "de",
+      "name": "Teile & Zubehör",
+      "description": "Fahrzeugteile, Modifikationen und technisches Zubehör",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "6e4c8edf-cbcd-4bf0-9aad-2a161d121c6b",
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "language": "nl",
+      "name": "Reisorganisaties & Tours",
+      "description": "Touroperators en reisbureaus gespecialiseerd in 4x4 avonturen",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "96af0ef1-a60c-4af6-a3de-8c60129e611c",
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "language": "en",
+      "name": "Travel Organizations & Tours",
+      "description": "Tour operators and travel agencies specializing in 4x4 adventures",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "dca42055-8988-4774-8eaa-202e4cea5259",
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "language": "de",
+      "name": "Reiseveranstalter & Touren",
+      "description": "Reiseveranstalter und Reisebüros spezialisiert auf 4x4-Abenteuer",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "617b06db-9d37-4c53-a580-5912786cf662",
+      "category_id": "00b86dd8-180c-4a4d-9b7f-1d9d66260481",
+      "language": "nl",
+      "name": "Accommodaties",
+      "description": "Campings en avontuurlijke verblijven",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "c7be0434-99d9-43e9-8e2a-e21a9c173703",
+      "category_id": "00b86dd8-180c-4a4d-9b7f-1d9d66260481",
+      "language": "en",
+      "name": "Accommodations",
+      "description": "Campsites and adventure lodges",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "f7a0347c-88a1-4f2c-8ed3-47be31d8fede",
+      "category_id": "00b86dd8-180c-4a4d-9b7f-1d9d66260481",
+      "language": "de",
+      "name": "Unterkünfte",
+      "description": "Campingplätze und Abenteuerunterkünfte",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "7e0a1331-561b-4616-b082-b9d43c8c8ba4",
+      "category_id": "89a53a22-0d66-4be8-a348-f04f00c095d4",
+      "language": "nl",
+      "name": "Clubs & Gemeenschappen",
+      "description": "Liefhebbersclubs en eigenaargroepen",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "99ee7418-b8f0-4410-b739-5ec6a438be5c",
+      "category_id": "89a53a22-0d66-4be8-a348-f04f00c095d4",
+      "language": "en",
+      "name": "Clubs & Communities",
+      "description": "Enthusiast clubs and owner groups",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "6545e88e-e863-45e7-adcd-20343674d138",
+      "category_id": "89a53a22-0d66-4be8-a348-f04f00c095d4",
+      "language": "de",
+      "name": "Clubs & Gemeinschaften",
+      "description": "Enthusiasten-Clubs und Besitzergruppen",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "618a6635-f904-4023-85f9-8f659f4911e1",
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "language": "nl",
+      "name": "Terrein & Offroad Ervaringen",
+      "description": "Offroad rijervaring en training",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "c2c2b36a-6590-4994-a8ae-aafe1bc4cbe8",
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "language": "en",
+      "name": "Terrain & Offroad Experiences",
+      "description": "Offroad driving experiences and training",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "84176d9b-6b37-43fb-aae6-7c36be868c90",
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "language": "de",
+      "name": "Gelände & Offroad-Erlebnisse",
+      "description": "Offroad-Fahrerlebnisse und Training",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "dc72499b-1ae6-4188-a64b-eaed65f8de91",
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "language": "nl",
+      "name": "Elektronica & Communicatie",
+      "description": "Navigatie, communicatieapparatuur en technologie",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "a1895099-e1cd-4b6c-9021-11a754b0c02b",
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "language": "en",
+      "name": "Electronics & Communication",
+      "description": "Navigation, communication devices and technology",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "5149fb86-dd3e-4d21-b869-a64d4ac8306f",
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "language": "en",
+      "name": "Vehicles & Dealers",
+      "description": "Car dealers, importers and specialized 4x4 brands",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "374bb4e2-71a6-4cfc-b3df-ae18aeb7a0a0",
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "language": "de",
+      "name": "Fahrzeuge & Händler",
+      "description": "Autohändler, Importeure und spezialisierte 4x4-Marken",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "9c5e2b5b-4410-42ea-90f2-2ad888cd251a",
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "language": "de",
+      "name": "Elektronik & Kommunikation",
+      "description": "Navigation, Kommunikationsgeräte und Technologie",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "7251683e-1ffe-4221-8c4d-34d518592a11",
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "language": "nl",
+      "name": "Overig",
+      "description": "Unieke exposanten en andere diensten",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "c28bee25-5a27-4b09-82d1-5d336fb4d43b",
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "language": "en",
+      "name": "Other",
+      "description": "Unique exhibitors and other services",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    },
+    {
+      "id": "93d8ad9c-a89e-4ecf-8568-38c2f10de097",
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "language": "de",
+      "name": "Sonstiges",
+      "description": "Einzigartige Aussteller und andere Dienstleistungen",
+      "created_at": "2025-11-23T11:35:51.704567+00:00"
+    }
+  ]
+}

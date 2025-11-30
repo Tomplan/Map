@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-11-30T12-49-09-085Z",
+  "type": "full",
+  "tables": [
+    "companies",
+    "event_subscriptions",
+    "assignments",
+    "assignments_archive",
+    "Markers_Core",
+    "Markers_Appearance",
+    "Markers_Content",
+    "organization_profile",
+    "user_roles",
+    "categories",
+    "category_translations",
+    "company_categories",
+    "event_activities",
+    "feedback_requests",
+    "organization_settings",
+    "company_translations",
+    "marker_defaults"
+  ],
+  "database": "db.xtkbvnnkovogqwcwdhkg.supabase.co",
+  "version": "2.0",
+  "generated_by": "Supabase Full Backup Script (Fixed)",
+  "method": "JavaScript Client",
+  "notes": "This backup was created using Supabase JavaScript client instead of pg_dump"
+}

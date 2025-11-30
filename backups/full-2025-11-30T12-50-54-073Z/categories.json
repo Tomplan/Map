@@ -1,0 +1,107 @@
+{
+  "table": "categories",
+  "timestamp": "2025-11-30T12-50-54-073Z",
+  "recordCount": 10,
+  "data": [
+    {
+      "id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "slug": "camping-trailers",
+      "icon": "mdiTent",
+      "color": "#2e7d32",
+      "sort_order": 2,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "slug": "trailers-towing",
+      "icon": "mdiTrailer",
+      "color": "#f57c00",
+      "sort_order": 3,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "823d0488-f298-48db-9261-76195b4d3205",
+      "slug": "parts-accessories",
+      "icon": "mdiCog",
+      "color": "#5e35b1",
+      "sort_order": 4,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "slug": "travel-tours",
+      "icon": "mdiEarth",
+      "color": "#00897b",
+      "sort_order": 5,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "00b86dd8-180c-4a4d-9b7f-1d9d66260481",
+      "slug": "accommodations",
+      "icon": "mdiHomeOutline",
+      "color": "#c62828",
+      "sort_order": 6,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "89a53a22-0d66-4be8-a348-f04f00c095d4",
+      "slug": "clubs-communities",
+      "icon": "mdiAccountGroup",
+      "color": "#6d4c41",
+      "sort_order": 7,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "313c9042-1382-4866-896c-80855a1a177d",
+      "slug": "offroad-experiences",
+      "icon": "mdiMountain",
+      "color": "#d84315",
+      "sort_order": 8,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "slug": "electronics-communication",
+      "icon": "mdiCellphone",
+      "color": "#455a64",
+      "sort_order": 9,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "slug": "other",
+      "icon": "mdiDotsHorizontal",
+      "color": "#757575",
+      "sort_order": 10,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-23T17:27:21.358453+00:00"
+    },
+    {
+      "id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "slug": "vehicles-dealers",
+      "icon": "mdiCarOutline",
+      "color": "#1976d2",
+      "sort_order": 1,
+      "active": true,
+      "created_at": "2025-11-23T11:35:51.704567+00:00",
+      "updated_at": "2025-11-25T00:38:31.493993+00:00"
+    }
+  ]
+}

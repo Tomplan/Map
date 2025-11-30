@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-11-30T12-44-04-170Z",
+  "type": "critical",
+  "tables": [
+    "companies",
+    "event_subscriptions",
+    "assignments",
+    "organization_profile",
+    "user_preferences"
+  ],
+  "database": "db.xtkbvnnkovogqwcwdhkg.supabase.co",
+  "version": "2.0",
+  "generated_by": "Supabase Backup Script",
+  "method": "JavaScript Client",
+  "notes": "This backup was created using Supabase JavaScript client instead of pg_dump"
+}

@@ -16,7 +16,17 @@
     "kill:dev": "bash scripts/kill-dev-servers.sh",
     "format": "prettier --write .",
     "normalize:phones": "node src/scripts/normalize_company_phones.cjs --dry-run",
-    "scrape:emails": "node src/scripts/scrape_company_emails.cjs"
+    "scrape:emails": "node src/scripts/scrape_company_emails.cjs",
+    "backup:critical": "node scripts/backup/backup-critical.js --compress",
+    "backup:full": "node scripts/backup/backup-full.js --compress",
+    "backup:schema": "node scripts/backup/backup-full.js --schema-only --compress",
+    "restore:critical": "node scripts/backup/restore.js --backup-file",
+    "restore:full": "node scripts/backup/restore.js --backup-file",
+    "backup:status": "node scripts/backup/scheduler.js --status",
+    "backup:list": "node scripts/backup/scheduler.js --list",
+    "backup:cleanup": "node scripts/backup/scheduler.js --cleanup",
+    "backup:setup": "node scripts/backup/scheduler.js --setup",
+    "backup:test": "node scripts/backup/scheduler.js --test"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
@@ -58,6 +68,7 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.1.1",
+    "archiver": "^6.0.2",
     "autoprefixer": "^10.4.14",
     "babel-jest": "^30.2.0",
     "eslint": "^9.39.1",
