@@ -181,17 +181,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     setShowYearModal(true);
                   }}
                 />
-              </div>
 
-              <div className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}>
-                <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-              </div>
-          </div>
-
-          {/* Map Management + Settings - System Administration */}
-          <div className="p-2 border-t border-gray-200">
-            {!isCollapsed ? (
-              <div className="py-3 space-y-2">
+                {/* Map Management - Now year-scoped since markers are per-year */}
                 {hasAnyRole(['super_admin','system_manager']) && (
                   <SidebarTile
                     to="/admin/map"
@@ -200,7 +191,28 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                     isActive={location.pathname === '/admin/map'}
                   />
                 )}
+              </div>
 
+              <div className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}>
+                <CollapsedShortcuts selectedYear={selectedYear} t={t} />
+
+                {/* Map Management - Collapsed state */}
+                {hasAnyRole(['super_admin','system_manager']) && (
+                  <SidebarTile
+                    to="/admin/map"
+                    icon={mdiMap}
+                    label={t('adminNav.mapManagement')}
+                    isCollapsed={isCollapsed}
+                    isActive={location.pathname === '/admin/map'}
+                  />
+                )}
+              </div>
+          </div>
+
+          {/* Settings + System Administration */}
+          <div className="p-2 border-t border-gray-200">
+            {!isCollapsed ? (
+              <div className="py-3 space-y-2">
                 {hasAnyRole(['super_admin','system_manager','event_manager']) && (
                   <SidebarTile
                     to="/admin/settings"
@@ -220,18 +232,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 )}
               </div>
             ) : (
-              // Collapsed state: show icons for Map and Settings
+              // Collapsed state: show icons for Settings
               <div className="py-3 space-y-2">
-                {hasAnyRole(['super_admin','system_manager']) && (
-                  <SidebarTile
-                    to="/admin/map"
-                    icon={mdiMap}
-                    label={t('adminNav.mapManagement')}
-                    isCollapsed={isCollapsed}
-                    isActive={location.pathname === '/admin/map'}
-                  />
-                )}
-
                 {hasAnyRole(['super_admin','system_manager','event_manager']) && (
                   <SidebarTile
                     to="/admin/settings"
