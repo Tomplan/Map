@@ -167,7 +167,7 @@ const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerR
   return false;
 });
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, applyVisitorSizing = false }) {
+function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, applyVisitorSizing = false, onMarkerDrag = null }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -215,8 +215,12 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     (markerId) => (e) => {
       const { lat, lng } = e.target.getLatLng();
       updateMarker(markerId, { lat, lng });
+      // Also call onMarkerDrag callback for real-time updates (e.g., in edit mode)
+      if (onMarkerDrag) {
+        onMarkerDrag(markerId, lat, lng);
+      }
     },
-    [updateMarker]
+    [updateMarker, onMarkerDrag]
   );
 
   const getMarkerRef = useCallback((markerId) => {
@@ -492,6 +496,7 @@ EventClusterMarkers.propTypes = {
   onFocusHandled: PropTypes.func,
   currentZoom: PropTypes.number,
   applyVisitorSizing: PropTypes.bool,
+  onMarkerDrag: PropTypes.func,
 };
 
 EventClusterMarkers.defaultProps = {

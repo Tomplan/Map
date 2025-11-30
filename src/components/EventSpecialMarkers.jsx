@@ -25,6 +25,7 @@ function EventSpecialMarkers({
   onMarkerSelect,
   currentZoom,
   applyVisitorSizing = false,
+  onMarkerDrag = null,
 }) {
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -58,8 +59,12 @@ function EventSpecialMarkers({
     (markerId) => (e) => {
       const { lat, lng } = e.target.getLatLng();
       updateMarker(markerId, { lat, lng });
+      // Also call onMarkerDrag callback for real-time updates (e.g., in edit mode)
+      if (onMarkerDrag) {
+        onMarkerDrag(markerId, lat, lng);
+      }
     },
-    [updateMarker]
+    [updateMarker, onMarkerDrag]
   );
 
   // Handle context menu open
@@ -285,6 +290,7 @@ EventSpecialMarkers.propTypes = {
   onMarkerSelect: PropTypes.func,
   currentZoom: PropTypes.number,
   applyVisitorSizing: PropTypes.bool,
+  onMarkerDrag: PropTypes.func,
 };
 
 EventSpecialMarkers.defaultProps = {

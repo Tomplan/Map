@@ -72,7 +72,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
     try {
       const { supabase } = await import('../supabaseClient');
       // Note: Markers_Admin removed - admin data now in Event_Subscriptions
-      const tables = ['Markers_Core', 'Markers_Appearance', 'Markers_Content'];
+      const tables = ['markers_core', 'markers_appearance', 'markers_content'];
       for (const table of tables) {
         const { data, error } = await supabase.from(table).select('id').eq('id', Number(id));
         if (error) return false; // ignore error, treat as not found

@@ -21,25 +21,25 @@ DROP POLICY IF EXISTS "Authenticated users can delete logos" ON storage.objects;
 
 -- Policy 1: Allow public to view/download logos
 CREATE POLICY "Public can view logos"
-ON storage.objects 
+ON storage.objects
 FOR SELECT
 USING (bucket_id = 'logos');
 
 -- Policy 2: Allow authenticated users to upload logos
 CREATE POLICY "Authenticated users can upload logos"
-ON storage.objects 
+ON storage.objects
 FOR INSERT
 WITH CHECK (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 
 -- Policy 3: Allow authenticated users to delete logos
 CREATE POLICY "Authenticated users can delete logos"
-ON storage.objects 
+ON storage.objects
 FOR DELETE
 USING (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 
@@ -48,7 +48,7 @@ USING (
 -- ============================================
 -- Run this query to check:
 
-SELECT 
+SELECT
   schemaname,
   tablename,
   policyname,
@@ -56,8 +56,8 @@ SELECT
   roles,
   cmd,
   qual
-FROM pg_policies 
-WHERE schemaname = 'storage' 
+FROM pg_policies
+WHERE schemaname = 'storage'
   AND tablename = 'objects'
   AND policyname LIKE '%logos%';
 

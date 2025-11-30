@@ -23,35 +23,35 @@ export const TABS = {
 // Field to table mapping
 export const FIELD_TABLE_MAP = {
   // Core fields
-  lat: 'Markers_Core',
-  lng: 'Markers_Core',
-  type: 'Markers_Core',
-  angle: 'Markers_Core',
-  rectWidth: 'Markers_Core',
-  rectHeight: 'Markers_Core',
-  coreLocked: 'Markers_Core',
+  lat: 'markers_core',
+  lng: 'markers_core',
+  type: 'markers_core',
+  angle: 'markers_core',
+  rectWidth: 'markers_core',
+  rectHeight: 'markers_core',
+  coreLocked: 'markers_core',
 
   // Appearance fields
-  iconUrl: 'Markers_Appearance',
-  iconSize: 'Markers_Appearance',
-  iconColor: 'Markers_Appearance',
-  className: 'Markers_Appearance',
-  prefix: 'Markers_Appearance',
-  glyph: 'Markers_Appearance',
-  glyphColor: 'Markers_Appearance',
-  glyphSize: 'Markers_Appearance',
+  iconUrl: 'markers_appearance',
+  iconSize: 'markers_appearance',
+  iconColor: 'markers_appearance',
+  className: 'markers_appearance',
+  prefix: 'markers_appearance',
+  glyph: 'markers_appearance',
+  glyphColor: 'markers_appearance',
+  glyphSize: 'markers_appearance',
   // Per-marker sizing fields - single source of truth
-  shadowScale: 'Markers_Appearance',
-  glyphAnchor: 'Markers_Appearance',
-  appearanceLocked: 'Markers_Appearance',
+  shadowScale: 'markers_appearance',
+  glyphAnchor: 'markers_appearance',
+  appearanceLocked: 'markers_appearance',
 
   // Content fields
   // Note: boothNumber removed - now using glyphText from Markers_Appearance
-  name: 'Markers_Content',
-  logo: 'Markers_Content',
-  website: 'Markers_Content',
-  info: 'Markers_Content',
-  contentLocked: 'Markers_Content',
+  name: 'markers_content',
+  logo: 'markers_content',
+  website: 'markers_content',
+  info: 'markers_content',
+  contentLocked: 'markers_content',
 
   // Note: Admin fields (contact, phone, meals, etc.) removed
   // These are now managed via Event_Subscriptions table

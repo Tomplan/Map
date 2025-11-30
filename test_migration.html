@@ -51,7 +51,7 @@
             // Test 3: Test join query
             output.innerHTML += '<h3>Test 3: Markers with Assignments</h3>';
             const { data: markers, error: mError } = await supabase
-                .from('Markers_Core')
+                .from('markers_core')
                 .select(`
                     id,
                     lat,

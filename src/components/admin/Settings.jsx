@@ -20,12 +20,13 @@ import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
 import MapDefaults from './MapDefaults';
+import MapSettings from './MapSettings';
 
 /**
  * Settings - Main settings page with role-based sections
  * All admin roles see this page, but different sections based on permissions
  */
-export default function Settings() {
+export default function Settings({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { role, isSuperAdmin, isSystemManager, isEventManager } = useUserRole();
   const [activeSection, setActiveSection] = useState('user-management');
@@ -79,6 +80,15 @@ export default function Settings() {
       component: <MapDefaults />,
       scope: 'organization',
       description: 'Default map position and zoom',
+    },
+    {
+      id: 'map-settings',
+      label: 'Map Settings by Year',
+      icon: mdiMapMarker,
+      roles: ['super_admin', 'system_manager'],
+      component: <MapSettings selectedYear={selectedYear} setSelectedYear={setSelectedYear} />,
+      scope: 'organization',
+      description: 'Configure map settings per event year',
     },
     {
       id: 'event-defaults',

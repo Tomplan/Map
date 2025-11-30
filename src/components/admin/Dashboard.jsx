@@ -39,7 +39,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       setStatsLoading(true);
       try {
         const [markersRes, companiesRes, assignmentsRes] = await Promise.all([
-          supabase.from('Markers_Core').select('id', { count: 'exact', head: true }).gt('id', 0),
+          supabase.from('markers_core').select('id', { count: 'exact', head: true }).gt('id', 0),
           supabase.from('companies').select('id', { count: 'exact', head: true }),
           supabase.from('assignments').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
         ]);

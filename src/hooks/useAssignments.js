@@ -33,7 +33,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
             `
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
-          marker:Markers_Core(id, lat, lng)
+          marker:markers_core(id, lat, lng)
         `
           )
           .eq('event_year', targetYear)
@@ -68,7 +68,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
             `
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
-          marker:Markers_Core(id, lat, lng)
+          marker:markers_core(id, lat, lng)
         `
           )
           .single();
@@ -96,7 +96,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           `
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
-          marker:Markers_Core(id, lat, lng)
+          marker:markers_core(id, lat, lng)
         `
         )
         .single();

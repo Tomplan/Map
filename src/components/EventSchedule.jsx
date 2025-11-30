@@ -15,10 +15,11 @@ export default function EventSchedule({ selectedYear }) {
   const lang = i18n.language || 'en';
   
   // Load activities from database
-  const { activities: activityData, loading, error, getActivityLocation } = useEventActivities();
+  const { activities: activityData, loading, error, getActivityLocation } = useEventActivities(selectedYear);
   
-  // Select activities for current day
-  const activities = selectedDay === 'saturday' ? activityData.saturday : activityData.sunday;
+  // Select activities for current day and filter to only active ones for public view
+  const activities = (selectedDay === 'saturday' ? activityData.saturday : activityData.sunday)
+    .filter(activity => activity.is_active);
 
   // Show loading state
   if (loading) {
@@ -352,23 +353,6 @@ export default function EventSchedule({ selectedYear }) {
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
             {lang === 'en' ? 'Program' : 'Programma'}
           </h1>
-
-          {/* Warning Banner for Managers */}
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded">
-            <div className="flex items-start gap-3">
-              <Icon path={mdiAlert} size={1} className="text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-semibold text-yellow-800 mb-1">
-                  {lang === 'en' ? 'Note for Managers' : 'Let op!'}
-                </p>
-                <p className="text-sm text-yellow-700">
-                  {lang === 'en'
-                    ? 'This schedule shows 2025 program data (October 11-12, 2025). Please update for the 2026 event (October 10-11, 2026).'
-                    : 'Dit programma toont 2025 gegevens (11-12 oktober 2025). Gelieve bij te werken voor het 2026 evenement (10-11 oktober 2026).'}
-                </p>
-              </div>
-            </div>
-          </div>
           
           {/* Day Selector */}
           <div className="flex gap-2">
@@ -380,7 +364,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {lang === 'en' ? 'Saturday October 10' : 'Zaterdag 10 oktober'}
+              {lang === 'en' ? 'Saturday' : 'Zaterdag'}
             </button>
             <button
               onClick={() => setSelectedDay('sunday')}
@@ -390,7 +374,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {lang === 'en' ? 'Sunday October 11' : 'Zondag 11 oktober'}
+              {lang === 'en' ? 'Sunday' : 'Zondag'}
             </button>
           </div>
         </div>

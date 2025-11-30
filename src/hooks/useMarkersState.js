@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { updateMarkerField } from '../services/markerUpdateService';
 
 /**
  * Custom hook to manage an array of marker objects and their state.
@@ -6,7 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
  * @param {Array} markers - Array of marker objects from data source.
  * @returns {[Array, Function, Function]} - [markersState, updateMarker, setMarkersState]
  */
-export default function useMarkersState(markers = []) {
+export default function useMarkersState(markers = [], selectedYear = new Date().getFullYear()) {
   const [markersState, setMarkersState] = useState(markers);
 
   // Sync markersState with incoming markers from useEventMarkers real-time updates
@@ -42,10 +43,10 @@ export default function useMarkersState(markers = []) {
         .eq('id', intId);
       if (!existsError && (!exists || exists.length === 0)) {
         // Insert with default values for NOT NULL columns
-        let row = { id: intId };
-        if (table === 'Markers_Core') row.coreLocked = false;
-        if (table === 'Markers_Appearance') row.appearanceLocked = false;
-        if (table === 'Markers_Content') row.contentLocked = false;
+        let row = { id: intId, event_year: selectedYear };
+        if (table === 'markers_core') row.coreLocked = false;
+        if (table === 'markers_appearance') row.appearanceLocked = false;
+        if (table === 'markers_content') row.contentLocked = false;
         await supabase.from(table).insert([row]);
         return true;
       }
@@ -60,9 +61,9 @@ export default function useMarkersState(markers = []) {
       const { supabase } = await import('../supabaseClient');
       // Ensure marker exists in all tables before update/fetch
       const tables = [
-        { name: 'Markers_Core', fields: coreFields },
-        { name: 'Markers_Appearance', fields: appearanceFields },
-        { name: 'Markers_Content', fields: contentFields },
+        { name: 'markers_core', fields: coreFields },
+        { name: 'markers_appearance', fields: appearanceFields },
+        { name: 'markers_content', fields: contentFields },
       ];
       for (const { name: table } of tables) {
         await ensureMarkerRow(supabase, table, intId);
@@ -83,20 +84,15 @@ export default function useMarkersState(markers = []) {
         // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin
       }
 
-      // Batch update each table once (instead of per-field)
-      if (Object.keys(coreUpdates).length > 0) {
-        await supabase.from('Markers_Core').update(coreUpdates).eq('id', intId);
-      }
-      if (Object.keys(appearanceUpdates).length > 0) {
-        await supabase.from('Markers_Appearance').update(appearanceUpdates).eq('id', intId);
-      }
-      if (Object.keys(contentUpdates).length > 0) {
-        await supabase.from('Markers_Content').update(contentUpdates).eq('id', intId);
+      // Update each field individually using the proper service with event_year filtering
+      const allUpdates = { ...coreUpdates, ...appearanceUpdates, ...contentUpdates };
+      for (const [key, value] of Object.entries(allUpdates)) {
+        await updateMarkerField(intId, key, value, selectedYear);
       }
     } catch (err) {
       // Silently ignore errors in production
     }
-  }, []);
+  }, [selectedYear]);
 
   return [markersState, updateMarker, setMarkersState];
 }

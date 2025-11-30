@@ -29,7 +29,7 @@ const CategoryManagement = lazy(() => import('./admin/CategoryManagement'));
 const Settings = lazy(() => import('./admin/Settings'));
 const FeedbackRequests = lazy(() => import('./admin/FeedbackRequests'));
 
-function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
+function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear, archiveMarkers, copyMarkers }) {
   // Shared visitor layout with offline status, favorites context, and tab navigation
   // Mobile-only design - bottom tabs always visible
   const VisitorLayout = ({ children }) => (
@@ -140,6 +140,8 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                 setMarkersState={setMarkersState}
                 updateMarker={updateMarker}
                 selectedYear={selectedYear}
+                archiveMarkers={archiveMarkers}
+                copyMarkers={copyMarkers}
               />
             </Suspense>
           }
@@ -177,7 +179,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         } />
         <Route path="settings" element={
           <Suspense fallback={<div className="p-4">Loading settings...</div>}>
-            <Settings />
+            <Settings selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
           </Suspense>
         } />
         <Route path="feedback" element={

@@ -21,7 +21,7 @@ export function useMarkerGlyphs(selectedYear) {
 
         // Load core marker data (only booth markers with id < 1000)
         const { data: coreData, error: coreError } = await supabase
-          .from('Markers_Core')
+          .from('markers_core')
           .select('id')
           .lt('id', 1000)
           .order('id', { ascending: true });
@@ -30,7 +30,7 @@ export function useMarkerGlyphs(selectedYear) {
 
         // Load appearance data (glyph text)
         const { data: appearanceData, error: appearanceError } = await supabase
-          .from('Markers_Appearance')
+          .from('markers_appearance')
           .select('id, glyph')
           .lt('id', 1000);
 

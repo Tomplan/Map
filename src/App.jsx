@@ -96,9 +96,9 @@ function AppContent() {
   }, [selectedYear, preferencesLoading, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
-  const { markers } = useEventMarkers(selectedYear);
+  const { markers, archiveCurrentYear: archiveMarkers, copyFromPreviousYear: copyMarkers } = useEventMarkers(selectedYear);
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
-  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers);
+  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, selectedYear);
 
   const [branding, setBranding] = useState({
     logo: null, // Will be set from Organization_Profile
@@ -188,6 +188,8 @@ function AppContent() {
             onLogin={setUser}
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
+            archiveMarkers={archiveMarkers}
+            copyMarkers={copyMarkers}
           />
         </HashRouter>
       </OrganizationLogoProvider>
