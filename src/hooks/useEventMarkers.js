@@ -361,9 +361,25 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
   }, [eventYear, isOnline, loadMarkers]);
 
-  // Copy markers from previous year
+  // Copy markers from previous year (skip existing markers)
   const copyFromPreviousYear = useCallback(async (sourceYear) => {
     try {
+      // First, check which marker IDs already exist in the target year
+      const [existingCoreRes, existingAppearanceRes, existingContentRes] = await Promise.all([
+        supabase.from('markers_core').select('id').eq('event_year', eventYear),
+        supabase.from('markers_appearance').select('id').eq('event_year', eventYear),
+        supabase.from('markers_content').select('id').eq('event_year', eventYear),
+      ]);
+
+      if (existingCoreRes.error) throw existingCoreRes.error;
+      if (existingAppearanceRes.error) throw existingAppearanceRes.error;
+      if (existingContentRes.error) throw existingContentRes.error;
+
+      // Create sets of existing IDs for fast lookup
+      const existingCoreIds = new Set((existingCoreRes.data || []).map(m => m.id));
+      const existingAppearanceIds = new Set((existingAppearanceRes.data || []).map(m => m.id));
+      const existingContentIds = new Set((existingContentRes.data || []).map(m => m.id));
+
       // Fetch markers from source year
       const [coreRes, appearanceRes, contentRes] = await Promise.all([
         supabase.from('markers_core').select('*').eq('event_year', sourceYear),
@@ -375,54 +391,57 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       if (appearanceRes.error) throw appearanceRes.error;
       if (contentRes.error) throw contentRes.error;
 
-      // Copy core markers to current year
+      let copiedCount = 0;
+
+      // Copy core markers to current year (skip existing)
       if (coreRes.data && coreRes.data.length > 0) {
-        const newCoreMarkers = coreRes.data.map(marker => {
-          const { id, ...markerData } = marker; // Exclude id to let database generate it
-          return {
-            ...markerData,
+        const markersToCopy = coreRes.data.filter(marker => !existingCoreIds.has(marker.id));
+        if (markersToCopy.length > 0) {
+          const newCoreMarkers = markersToCopy.map(marker => ({
+            ...marker,
             event_year: eventYear,
-          };
-        });
-        const { error: coreInsertError } = await supabase
-          .from('markers_core')
-          .insert(newCoreMarkers);
-        if (coreInsertError) throw coreInsertError;
+          }));
+          const { error: coreInsertError } = await supabase
+            .from('markers_core')
+            .insert(newCoreMarkers);
+          if (coreInsertError) throw coreInsertError;
+          copiedCount += markersToCopy.length;
+        }
       }
 
-      // Copy appearance markers to current year
+      // Copy appearance markers to current year (skip existing)
       if (appearanceRes.data && appearanceRes.data.length > 0) {
-        const newAppearanceMarkers = appearanceRes.data.map(marker => {
-          const { id, ...markerData } = marker; // Exclude id to let database generate it
-          return {
-            ...markerData,
+        const markersToCopy = appearanceRes.data.filter(marker => !existingAppearanceIds.has(marker.id));
+        if (markersToCopy.length > 0) {
+          const newAppearanceMarkers = markersToCopy.map(marker => ({
+            ...marker,
             event_year: eventYear,
-          };
-        });
-        const { error: appearanceInsertError } = await supabase
-          .from('markers_appearance')
-          .insert(newAppearanceMarkers);
-        if (appearanceInsertError) throw appearanceInsertError;
+          }));
+          const { error: appearanceInsertError } = await supabase
+            .from('markers_appearance')
+            .insert(newAppearanceMarkers);
+          if (appearanceInsertError) throw appearanceInsertError;
+        }
       }
 
-      // Copy content markers to current year
+      // Copy content markers to current year (skip existing)
       if (contentRes.data && contentRes.data.length > 0) {
-        const newContentMarkers = contentRes.data.map(marker => {
-          const { id, ...markerData } = marker; // Exclude id to let database generate it
-          return {
-            ...markerData,
+        const markersToCopy = contentRes.data.filter(marker => !existingContentIds.has(marker.id));
+        if (markersToCopy.length > 0) {
+          const newContentMarkers = markersToCopy.map(marker => ({
+            ...marker,
             event_year: eventYear,
-          };
-        });
-        const { error: contentInsertError } = await supabase
-          .from('markers_content')
-          .insert(newContentMarkers);
-        if (contentInsertError) throw contentInsertError;
+          }));
+          const { error: contentInsertError } = await supabase
+            .from('markers_content')
+            .insert(newContentMarkers);
+          if (contentInsertError) throw contentInsertError;
+        }
       }
 
       // Reload markers to show the copied data
       await loadMarkers(isOnline);
-      return { data: { copied: (coreRes.data?.length || 0) }, error: null };
+      return { data: { copied: copiedCount }, error: null };
     } catch (err) {
       console.error('Error copying markers from previous year:', err);
       return { data: null, error: err.message };
