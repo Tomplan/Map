@@ -82,7 +82,7 @@ export default function useUserPreferences() {
           preferred_language: preferredLanguage,
           assignments_sort_by: 'alphabetic',
           assignments_sort_direction: 'asc',
-          assignments_column_sort: 'markerId',
+          assignments_column_sort: 'marker_id',
           assignments_column_sort_direction: 'asc',
           dashboard_visible_cards: ['stats', 'recent', 'actions'],
           default_rows_per_page: 25,

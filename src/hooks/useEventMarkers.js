@@ -46,9 +46,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         // Fetch all data in parallel, including defaults for booth markers
         // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
         const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes] = await Promise.all([
-          supabase.from('Markers_Core').select('*'),
-          supabase.from('Markers_Appearance').select('*'),
-          supabase.from('Markers_Content').select('*'),
+          supabase.from('markers_core').select('*').eq('event_year', targetYear),
+          supabase.from('markers_appearance').select('*').eq('event_year', targetYear),
+          supabase.from('markers_content').select('*').eq('event_year', targetYear),
           supabase.from('assignments').select(`
             *,
             company:companies(id, name, logo, website, info, company_translations(language_code, info))
@@ -227,22 +227,37 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
     // Supabase realtime subscriptions for all related tables
     const coreChannel = supabase
-      .channel('markers-core-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Core' }, () => {
+      .channel(`markers-core-changes-${eventYear}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'markers_core',
+        filter: `event_year=eq.${eventYear}`
+      }, () => {
         loadMarkers(true);
       })
       .subscribe();
 
     const appearanceChannel = supabase
-      .channel('markers-appearance-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Appearance' }, () => {
+      .channel(`markers-appearance-changes-${eventYear}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'markers_appearance',
+        filter: `event_year=eq.${eventYear}`
+      }, () => {
         loadMarkers(true);
       })
       .subscribe();
 
     const contentChannel = supabase
-      .channel('markers-content-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Markers_Content' }, () => {
+      .channel(`markers-content-changes-${eventYear}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'markers_content',
+        filter: `event_year=eq.${eventYear}`
+      }, () => {
         loadMarkers(true);
       })
       .subscribe();
@@ -327,5 +342,99 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     loadMarkers(isOnline);
   }, [eventYear, isOnline, loadMarkers]);
 
-  return { markers, loading, isOnline, reload: () => loadMarkers(isOnline) };
+  // Archive current year markers and prepare for next year
+  const archiveCurrentYear = useCallback(async () => {
+    try {
+      // Call Supabase function to archive
+      const { data, error: archiveError } = await supabase.rpc('archive_markers', {
+        event_year_to_archive: eventYear,
+      });
+
+      if (archiveError) throw archiveError;
+
+      // Reload markers to show empty state
+      await loadMarkers(isOnline);
+      return { data, error: null };
+    } catch (err) {
+      console.error('Error archiving markers:', err);
+      return { data: null, error: err.message };
+    }
+  }, [eventYear, isOnline, loadMarkers]);
+
+  // Copy markers from previous year
+  const copyFromPreviousYear = useCallback(async (sourceYear) => {
+    try {
+      // Fetch markers from source year
+      const [coreRes, appearanceRes, contentRes] = await Promise.all([
+        supabase.from('markers_core').select('*').eq('event_year', sourceYear),
+        supabase.from('markers_appearance').select('*').eq('event_year', sourceYear),
+        supabase.from('markers_content').select('*').eq('event_year', sourceYear),
+      ]);
+
+      if (coreRes.error) throw coreRes.error;
+      if (appearanceRes.error) throw appearanceRes.error;
+      if (contentRes.error) throw contentRes.error;
+
+      // Copy core markers to current year
+      if (coreRes.data && coreRes.data.length > 0) {
+        const newCoreMarkers = coreRes.data.map(marker => {
+          const { id, ...markerData } = marker; // Exclude id to let database generate it
+          return {
+            ...markerData,
+            event_year: eventYear,
+          };
+        });
+        const { error: coreInsertError } = await supabase
+          .from('markers_core')
+          .insert(newCoreMarkers);
+        if (coreInsertError) throw coreInsertError;
+      }
+
+      // Copy appearance markers to current year
+      if (appearanceRes.data && appearanceRes.data.length > 0) {
+        const newAppearanceMarkers = appearanceRes.data.map(marker => {
+          const { id, ...markerData } = marker; // Exclude id to let database generate it
+          return {
+            ...markerData,
+            event_year: eventYear,
+          };
+        });
+        const { error: appearanceInsertError } = await supabase
+          .from('markers_appearance')
+          .insert(newAppearanceMarkers);
+        if (appearanceInsertError) throw appearanceInsertError;
+      }
+
+      // Copy content markers to current year
+      if (contentRes.data && contentRes.data.length > 0) {
+        const newContentMarkers = contentRes.data.map(marker => {
+          const { id, ...markerData } = marker; // Exclude id to let database generate it
+          return {
+            ...markerData,
+            event_year: eventYear,
+          };
+        });
+        const { error: contentInsertError } = await supabase
+          .from('markers_content')
+          .insert(newContentMarkers);
+        if (contentInsertError) throw contentInsertError;
+      }
+
+      // Reload markers to show the copied data
+      await loadMarkers(isOnline);
+      return { data: { copied: (coreRes.data?.length || 0) }, error: null };
+    } catch (err) {
+      console.error('Error copying markers from previous year:', err);
+      return { data: null, error: err.message };
+    }
+  }, [eventYear, isOnline, loadMarkers]);
+
+  return {
+    markers,
+    loading,
+    isOnline,
+    reload: () => loadMarkers(isOnline),
+    archiveCurrentYear,
+    copyFromPreviousYear
+  };
 }

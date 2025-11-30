@@ -29,9 +29,17 @@ import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false }) {
+// Fix default Leaflet marker icons for custom base URL
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
-  const { MAP_CONFIG, MAP_LAYERS } = useMapConfig();
+  const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
@@ -385,6 +393,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         position: 'relative',
         touchAction: 'pan-x pan-y',
         overflow: 'hidden',
+        zIndex: 1, // Ensure admin map stays below modals (modals typically use z-50/10+)
       }
     : {
         // Public view: fixed full-screen positioning
@@ -441,7 +450,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         id="map-container"
         className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
         style={{
-          zIndex: isAdminView ? 'auto' : 1,
+          zIndex: isAdminView ? 1 : 1, // Ensure admin map stays below modals
           height: isAdminView ? '100%' : '100svh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
@@ -479,7 +488,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
@@ -490,6 +499,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             onFocusHandled={() => setFocusMarkerId(null)}
             currentZoom={currentZoom}
             zoomAnimating={zoomAnimating}
+            onMarkerDrag={onMarkerDrag}
           />
 
           <EventSpecialMarkers
@@ -498,7 +508,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}
@@ -506,6 +516,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             selectedYear={selectedYear}
             currentZoom={currentZoom}
             zoomAnimating={zoomAnimating}
+            onMarkerDrag={onMarkerDrag}
           />
         </MapContainer>
       </div>
@@ -521,6 +532,8 @@ EventMap.propTypes = {
   selectedYear: PropTypes.number,
   selectedMarkerId: PropTypes.number,
   onMarkerSelect: PropTypes.func,
+  editMode: PropTypes.bool,
+  onMarkerDrag: PropTypes.func,
 };
 
 EventMap.defaultProps = {
@@ -530,6 +543,8 @@ EventMap.defaultProps = {
   selectedMarkerId: null,
   onMarkerSelect: null,
   previewUseVisitorSizing: false,
+  editMode: false,
+  onMarkerDrag: null,
 };
 
 export default EventMap;

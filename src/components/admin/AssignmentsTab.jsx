@@ -39,15 +39,15 @@ export default function AssignmentsTab({ selectedYear }) {
     return {
       sortBy: 'alphabetic',
       sortDirection: 'asc',
-      columnSort: 'markerId',
+      columnSort: 'marker_id',
       columnSortDirection: 'asc'
     };
   };
 
   const initialPrefs = loadSortPreferences();
-  const [sortBy, setSortBy] = useState(initialPrefs.sortBy); // 'alphabetic', 'byMarker', 'unassignedFirst'
+  const [sortBy, setSortBy] = useState(initialPrefs.sortBy); // 'alphabetic', 'by_marker', 'unassigned_first'
   const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
-  const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'markerId' or 'glyphText'
+  const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'marker_id' or 'glyph_text'
   const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
 
   // Sync with database preferences when they load
@@ -55,7 +55,7 @@ export default function AssignmentsTab({ selectedYear }) {
     if (!preferencesLoading && preferences) {
       const dbSortBy = preferences.assignments_sort_by || 'alphabetic';
       const dbSortDirection = preferences.assignments_sort_direction || 'asc';
-      const dbColumnSort = preferences.assignments_column_sort || 'markerId';
+      const dbColumnSort = preferences.assignments_column_sort || 'marker_id';
       const dbColumnSortDirection = preferences.assignments_column_sort_direction || 'asc';
 
       // Track what we synced from database
@@ -183,7 +183,7 @@ export default function AssignmentsTab({ selectedYear }) {
       let result = 0;
 
       switch (sortBy) {
-        case 'byMarker':
+        case 'by_marker':
           // Sort by lowest marker ID assigned
           // Unassigned companies go last
           if (!markerA && markerB) result = 1;
@@ -193,7 +193,7 @@ export default function AssignmentsTab({ selectedYear }) {
           else result = a.name.localeCompare(b.name); // If same marker, sort alphabetically
           break;
 
-        case 'unassignedFirst':
+        case 'unassigned_first':
           // Unassigned (0) first, then by lowest marker ID
           if (countA === 0 && countB > 0) result = -1;
           else if (countA > 0 && countB === 0) result = 1;
@@ -226,7 +226,7 @@ export default function AssignmentsTab({ selectedYear }) {
     const sorted = [...markers].sort((a, b) => {
       let result = 0;
 
-      if (columnSort === 'glyphText') {
+      if (columnSort === 'glyph_text') {
         // Sort alphabetically by glyph text
         result = a.glyph.localeCompare(b.glyph, undefined, { numeric: true, sensitivity: 'base' });
       } else {
@@ -420,8 +420,8 @@ export default function AssignmentsTab({ selectedYear }) {
                     title="Sort table rows"
                   >
                     <option value="alphabetic">A-Z</option>
-                    <option value="byMarker">{t('helpPanel.assignments.byMarker')}</option>
-                    <option value="unassignedFirst">{t('helpPanel.assignments.unassignedFirst')}</option>
+                    <option value="by_marker">{t('helpPanel.assignments.byMarker')}</option>
+                    <option value="unassigned_first">{t('helpPanel.assignments.unassignedFirst')}</option>
                   </select>
                   <button
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
@@ -441,8 +441,8 @@ export default function AssignmentsTab({ selectedYear }) {
                     className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                     title="Sort table columns"
                   >
-                    <option value="markerId">{t('helpPanel.assignments.markerId')}</option>
-                    <option value="glyphText">{t('helpPanel.assignments.glyphText')}</option>
+                    <option value="marker_id">{t('helpPanel.assignments.markerId')}</option>
+                    <option value="glyph_text">{t('helpPanel.assignments.glyphText')}</option>
                   </select>
                   <button
                     onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
