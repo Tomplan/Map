@@ -390,13 +390,8 @@ export default function ProgramManagement({ selectedYear }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        {/* Display Order Badge */}
+                        {/* Time and Badges */}
                         <div className="flex items-center gap-3 mb-2">
-                          <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded ${
-                            isInactive ? 'text-gray-500 bg-gray-200' : 'text-gray-600 bg-gray-100'
-                          }`}>
-                            {activity.display_order}
-                          </span>
                           <span className={`text-sm ${isInactive ? 'text-gray-600' : 'text-gray-500'}`}>
                             {activity.start_time} - {activity.end_time}
                           </span>
