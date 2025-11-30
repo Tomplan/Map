@@ -35,6 +35,7 @@ export default function ProgramManagement({ selectedYear }) {
   const [draggedItem, setDraggedItem] = useState(null);
   const [reordering, setReordering] = useState(false);
   const [copiedActivity, setCopiedActivity] = useState(null); // Store copied activity data
+  const [dropTargetIndex, setDropTargetIndex] = useState(null);
 
   const currentActivities = activities[activeTab] || [];
 
@@ -169,14 +170,23 @@ export default function ProgramManagement({ selectedYear }) {
   const handleDragEnd = (e) => {
     e.currentTarget.style.opacity = '1';
     setDraggedItem(null);
+    setDropTargetIndex(null);
   };
 
   /**
    * Handle drag over
    */
-  const handleDragOver = (e) => {
+  const handleDragOver = (e, index) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    setDropTargetIndex(index);
+  };
+
+  /**
+   * Handle drag leave
+   */
+  const handleDragLeave = () => {
+    setDropTargetIndex(null);
   };
 
   /**
@@ -337,39 +347,46 @@ export default function ProgramManagement({ selectedYear }) {
             </button>
           </div>
         ) : (
-          currentActivities.map((activity, index) => {
-            const location = getActivityLocation(activity, i18n.language);
-            const lang = i18n.language || 'en';
-            const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
-            const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
-            const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
-            const isInactive = !activity.is_active;
+           <>
+           {currentActivities.map((activity, index) => {
+             const location = getActivityLocation(activity, i18n.language);
+             const lang = i18n.language || 'en';
+             const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
+             const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
+             const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
+             const isInactive = !activity.is_active;
 
-            return (
-              <div
-                key={activity.id}
-                draggable={!reordering && !isInactive}
-                onDragStart={(e) => handleDragStart(e, activity, index)}
-                onDragEnd={handleDragEnd}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                className={`px-6 py-4 transition-colors ${
-                  isInactive
-                    ? 'bg-gray-100 border-l-4 border-gray-400 relative overflow-hidden'
-                    : reordering
-                    ? 'hover:bg-gray-50 opacity-50 cursor-wait'
-                    : 'hover:bg-gray-50 cursor-move'
-                }`}
-                style={isInactive ? {
-                  backgroundImage: `repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 10px,
-                    rgba(156, 163, 175, 0.1) 10px,
-                    rgba(156, 163, 175, 0.1) 20px
-                  )`
-                } : undefined}
-              >
+             return (
+               <div key={`activity-${activity.id}`}>
+                 {/* Drop indicator */}
+                 {dropTargetIndex === index && draggedItem && (
+                   <div className="h-1 bg-blue-500 rounded-full mb-2 animate-pulse"></div>
+                 )}
+
+                 <div
+                   draggable={!reordering && !isInactive}
+                   onDragStart={(e) => handleDragStart(e, activity, index)}
+                   onDragEnd={handleDragEnd}
+                   onDragOver={(e) => handleDragOver(e, index)}
+                   onDragLeave={handleDragLeave}
+                   onDrop={(e) => handleDrop(e, index)}
+                   className={`px-6 py-4 transition-colors ${
+                     isInactive
+                       ? 'bg-gray-100 border-l-4 border-gray-400 relative overflow-hidden'
+                       : reordering
+                       ? 'hover:bg-gray-50 opacity-50 cursor-wait'
+                       : 'hover:bg-gray-50 cursor-move'
+                   }`}
+                   style={isInactive ? {
+                     backgroundImage: `repeating-linear-gradient(
+                       45deg,
+                       transparent,
+                       transparent 10px,
+                       rgba(156, 163, 175, 0.1) 10px,
+                       rgba(156, 163, 175, 0.1) 20px
+                     )`
+                   } : undefined}
+                 >
                 <div className="flex items-start gap-4">
                   {/* Drag Handle */}
                   <button
@@ -491,9 +508,11 @@ export default function ProgramManagement({ selectedYear }) {
                   </div>
                 </div>
               </div>
-            );
-          })
-        )}
+            </div>
+          );
+        })}
+        </>
+      )}
       </div>
 
       {/* Footer Stats */}
