@@ -460,11 +460,11 @@ export default function AssignmentsTab({ selectedYear }) {
       {/* Assignment Matrix */}
       <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
-          <thead className="sticky top-0 z-10">
-            <tr className="bg-gray-100 text-gray-900">
+          <thead className="sticky top-0 z-10 bg-gray-100">
+            <tr className="text-gray-900">
               <th
-                className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 top-0 z-20"
-                style={{ minWidth: '200px', top: 0, left: 0, background: '#f3f4f6' }}
+                className="p-2 text-left font-semibold border-b border-r bg-gray-200 sticky left-0 z-20"
+                style={{ minWidth: '200px', background: '#f3f4f6' }}
               >
                 Company
               </th>
@@ -490,7 +490,7 @@ export default function AssignmentsTab({ selectedYear }) {
               const assignmentCount = companyAssignmentCounts[company.id] || 0;
               return (
                 <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="p-2 border-b border-r bg-white sticky left-0 z-10">
+                  <td className="p-2 border-b border-r bg-white sticky left-0 z-20" style={{ background: 'white' }}>
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-semibold text-gray-900 truncate" title={company.name}>
                         {company.name}
