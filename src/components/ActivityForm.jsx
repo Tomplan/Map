@@ -134,6 +134,7 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
     const coercedCompanyId = (companyId !== null && companyId !== undefined && companyId !== '') ? Number(companyId) : null;
 
     const payload = {
+      organization_id: 1, // Default organization ID - adjust if needed
       day: day,
       start_time: startTime || null,
       end_time: endTime || null,
