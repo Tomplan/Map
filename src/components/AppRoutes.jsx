@@ -3,28 +3,31 @@ import { Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 import OfflineStatus from './OfflineStatus';
 import BrandingBar from './BrandingBar';
-import AdminLogin from './AdminLogin';
-import ResetPassword from './ResetPassword';
-import StorageTestPage from './StorageTestPage';
-import TabNavigation from './TabNavigation';
-import HomePage from './HomePage';
-import ExhibitorListView from './ExhibitorListView';
-import EventSchedule from './EventSchedule';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
-import AdminLayout from './AdminLayout';
-import Dashboard from './admin/Dashboard';
-import MapManagement from './admin/MapManagement';
-import CompaniesTab from './admin/CompaniesTab';
-import EventSubscriptionsTab from './admin/EventSubscriptionsTab';
-import ProgramManagement from './ProgramManagement';
-import AssignmentsTab from './admin/AssignmentsTab';
-import CategoryManagement from './admin/CategoryManagement';
-import Settings from './admin/Settings';
-import FeedbackRequests from './admin/FeedbackRequests';
+import TabNavigation from './TabNavigation';
 
+// Lazy load heavy components to reduce initial bundle size
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
 const AccessibilityToggle = lazy(() => import('./AccessibilityToggle'));
 const FeedbackForm = lazy(() => import('./FeedbackForm'));
+const ResetPassword = lazy(() => import('./ResetPassword'));
+const AdminLogin = lazy(() => import('./AdminLogin'));
+const StorageTestPage = lazy(() => import('./StorageTestPage'));
+const HomePage = lazy(() => import('./HomePage'));
+const ExhibitorListView = lazy(() => import('./ExhibitorListView'));
+const EventSchedule = lazy(() => import('./EventSchedule'));
+const AdminLayout = lazy(() => import('./AdminLayout'));
+
+// Admin components - only load when needed
+const Dashboard = lazy(() => import('./admin/Dashboard'));
+const MapManagement = lazy(() => import('./admin/MapManagement'));
+const CompaniesTab = lazy(() => import('./admin/CompaniesTab'));
+const EventSubscriptionsTab = lazy(() => import('./admin/EventSubscriptionsTab'));
+const ProgramManagement = lazy(() => import('./ProgramManagement'));
+const AssignmentsTab = lazy(() => import('./admin/AssignmentsTab'));
+const CategoryManagement = lazy(() => import('./admin/CategoryManagement'));
+const Settings = lazy(() => import('./admin/Settings'));
+const FeedbackRequests = lazy(() => import('./admin/FeedbackRequests'));
 
 function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear }) {
   // Shared visitor layout with offline status, favorites context, and tab navigation
@@ -48,7 +51,9 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/"
         element={
           <VisitorLayout>
-            <HomePage selectedYear={selectedYear} branding={branding} />
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+              <HomePage selectedYear={selectedYear} branding={branding} />
+            </Suspense>
           </VisitorLayout>
         }
       />
@@ -72,10 +77,12 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/exhibitors"
         element={
           <VisitorLayout>
-            <ExhibitorListView
-              markersState={markersState}
-              selectedYear={selectedYear}
-            />
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading exhibitors...</div>}>
+              <ExhibitorListView
+                markersState={markersState}
+                selectedYear={selectedYear}
+              />
+            </Suspense>
           </VisitorLayout>
         }
       />
@@ -83,7 +90,9 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/schedule"
         element={
           <VisitorLayout>
-            <EventSchedule selectedYear={selectedYear} />
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading schedule...</div>}>
+              <EventSchedule selectedYear={selectedYear} />
+            </Suspense>
           </VisitorLayout>
         }
       />
@@ -104,7 +113,9 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         element={
           user ? (
             <FavoritesProvider selectedYear={selectedYear}>
-              <AdminLayout selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin...</div>}>
+                <AdminLayout selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+              </Suspense>
             </FavoritesProvider>
           ) : (
             <ErrorBoundary>
@@ -115,33 +126,71 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
           )
         }
       >
-        <Route index element={<Dashboard selectedYear={selectedYear} setSelectedYear={setSelectedYear} />} />
+        <Route index element={
+          <Suspense fallback={<div className="p-4">Loading dashboard...</div>}>
+            <Dashboard selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+          </Suspense>
+        } />
         <Route
           path="map"
           element={
-            <MapManagement
-              markersState={markersState}
-              setMarkersState={setMarkersState}
-              updateMarker={updateMarker}
-              selectedYear={selectedYear}
-            />
+            <Suspense fallback={<div className="p-4">Loading map management...</div>}>
+              <MapManagement
+                markersState={markersState}
+                setMarkersState={setMarkersState}
+                updateMarker={updateMarker}
+                selectedYear={selectedYear}
+              />
+            </Suspense>
           }
         />
-        <Route path="companies" element={<CompaniesTab />} />
+        <Route path="companies" element={
+          <Suspense fallback={<div className="p-4">Loading companies...</div>}>
+            <CompaniesTab />
+          </Suspense>
+        } />
         <Route
           path="subscriptions"
-          element={<EventSubscriptionsTab selectedYear={selectedYear} />}
+          element={
+            <Suspense fallback={<div className="p-4">Loading subscriptions...</div>}>
+              <EventSubscriptionsTab selectedYear={selectedYear} />
+            </Suspense>
+          }
         />
-        <Route path="program" element={<ProgramManagement />} />
+        <Route path="program" element={
+          <Suspense fallback={<div className="p-4">Loading program...</div>}>
+            <ProgramManagement />
+          </Suspense>
+        } />
         <Route
           path="assignments"
-          element={<AssignmentsTab selectedYear={selectedYear} />}
+          element={
+            <Suspense fallback={<div className="p-4">Loading assignments...</div>}>
+              <AssignmentsTab selectedYear={selectedYear} />
+            </Suspense>
+          }
         />
-        <Route path="categories" element={<CategoryManagement />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="feedback" element={<FeedbackRequests />} />
+        <Route path="categories" element={
+          <Suspense fallback={<div className="p-4">Loading categories...</div>}>
+            <CategoryManagement />
+          </Suspense>
+        } />
+        <Route path="settings" element={
+          <Suspense fallback={<div className="p-4">Loading settings...</div>}>
+            <Settings />
+          </Suspense>
+        } />
+        <Route path="feedback" element={
+          <Suspense fallback={<div className="p-4">Loading feedback...</div>}>
+            <FeedbackRequests />
+          </Suspense>
+        } />
       </Route>
-      <Route path="/storage-test" element={<StorageTestPage />} />
+      <Route path="/storage-test" element={
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading test page...</div>}>
+          <StorageTestPage />
+        </Suspense>
+      } />
 
     </Routes>
   );

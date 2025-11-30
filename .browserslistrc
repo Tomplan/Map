@@ -1,0 +1,6 @@
+# Modern browsers supported by the application
+last 2 versions
+not dead
+not IE 11
+> 1%
+maintained node versions
