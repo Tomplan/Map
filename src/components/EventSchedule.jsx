@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import { mdiClockOutline, mdiMapMarker, mdiAlert } from '@mdi/js';
-import { useEventActivities } from '../hooks/useEventActivities';
+import useEventActivities from '../hooks/useEventActivities';
 
 /**
  * EventSchedule - Timeline of event activities

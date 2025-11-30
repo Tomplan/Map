@@ -39,7 +39,6 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             name
           )
         `)
-        .eq('is_active', true)
         .order('display_order', { ascending: true });
 
       // Only filter by event_year if the column exists (after migration)

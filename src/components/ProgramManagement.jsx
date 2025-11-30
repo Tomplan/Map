@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
-import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy, MdContentPaste } from 'react-icons/md';
+import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy, MdContentPaste, MdRestore } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
 import YearScopeBadge from './admin/YearScopeBadge';
@@ -137,6 +137,21 @@ export default function ProgramManagement({ selectedYear }) {
 
     setEditActivity(null); // Ensure we're creating a new activity
     setShowForm(true);
+  };
+
+  /**
+   * Handle reactivate activity
+   */
+  const handleReactivate = async (activityId) => {
+    try {
+      const { error } = await updateActivity(activityId, { is_active: true });
+      if (error) throw new Error(error);
+
+      toastSuccess(t('programManagement.reactivateSuccess'));
+    } catch (err) {
+      console.error('Error reactivating activity:', err);
+      toastError(t('programManagement.reactivateError') + ': ' + err.message);
+    }
   };
 
   /**
@@ -328,27 +343,45 @@ export default function ProgramManagement({ selectedYear }) {
             const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
             const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
             const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
+            const isInactive = !activity.is_active;
 
             return (
               <div
                 key={activity.id}
-                draggable={!reordering}
+                draggable={!reordering && !isInactive}
                 onDragStart={(e) => handleDragStart(e, activity, index)}
                 onDragEnd={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, index)}
-                className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
-                  reordering ? 'opacity-50 cursor-wait' : 'cursor-move'
+                className={`px-6 py-4 transition-colors ${
+                  isInactive
+                    ? 'bg-gray-100 border-l-4 border-gray-400 relative overflow-hidden'
+                    : reordering
+                    ? 'hover:bg-gray-50 opacity-50 cursor-wait'
+                    : 'hover:bg-gray-50 cursor-move'
                 }`}
+                style={isInactive ? {
+                  backgroundImage: `repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 10px,
+                    rgba(156, 163, 175, 0.1) 10px,
+                    rgba(156, 163, 175, 0.1) 20px
+                  )`
+                } : undefined}
               >
                 <div className="flex items-start gap-4">
                   {/* Drag Handle */}
                   <button
-                    className={`mt-1 text-gray-400 hover:text-gray-600 ${
-                      reordering ? 'cursor-wait' : 'cursor-move'
+                    className={`mt-1 ${
+                      isInactive
+                        ? 'text-gray-300 cursor-not-allowed'
+                        : reordering
+                        ? 'text-gray-400 cursor-wait'
+                        : 'text-gray-400 hover:text-gray-600 cursor-move'
                     }`}
-                    title={t('programManagement.dragToReorder')}
-                    disabled={reordering}
+                    title={isInactive ? t('programManagement.inactive') : t('programManagement.dragToReorder')}
+                    disabled={reordering || isInactive}
                   >
                     <MdDragIndicator className="text-2xl" />
                   </button>
@@ -359,40 +392,53 @@ export default function ProgramManagement({ selectedYear }) {
                       <div className="flex-1">
                         {/* Display Order Badge */}
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-medium text-gray-600 bg-gray-100 rounded">
+                          <span className={`inline-flex items-center justify-center w-6 h-6 text-xs font-medium rounded ${
+                            isInactive ? 'text-gray-500 bg-gray-200' : 'text-gray-600 bg-gray-100'
+                          }`}>
                             {activity.display_order}
                           </span>
-                          <span className="text-sm text-gray-500">
+                          <span className={`text-sm ${isInactive ? 'text-gray-600' : 'text-gray-500'}`}>
                             {activity.start_time} - {activity.end_time}
                           </span>
                           {badge && (
-                            <span className="px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded">
+                            <span className={`px-2 py-1 text-xs font-medium rounded ${
+                              isInactive ? 'text-gray-600 bg-gray-200' : 'text-blue-700 bg-blue-100'
+                            }`}>
                               {badge}
+                            </span>
+                          )}
+                          {isInactive && (
+                            <span className="px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded">
+                              {t('programManagement.inactive')}
                             </span>
                           )}
                         </div>
 
                         {/* Title */}
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                        <h3 className={`text-lg font-semibold mb-1 ${isInactive ? 'text-gray-700' : 'text-gray-900'}`}>
                           {title}
                         </h3>
 
                         {/* Description */}
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        <p className={`text-sm mb-2 line-clamp-2 ${isInactive ? 'text-gray-600' : 'text-gray-600'}`}>
                           {description}
                         </p>
 
                         {/* Location */}
                         <div className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-500">{t('programManagement.location')}:</span>
-                          <span className="font-medium text-gray-700">
+                          <span className={isInactive ? 'text-gray-600' : 'text-gray-500'}>{t('programManagement.location')}:</span>
+                          <span className={`font-medium ${isInactive ? 'text-gray-700' : 'text-gray-700'}`}>
                             {location.text}
                           </span>
                           {activity.show_location_type_badge && (
                             <span className={`px-2 py-0.5 text-xs rounded ${
-                              (activity.location_type === 'exhibitor' || activity.location_type === 'company')
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-700'
+                              isInactive
+                                ? ((activity.location_type === 'exhibitor' || activity.location_type === 'company')
+                                    ? 'bg-green-50 text-green-600'
+                                    : 'bg-gray-50 text-gray-600')
+                                : ((activity.location_type === 'exhibitor' || activity.location_type === 'company')
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-700')
                             }`}>
                               {(activity.location_type === 'exhibitor' || activity.location_type === 'company') ? t('programManagement.exhibitor') : t('programManagement.venue')}
                             </span>
@@ -404,8 +450,13 @@ export default function ProgramManagement({ selectedYear }) {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleCopyActivity(activity)}
-                          className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                          className={`p-2 rounded-lg transition-colors ${
+                            isInactive
+                              ? 'text-gray-400 hover:bg-gray-50 cursor-not-allowed'
+                              : 'text-gray-600 hover:bg-gray-50'
+                          }`}
                           title="Copy activity"
+                          disabled={isInactive}
                         >
                           <MdContentCopy className="text-xl" />
                         </button>
@@ -414,18 +465,32 @@ export default function ProgramManagement({ selectedYear }) {
                             setEditActivity(activity);
                             setShowForm(true);
                           }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className={`p-2 rounded-lg transition-colors ${
+                            isInactive
+                              ? 'text-blue-400 hover:bg-blue-50'
+                              : 'text-blue-600 hover:bg-blue-50'
+                          }`}
                           title={t('programManagement.edit')}
                         >
                           <MdEdit className="text-xl" />
                         </button>
-                        <button
-                          onClick={() => setDeleteConfirm({ id: activity.id, title })}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title={t('programManagement.delete')}
-                        >
-                          <MdDelete className="text-xl" />
-                        </button>
+                        {isInactive ? (
+                          <button
+                            onClick={() => handleReactivate(activity.id)}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            title={t('programManagement.reactivate')}
+                          >
+                            <MdRestore className="text-xl" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => setDeleteConfirm({ id: activity.id, title })}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title={t('programManagement.delete')}
+                          >
+                            <MdDelete className="text-xl" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -439,9 +504,17 @@ export default function ProgramManagement({ selectedYear }) {
       {/* Footer Stats */}
       {currentActivities.length > 0 && (
         <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
-          <p className="text-sm text-gray-600">
-            {t('programManagement.totalActivities')}: <span className="font-medium">{currentActivities.length}</span>
-          </p>
+          <div className="flex gap-6 text-sm">
+            <p className="text-gray-600">
+              {t('programManagement.totalActivities')}: <span className="font-medium">{currentActivities.length}</span>
+            </p>
+            <p className="text-gray-600">
+              {t('programManagement.activeActivities')}: <span className="font-medium text-green-600">{currentActivities.filter(a => a.is_active).length}</span>
+            </p>
+            <p className="text-gray-600">
+              {t('programManagement.inactiveActivities')}: <span className="font-medium text-orange-600">{currentActivities.filter(a => !a.is_active).length}</span>
+            </p>
+          </div>
         </div>
       )}
 

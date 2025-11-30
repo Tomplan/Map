@@ -4,6 +4,7 @@ import Modal from './common/Modal';
 import { useDialog } from '../contexts/DialogContext';
 import { supabase } from '../supabaseClient';
 import useCompanies from '../hooks/useCompanies';
+import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import YearScopeBadge from './admin/YearScopeBadge';
 
 export default function ActivityForm({ activity = null, day = 'saturday', year = new Date().getFullYear(), initialActivityData = null, onSave = () => {}, onClose = () => {} }) {
@@ -33,7 +34,7 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
   const [displayOrder, setDisplayOrder] = useState(activity?.display_order ?? 0);
   const [isActive, setIsActive] = useState(activity?.is_active ?? true);
   const [showLocationTypeBadge, setShowLocationTypeBadge] = useState(activity?.show_location_type_badge ?? false);
-  const [locationType, setLocationType] = useState(activity?.location_type || (activity?.company_id ? 'company' : 'venue'));
+  const [locationType, setLocationType] = useState(activity?.location_type || (activity?.company_id ? 'exhibitor' : 'venue'));
   const [companyId, setCompanyId] = useState(activity?.company_id ?? null);
 
   // unique id suffix used for element ids in the modal to avoid collisions
@@ -42,6 +43,11 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
   const { toastSuccess, toastError } = useDialog();
 
   const { companies } = useCompanies();
+  const { subscriptions } = useEventSubscriptions(year);
+
+  // Filter companies to only show those with active subscriptions for this year
+  const subscribedCompanyIds = new Set(subscriptions.map(sub => sub.company_id));
+  const subscribedCompanies = companies.filter(company => subscribedCompanyIds.has(company.id));
 
   // Keep fields in sync if `activity` or `initialActivityData` changes
   useEffect(() => {
@@ -68,7 +74,7 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
       setDisplayOrder(activity.display_order || 0);
       setIsActive(activity.is_active ?? true);
       setShowLocationTypeBadge(activity.show_location_type_badge ?? false);
-      setLocationType(activity.location_type || (activity.company_id ? 'company' : 'venue'));
+      setLocationType(activity.location_type || (activity.company_id ? 'exhibitor' : 'venue'));
       setCompanyId(activity.company_id || null);
     }
     // If pasting copied data (creating new activity), use the copied data
@@ -94,7 +100,7 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
       setDisplayOrder(initialActivityData.display_order || 0);
       setIsActive(initialActivityData.is_active ?? true);
       setShowLocationTypeBadge(initialActivityData.show_location_type_badge ?? false);
-      setLocationType(initialActivityData.location_type || (initialActivityData.company_id ? 'company' : 'venue'));
+      setLocationType(initialActivityData.location_type || (initialActivityData.company_id ? 'exhibitor' : 'venue'));
       setCompanyId(initialActivityData.company_id || null);
     }
     // If creating a new activity from scratch, reset to defaults
@@ -288,150 +294,157 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           <button type="button" onClick={() => setTab('de')} className={`px-3 py-1 rounded ${tab==='de'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>DE</button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Left: language-specific fields */}
-          <div className="md:col-span-2">
-            {tab === 'nl' && (
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor={`title-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.titleNL', { lng: adminLang })}</label>
-                  <input id={`title-nl-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={titleNl} onChange={(e) => setTitleNl(e.target.value)} />
-                </div>
-                <div>
-                  <label htmlFor={`description-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.descriptionNL')}</label>
-                  <textarea id={`description-nl-${uid}`} rows={4} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={descriptionNl} onChange={(e) => setDescriptionNl(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor={`location-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.locationNL')}</label>
-                    <input id={`location-nl-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={locationNl} onChange={(e) => setLocationNl(e.target.value)} />
-                  </div>
-                  <div>
-                    <label htmlFor={`badge-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.badgeNL')} <span className="text-xs text-gray-400">{t('activityForm.optional')}</span></label>
-                    <input id={`badge-nl-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={badgeNl} onChange={(e) => setBadgeNl(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'en' && (
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor={`title-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.titleEN', { lng: adminLang })}</label>
-                  <input id={`title-en-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
-                </div>
-                <div>
-                  <label htmlFor={`description-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.descriptionEN')}</label>
-                  <textarea id={`description-en-${uid}`} rows={4} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor={`location-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.locationEN')}</label>
-                    <input id={`location-en-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={locationEn} onChange={(e) => setLocationEn(e.target.value)} />
-                  </div>
-                  <div>
-                    <label htmlFor={`badge-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.badgeEN')} <span className="text-xs text-gray-400">{t('activityForm.optional')}</span></label>
-                    <input id={`badge-en-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={badgeEn} onChange={(e) => setBadgeEn(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {tab === 'de' && (
-              <div className="space-y-3">
-                <div>
-                  <label htmlFor={`title-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">Title (DE)</label>
-                  <input id={`title-de-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={titleDe} onChange={(e) => setTitleDe(e.target.value)} />
-                </div>
-                <div>
-                  <label htmlFor={`description-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">Description (DE)</label>
-                  <textarea id={`description-de-${uid}`} rows={4} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={descriptionDe} onChange={(e) => setDescriptionDe(e.target.value)} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label htmlFor={`location-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">Location (DE)</label>
-                    <input id={`location-de-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={locationDe} onChange={(e) => setLocationDe(e.target.value)} />
-                  </div>
-                  <div>
-                    <label htmlFor={`badge-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">Badge (DE) <span className="text-xs text-gray-400">{t('activityForm.optional')}</span></label>
-                    <input id={`badge-de-${uid}`} className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={badgeDe} onChange={(e) => setBadgeDe(e.target.value)} />
-                  </div>
-                </div>
-              </div>
-            )}
+        {/* Basic Information Section */}
+        <div className="space-y-6">
+          {/* Time Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor={`start-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.startTime')}</label>
+              <input id={`start-time-${uid}`} type="time" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={startTime || ''} onChange={(e) => setStartTime(e.target.value)} />
+            </div>
+            <div>
+              <label htmlFor={`end-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.endTime')}</label>
+              <input id={`end-time-${uid}`} type="time" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={endTime || ''} onChange={(e) => setEndTime(e.target.value)} />
+            </div>
           </div>
 
-          {/* Right: meta fields */}
-          <div className="space-y-3">
+          {/* Location Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`start-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.startTime')}</label>
-              <input id={`start-time-${uid}`} type="time" className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={startTime || ''} onChange={(e) => setStartTime(e.target.value)} />
-            </div>
-
-            <div>
-              <label htmlFor={`end-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.endTime')}</label>
-              <input id={`end-time-${uid}`} type="time" className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-200" value={endTime || ''} onChange={(e) => setEndTime(e.target.value)} />
-            </div>
-
-            <div>
-              <label htmlFor={`location-type-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.locationType')}</label>
-              <select id={`location-type-${uid}`} className="w-full px-3 py-2 border rounded" value={locationType} onChange={(e) => setLocationType(e.target.value)}>
+              <label htmlFor={`location-type-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationType')}</label>
+              <select id={`location-type-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationType} onChange={(e) => setLocationType(e.target.value)}>
                 <option value="venue">{t('activityForm.venue')}</option>
                 <option value="exhibitor">{t('activityForm.exhibitor')}</option>
-                <option value="company">Company</option>
               </select>
             </div>
-
             <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor={`company-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.company')}</label>
-                <div className="ml-2"><YearScopeBadge scope="global" /></div>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor={`company-${uid}`} className="block text-sm font-medium text-gray-700">{t('activityForm.company')}</label>
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  {t('activityForm.subscribedCompanies', { year })}
+                </span>
               </div>
-              <select id={`company-${uid}`} className="w-full px-3 py-2 border rounded" value={companyId || ''} onChange={(e) => setCompanyId(e.target.value || null)}>
+              <select id={`company-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={companyId || ''} onChange={(e) => setCompanyId(e.target.value || null)}>
                 <option value="">{t('activityForm.selectCompany')}</option>
-                {companies.map(c => (
+                {subscribedCompanies.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
-              <p className="text-xs text-gray-400 mt-2">{t('activityForm.companyScopeHint')}</p>
+              <p className="text-xs text-gray-500 mt-1">{t('activityForm.companyScopeHint')}</p>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor={`display-order-${uid}`} className="block text-sm font-medium text-gray-700 mb-1">{t('activityForm.displayOrder')}</label>
-              <input id={`display-order-${uid}`} type="number" className="w-full px-3 py-2 border rounded" value={displayOrder || 0} onChange={(e) => setDisplayOrder(Number(e.target.value))} aria-describedby={`display-order-help-${uid}`} />
-              <p id={`display-order-help-${uid}`} className="text-xs text-gray-400 mt-1">{t('activityForm.displayOrderHelp')}</p>
-            </div>
+          {/* Display Order */}
+          <div>
+            <label htmlFor={`display-order-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.displayOrder')}</label>
+            <input id={`display-order-${uid}`} type="number" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={displayOrder || 0} onChange={(e) => setDisplayOrder(Number(e.target.value))} aria-describedby={`display-order-help-${uid}`} />
+            <p id={`display-order-help-${uid}`} className="text-xs text-gray-500 mt-1">{t('activityForm.displayOrderHelp')}</p>
+          </div>
 
-            <div className="flex items-start gap-3">
-              <label htmlFor={`isActive-${uid}`} className="flex items-start gap-3 cursor-pointer">
-                <input
-                  id={`isActive-${uid}`}
-                  type="checkbox"
-                  className="h-5 w-5 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-400"
-                  checked={isActive}
-                  onChange={(e) => setIsActive(e.target.checked)}
-                />
+        </div>
+
+        {/* Content Section */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+
+          {tab === 'nl' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor={`title-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.titleNL', { lng: adminLang })}</label>
+                <input id={`title-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleNl} onChange={(e) => setTitleNl(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor={`description-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.descriptionNL')}</label>
+                <textarea id={`description-nl-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionNl} onChange={(e) => setDescriptionNl(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="text-sm">{t('activityForm.isActive')}</div>
-                  <div className="text-xs text-gray-400">{t('activityForm.isActiveHelp')}</div>
+                  <label htmlFor={`location-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationNL')}</label>
+                  <input id={`location-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationNl} onChange={(e) => setLocationNl(e.target.value)} />
                 </div>
-              </label>
+                <div>
+                  <label htmlFor={`badge-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.badgeNL')} <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
+                  <input id={`badge-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeNl} onChange={(e) => setBadgeNl(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'en' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor={`title-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.titleEN', { lng: adminLang })}</label>
+                <input id={`title-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor={`description-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.descriptionEN')}</label>
+                <textarea id={`description-en-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor={`location-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationEN')}</label>
+                  <input id={`location-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationEn} onChange={(e) => setLocationEn(e.target.value)} />
+                </div>
+                <div>
+                  <label htmlFor={`badge-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.badgeEN')} <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
+                  <input id={`badge-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeEn} onChange={(e) => setBadgeEn(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'de' && (
+            <div className="space-y-4">
+              <div>
+                <label htmlFor={`title-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Title (DE)</label>
+                <input id={`title-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleDe} onChange={(e) => setTitleDe(e.target.value)} />
+              </div>
+              <div>
+                <label htmlFor={`description-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Description (DE)</label>
+                <textarea id={`description-de-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionDe} onChange={(e) => setDescriptionDe(e.target.value)} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor={`location-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Location (DE)</label>
+                  <input id={`location-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationDe} onChange={(e) => setLocationDe(e.target.value)} />
+                </div>
+                <div>
+                  <label htmlFor={`badge-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Badge (DE) <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
+                  <input id={`badge-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeDe} onChange={(e) => setBadgeDe(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Activity Settings - At the very bottom */}
+        <div className="mt-6 px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <div className="space-y-3">
+            <div className="flex items-center space-x-3">
+              <input
+                id={`isActive-${uid}`}
+                type="checkbox"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+              />
+              <div className="flex-1">
+                <label htmlFor={`isActive-${uid}`} className="text-sm text-gray-700 cursor-pointer">{t('activityForm.isActive')}</label>
+                <p className="text-xs text-gray-500 mt-0.5">{t('activityForm.isActiveHelp')}</p>
+              </div>
             </div>
 
-            <div className="flex items-start gap-3">
-              <label htmlFor={`showLocBadge-${uid}`} className="flex items-start gap-3 cursor-pointer">
-                <input
-                  id={`showLocBadge-${uid}`}
-                  type="checkbox"
-                  className="h-5 w-5 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-400"
-                  checked={showLocationTypeBadge}
-                  onChange={(e) => setShowLocationTypeBadge(e.target.checked)}
-                />
-                <div>
-                  <div className="text-sm">{t('activityForm.showLocationBadge')}</div>
-                  <div className="text-xs text-gray-400">{t('activityForm.showLocationBadgeHelp')}</div>
-                </div>
-              </label>
+            <div className="flex items-center space-x-3">
+              <input
+                id={`showLocBadge-${uid}`}
+                type="checkbox"
+                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                checked={showLocationTypeBadge}
+                onChange={(e) => setShowLocationTypeBadge(e.target.checked)}
+              />
+              <div className="flex-1">
+                <label htmlFor={`showLocBadge-${uid}`} className="text-sm text-gray-700 cursor-pointer">{t('activityForm.showLocationBadge')}</label>
+                <p className="text-xs text-gray-500 mt-0.5">{t('activityForm.showLocationBadgeHelp')}</p>
+              </div>
             </div>
           </div>
         </div>
