@@ -91,6 +91,26 @@ CREATE POLICY "Admin can view event activities archive" ON event_activities_arch
 CREATE POLICY "Admin can insert event activities archive" ON event_activities_archive
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
+-- Update RLS policies for event_activities table to handle event_year
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view active event activities" ON event_activities;
+DROP POLICY IF EXISTS "Admins can insert event activities" ON event_activities;
+DROP POLICY IF EXISTS "Admins can update event activities" ON event_activities;
+DROP POLICY IF EXISTS "Admins can delete event activities" ON event_activities;
+
+-- Create new RLS policies that work with event_year
+CREATE POLICY "Users can view active event activities" ON event_activities
+  FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Admins can insert event activities" ON event_activities
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Admins can update event activities" ON event_activities
+  FOR UPDATE USING (auth.role() = 'authenticated');
+
+CREATE POLICY "Admins can delete event activities" ON event_activities
+  FOR DELETE USING (auth.role() = 'authenticated');
+
 -- Verify the migration
 -- SELECT COUNT(*) as activities_count FROM event_activities;
 -- SELECT event_year, COUNT(*) as count_per_year FROM event_activities GROUP BY event_year ORDER BY event_year;
