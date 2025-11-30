@@ -33,7 +33,14 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
       let query = supabase
         .from('event_activities')
         .select(`
-          *,
+          id, organization_id, day, start_time, end_time, display_order,
+          title_nl, title_en, title_de,
+          description_nl, description_en, description_de,
+          location_type, company_id,
+          location_nl, location_en, location_de,
+          badge_nl, badge_en, badge_de,
+          is_active, show_location_type_badge,
+          created_at, updated_at, created_by, updated_by,
           companies!event_activities_company_id_fkey (
             id,
             name
@@ -83,7 +90,14 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
         .from('event_activities')
         .insert([dataWithYear])
         .select(`
-          *,
+          id, organization_id, day, start_time, end_time, display_order,
+          title_nl, title_en, title_de,
+          description_nl, description_en, description_de,
+          location_type, company_id,
+          location_nl, location_en, location_de,
+          badge_nl, badge_en, badge_de,
+          is_active, show_location_type_badge,
+          created_at, updated_at, created_by, updated_by,
           companies!event_activities_company_id_fkey (
             id,
             name
@@ -115,7 +129,14 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
         .update(updates)
         .eq('id', id)
         .select(`
-          *,
+          id, organization_id, day, start_time, end_time, display_order,
+          title_nl, title_en, title_de,
+          description_nl, description_en, description_de,
+          location_type, company_id,
+          location_nl, location_en, location_de,
+          badge_nl, badge_en, badge_de,
+          is_active, show_location_type_badge,
+          created_at, updated_at, created_by, updated_by,
           companies!event_activities_company_id_fkey (
             id,
             name
@@ -229,13 +250,14 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
       }
 
       // Copy activities to current year
-      const newActivities = sourceActivities.map(activity => ({
-        ...activity,
-        event_year: eventYear,
-        id: undefined, // Let database generate new ID
-        created_at: undefined, // Let database set new timestamp
-        updated_at: undefined,
-      }));
+      const newActivities = sourceActivities.map(activity => {
+        // Remove id, created_at, updated_at to let database generate them
+        const { id, created_at, updated_at, ...activityData } = activity;
+        return {
+          ...activityData,
+          event_year: eventYear,
+        };
+      });
 
       const { data, error: insertError } = await supabase
         .from('event_activities')
