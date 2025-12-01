@@ -269,7 +269,7 @@ export default function useEventSubscriptions(eventYear) {
   // Subscribe to real-time changes
   useEffect(() => {
     const channel = supabase
-      .channel('event-subscriptions-changes')
+      .channel(`event-subscriptions-changes-${eventYear}`)
       .on(
         'postgres_changes',
         {

@@ -14,6 +14,7 @@ import {
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useAssignments from '../../hooks/useAssignments';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
 
@@ -24,10 +25,10 @@ import YearScopeBadge from './YearScopeBadge';
 export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { subscriptions, loading } = useEventSubscriptions(selectedYear);
+  const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
   const [counts, setCounts] = useState({
     markers: null,
     companies: null,
-    assignments: null,
   });
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
@@ -38,16 +39,14 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     async function fetchCounts() {
       setStatsLoading(true);
       try {
-        const [markersRes, companiesRes, assignmentsRes] = await Promise.all([
+        const [markersRes, companiesRes] = await Promise.all([
           supabase.from('markers_core').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear).lt('id', 1000),
           supabase.from('companies').select('id', { count: 'exact', head: true }),
-          supabase.from('assignments').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
         ]);
 
         setCounts({
           markers: markersRes.count ?? 0,
           companies: (companiesRes.count ?? 0) - 1, // All companies minus organization
-          assignments: assignmentsRes.count ?? 0,
         });
       } catch (error) {
         console.error('Error fetching dashboard counts:', error);
@@ -99,7 +98,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: `${selectedYear} ${t('dashboard.assignments')}`,
-      value: statsLoading ? '...' : (counts.assignments?.toString() ?? '-'),
+      value: assignmentsLoading ? '...' : assignments.length.toString(),
       icon: mdiClipboardCheck,
       color: 'purple',
     },
@@ -120,7 +119,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">
           {selectedYear} {t('dashboard.eventTotals')}
-          {(loading || statsLoading) && <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>}
+          {(loading || statsLoading || assignmentsLoading) && <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>}
         </h2>
 
         {/* Stats Grid - Inside Event Totals */}
