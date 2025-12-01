@@ -362,13 +362,22 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      {marker.iconUrl && (
-                        <img
-                          src={getIconPath(marker.iconUrl)}
-                          alt="icon"
-                          className="w-6 h-6"
-                        />
-                      )}
+                       {marker.iconUrl ? (
+                         <div className="relative">
+                           <img
+                             src={getIconPath(marker.iconUrl)}
+                             alt="icon"
+                             className="w-6 h-6"
+                           />
+                           <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
+                             <span className="text-white text-xs">•</span>
+                           </div>
+                         </div>
+                       ) : (
+                         <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+                           D
+                         </div>
+                       )}
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-gray-900 truncate">
                           {isDefault
@@ -466,7 +475,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                     onCancel={handleCancelEdit}
                   />
                 ) : (
-                  <ViewPanel marker={selectedMarker} isSpecialMarker={isSpecialMarker} isDefaultMarker={isDefaultMarker} />
+                  <ViewPanel marker={selectedMarker} isSpecialMarker={isSpecialMarker} isDefaultMarker={isDefaultMarker} isBoothMarker={isBoothMarker} />
                 )}
               </div>
             )}
@@ -478,7 +487,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 }
 
 /** View Panel - Read-only display */
-function ViewPanel({ marker, isSpecialMarker, isDefaultMarker }) {
+function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker }) {
   return (
     <div className="space-y-6">
       {isDefaultMarker && (
@@ -508,8 +517,23 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker }) {
       {/* Visual Styling */}
       <Section title={isDefaultMarker ? "Default Visual Styling" : "Visual Styling"}>
         <Field label="Icon">
-          {marker.iconUrl && (
-            <img src={getIconPath(marker.iconUrl)} alt="icon" className="w-8 h-8" />
+          {marker.iconUrl ? (
+            <div className="flex items-center gap-2">
+              <img src={getIconPath(marker.iconUrl)} alt="icon" className="w-8 h-8" />
+              <span className="text-xs text-orange-600 font-medium">Custom Color</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+                Default
+              </div>
+              <span className="text-xs text-blue-600 font-medium">
+                {isBoothMarker
+                  ? (marker.assignments?.length > 0 ? 'Red (assigned)' : 'Gray (unassigned)')
+                  : 'Based on marker type'
+                }
+              </span>
+            </div>
           )}
         </Field>
         <Field label="Icon Size" value={JSON.stringify(marker.iconSize)} />
@@ -572,6 +596,21 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, on
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">Icon</label>
           <div className="grid grid-cols-6 gap-2">
+            {/* Use Default Color option */}
+            <button
+              onClick={() => onChange('iconUrl', null)}
+              className={`p-2 border-2 rounded-lg transition-all ${
+                !marker.iconUrl
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-400'
+              }`}
+              title="Use default color based on assignment status"
+            >
+              <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-xs text-gray-600 font-medium">
+                Default
+              </div>
+            </button>
+            {/* Custom color options */}
             {ICON_OPTIONS.map((iconFile) => (
               <button
                 key={iconFile}
@@ -586,6 +625,15 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, on
               </button>
             ))}
           </div>
+          {!marker.iconUrl ? (
+            <p className="text-xs text-gray-600 mt-1">
+              Using default color: {isBoothMarker ? (marker.assignments?.length > 0 ? 'Red (assigned)' : 'Gray (unassigned)') : 'Based on marker type'}
+            </p>
+          ) : (
+            <p className="text-xs text-gray-600 mt-1">
+              Using custom color override
+            </p>
+          )}
         </div>
         {!isDefaultMarker && <InputField label="Glyph (Booth Label)" value={marker.glyph} onChange={(v) => onChange('glyph', v)} />}
         <InputField label="Glyph Color" type="color" value={marker.glyphColor} onChange={(v) => onChange('glyphColor', v)} />

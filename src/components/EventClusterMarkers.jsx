@@ -16,6 +16,7 @@ import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
 import { useDialog } from '../contexts/DialogContext';
+import { supabase } from '../supabaseClient';
 import './MobileBottomSheet.css';
 
 const CLUSTER_CONFIG = {
@@ -36,16 +37,29 @@ const DEFAULT_ICON = {
   GLYPH_ANCHOR: [0, -4],
 };
 
-const getIconFile = (marker, isFavorited = false) => {
+const getIconFile = (marker, isFavorited = false, assignedDefault = null, unassignedDefault = null) => {
   // If favorited, always use yellow marker
   if (isFavorited) {
     return getIconPath('glyph-marker-icon-yellow.svg');
   }
-  // Otherwise use custom iconUrl or type-based icon
-  return marker.iconUrl ? getIconPath(marker.iconUrl) : getIconPath(`${marker.type || 'default'}.svg`);
+
+  // Use custom iconUrl if set
+  if (marker.iconUrl) {
+    return getIconPath(marker.iconUrl);
+  }
+
+  // Use assignment-based default
+  const hasAssignment = marker.assignments?.length > 0;
+  const defaultAppearance = hasAssignment ? assignedDefault : unassignedDefault;
+  if (defaultAppearance?.iconUrl) {
+    return getIconPath(defaultAppearance.iconUrl);
+  }
+
+  // Final fallback
+  return getIconPath(`${marker.type || 'default'}.svg`);
 };
 
-const createIcon = (marker, isActive = false, isFavorited = false, currentZoom = 17, isAdminView = false) => {
+const createIcon = (marker, isActive = false, isFavorited = false, currentZoom = 17, isAdminView = false, assignedDefault = null, unassignedDefault = null) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
   if (isActive) className += ' marker-active';
   if (isFavorited) className += ' marker-favorited';
@@ -60,7 +74,7 @@ const createIcon = (marker, isActive = false, isFavorited = false, currentZoom =
   return createMarkerIcon({
     className,
     prefix: marker.prefix,
-    iconUrl: getIconFile(marker, isFavorited),
+    iconUrl: getIconFile(marker, isFavorited, assignedDefault, unassignedDefault),
     iconSize,
     glyph: marker.glyph || '',
     glyphColor: marker.glyphColor || DEFAULT_ICON.GLYPH_COLOR,
@@ -202,6 +216,48 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
+
+  // Load default markers for fallback colors
+  const [defaultMarkers, setDefaultMarkers] = useState({ assigned: null, unassigned: null });
+  useEffect(() => {
+    const loadDefaults = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('markers_appearance')
+          .select('*')
+          .in('id', [-1, -2])
+          .eq('event_year', 0);
+
+        if (error) throw error;
+
+        const assigned = data.find(d => d.id === -1) || {};
+        const unassigned = data.find(d => d.id === -2) || {};
+
+        setDefaultMarkers({ assigned, unassigned });
+      } catch (error) {
+        console.error('Error loading default markers:', error);
+      }
+    };
+
+    loadDefaults();
+
+    // Subscribe to default marker changes
+    const subscription = supabase
+      .channel('default-markers-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'markers_appearance',
+        filter: 'event_year=eq.0'
+      }, () => {
+        loadDefaults();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, []);
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();
@@ -348,12 +404,12 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
     const zoomBucket = getZoomBucket(currentZoom);
     const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
-    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize||DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}`;
+    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize||DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}-${marker.assignments?.length || 0}`;
     if (!iconsByMarker.current[key]) {
-      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited, currentZoom, effectiveAdminSizing);
+      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited, currentZoom, effectiveAdminSizing, defaultMarkers.assigned, defaultMarkers.unassigned);
     }
     return iconsByMarker.current[key];
-  }, [isFavorite, currentZoom, isAdminView, applyVisitorSizing]);
+  }, [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers]);
 
   // Clean up stale cache entries when markers change to prevent memory leaks
   useEffect(() => {

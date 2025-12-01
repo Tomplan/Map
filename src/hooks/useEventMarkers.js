@@ -130,7 +130,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           if (marker.id < 1000) {
             // Booth markers: use company assignment data
             const primaryAssignment = assignments[0] || {};
-            const hasAssignment = !!primaryAssignment.companyId;
 
             contentData = {
               name: primaryAssignment.name,
@@ -141,39 +140,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               assignmentId: primaryAssignment.assignmentId,
               company_translations: primaryAssignment.company_translations,
             };
-
-            // Apply global defaults based on assignment status
-            // Defaults are applied first, then individual marker values override them
-            const defaults = hasAssignment ? assignedDefaults : unassignedDefaults;
-
-            // Debug logging for marker coloring
-            if (process.env.NODE_ENV !== 'production') {
-              console.debug(`[Marker ${marker.id}] hasAssignment: ${hasAssignment}, using ${hasAssignment ? 'assigned' : 'unassigned'} defaults`);
-              console.debug(`[Marker ${marker.id}] default iconUrl: ${defaults.appearance.iconUrl}`);
-            }
-
-            // Merge appearance defaults (individual marker values take precedence)
-            const mergedAppearance = {
-              ...defaults.appearance,
-              ...appearance, // Individual marker values override defaults
-            };
-
-            // Always set iconUrl based on assignment status (dynamic colors)
-            if (hasAssignment) {
-              mergedAppearance.iconUrl = assignedDefaults.appearance.iconUrl;
-            } else {
-              mergedAppearance.iconUrl = unassignedDefaults.appearance.iconUrl;
-            }
-
-            // Merge core defaults (for rectangles, etc.)
-            const mergedCore = {
-              ...defaults.core,
-              ...marker, // Individual marker values override defaults
-            };
-
-            // Update marker with merged defaults
-            Object.assign(marker, mergedCore);
-            Object.assign(appearance, mergedAppearance);
 
             // If this marker has a company assignment, get subscription data for admin fields
             if (primaryAssignment.companyId) {
