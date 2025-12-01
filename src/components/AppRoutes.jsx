@@ -14,6 +14,7 @@ const ResetPassword = lazy(() => import('./ResetPassword'));
 const AdminLogin = lazy(() => import('./AdminLogin'));
 const StorageTestPage = lazy(() => import('./StorageTestPage'));
 const HomePage = lazy(() => import('./HomePage'));
+const ExcelImportExportDemo = lazy(() => import('./ExcelImportExport'));
 const ExhibitorListView = lazy(() => import('./ExhibitorListView'));
 const EventSchedule = lazy(() => import('./EventSchedule'));
 const AdminLayout = lazy(() => import('./AdminLayout'));
@@ -82,6 +83,16 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
                 markersState={markersState}
                 selectedYear={selectedYear}
               />
+            </Suspense>
+          </VisitorLayout>
+        }
+      />
+      <Route
+        path="/dev/excel"
+        element={
+          <VisitorLayout>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+              <ExcelImportExportDemo />
             </Suspense>
           </VisitorLayout>
         }
