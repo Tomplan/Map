@@ -11,10 +11,36 @@ import { createClient } from '@supabase/supabase-js'
 let env = {}
 if (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Object.keys(globalThis.__SUPABASE_CONFIG__).length) {
   env = globalThis.__SUPABASE_CONFIG__
+} else if (typeof import.meta !== 'undefined' && import.meta.env) {
+  // Use Vite's import.meta.env for browser environment
+  env = import.meta.env
+  // Also check for explicitly defined variables
+  if (typeof globalThis.__VITE_SUPABASE_URL__ !== 'undefined') {
+    env.VITE_SUPABASE_URL = globalThis.__VITE_SUPABASE_URL__
+    env.VITE_SUPABASE_ANON_KEY = globalThis.__VITE_SUPABASE_ANON_KEY__
+    env.VITE_ADMIN_EMAIL = globalThis.__VITE_ADMIN_EMAIL__
+    env.VITE_ADMIN_PASSWORD = globalThis.__VITE_ADMIN_PASSWORD__
+  }
 } else if (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) {
   env = process.env
 } else {
   env = {}
+}
+
+// helpful runtime debug: show where we sourced the env values from
+const envSource = (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Object.keys(globalThis.__SUPABASE_CONFIG__).length)
+  ? 'globalThis.__SUPABASE_CONFIG__'
+  : (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) ? 'process.env' : 'none'
+
+// Avoid noisy logs in tests; debug in browser/dev to help investigate missing creds.
+if (!((typeof process !== 'undefined' && process.env && (process.env.JEST_WORKER_ID !== undefined || process.env.NODE_ENV === 'test')))) {
+  try {
+    const urlPresent = !!env.VITE_SUPABASE_URL
+    const keyPresent = !!env.VITE_SUPABASE_ANON_KEY
+    console.debug(`[supabaseClient] env source=${envSource} url=${urlPresent} anonKey=${keyPresent}`)
+  } catch (e) {
+    // swallow logging failures
+  }
 }
 
 const supabaseUrl = env.VITE_SUPABASE_URL
@@ -62,7 +88,7 @@ if (isTestEnv) {
     //
     // VITE_SUPABASE_URL=https://xxxx.supabase.co
     // VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
-    console.warn('Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Falling back to a non-operational supabase client.');
+    console.warn('Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Falling back to a non-operational supabase client. (env source: ' + envSource + ')');
 
     // Minimal graceful fallback used at runtime when configured values are missing
     const chainable = () => {
@@ -90,9 +116,12 @@ if (isTestEnv) {
         // Provide modern supabase-js methods used by app UI. When missing
         // runtime credentials are present we keep these no-op and return
         // informative errors so callers can handle the situation gracefully.
-        signInWithPassword: async function () { return { data: null, error: new Error('Supabase auth not configured') } },
+        signInWithPassword: async function () {
+          console.warn('Supabase auth called but Supabase is not configured. Returning no-op error from signInWithPassword.');
+          return { data: null, error: new Error('Supabase auth not configured') }
+        },
         // Some older call sites use `signIn` historically; keep an alias
-        signIn: async function () { return { data: null, error: new Error('Supabase auth not configured') } },
+        signIn: async function () { console.warn('Supabase auth.signIn called but Supabase is not configured.'); return { data: null, error: new Error('Supabase auth not configured') } },
       },
     }
 
@@ -111,6 +140,18 @@ if (isTestEnv) {
     detectSessionInUrl: true,
   },
   });
+
+    // Expose a dev-only global for interactive debugging in the browser
+    // so developers can run `window.__supabase_client__` in DevTools.
+    // Only expose when not running tests.
+    if (!isTestEnv && typeof globalThis !== 'undefined') {
+      try {
+        globalThis.__supabase_client__ = supabase
+        console.debug('[supabaseClient] exposed globalThis.__supabase_client__ for interactive debugging')
+      } catch (e) {
+        // ignore failures to set global
+      }
+    }
   }
 }
 
