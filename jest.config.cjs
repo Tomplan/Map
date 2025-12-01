@@ -6,6 +6,7 @@ module.exports = {
   },
   transformIgnorePatterns: ['/node_modules/(?!react-leaflet|leaflet)/'],
   moduleFileExtensions: ['js', 'jsx'],
+  setupFilesAfterEnv: ['<rootDir>/src/setupTests.js'],
   moduleNameMapper: {
     '\\.(svg|png|jpg|jpeg|gif|webp|avif)$': '<rootDir>/__mocks__/fileMock.js',
     '\\.(css|less|sass|scss)$': '<rootDir>/__mocks__/fileMock.js',

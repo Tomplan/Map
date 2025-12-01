@@ -13,6 +13,8 @@ jest.mock('../../../supabaseClient', () => ({
     from: (table) => ({
       select: () => ({ in: () => Promise.resolve({ data: [] }) }),
     }),
+    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+    removeChannel: () => true,
   },
 }));
 
@@ -47,8 +49,10 @@ describe('MapManagement glyphAnchor edit UI', () => {
 
     render(<MapManagement markersState={markers} setMarkersState={setMarkersState} updateMarker={updateMarker} selectedYear={2025} />);
 
-    // Select the marker list item (uses glyph if present)
-    const button = await screen.findByRole('button', { name: /A|Marker 5/i });
+    // Select the marker list item by ID text and then click the surrounding button
+    const idNode = await screen.findByText(/ID:\s*5/i);
+    const button = idNode.closest('button');
+    expect(button).toBeTruthy();
     fireEvent.click(button);
 
     // Click the Edit button

@@ -20,8 +20,10 @@ jest.mock('react-i18next', () => ({
 jest.mock('../../supabaseClient', () => ({
   supabase: {
     from: (table) => ({
-      select: () => ({ eq: () => Promise.resolve({ count: table === 'assignments' ? 99 : (table === 'event_subscriptions' ? 63 : 0) }) }),
+      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { count: table === 'assignment_counts' ? 99 : (table === 'subscription_counts' ? 63 : 0) }, error: null }) }) }),
     }),
+    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+    removeChannel: () => true,
   },
 }));
 

@@ -41,10 +41,12 @@ jest.mock('../../supabaseClient', () => ({
   supabase: {
     from: (table) => ({
       select: () => ({
-        gt: () => Promise.resolve({ count: table.includes('markers_core') ? 10 : 0 }),
-        eq: () => Promise.resolve({ count: table === 'assignments' ? 12 : 0 }),
+        gt: () => ({ single: () => Promise.resolve({ data: { count: table.includes('markers_core') ? 10 : 0 }, error: null }) }),
+        eq: () => ({ single: () => Promise.resolve({ data: { count: table === 'assignments' ? 12 : 0 }, error: null }) }),
       }),
     }),
+    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
+    removeChannel: () => true,
   },
 }));
 
