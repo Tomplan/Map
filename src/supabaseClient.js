@@ -89,6 +89,11 @@ if (isTestEnv) {
       auth: {
         getSession: async function () { return { data: { session: null }, error: null } },
         onAuthStateChange: function (cb) { return { data: { subscription: { unsubscribe() {} } } } },
+        // Provide modern supabase-js methods used by app UI. When missing
+        // runtime credentials are present we keep these no-op and return
+        // informative errors so callers can handle the situation gracefully.
+        signInWithPassword: async function () { return { data: null, error: new Error('Supabase auth not configured') } },
+        // Some older call sites use `signIn` historically; keep an alias
         signIn: async function () { return { data: null, error: new Error('Supabase auth not configured') } },
       },
     }

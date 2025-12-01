@@ -103,7 +103,11 @@ const supabase = {
     }
   },
   auth: {
-    signIn: async () => ({ data: null, error: null })
+    signIn: async () => ({ data: null, error: null }),
+    // Also support the newer supabase auth method used in app code
+    signInWithPassword: async (payload) => ({ data: { user: null, session: null }, error: null }),
+    getSession: async () => ({ data: { session: null }, error: null }),
+    onAuthStateChange: (_cb) => ({ data: { subscription: { unsubscribe() {} } } }),
   }
 }
 
