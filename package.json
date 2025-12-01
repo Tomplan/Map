@@ -54,7 +54,8 @@
     "react-leaflet": "^5.0.0",
     "react-leaflet-markercluster": "^5.0.0-rc.0",
     "react-markdown": "^10.1.0",
-    "react-router-dom": "^7.9.4"
+    "react-router-dom": "^7.9.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.28.5",
