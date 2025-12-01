@@ -151,9 +151,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               ...appearance, // Individual marker values override defaults
             };
 
-            // Override default blue icon for unassigned markers
-            if (mergedAppearance.iconUrl === 'glyph-marker-icon-blue.svg' && !hasAssignment) {
-              mergedAppearance.iconUrl = 'glyph-marker-icon-gray.svg';
+            // Override assigned default icon for unassigned markers
+            if (mergedAppearance.iconUrl === assignedDefaults.appearance.iconUrl && !hasAssignment) {
+              mergedAppearance.iconUrl = unassignedDefaults.appearance.iconUrl;
             }
 
             // Merge core defaults (for rectangles, etc.)
