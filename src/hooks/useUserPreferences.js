@@ -334,6 +334,14 @@ export default function useUserPreferences() {
       }, (payload) => {
         // Filter for this user only
         if (payload.new?.user_id === userId) {
+          // Ignore updates made by this same user to prevent infinite loops
+          if (payload.new.updated_by === userId && payload.new.row_version === currentVersionRef.current + 1) {
+            console.log('useUserPreferences: Ignoring self-triggered update for user', userId);
+            // Update our version reference but don't trigger state update
+            currentVersionRef.current = payload.new.row_version;
+            return;
+          }
+          
           console.log('useUserPreferences: Real-time update received for user', userId, payload.new);
           currentVersionRef.current = payload.new.row_version;
           setPreferences(payload.new);
