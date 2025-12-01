@@ -34,6 +34,10 @@ export default function SidebarTile({
   labelClass = 'text-sm font-medium text-left',
   ariaLabel
 }) {
+  // Debug logging for badge changes
+  React.useEffect(() => {
+    console.log(`SidebarTile "${label}" - badge changed to:`, badge);
+  }, [badge, label]);
   // Unified rendering: always mount label + badge so we can animate them
   // with transform and opacity without remounting nodes. This avoids
   // clipping/mount delay when toggling the sidebar and yields a smoother
