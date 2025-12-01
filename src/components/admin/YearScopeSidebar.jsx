@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
-import useEventSubscriptions from '../../hooks/useEventSubscriptions';
-import useAssignments from '../../hooks/useAssignments';
+import { supabase } from '../../supabaseClient';
 import SidebarTile from './SidebarTile';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
@@ -14,14 +13,71 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
     return (!v || v === key) ? fallback : v;
   };
 
-  // Use real-time hooks for counts
-  const { subscriptions, loading: subscriptionsLoading } = useEventSubscriptions(selectedYear);
-  const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
+  const [counts, setCounts] = useState({ subscriptions: 0, assignments: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // Load counts function
+  const loadCounts = async () => {
+    try {
+      setLoading(true);
+      const [subsRes, assignRes] = await Promise.all([
+        supabase.from('event_subscriptions').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
+        supabase.from('assignments').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
+      ]);
+
+      setCounts({
+        subscriptions: subsRes?.count ?? 0,
+        assignments: assignRes?.count ?? 0,
+      });
+    } catch (error) {
+      console.error('Error loading sidebar counts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load counts on mount and year change
+  useEffect(() => {
+    loadCounts();
+  }, [selectedYear]);
+
+  // Real-time subscriptions
+  useEffect(() => {
+    const subsChannel = supabase
+      .channel(`sidebar-subscriptions-${selectedYear}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'event_subscriptions',
+        filter: `event_year=eq.${selectedYear}`,
+      }, () => {
+        console.log('Sidebar: Subscriptions changed, reloading counts');
+        loadCounts();
+      })
+      .subscribe();
+
+    const assignChannel = supabase
+      .channel(`sidebar-assignments-${selectedYear}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'assignments',
+        filter: `event_year=eq.${selectedYear}`,
+      }, () => {
+        console.log('Sidebar: Assignments changed, reloading counts');
+        loadCounts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subsChannel);
+      supabase.removeChannel(assignChannel);
+    };
+  }, [selectedYear]);
 
   // Debug logging
   console.log('YearScopeSidebar - selectedYear:', selectedYear);
-  console.log('YearScopeSidebar - subscriptions:', subscriptions?.length, 'loading:', subscriptionsLoading);
-  console.log('YearScopeSidebar - assignments:', assignments?.length, 'loading:', assignmentsLoading);
+  console.log('YearScopeSidebar - counts:', counts, 'loading:', loading);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
 
@@ -46,18 +102,18 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           to="/admin/subscriptions"
           icon={mdiCalendarCheck}
           label={tSafe('adminNav.eventSubscriptions','Subscriptions')}
-          badge={subscriptionsLoading ? '...' : subscriptions.length.toString()}
+          badge={loading ? '...' : counts.subscriptions.toString()}
           isActive={location.pathname === '/admin/subscriptions'}
-          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${subscriptionsLoading ? '...' : subscriptions.length}`}
+          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
         />
 
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
           label={tSafe('adminNav.assignments','Assignments')}
-          badge={assignmentsLoading ? '...' : assignments.length.toString()}
+          badge={loading ? '...' : counts.assignments.toString()}
           isActive={location.pathname === '/admin/assignments'}
-          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${assignmentsLoading ? '...' : assignments.length}`}
+          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
         />
 
         <SidebarTile
