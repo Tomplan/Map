@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath } from '../utils/getLogoPath';
 import LanguageToggle from './LanguageToggle';
+import useEventSubscriptions from '../hooks/useEventSubscriptions';
 
 /**
  * HomePage - Landing page for event visitors
@@ -14,6 +15,9 @@ export default function HomePage({ selectedYear, branding }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
+
+  // Get subscribed companies count for the selected year
+  const { subscriptions, loading: subscriptionsLoading } = useEventSubscriptions(selectedYear);
 
   // Event info from actual website
   const eventInfo = {
@@ -58,7 +62,9 @@ export default function HomePage({ selectedYear, branding }) {
           {/* Quick Stats - Placeholder */}
           <div className="flex justify-center gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">67</div>
+              <div className="text-2xl font-bold text-orange-600">
+                {subscriptionsLoading ? '...' : subscriptions.length}
+              </div>
               <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
             </div>
             <div className="text-center">

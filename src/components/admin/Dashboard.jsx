@@ -46,7 +46,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
         setCounts({
           markers: markersRes.count ?? 0,
-          companies: companiesRes.count ?? 0,
+          companies: (companiesRes.count ?? 0) - 1, // All companies minus organization
           assignments: assignmentsRes.count ?? 0,
         });
       } catch (error) {
