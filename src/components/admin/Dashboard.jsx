@@ -13,8 +13,8 @@ import {
   mdiCircleMultiple
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
+import { useSubscriptionCount, useAssignmentCount, useMarkerCount, useCompanyCount } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
-import useAssignments from '../../hooks/useAssignments';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
 
@@ -24,44 +24,25 @@ import YearScopeBadge from './YearScopeBadge';
  */
 export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
-  const { subscriptions, loading } = useEventSubscriptions(selectedYear);
-  const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
+  // Use real-time count hooks
+  const { count: subscriptionCount, loading } = useSubscriptionCount(selectedYear);
+  const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
+  const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
+  const { count: companyCount, loading: companiesLoading } = useCompanyCount();
+
+  // Keep subscriptions hook for totals calculation (meal counts, coins)
+  const { subscriptions } = useEventSubscriptions(selectedYear);
 
   // Debug logging
   console.log('Dashboard - selectedYear:', selectedYear);
-  console.log('Dashboard - subscriptions:', subscriptions?.length, 'loading:', loading);
-  console.log('Dashboard - assignments:', assignments?.length, 'loading:', assignmentsLoading);
-  const [counts, setCounts] = useState({
-    markers: null,
-    companies: null,
-  });
+  console.log('Dashboard - subscriptionCount:', subscriptionCount, 'loading:', loading);
+  console.log('Dashboard - assignmentCount:', assignmentCount, 'loading:', assignmentsLoading);
+  console.log('Dashboard - markerCount:', markerCount, 'loading:', markersLoading);
+  console.log('Dashboard - companyCount:', companyCount, 'loading:', companiesLoading);
+
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(true);
-
-  // Fetch counts from Supabase
-  useEffect(() => {
-    async function fetchCounts() {
-      setStatsLoading(true);
-      try {
-        const [markersRes, companiesRes] = await Promise.all([
-          supabase.from('markers_core').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear).lt('id', 1000),
-          supabase.from('companies').select('id', { count: 'exact', head: true }),
-        ]);
-
-        setCounts({
-          markers: markersRes.count ?? 0,
-          companies: (companiesRes.count ?? 0) - 1, // All companies minus organization
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard counts:', error);
-      } finally {
-        setStatsLoading(false);
-      }
-    }
-
-    fetchCounts();
-  }, [selectedYear]);
+  const statsLoading = markersLoading || companiesLoading;
 
   // Calculate meal and coin totals
   const totals = useMemo(() => {
@@ -85,25 +66,25 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const stats = [
     {
       label: t('dashboard.totalAssignableBooths'),
-      value: statsLoading ? '...' : (counts.markers?.toString() ?? '-'),
+      value: markersLoading ? '...' : markerCount.toString(),
       icon: mdiMapMarker,
       color: 'blue',
     },
     {
       label: t('dashboard.companies'),
-      value: statsLoading ? '...' : (counts.companies?.toString() ?? '-'),
+      value: companiesLoading ? '...' : (companyCount - 1).toString(), // All companies minus organization
       icon: mdiDomain,
       color: 'green',
     },
     {
       label: `${selectedYear} ${t('dashboard.subscriptions')}`,
-      value: loading ? '...' : subscriptions.length.toString(),
+      value: loading ? '...' : subscriptionCount.toString(),
       icon: mdiCalendar,
       color: 'orange',
     },
     {
       label: `${selectedYear} ${t('dashboard.assignments')}`,
-      value: assignmentsLoading ? '...' : assignments.length.toString(),
+      value: assignmentsLoading ? '...' : assignmentCount.toString(),
       icon: mdiClipboardCheck,
       color: 'purple',
     },

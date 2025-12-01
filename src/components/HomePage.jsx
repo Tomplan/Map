@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath } from '../utils/getLogoPath';
 import LanguageToggle from './LanguageToggle';
-import useEventSubscriptions from '../hooks/useEventSubscriptions';
+import { useSubscriptionCount } from '../hooks/useCountViews';
 
 /**
  * HomePage - Landing page for event visitors
@@ -17,7 +17,7 @@ export default function HomePage({ selectedYear, branding }) {
   const { organizationLogo } = useOrganizationLogo();
 
   // Get subscribed companies count for the selected year
-  const { subscriptions, loading: subscriptionsLoading } = useEventSubscriptions(selectedYear);
+  const { count: exhibitorCount, loading: subscriptionsLoading } = useSubscriptionCount(selectedYear);
 
   // Event info from actual website
   const eventInfo = {
@@ -63,7 +63,7 @@ export default function HomePage({ selectedYear, branding }) {
           <div className="flex justify-center gap-6">
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {subscriptionsLoading ? '...' : subscriptions.length}
+                {subscriptionsLoading ? '...' : exhibitorCount}
               </div>
               <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
             </div>
