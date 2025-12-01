@@ -194,24 +194,12 @@ CREATE TRIGGER trigger_company_count
   AFTER INSERT OR DELETE ON companies
   FOR EACH ROW EXECUTE FUNCTION update_company_count();
 
--- Enable Row Level Security (optional, but good practice)
-ALTER TABLE subscription_counts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE assignment_counts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE marker_counts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE company_counts ENABLE ROW LEVEL SECURITY;
-
--- Create policies for authenticated users
-CREATE POLICY "Allow authenticated users to read subscription_counts" ON subscription_counts
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Allow authenticated users to read assignment_counts" ON assignment_counts
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Allow authenticated users to read marker_counts" ON marker_counts
-  FOR SELECT TO authenticated USING (true);
-
-CREATE POLICY "Allow authenticated users to read company_counts" ON company_counts
-  FOR SELECT TO authenticated USING (true);
+-- Disable Row Level Security on count tables
+-- These are internal tables accessed by triggers, not directly by users
+ALTER TABLE subscription_counts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE assignment_counts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE marker_counts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE company_counts DISABLE ROW LEVEL SECURITY;
 
 -- Grant permissions
 GRANT SELECT ON subscription_counts TO authenticated;
