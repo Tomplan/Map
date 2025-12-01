@@ -139,11 +139,22 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
             // Defaults are applied first, then individual marker values override them
             const defaults = hasAssignment ? assignedDefaults : unassignedDefaults;
 
+            // Debug logging for marker coloring
+            if (process.env.NODE_ENV !== 'production') {
+              console.debug(`[Marker ${marker.id}] hasAssignment: ${hasAssignment}, using ${hasAssignment ? 'assigned' : 'unassigned'} defaults`);
+              console.debug(`[Marker ${marker.id}] default iconUrl: ${defaults.appearance.iconUrl}`);
+            }
+
             // Merge appearance defaults (individual marker values take precedence)
             const mergedAppearance = {
               ...defaults.appearance,
               ...appearance, // Individual marker values override defaults
             };
+
+            // Override default blue icon for unassigned markers
+            if (mergedAppearance.iconUrl === 'glyph-marker-icon-blue.svg' && !hasAssignment) {
+              mergedAppearance.iconUrl = 'glyph-marker-icon-gray.svg';
+            }
 
             // Merge core defaults (for rectangles, etc.)
             const mergedCore = {
