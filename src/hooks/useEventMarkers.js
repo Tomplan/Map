@@ -45,15 +45,16 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       try {
         // Fetch all data in parallel, including defaults for booth markers
         // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
-        const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes] = await Promise.all([
+        const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes, defaultsRes] = await Promise.all([
           supabase.from('markers_core').select('*').or(`event_year.eq.${targetYear},event_year.eq.0`),
-          supabase.from('markers_appearance').select('*').or(`event_year.eq.${targetYear},event_year.eq.0`),
+          supabase.from('markers_appearance').select('*').eq('event_year', targetYear),
           supabase.from('markers_content').select('*').eq('event_year', targetYear),
           supabase.from('assignments').select(`
             *,
             company:companies(id, name, logo, website, info, company_translations(language_code, info))
           `).eq('event_year', targetYear),
           supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
+          supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
         ]);
 
         if (coreRes.error) throw coreRes.error;
@@ -62,9 +63,15 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         if (assignmentsRes.error) throw assignmentsRes.error;
         if (subscriptionsRes.error) throw subscriptionsRes.error;
 
+
         // Build lookup maps
         const appearanceById = {};
         for (const row of appearanceRes.data || []) {
+          if (row && row.id) appearanceById[row.id] = row;
+        }
+
+        // Ensure defaults are loaded (override any existing)
+        for (const row of defaultsRes.data || []) {
           if (row && row.id) appearanceById[row.id] = row;
         }
 
@@ -151,8 +158,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
               ...appearance, // Individual marker values override defaults
             };
 
-            // Override assigned default icon for unassigned markers
-            if (mergedAppearance.iconUrl === assignedDefaults.appearance.iconUrl && !hasAssignment) {
+            // Always set iconUrl based on assignment status (dynamic colors)
+            if (hasAssignment) {
+              mergedAppearance.iconUrl = assignedDefaults.appearance.iconUrl;
+            } else {
               mergedAppearance.iconUrl = unassignedDefaults.appearance.iconUrl;
             }
 
