@@ -245,6 +245,21 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
   const isSpecialMarker = selectedMarker && selectedMarker.id >= 1000;
   const isBoothMarker = selectedMarker && selectedMarker.id > 0 && selectedMarker.id < 1000;
 
+  // Get current default color names dynamically
+  const getDefaultColorName = (hasAssignment) => {
+    const defaultMarker = defaultMarkers.find(d => d.id === (hasAssignment ? -1 : -2));
+    if (!defaultMarker?.iconUrl) return hasAssignment ? 'Blue (assigned)' : 'Gray (unassigned)';
+
+    // Extract color from icon filename (e.g., 'glyph-marker-icon-red.svg' -> 'Red')
+    const colorMatch = defaultMarker.iconUrl.match(/glyph-marker-icon-(\w+)\.svg/);
+    if (colorMatch) {
+      const color = colorMatch[1].charAt(0).toUpperCase() + colorMatch[1].slice(1);
+      return `${color} (${hasAssignment ? 'assigned' : 'unassigned'})`;
+    }
+
+    return hasAssignment ? 'Blue (assigned)' : 'Gray (unassigned)';
+  };
+
   return (
     <ProtectedSection requiredRole={['super_admin', 'system_manager']}>
       <div className="bg-white rounded-lg shadow">
@@ -470,12 +485,13 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                     isDefaultMarker={isDefaultMarker}
                     isSpecialMarker={isSpecialMarker}
                     isBoothMarker={isBoothMarker}
+                    getDefaultColorName={getDefaultColorName}
                     onChange={handleFieldChange}
                     onSave={handleSave}
                     onCancel={handleCancelEdit}
                   />
                 ) : (
-                  <ViewPanel marker={selectedMarker} isSpecialMarker={isSpecialMarker} isDefaultMarker={isDefaultMarker} isBoothMarker={isBoothMarker} />
+                  <ViewPanel marker={selectedMarker} isSpecialMarker={isSpecialMarker} isDefaultMarker={isDefaultMarker} isBoothMarker={isBoothMarker} getDefaultColorName={getDefaultColorName} />
                 )}
               </div>
             )}
@@ -487,7 +503,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 }
 
 /** View Panel - Read-only display */
-function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker }) {
+function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker, getDefaultColorName }) {
   return (
     <div className="space-y-6">
       {isDefaultMarker && (
@@ -524,12 +540,12 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker }) 
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+              <div className="w-8 h-8 bg-gray-200 rounded flex items-center justify-center text-[9px] text-gray-600 font-medium leading-none">
                 Default
               </div>
               <span className="text-xs text-blue-600 font-medium">
                 {isBoothMarker
-                  ? (marker.assignments?.length > 0 ? 'Red (assigned)' : 'Gray (unassigned)')
+                  ? getDefaultColorName(marker.assignments?.length > 0)
                   : 'Based on marker type'
                 }
               </span>
@@ -568,7 +584,7 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker }) 
 }
 
 /** Edit Panel - Editable fields */
-function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, onChange, onSave, onCancel }) {
+function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, getDefaultColorName, onChange, onSave, onCancel }) {
   return (
     <div className="space-y-6">
       {isDefaultMarker && (
@@ -599,14 +615,14 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, on
             {/* Use Default Color option */}
             <button
               onClick={() => onChange('iconUrl', null)}
-              className={`p-2 border-2 rounded-lg transition-all ${
+              className={`w-10 h-10 border-2 rounded-lg transition-all flex items-center justify-center ${
                 !marker.iconUrl
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-400'
               }`}
               title="Use default color based on assignment status"
             >
-              <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-xs text-gray-600 font-medium">
+              <div className="text-[9px] text-gray-600 font-medium leading-none">
                 Default
               </div>
             </button>
@@ -627,7 +643,7 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, on
           </div>
           {!marker.iconUrl ? (
             <p className="text-xs text-gray-600 mt-1">
-              Using default color: {isBoothMarker ? (marker.assignments?.length > 0 ? 'Red (assigned)' : 'Gray (unassigned)') : 'Based on marker type'}
+              Using default color: {isBoothMarker ? getDefaultColorName(marker.assignments?.length > 0) : 'Based on marker type'}
             </p>
           ) : (
             <p className="text-xs text-gray-600 mt-1">

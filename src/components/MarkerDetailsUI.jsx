@@ -11,7 +11,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useTranslation } from 'react-i18next';
 
 // --- Tooltip for both cluster + special markers ---
-const MarkerTooltipContent = ({ marker, organizationLogo }) => {
+const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true }) => {
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
@@ -26,7 +26,7 @@ const MarkerTooltipContent = ({ marker, organizationLogo }) => {
         </div>
       )}
       <div className="flex flex-col min-w-0">
-        {marker.glyph && (
+        {showBoothNumber && marker.glyph && (
           <div className="text-xs font-semibold text-gray-700">
             Booth {marker.glyph}
           </div>
@@ -46,7 +46,7 @@ const MarkerTooltipContent = ({ marker, organizationLogo }) => {
 };
 
 // --- Desktop Popup with scrollable content ---
-const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
+const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }) => {
   const hasCompanyData = marker.name || marker.companyId;
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const translatedInfo = useTranslatedCompanyInfo(marker);
@@ -96,7 +96,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
           ) : (
             <div className="text-base font-semibold text-gray-500 italic mb-1">Unassigned Booth</div>
           )}
-          {marker.glyph && (
+          {showBoothNumber && marker.glyph && (
             <div className="text-sm text-gray-700 mb-2">
               Booth {marker.glyph}
             </div>
@@ -153,7 +153,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo }) => {
 };
 
 // --- Mobile Popup + Bottom Sheet pair ---
-const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
+const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumber = true }) => {
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
@@ -173,7 +173,7 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
         ) : (
           <div className="font-semibold text-gray-500 italic text-sm">Unassigned Booth</div>
         )}
-        {marker.glyph && (
+        {showBoothNumber && marker.glyph && (
           <div className="text-xs text-gray-700 mb-2">
             Booth {marker.glyph}
           </div>
@@ -192,7 +192,7 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo }) => {
 };
 
 // --- Combined helper ---
-export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => {
+export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo, showBoothNumber = true }) => {
   // Only show tooltip if marker has meaningful content (glyph or name)
   // This prevents showing empty/incomplete tooltips on first hover
   const hasTooltipContent = marker && (
@@ -206,13 +206,13 @@ export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo }) => 
         <>
           {hasTooltipContent && (
             <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
-              <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} />
+              <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />
             </Tooltip>
           )}
-          <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} />
+          <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />
         </>
       )}
-      {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} />}
+      {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />}
     </>
   );
 };

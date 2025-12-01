@@ -236,6 +236,7 @@ function EventSpecialMarkers({
                 marker={marker}
                 isMobile={isMobile}
                 organizationLogo={organizationLogo}
+                showBoothNumber={false}
                 onMoreInfo={() => {
                   setSelectedMarker(marker);
                 }}
