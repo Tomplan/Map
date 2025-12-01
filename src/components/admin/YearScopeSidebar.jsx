@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
-import { supabase } from '../../supabaseClient';
+import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useAssignments from '../../hooks/useAssignments';
 import SidebarTile from './SidebarTile';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
@@ -12,37 +13,10 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
     const v = t(key);
     return (!v || v === key) ? fallback : v;
   };
-  const [counts, setCounts] = useState({ subscriptions: '-', assignments: '-', program: '-' });
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let mounted = true;
-
-    async function fetchCounts() {
-      setLoading(true);
-      try {
-        const [subsRes, assignRes] = await Promise.all([
-          supabase.from('event_subscriptions').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
-          supabase.from('assignments').select('id', { count: 'exact', head: true }).eq('event_year', selectedYear),
-        ]);
-
-        if (!mounted) return;
-        setCounts({
-          subscriptions: subsRes?.count ?? '-',
-          assignments: assignRes?.count ?? '-',
-          program: '-',
-        });
-      } catch (e) {
-        console.error('Error fetching sidebar counts', e);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-
-    fetchCounts();
-
-    return () => { mounted = false; };
-  }, [selectedYear]);
+  // Use real-time hooks for counts
+  const { subscriptions, loading: subscriptionsLoading } = useEventSubscriptions(selectedYear);
+  const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
 
@@ -67,18 +41,18 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           to="/admin/subscriptions"
           icon={mdiCalendarCheck}
           label={tSafe('adminNav.eventSubscriptions','Subscriptions')}
-          badge={loading ? '...' : counts.subscriptions}
+          badge={subscriptionsLoading ? '...' : subscriptions.length.toString()}
           isActive={location.pathname === '/admin/subscriptions'}
-          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${loading ? '...' : counts.subscriptions}`}
+          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${subscriptionsLoading ? '...' : subscriptions.length}`}
         />
 
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
           label={tSafe('adminNav.assignments','Assignments')}
-          badge={loading ? '...' : counts.assignments}
+          badge={assignmentsLoading ? '...' : assignments.length.toString()}
           isActive={location.pathname === '/admin/assignments'}
-          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${loading ? '...' : counts.assignments}`}
+          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${assignmentsLoading ? '...' : assignments.length}`}
         />
 
         <SidebarTile
