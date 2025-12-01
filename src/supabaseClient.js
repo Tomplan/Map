@@ -33,6 +33,7 @@ if (isTestEnv) {
     const api = {
     select() { return api },
     in() { return api },
+    or() { return api },
     eq() { return api },
       order() { return api },
       limit() { return api },
@@ -70,6 +71,7 @@ if (isTestEnv) {
       const api = {
         select() { return api },
         in() { return api },
+        or() { return api },
         eq() { return api },
         order() { return api },
         limit() { return api },

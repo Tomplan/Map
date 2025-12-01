@@ -29,12 +29,14 @@ function makeChain(table) {
   const chain = {
     select() { return chain },
     in() { return chain },
+    or() { return chain },
     order() { return chain },
     limit() { return chain },
     // eq() is chainable; .single() or .then() will return configured values
     eq() { return chain },
     // sometimes tests call gt().single() or similar
     gt() { return chain },
+    or() { return chain },
     single() {
       const payload = getQueryResponse(table, 'single') ?? getQueryResponse(table, 'eq') ?? getQueryResponse(table, 'select') ?? null
       return Promise.resolve({ data: payload, error: null })
