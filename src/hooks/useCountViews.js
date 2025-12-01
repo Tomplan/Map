@@ -27,7 +27,11 @@ export function useSubscriptionCount(eventYear) {
           .eq('event_year', eventYear)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading subscription count:', error);
+          throw error;
+        }
+        console.log(`Loaded subscription count for year ${eventYear}:`, data?.count || 0);
         setCount(data?.count || 0);
       } catch (err) {
         console.error('Error loading subscription count:', err);
@@ -86,7 +90,11 @@ export function useAssignmentCount(eventYear) {
           .eq('event_year', eventYear)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error loading assignment count:', error);
+          throw error;
+        }
+        console.log(`Loaded assignment count for year ${eventYear}:`, data?.count || 0);
         setCount(data?.count || 0);
       } catch (err) {
         console.error('Error loading assignment count:', err);
