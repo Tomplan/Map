@@ -3,20 +3,18 @@ import { createClient } from '@supabase/supabase-js'
 // Safely obtain Vite environment values when available, and fall back to
 // process.env for tests/Node. We avoid direct top-level `import.meta` usage so
 // Jest (CommonJS) doesn't fail parsing the file.
+// Prefer browser build-time env (Vite -> `import.meta.env`) when available.
+// Fall back to process.env for Node (tests/CI).
+// Prefer runtime-provided global bridge (set in `src/main.jsx` by Vite) so
+// this file avoids referencing `import.meta` directly (which confuses Jest
+// in some environments). Tests/Node can still provide values via process.env.
 let env = {}
-if (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) {
+if (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Object.keys(globalThis.__SUPABASE_CONFIG__).length) {
+  env = globalThis.__SUPABASE_CONFIG__
+} else if (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) {
   env = process.env
 } else {
-  try {
-    // Attempt to read import.meta.env at runtime (works inside Vite-built ESM).
-    // Use indirect eval so bundlers don't statically parse `import.meta` here.
-    // If this platform doesn't support `import.meta`, the eval will throw and
-    // we fall back to an empty object.
-    // eslint-disable-next-line no-eval
-    env = (0, eval)('import.meta.env') || {}
-  } catch (e) {
-    env = {}
-  }
+  env = {}
 }
 
 const supabaseUrl = env.VITE_SUPABASE_URL
