@@ -33,12 +33,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   // Keep subscriptions hook for totals calculation (meal counts, coins)
   const { subscriptions } = useEventSubscriptions(selectedYear);
 
-  // Debug logging
-  console.log('Dashboard - selectedYear:', selectedYear);
-  console.log('Dashboard - subscriptionCount:', subscriptionCount, 'loading:', loading);
-  console.log('Dashboard - assignmentCount:', assignmentCount, 'loading:', assignmentsLoading);
-  console.log('Dashboard - markerCount:', markerCount, 'loading:', markersLoading);
-  console.log('Dashboard - companyCount:', companyCount, 'loading:', companiesLoading);
 
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
