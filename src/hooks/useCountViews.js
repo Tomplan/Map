@@ -53,7 +53,8 @@ export function useSubscriptionCount(eventYear) {
         table: 'subscription_counts',
         filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('Subscription count table changed:', payload);
+        console.log('🔥 SUBSCRIPTION COUNT TABLE CHANGED:', payload);
+        console.log('🔥 Updating subscription count to:', payload.new?.count || 0);
         // Update local state directly from the payload
         if (payload.new) {
           setCount(payload.new.count);
@@ -61,9 +62,11 @@ export function useSubscriptionCount(eventYear) {
           setCount(0);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔥 Subscription status for subscription_counts:', status);
+      });
 
-    console.log('Subscribed to subscription_counts changes for year:', eventYear);
+    console.log('🔥 Subscribed to subscription_counts changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
@@ -120,7 +123,8 @@ export function useAssignmentCount(eventYear) {
         table: 'assignment_counts',
         filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('Assignment count table changed:', payload);
+        console.log('🔥 ASSIGNMENT COUNT TABLE CHANGED:', payload);
+        console.log('🔥 Updating assignment count to:', payload.new?.count || 0);
         // Update local state directly from the payload
         if (payload.new) {
           setCount(payload.new.count);
@@ -128,9 +132,11 @@ export function useAssignmentCount(eventYear) {
           setCount(0);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔥 Subscription status for assignment_counts:', status);
+      });
 
-    console.log('Subscribed to assignment_counts changes for year:', eventYear);
+    console.log('🔥 Subscribed to assignment_counts changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
