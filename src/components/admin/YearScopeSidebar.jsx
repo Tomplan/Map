@@ -18,6 +18,11 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   const { subscriptions, loading: subscriptionsLoading } = useEventSubscriptions(selectedYear);
   const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
 
+  // Debug logging
+  console.log('YearScopeSidebar - selectedYear:', selectedYear);
+  console.log('YearScopeSidebar - subscriptions:', subscriptions?.length, 'loading:', subscriptionsLoading);
+  console.log('YearScopeSidebar - assignments:', assignments?.length, 'loading:', assignmentsLoading);
+
   const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
 
   return (

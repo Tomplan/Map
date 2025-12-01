@@ -26,6 +26,11 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { subscriptions, loading } = useEventSubscriptions(selectedYear);
   const { assignments, loading: assignmentsLoading } = useAssignments(selectedYear);
+
+  // Debug logging
+  console.log('Dashboard - selectedYear:', selectedYear);
+  console.log('Dashboard - subscriptions:', subscriptions?.length, 'loading:', loading);
+  console.log('Dashboard - assignments:', assignments?.length, 'loading:', assignmentsLoading);
   const [counts, setCounts] = useState({
     markers: null,
     companies: null,
