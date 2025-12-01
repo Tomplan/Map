@@ -7,16 +7,10 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 // Mock EventMap to avoid map rendering
 jest.mock('../../EventMap/EventMap', () => () => (<div data-testid="event-map">map</div>));
 
-// Mock supabase for fetching defaults
-jest.mock('../../../supabaseClient', () => ({
-  supabase: {
-    from: (table) => ({
-      select: () => ({ in: () => Promise.resolve({ data: [] }) }),
-    }),
-    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
-    removeChannel: () => true,
-  },
-}));
+jest.mock('../../../supabaseClient');
+const { __setQueryResponse, __resetMocks } = require('../../../supabaseClient');
+
+beforeEach(() => { __resetMocks() });
 
 // Mock hooks that rely on auth/session
 jest.mock('../../../hooks/useUserRole', () => () => ({

@@ -16,16 +16,16 @@ jest.mock('react-i18next', () => ({
   } })
 }));
 
-// Mock supabase to provide counts
-jest.mock('../../supabaseClient', () => ({
-  supabase: {
-    from: (table) => ({
-      select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { count: table === 'assignment_counts' ? 99 : (table === 'subscription_counts' ? 63 : 0) }, error: null }) }) }),
-    }),
-    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
-    removeChannel: () => true,
-  },
-}));
+// Use centralized supabaseClient mock and configure responses for each test
+jest.mock('../../supabaseClient');
+const { __setQueryResponse, __resetMocks } = require('../../supabaseClient');
+
+beforeEach(() => {
+  __resetMocks();
+  // make subscription and assignment counts available to the hooks (configure eq -> single)
+  __setQueryResponse('subscription_counts', 'eq', { count: 63 });
+  __setQueryResponse('assignment_counts', 'eq', { count: 99 });
+});
 
 // Mock react-router-dom the same way other admin tests do so we avoid pulling
 // in router implementation (TextEncoder issues in jest env) and keep Link simple

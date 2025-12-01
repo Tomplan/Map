@@ -36,19 +36,15 @@ jest.mock('../../hooks/useEventSubscriptions', () => {
   }));
 });
 
-// Mock supabase client so fetchCounts doesn't throw
-jest.mock('../../supabaseClient', () => ({
-  supabase: {
-    from: (table) => ({
-      select: () => ({
-        gt: () => ({ single: () => Promise.resolve({ data: { count: table.includes('markers_core') ? 10 : 0 }, error: null }) }),
-        eq: () => ({ single: () => Promise.resolve({ data: { count: table === 'assignments' ? 12 : 0 }, error: null }) }),
-      }),
-    }),
-    channel: () => ({ on: () => ({ subscribe: () => ({}) }) }),
-    removeChannel: () => true,
-  },
-}));
+// Use centralized supabase mock and configure counts used by Dashboard fetches
+jest.mock('../../supabaseClient');
+const { __setQueryResponse, __resetMocks } = require('../../supabaseClient');
+
+beforeEach(() => {
+  __resetMocks();
+  __setQueryResponse('markers_core', 'select', { gt: () => ({ single: () => Promise.resolve({ data: { count: 10 }, error: null }) }) });
+  __setQueryResponse('assignment_counts', 'select', { eq: () => ({ single: () => Promise.resolve({ data: { count: 12 }, error: null }) }) });
+});
 
 // Mock react-router-dom to avoid pulling in router implementation (TextEncoder issues in jest env)
 jest.mock('react-router-dom', () => {
