@@ -31,7 +31,6 @@ export function useSubscriptionCount(eventYear) {
           console.error('Error loading subscription count:', error);
           throw error;
         }
-        console.log(`Loaded subscription count for year ${eventYear}:`, data?.count || 0);
         setCount(data?.count || 0);
       } catch (err) {
         console.error('Error loading subscription count:', err);
@@ -53,8 +52,6 @@ export function useSubscriptionCount(eventYear) {
         table: 'subscription_counts',
         filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('🔥 SUBSCRIPTION COUNT TABLE CHANGED:', payload);
-        console.log('🔥 Updating subscription count to:', payload.new?.count || 0);
         // Update local state directly from the payload
         if (payload.new) {
           setCount(payload.new.count);
@@ -62,11 +59,7 @@ export function useSubscriptionCount(eventYear) {
           setCount(0);
         }
       })
-      .subscribe((status) => {
-        console.log('🔥 Subscription status for subscription_counts:', status);
-      });
-
-    console.log('🔥 Subscribed to subscription_counts changes for year:', eventYear);
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -101,7 +94,6 @@ export function useAssignmentCount(eventYear) {
           console.error('Error loading assignment count:', error);
           throw error;
         }
-        console.log(`Loaded assignment count for year ${eventYear}:`, data?.count || 0);
         setCount(data?.count || 0);
       } catch (err) {
         console.error('Error loading assignment count:', err);
@@ -123,8 +115,6 @@ export function useAssignmentCount(eventYear) {
         table: 'assignment_counts',
         filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('🔥 ASSIGNMENT COUNT TABLE CHANGED:', payload);
-        console.log('🔥 Updating assignment count to:', payload.new?.count || 0);
         // Update local state directly from the payload
         if (payload.new) {
           setCount(payload.new.count);
@@ -132,11 +122,7 @@ export function useAssignmentCount(eventYear) {
           setCount(0);
         }
       })
-      .subscribe((status) => {
-        console.log('🔥 Subscription status for assignment_counts:', status);
-      });
-
-    console.log('🔥 Subscribed to assignment_counts changes for year:', eventYear);
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
@@ -188,7 +174,6 @@ export function useMarkerCount(eventYear) {
         schema: 'public',
         table: 'marker_counts'
       }, (payload) => {
-        console.log('Marker count changed:', payload);
         // Reload count when view changes
         loadCount();
       })
@@ -242,7 +227,6 @@ export function useCompanyCount() {
         schema: 'public',
         table: 'company_counts'
       }, (payload) => {
-        console.log('Company count changed:', payload);
         // Reload count when view changes
         loadCount();
       })
