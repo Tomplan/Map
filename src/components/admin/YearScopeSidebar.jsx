@@ -14,20 +14,8 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   };
 
   // Use real-time count hooks
-  console.log('YearScopeSidebar - CALLING HOOKS with selectedYear:', selectedYear);
   const { count: subscriptionCount, loading: subscriptionsLoading } = useSubscriptionCount(selectedYear);
   const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
-  console.log('YearScopeSidebar - HOOKS RETURNED:', { subscriptionCount, assignmentCount, subscriptionsLoading, assignmentsLoading });
-
-  // Debug logging
-  console.log('YearScopeSidebar - selectedYear:', selectedYear);
-  console.log('YearScopeSidebar - subscriptionCount:', subscriptionCount, 'loading:', subscriptionsLoading);
-  console.log('YearScopeSidebar - assignmentCount:', assignmentCount, 'loading:', assignmentsLoading);
-
-  // Force re-render logging
-  React.useEffect(() => {
-    console.log('YearScopeSidebar - COMPONENT RE-RENDERED with counts:', { subscriptionCount, assignmentCount });
-  }, [subscriptionCount, assignmentCount]);
 
   const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
 

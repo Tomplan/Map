@@ -27,6 +27,17 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         // Always use the latest eventYear from ref if no year specified
         const targetYear = year !== undefined ? year : eventYearRef.current;
 
+        // First get valid marker IDs for this year
+        const { data: validMarkers, error: markersError } = await supabase
+          .from('markers_core')
+          .select('id')
+          .eq('event_year', targetYear);
+
+        if (markersError) throw markersError;
+
+        const validMarkerIds = validMarkers?.map(m => m.id) || [];
+
+        // Only load assignments for markers that exist in this year's markers
         const { data, error: fetchError } = await supabase
           .from('assignments')
           .select(
@@ -37,7 +48,12 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         `
           )
           .eq('event_year', targetYear)
+          .in('marker_id', validMarkerIds)
           .order('marker_id', { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        setAssignments(data || []);
 
         if (fetchError) throw fetchError;
 

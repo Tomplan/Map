@@ -204,7 +204,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
 
   // Dialog context for confirmations
-  const { confirm } = useDialog();
+  const { confirm, toastError } = useDialog();
 
   const filteredMarkers = useMemo(
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
@@ -246,6 +246,13 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
   // Handle assignment
   const handleAssign = useCallback(
     async (markerId, companyId) => {
+      // Check if marker exists in current markers
+      const markerExists = safeMarkers.some(m => m.id === markerId);
+      if (!markerExists) {
+        toastError(`Cannot assign to marker ${markerId} - marker does not exist`);
+        return;
+      }
+
       // Check if marker already has assignments
       const existingAssignments = assignments.filter(a => a.marker_id === markerId);
 
@@ -292,7 +299,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers]
+    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, toastError, confirm]
   );
 
   // Handle unassignment

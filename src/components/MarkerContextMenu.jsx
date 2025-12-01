@@ -31,15 +31,15 @@ function MarkerContextMenu({
       const companyAssignments = assignments.filter(
         (a) => a.company_id === sub.company_id
       );
-      
+
       const assignedBoothCount = companyAssignments.length;
       const totalBoothCount = sub.booth_count || 1;
-      
+
       // Check if already assigned to this specific marker
       const isAssignedToThisMarker = companyAssignments.some(
         (a) => a.marker_id === marker.id
       );
-      
+
       // Show if: NOT assigned to this marker AND has available booths
       return !isAssignedToThisMarker && assignedBoothCount < totalBoothCount;
     })
@@ -50,7 +50,7 @@ function MarkerContextMenu({
       const assignedBoothCount = companyAssignments.length;
       const totalBoothCount = sub.booth_count || 1;
       const remainingBooths = totalBoothCount - assignedBoothCount;
-      
+
       return {
         id: sub.company_id,
         name: sub.company?.name || 'Unknown Company',
@@ -64,6 +64,7 @@ function MarkerContextMenu({
     .filter((company) =>
       company.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
 
   // Focus search input when menu opens
   useEffect(() => {
