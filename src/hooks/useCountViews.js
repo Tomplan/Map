@@ -44,29 +44,26 @@ export function useSubscriptionCount(eventYear) {
 
     loadCount();
 
-    // Subscribe to real-time changes on the underlying table
-    // When event_subscriptions table changes, reload the count from the view
+    // Subscribe to real-time changes on the count table directly
     const channel = supabase
       .channel(`subscription-count-${eventYear}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'event_subscriptions'
+        table: 'subscription_counts',
+        filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('Event subscriptions table changed:', payload);
-        // Check if the change is for our year
-        const relevantYear = payload.eventType === 'DELETE'
-          ? payload.old?.event_year
-          : payload.new?.event_year;
-
-        if (relevantYear === eventYear) {
-          console.log('Reloading subscription count for year:', eventYear);
-          loadCount();
+        console.log('Subscription count table changed:', payload);
+        // Update local state directly from the payload
+        if (payload.new) {
+          setCount(payload.new.count);
+        } else if (payload.eventType === 'DELETE') {
+          setCount(0);
         }
       })
       .subscribe();
 
-    console.log('Subscribed to event_subscriptions changes for year:', eventYear);
+    console.log('Subscribed to subscription_counts changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
@@ -114,29 +111,26 @@ export function useAssignmentCount(eventYear) {
 
     loadCount();
 
-    // Subscribe to real-time changes on the underlying table
-    // When assignments table changes, reload the count from the view
+    // Subscribe to real-time changes on the count table directly
     const channel = supabase
       .channel(`assignment-count-${eventYear}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'assignments'
+        table: 'assignment_counts',
+        filter: `event_year=eq.${eventYear}`
       }, (payload) => {
-        console.log('Assignments table changed:', payload);
-        // Check if the change is for our year
-        const relevantYear = payload.eventType === 'DELETE'
-          ? payload.old?.event_year
-          : payload.new?.event_year;
-
-        if (relevantYear === eventYear) {
-          console.log('Reloading assignment count for year:', eventYear);
-          loadCount();
+        console.log('Assignment count table changed:', payload);
+        // Update local state directly from the payload
+        if (payload.new) {
+          setCount(payload.new.count);
+        } else if (payload.eventType === 'DELETE') {
+          setCount(0);
         }
       })
       .subscribe();
 
-    console.log('Subscribed to assignments changes for year:', eventYear);
+    console.log('Subscribed to assignment_counts changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
