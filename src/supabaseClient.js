@@ -31,9 +31,9 @@ if (isTestEnv) {
   // used in tests to avoid network calls and keep tests deterministic.
   const chainable = () => {
     const api = {
-      select() { return api },
-      in() { return api },
-      eq() { return Promise.resolve({ data: [], error: null }) },
+    select() { return api },
+    in() { return api },
+    eq() { return api },
       order() { return api },
       limit() { return api },
       single() { return Promise.resolve({ data: null, error: null }) },
@@ -52,12 +52,48 @@ if (isTestEnv) {
 
 } else {
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.'
-    )
-  }
+    // Don't throw in runtime — many development environments (or CI) may not
+    // have Supabase creds available. Export a resilient no-op client instead
+    // so the app can still run, and features that require Supabase will
+    // behave gracefully. This prevents uncaught runtime errors in the browser.
+    //
+    // If you do need a working Supabase client for local development, set
+    // VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in a `.env` or
+    // `.env.local` file at the project root. Example:
+    //
+    // VITE_SUPABASE_URL=https://xxxx.supabase.co
+    // VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
+    console.warn('Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Falling back to a non-operational supabase client.');
 
-  supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    // Minimal graceful fallback used at runtime when configured values are missing
+    const chainable = () => {
+      const api = {
+        select() { return api },
+        in() { return api },
+        eq() { return api },
+        order() { return api },
+        limit() { return api },
+        single() { return Promise.resolve({ data: null, error: null }) },
+        then(fn) { return Promise.resolve({ data: null, error: null }).then(fn) },
+      }
+      return api
+    }
+
+    supabase = {
+      from: function () { return chainable() },
+      channel: function () { return { on: function () { return { subscribe: function () { return { unsubscribe() {} } } } } } },
+      removeChannel: function () { return true },
+      storage: { from: function () { return { upload: async function () { return { data: null, error: new Error('Supabase storage not configured') } } } } },
+      auth: {
+        getSession: async function () { return { data: { session: null }, error: null } },
+        onAuthStateChange: function (cb) { return { data: { subscription: { unsubscribe() {} } } } },
+        signIn: async function () { return { data: null, error: new Error('Supabase auth not configured') } },
+      },
+    }
+
+  } else {
+
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     // Persist session in localStorage (default, but explicit for clarity)
     storageKey: 'supabase.auth.token',
@@ -70,6 +106,7 @@ if (isTestEnv) {
     detectSessionInUrl: true,
   },
   });
+  }
 }
 
 export { supabase }
