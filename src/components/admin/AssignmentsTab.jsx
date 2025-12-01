@@ -72,7 +72,7 @@ export default function AssignmentsTab({ selectedYear }) {
       setColumnSortDirection(dbColumnSortDirection);
     }
   }, [preferencesLoading, preferences]);
-  const { markers, loading: loadingMarkers } = useMarkerGlyphs();
+  const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
   const {
     assignments,

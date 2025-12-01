@@ -24,6 +24,7 @@ export function useMarkerGlyphs(selectedYear) {
           .from('markers_core')
           .select('id')
           .lt('id', 1000)
+          .eq('event_year', selectedYear)
           .order('id', { ascending: true });
 
         if (coreError) throw coreError;
@@ -32,7 +33,8 @@ export function useMarkerGlyphs(selectedYear) {
         const { data: appearanceData, error: appearanceError } = await supabase
           .from('markers_appearance')
           .select('id, glyph')
-          .lt('id', 1000);
+          .lt('id', 1000)
+          .eq('event_year', selectedYear);
 
         if (appearanceError) throw appearanceError;
 
@@ -60,7 +62,7 @@ export function useMarkerGlyphs(selectedYear) {
     }
 
     loadMarkers();
-  }, [selectedYear]); // Reload when selectedYear changes (if provided)
+  }, [selectedYear]); // Reload when selectedYear changes
 
   return { markers, loading, error };
 }
