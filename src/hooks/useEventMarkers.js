@@ -261,6 +261,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       })
       .subscribe();
 
+    // Separate subscription for default markers (event_year = 0) that affect all years
+    const defaultsChannel = supabase
+      .channel('markers-appearance-defaults-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'markers_appearance',
+        filter: 'event_year=eq.0'
+      }, () => {
+        loadMarkers(true);
+      })
+      .subscribe();
+
     const contentChannel = supabase
       .channel(`markers-content-changes-${eventYear}`)
       .on('postgres_changes', {
@@ -341,6 +354,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       window.removeEventListener('offline', handleOffline);
       supabase.removeChannel(coreChannel);
       supabase.removeChannel(appearanceChannel);
+      supabase.removeChannel(defaultsChannel);
       supabase.removeChannel(contentChannel);
       supabase.removeChannel(assignmentsChannel);
       supabase.removeChannel(companiesChannel);
