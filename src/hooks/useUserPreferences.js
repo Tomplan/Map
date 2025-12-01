@@ -37,6 +37,8 @@ export default function useUserPreferences() {
   const [userId, setUserId] = useState(null);
   const channelRef = useRef(null);
   const currentVersionRef = useRef(0);
+  const isUpdatingRef = useRef(false);
+  const lastUpdateTimeRef = useRef(0);
 
   /**
    * Load user preferences from database
@@ -134,7 +136,15 @@ export default function useUserPreferences() {
       return false;
     }
 
+    // Prevent concurrent updates and add cooldown
+    const now = Date.now();
+    if (isUpdatingRef.current || (now - lastUpdateTimeRef.current) < 1000) {
+      console.log('useUserPreferences: Skipping update - concurrent update or cooldown active');
+      return false;
+    }
+
     try {
+      isUpdatingRef.current = true;
       // Fetch current preferences to get the latest row_version
       const { data: currentPrefs, error: fetchError } = await supabase
         .from('user_preferences')
@@ -190,10 +200,13 @@ export default function useUserPreferences() {
       console.log(`useUserPreferences: Successfully updated ${key} to`, value, 'new data:', data);
       currentVersionRef.current = data.row_version;
       setPreferences(data);
+      lastUpdateTimeRef.current = Date.now();
       return true;
     } catch (error) {
       console.error('Error in updatePreference:', error);
       throw error;
+    } finally {
+      isUpdatingRef.current = false;
     }
   }, [userId, loadPreferences]);
 
@@ -210,7 +223,15 @@ export default function useUserPreferences() {
       return false;
     }
 
+    // Prevent concurrent updates and add cooldown
+    const now = Date.now();
+    if (isUpdatingRef.current || (now - lastUpdateTimeRef.current) < 1000) {
+      console.log('useUserPreferences: Skipping bulk update - concurrent update or cooldown active');
+      return false;
+    }
+
     try {
+      isUpdatingRef.current = true;
       // Fetch current preferences to get the latest row_version
       const { data: currentPrefs, error: fetchError } = await supabase
         .from('user_preferences')
@@ -266,10 +287,13 @@ export default function useUserPreferences() {
 
       currentVersionRef.current = data.row_version;
       setPreferences(data);
+      lastUpdateTimeRef.current = Date.now();
       return true;
     } catch (error) {
       console.error('Error in updatePreferences:', error);
       throw error;
+    } finally {
+      isUpdatingRef.current = false;
     }
   }, [userId, loadPreferences]);
 
