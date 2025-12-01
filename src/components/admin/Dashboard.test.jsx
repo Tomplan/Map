@@ -73,7 +73,6 @@ describe('Dashboard integration', () => {
     render(<Dashboard selectedYear={2025} setSelectedYear={setSelectedYear} />);
 
     // The Dashboard should not have the year selector (moved into AdminLayout sidebar)
-    const select = screen.queryByLabelText(/Viewing year/i);
-    expect(select).toBeNull();
+    await waitFor(() => expect(screen.queryByLabelText(/Viewing year/i)).toBeNull());
   });
 });

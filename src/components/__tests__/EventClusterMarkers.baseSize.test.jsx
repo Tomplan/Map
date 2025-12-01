@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 // Mocks for react-leaflet + cluster
 jest.mock('react-leaflet', () => ({
@@ -41,7 +41,7 @@ jest.mock('../MarkerContextMenu', () => () => null);
 import EventClusterMarkers from '../EventClusterMarkers';
 
 describe('EventClusterMarkers — base size source', () => {
-  it('uses marker.iconSize as the base size, ignoring iconBaseSize', () => {
+  it('uses marker.iconSize as the base size, ignoring iconBaseSize', async () => {
     const markers = [
       { id: 1, lat: 52.0, lng: 4.0, type: 'default', iconSize: [40, 80], iconBaseSize: [10, 20] },
     ];
@@ -57,14 +57,14 @@ describe('EventClusterMarkers — base size source', () => {
     render(<EventClusterMarkers {...props} />);
 
     // getIconSizeForZoom should have been called and the base size passed should be marker.iconSize
-    expect(mockGetIconSizeForZoom).toHaveBeenCalled();
+    await waitFor(() => expect(mockGetIconSizeForZoom).toHaveBeenCalled());
     const calledArgs = mockGetIconSizeForZoom.mock.calls[0];
     // second arg is the baseSize
     expect(Array.isArray(calledArgs[1])).toBe(true);
     expect(calledArgs[1]).toEqual([40, 80]);
   });
 
-  it('computes missing icon height from width for iconSize with only width', () => {
+  it('computes missing icon height from width for iconSize with only width', async () => {
     const markers = [
       { id: 2, lat: 52.0, lng: 4.0, type: 'default', iconSize: [40] },
     ];
@@ -79,13 +79,13 @@ describe('EventClusterMarkers — base size source', () => {
 
     render(<EventClusterMarkers {...props} />);
 
-    expect(mockGetIconSizeForZoom).toHaveBeenCalled();
+    await waitFor(() => expect(mockGetIconSizeForZoom).toHaveBeenCalled());
     const calledArgs = mockGetIconSizeForZoom.mock.calls[mockGetIconSizeForZoom.mock.calls.length - 1];
     // DEFAULT_ICON.SIZE in component is [15,25], so height should be computed as round(40 * 25/15) = 67
     expect(calledArgs[1]).toEqual([40, 67]);
   });
 
-  it('scales explicitly configured glyphSize relative to stored iconSize', () => {
+  it('scales explicitly configured glyphSize relative to stored iconSize', async () => {
     // Force getIconSizeForZoom to return a scaled icon height (20x40)
     mockGetIconSizeForZoom.mockReturnValueOnce([20, 40]);
 
@@ -105,7 +105,7 @@ describe('EventClusterMarkers — base size source', () => {
 
     // scaledGlyph = round((currentIconHeight * baseGlyphPx) / baseIconHeight)
     // currentIconHeight = 40, baseIconHeight = 80, baseGlyphPx = 12 => scaled = 6
-    expect(mockCreate).toHaveBeenCalled();
+    await waitFor(() => expect(mockCreate).toHaveBeenCalled());
     const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0];
     expect(callArgs.glyphSize).toBe('6.00px');
   });

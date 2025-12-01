@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 // lightweight mocks for react-leaflet + cluster so we can mount the component
 jest.mock('react-leaflet', () => ({
@@ -45,7 +45,7 @@ jest.mock('../../utils/markerSizing', () => ({
 import EventClusterMarkers from '../EventClusterMarkers';
 
 describe('EventClusterMarkers -- zoom bucket behavior', () => {
-  it('recreates marker icons when zoom bucket changes (calls createMarkerIcon again)', () => {
+  it('recreates marker icons when zoom bucket changes (calls createMarkerIcon again)', async () => {
     // two markers to ensure multiple invocations
     const markers = [
       { id: 1, lat: 52.0, lng: 4.0, type: 'default' },
@@ -63,13 +63,13 @@ describe('EventClusterMarkers -- zoom bucket behavior', () => {
     const { rerender } = render(<EventClusterMarkers {...props} />);
 
     // createMarkerIcon should have been called once per marker on initial render
-    expect(mockCreate).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(2));
 
     // Change to a higher zoom that falls into a different zoom bucket (trigger re-creation)
     mockCreate.mockClear();
     rerender(<EventClusterMarkers {...props} currentZoom={18} />);
 
     // Both markers should have new icons created again
-    expect(mockCreate).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(mockCreate).toHaveBeenCalledTimes(2));
   });
 });

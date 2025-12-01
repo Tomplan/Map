@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('react-leaflet', () => ({
   Tooltip: ({ children }) => require('react').createElement('div', { 'data-testid': 'tooltip' }, children),
@@ -27,23 +27,27 @@ describe('MarkerDetailsUI — showBoothNumber', () => {
     companyId: 9001,
   };
 
-  it('does not show Booth text when showBoothNumber is false', () => {
+  it('does not show Booth text when showBoothNumber is false', async () => {
     render(<MarkerUI marker={baseMarker} isMobile={false} organizationLogo={null} showBoothNumber={false} />);
 
     // Tooltip + popup should render, but not include 'Booth'
     const tooltip = screen.getByTestId('tooltip');
     const popup = screen.getByTestId('popup');
 
+    await waitFor(() => expect(tooltip).toBeTruthy());
+    await waitFor(() => expect(popup).toBeTruthy());
     expect(tooltip.textContent).not.toMatch(/Booth/);
     expect(popup.textContent).not.toMatch(/Booth/);
   });
 
-  it('does show Booth text when showBoothNumber is true', () => {
+  it('does show Booth text when showBoothNumber is true', async () => {
     render(<MarkerUI marker={baseMarker} isMobile={false} organizationLogo={null} showBoothNumber={true} />);
 
     const tooltip = screen.getByTestId('tooltip');
     const popup = screen.getByTestId('popup');
 
+    await waitFor(() => expect(tooltip).toBeTruthy());
+    await waitFor(() => expect(popup).toBeTruthy());
     expect(tooltip.textContent).toMatch(/Booth/);
     expect(popup.textContent).toMatch(/Booth/);
   });

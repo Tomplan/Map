@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 // Reuse the same lightweight mocks as the zoom test
 jest.mock('react-leaflet', () => ({
@@ -31,13 +31,15 @@ describe('EventClusterMarkers snapshots (visual regression style)', () => {
     iconCreateFunction: () => null,
   };
 
-  it('renders a compact DOM tree for zoom=16', () => {
+  it('renders a compact DOM tree for zoom=16', async () => {
     const { container } = render(<EventClusterMarkers {...baseProps} currentZoom={16} />);
+    await waitFor(() => expect(container).toBeDefined());
     expect(container).toMatchSnapshot();
   });
 
-  it('renders a slightly different DOM tree for zoom=19', () => {
+  it('renders a slightly different DOM tree for zoom=19', async () => {
     const { container } = render(<EventClusterMarkers {...baseProps} currentZoom={19} />);
+    await waitFor(() => expect(container).toBeDefined());
     expect(container).toMatchSnapshot();
   });
 });
