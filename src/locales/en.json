@@ -487,7 +487,7 @@
     }
   },
   "dashboard": {
-    "totalMarkers": "Total Markers",
+    "totalAssignableBooths": "Total Assignable Booths",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",

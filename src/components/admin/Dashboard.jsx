@@ -80,7 +80,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   const stats = [
     {
-      label: t('dashboard.totalMarkers'),
+      label: t('dashboard.totalAssignableBooths'),
       value: statsLoading ? '...' : (counts.markers?.toString() ?? '-'),
       icon: mdiMapMarker,
       color: 'blue',

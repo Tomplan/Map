@@ -479,7 +479,7 @@
     }
   },
   "dashboard": {
-    "totalMarkers": "Total Markers",
+    "totalAssignableBooths": "Total Zuweisbare Stände",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",

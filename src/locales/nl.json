@@ -480,7 +480,7 @@
     }
   },
   "dashboard": {
-    "totalMarkers": "Totaal Markers",
+    "totalAssignableBooths": "Totaal Toewijsbare Stands",
     "companies": "Bedrijven",
     "subscriptions": "Inschrijvingen",
     "assignments": "Toewijzingen",
