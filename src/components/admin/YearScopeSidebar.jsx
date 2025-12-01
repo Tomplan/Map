@@ -22,6 +22,11 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   console.log('YearScopeSidebar - subscriptionCount:', subscriptionCount, 'loading:', subscriptionsLoading);
   console.log('YearScopeSidebar - assignmentCount:', assignmentCount, 'loading:', assignmentsLoading);
 
+  // Force re-render logging
+  React.useEffect(() => {
+    console.log('YearScopeSidebar - COMPONENT RE-RENDERED with counts:', { subscriptionCount, assignmentCount });
+  }, [subscriptionCount, assignmentCount]);
+
   const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
 
   return (

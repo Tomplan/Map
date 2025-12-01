@@ -41,18 +41,21 @@ export function useSubscriptionCount(eventYear) {
     loadCount();
 
     // Subscribe to real-time changes
-    const channel = supabase
-      .channel(`subscription-count-${eventYear}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'subscription_counts'
-      }, (payload) => {
-        console.log('Subscription count changed:', payload);
-        // Reload count when view changes
-        loadCount();
-      })
-      .subscribe();
+  const channel = supabase
+    .channel(`subscription-count-${eventYear}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'subscription_counts'
+    }, (payload) => {
+      console.log('Subscription count changed:', payload);
+      console.log('Reloading subscription count for year:', eventYear);
+      // Reload count when view changes
+      loadCount();
+    })
+    .subscribe();
+
+  console.log('Subscribed to subscription count changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
@@ -105,10 +108,13 @@ export function useAssignmentCount(eventYear) {
         table: 'assignment_counts'
       }, (payload) => {
         console.log('Assignment count changed:', payload);
+        console.log('Reloading assignment count for year:', eventYear);
         // Reload count when view changes
         loadCount();
       })
       .subscribe();
+
+    console.log('Subscribed to assignment count changes for year:', eventYear);
 
     return () => {
       supabase.removeChannel(channel);
