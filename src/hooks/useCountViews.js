@@ -45,18 +45,24 @@ export function useSubscriptionCount(eventYear) {
 
     // Subscribe to real-time changes on the count table directly
     const channel = supabase
-      .channel(`subscription-count-${eventYear}`)
+      .channel(`subscription-count-${eventYear}-${Date.now()}-${Math.random()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'subscription_counts',
-        filter: `event_year=eq.${eventYear}`
+        table: 'subscription_counts'
       }, (payload) => {
-        // Update local state directly from the payload
-        if (payload.new) {
-          setCount(payload.new.count);
-        } else if (payload.eventType === 'DELETE') {
-          setCount(0);
+        // Check if this update is for our event year
+        const isRelevantUpdate =
+          (payload.new && payload.new.event_year === eventYear) ||
+          (payload.old && payload.old.event_year === eventYear);
+
+        if (isRelevantUpdate) {
+          // Update local state directly from the payload
+          if (payload.new) {
+            setCount(payload.new.count);
+          } else if (payload.eventType === 'DELETE') {
+            setCount(0);
+          }
         }
       })
       .subscribe();
@@ -108,18 +114,24 @@ export function useAssignmentCount(eventYear) {
 
     // Subscribe to real-time changes on the count table directly
     const channel = supabase
-      .channel(`assignment-count-${eventYear}`)
+      .channel(`assignment-count-${eventYear}-${Date.now()}-${Math.random()}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'assignment_counts',
-        filter: `event_year=eq.${eventYear}`
+        table: 'assignment_counts'
       }, (payload) => {
-        // Update local state directly from the payload
-        if (payload.new) {
-          setCount(payload.new.count);
-        } else if (payload.eventType === 'DELETE') {
-          setCount(0);
+        // Check if this update is for our event year
+        const isRelevantUpdate =
+          (payload.new && payload.new.event_year === eventYear) ||
+          (payload.old && payload.old.event_year === eventYear);
+
+        if (isRelevantUpdate) {
+          // Update local state directly from the payload
+          if (payload.new) {
+            setCount(payload.new.count);
+          } else if (payload.eventType === 'DELETE') {
+            setCount(0);
+          }
         }
       })
       .subscribe();
