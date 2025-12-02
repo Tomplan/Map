@@ -31,6 +31,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     unsubscribeCompany,
     archiveCurrentYear,
     copyFromPreviousYear,
+    reload,
   } = useEventSubscriptions(selectedYear);
 
   const { companies } = useCompanies();
@@ -304,13 +305,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             dataType="event_subscriptions"
             existingData={subscriptions}
             eventYear={selectedYear}
-            additionalData={{ 
+            additionalData={{
               supabase,
-              selectedYear 
+              selectedYear
             }}
             onImportComplete={async () => {
-              // ImportModal will handle refreshing the data through its callback
-              // No additional action needed here
+              // Reload subscriptions after import completes
+              await reload();
             }}
           />
           <button
