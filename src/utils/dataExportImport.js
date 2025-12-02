@@ -101,6 +101,17 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       }
     });
 
+    // Apply top vertical alignment to all data cells for better readability
+    // This ensures text aligns to the top of cells, especially useful when row heights vary
+    for (let rowIdx = 2; rowIdx <= (sheet.rowCount || exportData.length + 1); rowIdx++) {
+      const row = sheet.getRow(rowIdx);
+      for (let colIdx = 1; colIdx <= columns.length; colIdx++) {
+        const cell = row.getCell(colIdx);
+        // Merge with existing alignment (from text wrapping) or create new alignment
+        cell.alignment = { ...cell.alignment, vertical: 'top' };
+      }
+    }
+
     // Convert data range to Excel Table for auto-filtering and styling
     // This provides dropdown arrows in headers for sorting/filtering and professional banded rows
     const lastRow = exportData.length + 1; // +1 for header row
