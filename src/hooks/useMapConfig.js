@@ -41,8 +41,12 @@ export default function useMapConfig(selectedYear) {
         activeSettings?.map_center_lng ?? FALLBACK_CONFIG.DEFAULT_POSITION[1],
       ],
 
+      // Admin-specific map center (not configurable, use fallback)
+      ADMIN_DEFAULT_POSITION: FALLBACK_CONFIG.ADMIN_DEFAULT_POSITION,
+
       // Zoom levels from database or fallback
       DEFAULT_ZOOM: activeSettings?.map_default_zoom ?? FALLBACK_CONFIG.DEFAULT_ZOOM,
+      ADMIN_DEFAULT_ZOOM: FALLBACK_CONFIG.ADMIN_DEFAULT_ZOOM,
       MIN_ZOOM: activeSettings?.map_min_zoom ?? FALLBACK_CONFIG.MIN_ZOOM,
       MAX_ZOOM: activeSettings?.map_max_zoom ?? FALLBACK_CONFIG.MAX_ZOOM,
       SEARCH_ZOOM: activeSettings?.map_search_zoom ?? FALLBACK_CONFIG.SEARCH_ZOOM,

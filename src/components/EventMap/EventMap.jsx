@@ -383,6 +383,14 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
     setMapInstance(map);
+    
+    // Force a resize event to ensure proper tile loading
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        console.log('Map resized and tiles should be loaded');
+      }
+    }, 100);
   };
 
   const containerStyle = isAdminView
@@ -390,6 +398,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         // Admin view: relative positioning to fit within flex parent
         height: '100%',
         width: '100%',
+        minHeight: '400px', // Ensure minimum height to prevent collapse
         position: 'relative',
         touchAction: 'pan-x pan-y',
         overflow: 'hidden',
@@ -467,7 +476,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           zoomControl={false}
           style={{
             width: isAdminView ? '100%' : '100vw',
-            height: isAdminView ? '100%' : '100svh'
+            height: isAdminView ? '100%' : '100svh',
+            minHeight: isAdminView ? '400px' : '100svh'
           }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}

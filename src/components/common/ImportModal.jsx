@@ -665,9 +665,15 @@ export default function ImportModal({
                       <th className="text-left p-2 font-medium text-gray-700">Row</th>
                       <th className="text-left p-2 font-medium text-gray-700">Status</th>
                       {(() => {
-                          // Build preview columns: default to first 4 configured export columns
-                          // but also append per-category columns if the parsed file provided metadata
-                          const base = config.exportColumns.slice(0, 4)
+                          // Build preview columns from config export columns
+                          let base;
+                          if (dataType === 'event_subscriptions') {
+                            // Use all configured export columns for subscriptions
+                            base = config.exportColumns;
+                          } else {
+                            // Default: show first 6 columns for better visibility
+                            base = config.exportColumns.slice(0, 6);
+                          }
                           const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
                             ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
                             : []
@@ -720,7 +726,15 @@ export default function ImportModal({
                           )}
                         </td>
                         {(() => {
-                          const base = config.exportColumns.slice(0, 4)
+                          // Build preview columns from config export columns
+                          let base;
+                          if (dataType === 'event_subscriptions') {
+                            // Use all configured export columns for subscriptions
+                            base = config.exportColumns;
+                          } else {
+                            // Default: show first 6 columns for better visibility
+                            base = config.exportColumns.slice(0, 6);
+                          }
                           const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
                             ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
                             : []

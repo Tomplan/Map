@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive } from '@mdi/js';
+import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive, mdiEye, mdiPrinter } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
 import { getLogoPath } from '../../utils/getLogoPath';
@@ -9,14 +9,17 @@ import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
 import { useDialog } from '../../contexts/DialogContext';
+import useUserRole from '../../hooks/useUserRole';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
- * System Managers only - merges Core/Appearance/Content tabs
+ * System Managers and Super Admins: Full editing capabilities
+ * Event Managers: Read-only view for assignments and printing
  * Features: Marker list, interactive map, and detail/edit panel
  */
 export default function MapManagement({ markersState, setMarkersState, updateMarker, selectedYear, archiveMarkers, copyMarkers }) {
   const { t } = useTranslation();
+  const { isEventManager, isSystemManager, isSuperAdmin } = useUserRole();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -25,6 +28,9 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
   const { confirm, toastError, toastSuccess } = useDialog();
+
+  // Event managers have read-only access
+  const isReadOnly = isEventManager;
 
   // Fetch default markers on mount
   useEffect(() => {
@@ -206,6 +212,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
   // Handle archive current year
   const handleArchive = async () => {
+    if (isReadOnly) return; // Event managers can't archive
+    
     const confirmed = await confirm({
       title: 'Archive Markers',
       message: `Archive all markers for ${selectedYear}? This will move them to the archive and clear the current year.`,
@@ -224,6 +232,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
   // Handle copy from previous year
   const handleCopyFromPreviousYear = async () => {
+    if (isReadOnly) return; // Event managers can't copy
+    
     const previousYear = selectedYear - 1;
     const confirmed = await confirm({
       title: 'Copy Markers',
@@ -239,6 +249,11 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     } else {
       toastSuccess(`Markers copied from ${previousYear} to ${selectedYear}`);
     }
+  };
+
+  // Print map (for Event Managers)
+  const handlePrintMap = () => {
+    window.print();
   };
 
   const isDefaultMarker = selectedMarker && (selectedMarker.id === -1 || selectedMarker.id === -2);
@@ -261,39 +276,56 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
   };
 
   return (
-    <ProtectedSection requiredRole={['super_admin', 'system_manager']}>
+    <ProtectedSection requiredRole={['super_admin', 'system_manager', 'event_manager']}>
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
           {/* Header with year info and actions */}
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold text-gray-900">
-                {t('mapManagement.title')}
+                {isReadOnly ? 'Event Map Viewer' : t('mapManagement.title')}
               </h1>
               <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {selectedYear}
               </div>
+              {/* Read-only badge removed per request - keep header title behavior unchanged */}
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={handleCopyFromPreviousYear}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                title={`Copy markers from ${selectedYear - 1}`}
-              >
-                <Icon path={mdiContentCopy} size={0.8} />
-                Copy from {selectedYear - 1}
-              </button>
-              <button
-                onClick={handleArchive}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={(markersState?.length || 0) === 0}
-                title={`Archive all markers for ${selectedYear}`}
-              >
-                <Icon path={mdiArchive} size={0.8} />
-                Archive {selectedYear}
-              </button>
+              {isReadOnly ? (
+                <button
+                  onClick={handlePrintMap}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  title="Print map"
+                >
+                  <Icon path={mdiPrinter} size={0.8} />
+                  Print Map
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={handleCopyFromPreviousYear}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    title={`Copy markers from ${selectedYear - 1}`}
+                  >
+                    <Icon path={mdiContentCopy} size={0.8} />
+                    Copy from {selectedYear - 1}
+                  </button>
+                  <button
+                    onClick={handleArchive}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={(markersState?.length || 0) === 0}
+                    title={`Archive all markers for ${selectedYear}`}
+                  >
+                    <Icon path={mdiArchive} size={0.8} />
+                    Archive {selectedYear}
+                  </button>
+                </>
+              )}
             </div>
           </div>
+          
+
+          {/* read-only notice removed per request - event manager view remains read-only but UI note removed */}
 
           {/* Empty state for no markers */}
           {filteredMarkers.length === 0 && !searchTerm && (
@@ -301,20 +333,26 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">No Markers Found for {selectedYear}</h3>
                 <p className="text-blue-700 mb-4">
-                  There are no markers configured for {selectedYear}. You can copy markers from the previous year or create new ones.
+                  {isReadOnly 
+                    ? `There are no markers configured for ${selectedYear}. Please contact your system administrator.`
+                    : `There are no markers configured for ${selectedYear}. You can copy markers from the previous year or create new ones.`
+                  }
                 </p>
-                <button
-                  onClick={handleCopyFromPreviousYear}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Copy from {selectedYear - 1}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={handleCopyFromPreviousYear}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Copy from {selectedYear - 1}
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          {/* Search and Sort */}
-          <div className="flex gap-4">
+          {/* Search and Sort (hidden for read-only event managers) */}
+          {!isReadOnly && (
+            <div className="flex gap-4">
             {/* Search */}
             <div className="relative flex-1">
               <Icon
@@ -352,12 +390,14 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
               </button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="flex h-[calc(100vh-150px)]">
           {/* LEFT: Marker List */}
-          <div className="w-64 border-r border-gray-200 overflow-y-auto flex-shrink-0">
+          {!isReadOnly && (
+            <div className="w-64 border-r border-gray-200 overflow-y-auto flex-shrink-0">
             <div className="p-2">
               {filteredMarkers.map((marker) => {
                 const isSelected = marker.id === selectedMarkerId;
@@ -416,38 +456,43 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               })}
             </div>
           </div>
+          )}
 
           {/* CENTER: Map View */}
           <div className="flex-1 relative bg-gray-50">
-            <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-500">Loading map...</div>}>
-              <EventMap
-                isAdminView={true}
-                previewUseVisitorSizing={true}
-                markersState={markersState}
-                updateMarker={updateMarker}
-                selectedYear={selectedYear}
-                selectedMarkerId={selectedMarkerId}
-                editMode={editMode}
-                onMarkerSelect={(id) => {
-                  setSelectedMarkerId(id);
-                  setEditMode(false);
-                }}
-                onMarkerDrag={(id, newLat, newLng) => {
-                  // Update coordinates in edit data when marker is dragged
-                  if (editMode && selectedMarkerId === id) {
-                    setEditData(prev => ({
-                      ...prev,
-                      lat: newLat,
-                      lng: newLng
-                    }));
-                  }
-                }}
-              />
-            </Suspense>
+            <EventMap
+              // This is the admin map page; always render the admin-sized map even
+              // for read-only event managers so the app sidebar and admin layout
+              // remain visible. Previously this passed `!isReadOnly` which caused
+              // the visitor/fullscreen-sized map to completely cover the sidebar
+              // for event managers.
+              isAdminView={true}
+              previewUseVisitorSizing={true}
+              markersState={markersState}
+              updateMarker={isReadOnly ? null : updateMarker}
+              selectedYear={selectedYear}
+              selectedMarkerId={selectedMarkerId}
+              editMode={!isReadOnly && editMode}
+              onMarkerSelect={(id) => {
+                setSelectedMarkerId(id);
+                if (!isReadOnly) setEditMode(false);
+              }}
+              onMarkerDrag={(id, newLat, newLng) => {
+                // Update coordinates in edit data when marker is dragged
+                if (!isReadOnly && editMode && selectedMarkerId === id) {
+                  setEditData(prev => ({
+                    ...prev,
+                    lat: newLat,
+                    lng: newLng
+                  }));
+                }
+              }}
+            />
           </div>
 
           {/* RIGHT: Detail/Edit Panel */}
-          <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
+          {!isReadOnly && (
+            <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
             {!selectedMarker ? (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {t('mapManagement.selectMarker')}
@@ -469,7 +514,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                       {isBoothMarker && ' (Booth - Content managed via Companies/Assignments)'}
                     </p>
                   </div>
-                  {!editMode && (
+                  {!editMode && !isReadOnly && (
                     <button
                       onClick={handleStartEdit}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -495,7 +540,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 )}
               </div>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </ProtectedSection>
@@ -708,11 +754,8 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, ge
       )}
 
       {isBoothMarker && (
-        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800">
-            <strong>Note:</strong> This is a booth marker. Content (name, logo, website, info) is managed via the Companies and Assignments tabs.
-          </p>
-        </div>
+        // Booth markers are still managed via Companies/Assignments; no informational note shown here.
+        <></>
       )}
 
       {/* Actions */}

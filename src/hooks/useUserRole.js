@@ -37,13 +37,17 @@ export default function useUserRole() {
   const hasRole = (requiredRole) => {
     if (!role) return false;
     if (role === 'super_admin') return true; // Super admin has all permissions
-    return role === requiredRole;
+    // Handle both 'event_manager' and 'event manager' formats
+    const normalizedRole = role.replace(' ', '_');
+    return normalizedRole === requiredRole;
   };
 
   const hasAnyRole = (requiredRoles) => {
     if (!role) return false;
     if (role === 'super_admin') return true;
-    return requiredRoles.includes(role);
+    // Handle both 'event_manager' and 'event manager' formats
+    const normalizedRole = role.replace(' ', '_');
+    return requiredRoles.includes(normalizedRole);
   };
 
   return {
@@ -54,6 +58,6 @@ export default function useUserRole() {
     hasAnyRole,
     isSuperAdmin: role === 'super_admin',
     isSystemManager: role === 'system_manager',
-    isEventManager: role === 'event_manager',
+    isEventManager: role === 'event_manager' || role === 'event manager',
   };
 }

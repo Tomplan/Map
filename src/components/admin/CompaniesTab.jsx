@@ -158,8 +158,7 @@ export default function CompaniesTab() {
     if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, companies.length]); // Use companies.length for stable dependency
+  }, [activeTab, companies.length, companies]); // Add companies as dependency for proper refresh
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
