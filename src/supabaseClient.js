@@ -69,7 +69,16 @@ if (isTestEnv) {
 
   supabase = {
     from: function () { return chainable() },
-    channel: function () { return { on: function () { return { subscribe: function () { return {} } } } } },
+    channel: function () {
+      // Chainable channel mock for tests: supports .on(...).on(...).subscribe()
+      return (function () {
+        const obj = {
+          on() { return obj },
+          subscribe() { return obj }
+        }
+        return obj
+      })()
+    },
     removeChannel: function () { return true },
     storage: { from: function () { return { upload: async function () { return { data: null, error: null } } } } },
     auth: { signIn: async function () { return { data: null, error: null } } },
@@ -107,7 +116,15 @@ if (isTestEnv) {
 
     supabase = {
       from: function () { return chainable() },
-      channel: function () { return { on: function () { return { subscribe: function () { return { unsubscribe() {} } } } } } },
+      channel: function () {
+        // Graceful chainable runtime fallback for environments without a working supabase
+        const obj = {
+          on() { return obj },
+          subscribe() { return obj },
+          unsubscribe() {}
+        }
+        return obj
+      },
       removeChannel: function () { return true },
       storage: { from: function () { return { upload: async function () { return { data: null, error: new Error('Supabase storage not configured') } } } } },
       auth: {

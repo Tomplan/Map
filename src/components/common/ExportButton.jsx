@@ -5,6 +5,7 @@ import { useDialog } from '../../contexts/DialogContext';
 import { exportToExcel, exportToCSV, exportToJSON } from '../../utils/dataExportImport';
 import { supabase as globalSupabase } from '../../supabaseClient'
 import { getDataConfig } from '../../config/dataConfigs';
+import useCategories from '../../hooks/useCategories'
 
 /**
  * ExportButton - Reusable export button with format dropdown
@@ -35,6 +36,8 @@ export default function ExportButton({
   const { toastSuccess, toastError } = useDialog();
 
   const config = getDataConfig(dataType);
+  // in-memory categories available via hook — used as a fallback when Supabase is missing
+  const { categories: inMemoryCategories } = useCategories()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -81,19 +84,26 @@ export default function ExportButton({
       let columnsToUse = config.exportColumns.slice()
       // Ensure the companies export expands categories no matter which component calls it
       // Prefer an explicitly provided supabase client via additionalData, otherwise fall
-      // back to the app's global `supabase` singleton so export works everywhere.
+      // back to the app's global `supabase` singleton so export works everywhere. As a
+      // final fallback, use the in-memory categories from the app state (useCategories)
+      // so exports from the UI still include per-category columns even without Supabase
       const supabaseClient = additionalData?.supabase || globalSupabase
       if (config.table === 'companies' && supabaseClient) {
         try {
           // Fetch current categories from database so the export always reflects live categories
           // Fetch categories and translations (name exists in category_translations)
           // Avoid selecting a non-existent top-level `name` column which causes 400 responses.
-          const { data: categories } = await additionalData.supabase
+          let { data: categories } = await supabaseClient
             .from('categories')
             .select('slug, category_translations(language, name, title)')
             .order('sort_order')
 
-          if (Array.isArray(categories) && categories.length > 0) {
+            if ((!Array.isArray(categories) || categories.length === 0) && Array.isArray(inMemoryCategories) && inMemoryCategories.length > 0) {
+              // prefer in-memory categories if Supabase returned nothing
+              categories = inMemoryCategories.map(c => ({ slug: c.slug, category_translations: c.translations || [] }))
+            }
+
+            if (Array.isArray(categories) && categories.length > 0) {
             // Sort client-side by translated name (current app language not available here),
             // prefer 'nl' then fallback to first available translation, then slug.
             categories.sort((a, b) => {

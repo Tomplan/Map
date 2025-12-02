@@ -111,13 +111,14 @@ describe('ExportButton companies export', () => {
       })
     }
 
-    // Isolate module imports so we can mock the supabaseClient at module load time
+    // Also test fallback to in-memory categories when supabase is missing by
+    // mocking the useCategories hook to return categories.
     jest.isolateModules(async () => {
       jest.doMock('../../supabaseClient', () => ({ supabase: mockGlobalSupabase }))
+      jest.doMock('../../hooks/useCategories', () => ({ default: () => ({ categories: [ { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] }, { slug: 'cat2', translations: [{ language: 'nl', name: 'Category Two' }] } ] }) }))
 
-      // Import the button module fresh so it picks up the mocked global
+      // Import the button module fresh so it picks up the mocked global and hook
       const { default: ExportButtonLocal } = await import('../common/ExportButton')
-
       const companies = [{ id: 1, name: 'Acme Co' }, { id: 2, name: 'Beta LLC' }]
 
       // Spy on exportToExcel
