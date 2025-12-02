@@ -8,7 +8,7 @@ dotenv.config()
 export default defineConfig({
   base: '/Map',
   optimizeDeps: {
-    include: ['xlsx']
+    include: ['xlsx', 'file-saver']
   },
   plugins: [react()],
   server: {
