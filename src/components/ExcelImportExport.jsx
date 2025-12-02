@@ -63,6 +63,16 @@ export default function ExcelImportExport() {
 
     await sheet.protect('', { selectLockedCells: true, selectUnlockedCells: true })
 
+    // Add hidden metadata worksheet so imports can use canonical keys if needed
+    try {
+      const meta = { columns: sheet.columns.map(c => ({ key: c.key, header: c.header })) }
+      const metaSheet = workbook.addWorksheet('__export_metadata')
+      metaSheet.getCell('A1').value = JSON.stringify(meta)
+      try { metaSheet.state = 'veryHidden' } catch (e) { /* ignore in tests */ }
+    } catch (e) {
+      // ignore write errors when tests use mocks
+    }
+
     // Generate workbook buffer then download
     const wbout = await workbook.xlsx.writeBuffer()
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })

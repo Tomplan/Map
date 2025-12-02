@@ -14,8 +14,10 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     const originalWorkbook = ExcelJS.Workbook
     jest.spyOn(ExcelJS, 'Workbook').mockImplementation(function Workbook() {
       captured = {
-        _sheet: null,
+        sheets: {},
+        lastAdded: null,
         addWorksheet(name) {
+          // create a sheet object with helpers for getRow/getCell
           const ws = {
             name,
             columns: null,
@@ -25,22 +27,26 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
             rowCount: 0,
             addRows(r) {
               this.rows.push(...r)
-              // header row + data rows
               this.rowCount = this.rows.length + 1
             },
             getRow(rowNumber) {
-              // return lightweight row that supports getCell
               return {
                 getCell: (colNumber) => {
                   const key = `${rowNumber}:${colNumber}`
-                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {} }
+                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {}, dataValidation: undefined }
                   return ws._cells[key]
                 }
               }
             },
+            getCell(cellRef) {
+              // Very lightweight cell setter for metadata sheet (A1)
+              if (!ws._cells[cellRef]) ws._cells[cellRef] = { value: undefined }
+              return ws._cells[cellRef]
+            },
             protect(password, opts) { this._protected = { password, opts } }
           }
-          this._sheet = ws
+          captured.sheets[name] = ws
+          captured.lastAdded = ws
           return ws
         },
         xlsx: { async writeBuffer() { return new ArrayBuffer(8) } }
@@ -62,32 +68,40 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     // exported rows added
     // rows are transformed to export format (headers used as keys, values stringified)
     const expectedRows = rows.map(r => ({ ID: String(r.ID), 'Company Name': String(r.Name) }))
-    expect(captured._sheet.rows).toEqual(expectedRows)
+    // ensure the data sheet contains expected rows
+    expect(captured.sheets['Data'].rows).toEqual(expectedRows)
     // freeze view set
-    expect(captured._sheet.views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
+    expect(captured.sheets['Data'].views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
     // column widths calculated based on header & content
-    expect(captured._sheet.columns).toBeTruthy()
+    expect(captured.sheets['Data'].columns).toBeTruthy()
     // "ID" header -> max length of header (2) vs values (1) -> width = max(2+2, 10) -> 10
     // "Company Name" header (12) vs values (Alice=5,Bob=3) -> width = 12+2 = 14
-    expect(captured._sheet.columns[0].width).toBe(10)
-    expect(captured._sheet.columns[1].width).toBe(14)
+    expect(captured.sheets['Data'].columns[0].width).toBe(10)
+    expect(captured.sheets['Data'].columns[1].width).toBe(14)
 
     // sheet should have been protected
-    expect(captured._sheet._protected).toBeTruthy()
+    expect(captured.sheets['Data']._protected).toBeTruthy()
 
     // verify protection: header row locked
-    const headerCell = captured._sheet.getRow(1).getCell(1)
+    const headerCell = captured.sheets['Data'].getRow(1).getCell(1)
     expect(headerCell.protection.locked).toBe(true)
-    const headerCell2 = captured._sheet.getRow(1).getCell(2)
+    const headerCell2 = captured.sheets['Data'].getRow(1).getCell(2)
     expect(headerCell2.protection.locked).toBe(true)
 
     // first data row column 1 (IDs) locked, column 2 unlocked
-    const dataCellId = captured._sheet.getRow(2).getCell(1)
+    const dataCellId = captured.sheets['Data'].getRow(2).getCell(1)
     expect(dataCellId.protection.locked).toBe(true)
-    const dataCellOther = captured._sheet.getRow(2).getCell(2)
+    const dataCellOther = captured.sheets['Data'].getRow(2).getCell(2)
     expect(dataCellOther.protection.locked).toBe(false)
 
     // restore original
+    // metadata sheet should exist and contain JSON in A1
+    const metaSheet = captured.sheets['__export_metadata']
+    expect(metaSheet).toBeTruthy()
+    const raw = metaSheet.getCell('A1').value
+    const parsed = JSON.parse(raw)
+    expect(Array.isArray(parsed.columns)).toBe(true)
+
     ExcelJS.Workbook.mockRestore()
   })
 
@@ -95,7 +109,8 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     let captured = null
     jest.spyOn(ExcelJS, 'Workbook').mockImplementation(function Workbook() {
       captured = {
-        _sheet: null,
+        sheets: {},
+        lastAdded: null,
         addWorksheet(name) {
           const ws = {
             name,
@@ -104,24 +119,21 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
             views: null,
             _cells: {},
             rowCount: 0,
-            addRows(r) {
-              this.rows.push(...r);
-              this.rowCount = this.rows.length + 1;
-            },
+            addRows(r) { this.rows.push(...r); this.rowCount = this.rows.length + 1 },
             getRow(rowNumber) {
               return {
                 getCell: (colNumber) => {
-                  const key = `${rowNumber}:${colNumber}`;
-                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {}, dataValidation: undefined };
-                  return ws._cells[key];
+                  const key = `${rowNumber}:${colNumber}`
+                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {}, dataValidation: undefined }
+                  return ws._cells[key]
                 }
-              };
+              }
             },
-            protect(password, opts) {
-              this._protected = { password, opts };
-            }
-          };
-          this._sheet = ws
+            getCell(cellRef) { if (!ws._cells[cellRef]) ws._cells[cellRef] = { value: undefined }; return ws._cells[cellRef] },
+            protect(password, opts) { this._protected = { password, opts } }
+          }
+          captured.sheets[name] = ws
+          captured.lastAdded = ws
           return ws
         },
         xlsx: { async writeBuffer() { return new ArrayBuffer(8) } }
@@ -140,8 +152,8 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     expect(result.success).toBe(true)
     // dataValidation should be applied on row cells for the boolean column (col index 3)
     // check row 2 col 3 and row 3 col 3 (1-based indexes)
-    const cellA = captured._sheet.getRow(2).getCell(3)
-    const cellB = captured._sheet.getRow(3).getCell(3)
+    const cellA = captured.sheets['Data'].getRow(2).getCell(3)
+    const cellB = captured.sheets['Data'].getRow(3).getCell(3)
     expect(cellA.dataValidation).toBeTruthy()
     expect(cellB.dataValidation).toBeTruthy()
 

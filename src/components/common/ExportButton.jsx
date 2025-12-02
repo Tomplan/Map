@@ -3,6 +3,7 @@ import Icon from '@mdi/react';
 import { mdiDownload, mdiLoading, mdiChevronDown } from '@mdi/js';
 import { useDialog } from '../../contexts/DialogContext';
 import { exportToExcel, exportToCSV, exportToJSON } from '../../utils/dataExportImport';
+import { supabase as globalSupabase } from '../../supabaseClient'
 import { getDataConfig } from '../../config/dataConfigs';
 
 /**
@@ -78,7 +79,11 @@ export default function ExportButton({
       // Special-case: companies export -> expand 'Categories' into per-category boolean columns
       // so users can select categories individually without editing the category names.
       let columnsToUse = config.exportColumns.slice()
-      if (config.table === 'companies' && additionalData?.supabase) {
+      // Ensure the companies export expands categories no matter which component calls it
+      // Prefer an explicitly provided supabase client via additionalData, otherwise fall
+      // back to the app's global `supabase` singleton so export works everywhere.
+      const supabaseClient = additionalData?.supabase || globalSupabase
+      if (config.table === 'companies' && supabaseClient) {
         try {
           // Fetch current categories from database so the export always reflects live categories
           // Fetch categories and translations (name exists in category_translations)
@@ -115,7 +120,7 @@ export default function ExportButton({
             // Fetch mappings of companies -> category slugs
             const companyIds = data.map(d => d.id).filter(Boolean)
             const { data: companyCategories } = companyIds.length
-              ? await additionalData.supabase.from('company_categories').select('company_id, categories(slug)').in('company_id', companyIds)
+              ? await supabaseClient.from('company_categories').select('company_id, categories(slug)').in('company_id', companyIds)
               : { data: [] }
 
             const categoryMap = {}

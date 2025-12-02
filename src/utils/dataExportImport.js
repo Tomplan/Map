@@ -114,6 +114,21 @@ export async function exportToExcel(data, columns, filename) {
       deleteRows: false,
     })
 
+    // Add hidden metadata worksheet with canonical column mapping so imports can
+    // reliably map visible headers back to field keys (prevents header renames
+    // from breaking imports). Metadata is written as JSON in cell A1 and the
+    // sheet is hidden/veryHidden where supported.
+    try {
+      const metaSheet = workbook.addWorksheet('__export_metadata')
+      // store the canonical column keys and headers for importer lookup
+      const meta = { columns: columns.map(c => ({ key: c.key, header: c.header })) }
+      metaSheet.getCell('A1').value = JSON.stringify(meta)
+      // ExcelJS supports worksheet.state = 'veryHidden' to hide it from users
+      try { metaSheet.state = 'veryHidden' } catch (e) { /* ignore if not supported in test mocks */ }
+    } catch (e) {
+      // ignore metadata write failures (tests may use lightweight mocks)
+    }
+
     // Generate buffer and trigger download
     const buffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
@@ -213,6 +228,17 @@ export async function parseExcelFile(file) {
         const data = new Uint8Array(e.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
 
+        // Read optional export metadata sheet (created as '__export_metadata')
+        let exportMeta = null
+        try {
+          const metaSheet = workbook.Sheets['__export_metadata']
+          if (metaSheet && metaSheet['A1'] && metaSheet['A1'].v) {
+            exportMeta = JSON.parse(String(metaSheet['A1'].v))
+          }
+        } catch (e) {
+          // ignore parse errors
+        }
+
         // Get first sheet
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
@@ -222,6 +248,33 @@ export async function parseExcelFile(file) {
           defval: '', // Default value for empty cells
           raw: false  // Keep as strings to preserve formatting
         });
+
+        // If metadata declares per-category columns (e.g. key 'category:slug'),
+        // combine them into a single 'Categories' comma-separated value to
+        // keep the importer compatible with the existing transformImport.
+        if (exportMeta && Array.isArray(exportMeta.columns)) {
+          const categoryCols = exportMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
+          if (categoryCols.length) {
+            // For each row, build an array of slugs where the corresponding column value is truthy/TRUE
+            jsonData.forEach(row => {
+              const slugs = []
+              categoryCols.forEach(col => {
+                const header = col.header
+                const slug = String(col.key).split(':')[1]
+                const val = row[header]
+                if (val !== undefined && val !== null) {
+                  const s = String(val).trim().toUpperCase()
+                  if (s === 'TRUE' || s === '1' || s === 'YES') {
+                    slugs.push(slug)
+                  }
+                }
+                // Remove the boolean column so importer only sees a familiar 'Categories' header
+                delete row[header]
+              })
+              row['Categories'] = slugs.join(', ')
+            })
+          }
+        }
 
         resolve({ data: jsonData, error: null });
       } catch (error) {
