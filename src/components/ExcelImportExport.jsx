@@ -27,6 +27,21 @@ export default function ExcelImportExport() {
     if (cols.length) sheet.columns = cols
     sheet.addRows(rows)
 
+    // Calculate column widths (auto-fit by measuring header and cell string lengths)
+    const MIN_COL_WIDTH = 10
+    const MAX_COL_WIDTH = 60
+    const colKeys = Object.keys(rows[0] || {})
+    const computedWidths = colKeys.map((k) => {
+      let maxLen = String(k).length
+      for (const r of rows) {
+        const cell = r[k]
+        const text = cell === null || cell === undefined ? '' : String(cell)
+        if (text.length > maxLen) maxLen = text.length
+      }
+      return Math.min(Math.max(maxLen + 2, MIN_COL_WIDTH), MAX_COL_WIDTH)
+    })
+    sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i] })
+
     // Freeze header row + first column (top row and first column)
     sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
 

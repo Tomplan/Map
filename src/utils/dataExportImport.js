@@ -38,10 +38,26 @@ export async function exportToExcel(data, columns, filename) {
     if (cols.length) sheet.columns = cols
     sheet.addRows(exportData)
 
-    // Set column widths
-    const colWidths = columns.map(col => ({ width: Math.max(col.header.length + 2, 15) }))
-    // ExcelJS column width is 'width' on each column object
-    sheet.columns.forEach((c, i) => { if (colWidths[i]) c.width = colWidths[i].width })
+    // Calculate and set column widths so the widest cell is visible
+    // For each column: find the max length among the header and every cell in that column
+    // Add a small padding (2 chars) and apply a min/max to avoid extremely small or large columns
+    const MIN_COL_WIDTH = 10
+    const MAX_COL_WIDTH = 60
+
+    const computedWidths = columns.map((col) => {
+      const headerText = String(col.header || '')
+      let maxLen = headerText.length
+      for (const row of exportData) {
+        const cell = row[col.header]
+        const text = cell === null || cell === undefined ? '' : String(cell)
+        if (text.length > maxLen) maxLen = text.length
+      }
+      const width = Math.min(Math.max(maxLen + 2, MIN_COL_WIDTH), MAX_COL_WIDTH)
+      return { width }
+    })
+
+    // Apply widths to each column object the worksheet holds
+    sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i].width })
 
     // Freeze header row + first column
     sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]

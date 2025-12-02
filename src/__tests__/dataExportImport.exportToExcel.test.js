@@ -48,6 +48,12 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     expect(captured._sheet.rows).toEqual(expectedRows)
     // freeze view set
     expect(captured._sheet.views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
+    // column widths calculated based on header & content
+    expect(captured._sheet.columns).toBeTruthy()
+    // "ID" header -> max length of header (2) vs values (1) -> width = max(2+2, 10) -> 10
+    // "Company Name" header (12) vs values (Alice=5,Bob=3) -> width = 12+2 = 14
+    expect(captured._sheet.columns[0].width).toBe(10)
+    expect(captured._sheet.columns[1].width).toBe(14)
 
     // restore original
     ExcelJS.Workbook.mockRestore()

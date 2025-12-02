@@ -117,6 +117,12 @@ describe('ExcelImportExport integration', () => {
       expect(capturedWorkbook._sheet.rows).toEqual(rows)
       // Freeze panes were requested as a view
       expect(capturedWorkbook._sheet.views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
+      // Column widths should be computed so that the widest cell is visible
+      expect(capturedWorkbook._sheet.columns).toBeTruthy()
+      // 'name' column has header length 4, values up to 5 -> width = max(5+2,10) = 10
+      // 'age' column header length 3 -> width = max(3+2,10) = 10
+      expect(capturedWorkbook._sheet.columns[0].width).toBe(10)
+      expect(capturedWorkbook._sheet.columns[1].width).toBe(10)
 
       // restore ExcelJS.Workbook
       ExcelJS.Workbook.mockRestore()
