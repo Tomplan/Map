@@ -29,7 +29,10 @@ describe('ExportButton companies export', () => {
               },
               order: (col, opts) => {
                 if (table === 'categories') {
-                  return Promise.resolve({ data: [{ slug: 'cat1', name: 'Category One' }, { slug: 'cat2', name: 'Category Two' }], error: null })
+                  return Promise.resolve({ data: [
+                    { slug: 'cat1', category_translations: [{ language: 'nl', name: 'Category One' }] },
+                    { slug: 'cat2', category_translations: [{ language: 'nl', name: 'Category Two' }] }
+                  ], error: null })
                 }
                 return Promise.resolve({ data: [], error: null })
               }

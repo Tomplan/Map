@@ -81,13 +81,29 @@ export default function ExportButton({
       if (config.table === 'companies' && additionalData?.supabase) {
         try {
           // Fetch current categories from database so the export always reflects live categories
-          const { data: categories } = await additionalData.supabase.from('categories').select('slug, name').order('name')
+          // Fetch categories and translations (name exists in category_translations)
+          // Avoid selecting a non-existent top-level `name` column which causes 400 responses.
+          const { data: categories } = await additionalData.supabase
+            .from('categories')
+            .select('slug, category_translations(language, name, title)')
+            .order('sort_order')
 
           if (Array.isArray(categories) && categories.length > 0) {
+            // Sort client-side by translated name (current app language not available here),
+            // prefer 'nl' then fallback to first available translation, then slug.
+            categories.sort((a, b) => {
+              const aName = (a.category_translations?.find(t => t.language === 'nl')?.name) || a.category_translations?.[0]?.name || a.slug || ''
+              const bName = (b.category_translations?.find(t => t.language === 'nl')?.name) || b.category_translations?.[0]?.name || b.slug || ''
+              return String(aName).localeCompare(String(bName))
+            })
             // find index of the original 'categories' placeholder column and replace it
             const placeholderIndex = columnsToUse.findIndex(c => c.key === 'categories' || c.header === 'Categories')
 
-            const categoryCols = categories.map(cat => ({ key: `category:${cat.slug}`, header: cat.name, type: 'boolean' }))
+            // Choose header name: prefer nl translation, fallback to first translation.name or slug
+            const categoryCols = categories.map(cat => {
+              const header = (cat.category_translations?.find(t => t.language === 'nl')?.name) || cat.category_translations?.[0]?.name || cat.slug
+              return ({ key: `category:${cat.slug}`, header, type: 'boolean' })
+            })
 
             if (placeholderIndex >= 0) {
               columnsToUse.splice(placeholderIndex, 1, ...categoryCols)
