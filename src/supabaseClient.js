@@ -11,15 +11,14 @@ import { createClient } from '@supabase/supabase-js'
 let env = {}
 if (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Object.keys(globalThis.__SUPABASE_CONFIG__).length) {
   env = globalThis.__SUPABASE_CONFIG__
-} else if (typeof import.meta !== 'undefined' && import.meta.env) {
-  // Use Vite's import.meta.env for browser environment
-  env = import.meta.env
-  // Also check for explicitly defined variables
-  if (typeof globalThis.__VITE_SUPABASE_URL__ !== 'undefined') {
-    env.VITE_SUPABASE_URL = globalThis.__VITE_SUPABASE_URL__
-    env.VITE_SUPABASE_ANON_KEY = globalThis.__VITE_SUPABASE_ANON_KEY__
-    env.VITE_ADMIN_EMAIL = globalThis.__VITE_ADMIN_EMAIL__
-    env.VITE_ADMIN_PASSWORD = globalThis.__VITE_ADMIN_PASSWORD__
+} else if (typeof globalThis !== 'undefined' && typeof __VITE_SUPABASE_URL__ !== 'undefined') {
+  // Vite define() injected tokens (compile-time replacements) may be
+  // present as globals (for preview/prod). Use them if available.
+  env = {
+    VITE_SUPABASE_URL: typeof __VITE_SUPABASE_URL__ !== 'undefined' ? __VITE_SUPABASE_URL__ : undefined,
+    VITE_SUPABASE_ANON_KEY: typeof __VITE_SUPABASE_ANON_KEY__ !== 'undefined' ? __VITE_SUPABASE_ANON_KEY__ : undefined,
+    VITE_ADMIN_EMAIL: typeof __VITE_ADMIN_EMAIL__ !== 'undefined' ? __VITE_ADMIN_EMAIL__ : undefined,
+    VITE_ADMIN_PASSWORD: typeof __VITE_ADMIN_PASSWORD__ !== 'undefined' ? __VITE_ADMIN_PASSWORD__ : undefined,
   }
 } else if (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) {
   env = process.env
@@ -30,6 +29,7 @@ if (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Objec
 // helpful runtime debug: show where we sourced the env values from
 const envSource = (typeof globalThis !== 'undefined' && globalThis.__SUPABASE_CONFIG__ && Object.keys(globalThis.__SUPABASE_CONFIG__).length)
   ? 'globalThis.__SUPABASE_CONFIG__'
+  : (typeof globalThis !== 'undefined' && typeof __VITE_SUPABASE_URL__ !== 'undefined') ? '__VITE_DEFINE_GLOBALS__'
   : (typeof process !== 'undefined' && process.env && Object.keys(process.env).length) ? 'process.env' : 'none'
 
 // Avoid noisy logs in tests; debug in browser/dev to help investigate missing creds.
@@ -156,3 +156,15 @@ if (isTestEnv) {
 }
 
 export { supabase }
+
+// Export a tiny helper so unit tests can verify where the runtime env
+// was detected without the tests having to inspect private variables.
+// This helps protect against regressions where the runtime bridge or
+// define-globals get removed accidentally.
+export function __getSupabaseRuntimeInfo() {
+  return {
+    envSource,
+    supabaseUrl: supabaseUrl || null,
+    supabaseAnonKey: supabaseAnonKey || null,
+  }
+}

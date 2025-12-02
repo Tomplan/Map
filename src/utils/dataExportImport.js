@@ -38,6 +38,9 @@ export async function exportToExcel(data, columns, filename) {
     }));
     worksheet['!cols'] = colWidths;
 
+    // Freeze first row and first column (header row and ID column)
+    worksheet['!freeze'] = { xSplit: 1, ySplit: 1 };
+
     // Generate Excel file and trigger download
     const excelBuffer = XLSX.write(workbook, {
       bookType: 'xlsx',

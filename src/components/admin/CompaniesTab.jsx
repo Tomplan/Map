@@ -15,6 +15,9 @@ import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
+import ExportButton from '../common/ExportButton';
+import ImportButton from '../common/ImportButton';
+import { supabase } from '../../supabaseClient';
 
 /**
  * InfoFieldWithTranslations - Multi-language editing with auto-save
@@ -213,7 +216,7 @@ export default function CompaniesTab() {
 
   return (
     <div className="h-full flex flex-col p-4">
-      {/* Header with search and add button */}
+      {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
@@ -222,19 +225,36 @@ export default function CompaniesTab() {
             placeholder={t('helpPanel.companies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="px-3 py-2 border rounded-lg"
+            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <span className="text-sm text-gray-600">
             {filteredItems.length} of {companies.length + 1}
           </span>
         </div>
-        <button
-          onClick={handleStartCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          <Icon path={mdiPlus} size={0.8} />
-          {t('helpPanel.companies.addCompany')}
-        </button>
+
+        {/* Action buttons: Export, Import, Add */}
+        <div className="flex gap-2">
+          <ExportButton
+            dataType="companies"
+            data={companies}
+            filename={`companies-${new Date().toISOString().split('T')[0]}`}
+            additionalData={{ supabase }}
+          />
+          <ImportButton
+            dataType="companies"
+            existingData={companies}
+            onImportComplete={() => {
+              // Real-time subscription handles reload automatically
+            }}
+          />
+          <button
+            onClick={handleStartCreate}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Icon path={mdiPlus} size={0.8} />
+            {t('helpPanel.companies.addCompany')}
+          </button>
+        </div>
       </div>
 
       {/* Tabs */}

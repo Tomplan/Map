@@ -72,7 +72,7 @@ export default function ExportButton({
       // Transform data if needed
       let exportData = data;
       if (config.transformExport) {
-        exportData = config.transformExport(data, additionalData);
+        exportData = await config.transformExport(data, additionalData);
       }
 
       let result;
