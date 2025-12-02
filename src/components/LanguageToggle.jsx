@@ -11,7 +11,7 @@ const LANGUAGES = [
 
 export default function LanguageToggle({ className = '' }) {
   const { i18n } = useTranslation();
-  const { updatePreference } = usePreferences();
+  const { preferences, updatePreference } = usePreferences();
   const { toastError, toastWarning } = useDialog();
   const current = i18n.language;
 
@@ -21,15 +21,18 @@ export default function LanguageToggle({ className = '' }) {
     // Save to localStorage for instant persistence on refresh
     localStorage.setItem('preferredLanguage', langCode);
 
-    // Save to database for cross-device sync
-    try {
-      await updatePreference('preferred_language', langCode);
-    } catch (error) {
-      // Check if it's a conflict error
-      if (error.message.includes('updated from another device')) {
-        toastWarning(error.message);
-      } else {
-        toastError('Failed to save language preference. Please try again.');
+    // Save to database for cross-device sync (only if user is logged in)
+    // preferences will be null/undefined when not authenticated
+    if (preferences) {
+      try {
+        await updatePreference('preferred_language', langCode);
+      } catch (error) {
+        // Check if it's a conflict error
+        if (error.message.includes('updated from another device')) {
+          toastWarning(error.message);
+        } else {
+          toastError('Failed to save language preference. Please try again.');
+        }
       }
     }
   };
