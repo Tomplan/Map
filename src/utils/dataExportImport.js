@@ -166,8 +166,13 @@ export async function exportToExcel(data, columns, filename, options = {}) {
             errorTitle: 'Invalid value',
             error: 'Please select either + or - from the list.'
           }
-          // Merge with existing alignment (preserves vertical top) and add horizontal center
-          try { cell.alignment = { ...cell.alignment, horizontal: 'center' } } catch (e) { /* ignore in lightweight mocks */ }
+          // Apply center alignment for category columns (explicitly set full alignment object)
+          try {
+            cell.alignment = {
+              vertical: 'top',      // Align text to top
+              horizontal: 'center'  // Center align horizontally
+            }
+          } catch (e) { /* ignore in lightweight mocks */ }
         } catch (e) {
           // Some lightweight mocks may not support dataValidation assignment; ignore in tests
         }
