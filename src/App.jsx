@@ -31,18 +31,27 @@ function AppContent() {
     }
   }, [i18n]);
 
-  // Sync language from preferences to i18n (DB is source of truth)
+  // Sync language bidirectionally: localStorage (login choice) takes priority on first load
   useEffect(() => {
     if (!preferencesLoading && preferences?.preferred_language) {
+      const storedLang = localStorage.getItem('preferredLanguage');
+      const dbLang = preferences.preferred_language;
       const currentLang = i18n.language;
-      const prefLang = preferences.preferred_language;
 
-      if (currentLang !== prefLang) {
-        i18n.changeLanguage(prefLang);
-        localStorage.setItem('preferredLanguage', prefLang);
+      // If localStorage differs from DB (user changed at login), sync TO database
+      if (storedLang && storedLang !== dbLang) {
+        updatePreference('preferred_language', storedLang);
+        if (currentLang !== storedLang) {
+          i18n.changeLanguage(storedLang);
+        }
+      }
+      // Otherwise, sync FROM database (multi-device sync)
+      else if (currentLang !== dbLang) {
+        i18n.changeLanguage(dbLang);
+        localStorage.setItem('preferredLanguage', dbLang);
       }
     }
-  }, [preferencesLoading, preferences?.preferred_language, i18n]);
+  }, [preferencesLoading, preferences?.preferred_language, i18n, updatePreference]);
 
   // Initialize selected year from localStorage (will sync with DB when preferences load)
   const [selectedYear, setSelectedYear] = useState(() => {
