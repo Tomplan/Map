@@ -42,6 +42,7 @@ export default function ImportModal({
   const [step, setStep] = useState(STEPS.FILE_SELECT);
   const [selectedFile, setSelectedFile] = useState(null);
   const [parsedRows, setParsedRows] = useState([]);
+  const [parsedMeta, setParsedMeta] = useState(null);
   const [validatedRows, setValidatedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [importResults, setImportResults] = useState(null);
@@ -72,8 +73,8 @@ export default function ImportModal({
     setError(null);
     setStep(STEPS.PARSING);
 
-    // Parse file
-    const { data, error: parseError } = await parseFile(file);
+    // Parse file (parseFile now returns optional metadata for XLSX files)
+    const { data, error: parseError, metadata } = await parseFile(file);
 
     if (parseError || !data) {
       setError(parseError || 'Failed to parse file');
@@ -90,6 +91,12 @@ export default function ImportModal({
     }
 
     setParsedRows(data);
+    // Save metadata (if present) so the preview can render per-category columns
+    setParsedMeta(metadata || null);
+    // Note: parseFile now returns metadata on Excel; the returned object is
+    // { data, error, metadata } — but older code path may only provide data.
+    // We'll instead re-run the parseFile call to destructure metadata properly
+    // below. (See further handling immediately after.)
 
     // Validate and match records
     await validateAndMatch(data);
@@ -607,11 +614,20 @@ export default function ImportModal({
                     <th className="text-left p-2 font-medium text-gray-700">Select</th>
                     <th className="text-left p-2 font-medium text-gray-700">Row</th>
                     <th className="text-left p-2 font-medium text-gray-700">Status</th>
-                    {config.exportColumns.slice(0, 4).map(col => (
-                      <th key={col.key} className="text-left p-2 font-medium text-gray-700">
-                        {col.header}
-                      </th>
-                    ))}
+                    {(() => {
+                        // Build preview columns: default to first 4 configured export columns
+                        // but also append per-category columns if the parsed file provided metadata
+                        const base = config.exportColumns.slice(0, 4)
+                        const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
+                          ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
+                          : []
+                        const previewCols = [...base, ...extra]
+                        return previewCols.map(col => (
+                          <th key={col.key} className="text-left p-2 font-medium text-gray-700">
+                            {col.header}
+                          </th>
+                        ))
+                      })()}
                     <th className="text-left p-2 font-medium text-gray-700">Errors</th>
                   </tr>
                 </thead>
@@ -653,11 +669,18 @@ export default function ImportModal({
                           </span>
                         )}
                       </td>
-                      {config.exportColumns.slice(0, 4).map(col => (
-                        <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
-                          {row.originalRow[col.header] || '-'}
-                        </td>
-                      ))}
+                      {(() => {
+                        const base = config.exportColumns.slice(0, 4)
+                        const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
+                          ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
+                          : []
+                        const previewCols = [...base, ...extra]
+                        return previewCols.map(col => (
+                          <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
+                            {row.originalRow[col.header] || '-'}
+                          </td>
+                        ))
+                      })()}
                       <td className="p-2">
                         {row.validation.errors.length > 0 && (
                           <div className="text-xs text-red-600">

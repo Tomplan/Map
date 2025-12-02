@@ -43,7 +43,8 @@ describe('parseExcelFile metadata handling', () => {
 
     const r1 = data[0]
     expect(r1['Categories']).toBe('cat1')
-    expect(r1['Category One']).toBeUndefined()
+    // per-category columns are preserved for preview and diagnostics
+    expect(r1['Category One']).toBe('+')
 
     const r2 = data[1]
     expect(r2['Categories']).toBe('cat2')
@@ -88,6 +89,8 @@ describe('parseExcelFile metadata handling', () => {
 
     const r1 = data.find(d => String(d['ID']) === '1')
     expect(r1['Categories']).toBe('cat1')
+    // long-format aggregated rows still preserve input fields if present
+    expect(r1['Category Slug']).toBeUndefined() // aggregated row removes the per-row selected after aggregation
 
     const r2 = data.find(d => String(d['ID']) === '2')
     expect(r2['Categories']).toBe('cat2')

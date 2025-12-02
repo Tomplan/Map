@@ -370,7 +370,10 @@ export async function parseExcelFile(file) {
         if (exportMeta && Array.isArray(exportMeta.columns)) {
           const categoryCols = exportMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
           if (categoryCols.length) {
-            // For each row, build an array of slugs where the corresponding column value is truthy/TRUE
+            // For each row, build an array of slugs where the corresponding column value is truthy/TRUE.
+            // IMPORTANT: do NOT delete the boolean columns — keep them so the UI
+            // preview can show per-category flags while we also provide the
+            // aggregated 'Categories' CSV string for downstream import.
             jsonData.forEach(row => {
               const slugs = []
               categoryCols.forEach(col => {
@@ -384,15 +387,16 @@ export async function parseExcelFile(file) {
                     slugs.push(slug)
                   }
                 }
-                // Remove the boolean column so importer only sees a familiar 'Categories' header
-                delete row[header]
+                // Keep the boolean column to allow preview/diagnostics in the UI
               })
               row['Categories'] = slugs.join(', ')
             })
           }
         }
 
-        resolve({ data: jsonData, error: null });
+        // Return any parsed export metadata so callers (UI) can render
+        // per-column context (e.g., category:slug mapping) in previews.
+        resolve({ data: jsonData, error: null, metadata: exportMeta });
       } catch (error) {
         console.error('Error parsing Excel file:', error);
         resolve({ data: null, error: error.message });
