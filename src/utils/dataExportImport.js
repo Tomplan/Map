@@ -128,8 +128,9 @@ export async function exportToExcel(data, columns, filename, options = {}) {
         showRowStripes: true,        // Alternating row colors
         showColumnStripes: false,    // No column stripes (cleaner look)
       },
-      columns: columns.map(col => ({ name: col.header })),
-      rows: exportData.map(row => columns.map(col => row[col.header]))
+      columns: columns.map(col => ({ name: col.header }))
+      // Note: Not passing 'rows' parameter - table will use existing cell data from sheet.addRows()
+      // This preserves cell formatting that was applied before table creation
     });
 
     // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
