@@ -207,10 +207,10 @@ export default function ExportButton({
               : 'none'
             const categorySlugs = Array.isArray(categories) ? categories.map(c => c.slug) : []
 
-            result = await exportToExcel(longRows, longColumns, baseFilename, { metadata: { category_source: categorySource, category_slugs: categorySlugs, format: 'long' } })
+            result = await exportToExcel(longRows, longColumns, baseFilename, { metadata: { category_source: categorySource, category_slugs: categorySlugs, format: 'long' }, freezeColumns: 2 })
           } else {
             // Fallback to regular excel export when no categories
-            result = await exportToExcel(exportData, columnsToUse, baseFilename, { metadata: { format: 'wide' } })
+            result = await exportToExcel(exportData, columnsToUse, baseFilename, { metadata: { format: 'wide' }, freezeColumns: 2 })
           }
           break;
         case 'excel':
@@ -221,7 +221,7 @@ export default function ExportButton({
               : 'none'
             const categorySlugs = Array.isArray(categories) ? categories.map(c => c.slug) : []
 
-            result = await exportToExcel(exportData, columnsToUse, baseFilename, { metadata: { category_source: categorySource, category_slugs: categorySlugs, format: 'wide' } });
+            result = await exportToExcel(exportData, columnsToUse, baseFilename, { metadata: { category_source: categorySource, category_slugs: categorySlugs, format: 'wide' }, freezeColumns: 2 });
           break;
         case 'csv':
           result = await exportToCSV(exportData, config.exportColumns, baseFilename);

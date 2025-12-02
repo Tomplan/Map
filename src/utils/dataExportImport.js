@@ -79,8 +79,24 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       }
     }
 
-    // Freeze header row + first column
-    sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
+    // Freeze header row + N columns. Default to freezing the first column
+    // (IDs) for backward compatibility but allow caller to request freezing
+    // more columns (e.g., ID + Company Name).
+    const freezeColumns = (options && Number.isInteger(options.freezeColumns) && options.freezeColumns > 0) ? options.freezeColumns : 1
+    const topLeftCol = freezeColumns + 1
+    // small helper to convert 1-based column index to Excel letter(s)
+    function colIndexToLetter(index) {
+      let dividend = index
+      let columnName = ''
+      while (dividend > 0) {
+        let modulo = (dividend - 1) % 26
+        columnName = String.fromCharCode(65 + modulo) + columnName
+        dividend = Math.floor((dividend - modulo) / 26)
+      }
+      return columnName
+    }
+
+    sheet.views = [{ state: 'frozen', xSplit: freezeColumns, ySplit: 1, topLeftCell: `${colIndexToLetter(topLeftCol)}2` }]
 
     // Protect sheet so headers (first row) and IDs (first column) are locked
     // Approach: Unlock all cells, then lock first row and first column, then protect the sheet
@@ -91,8 +107,8 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       const row = sheet.getRow(r)
       for (let c = 1; c <= totalCols; c++) {
         const cell = row.getCell(c)
-        // lock header row (row 1) and id column (col 1); other cells unlocked
-        if (r === 1 || c === 1) {
+        // lock header row (row 1) and N left-most columns; other cells unlocked
+        if (r === 1 || c <= freezeColumns) {
           cell.protection = { locked: true }
         } else {
           cell.protection = { locked: false }
