@@ -123,11 +123,11 @@ export default function ExportButton({
             })
 
             if (placeholderIndex >= 0) {
-              columnsToUse.splice(placeholderIndex, 1, ...categoryCols)
-            } else {
-              // append if placeholder not found
-              columnsToUse.push(...categoryCols)
+              // remove the original 'Categories' placeholder and append category columns
+              columnsToUse.splice(placeholderIndex, 1)
             }
+            // append category columns to the end so they don't split core fields
+            columnsToUse.push(...categoryCols)
 
             // Fetch mappings of companies -> category slugs
             const companyIds = data.map(d => d.id).filter(Boolean)
@@ -164,55 +164,7 @@ export default function ExportButton({
       const baseFilename = getFilename();
 
       switch (format) {
-        case 'excel-long':
-          // Long-format: one row per (company, category) so spreadsheets are tall
-          // rather than wide. This is only meaningful when we have category
-          // definitions available. If categories are missing, fall back to regular
-          // excel export.
-          if (config.table === 'companies' && Array.isArray(categories) && categories.length > 0) {
-            // Base columns: remove any per-category boolean placeholder keys
-            const baseCols = columnsToUse.filter(c => !(c.key && String(c.key).startsWith('category:')) && c.key !== 'categories')
-
-            // Long format columns: base fields (use header as key so exportToExcel
-            // can map values correctly) + category_slug + selected flag
-            const longColumns = baseCols.map(c => ({ header: c.header, key: c.header, type: c.type }))
-            // Use header strings as keys so exportToExcel's column.key lookup
-            // matches the keys present in the longRows objects (we populate
-            // values using header keys below).
-            longColumns.push({ key: 'Category Slug', header: 'Category Slug', type: 'string' })
-            longColumns.push({ key: 'Selected', header: 'Selected', type: 'boolean' })
-
-            // Build long-form rows
-            const longRows = []
-            exportData.forEach(row => {
-              categories.forEach(cat => {
-                const selectedKey = `category:${cat.slug}`
-                const selectedVal = row[selectedKey] === 'TRUE' || row[selectedKey] === true || String(row[selectedKey]).toUpperCase() === 'YES'
-                // Copy base fields only
-                const newRow = {}
-                baseCols.forEach(bc => {
-                  // prefer the source key (bc.key) otherwise allow already-header-keyed values
-                  const value = row[bc.key] !== undefined ? row[bc.key] : row[bc.header]
-                  newRow[bc.header] = value
-                })
-                // Add category slug and selected flag
-                newRow['Category Slug'] = cat.slug
-                newRow['Selected'] = selectedVal ? 'TRUE' : 'FALSE'
-                longRows.push(newRow)
-              })
-            })
-
-            const categorySource = Array.isArray(categories) && categories.length > 0
-              ? (additionalData?.supabase ? 'supabase' : (inMemoryCategories && inMemoryCategories.length ? 'in-memory' : 'unknown'))
-              : 'none'
-            const categorySlugs = Array.isArray(categories) ? categories.map(c => c.slug) : []
-
-            result = await exportToExcel(longRows, longColumns, baseFilename, { metadata: { category_source: categorySource, category_slugs: categorySlugs, format: 'long' }, freezeColumns: 2 })
-          } else {
-            // Fallback to regular excel export when no categories
-            result = await exportToExcel(exportData, columnsToUse, baseFilename, { metadata: { format: 'wide' }, freezeColumns: 2 })
-          }
-          break;
+          
         case 'excel':
             // Build metadata to help identify where category columns came from so
             // import/debugging can detect the source quickly.
@@ -281,13 +233,7 @@ export default function ExportButton({
               <span>📊</span>
               <span>Export as Excel (.xlsx)</span>
             </button>
-            <button
-              onClick={() => handleExport('excel-long')}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-            >
-              <span>📊</span>
-              <span>Export as Excel — rows per category (long)</span>
-            </button>
+            
             <button
               onClick={() => handleExport('csv')}
               className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
