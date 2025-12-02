@@ -62,6 +62,38 @@ export async function exportToExcel(data, columns, filename) {
     // Freeze header row + first column
     sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
 
+    // Protect sheet so headers (first row) and IDs (first column) are locked
+    // Approach: Unlock all cells, then lock first row and first column, then protect the sheet
+    const totalRows = sheet.rowCount || (exportData.length + 1)
+    const totalCols = sheet.columns ? sheet.columns.length : columns.length
+
+    for (let r = 1; r <= totalRows; r++) {
+      const row = sheet.getRow(r)
+      for (let c = 1; c <= totalCols; c++) {
+        const cell = row.getCell(c)
+        // lock header row (row 1) and id column (col 1); other cells unlocked
+        if (r === 1 || c === 1) {
+          cell.protection = { locked: true }
+        } else {
+          cell.protection = { locked: false }
+        }
+      }
+    }
+
+    // Enable worksheet protection (no password by default) so locked flags apply
+    // Disable formatting/inserting/deleting by default so headers/ids remain read-only
+    await sheet.protect('', {
+      selectLockedCells: true,
+      selectUnlockedCells: true,
+      formatCells: false,
+      formatRows: false,
+      formatColumns: false,
+      insertColumns: false,
+      insertRows: false,
+      deleteColumns: false,
+      deleteRows: false,
+    })
+
     // Generate buffer and trigger download
     const buffer = await workbook.xlsx.writeBuffer()
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })

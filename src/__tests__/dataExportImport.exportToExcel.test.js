@@ -21,7 +21,24 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
             columns: null,
             rows: [],
             views: null,
-            addRows(r) { this.rows.push(...r) }
+            _cells: {},
+            rowCount: 0,
+            addRows(r) {
+              this.rows.push(...r)
+              // header row + data rows
+              this.rowCount = this.rows.length + 1
+            },
+            getRow(rowNumber) {
+              // return lightweight row that supports getCell
+              return {
+                getCell: (colNumber) => {
+                  const key = `${rowNumber}:${colNumber}`
+                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {} }
+                  return ws._cells[key]
+                }
+              }
+            },
+            protect(password, opts) { this._protected = { password, opts } }
           }
           this._sheet = ws
           return ws
@@ -54,6 +71,21 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     // "Company Name" header (12) vs values (Alice=5,Bob=3) -> width = 12+2 = 14
     expect(captured._sheet.columns[0].width).toBe(10)
     expect(captured._sheet.columns[1].width).toBe(14)
+
+    // sheet should have been protected
+    expect(captured._sheet._protected).toBeTruthy()
+
+    // verify protection: header row locked
+    const headerCell = captured._sheet.getRow(1).getCell(1)
+    expect(headerCell.protection.locked).toBe(true)
+    const headerCell2 = captured._sheet.getRow(1).getCell(2)
+    expect(headerCell2.protection.locked).toBe(true)
+
+    // first data row column 1 (IDs) locked, column 2 unlocked
+    const dataCellId = captured._sheet.getRow(2).getCell(1)
+    expect(dataCellId.protection.locked).toBe(true)
+    const dataCellOther = captured._sheet.getRow(2).getCell(2)
+    expect(dataCellOther.protection.locked).toBe(false)
 
     // restore original
     ExcelJS.Workbook.mockRestore()

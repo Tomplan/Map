@@ -45,6 +45,24 @@ export default function ExcelImportExport() {
     // Freeze header row + first column (top row and first column)
     sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
 
+    // Lock header row (first row) and IDs (first column) and leave other cells editable
+    const totalRows = sheet.rowCount || (rows.length + 1)
+    const totalCols = sheet.columns ? sheet.columns.length : colKeys.length
+
+    for (let r = 1; r <= totalRows; r++) {
+      const row = sheet.getRow(r)
+      for (let c = 1; c <= totalCols; c++) {
+        const cell = row.getCell(c)
+        if (r === 1 || c === 1) {
+          cell.protection = { locked: true }
+        } else {
+          cell.protection = { locked: false }
+        }
+      }
+    }
+
+    await sheet.protect('', { selectLockedCells: true, selectUnlockedCells: true })
+
     // Generate workbook buffer then download
     const wbout = await workbook.xlsx.writeBuffer()
     const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
