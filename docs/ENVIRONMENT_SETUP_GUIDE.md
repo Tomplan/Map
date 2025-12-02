@@ -82,8 +82,33 @@ npm run backup:critical
 ### "Connection refused"
 ✅ **Check** - Verify SUPABASE_DB_HOST is correct
 
-### "Password authentication failed"  
+### "Password authentication failed"
 ✅ **Check** - Verify SUPABASE_DB_PASSWORD is correct
+
+### npm v11 - Missing DevDependencies (vite, etc.)
+⚠️ **Important**: npm v11.6.0 may have `omit = "dev"` configured, preventing devDependencies from installing.
+
+**Symptoms:**
+- Build fails with "Cannot find package 'vite'"
+- Missing packages even after `npm install`
+- `npm list vite` shows "(empty)"
+
+**Quick Fix:**
+```bash
+npm install --include=dev
+```
+
+**Permanent Fix (may need to repeat):**
+```bash
+npm config set omit "" --location=user
+```
+
+**Alternative:** Consider downgrading to npm v10 if issue persists:
+```bash
+npm install -g npm@10
+```
+
+This issue was discovered during file-saver integration (Dec 2025) and affects all devDependencies including vite, @vitejs/plugin-react, and build tools.
 
 ## 🎉 Success!
 
