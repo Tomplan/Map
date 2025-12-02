@@ -112,6 +112,35 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       }
     }
 
+    // Apply center alignment to category columns BEFORE table creation
+    // Identify category columns by checking original key/type
+    const booleanColumnIndices = sheet.columns
+      .map((c, i) => ({ c, i }))
+      .filter(obj => {
+        // Check original column key first (e.g., 'category:slug')
+        if (obj.c && obj.c.origKey && String(obj.c.origKey).startsWith('category:')) return true
+        // Or check original declared type
+        if (obj.c && obj.c.origType === 'boolean') return true
+        // Lastly fallback to header text that contains 'category'
+        if (obj.c && obj.c.header && String(obj.c.header).toLowerCase().includes('category')) return true
+        return false
+      })
+      .map(obj => obj.i + 1) // ExcelJS columns are 1-based when accessing cells by col number
+
+    // Apply center alignment to category columns before table creation
+    for (let rowIdx = 2; rowIdx <= (sheet.rowCount || exportData.length + 1); rowIdx++) {
+      const row = sheet.getRow(rowIdx);
+      for (const colIdx of booleanColumnIndices) {
+        const cell = row.getCell(colIdx);
+        try {
+          cell.alignment = {
+            vertical: 'top',
+            horizontal: 'center'
+          };
+        } catch (e) { /* ignore in lightweight mocks */ }
+      }
+    }
+
     // Convert data range to Excel Table for auto-filtering and styling
     // This provides dropdown arrows in headers for sorting/filtering and professional banded rows
     const lastRow = exportData.length + 1; // +1 for header row
@@ -128,32 +157,19 @@ export async function exportToExcel(data, columns, filename, options = {}) {
         showRowStripes: true,        // Alternating row colors
         showColumnStripes: false,    // No column stripes (cleaner look)
       },
-      columns: columns.map(col => ({ name: col.header }))
-      // Note: Not passing 'rows' parameter - table will use existing cell data from sheet.addRows()
-      // This preserves cell formatting that was applied before table creation
+      columns: columns.map(col => ({ name: col.header })),
+      rows: exportData.map(row => columns.map(col => row[col.header]))
     });
 
     // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
-    const booleanColumnIndices = sheet.columns
-      .map((c, i) => ({ c, i }))
-      .filter(obj => {
-        // Check original column key first (e.g., 'category:slug')
-        if (obj.c && obj.c.origKey && String(obj.c.origKey).startsWith('category:')) return true
-        // Or check original declared type
-        if (obj.c && obj.c.origType === 'boolean') return true
-        // Lastly fallback to header text that contains 'category'
-        if (obj.c && obj.c.header && String(obj.c.header).toLowerCase().includes('category')) return true
-        return false
-      })
-      .map(obj => obj.i + 1) // ExcelJS columns are 1-based when accessing cells by col number
-
+    // Note: booleanColumnIndices was already computed above before table creation
     // For each data row, add validation on boolean columns
     for (let r = 2; r <= (sheet.rowCount || exportData.length + 1); r++) {
       const row = sheet.getRow(r)
       for (const colIdx of booleanColumnIndices) {
         const cell = row.getCell(colIdx)
         // Only set validation for cells that exist
-          try {
+        try {
           // Enforce strict validation: only allow TRUE or FALSE values.
           // errorStyle: 'stop' prevents invalid entry (Excel shows error and will
           // reject the input) which helps keep imports safer.
@@ -167,13 +183,7 @@ export async function exportToExcel(data, columns, filename, options = {}) {
             errorTitle: 'Invalid value',
             error: 'Please select either + or - from the list.'
           }
-          // Apply center alignment for category columns (explicitly set full alignment object)
-          try {
-            cell.alignment = {
-              vertical: 'top',      // Align text to top
-              horizontal: 'center'  // Center align horizontally
-            }
-          } catch (e) { /* ignore in lightweight mocks */ }
+          // Note: Center alignment was already applied before table creation (line 130-142)
         } catch (e) {
           // Some lightweight mocks may not support dataValidation assignment; ignore in tests
         }
