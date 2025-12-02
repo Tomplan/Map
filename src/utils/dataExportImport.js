@@ -34,7 +34,10 @@ export async function exportToExcel(data, columns, filename, options = {}) {
     const sheet = workbook.addWorksheet('Data')
 
     // Set header columns then add rows
-    const cols = columns.map((c) => ({ header: c.header, key: c.header }))
+    // Preserve the original column key and type on the worksheet column definitions
+    // so we can reliably detect category columns later even if the visible
+    // header doesn't include the word "category".
+    const cols = columns.map((c) => ({ header: c.header, key: c.header, origKey: c.key, origType: c.type }))
     if (cols.length) sheet.columns = cols
     sheet.addRows(exportData)
 
@@ -62,7 +65,15 @@ export async function exportToExcel(data, columns, filename, options = {}) {
     // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
     const booleanColumnIndices = sheet.columns
       .map((c, i) => ({ c, i }))
-      .filter(obj => obj.c && (obj.c.type === 'boolean' || (obj.c.header && String(obj.c.header).toLowerCase().includes('category'))))
+      .filter(obj => {
+        // Check original column key first (e.g., 'category:slug')
+        if (obj.c && obj.c.origKey && String(obj.c.origKey).startsWith('category:')) return true
+        // Or check original declared type
+        if (obj.c && obj.c.origType === 'boolean') return true
+        // Lastly fallback to header text that contains 'category'
+        if (obj.c && obj.c.header && String(obj.c.header).toLowerCase().includes('category')) return true
+        return false
+      })
       .map(obj => obj.i + 1) // ExcelJS columns are 1-based when accessing cells by col number
 
     // For each data row, add validation on boolean columns

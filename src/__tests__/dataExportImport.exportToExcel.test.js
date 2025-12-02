@@ -209,13 +209,14 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     global.URL = Object.assign(global.URL || {}, { createObjectURL: jest.fn().mockReturnValue('blob:fake'), revokeObjectURL: jest.fn() })
     jest.spyOn(fileSaver, 'saveAs').mockImplementation(() => true)
 
+    // header doesn't include word 'category' but the original key is category:cat1
     const rows = [{ ID: 1, Name: 'Alice', 'category:cat1': 'TRUE' }, { ID: 2, Name: 'Bob', 'category:cat1': 'FALSE' }]
-    const columns = [{ key: 'ID', header: 'ID' }, { key: 'Name', header: 'Company Name' }, { key: 'category:cat1', header: 'Category One', type: 'boolean' }]
+    const columns = [{ key: 'ID', header: 'ID' }, { key: 'Name', header: 'Company Name' }, { key: 'category:cat1', header: 'Food', type: 'boolean' }]
 
     const result = await dataExport.exportToExcel(rows, columns, 'companies-test')
 
     expect(result.success).toBe(true)
-    // dataValidation should be applied on row cells for the boolean column (col index 3)
+    // dataValidation should be applied on row cells for the boolean column (col index 3) even though header doesn't include 'category'
     // check row 2 col 3 and row 3 col 3 (1-based indexes)
     const cellA = captured.sheets['Data'].getRow(2).getCell(3)
     const cellB = captured.sheets['Data'].getRow(3).getCell(3)
