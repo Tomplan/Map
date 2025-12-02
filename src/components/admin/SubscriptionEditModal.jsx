@@ -4,7 +4,7 @@ import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
 import { getLogoPath } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
-import { useAssignments } from '../../hooks/useAssignments';
+import useAssignments from '../../hooks/useAssignments';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 
 /**
