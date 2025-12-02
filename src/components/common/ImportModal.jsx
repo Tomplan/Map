@@ -249,6 +249,102 @@ export default function ImportModal({
     }
   };
 
+  // Helper: Assign categories to company
+  const assignCompanyCategories = async (companyId, categorySlugs, categorySlugToIdMap, errors) => {
+    if (!categorySlugs || categorySlugs.length === 0) return;
+
+    try {
+      // Map slugs to IDs
+      const categoryIds = categorySlugs
+        .map(slug => categorySlugToIdMap[slug.toLowerCase()])
+        .filter(id => id !== undefined);
+
+      if (categoryIds.length === 0) return; // No valid categories
+
+      // Delete existing assignments
+      await supabase
+        .from('company_categories')
+        .delete()
+        .eq('company_id', companyId);
+
+      // Add new assignments
+      const assignments = categoryIds.map(categoryId => ({
+        company_id: companyId,
+        category_id: categoryId
+      }));
+
+      const { error } = await supabase
+        .from('company_categories')
+        .insert(assignments);
+
+      if (error) {
+        errors.push({
+          type: 'CATEGORY',
+          companyId,
+          message: `Failed to assign categories: ${error.message}`
+        });
+      }
+    } catch (error) {
+      errors.push({
+        type: 'CATEGORY',
+        companyId,
+        message: `Failed to assign categories: ${error.message}`
+      });
+    }
+  };
+
+  // Helper: Save company translations
+  const saveCompanyTranslations = async (companyId, translations, errors) => {
+    if (!translations) return;
+
+    const translationRecords = [];
+
+    // Build translation records for each language
+    if (translations.nl && translations.nl.trim()) {
+      translationRecords.push({
+        company_id: companyId,
+        language_code: 'nl',
+        info: translations.nl.trim(),
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    if (translations.en && translations.en.trim()) {
+      translationRecords.push({
+        company_id: companyId,
+        language_code: 'en',
+        info: translations.en.trim(),
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    if (translations.de && translations.de.trim()) {
+      translationRecords.push({
+        company_id: companyId,
+        language_code: 'de',
+        info: translations.de.trim(),
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    // Upsert translations (insert or update)
+    if (translationRecords.length > 0) {
+      const { error } = await supabase
+        .from('company_translations')
+        .upsert(translationRecords, {
+          onConflict: 'company_id,language_code'
+        });
+
+      if (error) {
+        errors.push({
+          type: 'TRANSLATION',
+          companyId,
+          message: `Failed to save translations: ${error.message}`
+        });
+      }
+    }
+  };
+
   // Execute import
   const handleImport = async () => {
     const rowsToImport = validatedRows.filter(r => selectedRows.has(r.index));
@@ -280,6 +376,20 @@ export default function ImportModal({
           markers.forEach(m => {
             if (m.glyph) markerMap[m.glyph.toLowerCase()] = m.id;
             markerMap[m.id.toString()] = m.id;
+          });
+        }
+      }
+
+      // For companies: Build category slug-to-ID map
+      let categorySlugToIdMap = {};
+      if (dataType === 'companies') {
+        const { data: categories, error: categoriesError } = await supabase
+          .from('categories')
+          .select('id, slug');
+
+        if (!categoriesError && categories) {
+          categories.forEach(cat => {
+            categorySlugToIdMap[cat.slug.toLowerCase()] = cat.id;
           });
         }
       }
@@ -330,6 +440,22 @@ export default function ImportModal({
           errors.push({ type: 'CREATE_BATCH', message: error.message });
         } else {
           createdCount = data?.length || 0;
+
+          // For companies: Save translations and assign categories after successful creation
+          if (dataType === 'companies' && data) {
+            for (let i = 0; i < data.length; i++) {
+              const company = data[i];
+              const originalData = creates[i];
+
+              if (originalData._translations) {
+                await saveCompanyTranslations(company.id, originalData._translations, errors);
+              }
+
+              if (originalData._categorySlugs) {
+                await assignCompanyCategories(company.id, originalData._categorySlugs, categorySlugToIdMap, errors);
+              }
+            }
+          }
         }
       }
 
@@ -344,6 +470,16 @@ export default function ImportModal({
           errors.push({ type: 'UPDATE', id: update.id, message: error.message });
         } else {
           updatedCount++;
+
+          // For companies: Save translations and assign categories after successful update
+          if (dataType === 'companies') {
+            if (update.data._translations) {
+              await saveCompanyTranslations(update.id, update.data._translations, errors);
+            }
+            if (update.data._categorySlugs) {
+              await assignCompanyCategories(update.id, update.data._categorySlugs, categorySlugToIdMap, errors);
+            }
+          }
         }
       }
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ExcelImportExport from '../ExcelImportExport'
 import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 describe('ExcelImportExport integration', () => {
   test('uploads an xlsx file and shows preview, then exports', async () => {
@@ -44,10 +45,18 @@ describe('ExcelImportExport integration', () => {
     }
 
       const exportBtn = screen.getByTestId('export-btn')
-    // Ensure there are rows in state so export is active
-    fireEvent.click(exportBtn)
+      // Ensure there are rows in state so export is active
+      // Prevent jsdom navigation on anchor click
+      const origClick = HTMLAnchorElement.prototype.click
+      HTMLAnchorElement.prototype.click = jest.fn()
 
-    expect(createSpy).toHaveBeenCalled()
+      fireEvent.click(exportBtn)
+
+      // ExcelJS export is async – wait for createObjectURL to be called
+      await waitFor(() => expect(createSpy).toHaveBeenCalled())
+
+      // restore prototypes/mocks
+      HTMLAnchorElement.prototype.click = origClick
       if (createSpy.mockRestore) createSpy.mockRestore()
     })
 
@@ -74,22 +83,42 @@ describe('ExcelImportExport integration', () => {
       const preview = await screen.findByTestId('preview')
       await waitFor(() => expect(preview).toHaveTextContent('Alice'))
 
-      // Intercept the workbook build to assert sheet content. This avoids
-      // having to read bytes out of the created Blob (which can be
-      // environment-dependent in jsdom/node).
-      const originalAppend = XLSX.utils.book_append_sheet
-      let appendedSheet = null
-      jest.spyOn(XLSX.utils, 'book_append_sheet').mockImplementation((wb, sheet, name) => {
-        appendedSheet = sheet
-        return originalAppend(wb, sheet, name)
+      // Replace ExcelJS.Workbook with a lightweight mock so we can inspect
+      // the worksheet that gets created and ensure rows and views are set.
+      const originalWorkbook = ExcelJS.Workbook
+      let capturedWorkbook = null
+      jest.spyOn(ExcelJS, 'Workbook').mockImplementation(function Workbook() {
+        capturedWorkbook = {
+          _sheet: null,
+          addWorksheet(name) {
+            const ws = {
+              name,
+              columns: null,
+              rows: [],
+              views: null,
+              addRows(r) { this.rows.push(...r) }
+            }
+            this._sheet = ws
+            return ws
+          },
+          xlsx: {
+            async writeBuffer() { return new ArrayBuffer(8) }
+          }
+        }
+        return capturedWorkbook
       })
 
       // Trigger export
       const exportBtn = screen.getByTestId('export-btn')
       fireEvent.click(exportBtn)
 
-      expect(appendedSheet).toBeTruthy()
-      const exported = XLSX.utils.sheet_to_json(appendedSheet)
-      expect(exported).toEqual(rows)
+      // Ensure the mocked workbook was used and rows were written
+      expect(capturedWorkbook).toBeTruthy()
+      expect(capturedWorkbook._sheet.rows).toEqual(rows)
+      // Freeze panes were requested as a view
+      expect(capturedWorkbook._sheet.views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
+
+      // restore ExcelJS.Workbook
+      ExcelJS.Workbook.mockRestore()
     })
 })

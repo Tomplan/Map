@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import ExcelJS from 'exceljs'
 
 /**
  * Core utilities for data export/import
@@ -27,26 +28,28 @@ export async function exportToExcel(data, columns, filename) {
       return transformed;
     });
 
-    // Create workbook and worksheet
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
+    // Use ExcelJS to create the workbook so freeze panes are written
+    // reliably (xlsx library does not write <pane/> reliably).
+    const workbook = new ExcelJS.Workbook()
+    const sheet = workbook.addWorksheet('Data')
+
+    // Set header columns then add rows
+    const cols = columns.map((c) => ({ header: c.header, key: c.header }))
+    if (cols.length) sheet.columns = cols
+    sheet.addRows(exportData)
 
     // Set column widths
-    const colWidths = columns.map(col => ({
-      wch: Math.max(col.header.length + 2, 15)
-    }));
-    worksheet['!cols'] = colWidths;
+    const colWidths = columns.map(col => ({ width: Math.max(col.header.length + 2, 15) }))
+    // ExcelJS column width is 'width' on each column object
+    sheet.columns.forEach((c, i) => { if (colWidths[i]) c.width = colWidths[i].width })
 
-    // Generate Excel file and trigger download
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: 'xlsx',
-      type: 'array'
-    });
-    const blob = new Blob([excelBuffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    saveAs(blob, `${filename}.xlsx`);
+    // Freeze header row + first column
+    sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
+
+    // Generate buffer and trigger download
+    const buffer = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    saveAs(blob, `${filename}.xlsx`)
 
     return { success: true };
   } catch (error) {

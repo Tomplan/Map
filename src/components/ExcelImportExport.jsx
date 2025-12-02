@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import * as XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 
 export default function ExcelImportExport() {
   const [rows, setRows] = useState([])
@@ -14,13 +15,24 @@ export default function ExcelImportExport() {
     setRows(json)
   }
 
-  const exportToExcel = () => {
+  const exportToExcel = async () => {
     if (!rows?.length) return
-    const ws = XLSX.utils.json_to_sheet(rows)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
-    const blob = new Blob([wbout], { type: 'application/octet-stream' })
+
+    // Use ExcelJS for exports so freeze panes are written reliably
+    const workbook = new ExcelJS.Workbook()
+    const sheet = workbook.addWorksheet('Sheet1')
+
+    // Add header row based on keys and write rows
+    const cols = Object.keys(rows[0] || {}).map((k) => ({ header: k, key: k }))
+    if (cols.length) sheet.columns = cols
+    sheet.addRows(rows)
+
+    // Freeze header row + first column (top row and first column)
+    sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
+
+    // Generate workbook buffer then download
+    const wbout = await workbook.xlsx.writeBuffer()
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
