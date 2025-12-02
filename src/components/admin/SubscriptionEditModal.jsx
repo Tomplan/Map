@@ -21,9 +21,10 @@ export default function SubscriptionEditModal({
   const { organizationLogo } = useOrganizationLogo();
   const [editForm, setEditForm] = useState({});
 
-  // Get booth assignments for display context
-  const { assignments } = useAssignments(subscription?.event_year);
-  const { markers } = useMarkerGlyphs(subscription?.event_year);
+  // Get booth assignments for display context (use current year as fallback)
+  const eventYear = subscription?.event_year || new Date().getFullYear();
+  const { assignments } = useAssignments(eventYear);
+  const { markers } = useMarkerGlyphs(eventYear);
 
   // Build marker glyph map
   const markerGlyphMap = useMemo(() => {
