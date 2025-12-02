@@ -224,7 +224,13 @@ function formatValueForExport(value, type) {
     case 'number':
       return typeof value === 'number' ? value : '';
     case 'boolean':
-      return value ? 'Yes' : 'No';
+      // Preserve explicit TRUE/FALSE strings if provided (to keep Excel
+      // data-validation friendly values). Otherwise normalize booleans or
+      // truthy/falsey values into canonical 'TRUE'/'FALSE' strings.
+      if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
+      const s = String(value).trim().toUpperCase()
+      if (s === 'TRUE' || s === '1' || s === 'YES' || s === '☑' || s === 'X') return 'TRUE'
+      return 'FALSE'
     default:
       return String(value);
   }
