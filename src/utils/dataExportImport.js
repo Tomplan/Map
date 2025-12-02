@@ -59,6 +59,26 @@ export async function exportToExcel(data, columns, filename) {
     // Apply widths to each column object the worksheet holds
     sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i].width })
 
+    // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
+    const booleanColumnIndices = sheet.columns
+      .map((c, i) => ({ c, i }))
+      .filter(obj => obj.c && (obj.c.type === 'boolean' || (obj.c.header && String(obj.c.header).toLowerCase().includes('category'))))
+      .map(obj => obj.i + 1) // ExcelJS columns are 1-based when accessing cells by col number
+
+    // For each data row, add validation on boolean columns
+    for (let r = 2; r <= (sheet.rowCount || exportData.length + 1); r++) {
+      const row = sheet.getRow(r)
+      for (const colIdx of booleanColumnIndices) {
+        const cell = row.getCell(colIdx)
+        // Only set validation for cells that exist
+        try {
+          cell.dataValidation = { type: 'list', allowBlank: true, formulae: ['"TRUE,FALSE"'] }
+        } catch (e) {
+          // Some lightweight mocks may not support dataValidation assignment; ignore in tests
+        }
+      }
+    }
+
     // Freeze header row + first column
     sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
 

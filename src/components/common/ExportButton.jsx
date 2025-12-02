@@ -75,12 +75,64 @@ export default function ExportButton({
         exportData = await config.transformExport(data, additionalData);
       }
 
+      // Special-case: companies export -> expand 'Categories' into per-category boolean columns
+      // so users can select categories individually without editing the category names.
+      let columnsToUse = config.exportColumns.slice()
+      if (config.table === 'companies' && additionalData?.supabase) {
+        try {
+          // Fetch current categories from database so the export always reflects live categories
+          const { data: categories } = await additionalData.supabase.from('categories').select('slug, name').order('name')
+
+          if (Array.isArray(categories) && categories.length > 0) {
+            // find index of the original 'categories' placeholder column and replace it
+            const placeholderIndex = columnsToUse.findIndex(c => c.key === 'categories' || c.header === 'Categories')
+
+            const categoryCols = categories.map(cat => ({ key: `category:${cat.slug}`, header: cat.name, type: 'boolean' }))
+
+            if (placeholderIndex >= 0) {
+              columnsToUse.splice(placeholderIndex, 1, ...categoryCols)
+            } else {
+              // append if placeholder not found
+              columnsToUse.push(...categoryCols)
+            }
+
+            // Fetch mappings of companies -> category slugs
+            const companyIds = data.map(d => d.id).filter(Boolean)
+            const { data: companyCategories } = companyIds.length
+              ? await additionalData.supabase.from('company_categories').select('company_id, categories(slug)').in('company_id', companyIds)
+              : { data: [] }
+
+            const categoryMap = {}
+            if (companyCategories) {
+              companyCategories.forEach(cc => {
+                if (!categoryMap[cc.company_id]) categoryMap[cc.company_id] = []
+                if (cc.categories?.slug) categoryMap[cc.company_id].push(cc.categories.slug)
+              })
+            }
+
+            // Post-process transformed export rows to add boolean flags per category
+            exportData = exportData.map(row => {
+              const id = row.id
+              const slugs = categoryMap[id] || []
+              const newRow = { ...row }
+              categories.forEach(cat => {
+                // Use string 'TRUE'/'FALSE' to make cells explicit and compatible with Excel data validation
+                newRow[`category:${cat.slug}`] = slugs.includes(cat.slug) ? 'TRUE' : 'FALSE'
+              })
+              return newRow
+            })
+          }
+        } catch (e) {
+          console.error('Error expanding company categories for export:', e)
+        }
+      }
+
       let result;
       const baseFilename = getFilename();
 
       switch (format) {
         case 'excel':
-          result = await exportToExcel(exportData, config.exportColumns, baseFilename);
+          result = await exportToExcel(exportData, columnsToUse, baseFilename);
           break;
         case 'csv':
           result = await exportToCSV(exportData, config.exportColumns, baseFilename);

@@ -90,4 +90,61 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     // restore original
     ExcelJS.Workbook.mockRestore()
   })
+
+  test('applies dataValidation for boolean/category columns', async () => {
+    let captured = null
+    jest.spyOn(ExcelJS, 'Workbook').mockImplementation(function Workbook() {
+      captured = {
+        _sheet: null,
+        addWorksheet(name) {
+          const ws = {
+            name,
+            columns: null,
+            rows: [],
+            views: null,
+            _cells: {},
+            rowCount: 0,
+            addRows(r) {
+              this.rows.push(...r);
+              this.rowCount = this.rows.length + 1;
+            },
+            getRow(rowNumber) {
+              return {
+                getCell: (colNumber) => {
+                  const key = `${rowNumber}:${colNumber}`;
+                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {}, dataValidation: undefined };
+                  return ws._cells[key];
+                }
+              };
+            },
+            protect(password, opts) {
+              this._protected = { password, opts };
+            }
+          };
+          this._sheet = ws
+          return ws
+        },
+        xlsx: { async writeBuffer() { return new ArrayBuffer(8) } }
+      }
+      return captured
+    })
+
+    global.URL = Object.assign(global.URL || {}, { createObjectURL: jest.fn().mockReturnValue('blob:fake'), revokeObjectURL: jest.fn() })
+    jest.spyOn(fileSaver, 'saveAs').mockImplementation(() => true)
+
+    const rows = [{ ID: 1, Name: 'Alice', 'category:cat1': 'TRUE' }, { ID: 2, Name: 'Bob', 'category:cat1': 'FALSE' }]
+    const columns = [{ key: 'ID', header: 'ID' }, { key: 'Name', header: 'Company Name' }, { key: 'category:cat1', header: 'Category One', type: 'boolean' }]
+
+    const result = await dataExport.exportToExcel(rows, columns, 'companies-test')
+
+    expect(result.success).toBe(true)
+    // dataValidation should be applied on row cells for the boolean column (col index 3)
+    // check row 2 col 3 and row 3 col 3 (1-based indexes)
+    const cellA = captured._sheet.getRow(2).getCell(3)
+    const cellB = captured._sheet.getRow(3).getCell(3)
+    expect(cellA.dataValidation).toBeTruthy()
+    expect(cellB.dataValidation).toBeTruthy()
+
+    ExcelJS.Workbook.mockRestore()
+  })
 })
