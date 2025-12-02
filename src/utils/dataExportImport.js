@@ -72,6 +72,18 @@ export async function exportToExcel(data, columns, filename, options = {}) {
     // Apply widths to each column object the worksheet holds
     sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i].width })
 
+    // Helper function to convert column index to Excel letter (A, B, ..., Z, AA, AB, ...)
+    function colIndexToLetter(index) {
+      let dividend = index;
+      let columnName = '';
+      while (dividend > 0) {
+        let modulo = (dividend - 1) % 26;
+        columnName = String.fromCharCode(65 + modulo) + columnName;
+        dividend = Math.floor((dividend - modulo) / 26);
+      }
+      return columnName;
+    }
+
     // Apply text wrapping to columns marked with wrapText flag
     columns.forEach((col, colIdx) => {
       if (col.wrapText) {
@@ -87,6 +99,26 @@ export async function exportToExcel(data, columns, filename, options = {}) {
           };
         }
       }
+    });
+
+    // Convert data range to Excel Table for auto-filtering and styling
+    // This provides dropdown arrows in headers for sorting/filtering and professional banded rows
+    const lastRow = exportData.length + 1; // +1 for header row
+    const lastCol = columns.length;
+    const lastColLetter = colIndexToLetter(lastCol);
+
+    sheet.addTable({
+      name: `Data_${Date.now()}`,  // Unique table name (required by Excel)
+      ref: `A1:${lastColLetter}${lastRow}`,  // Range from A1 to last data cell
+      headerRow: true,  // First row is headers
+      totalsRow: false,  // Don't add totals row
+      style: {
+        theme: 'TableStyleMedium2',  // Professional blue/white banded style
+        showRowStripes: true,        // Alternating row colors
+        showColumnStripes: false,    // No column stripes (cleaner look)
+      },
+      columns: columns.map(col => ({ name: col.header }))
+      // Note: No rows parameter - data was already added to sheet at line 52
     });
 
     // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
@@ -135,51 +167,16 @@ export async function exportToExcel(data, columns, filename, options = {}) {
     // more columns (e.g., ID + Company Name).
     const freezeColumns = (options && Number.isInteger(options.freezeColumns) && options.freezeColumns > 0) ? options.freezeColumns : 1
     const topLeftCol = freezeColumns + 1
-    // small helper to convert 1-based column index to Excel letter(s)
-    function colIndexToLetter(index) {
-      let dividend = index
-      let columnName = ''
-      while (dividend > 0) {
-        let modulo = (dividend - 1) % 26
-        columnName = String.fromCharCode(65 + modulo) + columnName
-        dividend = Math.floor((dividend - modulo) / 26)
-      }
-      return columnName
-    }
 
     sheet.views = [{ state: 'frozen', xSplit: freezeColumns, ySplit: 1, topLeftCell: `${colIndexToLetter(topLeftCol)}2` }]
 
-    // Protect sheet so headers (first row) and IDs (first column) are locked
-    // Approach: Unlock all cells, then lock first row and first column, then protect the sheet
-    const totalRows = sheet.rowCount || (exportData.length + 1)
-    const totalCols = sheet.columns ? sheet.columns.length : columns.length
-
-    for (let r = 1; r <= totalRows; r++) {
-      const row = sheet.getRow(r)
-      for (let c = 1; c <= totalCols; c++) {
-        const cell = row.getCell(c)
-        // lock header row (row 1) and N left-most columns; other cells unlocked
-        if (r === 1 || c <= freezeColumns) {
-          cell.protection = { locked: true }
-        } else {
-          cell.protection = { locked: false }
-        }
-      }
-    }
-
-    // Enable worksheet protection (no password by default) so locked flags apply
-    // Disable formatting/inserting/deleting by default so headers/ids remain read-only
-    await sheet.protect('', {
-      selectLockedCells: true,
-      selectUnlockedCells: true,
-      formatCells: false,
-      formatRows: false,
-      formatColumns: false,
-      insertColumns: false,
-      insertRows: false,
-      deleteColumns: false,
-      deleteRows: false,
-    })
+    // Note: Sheet protection has been intentionally removed to support Excel Table features.
+    // Excel Tables provide natural protection against accidental data corruption through:
+    // - Structured table format with clear boundaries
+    // - Auto-filtering that makes data manipulation more intentional
+    // - Built-in validation and formatting rules
+    // Users benefit more from table features (filtering, sorting, banded rows) than from
+    // locked headers/IDs, especially in import/export workflows where editing flexibility is needed.
 
     // Add hidden metadata worksheet with canonical column mapping so imports can
     // reliably map visible headers back to field keys (prevents header renames
