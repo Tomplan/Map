@@ -16,7 +16,7 @@ import ExcelJS from 'exceljs'
  * @param {string} filename - Output filename (without extension)
  * @returns {Promise<void>}
  */
-export async function exportToExcel(data, columns, filename) {
+export async function exportToExcel(data, columns, filename, options = {}) {
   try {
     // Transform data to match column headers
     const exportData = data.map(row => {
@@ -121,7 +121,9 @@ export async function exportToExcel(data, columns, filename) {
     try {
       const metaSheet = workbook.addWorksheet('__export_metadata')
       // store the canonical column keys and headers for importer lookup
-      const meta = { columns: columns.map(c => ({ key: c.key, header: c.header })) }
+      const baseMeta = { columns: columns.map(c => ({ key: c.key, header: c.header })) }
+      // Merge optional metadata passed by caller (e.g., category source / slugs)
+      const meta = Object.assign({}, baseMeta, options.metadata || {})
       metaSheet.getCell('A1').value = JSON.stringify(meta)
       // ExcelJS supports worksheet.state = 'veryHidden' to hide it from users
       try { metaSheet.state = 'veryHidden' } catch (e) { /* ignore if not supported in test mocks */ }
@@ -248,6 +250,63 @@ export async function parseExcelFile(file) {
           defval: '', // Default value for empty cells
           raw: false  // Keep as strings to preserve formatting
         });
+
+        // If metadata explicitly declares a long-format export (rows per category),
+        // aggregate rows for the same company back into a single row with a
+        // 'Categories' comma-separated value so the rest of the import pipeline
+        // remains compatible.
+        if (exportMeta && exportMeta.format === 'long' && Array.isArray(exportMeta.columns)) {
+          // Detect headers for category slug & selected flag from metadata
+          const catSlugCol = exportMeta.columns.find(c => c.key === 'category_slug')
+          const selectedCol = exportMeta.columns.find(c => c.key === 'category_selected')
+
+          const catSlugHeader = catSlugCol ? catSlugCol.header : (exportMeta.columns.find(c => String(c.header).toLowerCase().includes('category slug')) || {}).header
+          const selectedHeader = selectedCol ? selectedCol.header : (exportMeta.columns.find(c => String(c.header).toLowerCase().includes('selected')) || {}).header
+
+          // Determine grouping key: prefer id column if present otherwise company name
+          const idCol = exportMeta.columns.find(c => c.key === 'id')
+          const idHeader = idCol ? idCol.header : (exportMeta.columns.find(c => String(c.header).toLowerCase() === 'id') || {}).header
+          const nameCol = exportMeta.columns.find(c => c.key === 'name')
+          const nameHeader = nameCol ? nameCol.header : (exportMeta.columns.find(c => String(c.header).toLowerCase().includes('company name')) || {}).header
+
+          const grouped = {}
+          jsonData.forEach((row, idx) => {
+            const idVal = idHeader ? String(row[idHeader]) : ''
+            const nameVal = nameHeader ? String(row[nameHeader]) : ''
+            const groupKey = (idVal && idVal !== 'undefined' && idVal !== 'null') ? `id:${idVal}` : (nameVal ? `name:${nameVal}` : `row:${idx}`)
+
+            if (!grouped[groupKey]) {
+              // copy base fields (all headers except category slug and selected)
+              const baseObj = {}
+              Object.keys(row).forEach(h => {
+                if (h === catSlugHeader || h === selectedHeader) return
+                baseObj[h] = row[h]
+              })
+              baseObj['__aggregatedCategories'] = new Set()
+              grouped[groupKey] = baseObj
+            }
+
+            // Read category slug and selected flag
+            const slug = catSlugHeader ? row[catSlugHeader] : undefined
+            const selectedRaw = selectedHeader ? row[selectedHeader] : undefined
+            const selectedStr = selectedRaw === undefined || selectedRaw === null ? '' : String(selectedRaw).trim().toUpperCase()
+            const selected = (selectedStr === 'TRUE' || selectedStr === '1' || selectedStr === 'YES' || selectedStr === '☑' || selectedStr === 'X')
+            if (slug && selected) grouped[groupKey]['__aggregatedCategories'].add(String(slug).trim())
+          })
+
+          // Build final rows from grouped values
+          const aggregatedRows = Object.values(grouped).map(obj => {
+            const categories = Array.from(obj['__aggregatedCategories'])
+            delete obj['__aggregatedCategories']
+            obj['Categories'] = categories.join(', ')
+            return obj
+          })
+
+          // Replace jsonData with aggregated rows for downstream import
+          // Note: keep original order best-effort by using grouped object insertion order
+          jsonData.length = 0
+          aggregatedRows.forEach(r => jsonData.push(r))
+        }
 
         // If metadata declares per-category columns (e.g. key 'category:slug'),
         // combine them into a single 'Categories' comma-separated value to

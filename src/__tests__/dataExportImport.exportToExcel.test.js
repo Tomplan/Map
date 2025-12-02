@@ -101,6 +101,10 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     const raw = metaSheet.getCell('A1').value
     const parsed = JSON.parse(raw)
     expect(Array.isArray(parsed.columns)).toBe(true)
+    // metadata should include 'columns' mapping; optional metadata fields may
+    // be provided by the caller (category_source / category_slugs) but are not
+    // required for the core exportToExcel helper.
+    expect(parsed.columns).toBeTruthy()
 
     ExcelJS.Workbook.mockRestore()
   })
