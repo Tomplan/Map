@@ -72,6 +72,23 @@ export async function exportToExcel(data, columns, filename, options = {}) {
     // Apply widths to each column object the worksheet holds
     sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i].width })
 
+    // Apply text wrapping to columns marked with wrapText flag
+    columns.forEach((col, colIdx) => {
+      if (col.wrapText) {
+        const excelColIdx = colIdx + 1; // ExcelJS uses 1-based indexing
+
+        // Apply wrapping to all data rows (skip header row 1)
+        for (let rowIdx = 2; rowIdx <= (sheet.rowCount || exportData.length + 1); rowIdx++) {
+          const cell = sheet.getRow(rowIdx).getCell(excelColIdx);
+          cell.alignment = {
+            wrapText: true,           // Enable text wrapping
+            vertical: 'top',          // Align text to top of cell
+            horizontal: 'left'        // Left-align for readability
+          };
+        }
+      }
+    });
+
     // Add data validation for boolean/category columns (restrict to TRUE/FALSE)
     const booleanColumnIndices = sheet.columns
       .map((c, i) => ({ c, i }))

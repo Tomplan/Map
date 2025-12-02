@@ -36,9 +36,9 @@ export const dataConfigs = {
       { key: 'phone', header: 'Phone', type: 'phone' },
       { key: 'email', header: 'Email', type: 'email' },
       { key: 'website', header: 'Website', type: 'string' },
-      { key: 'info_nl', header: 'Info (Nederlands)', type: 'string' },
-      { key: 'info_en', header: 'Info (English)', type: 'string' },
-      { key: 'info_de', header: 'Info (Deutsch)', type: 'string' },
+      { key: 'info_nl', header: 'Info (Nederlands)', type: 'string', wrapText: true },
+      { key: 'info_en', header: 'Info (English)', type: 'string', wrapText: true },
+      { key: 'info_de', header: 'Info (Deutsch)', type: 'string', wrapText: true },
       { key: 'logo', header: 'Logo URL', type: 'string' }
     ],
 
@@ -276,15 +276,15 @@ export const dataConfigs = {
       { key: 'phone', header: 'Phone', type: 'phone' },
       { key: 'email', header: 'Email', type: 'email' },
       { key: 'booth_count', header: 'Booth Count', type: 'number' },
-      { key: 'booth_labels', header: 'Booth Labels', type: 'string' },
-      { key: 'area', header: 'Area', type: 'string' },
+      { key: 'booth_labels', header: 'Booth Labels', type: 'string', wrapText: true },
+      { key: 'area', header: 'Area', type: 'string', wrapText: true },
       { key: 'breakfast_sat', header: 'Breakfast (Sat)', type: 'number' },
       { key: 'lunch_sat', header: 'Lunch (Sat)', type: 'number' },
       { key: 'bbq_sat', header: 'BBQ (Sat)', type: 'number' },
       { key: 'breakfast_sun', header: 'Breakfast (Sun)', type: 'number' },
       { key: 'lunch_sun', header: 'Lunch (Sun)', type: 'number' },
       { key: 'coins', header: 'Coins', type: 'number' },
-      { key: 'notes', header: 'Notes', type: 'string' }
+      { key: 'notes', header: 'Notes', type: 'string', wrapText: true }
     ],
 
     // Transform export data (join company name and booth labels)
