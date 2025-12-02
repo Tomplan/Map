@@ -276,6 +276,7 @@ export const dataConfigs = {
       { key: 'phone', header: 'Phone', type: 'phone' },
       { key: 'email', header: 'Email', type: 'email' },
       { key: 'booth_count', header: 'Booth Count', type: 'number' },
+      { key: 'booth_labels', header: 'Booth Labels', type: 'string' },
       { key: 'area', header: 'Area', type: 'string' },
       { key: 'breakfast_sat', header: 'Breakfast (Sat)', type: 'number' },
       { key: 'lunch_sat', header: 'Lunch (Sat)', type: 'number' },
@@ -286,25 +287,185 @@ export const dataConfigs = {
       { key: 'notes', header: 'Notes', type: 'string' }
     ],
 
-    // Transform export data (join company name)
-    transformExport: (subscriptions) => {
-      return subscriptions.map(sub => ({
-        id: sub.id,
-        company_name: sub.company?.name || '',
-        event_year: sub.event_year,
-        contact: sub.contact || '',
-        phone: sub.phone || '',
-        email: sub.email || '',
-        booth_count: sub.booth_count || 1,
-        area: sub.area || '',
-        breakfast_sat: sub.breakfast_sat || 0,
-        lunch_sat: sub.lunch_sat || 0,
-        bbq_sat: sub.bbq_sat || 0,
-        breakfast_sun: sub.breakfast_sun || 0,
-        lunch_sun: sub.lunch_sun || 0,
-        coins: sub.coins || 0,
-        notes: sub.notes || ''
-      }));
+    // Transform export data (join company name and booth labels)
+    transformExport: async (subscriptions, additionalData) => {
+      const { supabase, eventYear } = additionalData || {};
+
+      // If no supabase or event year, return basic export
+      if (!supabase || !eventYear) {
+        return subscriptions.map(sub => ({
+          id: sub.id,
+          company_name: sub.company?.name || '',
+          event_year: sub.event_year,
+          contact: sub.contact || '',
+          phone: sub.phone || '',
+          email: sub.email || '',
+          booth_count: sub.booth_count || 1,
+          booth_labels: '', // Empty without database access
+          area: sub.area || '',
+          breakfast_sat: sub.breakfast_sat || 0,
+          lunch_sat: sub.lunch_sat || 0,
+          bbq_sat: sub.bbq_sat || 0,
+          breakfast_sun: sub.breakfast_sun || 0,
+          lunch_sun: sub.lunch_sun || 0,
+          coins: sub.coins || 0,
+          notes: sub.notes || ''
+        }));
+      }
+
+      try {
+        // Fetch glyph text from markers_appearance (the actual booth labels)
+        const { data: markerAppearances, error: appearanceError } = await supabase
+          .from('markers_appearance')
+          .select('id, glyph')
+          .eq('event_year', eventYear);
+
+        if (appearanceError) {
+          console.error('Error fetching marker appearances:', appearanceError);
+          // Return basic export without booth labels
+          return subscriptions.map(sub => ({
+            id: sub.id,
+            company_name: sub.company?.name || '',
+            event_year: sub.event_year,
+            contact: sub.contact || '',
+            phone: sub.phone || '',
+            email: sub.email || '',
+            booth_count: sub.booth_count || 1,
+            booth_labels: '',
+            area: sub.area || '',
+            breakfast_sat: sub.breakfast_sat || 0,
+            lunch_sat: sub.lunch_sat || 0,
+            bbq_sat: sub.bbq_sat || 0,
+            breakfast_sun: sub.breakfast_sun || 0,
+            lunch_sun: sub.lunch_sun || 0,
+            coins: sub.coins || 0,
+            notes: sub.notes || ''
+          }));
+        }
+
+        // Build marker ID to glyph map from appearance data
+        const markerGlyphMap = {};
+        markerAppearances?.forEach(appearance => {
+          markerGlyphMap[appearance.id] = appearance.glyph || appearance.id.toString();
+        });
+
+        // Get company IDs to fetch their assignments
+        const companyIds = subscriptions.map(s => s.company_id).filter(Boolean);
+
+        if (companyIds.length === 0) {
+          // No companies to process, return basic export
+          return subscriptions.map(sub => ({
+            id: sub.id,
+            company_name: sub.company?.name || '',
+            event_year: sub.event_year,
+            contact: sub.contact || '',
+            phone: sub.phone || '',
+            email: sub.email || '',
+            booth_count: sub.booth_count || 1,
+            booth_labels: '',
+            area: sub.area || '',
+            breakfast_sat: sub.breakfast_sat || 0,
+            lunch_sat: sub.lunch_sat || 0,
+            bbq_sat: sub.bbq_sat || 0,
+            breakfast_sun: sub.breakfast_sun || 0,
+            lunch_sun: sub.lunch_sun || 0,
+            coins: sub.coins || 0,
+            notes: sub.notes || ''
+          }));
+        }
+
+        // Fetch assignments for all companies in this year
+        const { data: assignments, error: assignmentsError } = await supabase
+          .from('assignments')
+          .select('company_id, marker_id')
+          .eq('event_year', eventYear)
+          .in('company_id', companyIds);
+
+        if (assignmentsError) {
+          console.error('Error fetching assignments:', assignmentsError);
+          // Return basic export without booth labels
+          return subscriptions.map(sub => ({
+            id: sub.id,
+            company_name: sub.company?.name || '',
+            event_year: sub.event_year,
+            contact: sub.contact || '',
+            phone: sub.phone || '',
+            email: sub.email || '',
+            booth_count: sub.booth_count || 1,
+            booth_labels: '',
+            area: sub.area || '',
+            breakfast_sat: sub.breakfast_sat || 0,
+            lunch_sat: sub.lunch_sat || 0,
+            bbq_sat: sub.bbq_sat || 0,
+            breakfast_sun: sub.breakfast_sun || 0,
+            lunch_sun: sub.lunch_sun || 0,
+            coins: sub.coins || 0,
+            notes: sub.notes || ''
+          }));
+        }
+
+        // Build company ID to booth labels map
+        const companyBoothMap = {};
+        assignments?.forEach(assignment => {
+          const glyph = markerGlyphMap[assignment.marker_id];
+          if (glyph) {
+            if (!companyBoothMap[assignment.company_id]) {
+              companyBoothMap[assignment.company_id] = [];
+            }
+            companyBoothMap[assignment.company_id].push(glyph);
+          }
+        });
+
+        // Sort booth labels for each company
+        Object.keys(companyBoothMap).forEach(companyId => {
+          companyBoothMap[companyId].sort();
+        });
+
+        // Enhanced export with company details and assignment info
+        return subscriptions.map(sub => {
+          const boothLabels = companyBoothMap[sub.company_id]?.join(', ') || '';
+
+          return {
+            id: sub.id,
+            company_name: sub.company?.name || '',
+            event_year: sub.event_year,
+            contact: sub.contact || '',
+            phone: sub.phone || '',
+            email: sub.email || '',
+            booth_count: sub.booth_count || 1,
+            booth_labels: boothLabels, // Enhanced field with actual booth labels
+            area: sub.area || '',
+            breakfast_sat: sub.breakfast_sat || 0,
+            lunch_sat: sub.lunch_sat || 0,
+            bbq_sat: sub.bbq_sat || 0,
+            breakfast_sun: sub.breakfast_sun || 0,
+            lunch_sun: sub.lunch_sun || 0,
+            coins: sub.coins || 0,
+            notes: sub.notes || ''
+          };
+        });
+      } catch (error) {
+        console.error('Error in transformExport:', error);
+        // Return basic export on any error
+        return subscriptions.map(sub => ({
+          id: sub.id,
+          company_name: sub.company?.name || '',
+          event_year: sub.event_year,
+          contact: sub.contact || '',
+          phone: sub.phone || '',
+          email: sub.email || '',
+          booth_count: sub.booth_count || 1,
+          booth_labels: '',
+          area: sub.area || '',
+          breakfast_sat: sub.breakfast_sat || 0,
+          lunch_sat: sub.lunch_sat || 0,
+          bbq_sat: sub.bbq_sat || 0,
+          breakfast_sun: sub.breakfast_sun || 0,
+          lunch_sun: sub.lunch_sun || 0,
+          coins: sub.coins || 0,
+          notes: sub.notes || ''
+        }));
+      }
     },
 
     // Transform import row (requires companyMap and eventYear)
@@ -344,7 +505,7 @@ export const dataConfigs = {
       return transformed;
     },
 
-    // Validation function
+    // Validation function with comprehensive field validation
     validateRow: (row, rowIndex, companyMap) => {
       const errors = [];
 
@@ -366,7 +527,46 @@ export const dataConfigs = {
         }
       }
 
-      // Optional: Email format
+      // Event year validation
+      const eventYear = parseInt(row['Event Year']);
+      if (row['Event Year'] && (isNaN(eventYear) || eventYear < 2020 || eventYear > 2100)) {
+        errors.push({
+          field: 'Event Year',
+          message: 'Event Year must be a valid year between 2020-2100'
+        });
+      }
+
+      // Booth count validation
+      const boothCount = parseInt(row['Booth Count']);
+      if (row['Booth Count'] && (isNaN(boothCount) || boothCount < 1)) {
+        errors.push({
+          field: 'Booth Count',
+          message: 'Booth Count must be at least 1'
+        });
+      }
+
+      // Meal count validation (0 or positive integers)
+      const mealFields = ['Breakfast (Sat)', 'Lunch (Sat)', 'BBQ (Sat)', 'Breakfast (Sun)', 'Lunch (Sun)'];
+      mealFields.forEach(field => {
+        const value = parseInt(row[field]);
+        if (row[field] && (isNaN(value) || value < 0)) {
+          errors.push({
+            field: field,
+            message: `${field} must be 0 or a positive integer`
+          });
+        }
+      });
+
+      // Coins validation
+      const coins = parseInt(row['Coins']);
+      if (row['Coins'] && (isNaN(coins) || coins < 0)) {
+        errors.push({
+          field: 'Coins',
+          message: 'Coins must be 0 or a positive integer'
+        });
+      }
+
+      // Optional: Email format validation
       if (row['Email'] && row['Email'].trim()) {
         const emailValidation = validateEmail(row['Email']);
         if (!emailValidation.valid) {
@@ -377,7 +577,7 @@ export const dataConfigs = {
         }
       }
 
-      // Optional: Phone format
+      // Optional: Phone format validation
       if (row['Phone'] && row['Phone'].trim()) {
         const phoneValidation = validatePhone(row['Phone'], normalizePhone);
         if (!phoneValidation.valid) {
@@ -387,29 +587,6 @@ export const dataConfigs = {
           });
         }
       }
-
-      // Validate numbers
-      const numberFields = [
-        { key: 'Booth Count', min: 1 },
-        { key: 'Breakfast (Sat)', min: 0 },
-        { key: 'Lunch (Sat)', min: 0 },
-        { key: 'BBQ (Sat)', min: 0 },
-        { key: 'Breakfast (Sun)', min: 0 },
-        { key: 'Lunch (Sun)', min: 0 },
-        { key: 'Coins', min: 0 }
-      ];
-
-      numberFields.forEach(({ key, min }) => {
-        if (row[key] !== undefined && row[key] !== null && row[key] !== '') {
-          const numValidation = validateNumber(row[key], { min });
-          if (!numValidation.valid) {
-            errors.push({
-              field: key,
-              message: numValidation.error
-            });
-          }
-        }
-      });
 
       return {
         valid: errors.length === 0,

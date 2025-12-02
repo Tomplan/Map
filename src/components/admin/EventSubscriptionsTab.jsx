@@ -12,6 +12,8 @@ import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
 import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
+import ExportButton from '../common/ExportButton';
+import ImportButton from '../common/ImportButton';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
@@ -283,6 +285,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </span>
         </div>
         <div className="flex gap-2">
+          <ExportButton
+            dataType="event_subscriptions"
+            data={subscriptions}
+            additionalData={{ 
+              supabase,
+              eventYear: selectedYear 
+            }}
+            filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
+          />
+          <ImportButton
+            dataType="event_subscriptions"
+            existingData={subscriptions}
+            eventYear={selectedYear}
+            additionalData={{ 
+              supabase,
+              selectedYear 
+            }}
+            onImportComplete={async () => {
+              // ImportModal will handle refreshing the data through its callback
+              // No additional action needed here
+            }}
+          />
           <button
             onClick={handleCopyFromPreviousYear}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
