@@ -37,7 +37,7 @@ export default function ExportButton({
 
   const config = getDataConfig(dataType);
   // in-memory categories available via hook — used as a fallback when Supabase is missing
-  const { categories: inMemoryCategories } = useCategories()
+  const { categories: inMemoryCategories, loading: categoriesLoading } = useCategories()
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -149,8 +149,10 @@ export default function ExportButton({
               const slugs = categoryMap[id] || []
               const newRow = { ...row }
               categories.forEach(cat => {
-                // Use string 'TRUE'/'FALSE' to make cells explicit and compatible with Excel data validation
-                newRow[`category:${cat.slug}`] = slugs.includes(cat.slug) ? 'TRUE' : 'FALSE'
+                // Use visible symbols so spreadsheet UIs render a clear check/dash
+                // and users can easily select values via the dropdown validation.
+                // '+' represents selected, '-' represents not selected.
+                newRow[`category:${cat.slug}`] = slugs.includes(cat.slug) ? '+' : '-'
               })
               return newRow
             })
@@ -228,7 +230,13 @@ export default function ExportButton({
           <div className="py-1">
             <button
               onClick={() => handleExport('excel')}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+              // Prevent exporting to Excel while categories are still loading — this avoids
+              // the race condition where the dropdown is clicked before category columns
+              // have been derived (and users would get a fallback 'Categories' CSV column).
+              disabled={config.table === 'companies' && categoriesLoading}
+              title={config.table === 'companies' && categoriesLoading ? 'Categories are still loading — please wait to export Excel so category columns are included' : undefined}
+              className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2 ${config.table === 'companies' && categoriesLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              aria-disabled={config.table === 'companies' && categoriesLoading}
             >
               <span>📊</span>
               <span>Export as Excel (.xlsx)</span>

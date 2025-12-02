@@ -5,8 +5,8 @@ describe('parseExcelFile metadata handling', () => {
   test('parses a workbook with per-category boolean columns and metadata into Categories field', async () => {
     // Build workbook with sheet - data sheet
     const rows = [
-      { ID: 1, 'Company Name': 'Acme', 'Category One': 'TRUE', 'Category Two': 'FALSE' },
-      { ID: 2, 'Company Name': 'Beta', 'Category One': 'FALSE', 'Category Two': 'TRUE' }
+      { ID: 1, 'Company Name': 'Acme', 'Category One': '+', 'Category Two': '-' },
+      { ID: 2, 'Company Name': 'Beta', 'Category One': '-', 'Category Two': '+' }
     ]
 
     const ws = XLSX.utils.json_to_sheet(rows)
@@ -52,10 +52,10 @@ describe('parseExcelFile metadata handling', () => {
   test('parses long-format workbook (rows per category) and aggregates into Categories', async () => {
     // Build workbook with long-format rows
     const rows = [
-      { ID: 1, 'Company Name': 'Acme', 'Category Slug': 'cat1', 'Selected': 'TRUE' },
-      { ID: 1, 'Company Name': 'Acme', 'Category Slug': 'cat2', 'Selected': 'FALSE' },
-      { ID: 2, 'Company Name': 'Beta', 'Category Slug': 'cat1', 'Selected': 'FALSE' },
-      { ID: 2, 'Company Name': 'Beta', 'Category Slug': 'cat2', 'Selected': 'TRUE' }
+      { ID: 1, 'Company Name': 'Acme', 'Category Slug': 'cat1', 'Selected': '+' },
+      { ID: 1, 'Company Name': 'Acme', 'Category Slug': 'cat2', 'Selected': '-' },
+      { ID: 2, 'Company Name': 'Beta', 'Category Slug': 'cat1', 'Selected': '-' },
+      { ID: 2, 'Company Name': 'Beta', 'Category Slug': 'cat2', 'Selected': '+' }
     ]
 
     const ws = XLSX.utils.json_to_sheet(rows)

@@ -23,7 +23,17 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       const transformed = {};
       columns.forEach(col => {
         const value = row[col.key];
-        transformed[col.header] = formatValueForExport(value, col.type);
+        // For per-category columns (keys like 'category:slug') prefer
+        // visual symbols so spreadsheets show a check or dash instead of
+        // raw TRUE/FALSE text. Keep general booleans using formatValueForExport.
+        if (col && col.key && String(col.key).startsWith('category:')) {
+          // Treat truthy values / legacy TRUE as checked symbol
+          const s = value === undefined || value === null ? '' : String(value).trim().toUpperCase()
+          const truthy = (s === 'TRUE' || s === '1' || s === 'YES' || s === '+' || s === 'X' || s === '✓')
+          transformed[col.header] = truthy ? '+' : '-'
+        } else {
+          transformed[col.header] = formatValueForExport(value, col.type);
+        }
       });
       return transformed;
     });
@@ -82,8 +92,21 @@ export async function exportToExcel(data, columns, filename, options = {}) {
       for (const colIdx of booleanColumnIndices) {
         const cell = row.getCell(colIdx)
         // Only set validation for cells that exist
-        try {
-          cell.dataValidation = { type: 'list', allowBlank: true, formulae: ['"TRUE,FALSE"'] }
+          try {
+          // Enforce strict validation: only allow TRUE or FALSE values.
+          // errorStyle: 'stop' prevents invalid entry (Excel shows error and will
+          // reject the input) which helps keep imports safer.
+          cell.dataValidation = {
+            type: 'list',
+            allowBlank: true,
+            // Use visual symbols in the dropdown so users can choose plus/minus
+            formulae: ['"+,-"'],
+            showErrorMessage: true,
+            errorStyle: 'stop',
+            errorTitle: 'Invalid value',
+            error: 'Please select either + or - from the list.'
+          }
+          try { cell.alignment = { horizontal: 'center' } } catch (e) { /* ignore in lightweight mocks */ }
         } catch (e) {
           // Some lightweight mocks may not support dataValidation assignment; ignore in tests
         }
@@ -240,7 +263,7 @@ function formatValueForExport(value, type) {
       // truthy/falsey values into canonical 'TRUE'/'FALSE' strings.
       if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE'
       const s = String(value).trim().toUpperCase()
-      if (s === 'TRUE' || s === '1' || s === 'YES' || s === '☑' || s === 'X') return 'TRUE'
+      if (s === 'TRUE' || s === '1' || s === 'YES' || s === '+' || s === 'X') return 'TRUE'
       return 'FALSE'
     default:
       return String(value);
@@ -323,7 +346,7 @@ export async function parseExcelFile(file) {
             const slug = catSlugHeader ? row[catSlugHeader] : undefined
             const selectedRaw = selectedHeader ? row[selectedHeader] : undefined
             const selectedStr = selectedRaw === undefined || selectedRaw === null ? '' : String(selectedRaw).trim().toUpperCase()
-            const selected = (selectedStr === 'TRUE' || selectedStr === '1' || selectedStr === 'YES' || selectedStr === '☑' || selectedStr === 'X')
+            const selected = (selectedStr === 'TRUE' || selectedStr === '1' || selectedStr === 'YES' || selectedStr === '+' || selectedStr === 'X')
             if (slug && selected) grouped[groupKey]['__aggregatedCategories'].add(String(slug).trim())
           })
 
@@ -356,7 +379,8 @@ export async function parseExcelFile(file) {
                 const val = row[header]
                 if (val !== undefined && val !== null) {
                   const s = String(val).trim().toUpperCase()
-                  if (s === 'TRUE' || s === '1' || s === 'YES') {
+                  // Accept the visual check symbol and common truthy values
+                  if (s === 'TRUE' || s === '1' || s === 'YES' || s === '+' || s === 'X' || s === '✓') {
                     slugs.push(slug)
                   }
                 }

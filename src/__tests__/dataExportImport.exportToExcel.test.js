@@ -210,7 +210,7 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     jest.spyOn(fileSaver, 'saveAs').mockImplementation(() => true)
 
     // header doesn't include word 'category' but the original key is category:cat1
-    const rows = [{ ID: 1, Name: 'Alice', 'category:cat1': 'TRUE' }, { ID: 2, Name: 'Bob', 'category:cat1': 'FALSE' }]
+    const rows = [{ ID: 1, Name: 'Alice', 'category:cat1': '+' }, { ID: 2, Name: 'Bob', 'category:cat1': '-' }]
     const columns = [{ key: 'ID', header: 'ID' }, { key: 'Name', header: 'Company Name' }, { key: 'category:cat1', header: 'Food', type: 'boolean' }]
 
     const result = await dataExport.exportToExcel(rows, columns, 'companies-test')
@@ -222,6 +222,12 @@ describe('dataExportImport.exportToExcel (ExcelJS)', () => {
     const cellB = captured.sheets['Data'].getRow(3).getCell(3)
     expect(cellA.dataValidation).toBeTruthy()
     expect(cellB.dataValidation).toBeTruthy()
+    // dataValidation should be strict (errorStyle stop) to prevent arbitrary text
+    expect(cellA.dataValidation.errorStyle).toBe('stop')
+    expect(cellB.dataValidation.errorStyle).toBe('stop')
+    // category cells should be center-aligned
+    expect(cellA.alignment).toBeTruthy()
+    expect(cellA.alignment.horizontal).toBe('center')
 
     ExcelJS.Workbook.mockRestore()
   })

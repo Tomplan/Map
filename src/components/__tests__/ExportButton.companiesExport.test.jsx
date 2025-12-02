@@ -83,14 +83,38 @@ describe('ExportButton companies export', () => {
     expect(tail.every(c => c.key && c.key.startsWith('category:'))).toBe(true)
     expect(catCols.map(c => c.header)).toEqual(['Category One', 'Category Two'])
 
-    // Data rows should have category flags as 'TRUE' / 'FALSE'
+    // Data rows should have category flags as '+' / '-'
     const row1 = passedData.find(r => r.id === 1)
     const row2 = passedData.find(r => r.id === 2)
-    expect(row1['category:cat1']).toBe('TRUE')
-    expect(row1['category:cat2']).toBe('FALSE')
-    expect(row2['category:cat1']).toBe('FALSE')
+    expect(row1['category:cat1']).toBe('+')
+    expect(row1['category:cat2']).toBe('-')
+    expect(row2['category:cat1']).toBe('-')
 
     exportSpy.mockRestore()
+    })
+  })
+
+  test('disables Excel export while in-memory categories are still loading', async () => {
+    jest.isolateModules(async () => {
+      // Mock useCategories to report loading=true to simulate initial app load
+      jest.doMock('../../hooks/useCategories', () => ({ default: () => ({ categories: [], loading: true }) }))
+
+      const { default: ExportButtonLocal } = await import('../common/ExportButton')
+
+      const companies = [{ id: 1, name: 'Acme Co' }]
+
+      const { getByText } = render(
+        <ExportButtonLocal dataType="companies" data={companies} filename={'companies-test-file'} />
+        , { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> })
+
+      // Open dropdown
+      fireEvent.click(getByText('Export'))
+
+      const excelButton = getByText('Export as Excel (.xlsx)')
+      // The Excel export option should be rendered but disabled while categories are loading
+      expect(excelButton.closest('button')).toBeDisabled()
+      // And it should include a helpful tooltip/title
+      expect(excelButton.closest('button').getAttribute('title')).toMatch(/Categories are still loading/)
     })
   })
 
