@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import normalizePhone from '../utils/phone';
 
@@ -10,10 +10,17 @@ export default function useCompanies() {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const reloadTimeoutRef = useRef(null);
 
   // Load all companies
   const loadCompanies = useCallback(async () => {
     try {
+      // Clear any pending debounced reload
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+        reloadTimeoutRef.current = null;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -112,16 +119,21 @@ export default function useCompanies() {
     loadCompanies();
   }, [loadCompanies]);
 
-  // Subscribe to realtime changes
+  // Subscribe to realtime changes (debounced to batch multiple rapid changes)
   useEffect(() => {
     const channel = supabase
       .channel('companies-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
-        loadCompanies(); // Reload on any change
+        // Debounce: wait 500ms after last change before reloading
+        if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
+        reloadTimeoutRef.current = setTimeout(() => {
+          loadCompanies();
+        }, 500);
       })
       .subscribe();
 
     return () => {
+      if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
       supabase.removeChannel(channel);
     };
   }, [loadCompanies]);

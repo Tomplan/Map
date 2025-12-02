@@ -91,7 +91,7 @@ function InfoFieldDisplay({ companyId, currentLanguage }) {
  * Companies are reusable across years
  */
 export default function CompaniesTab() {
-  const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies } = useCompanies();
+  const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies, reload: reloadCompanies } = useCompanies();
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
@@ -243,8 +243,9 @@ export default function CompaniesTab() {
           <ImportButton
             dataType="companies"
             existingData={companies}
-            onImportComplete={() => {
-              // Real-time subscription handles reload automatically
+            onImportComplete={async () => {
+              // Reload companies - categories will reload automatically via useEffect
+              await reloadCompanies();
             }}
           />
           <button

@@ -212,6 +212,27 @@ export const dataConfigs = {
         }
       }
 
+      // Validate category columns (per-category boolean columns)
+      Object.keys(row).forEach(key => {
+        // Check if this is a category column (header contains category indicators)
+        const isCategoryColumn = key.toLowerCase().includes('category') || 
+                                key.toLowerCase().includes('cat:') ||
+                                // Check if the key starts with category: pattern (for metadata)
+                                key.startsWith('category:');
+        
+        if (isCategoryColumn && row[key]) {
+          const value = String(row[key]).trim().toUpperCase();
+          const validCategoryValues = ['TRUE', 'FALSE', '+', '-', 'X', '✓', '1', '0', 'YES', 'NO'];
+          
+          if (!validCategoryValues.includes(value)) {
+            errors.push({
+              field: key,
+              message: `Invalid category value "${row[key]}". Use +, -, TRUE, FALSE, X, or ✓`
+            });
+          }
+        }
+      });
+
       return {
         valid: errors.length === 0,
         errors

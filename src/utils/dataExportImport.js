@@ -502,6 +502,21 @@ export async function parseFile(file) {
   }
 }
 
+// Helper: remove internal-only keys (leading underscore) before sending data to DB
+export function sanitizeDbPayload(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(o => sanitizeDbPayload(o))
+  }
+  if (!obj || typeof obj !== 'object') return obj
+
+  const out = {}
+  Object.keys(obj).forEach(k => {
+    if (String(k).startsWith('_')) return // skip internal keys
+    out[k] = obj[k]
+  })
+  return out
+}
+
 // ==================== VALIDATION FUNCTIONS ====================
 
 /**

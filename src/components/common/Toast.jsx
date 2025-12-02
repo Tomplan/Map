@@ -24,14 +24,14 @@ function Toast({ message, type, onClose, duration }) {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white max-w-sm ${bgStyle}`}
+      className={`fixed bottom-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white max-w-sm ${bgStyle} transition-all duration-300 ease-in-out transform`}
       role="alert"
     >
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm">{message}</p>
         <button
           onClick={onClose}
-          className="text-white hover:text-gray-200 text-lg leading-none"
+          className="text-white hover:text-gray-200 text-lg leading-none transition-colors duration-200"
           aria-label="Close"
         >
           &times;
