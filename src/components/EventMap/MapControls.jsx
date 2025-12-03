@@ -7,7 +7,7 @@ import {
   handleZoomOut,
   handleHome,
   handleCustomSearchClick,
-} from '../../utils/MapControls';
+} from '../../utils/mapControls';
 import PrintButton from '../PrintButton';
 
 const checkboxStyle = {
