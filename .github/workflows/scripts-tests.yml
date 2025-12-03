@@ -2,9 +2,9 @@ name: CI — Scripts unit tests
 
 on:
   push:
-    branches: [ main, master, 'feature/**', 'chore/**' ]
+    branches: [ main, master, development, 'feature/**', 'chore/**' ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, development ]
 
 jobs:
   scripts-tests:
