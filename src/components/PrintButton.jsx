@@ -111,8 +111,11 @@ export default function PrintButton({ mapInstance }) {
 
     } catch (error) {
       console.error('Print error:', error);
-      // Fallback to basic window.print()
-        window.print();
+      // Fallback to basic window.print(); alert user that snapshot may be incomplete
+      try {
+        alert('Snapshot printing failed, likely due to blocked map tiles or cross-origin issues — fallback to browser print. Use header Print Map plugin if available for better results.');
+      } catch (e) { /* ignore */ }
+      window.print();
     } finally {
       setIsPrinting(false);
     }

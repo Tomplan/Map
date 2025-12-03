@@ -403,6 +403,51 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }, 100);
   };
 
+  // Ensure the map invalidates its size when the container or viewport changes.
+  // Opening/closing devtools (or other layout changes) can change the available
+  // size and cause Leaflet to not request tiles for the newly visible region.
+  // A ResizeObserver on the map container + window resize listener ensures we
+  // inform Leaflet to refresh tiles when the rendered size changes.
+  useEffect(() => {
+    if (!mapInstance) return undefined;
+
+    let cleanup = null;
+
+    const requestInvalidate = () => {
+      try {
+        // Debounce a bit to avoid thrashing during continuous resize
+        if (mapInstance._invalidateTimeout) clearTimeout(mapInstance._invalidateTimeout);
+        mapInstance._invalidateTimeout = setTimeout(() => {
+          try { mapInstance.invalidateSize(); } catch (err) { /* ignore */ }
+          mapInstance._invalidateTimeout = null;
+        }, 120);
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    // ResizeObserver for container changes
+    try {
+      const container = mapInstance.getContainer && mapInstance.getContainer();
+      if (container && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => requestInvalidate());
+        ro.observe(container);
+        cleanup = () => ro.disconnect();
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    // Also listen for window resizes in case layout/viewport changes cause issues
+    const onWinResize = () => requestInvalidate();
+    window.addEventListener('resize', onWinResize);
+
+    return () => {
+      try { window.removeEventListener('resize', onWinResize); } catch (e) { /* ignore */ }
+      if (cleanup) cleanup();
+    };
+  }, [mapInstance]);
+
   const containerStyle = isAdminView
     ? {
         // Admin view: relative positioning to fit within flex parent

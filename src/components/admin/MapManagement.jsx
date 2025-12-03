@@ -385,6 +385,12 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
       printWindow.onafterprint = () => printWindow.close();
     } catch (err) {
       console.error('Snapshot print failed:', err);
+      // For admin users show a helpful error toast explaining likely cause and next steps
+      try {
+        toastError('Snapshot failed — map tiles may be blocked by CORS or the service worker. Use the Print Map plugin preset or enable CORS for your tile provider.');
+      } catch (e) {
+        // if toast isn't available just fall back silently
+      }
       window.print();
     } finally {
       setIsPrintingHeader(false);

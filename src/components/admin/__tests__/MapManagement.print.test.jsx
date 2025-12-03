@@ -28,18 +28,21 @@ jest.mock('../../../utils/getIconPath', () => ({ getIconPath: (file) => `/assets
 jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: (file) => `/assets/${file || 'default.png'}` }));
 
 // Mock EventMap so it calls onMapReady with a fake map on mount
-jest.mock('../../EventMap/EventMap', () => (props) => {
-  React.useEffect(() => {
-    if (props.onMapReady) {
-      // Provide a fake map object with printControl.options.printModes
-      props.onMapReady({
-        printControl: { options: { printModes: [ { options: { title: 'A4 — Landscape' } } ] } }
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+jest.mock('../../EventMap/EventMap', () => {
+  // require React inside the factory so Jest's static mock validation allows it
+  const React = require('react');
+  return (props) => {
+    React.useEffect(() => {
+      if (props.onMapReady) {
+        props.onMapReady({
+          printControl: { options: { printModes: [ { options: { title: 'A4 — Landscape' } } ] } }
+        });
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-  return <div data-testid="event-map-mock">mock</div>;
+    return React.createElement('div', { 'data-testid': 'event-map-mock' }, 'mock');
+  };
 });
 
 import MapManagement from '../MapManagement';
