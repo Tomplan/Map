@@ -173,7 +173,9 @@ export default function PrintButton({ mapInstance }) {
         disabled={isPrinting}
         className={`bg-white rounded-full shadow p-2 mb-2 flex items-center justify-center ${isPrinting ? 'opacity-50 cursor-wait' : ''}`}
         aria-label="Print map"
-        title="Print map"
+        title="Print map — choose presets"
+        aria-haspopup="menu"
+        aria-expanded={menuOpen}
         type="button"
         style={{ width: 44, height: 44 }}
       >
