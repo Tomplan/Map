@@ -86,8 +86,10 @@ export default function MapControls({
         <MdRemove size={28} color="#1976d2" aria-hidden="true" />
         <span className="sr-only">Zoom out</span>
       </button>
-      {/* Primary Print button (main entry point). Keep the map control too for now. */}
-      <PrintButton mapInstance={mapInstance} />
+      {/* Print button for admin users only. Printing is an admin-only action.
+        Keep map control available for now but make the React button visible
+        only in `isAdminView` to enforce UI access control. */}
+      {isAdminView && <PrintButton mapInstance={mapInstance} />}
 
       {/* Admin layers button and popover */}
       {isAdminView && (
