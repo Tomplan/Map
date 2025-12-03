@@ -142,26 +142,90 @@ export default function PrintButton({ mapInstance }) {
     setIsPrinting(true);
     setMenuOpen(false);
 
-    try {
-      // The control stores an instance of the BrowserPrint backend at
-      // mapInstance.printControl.browserPrint — call its print method with a
-      // Mode object. Some versions expose `print` while others use
-      // `_printMode` internally; try both.
-      const control = mapInstance.printControl;
-      const browserPrint = control.browserPrint || control;
+    const control = mapInstance.printControl;
+    const browserPrint = control?.browserPrint || control;
 
-      if (typeof browserPrint.print === 'function') {
-        browserPrint.print(mode);
-      } else if (typeof control._printMode === 'function') {
-        control._printMode(mode);
-      } else {
-        // As a last resort fallback to html2canvas snapshot
+    // If the plugin throws immediately or never emits a PrintStart event,
+    // fallback to the snapshot approach after a short timeout.
+    let listenersAdded = false;
+    let timeoutId = null;
+    let started = false;
+    let finished = false;
+
+    const cleanupListeners = () => {
+      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event)) return;
+      const Ev = window.L.BrowserPrint.Event;
+      try {
+        mapInstance.off(Ev.PrintStart, onStart);
+        mapInstance.off(Ev.PrintEnd, onEnd);
+        mapInstance.off(Ev.PrintCancel, onCancel);
+      } catch (e) {
+        // ignore
+      }
+      listenersAdded = false;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    };
+
+    const onStart = () => { started = true; };
+    const onEnd = () => { finished = true; cleanupListeners(); };
+    const onCancel = () => { finished = true; cleanupListeners(); };
+
+    try {
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
+        const Ev = window.L.BrowserPrint.Event;
+        mapInstance.on(Ev.PrintStart, onStart);
+        mapInstance.on(Ev.PrintEnd, onEnd);
+        mapInstance.on(Ev.PrintCancel, onCancel);
+        listenersAdded = true;
+      }
+
+      // Try to trigger the plugin's print path.
+      try {
+        if (typeof browserPrint.print === 'function') {
+          browserPrint.print(mode);
+        } else if (typeof control?._printMode === 'function') {
+          control._printMode(mode);
+        } else {
+          // No programmatic plugin API available — fallback immediately.
+          throw new Error('No browser print API available');
+        }
+      } catch (callErr) {
+        console.warn('BrowserPrint call failed:', callErr);
+        // Immediate failure — fallback to snapshot
+        cleanupListeners();
+        await handlePrint();
+        return;
+      }
+
+      // Wait for either a start or a short timeout. If printing never starts
+      // within 2.5s, fall back to the snapshot method (common symptom of
+      // runtime cloning errors inside the plugin).
+      const waitForStart = () => new Promise((resolve) => {
+        if (started) return resolve('started');
+        timeoutId = setTimeout(() => resolve('timeout'), 2500);
+        const poll = setInterval(() => {
+          if (started || finished) {
+            clearInterval(poll);
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            resolve(started ? 'started' : 'finished');
+          }
+        }, 80);
+      });
+
+      const result = await waitForStart();
+      if (result === 'timeout') {
+        console.warn('BrowserPrint did not start; falling back to snapshot export');
+        cleanupListeners();
         await handlePrint();
       }
-    } catch (err) {
-      console.error('Programmatic print failed, falling back to snapshot', err);
-      await handlePrint();
+
+      // If started, we let the plugin handle the rest — PrintEnd handler will cleanup.
     } finally {
+      // Ensure we always stop showing busy state. If the plugin produced the
+      // print dialog, the browser will block further JS while the user handles it.
       setIsPrinting(false);
     }
   };
