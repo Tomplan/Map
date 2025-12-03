@@ -346,13 +346,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         mapInstance._printControl = printControl;
         mapInstance.printControl = printControl; // Make it accessible to PrintButton
 
-        // Set map view to hard-coded default before printing
-        printControl.on('beforePrint', () => {
-          mapInstance.setView(
-            MAP_CONFIG.DEFAULT_POSITION,
-            MAP_CONFIG.DEFAULT_ZOOM
-          );
-        });
+        // Set map view to hard-coded default before printing. The BrowserPrint
+        // control doesn't emit Evented-style events itself — the L.BrowserPrint
+        // instance fires lifecycle events on the map. Listen to the print init
+        // event on the map object instead.
+        if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
+          const evtName = window.L.BrowserPrint.Event.PrintInit || 'browser-print-init';
+          mapInstance.on(evtName, () => {
+            mapInstance.setView(MAP_CONFIG.DEFAULT_POSITION, MAP_CONFIG.DEFAULT_ZOOM);
+          });
+        }
       } else {
         console.warn('BrowserPrint not available, print button will use fallback');
       }
