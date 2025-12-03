@@ -2570,6 +2570,1314 @@ Beschikbare pictogrammen zijn: Auto, Tent, Aanhanger, Auto-onderdelen, Vliegtuig
     }
   },
 
+  importExport: {
+    title: {
+      en: "Import & Export Workflow",
+      nl: "Import & Export Workflow"
+    },
+    content: {
+      en: `
+Import and export features enable efficient bulk data operations for companies, subscriptions, assignments, and activities. These tools save time when managing large datasets and provide reliable ways to backup, migrate, or update data.
+
+**Overview**
+
+The import/export system supports three data types across the application:
+- **Companies**: Your exhibitor database (permanent records)
+- **Event Subscriptions**: Year-specific company participation
+- **Assignments**: Company-to-booth location mappings per year
+
+**Supported File Formats:**
+- **Excel (.xlsx)**: Recommended format with automatic column sizing, filtering, and data validation
+- **CSV (.csv)**: Lightweight format for simple data transfers
+- **JSON (.json)**: Raw data format for technical integrations
+
+**Export Workflow** 🔑 *Event Manager+*
+
+**Step 1: Navigate to Data Tab**
+Go to the tab containing the data you want to export:
+- Companies Tab → Export companies
+- Subscriptions Tab → Export subscriptions for selected year
+- Assignments Tab → Export assignments for selected year
+
+**Step 2: Click Export Button**
+Look for the "Export" button (usually top-right corner with download icon)
+
+**Step 3: Select Format**
+A dropdown menu appears with three options:
+- **Excel (.xlsx)**: Best for editing and re-importing
+- **CSV (.csv)**: Best for simple data transfer or legacy systems
+- **JSON (.json)**: Best for technical integrations or backups
+
+**Step 4: Download File**
+The file downloads automatically with a timestamped filename:
+- Format: \`[data-type]-[YYYY-MM-DD].[extension]\`
+- Example: \`companies-2025-12-02.xlsx\`
+
+**Excel Export Features:**
+
+When you export to Excel (.xlsx), you get:
+- **Frozen Header Row**: First row stays visible when scrolling
+- **Auto-Sized Columns**: Columns automatically sized to fit content
+- **Sortable Table**: Built-in Excel table with filter dropdowns
+- **Banded Rows**: Alternating row colors for readability
+- **Data Validation**: Category columns restricted to TRUE/FALSE values
+- **Text Wrapping**: Long text fields (descriptions, addresses) wrap automatically
+- **Category Expansion**: Companies export includes one column per category
+
+**Category Expansion (Companies Only):**
+Instead of a single "Categories" column with comma-separated values, each category gets its own column:
+- Column header: Category name (e.g., "Automotive Dealers")
+- Cell value: \`+\` (assigned) or \`-\` (not assigned)
+- On import: Recognizes \`TRUE\`, \`1\`, \`YES\`, \`+\`, \`X\`, \`✓\` as checked
+- Benefit: Assign categories by typing \`+\` instead of editing category names
+
+**Import Workflow** 🔑 *Event Manager+*
+
+The import process follows a **5-step workflow** with validation and preview before any data is saved.
+
+**Step 1: File Selection**
+
+1. **Navigate to Target Tab**: Go to the tab where you want to import (Companies, Subscriptions, or Assignments)
+2. **Click "Import" Button**: Usually near the Export button
+3. **Select File**: Choose your Excel (.xlsx), CSV (.csv), or JSON (.json) file
+4. **Upload**: File automatically begins parsing
+
+**Step 2: Parsing & Validation**
+
+The system automatically:
+- **Parses File**: Reads all rows from the uploaded file
+- **Validates Columns**: Checks that required columns exist with correct headers
+- **Validates Data**: Verifies each row against business rules
+- **Matches Records**: Compares against existing data to determine CREATE vs UPDATE actions
+
+**Validation Rules:**
+- **Required Fields**: Ensures mandatory columns have values
+- **Company Names**: Verifies company exists in database (for subscriptions/assignments)
+- **Booth Labels**: Validates marker/booth exists for current year (for assignments)
+- **Data Types**: Checks emails, phones, numbers, booleans are correctly formatted
+- **Unique Constraints**: Prevents duplicate records
+
+**Step 3: Preview & Error Review**
+
+You'll see a **preview table** showing all rows with their status:
+
+**Status Indicators:**
+- 🟢 **CREATE** (Green): New record will be added
+- 🟡 **UPDATE** (Yellow): Existing record will be updated
+- 🔴 **ERROR** (Red): Validation failed, will not be imported
+
+**For Each Row:**
+- **Checkbox**: Select/deselect rows to import (errors auto-deselected)
+- **Action**: CREATE, UPDATE, or ERROR
+- **Data Preview**: Shows key fields from the row
+- **Error Messages**: Specific validation failures (for ERROR rows)
+
+**Reviewing Errors:**
+- Scroll through ERROR rows to see what failed
+- Common errors: Missing company, invalid phone format, empty required fields
+- Fix errors in your source file, then re-import
+
+**Step 4: Select Rows to Import**
+
+- **Valid Rows**: Auto-selected by default
+- **Error Rows**: Auto-deselected (cannot import invalid data)
+- **Manual Selection**: Uncheck rows you don't want to import
+- **Select All / Deselect All**: Bulk toggle buttons available
+
+**Import Strategy:**
+- **Import All Valid**: Accept all CREATE and UPDATE actions
+- **Only CREATE**: Uncheck UPDATE rows to avoid changing existing data
+- **Only UPDATE**: Uncheck CREATE rows to avoid adding new records
+- **Selective**: Manually pick specific rows
+
+**Step 5: Execute Import**
+
+1. **Review Summary**: Check count of CREATE vs UPDATE actions
+2. **Click "Import Selected"**: Button shows count (e.g., "Import 47 Records")
+3. **Watch Progress**: Progress bar shows current record / total
+4. **View Results**: Success/failure summary appears
+
+**Import Results:**
+- **Success Count**: Number of records imported successfully
+- **Error Count**: Number that failed during import (rare if validation passed)
+- **Error Details**: Specific failures if any occurred
+- **Data Refresh**: Tab automatically reloads to show new data
+
+**Matching Logic (CREATE vs UPDATE)**
+
+The system automatically determines whether to create or update based on matching rules:
+
+**Companies:**
+- **Match Field**: Company Name (case-insensitive)
+- **CREATE**: If name doesn't match any existing company
+- **UPDATE**: If name matches existing company (updates all fields)
+
+**Event Subscriptions:**
+- **Match Fields**: Company Name + Event Year
+- **CREATE**: If company not yet subscribed for this year
+- **UPDATE**: If company already subscribed for this year
+
+**Assignments:**
+- **Match Fields**: Company Name + Booth Label + Event Year
+- **CREATE**: If company not assigned to this booth this year
+- **UPDATE**: If company already assigned to this booth this year
+
+**Important Matching Notes:**
+- Matching is case-insensitive and trims whitespace
+- Partial name matches do NOT count (must be exact after normalization)
+- Updates overwrite ALL fields, not just changed ones
+- Company lookup happens during validation (errors if company not found)
+
+**Data Transformation on Import**
+
+The system automatically transforms data during import:
+
+**Phone Numbers:**
+- Formats to standard Dutch format: \`06 1234 5678\` or \`+31 6 1234 5678\`
+- Removes spaces, dashes, and parentheses
+- Validates length and format
+- Shows error if format unrecognizable
+
+**Email Addresses:**
+- Standardizes to lowercase
+- Trims whitespace
+- Validates email format (presence of @ and domain)
+- Shows error if invalid
+
+**Boolean Values:**
+- Recognizes: TRUE, FALSE, YES, NO, 1, 0, +, -, X, ✓
+- Converts to database boolean (true/false)
+- Empty cells default to false
+
+**Categories (Companies Only):**
+- Per-category columns: \`+\` or TRUE = assign, \`-\` or FALSE = don't assign
+- Aggregated column: Comma-separated category names
+- Both formats supported in imports
+
+**Common Import/Export Workflows**
+
+**1. Bulk Company Update:**
+1. Export companies to Excel
+2. Edit company info, contacts, categories in Excel
+3. Save file
+4. Import updated Excel file
+5. Review preview (should show mostly UPDATE actions)
+6. Import selected rows
+
+**2. Annual Event Setup:**
+1. Export subscriptions from previous year
+2. Edit Excel: Add new companies, remove no-shows
+3. Import into new year's subscriptions tab
+4. Review CREATE actions for new companies
+5. Import to populate new year
+
+**3. Category Bulk Assignment:**
+1. Export companies to Excel
+2. Fill in category columns with \`+\` for assignments
+3. Import companies
+4. System updates category assignments for all companies
+
+**4. Data Backup:**
+1. Export all data types to Excel or JSON
+2. Save files with clear date labels
+3. Store securely (local drive, cloud storage)
+4. Keep multiple versions for historical reference
+
+**5. Data Migration:**
+1. Export from old system to CSV/Excel
+2. Transform columns to match expected headers
+3. Import using preview to verify transformations
+4. Fix errors, re-import until clean
+
+**Error Handling**
+
+**Common Import Errors:**
+
+**"Company not found":**
+- Cause: Company name in import doesn't match any existing company
+- Fix: Ensure company exists in Companies tab first, or fix spelling
+
+**"Required field missing":**
+- Cause: Empty cell in required column (e.g., Company Name)
+- Fix: Fill in the missing value in your Excel file
+
+**"Invalid email format":**
+- Cause: Email address missing @ or domain
+- Fix: Correct email format to \`name@domain.com\`
+
+**"Invalid phone format":**
+- Cause: Phone number not recognizable
+- Fix: Use format like \`06 1234 5678\` or \`+31 6 1234 5678\`
+
+**"Booth label not found":**
+- Cause: Marker/booth doesn't exist for selected year
+- Fix: Create marker first, or use existing booth label
+
+**Column Header Mismatches:**
+- Cause: Export from different system with different column names
+- Fix: Rename columns in Excel to match expected headers exactly
+
+**Best Practices**
+
+**For Export:**
+- Always export to Excel for maximum features
+- Include timestamp in custom filenames
+- Export before bulk operations (safety backup)
+- Use CSV only for simple data or legacy system compatibility
+- Use JSON for technical integrations or complete backups
+
+**For Import:**
+- Start with small test batch (10-20 rows) to verify format
+- Review preview carefully before importing
+- Fix all errors in source file rather than importing partial data
+- Keep original export file as backup before making changes
+- Use selective row import when testing or uncertain
+
+**For Data Quality:**
+- Standardize company names before import (avoid "ABC Inc." vs "ABC Inc")
+- Use consistent category names (exact match required)
+- Validate phone/email formats before import
+- Remove duplicate rows in Excel before importing
+- Check year selector is correct before importing year-specific data
+
+**Technical Details**
+
+**Excel Parsing:**
+- Uses \`xlsx\` and \`exceljs\` libraries for robust parsing
+- Reads first worksheet in multi-sheet files
+- Converts all data to JSON internally
+- Preserves cell formatting for validation
+
+**CSV Parsing:**
+- Auto-detects delimiters (comma, semicolon, tab)
+- Handles quoted fields with embedded commas
+- Processes header row for column mapping
+
+**JSON Parsing:**
+- Expects array of objects: \`[{...}, {...}]\`
+- Object keys must match expected column names
+- Strict JSON validation (syntax errors rejected)
+
+**File Size Limits:**
+- Excel: Up to 10,000 rows (browser memory limit)
+- CSV: Up to 50,000 rows
+- JSON: Up to 5MB file size
+- Larger files: Split into multiple imports
+
+**Import Performance:**
+- Batch size: 50 records per transaction
+- Progress updates every 10 records
+- Average speed: 100-200 records per second
+- Large imports (1000+ rows): ~5-10 seconds
+      `.trim(),
+      nl: `
+Import en export functies maken efficiënte bulk data-operaties mogelijk voor bedrijven, inschrijvingen, toewijzingen en activiteiten. Deze tools besparen tijd bij het beheren van grote datasets en bieden betrouwbare manieren om data te backuppen, migreren of updaten.
+
+**Overzicht**
+
+Het import/export systeem ondersteunt drie datatypes in de applicatie:
+- **Bedrijven**: Je standhouder database (permanente records)
+- **Event Inschrijvingen**: Jaar-specifieke bedrijfsdeelname
+- **Toewijzingen**: Bedrijf-naar-stand locatie mappings per jaar
+
+**Ondersteunde Bestandsformaten:**
+- **Excel (.xlsx)**: Aanbevolen formaat met automatische kolomgrootte, filtering en datavalidatie
+- **CSV (.csv)**: Lichtgewicht formaat voor eenvoudige data transfers
+- **JSON (.json)**: Raw data formaat voor technische integraties
+
+**Export Workflow** 🔑 *Event Manager+*
+
+**Stap 1: Navigeer naar Data Tab**
+Ga naar de tab met de data die je wilt exporteren:
+- Bedrijven Tab → Exporteer bedrijven
+- Inschrijvingen Tab → Exporteer inschrijvingen voor geselecteerd jaar
+- Toewijzingen Tab → Exporteer toewijzingen voor geselecteerd jaar
+
+**Stap 2: Klik Export Knop**
+Zoek de "Export" knop (meestal rechtsboven met download-icoon)
+
+**Stap 3: Selecteer Formaat**
+Een dropdown menu verschijnt met drie opties:
+- **Excel (.xlsx)**: Best voor bewerken en opnieuw importeren
+- **CSV (.csv)**: Best voor eenvoudige data transfer of legacy systemen
+- **JSON (.json)**: Best voor technische integraties of backups
+
+**Stap 4: Download Bestand**
+Het bestand download automatisch met een tijdstempel bestandsnaam:
+- Formaat: \`[data-type]-[YYYY-MM-DD].[extensie]\`
+- Voorbeeld: \`companies-2025-12-02.xlsx\`
+
+**Excel Export Functies:**
+
+Wanneer je exporteert naar Excel (.xlsx), krijg je:
+- **Bevroren Header Rij**: Eerste rij blijft zichtbaar bij scrollen
+- **Auto-Grootte Kolommen**: Kolommen automatisch aangepast aan content
+- **Sorteerbare Tabel**: Ingebouwde Excel tabel met filter dropdowns
+- **Gestreepte Rijen**: Alternerende rijkleuren voor leesbaarheid
+- **Data Validatie**: Categoriekolommen beperkt tot TRUE/FALSE waarden
+- **Tekst Omloop**: Lange tekstvelden (beschrijvingen, adressen) lopen automatisch door
+- **Categorie Uitbreiding**: Bedrijven export bevat één kolom per categorie
+
+**Categorie Uitbreiding (Alleen Bedrijven):**
+In plaats van één "Categorieën" kolom met komma-gescheiden waarden, krijgt elke categorie zijn eigen kolom:
+- Kolomkop: Categorienaam (bijv. "Automotive Dealers")
+- Celwaarde: \`+\` (toegewezen) of \`-\` (niet toegewezen)
+- Bij import: Herkent \`TRUE\`, \`1\`, \`YES\`, \`+\`, \`X\`, \`✓\` als aangevinkt
+- Voordeel: Wijs categorieën toe door \`+\` te typen in plaats van categorienamen te bewerken
+
+**Import Workflow** 🔑 *Event Manager+*
+
+Het importproces volgt een **5-stappen workflow** met validatie en preview voordat data wordt opgeslagen.
+
+**Stap 1: Bestandsselectie**
+
+1. **Navigeer naar Doel Tab**: Ga naar de tab waar je wilt importeren (Bedrijven, Inschrijvingen of Toewijzingen)
+2. **Klik "Import" Knop**: Meestal bij de Export knop
+3. **Selecteer Bestand**: Kies je Excel (.xlsx), CSV (.csv) of JSON (.json) bestand
+4. **Upload**: Bestand begint automatisch met parsen
+
+**Stap 2: Parsen & Validatie**
+
+Het systeem automatisch:
+- **Parset Bestand**: Leest alle rijen van het geüploade bestand
+- **Valideert Kolommen**: Controleert dat vereiste kolommen bestaan met correcte headers
+- **Valideert Data**: Verifieert elke rij tegen bedrijfsregels
+- **Matcht Records**: Vergelijkt met bestaande data om CREATE vs UPDATE acties te bepalen
+
+**Validatie Regels:**
+- **Verplichte Velden**: Zorgt dat verplichte kolommen waarden hebben
+- **Bedrijfsnamen**: Verifieert dat bedrijf bestaat in database (voor inschrijvingen/toewijzingen)
+- **Stand Labels**: Valideert marker/stand bestaat voor huidig jaar (voor toewijzingen)
+- **Datatypes**: Controleert emails, telefoons, nummers, booleans zijn correct geformatteerd
+- **Unieke Beperkingen**: Voorkomt dubbele records
+
+**Stap 3: Preview & Fout Review**
+
+Je ziet een **preview tabel** met alle rijen en hun status:
+
+**Status Indicatoren:**
+- 🟢 **CREATE** (Groen): Nieuw record wordt toegevoegd
+- 🟡 **UPDATE** (Geel): Bestaand record wordt geüpdatet
+- 🔴 **ERROR** (Rood): Validatie mislukt, wordt niet geïmporteerd
+
+**Voor Elke Rij:**
+- **Checkbox**: Selecteer/deselecteer rijen om te importeren (fouten auto-gedeselecteerd)
+- **Actie**: CREATE, UPDATE, of ERROR
+- **Data Preview**: Toont belangrijke velden van de rij
+- **Foutmeldingen**: Specifieke validatiefouten (voor ERROR rijen)
+
+**Fouten Reviewen:**
+- Scroll door ERROR rijen om te zien wat mislukte
+- Veelvoorkomende fouten: Ontbrekend bedrijf, ongeldig telefoonformaat, lege verplichte velden
+- Repareer fouten in je bronbestand, importeer dan opnieuw
+
+**Stap 4: Selecteer Rijen om te Importeren**
+
+- **Geldige Rijen**: Standaard auto-geselecteerd
+- **Fout Rijen**: Auto-gedeselecteerd (kan geen ongeldige data importeren)
+- **Handmatige Selectie**: Vink rijen uit die je niet wilt importeren
+- **Selecteer Alles / Deselecteer Alles**: Bulk toggle knoppen beschikbaar
+
+**Import Strategie:**
+- **Importeer Alle Geldige**: Accepteer alle CREATE en UPDATE acties
+- **Alleen CREATE**: Vink UPDATE rijen uit om bestaande data niet te wijzigen
+- **Alleen UPDATE**: Vink CREATE rijen uit om geen nieuwe records toe te voegen
+- **Selectief**: Kies handmatig specifieke rijen
+
+**Stap 5: Voer Import Uit**
+
+1. **Review Samenvatting**: Controleer aantal CREATE vs UPDATE acties
+2. **Klik "Importeer Geselecteerd"**: Knop toont aantal (bijv. "Importeer 47 Records")
+3. **Bekijk Voortgang**: Voortgangsbalk toont huidig record / totaal
+4. **Bekijk Resultaten**: Succes/faal samenvatting verschijnt
+
+**Import Resultaten:**
+- **Succes Aantal**: Aantal records succesvol geïmporteerd
+- **Fout Aantal**: Aantal mislukt tijdens import (zeldzaam als validatie slaagde)
+- **Fout Details**: Specifieke mislukkingen indien voorkwamen
+- **Data Verversing**: Tab herlaadt automatisch om nieuwe data te tonen
+
+**Matching Logica (CREATE vs UPDATE)**
+
+Het systeem bepaalt automatisch of het moet creëren of updaten op basis van matching regels:
+
+**Bedrijven:**
+- **Match Veld**: Bedrijfsnaam (hoofdletter-ongevoelig)
+- **CREATE**: Als naam niet matcht met bestaand bedrijf
+- **UPDATE**: Als naam matcht met bestaand bedrijf (update alle velden)
+
+**Event Inschrijvingen:**
+- **Match Velden**: Bedrijfsnaam + Event Jaar
+- **CREATE**: Als bedrijf nog niet ingeschreven voor dit jaar
+- **UPDATE**: Als bedrijf al ingeschreven voor dit jaar
+
+**Toewijzingen:**
+- **Match Velden**: Bedrijfsnaam + Stand Label + Event Jaar
+- **CREATE**: Als bedrijf niet toegewezen aan deze stand dit jaar
+- **UPDATE**: Als bedrijf al toegewezen aan deze stand dit jaar
+
+**Belangrijke Matching Opmerkingen:**
+- Matching is hoofdletter-ongevoelig en trimt witruimte
+- Gedeeltelijke naam matches tellen NIET (moet exact zijn na normalisatie)
+- Updates overschrijven ALLE velden, niet alleen gewijzigde
+- Bedrijf lookup gebeurt tijdens validatie (fout als bedrijf niet gevonden)
+
+**Data Transformatie bij Import**
+
+Het systeem transformeert automatisch data tijdens import:
+
+**Telefoonnummers:**
+- Formatteert naar standaard Nederlands formaat: \`06 1234 5678\` of \`+31 6 1234 5678\`
+- Verwijdert spaties, streepjes en haakjes
+- Valideert lengte en formaat
+- Toont fout als formaat onherkenbaar
+
+**Email Adressen:**
+- Standaardiseert naar kleine letters
+- Trimt witruimte
+- Valideert email formaat (aanwezigheid van @ en domein)
+- Toont fout als ongeldig
+
+**Boolean Waarden:**
+- Herkent: TRUE, FALSE, YES, NO, 1, 0, +, -, X, ✓
+- Converteert naar database boolean (true/false)
+- Lege cellen standaard naar false
+
+**Categorieën (Alleen Bedrijven):**
+- Per-categorie kolommen: \`+\` of TRUE = toewijzen, \`-\` of FALSE = niet toewijzen
+- Geaggregeerde kolom: Komma-gescheiden categorienamen
+- Beide formaten ondersteund bij imports
+
+**Veelvoorkomende Import/Export Workflows**
+
+**1. Bulk Bedrijf Update:**
+1. Exporteer bedrijven naar Excel
+2. Bewerk bedrijfsinfo, contacten, categorieën in Excel
+3. Sla bestand op
+4. Importeer bijgewerkt Excel bestand
+5. Review preview (zou vooral UPDATE acties moeten tonen)
+6. Importeer geselecteerde rijen
+
+**2. Jaarlijkse Event Setup:**
+1. Exporteer inschrijvingen van vorig jaar
+2. Bewerk Excel: Voeg nieuwe bedrijven toe, verwijder no-shows
+3. Importeer in nieuwe jaar inschrijvingen tab
+4. Review CREATE acties voor nieuwe bedrijven
+5. Importeer om nieuw jaar te vullen
+
+**3. Categorie Bulk Toewijzing:**
+1. Exporteer bedrijven naar Excel
+2. Vul categoriekolommen in met \`+\` voor toewijzingen
+3. Importeer bedrijven
+4. Systeem update categorietoewijzingen voor alle bedrijven
+
+**4. Data Backup:**
+1. Exporteer alle datatypes naar Excel of JSON
+2. Sla bestanden op met duidelijke datumlabels
+3. Bewaar veilig (lokale drive, cloud opslag)
+4. Behoud meerdere versies voor historische referentie
+
+**5. Data Migratie:**
+1. Exporteer van oud systeem naar CSV/Excel
+2. Transformeer kolommen om verwachte headers te matchen
+3. Importeer met preview om transformaties te verifiëren
+4. Repareer fouten, re-importeer tot schoon
+
+**Foutafhandeling**
+
+**Veelvoorkomende Import Fouten:**
+
+**"Company not found":**
+- Oorzaak: Bedrijfsnaam in import matcht geen bestaand bedrijf
+- Oplossing: Zorg dat bedrijf bestaat in Bedrijven tab eerst, of repareer spelling
+
+**"Required field missing":**
+- Oorzaak: Lege cel in verplichte kolom (bijv. Bedrijfsnaam)
+- Oplossing: Vul de ontbrekende waarde in je Excel bestand in
+
+**"Invalid email format":**
+- Oorzaak: Email adres mist @ of domein
+- Oplossing: Corrigeer email formaat naar \`naam@domein.com\`
+
+**"Invalid phone format":**
+- Oorzaak: Telefoonnummer niet herkenbaar
+- Oplossing: Gebruik formaat zoals \`06 1234 5678\` of \`+31 6 1234 5678\`
+
+**"Booth label not found":**
+- Oorzaak: Marker/stand bestaat niet voor geselecteerd jaar
+- Oplossing: Maak marker eerst aan, of gebruik bestaand stand label
+
+**Kolom Header Mismatch:**
+- Oorzaak: Export van ander systeem met andere kolomnamen
+- Oplossing: Hernoem kolommen in Excel om exact verwachte headers te matchen
+
+**Best Practices**
+
+**Voor Export:**
+- Exporteer altijd naar Excel voor maximale functies
+- Voeg tijdstempel toe in custom bestandsnamen
+- Exporteer voor bulk operaties (veiligheidsbackup)
+- Gebruik CSV alleen voor eenvoudige data of legacy systeem compatibiliteit
+- Gebruik JSON voor technische integraties of complete backups
+
+**Voor Import:**
+- Start met kleine test batch (10-20 rijen) om formaat te verifiëren
+- Review preview zorgvuldig voor importeren
+- Repareer alle fouten in bronbestand i.p.v. gedeeltelijke data importeren
+- Behoud origineel export bestand als backup voor wijzigingen maken
+- Gebruik selectieve rij import bij testen of onzekerheid
+
+**Voor Data Kwaliteit:**
+- Standaardiseer bedrijfsnamen voor import (vermijd "ABC Inc." vs "ABC Inc")
+- Gebruik consistente categorienamen (exacte match vereist)
+- Valideer telefoon/email formaten voor import
+- Verwijder dubbele rijen in Excel voor importeren
+- Controleer jaarselector is correct voor importeren jaar-specifieke data
+
+**Technische Details**
+
+**Excel Parsing:**
+- Gebruikt \`xlsx\` en \`exceljs\` bibliotheken voor robuust parsen
+- Leest eerste werkblad in multi-sheet bestanden
+- Converteert alle data intern naar JSON
+- Behoudt cel formatting voor validatie
+
+**CSV Parsing:**
+- Auto-detecteert scheidingstekens (komma, puntkomma, tab)
+- Handelt geciteerde velden met ingebedde komma's
+- Verwerkt header rij voor kolom mapping
+
+**JSON Parsing:**
+- Verwacht array van objecten: \`[{...}, {...}]\`
+- Object sleutels moeten verwachte kolomnamen matchen
+- Strikte JSON validatie (syntax fouten geweigerd)
+
+**Bestandsgrootte Limieten:**
+- Excel: Tot 10.000 rijen (browser geheugen limiet)
+- CSV: Tot 50.000 rijen
+- JSON: Tot 5MB bestandsgrootte
+- Grotere bestanden: Splits in meerdere imports
+
+**Import Prestatie:**
+- Batch grootte: 50 records per transactie
+- Voortgang updates elke 10 records
+- Gemiddelde snelheid: 100-200 records per seconde
+- Grote imports (1000+ rijen): ~5-10 seconden
+      `.trim()
+    },
+    updated: "2025-12-02",
+    tips: {
+      en: [
+        "Always export before bulk changes to create a safety backup",
+        "Use Excel format for imports - it provides the best validation and preview",
+        "Test imports with small batches (10-20 rows) before importing large datasets",
+        "Review the preview carefully - check CREATE vs UPDATE counts match expectations",
+        "Fix all validation errors in your source file rather than skipping error rows"
+      ],
+      nl: [
+        "Exporteer altijd voor bulk wijzigingen om een veiligheidsbackup te maken",
+        "Gebruik Excel formaat voor imports - het biedt de beste validatie en preview",
+        "Test imports met kleine batches (10-20 rijen) voor het importeren van grote datasets",
+        "Review de preview zorgvuldig - controleer CREATE vs UPDATE aantallen matchen verwachtingen",
+        "Repareer alle validatiefouten in je bronbestand i.p.v. foutrijen overslaan"
+      ]
+    }
+  },
+
+  feedbackRequests: {
+    title: {
+      en: "Feedback & Feature Requests",
+      nl: "Feedback & Functieverzoeken"
+    },
+    content: {
+      en: `
+The Feedback & Feature Requests system enables collaboration between admin users to track bugs, suggest features, request improvements, and discuss enhancements. It's a built-in system for continuous improvement.
+
+**Overview**
+
+Feedback Requests provide a structured way to:
+- **Report Bugs**: Document issues that need fixing
+- **Request Features**: Suggest new functionality
+- **Propose Improvements**: Recommend enhancements to existing features
+- **Track Progress**: Monitor request status from submission to completion
+- **Vote on Priorities**: Community voting to surface popular requests
+- **Discuss Solutions**: Comment threads for collaboration
+
+**Access** 🔓 *All Roles*
+
+All authenticated admin users can access Feedback Requests, regardless of role. Navigate to **Feedback** in the admin menu to view all requests.
+
+**Request Types:**
+
+**Feature** - New functionality request
+- Use for suggesting entirely new capabilities
+- Example: "Add calendar view for event scheduling"
+- Badge color: Blue
+
+**Bug/Issue** - Problem report
+- Use for documenting errors or broken functionality
+- Example: "Import fails when Excel has merged cells"
+- Badge color: Red
+
+**Improvement** - Enhancement to existing feature
+- Use for optimizing or extending current functionality
+- Example: "Add bulk delete option for markers"
+- Badge color: Blue
+
+**Suggestion** - General idea or recommendation
+- Use for less formal proposals or discussion topics
+- Example: "Consider dark mode for admin panel"
+- Badge color: Blue
+
+**Request Statuses:**
+
+**Open** (default) - Awaiting review
+- Newly created requests start as "open"
+- Indicates request needs attention
+- Color: Yellow icon
+
+**In Progress** - Currently being worked on
+- Super Admin marks requests as in progress when development starts
+- Signals active work is happening
+- Color: Blue icon
+
+**Completed** - Implemented and deployed
+- Feature shipped or bug fixed
+- Includes optional version number (e.g., "v2.1.0")
+- Color: Green icon
+
+**Archived** - Closed without implementation
+- Won't be implemented (duplicate, out of scope, or obsolete)
+- Moved out of active view but preserved for reference
+- Color: Gray icon
+
+**Creating Requests** 🔓 *All Roles*
+
+**Step 1: Navigate to Feedback Tab**
+Click "Feedback" in the admin menu or navigate to `/admin/feedback`
+
+**Step 2: Switch to "Create" Tab**
+Click the "Create" or "New Request" tab at the top
+
+**Step 3: Fill in Request Form**
+- **Type**: Select from Feature, Bug, Improvement, or Suggestion
+- **Title** (required): Short, descriptive summary (e.g., "Add Excel export for assignments")
+- **Description** (optional): Detailed explanation, steps to reproduce (for bugs), or use cases
+
+**Step 4: Submit Request**
+Click "Submit Request" button - your request immediately appears in the "All Requests" list
+
+**Best Practices for Creating Requests:**
+- **Be Specific**: Clear, actionable titles help others understand quickly
+- **One Request Per Submission**: Don't bundle multiple ideas into one request
+- **Search First**: Check if similar request already exists to avoid duplicates
+- **Provide Context**: For bugs, include steps to reproduce; for features, explain the use case
+- **Use Correct Type**: Choose the type that best fits your request
+
+**Viewing Requests** 🔓 *All Roles*
+
+**All Requests Tab:**
+Shows every request from all users, sorted by creation date (newest first)
+
+**My Requests Tab:**
+Filters to show only requests you've created - useful for tracking your own submissions
+
+**Request Cards Display:**
+Each request shows:
+- **Type Badge**: Colored pill indicating request type
+- **Title**: Request summary (clickable to open detail view)
+- **Description**: First line preview (if provided)
+- **Status Icon**: Current status with color coding
+- **Vote Count**: Number of upvotes with thumbs-up icon
+- **Comment Count**: Number of comments with comment icon
+- **Submitter**: Email of user who created request
+- **Timestamp**: "X days ago" or formatted date
+
+**Voting on Requests** 🔓 *All Roles*
+
+**How Voting Works:**
+- Click the thumbs-up icon on any request card to vote
+- Click again to remove your vote
+- Your votes are highlighted (filled icon vs outline)
+- Vote count updates in real-time for all users
+
+**Why Vote:**
+- Signals which requests matter most to users
+- Helps prioritize development work
+- Shows community consensus
+- One vote per user per request
+
+**Voting Strategy:**
+- Vote for requests that would help your workflow
+- Vote for critical bugs affecting your work
+- Review "All Requests" regularly for new submissions
+- Re-visit periodically as priorities change
+
+**Filtering Requests** 🔓 *All Roles*
+
+**Search Bar:**
+- Type keywords to filter by title, description, or submitter email
+- Real-time filtering as you type
+- Case-insensitive search
+
+**Type Filter:**
+- Click "Filter" dropdown → Select types
+- Choose one or multiple types (Feature, Bug, Improvement, Suggestion)
+- Only requests with selected types show
+- Clear filter to show all types
+
+**Status Filter:**
+- Click status dropdown → Select statuses
+- Choose one or multiple statuses (Open, In Progress, Completed, Archived)
+- Only requests with selected statuses show
+- Clear filter to show all statuses
+
+**Filter Persistence:**
+Your filter selections are automatically saved and restored when you return to the Feedback page.
+
+**Viewing Request Details** 🔓 *All Roles*
+
+**Opening Detail View:**
+Click on any request title or card to open the detail panel
+
+**Detail View Shows:**
+- **Full Title and Description**: Complete request text
+- **Metadata**: Type, status, submitter, creation date, vote count
+- **Version** (if completed): Release version where implemented
+- **Priority** (if set): Low, Medium, High, or Critical
+- **Comments Thread**: All discussion on this request
+- **Actions**: Vote, comment, edit (own requests), update status (Super Admin)
+
+**Commenting on Requests** 🔓 *All Roles*
+
+**Adding Comments:**
+1. Open request detail view
+2. Scroll to comments section at bottom
+3. Type your comment in the text area
+4. Click "Post Comment"
+
+**Comment Features:**
+- Real-time updates (new comments appear instantly)
+- Shows commenter email and timestamp
+- Delete own comments (trash icon)
+- Super Admins can delete any comment
+
+**Comment Best Practices:**
+- Ask clarifying questions about unclear requests
+- Suggest alternative solutions
+- Share relevant context or workarounds
+- Reference related requests
+- Keep discussion constructive and professional
+
+**Managing Requests**
+
+**Editing Own Requests** 🔓 *All Roles*
+
+Users can edit their own requests:
+1. Open your request detail view
+2. Click "Edit" button
+3. Modify title or description
+4. Click "Save Changes"
+
+**Updating Request Status** 🔒 *Super Admin Only*
+
+Super Admins can change request status:
+1. Open request detail view
+2. Click status dropdown
+3. Select new status: Open, In Progress, Completed, or Archived
+4. If marking as Completed, optionally add version number
+5. Status updates immediately and notifies submitter
+
+**Setting Priority** 🔒 *Super Admin Only*
+
+Super Admins can set priority:
+1. Open request detail view
+2. Click priority dropdown
+3. Select: Low, Medium, High, or Critical
+4. Helps team focus on important items
+
+**Deleting Requests** 🔒 *Super Admin Only*
+
+Super Admins can delete requests:
+1. Open request detail view
+2. Click "Delete Request" button
+3. Confirm deletion in dialog
+4. Request is permanently removed
+
+**Use delete sparingly** - prefer "Archived" status to preserve history
+
+**Real-Time Collaboration**
+
+The feedback system updates in real-time for all connected users:
+- **New Requests**: Appear instantly in All Requests tab
+- **Vote Changes**: Vote counts update live
+- **New Comments**: Comments appear without page refresh
+- **Status Updates**: Status changes reflect immediately
+- **Edits**: Title/description updates show in real-time
+
+**Common Workflows**
+
+**Reporting a Bug:**
+1. Navigate to Feedback → Create tab
+2. Select type: "Bug"
+3. Title: "Import fails with special characters in company names"
+4. Description: Steps to reproduce, expected vs actual behavior
+5. Submit request
+6. Monitor for comments from Super Admin
+7. Vote on similar bugs to show severity
+
+**Requesting a Feature:**
+1. Search existing requests to avoid duplicates
+2. If not found, click Create tab
+3. Select type: "Feature"
+4. Title: Clear one-liner describing feature
+5. Description: Explain use case, benefits, and desired behavior
+6. Submit and share with team to gather votes
+7. Comment with additional context if questions arise
+
+**Triaging as Super Admin:**
+1. Review All Requests regularly (daily/weekly)
+2. Comment on unclear requests to gather requirements
+3. Set priority on critical items
+4. Update status to "In Progress" when work starts
+5. Mark "Completed" with version number when shipped
+6. Archive duplicates or out-of-scope requests
+
+**Using Votes to Prioritize:**
+1. Sort requests by vote count (mental prioritization)
+2. Focus development on high-vote items
+3. Review low-vote requests for quick wins
+4. Balance popular requests with strategic needs
+5. Communicate planned work in comments
+
+**Best Practices**
+
+**For All Users:**
+- Check for existing requests before creating duplicates
+- Vote actively on requests that matter to your work
+- Provide constructive feedback in comments
+- Update or delete your requests if they become obsolete
+- Be patient - development takes time
+
+**For Super Admins:**
+- Respond to new requests within 48 hours (comment or status update)
+- Set realistic expectations in comments about timeline
+- Update status regularly to show progress
+- Use "In Progress" to signal active work
+- Mark "Completed" with version numbers for clarity
+- Archive duplicates with comment referencing original
+- Encourage users to vote rather than creating duplicate requests
+
+**Tips for Effective Requests:**
+
+**Good Bug Report:**
+```
+Title: Map markers disappear after zoom level 15
+Type: Bug
+
+Description:
+Steps to reproduce:
+1. Navigate to Map Management
+2. Add markers at coordinates X,Y
+3. Zoom in beyond level 15
+4. Markers vanish from view
+
+Expected: Markers remain visible at all zoom levels
+Actual: Markers disappear above zoom 15
+Browser: Chrome 120
+```
+
+**Good Feature Request:**
+```
+Title: Add bulk category assignment for companies
+Type: Feature
+
+Description:
+Allow selecting multiple companies and assigning categories
+in one action. Currently must edit each company individually
+which is time-consuming for 100+ exhibitors.
+
+Use case: Annual event setup when categorizing new exhibitors
+Benefit: Save 2-3 hours during event preparation
+```
+
+**Technical Details**
+
+**Data Storage:**
+- Requests stored in `feedback_requests` table
+- Votes in `feedback_votes` table (one per user per request)
+- Comments in `feedback_comments` table
+- Real-time sync via Supabase subscriptions
+
+**Vote Mechanics:**
+- One vote per user per request (toggle on/off)
+- Vote count aggregated and cached on request record
+- Immediate local update + background sync
+
+**Comment Threading:**
+- Chronological order (oldest first)
+- Shows submitter email and timestamp
+- No nested replies (flat thread)
+
+**Search Implementation:**
+- Client-side filtering for instant results
+- Searches title, description, and submitter email fields
+- Case-insensitive partial matching
+      `.trim(),
+      nl: `
+Het Feedback & Functieverzoeken systeem maakt samenwerking tussen admin gebruikers mogelijk om bugs te tracken, features voor te stellen, verbeteringen aan te vragen en verbeteringen te bespreken. Het is een ingebouwd systeem voor continue verbetering.
+
+**Overzicht**
+
+Feedback Verzoeken bieden een gestructureerde manier om:
+- **Bugs Rapporteren**: Documenteer problemen die moeten worden opgelost
+- **Features Aanvragen**: Stel nieuwe functionaliteit voor
+- **Verbeteringen Voorstellen**: Beveel verbeteringen aan voor bestaande features
+- **Voortgang Tracken**: Monitor verzoekstatus van indiening tot voltooiing
+- **Stem op Prioriteiten**: Community voting om populaire verzoeken te tonen
+- **Bespreek Oplossingen**: Commentaar threads voor samenwerking
+
+**Toegang** 🔓 *Alle Rollen*
+
+Alle geauthenticeerde admin gebruikers hebben toegang tot Feedback Verzoeken, ongeacht rol. Navigeer naar **Feedback** in het admin menu om alle verzoeken te bekijken.
+
+**Verzoek Types:**
+
+**Feature** - Nieuw functionaliteitsverzoek
+- Gebruik voor het voorstellen van volledig nieuwe mogelijkheden
+- Voorbeeld: "Voeg kalenderweergave toe voor event planning"
+- Badge kleur: Blauw
+
+**Bug/Issue** - Probleemrapport
+- Gebruik voor documenteren van fouten of kapotte functionaliteit
+- Voorbeeld: "Import faalt wanneer Excel samengevoegde cellen heeft"
+- Badge kleur: Rood
+
+**Improvement** - Verbetering aan bestaande feature
+- Gebruik voor optimaliseren of uitbreiden van huidige functionaliteit
+- Voorbeeld: "Voeg bulk verwijder optie toe voor markers"
+- Badge kleur: Blauw
+
+**Suggestion** - Algemeen idee of aanbeveling
+- Gebruik voor minder formele voorstellen of discussie onderwerpen
+- Voorbeeld: "Overweeg dark mode voor admin paneel"
+- Badge kleur: Blauw
+
+**Verzoek Statussen:**
+
+**Open** (standaard) - Wacht op review
+- Nieuw aangemaakte verzoeken starten als "open"
+- Geeft aan dat verzoek aandacht nodig heeft
+- Kleur: Geel icoon
+
+**In Progress** - Wordt momenteel aan gewerkt
+- Super Admin markeert verzoeken als in progress wanneer ontwikkeling start
+- Signaleert dat actief werk plaatsvindt
+- Kleur: Blauw icoon
+
+**Completed** - Geïmplementeerd en gedeployed
+- Feature geleverd of bug gefixt
+- Bevat optioneel versienummer (bijv. "v2.1.0")
+- Kleur: Groen icoon
+
+**Archived** - Gesloten zonder implementatie
+- Wordt niet geïmplementeerd (duplicaat, buiten scope, of verouderd)
+- Verplaatst uit actieve weergave maar bewaard voor referentie
+- Kleur: Grijs icoon
+
+**Verzoeken Aanmaken** 🔓 *Alle Rollen*
+
+**Stap 1: Navigeer naar Feedback Tab**
+Klik "Feedback" in het admin menu of navigeer naar `/admin/feedback`
+
+**Stap 2: Schakel naar "Create" Tab**
+Klik de "Create" of "Nieuw Verzoek" tab bovenaan
+
+**Stap 3: Vul Verzoek Formulier In**
+- **Type**: Selecteer uit Feature, Bug, Improvement, of Suggestion
+- **Titel** (verplicht): Korte, beschrijvende samenvatting (bijv. "Voeg Excel export toe voor toewijzingen")
+- **Beschrijving** (optioneel): Gedetailleerde uitleg, stappen om te reproduceren (voor bugs), of use cases
+
+**Stap 4: Dien Verzoek In**
+Klik "Dien Verzoek In" knop - je verzoek verschijnt direct in de "Alle Verzoeken" lijst
+
+**Best Practices voor Het Aanmaken van Verzoeken:**
+- **Wees Specifiek**: Duidelijke, uitvoerbare titels helpen anderen snel begrijpen
+- **Één Verzoek Per Indiening**: Bundel geen meerdere ideeën in één verzoek
+- **Zoek Eerst**: Controleer of vergelijkbaar verzoek al bestaat om duplicaten te vermijden
+- **Geef Context**: Voor bugs, inclusief stappen om te reproduceren; voor features, leg use case uit
+- **Gebruik Correct Type**: Kies het type dat het best bij je verzoek past
+
+**Verzoeken Bekijken** 🔓 *Alle Rollen*
+
+**Alle Verzoeken Tab:**
+Toont elk verzoek van alle gebruikers, gesorteerd op aanmaakdatum (nieuwste eerst)
+
+**Mijn Verzoeken Tab:**
+Filtert om alleen jouw aangemaakte verzoeken te tonen - handig voor tracken van je eigen indieningen
+
+**Verzoek Kaarten Weergave:**
+Elk verzoek toont:
+- **Type Badge**: Gekleurde pil die verzoektype aangeeft
+- **Titel**: Verzoek samenvatting (klikbaar om detail view te openen)
+- **Beschrijving**: Eerste regel preview (indien opgegeven)
+- **Status Icoon**: Huidige status met kleurcodering
+- **Stem Aantal**: Aantal upvotes met thumbs-up icoon
+- **Commentaar Aantal**: Aantal commentaren met commentaar icoon
+- **Indiener**: Email van gebruiker die verzoek aanmaakte
+- **Tijdstempel**: "X dagen geleden" of geformatteerde datum
+
+**Stemmen op Verzoeken** 🔓 *Alle Rollen*
+
+**Hoe Stemmen Werkt:**
+- Klik het thumbs-up icoon op elk verzoek kaart om te stemmen
+- Klik opnieuw om je stem te verwijderen
+- Je stemmen zijn gemarkeerd (gevuld icoon vs outline)
+- Stem aantal update real-time voor alle gebruikers
+
+**Waarom Stemmen:**
+- Signaleert welke verzoeken het meest belangrijk zijn voor gebruikers
+- Helpt ontwikkelwerk te prioriteren
+- Toont community consensus
+- Eén stem per gebruiker per verzoek
+
+**Stem Strategie:**
+- Stem voor verzoeken die je workflow zouden helpen
+- Stem voor kritieke bugs die je werk beïnvloeden
+- Review "Alle Verzoeken" regelmatig voor nieuwe indieningen
+- Herbezoek periodiek naarmate prioriteiten veranderen
+
+**Verzoeken Filteren** 🔓 *Alle Rollen*
+
+**Zoekbalk:**
+- Typ trefwoorden om te filteren op titel, beschrijving of indiener email
+- Real-time filtering terwijl je typt
+- Hoofdletter-ongevoelig zoeken
+
+**Type Filter:**
+- Klik "Filter" dropdown → Selecteer types
+- Kies één of meerdere types (Feature, Bug, Improvement, Suggestion)
+- Alleen verzoeken met geselecteerde types tonen
+- Wis filter om alle types te tonen
+
+**Status Filter:**
+- Klik status dropdown → Selecteer statussen
+- Kies één of meerdere statussen (Open, In Progress, Completed, Archived)
+- Alleen verzoeken met geselecteerde statussen tonen
+- Wis filter om alle statussen te tonen
+
+**Filter Persistentie:**
+Je filter selecties worden automatisch opgeslagen en hersteld wanneer je terugkeert naar de Feedback pagina.
+
+**Verzoek Details Bekijken** 🔓 *Alle Rollen*
+
+**Detail View Openen:**
+Klik op elke verzoektitel of kaart om het detail paneel te openen
+
+**Detail View Toont:**
+- **Volledige Titel en Beschrijving**: Complete verzoektekst
+- **Metadata**: Type, status, indiener, aanmaakdatum, stem aantal
+- **Versie** (indien voltooid): Release versie waar geïmplementeerd
+- **Prioriteit** (indien ingesteld): Laag, Gemiddeld, Hoog, of Kritiek
+- **Commentaar Thread**: Alle discussie over dit verzoek
+- **Acties**: Stem, commentaar, bewerk (eigen verzoeken), update status (Super Admin)
+
+**Commentaar op Verzoeken** 🔓 *Alle Rollen*
+
+**Commentaar Toevoegen:**
+1. Open verzoek detail view
+2. Scroll naar commentaar sectie onderaan
+3. Typ je commentaar in het tekstveld
+4. Klik "Post Commentaar"
+
+**Commentaar Functies:**
+- Real-time updates (nieuwe commentaren verschijnen instant)
+- Toont commentator email en tijdstempel
+- Verwijder eigen commentaren (prullenbak icoon)
+- Super Admins kunnen elk commentaar verwijderen
+
+**Commentaar Best Practices:**
+- Stel verduidelijkende vragen over onduidelijke verzoeken
+- Stel alternatieve oplossingen voor
+- Deel relevante context of workarounds
+- Verwijs naar gerelateerde verzoeken
+- Houd discussie constructief en professioneel
+
+**Verzoeken Beheren**
+
+**Eigen Verzoeken Bewerken** 🔓 *Alle Rollen*
+
+Gebruikers kunnen hun eigen verzoeken bewerken:
+1. Open je verzoek detail view
+2. Klik "Bewerk" knop
+3. Wijzig titel of beschrijving
+4. Klik "Sla Wijzigingen Op"
+
+**Verzoek Status Updaten** 🔒 *Super Admin Only*
+
+Super Admins kunnen verzoekstatus wijzigen:
+1. Open verzoek detail view
+2. Klik status dropdown
+3. Selecteer nieuwe status: Open, In Progress, Completed, of Archived
+4. Bij markeren als Completed, voeg optioneel versienummer toe
+5. Status update direct en notificeert indiener
+
+**Prioriteit Instellen** 🔒 *Super Admin Only*
+
+Super Admins kunnen prioriteit instellen:
+1. Open verzoek detail view
+2. Klik prioriteit dropdown
+3. Selecteer: Laag, Gemiddeld, Hoog, of Kritiek
+4. Helpt team focussen op belangrijke items
+
+**Verzoeken Verwijderen** 🔒 *Super Admin Only*
+
+Super Admins kunnen verzoeken verwijderen:
+1. Open verzoek detail view
+2. Klik "Verwijder Verzoek" knop
+3. Bevestig verwijdering in dialoog
+4. Verzoek is permanent verwijderd
+
+**Gebruik verwijderen spaarzaam** - geef voorkeur aan "Archived" status om geschiedenis te behouden
+
+**Real-Time Samenwerking**
+
+Het feedback systeem update real-time voor alle verbonden gebruikers:
+- **Nieuwe Verzoeken**: Verschijnen instant in Alle Verzoeken tab
+- **Stem Wijzigingen**: Stem aantallen updaten live
+- **Nieuwe Commentaren**: Commentaren verschijnen zonder pagina refresh
+- **Status Updates**: Status wijzigingen reflecteren direct
+- **Bewerkingen**: Titel/beschrijving updates tonen real-time
+
+**Veelvoorkomende Workflows**
+
+**Een Bug Rapporteren:**
+1. Navigeer naar Feedback → Create tab
+2. Selecteer type: "Bug"
+3. Titel: "Import faalt met speciale karakters in bedrijfsnamen"
+4. Beschrijving: Stappen om te reproduceren, verwacht vs actueel gedrag
+5. Dien verzoek in
+6. Monitor voor commentaren van Super Admin
+7. Stem op vergelijkbare bugs om ernst te tonen
+
+**Een Feature Aanvragen:**
+1. Zoek bestaande verzoeken om duplicaten te vermijden
+2. Indien niet gevonden, klik Create tab
+3. Selecteer type: "Feature"
+4. Titel: Duidelijke one-liner die feature beschrijft
+5. Beschrijving: Leg use case, voordelen en gewenst gedrag uit
+6. Dien in en deel met team om stemmen te verzamelen
+7. Commentaar met aanvullende context indien vragen opkomen
+
+**Triagen als Super Admin:**
+1. Review Alle Verzoeken regelmatig (dagelijks/wekelijks)
+2. Commentaar op onduidelijke verzoeken om requirements te verzamelen
+3. Stel prioriteit in op kritieke items
+4. Update status naar "In Progress" wanneer werk start
+5. Markeer "Completed" met versienummer wanneer geleverd
+6. Archiveer duplicaten of out-of-scope verzoeken
+
+**Stemmen Gebruiken om te Prioriteren:**
+1. Sorteer verzoeken op stem aantal (mentale prioritering)
+2. Focus ontwikkeling op high-vote items
+3. Review low-vote verzoeken voor snelle wins
+4. Balanceer populaire verzoeken met strategische behoeften
+5. Communiceer gepland werk in commentaren
+
+**Best Practices**
+
+**Voor Alle Gebruikers:**
+- Controleer op bestaande verzoeken voor duplicaten aanmaken
+- Stem actief op verzoeken die belangrijk zijn voor je werk
+- Geef constructieve feedback in commentaren
+- Update of verwijder je verzoeken als ze verouderd raken
+- Wees geduldig - ontwikkeling kost tijd
+
+**Voor Super Admins:**
+- Reageer op nieuwe verzoeken binnen 48 uur (commentaar of status update)
+- Stel realistische verwachtingen in commentaren over tijdlijn
+- Update status regelmatig om voortgang te tonen
+- Gebruik "In Progress" om actief werk te signaleren
+- Markeer "Completed" met versienummers voor duidelijkheid
+- Archiveer duplicaten met commentaar die origineel refereert
+- Moedig gebruikers aan te stemmen i.p.v. dubbele verzoeken aanmaken
+
+**Tips voor Effectieve Verzoeken:**
+
+**Goed Bug Rapport:**
+```
+Titel: Kaart markers verdwijnen na zoom level 15
+Type: Bug
+
+Beschrijving:
+Stappen om te reproduceren:
+1. Navigeer naar Kaart Beheer
+2. Voeg markers toe op coördinaten X,Y
+3. Zoom in voorbij level 15
+4. Markers verdwijnen uit zicht
+
+Verwacht: Markers blijven zichtbaar op alle zoom levels
+Actueel: Markers verdwijnen boven zoom 15
+Browser: Chrome 120
+```
+
+**Goed Feature Verzoek:**
+```
+Titel: Voeg bulk categorie toewijzing toe voor bedrijven
+Type: Feature
+
+Beschrijving:
+Sta toe meerdere bedrijven te selecteren en categorieën
+in één actie toe te wijzen. Momenteel moet elk bedrijf individueel
+worden bewerkt wat tijdrovend is voor 100+ standhouders.
+
+Use case: Jaarlijkse event setup bij categoriseren nieuwe standhouders
+Voordeel: Bespaar 2-3 uur tijdens event voorbereiding
+```
+
+**Technische Details**
+
+**Data Opslag:**
+- Verzoeken opgeslagen in `feedback_requests` tabel
+- Stemmen in `feedback_votes` tabel (één per gebruiker per verzoek)
+- Commentaren in `feedback_comments` tabel
+- Real-time sync via Supabase subscriptions
+
+**Stem Mechanica:**
+- Één stem per gebruiker per verzoek (toggle aan/uit)
+- Stem aantal geaggregeerd en gecached op verzoek record
+- Directe lokale update + achtergrond sync
+
+**Commentaar Threading:**
+- Chronologische volgorde (oudste eerst)
+- Toont indiener email en tijdstempel
+- Geen geneste replies (platte thread)
+
+**Zoek Implementatie:**
+- Client-side filtering voor instant resultaten
+- Zoekt titel, beschrijving en indiener email velden
+- Hoofdletter-ongevoelig gedeeltelijk matchen
+      `.trim()
+    },
+    updated: "2025-12-02",
+    tips: {
+      en: [
+        "Search existing requests before creating new ones to avoid duplicates",
+        "Vote actively on requests that would improve your workflow",
+        "Provide detailed steps to reproduce when reporting bugs",
+        "Use comments to discuss and refine feature requests before voting",
+        "Check Feedback regularly - popular requests get prioritized for development"
+      ],
+      nl: [
+        "Zoek bestaande verzoeken voor het aanmaken van nieuwe om duplicaten te vermijden",
+        "Stem actief op verzoeken die je workflow zouden verbeteren",
+        "Geef gedetailleerde stappen om te reproduceren bij het rapporteren van bugs",
+        "Gebruik commentaren om feature verzoeken te bespreken en verfijnen voor stemmen",
+        "Check Feedback regelmatig - populaire verzoeken krijgen prioriteit voor ontwikkeling"
+      ]
+    }
+  },
+
   general: {
     title: {
       en: "Getting Started",
