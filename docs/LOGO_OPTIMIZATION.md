@@ -30,3 +30,12 @@ Notes
 
 Next steps
 - Add automated uploads to Supabase Storage or push generated files into a versioned asset path for CDN caching.
+
+Upload to Supabase and CI
+- You can upload the generated assets to your Supabase `Logos` bucket so they are served from the edge/CDN. Use the `scripts/upload-logos.mjs` script which requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` env vars (service role key is required to upload to storage from CI).
+
+CI example (GitHub Actions)
+1. Add the following secrets to your repo: `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
+2. Add a CI job (example workflow shown in `.github/workflows/upload-logos.yml`) that runs `npm ci`, `npm run images:optimize-logos`, then `npm run images:upload-logos`.
+
+When uploaded to Supabase Storage under `generated/` the application can reference these assets directly by public URL or by `getLogoPath` / `getResponsiveLogoSources` helpers.

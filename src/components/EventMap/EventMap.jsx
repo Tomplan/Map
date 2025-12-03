@@ -111,7 +111,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     safeMarkers.forEach((marker) => {
       if (marker.logo) {
         const img = new window.Image();
-        img.src = getLogoPath(marker.logo);
+        const r = getResponsiveLogoSources(marker.logo);
+        if (r && 'srcSet' in r) {
+          img.src = r.src;
+          img.srcset = r.srcSet;
+        } else {
+          img.src = getLogoPath(marker.logo);
+        }
       }
     });
   }, [safeMarkers]);

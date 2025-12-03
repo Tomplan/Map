@@ -90,7 +90,11 @@ export default function LogoUploader({
       {showPreview && currentLogo && (
         <div className="flex items-center gap-2 mb-2">
           <img
-            src={getLogoPath(currentLogo)}
+            {...(() => {
+              const s = getResponsiveLogoSources(currentLogo);
+              if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
+              return { src: getLogoPath(currentLogo) };
+            })()}
             alt="Current logo"
             className="h-12 w-12 object-contain border rounded p-1"
           />

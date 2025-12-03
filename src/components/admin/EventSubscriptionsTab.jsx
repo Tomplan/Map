@@ -476,7 +476,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   <td className="p-2 text-left">
                     <div className="flex items-center gap-2">
                       <img
-                        src={getLogoPath(company?.logo || organizationLogo)}
+                        {...(() => {
+                          const source = company?.logo || organizationLogo;
+                          const s = getResponsiveLogoSources(source);
+                          if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
+                          return { src: getLogoPath(source) };
+                        })()}
                         alt={company?.name}
                         className="w-8 h-8 object-contain"
                       />
