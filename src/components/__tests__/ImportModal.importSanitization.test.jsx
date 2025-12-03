@@ -9,11 +9,15 @@ jest.mock('../../utils/dataExportImport', () => ({
 }))
 
 describe('ImportModal import sanitization', () => {
-  beforeEach(() => jest.resetModules())
+  beforeEach(() => {
+    // keep module cache between tests here — resetting can cause multiple
+    // React module instances in Jest which lead to "Invalid hook call" errors
+    // when rendering components that use hooks.
+  })
 
   test('does not send _categorySlugs or _translations to DB insert/update', async () => {
-    // Ensure module mocks are fresh
-    jest.resetModules()
+    // Ensure module mocks are fresh — we reset only mocks where needed below
+    jest.resetAllMocks()
 
     // Prepare mock parse result (one row)
     const { parseFile } = require('../../utils/dataExportImport')
