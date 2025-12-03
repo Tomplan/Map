@@ -18,6 +18,16 @@
 import { createClient } from '@supabase/supabase-js';
 import { looksNumericBase } from './lib/logoUtils.js';
 
+function contentTypeForExt(ext) {
+  if (!ext) return 'application/octet-stream';
+  const e = ext.toLowerCase();
+  if (e === '.webp') return 'image/webp';
+  if (e === '.avif') return 'image/avif';
+  if (e === '.png') return 'image/png';
+  if (e === '.jpg' || e === '.jpeg') return 'image/jpeg';
+  return 'application/octet-stream';
+}
+
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
@@ -93,10 +103,11 @@ async function run() {
         }
 
         // upload to archived path with upsert
+        const ext = toPath.slice(((toPath.lastIndexOf('.') + 1) || 0) - 1);
         const put = await supabase.storage.from(BUCKET).upload(
           toPath,
           buffer,
-          { upsert: true }
+          { upsert: true, contentType: contentTypeForExt(ext) }
         );
 
         if (put.error) {
