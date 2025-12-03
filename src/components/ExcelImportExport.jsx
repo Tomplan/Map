@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import * as XLSX from 'xlsx'
+// XLSX is only used during upload parsing; dynamically import when needed
 import { exportToExcel } from '../utils/dataExportImport'
+import { saveAs } from 'file-saver'
 
 export default function ExcelImportExport() {
   const [rows, setRows] = useState([])
@@ -21,8 +22,12 @@ export default function ExcelImportExport() {
       const data = await file.arrayBuffer()
       
       setLoadingProgress('Processing workbook...')
+      // Dynamically import xlsx only when user uploads a file
+      const XLSXModule = await import('xlsx')
+      const XLSX = XLSXModule && XLSXModule.default ? XLSXModule.default : XLSXModule
+
       const workbook = XLSX.read(data, { type: 'array' })
-      
+
       setLoadingProgress('Extracting data...')
       const worksheet = workbook.Sheets[workbook.SheetNames[0]]
       const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
@@ -40,20 +45,75 @@ export default function ExcelImportExport() {
     }
   }
 
-  const exportToExcel = async () => {
+  const onExportToExcel = async () => {
     if (!rows?.length) return
 
     // Prepare column configuration for the export
     const columns = Object.keys(rows[0] || {}).map(key => ({
       key: key,
       header: key,
-      type: 'text' // Default to text type for general use
+      // Automatically detect numeric columns so exported workbook keeps
+      // numbers as numbers rather than stringifying them.
+      type: typeof (rows[0] && rows[0][key]) === 'number' ? 'number' : 'text'
     }))
 
-    // Use the proper export function that creates Excel tables with sorting support
-    await exportToExcel(rows, columns, 'export', {
-      freezeColumns: 1 // Freeze first column (IDs) for better usability
-    })
+    // Perform a lightweight Excel export here (keeps numeric types intact)
+    // and avoid loading the large export utility which serializes values.
+    try {
+      let ExcelJS
+      if (typeof process !== 'undefined' && process.env && process.env.NODE_ENV === 'test') {
+        // eslint-disable-next-line global-require
+        ExcelJS = require('exceljs')
+      } else {
+        const ExcelJSModule = await import('exceljs')
+        ExcelJS = ExcelJSModule && ExcelJSModule.default ? ExcelJSModule.default : ExcelJSModule
+      }
+      const workbook = new ExcelJS.Workbook()
+      const sheet = workbook.addWorksheet('Data')
+
+      if (columns.length) sheet.columns = columns.map(c => ({ header: c.header, key: c.key }))
+      sheet.addRows(rows)
+
+      // compute simple widths (min 10 chars)
+      const MIN_COL_WIDTH = 10
+      const MAX_COL_WIDTH = 60
+      const computedWidths = columns.map(col => {
+        const headerText = String(col.header || '')
+        let maxLen = headerText.length
+        for (const r of rows) {
+          const cell = r[col.key]
+          const text = cell === null || cell === undefined ? '' : String(cell)
+          if (text.length > maxLen) maxLen = text.length
+        }
+        const width = Math.min(Math.max(maxLen + 2, MIN_COL_WIDTH), MAX_COL_WIDTH)
+        return { width }
+      })
+      sheet.columns.forEach((c, i) => { if (computedWidths[i]) c.width = computedWidths[i].width })
+
+      // freeze header + first column
+      sheet.views = [{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }]
+
+      // lock header and first col
+      try {
+        const headerRow = sheet.getRow(1)
+        for (let i = 1; i <= columns.length; i++) {
+          try { headerRow.getCell(i).protection = { locked: true } } catch (e) {}
+        }
+        for (let r = 2; r <= (sheet.rowCount || rows.length + 1); r++) {
+          const rowObj = sheet.getRow(r)
+          for (let c = 1; c <= columns.length; c++) {
+            try { rowObj.getCell(c).protection = { locked: c === 1 } } catch (e) {}
+          }
+        }
+        try { sheet.protect && sheet.protect('', {}) } catch (e) {}
+      } catch (e) { /* ignore */ }
+
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      saveAs(blob, `export.xlsx`)
+    } catch (e) {
+      console.error('Export error (component):', e)
+    }
   }
 
   return (
@@ -81,7 +141,7 @@ export default function ExcelImportExport() {
         <div className="flex gap-3 pt-2">
           <button
             data-testid="export-btn"
-            onClick={exportToExcel}
+            onClick={onExportToExcel}
             className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
           >
             Export to Excel
