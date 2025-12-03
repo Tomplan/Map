@@ -6,7 +6,7 @@ import useAssignments from '../../hooks/useAssignments';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
