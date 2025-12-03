@@ -27,15 +27,7 @@ const BUCKET = 'Logos';
 const SIZES = [64, 128, 256, 512];
 const VARIANT_EXTS = ['.webp', '.avif'];
 
-function slugify(name) {
-  if (!name) return 'untitled';
-  return String(name)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 120);
-}
+import { slugify } from './lib/logoUtils.js';
 
 function cdnUrlFor(filename) {
   const base = url.replace(/\/$/, '');

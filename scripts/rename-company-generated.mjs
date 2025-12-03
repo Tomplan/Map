@@ -18,19 +18,13 @@ const confirm = process.argv.includes('--confirm');
 const DEFAULT_IDS = [2,3,4,5,6,7,8,9,10,21];
 const targetIds = ids.length ? ids : DEFAULT_IDS;
 
+import { slugify } from './lib/logoUtils.js';
+
 const SIZES = [64,128,256,512];
 const VARIANT_EXTS = ['.webp', '.avif'];
 const BUCKET = 'Logos';
 
-function slugify(name) {
-  if (!name) return 'untitled';
-  return String(name)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 120);
-}
+  // slugify imported from lib/logoUtils
 
 function cdnBaseUrlFor(fname) {
   const supabaseUrl = url.replace(/\/$/, '');
