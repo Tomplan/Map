@@ -37,7 +37,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null, onMapReady = null }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
@@ -390,8 +390,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     setMapInstance(map);
     // Inform parent components that the map instance is ready so they can
     // register print actions or other map-specific interactions.
-    if (typeof props?.onMapReady === 'function') {
-      try { props.onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
+    if (typeof onMapReady === 'function') {
+      try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
     }
     
     // Force a resize event to ensure proper tile loading
