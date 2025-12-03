@@ -326,20 +326,20 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         const BrowserPrintMode = window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode;
 
         const printControl = new BrowserPrintControl({
-          position: 'topleft',
+          position: 'topright',
           closePopupsOnPrint: false,
-          printModes: [
-            // Use L.BrowserPrint.Mode constructor when available; otherwise the plugin will build defaults.
-            BrowserPrintMode
-              ? new BrowserPrintMode('MapOnly', {
-                  title: 'Map Only',
-                  pageSize: 'A4',
-                  orientation: 'landscape',
-                  mapOnly: true,
-                  customArea: true,
-                })
-              : 'MapOnly'
-          ]
+          // Use common, supported mode constructors so the plugin executes the
+          // expected print flows (Portrait, Landscape, Auto, Custom).
+          printModes: BrowserPrintMode
+            ? [
+                // current view (use landscape page orientation)
+                BrowserPrintMode.Landscape('A4', { title: 'Current view — landscape' }),
+                BrowserPrintMode.Portrait('A4', { title: 'A4 — Portrait' }),
+                BrowserPrintMode.Landscape('A4', { title: 'A4 — Landscape' }),
+                BrowserPrintMode.Auto('A4', { title: 'Auto fit' }),
+                BrowserPrintMode.Custom('A4', { title: 'Select area', customArea: true }),
+              ]
+            : undefined,
         });
 
         printControl.addTo(mapInstance);
