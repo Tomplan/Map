@@ -356,7 +356,31 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
       const printWindow = window.open('', '_blank', 'width=900,height=700');
       if (!printWindow) return;
 
-      printWindow.document.write(`<!doctype html><html><head><title>Map Print</title><style>*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}</style></head><body><img src="${imageDataUrl}" alt="Map" onload="setTimeout(function(){ window.print(); }, 100);"/></body></html>`);
+      // Avoid document.write (browser warns). Build DOM safely using DOM APIs
+      const doc = printWindow.document;
+      doc.open();
+      // Build head content
+      const head = doc.createElement('head');
+      const title = doc.createElement('title');
+      title.textContent = 'Map Print';
+      const style = doc.createElement('style');
+      style.textContent = `*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}`;
+      head.appendChild(title);
+      head.appendChild(style);
+
+      // Build body with image and onload print
+      const body = doc.createElement('body');
+      const img = doc.createElement('img');
+      img.src = imageDataUrl;
+      img.alt = 'Map';
+      img.onload = () => setTimeout(() => { try { printWindow.print(); } catch (e) { /* ignore */ } }, 100);
+      body.appendChild(img);
+
+      // Attach head/body to document
+      while (doc.documentElement?.firstChild) doc.documentElement.removeChild(doc.documentElement.firstChild);
+      doc.documentElement.appendChild(head);
+      doc.documentElement.appendChild(body);
+      doc.close();
       printWindow.document.close();
       printWindow.onafterprint = () => printWindow.close();
     } catch (err) {

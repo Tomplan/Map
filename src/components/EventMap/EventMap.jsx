@@ -495,11 +495,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
-              key={layer.key}
-              attribution={layer.attribution}
-              url={layer.url}
-              maxZoom={MAP_CONFIG.MAX_ZOOM}
-            />
+                key={layer.key}
+                attribution={layer.attribution}
+                url={layer.url}
+                crossOrigin="anonymous"
+                maxZoom={MAP_CONFIG.MAX_ZOOM}
+              />
           ))}
 
           <EventClusterMarkers

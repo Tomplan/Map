@@ -78,47 +78,29 @@ export default function PrintButton({ mapInstance }) {
         return;
       }
 
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Map Print</title>
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              min-height: 100vh;
-              background: white;
-            }
-            img {
-              max-width: 100%;
-              max-height: 100vh;
-              object-fit: contain;
-            }
-            @media print {
-              body {
-                margin: 0;
-                padding: 0;
-              }
-              img {
-                width: 100%;
-                height: auto;
-                max-height: none;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <img src="${imageDataUrl}" alt="Map" onload="setTimeout(function() { window.print(); }, 100);" />
-        </body>
-        </html>
-      `);
+      // Avoid document.write; construct DOM safely in the opened window
+      const doc = printWindow.document;
+      doc.open();
+
+      const head = doc.createElement('head');
+      const title = doc.createElement('title');
+      title.textContent = 'Map Print';
+      const style = doc.createElement('style');
+      style.textContent = `*{margin:0;padding:0;box-sizing:border-box}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{body{margin:0;padding:0}img{width:100%;height:auto;max-height:none}}`;
+      head.appendChild(title);
+      head.appendChild(style);
+
+      const body = doc.createElement('body');
+      const img = doc.createElement('img');
+      img.src = imageDataUrl;
+      img.alt = 'Map';
+      img.onload = () => setTimeout(() => { try { printWindow.print(); } catch(e) { /* ignore */ } }, 100);
+      body.appendChild(img);
+
+      while (doc.documentElement?.firstChild) doc.documentElement.removeChild(doc.documentElement.firstChild);
+      doc.documentElement.appendChild(head);
+      doc.documentElement.appendChild(body);
+      doc.close();
 
       printWindow.document.close();
 
