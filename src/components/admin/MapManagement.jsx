@@ -1,22 +1,26 @@
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive } from '@mdi/js';
+import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive, mdiEye, mdiPrinter } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
+import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
+import useUserRole from '../../hooks/useUserRole';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
- * System Managers only - merges Core/Appearance/Content tabs
+ * System Managers and Super Admins: Full editing capabilities
+ * Event Managers: Read-only view for assignments and printing
  * Features: Marker list, interactive map, and detail/edit panel
  */
 export default function MapManagement({ markersState, setMarkersState, updateMarker, selectedYear, archiveMarkers, copyMarkers }) {
   const { t } = useTranslation();
+  const { isEventManager, isSystemManager, isSuperAdmin } = useUserRole();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -25,6 +29,13 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
   const { confirm, toastError, toastSuccess } = useDialog();
+  const [mapInstance, setMapInstance] = useState(null);
+  const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  const [printModes, setPrintModes] = useState([]);
+  const [isPrintingHeader, setIsPrintingHeader] = useState(false);
+
+  // Event managers have read-only access
+  const isReadOnly = isEventManager;
 
   // Fetch default markers on mount
   useEffect(() => {
@@ -206,6 +217,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
   // Handle archive current year
   const handleArchive = async () => {
+    if (isReadOnly) return; // Event managers can't archive
+    
     const confirmed = await confirm({
       title: 'Archive Markers',
       message: `Archive all markers for ${selectedYear}? This will move them to the archive and clear the current year.`,
@@ -224,6 +237,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
   // Handle copy from previous year
   const handleCopyFromPreviousYear = async () => {
+    if (isReadOnly) return; // Event managers can't copy
+    
     const previousYear = selectedYear - 1;
     const confirmed = await confirm({
       title: 'Copy Markers',
@@ -238,6 +253,147 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
       toastError(`Error copying markers: ${error}`);
     } else {
       toastSuccess(`Markers copied from ${previousYear} to ${selectedYear}`);
+    }
+  };
+
+  // Print map (for Event Managers)
+  const handlePrintMap = () => {
+    window.print();
+  };
+
+  // Programmatic print call for header presets — attempt plugin first, fallback to snapshot
+  const programmaticHeaderPrint = async (mode) => {
+    if (!mapInstance || !mapInstance.printControl || !mode) return;
+
+    setIsPrintingHeader(true);
+    const control = mapInstance.printControl;
+    const browserPrint = control?.browserPrint || control;
+
+    let timeoutId = null;
+    let started = false;
+    let finished = false;
+
+    const cleanup = () => {
+      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event)) return;
+      const Ev = window.L.BrowserPrint.Event;
+      try {
+        mapInstance.off(Ev.PrintStart, onStart);
+        mapInstance.off(Ev.PrintEnd, onEnd);
+        mapInstance.off(Ev.PrintCancel, onCancel);
+      } catch (e) {}
+      if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+    };
+
+    const onStart = () => { started = true; };
+    const onEnd = () => { finished = true; cleanup(); };
+    const onCancel = () => { finished = true; cleanup(); };
+
+    try {
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
+        const Ev = window.L.BrowserPrint.Event;
+        mapInstance.on(Ev.PrintStart, onStart);
+        mapInstance.on(Ev.PrintEnd, onEnd);
+        mapInstance.on(Ev.PrintCancel, onCancel);
+      }
+
+      try {
+        if (typeof browserPrint.print === 'function') {
+          browserPrint.print(mode);
+        } else if (typeof control?._printMode === 'function') {
+          control._printMode(mode);
+        } else {
+          throw new Error('No browser print API available');
+        }
+      } catch (err) {
+        console.warn('Header BrowserPrint call failed:', err);
+        cleanup();
+        await snapshotHeaderPrint();
+        return;
+      }
+
+      const waitStart = () => new Promise((resolve) => {
+        if (started) return resolve('started');
+        timeoutId = setTimeout(() => resolve('timeout'), 2500);
+        const poll = setInterval(() => {
+          if (started || finished) {
+            clearInterval(poll);
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            resolve(started ? 'started' : 'finished');
+          }
+        }, 80);
+      });
+
+      const result = await waitStart();
+      if (result === 'timeout') {
+        console.warn('Header BrowserPrint did not start; falling back to snapshot export');
+        cleanup();
+        await snapshotHeaderPrint();
+      }
+    } finally {
+      setIsPrintingHeader(false);
+    }
+  };
+
+  const snapshotHeaderPrint = async () => {
+    if (isPrintingHeader) return;
+    setIsPrintingHeader(true);
+    try {
+      const mapContainer = document.querySelector('#map-container') || document.querySelector('.leaflet-container');
+      if (!mapContainer) return;
+
+      await new Promise(r => setTimeout(r, 400));
+
+      const canvas = await html2canvas(mapContainer, {
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        scale: 2,
+        ignoreElements: (element) => element.classList?.contains('map-controls-print-hide')
+      });
+
+      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      if (!printWindow) return;
+
+      // Avoid document.write (browser warns). Build DOM safely using DOM APIs
+      const doc = printWindow.document;
+      doc.open();
+      // Build head content
+      const head = doc.createElement('head');
+      const title = doc.createElement('title');
+      title.textContent = 'Map Print';
+      const style = doc.createElement('style');
+      style.textContent = `*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}`;
+      head.appendChild(title);
+      head.appendChild(style);
+
+      // Build body with image and onload print
+      const body = doc.createElement('body');
+      const img = doc.createElement('img');
+      img.src = imageDataUrl;
+      img.alt = 'Map';
+      img.onload = () => setTimeout(() => { try { printWindow.print(); } catch (e) { /* ignore */ } }, 100);
+      body.appendChild(img);
+
+      // Attach head/body to document
+      while (doc.documentElement?.firstChild) doc.documentElement.removeChild(doc.documentElement.firstChild);
+      doc.documentElement.appendChild(head);
+      doc.documentElement.appendChild(body);
+      doc.close();
+      printWindow.document.close();
+      printWindow.onafterprint = () => printWindow.close();
+    } catch (err) {
+      console.error('Snapshot print failed:', err);
+      // For admin users show a helpful error toast explaining likely cause and next steps
+      try {
+        toastError('Snapshot failed — map tiles may be blocked by CORS or the service worker. Use the Print Map plugin preset or enable CORS for your tile provider.');
+      } catch (e) {
+        // if toast isn't available just fall back silently
+      }
+      window.print();
+    } finally {
+      setIsPrintingHeader(false);
     }
   };
 
@@ -261,39 +417,94 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
   };
 
   return (
-    <ProtectedSection requiredRole={['super_admin', 'system_manager']}>
+    <ProtectedSection requiredRole={['super_admin', 'system_manager', 'event_manager']}>
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
           {/* Header with year info and actions */}
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold text-gray-900">
-                {t('mapManagement.title')}
+                {isReadOnly ? 'Event Map Viewer' : t('mapManagement.title')}
               </h1>
               <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {selectedYear}
               </div>
+              {/* Read-only badge removed per request - keep header title behavior unchanged */}
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleCopyFromPreviousYear}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                title={`Copy markers from ${selectedYear - 1}`}
-              >
-                <Icon path={mdiContentCopy} size={0.8} />
-                Copy from {selectedYear - 1}
-              </button>
-              <button
-                onClick={handleArchive}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={(markersState?.length || 0) === 0}
-                title={`Archive all markers for ${selectedYear}`}
-              >
-                <Icon path={mdiArchive} size={0.8} />
-                Archive {selectedYear}
-              </button>
+            <div className="flex gap-2 items-center">
+              {/* Canonical header print action for Event/Org roles */}
+              <div className="relative">
+                <button
+                  onClick={() => setPrintMenuOpen((v) => !v)}
+                  className={`flex items-center gap-2 px-4 py-2 ${isReadOnly ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'} rounded-lg`}
+                  title="Print map"
+                  aria-haspopup="menu"
+                  aria-expanded={printMenuOpen}
+                >
+                  <Icon path={mdiPrinter} size={0.8} />
+                  Print Map
+                </button>
+
+                {printMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden">
+                    {printModes.length > 0 ? (
+                      <div className="py-1">
+                        {printModes.map((m, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={async () => {
+                              setPrintMenuOpen(false);
+                              await programmaticHeaderPrint(m);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                          >
+                            {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-1">
+                        <button
+                          type="button"
+                          onClick={async () => { setPrintMenuOpen(false); await snapshotHeaderPrint(); }}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                        >
+                          Snapshot (PNG)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Maintain Copy and Archive buttons for full admin users */}
+              {!isReadOnly && (
+                <>
+                  <button
+                    onClick={handleCopyFromPreviousYear}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                    title={`Copy markers from ${selectedYear - 1}`}
+                  >
+                    <Icon path={mdiContentCopy} size={0.8} />
+                    Copy from {selectedYear - 1}
+                  </button>
+                  <button
+                    onClick={handleArchive}
+                    className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={(markersState?.length || 0) === 0}
+                    title={`Archive all markers for ${selectedYear}`}
+                  >
+                    <Icon path={mdiArchive} size={0.8} />
+                    Archive {selectedYear}
+                  </button>
+                </>
+              )}
             </div>
           </div>
+          
+
+          {/* read-only notice removed per request - event manager view remains read-only but UI note removed */}
 
           {/* Empty state for no markers */}
           {filteredMarkers.length === 0 && !searchTerm && (
@@ -301,20 +512,26 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               <div className="text-center">
                 <h3 className="text-lg font-semibold text-blue-900 mb-2">No Markers Found for {selectedYear}</h3>
                 <p className="text-blue-700 mb-4">
-                  There are no markers configured for {selectedYear}. You can copy markers from the previous year or create new ones.
+                  {isReadOnly 
+                    ? `There are no markers configured for ${selectedYear}. Please contact your system administrator.`
+                    : `There are no markers configured for ${selectedYear}. You can copy markers from the previous year or create new ones.`
+                  }
                 </p>
-                <button
-                  onClick={handleCopyFromPreviousYear}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Copy from {selectedYear - 1}
-                </button>
+                {!isReadOnly && (
+                  <button
+                    onClick={handleCopyFromPreviousYear}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Copy from {selectedYear - 1}
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          {/* Search and Sort */}
-          <div className="flex gap-4">
+          {/* Search and Sort (hidden for read-only event managers) */}
+          {!isReadOnly && (
+            <div className="flex gap-4">
             {/* Search */}
             <div className="relative flex-1">
               <Icon
@@ -352,12 +569,14 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
               </button>
             </div>
-          </div>
+            </div>
+          )}
         </div>
 
         <div className="flex h-[calc(100vh-150px)]">
           {/* LEFT: Marker List */}
-          <div className="w-64 border-r border-gray-200 overflow-y-auto flex-shrink-0">
+          {!isReadOnly && (
+            <div className="w-64 border-r border-gray-200 overflow-y-auto flex-shrink-0">
             <div className="p-2">
               {filteredMarkers.map((marker) => {
                 const isSelected = marker.id === selectedMarkerId;
@@ -416,38 +635,48 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               })}
             </div>
           </div>
+          )}
 
           {/* CENTER: Map View */}
           <div className="flex-1 relative bg-gray-50">
-            <Suspense fallback={<div className="flex items-center justify-center h-full text-gray-500">Loading map...</div>}>
-              <EventMap
-                isAdminView={true}
-                previewUseVisitorSizing={true}
-                markersState={markersState}
-                updateMarker={updateMarker}
-                selectedYear={selectedYear}
-                selectedMarkerId={selectedMarkerId}
-                editMode={editMode}
-                onMarkerSelect={(id) => {
-                  setSelectedMarkerId(id);
-                  setEditMode(false);
-                }}
-                onMarkerDrag={(id, newLat, newLng) => {
-                  // Update coordinates in edit data when marker is dragged
-                  if (editMode && selectedMarkerId === id) {
-                    setEditData(prev => ({
-                      ...prev,
-                      lat: newLat,
-                      lng: newLng
-                    }));
-                  }
-                }}
-              />
-            </Suspense>
+            <EventMap
+              // This is the admin map page; always render the admin-sized map even
+              // for read-only event managers so the app sidebar and admin layout
+              // remain visible. Previously this passed `!isReadOnly` which caused
+              // the visitor/fullscreen-sized map to completely cover the sidebar
+              // for event managers.
+              isAdminView={true}
+              previewUseVisitorSizing={true}
+              markersState={markersState}
+              updateMarker={isReadOnly ? null : updateMarker}
+              selectedYear={selectedYear}
+              selectedMarkerId={selectedMarkerId}
+              editMode={!isReadOnly && editMode}
+              onMarkerSelect={(id) => {
+                setSelectedMarkerId(id);
+                if (!isReadOnly) setEditMode(false);
+              }}
+              onMarkerDrag={(id, newLat, newLng) => {
+                // Update coordinates in edit data when marker is dragged
+                if (!isReadOnly && editMode && selectedMarkerId === id) {
+                  setEditData(prev => ({
+                    ...prev,
+                    lat: newLat,
+                    lng: newLng
+                  }));
+                }
+              }}
+              onMapReady={(map) => {
+                setMapInstance(map);
+                const controlModes = map?.printControl?.options?.printModes || [];
+                setPrintModes(Array.isArray(controlModes) ? controlModes : []);
+              }}
+            />
           </div>
 
           {/* RIGHT: Detail/Edit Panel */}
-          <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
+          {!isReadOnly && (
+            <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
             {!selectedMarker ? (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {t('mapManagement.selectMarker')}
@@ -469,7 +698,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                       {isBoothMarker && ' (Booth - Content managed via Companies/Assignments)'}
                     </p>
                   </div>
-                  {!editMode && (
+                  {!editMode && !isReadOnly && (
                     <button
                       onClick={handleStartEdit}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -495,7 +724,8 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 )}
               </div>
             )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </ProtectedSection>
@@ -567,12 +797,20 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker, ge
       </Section>
 
       {/* Content (Special Markers Only) */}
-      {isSpecialMarker && (
+          {isSpecialMarker && (
         <Section title="Content (Special Marker)">
           <Field label="Name" value={marker.name} />
           <Field label="Logo">
             {marker.logo && (
-              <img src={getLogoPath(marker.logo)} alt="logo" className="w-12 h-12" />
+              <img
+                {...(() => {
+                  const r = getResponsiveLogoSources(marker.logo);
+                  if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                  return { src: getLogoPath(marker.logo) };
+                })()}
+                alt="logo"
+                className="w-12 h-12"
+              />
             )}
           </Field>
           <Field label="Website" value={marker.website} />
@@ -708,11 +946,8 @@ function EditPanel({ marker, isDefaultMarker, isSpecialMarker, isBoothMarker, ge
       )}
 
       {isBoothMarker && (
-        <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-4">
-          <p className="text-sm text-yellow-800">
-            <strong>Note:</strong> This is a booth marker. Content (name, logo, website, info) is managed via the Companies and Assignments tabs.
-          </p>
-        </div>
+        // Booth markers are still managed via Companies/Assignments; no informational note shown here.
+        <></>
       )}
 
       {/* Actions */}

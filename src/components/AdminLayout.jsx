@@ -183,7 +183,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 />
 
                 {/* Map Management - Now year-scoped since markers are per-year */}
-                {hasAnyRole(['super_admin','system_manager']) && (
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
                   <SidebarTile
                     to="/admin/map"
                     icon={mdiMap}
@@ -197,7 +197,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 <CollapsedShortcuts selectedYear={selectedYear} t={t} />
 
                 {/* Map Management - Collapsed state */}
-                {hasAnyRole(['super_admin','system_manager']) && (
+                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
                   <SidebarTile
                     to="/admin/map"
                     icon={mdiMap}

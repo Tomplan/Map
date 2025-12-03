@@ -35,14 +35,14 @@ function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 transition-opacity duration-200"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
     >
       <div
-        className={`bg-white rounded-xl shadow-2xl border border-gray-200 ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col ${className}`}
+        className={`bg-white rounded-xl shadow-2xl border border-gray-200 ${sizeClasses[size]} w-full max-h-[90vh] flex flex-col transform transition-all duration-200 ease-in-out scale-100 ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (

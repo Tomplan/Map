@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import normalizePhone from '../utils/phone';
 
@@ -11,10 +11,17 @@ export default function useEventSubscriptions(eventYear) {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const reloadTimeoutRef = useRef(null);
 
   // Load subscriptions for the given year
   const loadSubscriptions = useCallback(async () => {
     try {
+      // Clear any pending debounced reload
+      if (reloadTimeoutRef.current) {
+        clearTimeout(reloadTimeoutRef.current);
+        reloadTimeoutRef.current = null;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -279,12 +286,17 @@ export default function useEventSubscriptions(eventYear) {
           filter: `event_year=eq.${eventYear}`,
         },
         () => {
-          loadSubscriptions();
+          // Debounce: wait 500ms after last change before reloading
+          if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
+          reloadTimeoutRef.current = setTimeout(() => {
+            loadSubscriptions();
+          }, 500);
         }
       )
       .subscribe();
 
     return () => {
+      if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
       supabase.removeChannel(channel);
     };
   }, [eventYear, loadSubscriptions]);

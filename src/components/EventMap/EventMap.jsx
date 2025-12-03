@@ -11,7 +11,7 @@ import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
 import { useFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';
@@ -37,7 +37,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null }) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null, onMapReady = null }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
@@ -111,7 +111,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     safeMarkers.forEach((marker) => {
       if (marker.logo) {
         const img = new window.Image();
-        img.src = getLogoPath(marker.logo);
+        const r = getResponsiveLogoSources(marker.logo);
+        if (r && 'srcSet' in r) {
+          img.src = r.src;
+          img.srcset = r.srcSet;
+        } else {
+          img.src = getLogoPath(marker.logo);
+        }
       }
     });
   }, [safeMarkers]);
@@ -316,40 +322,45 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   useEffect(() => {
     if (!mapInstance) return;
 
-    // Setup browser print control only once
-    if (!mapInstance._printControl) {
-      // Check if BrowserPrint is available
-      if (window.L && window.L.Control && window.L.Control.BrowserPrint) {
-        const BrowserPrint = window.L.Control.BrowserPrint;
-        
-        const printControl = new BrowserPrint({
-          position: 'topleft',
+    // Setup browser print interface (back-end) WITHOUT adding the on-map control UI.
+    // We create a backend `L.browserPrint` instance and attach it to the map so
+    // the MapManagement header button can programmatically call printing. The
+    // UI control (map-embedded) will be hidden for now per requirement.
+
+    if (mapInstance._browserPrintInitialized) return;
+
+    if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+      const Mode = window.L.BrowserPrint.Mode;
+
+      const modes = [
+        Mode.Landscape('A4', { title: 'Current view — landscape' }),
+        Mode.Portrait('A4', { title: 'A4 — Portrait' }),
+        Mode.Landscape('A4', { title: 'A4 — Landscape' }),
+        Mode.Auto('A4', { title: 'Auto fit' }),
+        Mode.Custom('A4', { title: 'Select area', customArea: true }),
+      ];
+
+      // Create the backend browserPrint instance. Do NOT add the control UI to the map.
+      try {
+        const browserPrint = window.L.browserPrint(mapInstance, {
+          // Keep options so consumer can inspect available modes
+          printModes: modes,
           closePopupsOnPrint: false,
-          printModes: [
-            new BrowserPrint.Mode('MapOnly', {
-              title: 'Map Only',
-              pageSize: 'A4',
-              orientation: 'landscape',
-              mapOnly: true,
-              customArea: true,
-            })
-          ]
         });
 
-        printControl.addTo(mapInstance);
-        mapInstance._printControl = printControl;
-        mapInstance.printControl = printControl; // Make it accessible to PrintButton
+        // Keep a lightweight facade so other components (PrintButton) can
+        // read available modes and call into either the control or backend.
+        mapInstance.printControl = {
+          browserPrint,
+          options: { printModes: modes },
+        };
 
-        // Set map view to hard-coded default before printing
-        printControl.on('beforePrint', () => {
-          mapInstance.setView(
-            MAP_CONFIG.DEFAULT_POSITION,
-            MAP_CONFIG.DEFAULT_ZOOM
-          );
-        });
-      } else {
-        console.warn('BrowserPrint not available, print button will use fallback');
+        mapInstance._browserPrintInitialized = true;
+      } catch (err) {
+        console.warn('Failed to initialize L.browserPrint backend:', err);
       }
+    } else {
+      console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
     }
   }, [mapInstance]);
 
@@ -383,13 +394,72 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
     setMapInstance(map);
+    // Inform parent components that the map instance is ready so they can
+    // register print actions or other map-specific interactions.
+    if (typeof onMapReady === 'function') {
+      try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
+    }
+    
+    // Force a resize event to ensure proper tile loading
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        console.log('Map resized and tiles should be loaded');
+      }
+    }, 100);
   };
+
+  // Ensure the map invalidates its size when the container or viewport changes.
+  // Opening/closing devtools (or other layout changes) can change the available
+  // size and cause Leaflet to not request tiles for the newly visible region.
+  // A ResizeObserver on the map container + window resize listener ensures we
+  // inform Leaflet to refresh tiles when the rendered size changes.
+  useEffect(() => {
+    if (!mapInstance) return undefined;
+
+    let cleanup = null;
+
+    const requestInvalidate = () => {
+      try {
+        // Debounce a bit to avoid thrashing during continuous resize
+        if (mapInstance._invalidateTimeout) clearTimeout(mapInstance._invalidateTimeout);
+        mapInstance._invalidateTimeout = setTimeout(() => {
+          try { mapInstance.invalidateSize(); } catch (err) { /* ignore */ }
+          mapInstance._invalidateTimeout = null;
+        }, 120);
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    // ResizeObserver for container changes
+    try {
+      const container = mapInstance.getContainer && mapInstance.getContainer();
+      if (container && typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(() => requestInvalidate());
+        ro.observe(container);
+        cleanup = () => ro.disconnect();
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    // Also listen for window resizes in case layout/viewport changes cause issues
+    const onWinResize = () => requestInvalidate();
+    window.addEventListener('resize', onWinResize);
+
+    return () => {
+      try { window.removeEventListener('resize', onWinResize); } catch (e) { /* ignore */ }
+      if (cleanup) cleanup();
+    };
+  }, [mapInstance]);
 
   const containerStyle = isAdminView
     ? {
         // Admin view: relative positioning to fit within flex parent
         height: '100%',
         width: '100%',
+        minHeight: '400px', // Ensure minimum height to prevent collapse
         position: 'relative',
         touchAction: 'pan-x pan-y',
         overflow: 'hidden',
@@ -467,7 +537,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           zoomControl={false}
           style={{
             width: isAdminView ? '100%' : '100vw',
-            height: isAdminView ? '100%' : '100svh'
+            height: isAdminView ? '100%' : '100svh',
+            minHeight: isAdminView ? '400px' : '100svh'
           }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
@@ -475,11 +546,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
-              key={layer.key}
-              attribution={layer.attribution}
-              url={layer.url}
-              maxZoom={MAP_CONFIG.MAX_ZOOM}
-            />
+                key={layer.key}
+                attribution={layer.attribution}
+                url={layer.url}
+                crossOrigin="anonymous"
+                maxZoom={MAP_CONFIG.MAX_ZOOM}
+              />
           ))}
 
           <EventClusterMarkers

@@ -84,8 +84,8 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
     }
   }
 
-  // UI rendering
-  if (!isAdminView) return null;
+  // UI rendering — require both admin context and editable updateMarker function
+  if (!isAdminView || typeof updateMarker !== 'function') return null;
   return (
     <>
       <button

@@ -27,6 +27,12 @@
     "backup:cleanup": "node scripts/backup/scheduler.js --cleanup",
     "backup:setup": "node scripts/backup/scheduler.js --setup",
     "backup:test": "node scripts/backup/scheduler.js --test"
+    ,
+    "images:optimize-logos": "node scripts/optimize-logos.mjs",
+    "images:check-logos": "node scripts/check-logos.mjs"
+    ,
+    "images:upload-logos": "node scripts/upload-logos.mjs",
+    "images:migrate-logos-to-cdn": "node scripts/migrate-logos-to-cdn.mjs"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",
@@ -90,6 +96,7 @@
     "puppeteer": "^23.8.0",
     "rollup": "^4.53.3",
     "tailwindcss": "^3.4.18",
-    "vite": "^4.5.5"
+    "vite": "^4.5.5",
+    "sharp": "^0.32.6"
   }
 }

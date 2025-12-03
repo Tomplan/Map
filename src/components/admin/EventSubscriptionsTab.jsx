@@ -5,13 +5,15 @@ import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { mdiPlus, mdiPencil, mdiDelete, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
-import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
+import ExportButton from '../common/ExportButton';
+import ImportButton from '../common/ImportButton';
+import SubscriptionEditModal from './SubscriptionEditModal';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
@@ -29,6 +31,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     unsubscribeCompany,
     archiveCurrentYear,
     copyFromPreviousYear,
+    reload,
   } = useEventSubscriptions(selectedYear);
 
   const { companies } = useCompanies();
@@ -36,12 +39,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+
+  // Modal state for editing
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState(null);
 
   // Dialog context
   const { confirm, toastError, toastSuccess, toastWarning } = useDialog();
@@ -150,24 +155,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     });
   }, [filteredSubscriptions]);
 
-  // Start editing
+  // Start editing - open modal
   const handleEdit = (subscription) => {
-    setEditingId(subscription.id);
-    setEditForm({ ...subscription });
+    setEditingSubscription(subscription);
+    setIsEditModalOpen(true);
   };
 
-  // Save edited subscription
-  const handleSave = async () => {
-    const { id, company, ...updates } = editForm;
-    await updateSubscription(id, updates);
-    setEditingId(null);
-    setEditForm({});
+  // Save from modal
+  const handleModalSave = async (updates) => {
+    const { error } = await updateSubscription(editingSubscription.id, updates);
+    if (!error) {
+      setIsEditModalOpen(false);
+      setEditingSubscription(null);
+      toastSuccess('Subscription updated successfully');
+    } else {
+      toastError(`Error updating subscription: ${error}`);
+    }
   };
 
-  // Cancel edit
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditForm({});
+  // Close modal
+  const handleModalClose = () => {
+    setIsEditModalOpen(false);
+    setEditingSubscription(null);
   };
 
   // Delete subscription
@@ -283,6 +292,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </span>
         </div>
         <div className="flex gap-2">
+          <ExportButton
+            dataType="event_subscriptions"
+            data={subscriptions}
+            additionalData={{ 
+              supabase,
+              eventYear: selectedYear 
+            }}
+            filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
+          />
+          <ImportButton
+            dataType="event_subscriptions"
+            existingData={subscriptions}
+            eventYear={selectedYear}
+            additionalData={{
+              supabase,
+              selectedYear
+            }}
+            onImportComplete={async () => {
+              // Reload subscriptions after import completes
+              await reload();
+            }}
+          />
           <button
             onClick={handleCopyFromPreviousYear}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -429,7 +460,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </thead>
           <tbody>
             {filteredSubscriptions.map((subscription) => {
-              const isEditing = editingId === subscription.id;
               const company = subscription.company;
               const boothLabels = getBoothLabels(subscription.company_id);
 
@@ -446,7 +476,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   <td className="p-2 text-left">
                     <div className="flex items-center gap-2">
                       <img
-                        src={getLogoPath(company?.logo || organizationLogo)}
+                        {...(() => {
+                          const source = company?.logo || organizationLogo;
+                          const s = getResponsiveLogoSources(source);
+                          if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
+                          return { src: getLogoPath(source) };
+                        })()}
                         alt={company?.name}
                         className="w-8 h-8 object-contain"
                       />
@@ -456,28 +491,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                   {/* Contact */}
                   <td className="p-2 text-left">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.contact || ''}
-                        onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
                   </td>
 
                   {/* Phone */}
                   <td className="p-2 text-left">
-                    {isEditing ? (
-                      <PhoneInput
-                        value={editForm.phone || ''}
-                        onChange={(value) => setEditForm({ ...editForm, phone: value })}
-                        placeholder="+31612345678"
-                        className="text-xs"
-                      />
-                    ) : subscription.phone ? (
+                    {subscription.phone ? (
                       <span className="text-xs text-gray-700 flex items-center gap-1">
                         <span>{getPhoneFlag(subscription.phone)}</span>
                         <span>{formatPhoneForDisplay(subscription.phone)}</span>
@@ -489,148 +508,61 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                   {/* Email */}
                   <td className="p-2 text-left">
-                    {isEditing ? (
-                      <input
-                        type="email"
-                        value={editForm.email || ''}
-                        onChange={(e) => setEditForm({ ...editForm, email: e.target.value.toLowerCase() })}
-                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
                   </td>
 
                   {/* Booth Count */}
                   <td className="p-2 text-center">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        min="1"
-                        value={editForm.booth_count || 1}
-                        onChange={(e) => setEditForm({ ...editForm, booth_count: parseInt(e.target.value) })}
-                        className="w-16 px-2 py-1 border rounded text-xs text-center bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.booth_count}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.booth_count}</span>
                   </td>
 
                   {/* Area */}
                   <td className="p-2">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={editForm.area || ''}
-                        onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
-                        placeholder={t('helpPanel.subscriptions.areaPlaceholder')}
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.area || '-'}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.area || '-'}</span>
                   </td>
 
                   {/* Meals - Saturday */}
                   {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map(field => (
                     <td key={field} className="p-2 text-center bg-blue-50">
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          min="0"
-                          value={editForm[field] || 0}
-                          onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-700">{subscription[field]}</span>
-                      )}
+                      <span className="text-xs text-gray-700">{subscription[field]}</span>
                     </td>
                   ))}
 
                   {/* Meals - Sunday */}
                   {['breakfast_sun', 'lunch_sun'].map(field => (
                     <td key={field} className="p-2 text-center bg-green-50">
-                      {isEditing ? (
-                        <input
-                          type="number"
-                          min="0"
-                          value={editForm[field] || 0}
-                          onChange={(e) => setEditForm({ ...editForm, [field]: parseInt(e.target.value) || 0 })}
-                          className="w-12 px-1 py-1 border rounded text-xs text-center text-gray-900 bg-white"
-                        />
-                      ) : (
-                        <span className="text-xs text-gray-700">{subscription[field]}</span>
-                      )}
+                      <span className="text-xs text-gray-700">{subscription[field]}</span>
                     </td>
                   ))}
 
                   {/* Coins */}
                   <td className="p-2 text-center">
-                    {isEditing ? (
-                      <input
-                        type="number"
-                        min="0"
-                        value={editForm.coins || 0}
-                        onChange={(e) => setEditForm({ ...editForm, coins: parseInt(e.target.value) || 0 })}
-                        className="w-12 px-1 py-1 border rounded text-xs text-center bg-white text-gray-900"
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.coins}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.coins}</span>
                   </td>
 
                   {/* Notes */}
                   <td className="p-2 text-left">
-                    {isEditing ? (
-                      <textarea
-                        value={editForm.notes || ''}
-                        onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
-                        className="w-full px-2 py-1 border rounded text-xs bg-white text-gray-900"
-                        rows={2}
-                      />
-                    ) : (
-                      <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
-                    )}
+                    <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
                   </td>
 
                   {/* Actions */}
                   <td className="p-2 text-center">
-                    {isEditing ? (
-                      <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={handleSave}
-                          className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
-                          title="Save"
-                        >
-                          <Icon path={mdiCheck} size={0.6} />
-                        </button>
-                        <button
-                          onClick={handleCancel}
-                          className="p-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                          title="Cancel"
-                        >
-                          <Icon path={mdiClose} size={0.6} />
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex gap-1 justify-center">
-                        <button
-                          onClick={() => handleEdit(subscription)}
-                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                          title="Edit"
-                        >
-                          <Icon path={mdiPencil} size={0.6} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(subscription)}
-                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
-                          title="Unsubscribe"
-                        >
-                          <Icon path={mdiDelete} size={0.6} />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex gap-1 justify-center">
+                      <button
+                        onClick={() => handleEdit(subscription)}
+                        className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        title="Edit"
+                      >
+                        <Icon path={mdiPencil} size={0.6} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(subscription)}
+                        className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                        title="Unsubscribe"
+                      >
+                        <Icon path={mdiDelete} size={0.6} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -646,6 +578,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </div>
         )}
       </div>
+
+      {/* Edit Modal */}
+      <SubscriptionEditModal
+        isOpen={isEditModalOpen}
+        onClose={handleModalClose}
+        subscription={editingSubscription}
+        onSave={handleModalSave}
+      />
     </div>
   );
 }

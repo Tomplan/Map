@@ -12,7 +12,7 @@ import {
 } from '@mdi/js';
 import Modal from './Modal';
 import { useDialog } from '../../contexts/DialogContext';
-import { parseFile, matchRecords, buildLookupMap } from '../../utils/dataExportImport';
+import { parseFile, matchRecords, buildLookupMap, sanitizeDbPayload } from '../../utils/dataExportImport';
 import { getDataConfig } from '../../config/dataConfigs';
 import { supabase } from '../../supabaseClient';
 
@@ -42,10 +42,13 @@ export default function ImportModal({
   const [step, setStep] = useState(STEPS.FILE_SELECT);
   const [selectedFile, setSelectedFile] = useState(null);
   const [parsedRows, setParsedRows] = useState([]);
+  const [parsedMeta, setParsedMeta] = useState(null);
   const [validatedRows, setValidatedRows] = useState([]);
   const [selectedRows, setSelectedRows] = useState(new Set());
   const [importResults, setImportResults] = useState(null);
   const [error, setError] = useState(null);
+  const [suppressToasts, setSuppressToasts] = useState(false);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0, message: '' });
 
   const fileInputRef = useRef(null);
   const { toastError, toastSuccess, toastWarning } = useDialog();
@@ -60,6 +63,8 @@ export default function ImportModal({
     setSelectedRows(new Set());
     setImportResults(null);
     setError(null);
+    setSuppressToasts(false);
+    setImportProgress({ current: 0, total: 0, message: '' });
     onClose();
   };
 
@@ -72,24 +77,34 @@ export default function ImportModal({
     setError(null);
     setStep(STEPS.PARSING);
 
-    // Parse file
-    const { data, error: parseError } = await parseFile(file);
+    // Parse file (parseFile now returns optional metadata for XLSX files)
+    const { data, error: parseError, metadata } = await parseFile(file);
 
     if (parseError || !data) {
       setError(parseError || 'Failed to parse file');
       setStep(STEPS.FILE_SELECT);
-      toastError(`Failed to parse file: ${parseError}`);
+      if (!suppressToasts) {
+        toastError(`Failed to parse file: ${parseError}`);
+      }
       return;
     }
 
     if (data.length === 0) {
       setError('File is empty or has no valid data');
       setStep(STEPS.FILE_SELECT);
-      toastError('File is empty');
+      if (!suppressToasts) {
+        toastError('File is empty');
+      }
       return;
     }
 
     setParsedRows(data);
+    // Save metadata (if present) so the preview can render per-category columns
+    setParsedMeta(metadata || null);
+    // Note: parseFile now returns metadata on Excel; the returned object is
+    // { data, error, metadata } — but older code path may only provide data.
+    // We'll instead re-run the parseFile call to destructure metadata properly
+    // below. (See further handling immediately after.)
 
     // Validate and match records
     await validateAndMatch(data);
@@ -207,14 +222,16 @@ export default function ImportModal({
 
       setStep(STEPS.PREVIEW);
 
-      // Show summary
-      const validCount = validated.filter(r => r.validation.valid).length;
-      const errorCount = validated.filter(r => !r.validation.valid).length;
+      // Show summary only if not suppressed
+      if (!suppressToasts) {
+        const validCount = validated.filter(r => r.validation.valid).length;
+        const errorCount = validated.filter(r => !r.validation.valid).length;
 
-      if (errorCount > 0) {
-        toastWarning(`Parsed ${data.length} rows: ${validCount} valid, ${errorCount} errors`);
-      } else {
-        toastSuccess(`Parsed ${data.length} rows - all valid`);
+        if (errorCount > 0) {
+          toastWarning(`Parsed ${data.length} rows: ${validCount} valid, ${errorCount} errors`);
+        } else {
+          toastSuccess(`Parsed ${data.length} rows - all valid`);
+        }
       }
     } catch (error) {
       console.error('Validation error:', error);
@@ -356,6 +373,9 @@ export default function ImportModal({
 
     setStep(STEPS.IMPORTING);
 
+    // Initialize progress tracking
+    setImportProgress({ current: 0, total: rowsToImport.length, message: 'Starting import...' });
+
     try {
       // Build lookup maps for transforms
       let companyMap = null;
@@ -398,9 +418,13 @@ export default function ImportModal({
       const { data: { user } } = await supabase.auth.getUser();
       const created_by = user?.email || 'unknown';
 
-      // Separate creates and updates
+      // Separate creates and updates.
+      // We'll keep parallel arrays: sanitized payloads for DB, and originals for
+      // post-import actions (translations, category assignments).
       const creates = [];
+      const createsMeta = [];
       const updates = [];
+      const updatesMeta = [];
 
       for (const row of rowsToImport) {
         const transformed = config.transformImport(
@@ -419,9 +443,14 @@ export default function ImportModal({
           if (config.yearDependent) {
             transformed.created_by = created_by;
           }
-          creates.push(transformed);
+          // Keep a sanitized copy for DB insert (remove internal keys)
+          const dbPayload = sanitizeDbPayload(transformed);
+          creates.push(dbPayload);
+          createsMeta.push(transformed);
         } else if (row.action === 'UPDATE') {
-          updates.push({ id: row.matchedRecord.id, data: transformed });
+          const dbPayload = sanitizeDbPayload(transformed);
+          updates.push({ id: row.matchedRecord.id, data: dbPayload });
+          updatesMeta.push({ id: row.matchedRecord.id, original: transformed });
         }
       }
 
@@ -431,6 +460,12 @@ export default function ImportModal({
 
       // Batch insert creates
       if (creates.length > 0) {
+        setImportProgress({ 
+          current: 0, 
+          total: rowsToImport.length, 
+          message: `Creating ${creates.length} new records...` 
+        });
+
         const { data, error } = await supabase
           .from(config.table)
           .insert(creates)
@@ -440,18 +475,23 @@ export default function ImportModal({
           errors.push({ type: 'CREATE_BATCH', message: error.message });
         } else {
           createdCount = data?.length || 0;
+          setImportProgress({ 
+            current: createdCount, 
+            total: rowsToImport.length, 
+            message: `Created ${createdCount} records. Processing additional data...` 
+          });
 
           // For companies: Save translations and assign categories after successful creation
           if (dataType === 'companies' && data) {
             for (let i = 0; i < data.length; i++) {
               const company = data[i];
-              const originalData = creates[i];
+              const originalData = createsMeta[i];
 
-              if (originalData._translations) {
+              if (originalData && originalData._translations) {
                 await saveCompanyTranslations(company.id, originalData._translations, errors);
               }
 
-              if (originalData._categorySlugs) {
+              if (originalData && originalData._categorySlugs) {
                 await assignCompanyCategories(company.id, originalData._categorySlugs, categorySlugToIdMap, errors);
               }
             }
@@ -460,7 +500,22 @@ export default function ImportModal({
       }
 
       // Individual updates (Supabase doesn't support batch updates with different values)
-      for (const update of updates) {
+      setImportProgress({ 
+        current: createdCount, 
+        total: rowsToImport.length, 
+        message: `Updating ${updates.length} existing records...` 
+      });
+
+      for (let i = 0; i < updates.length; i++) {
+        const update = updates[i];
+        const progressPercent = Math.round(((createdCount + i) / rowsToImport.length) * 100);
+        
+        setImportProgress({ 
+          current: createdCount + i, 
+          total: rowsToImport.length, 
+          message: `Updating record ${i + 1} of ${updates.length}... (${progressPercent}%)` 
+        });
+
         const { error } = await supabase
           .from(config.table)
           .update(update.data)
@@ -473,11 +528,12 @@ export default function ImportModal({
 
           // For companies: Save translations and assign categories after successful update
           if (dataType === 'companies') {
-            if (update.data._translations) {
-              await saveCompanyTranslations(update.id, update.data._translations, errors);
+            const orig = updatesMeta.find(u => u.id === update.id)?.original || null;
+            if (orig && orig._translations) {
+              await saveCompanyTranslations(update.id, orig._translations, errors);
             }
-            if (update.data._categorySlugs) {
-              await assignCompanyCategories(update.id, update.data._categorySlugs, categorySlugToIdMap, errors);
+            if (orig && orig._categorySlugs) {
+              await assignCompanyCategories(update.id, orig._categorySlugs, categorySlugToIdMap, errors);
             }
           }
         }
@@ -515,14 +571,14 @@ export default function ImportModal({
     }
   };
 
-  // Render step content
-  const renderStepContent = () => {
+  // Memoized step content renderer to prevent unnecessary re-renders
+  const renderStepContent = React.useMemo(() => function() {
     switch (step) {
       case STEPS.FILE_SELECT:
         return (
-          <div className="p-6">
+          <div className="p-6 transition-all duration-200 ease-in-out">
             <div className="text-center">
-              <Icon path={mdiFileUpload} size={3} className="mx-auto text-gray-400 mb-4" />
+              <Icon path={mdiFileUpload} size={3} className="mx-auto text-gray-400 mb-4 transition-transform duration-200" />
               <h4 className="text-lg font-medium text-gray-900 mb-2">
                 Select a file to import
               </h4>
@@ -540,13 +596,13 @@ export default function ImportModal({
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
               >
                 Choose File
               </button>
 
               {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-pulse">
                   {error}
                 </div>
               )}
@@ -556,9 +612,9 @@ export default function ImportModal({
 
       case STEPS.PARSING:
         return (
-          <div className="p-6">
+          <div className="p-6 transition-all duration-200 ease-in-out">
             <div className="text-center">
-              <Icon path={mdiLoading} size={3} className="mx-auto text-blue-600 mb-4" spin />
+              <Icon path={mdiLoading} size={3} className="mx-auto text-blue-600 mb-4 transition-transform duration-200" spin />
               <h4 className="text-lg font-medium text-gray-900 mb-2">
                 Parsing file...
               </h4>
@@ -571,7 +627,7 @@ export default function ImportModal({
 
       case STEPS.PREVIEW:
         return (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full transition-all duration-200 ease-in-out">
             {/* Summary */}
             <div className="p-6 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between mb-4">
@@ -601,90 +657,122 @@ export default function ImportModal({
 
             {/* Preview Table */}
             <div className="flex-1 overflow-auto p-6">
-              <table className="w-full text-sm border-collapse">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left p-2 font-medium text-gray-700">Select</th>
-                    <th className="text-left p-2 font-medium text-gray-700">Row</th>
-                    <th className="text-left p-2 font-medium text-gray-700">Status</th>
-                    {config.exportColumns.slice(0, 4).map(col => (
-                      <th key={col.key} className="text-left p-2 font-medium text-gray-700">
-                        {col.header}
-                      </th>
-                    ))}
-                    <th className="text-left p-2 font-medium text-gray-700">Errors</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {validatedRows.map((row) => (
-                    <tr
-                      key={row.index}
-                      className={`border-b border-gray-100 ${
-                        row.validation.valid ? 'hover:bg-gray-50' : 'bg-red-50'
-                      }`}
-                    >
-                      <td className="p-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedRows.has(row.index)}
-                          onChange={() => toggleRow(row.index)}
-                          disabled={!row.validation.valid}
-                          className="rounded"
-                        />
-                      </td>
-                      <td className="p-2 text-gray-600">{row.index + 1}</td>
-                      <td className="p-2">
-                        {row.validation.valid ? (
-                          <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
-                            row.action === 'CREATE'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            <Icon
-                              path={row.action === 'CREATE' ? mdiCheck : mdiRefresh}
-                              size={0.5}
-                            />
-                            {row.action}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-700">
-                            <Icon path={mdiAlert} size={0.5} />
-                            ERROR
-                          </span>
-                        )}
-                      </td>
-                      {config.exportColumns.slice(0, 4).map(col => (
-                        <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
-                          {row.originalRow[col.header] || '-'}
-                        </td>
-                      ))}
-                      <td className="p-2">
-                        {row.validation.errors.length > 0 && (
-                          <div className="text-xs text-red-600">
-                            {row.validation.errors.map((err, i) => (
-                              <div key={i}>• {err.message}</div>
-                            ))}
-                          </div>
-                        )}
-                      </td>
+              <div className="transition-all duration-200 ease-in-out">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left p-2 font-medium text-gray-700">Select</th>
+                      <th className="text-left p-2 font-medium text-gray-700">Row</th>
+                      <th className="text-left p-2 font-medium text-gray-700">Status</th>
+                      {(() => {
+                          // Build preview columns from config export columns
+                          let base;
+                          if (dataType === 'event_subscriptions') {
+                            // Use all configured export columns for subscriptions
+                            base = config.exportColumns;
+                          } else {
+                            // Default: show first 6 columns for better visibility
+                            base = config.exportColumns.slice(0, 6);
+                          }
+                          const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
+                            ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
+                            : []
+                          const previewCols = [...base, ...extra]
+                          return previewCols.map(col => (
+                            <th key={col.key} className="text-left p-2 font-medium text-gray-700">
+                              {col.header}
+                            </th>
+                          ))
+                        })()}
+                      <th className="text-left p-2 font-medium text-gray-700">Errors</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {validatedRows.map((row) => (
+                      <tr
+                        key={row.index}
+                        className={`border-b border-gray-100 transition-colors duration-150 ${
+                          row.validation.valid ? 'hover:bg-gray-50' : 'bg-red-50'
+                        }`}
+                      >
+                        <td className="p-2">
+                          <input
+                            type="checkbox"
+                            checked={selectedRows.has(row.index)}
+                            onChange={() => toggleRow(row.index)}
+                            disabled={!row.validation.valid}
+                            className="rounded"
+                          />
+                        </td>
+                        <td className="p-2 text-gray-600">{row.index + 1}</td>
+                        <td className="p-2">
+                          {row.validation.valid ? (
+                            <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
+                              row.action === 'CREATE'
+                                ? 'bg-green-100 text-green-700'
+                                : 'bg-blue-100 text-blue-700'
+                            }`}>
+                              <Icon
+                                path={row.action === 'CREATE' ? mdiCheck : mdiRefresh}
+                                size={0.5}
+                              />
+                              {row.action}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-700">
+                              <Icon path={mdiAlert} size={0.5} />
+                              ERROR
+                            </span>
+                          )}
+                        </td>
+                        {(() => {
+                          // Build preview columns from config export columns
+                          let base;
+                          if (dataType === 'event_subscriptions') {
+                            // Use all configured export columns for subscriptions
+                            base = config.exportColumns;
+                          } else {
+                            // Default: show first 6 columns for better visibility
+                            base = config.exportColumns.slice(0, 6);
+                          }
+                          const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
+                            ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
+                            : []
+                          const previewCols = [...base, ...extra]
+                          return previewCols.map(col => (
+                            <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
+                              {row.originalRow[col.header] || '-'}
+                            </td>
+                          ))
+                        })()}
+                        <td className="p-2">
+                          {row.validation.errors.length > 0 && (
+                            <div className="text-xs text-red-600">
+                              {row.validation.errors.map((err, i) => (
+                                <div key={i}>• {err.message}</div>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Actions */}
             <div className="p-6 border-t border-gray-200 flex justify-between flex-shrink-0">
               <button
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150"
               >
                 Cancel
               </button>
               <button
                 onClick={handleImport}
                 disabled={selectedRows.size === 0}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
               >
                 Import Selected ({selectedRows.size})
               </button>
@@ -693,44 +781,61 @@ export default function ImportModal({
         );
 
       case STEPS.IMPORTING:
+        const progressPercent = importProgress.total > 0 ? Math.round((importProgress.current / importProgress.total) * 100) : 0;
         return (
-          <div className="p-6">
+          <div className="p-6 transition-all duration-200 ease-in-out">
             <div className="text-center">
-              <Icon path={mdiLoading} size={3} className="mx-auto text-blue-600 mb-4" spin />
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                Importing data...
-              </h4>
-              <p className="text-sm text-gray-600">
-                Processing {selectedRows.size} records
-              </p>
+              <div className="w-full max-w-md mx-auto">
+                <h4 className="text-lg font-medium text-gray-900 mb-4">
+                  Importing data...
+                </h4>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                  <div 
+                    className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progressPercent}%` }}
+                  ></div>
+                </div>
+                
+                {/* Progress Details */}
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    {importProgress.message || `Processing ${selectedRows.size} records`}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {importProgress.current} of {importProgress.total} records ({progressPercent}%)
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         );
 
       case STEPS.COMPLETE:
         return (
-          <div className="p-6">
+          <div className="p-6 transition-all duration-200 ease-in-out">
             <div className="text-center">
               {importResults.failed === 0 ? (
-                <Icon path={mdiCheckCircle} size={3} className="mx-auto text-green-600 mb-4" />
+                <Icon path={mdiCheckCircle} size={3} className="mx-auto text-green-600 mb-4 transition-transform duration-200" />
               ) : (
-                <Icon path={mdiAlertCircle} size={3} className="mx-auto text-orange-600 mb-4" />
+                <Icon path={mdiAlertCircle} size={3} className="mx-auto text-orange-600 mb-4 transition-transform duration-200" />
               )}
               <h4 className="text-lg font-medium text-gray-900 mb-2">
                 Import Complete
               </h4>
 
               <div className="mt-6 space-y-2 text-sm">
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 transition-colors duration-200">
                   <span className="text-green-600">✓ Created:</span>
                   <span className="font-medium">{importResults.created}</span>
                 </div>
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2 transition-colors duration-200">
                   <span className="text-blue-600">⟳ Updated:</span>
                   <span className="font-medium">{importResults.updated}</span>
                 </div>
                 {importResults.failed > 0 && (
-                  <div className="flex items-center justify-center gap-2">
+                  <div className="flex items-center justify-center gap-2 transition-colors duration-200">
                     <span className="text-red-600">✗ Failed:</span>
                     <span className="font-medium">{importResults.failed}</span>
                   </div>
@@ -738,7 +843,7 @@ export default function ImportModal({
               </div>
 
               {importResults.errors.length > 0 && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-sm">
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-sm transition-colors duration-200">
                   <div className="font-medium text-red-900 mb-2">Errors:</div>
                   {importResults.errors.map((err, i) => (
                     <div key={i} className="text-red-700">
@@ -750,7 +855,7 @@ export default function ImportModal({
 
               <button
                 onClick={handleClose}
-                className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
               >
                 Close
               </button>
@@ -761,17 +866,23 @@ export default function ImportModal({
       default:
         return null;
     }
-  };
+  }, [step, config, selectedRows, validatedRows, parsedMeta, selectedFile, error, importResults, importProgress]);
+
+  // Call the memoized function
+  const stepContent = renderStepContent();
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
       title={config.labels.modalTitle}
-      size={step === STEPS.PREVIEW ? 'full' : 'lg'}
+      size="lg"
       closeOnBackdrop={step !== STEPS.IMPORTING}
+      className="transition-all duration-200 ease-in-out"
     >
-      {renderStepContent()}
+      <div className="transition-all duration-200 ease-in-out">
+        {stepContent}
+      </div>
     </Modal>
   );
 }

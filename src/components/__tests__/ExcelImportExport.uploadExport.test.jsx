@@ -96,7 +96,17 @@ describe('ExcelImportExport integration', () => {
               columns: null,
               rows: [],
               views: null,
-              addRows(r) { this.rows.push(...r) }
+              _cells: {},
+              rowCount: 0,
+              addRows(r) { this.rows.push(...r); this.rowCount = this.rows.length + 1 },
+              getRow(rowNumber) {
+                return { getCell: (colNumber) => {
+                  const key = `${rowNumber}:${colNumber}`
+                  if (!ws._cells[key]) ws._cells[key] = { value: undefined, protection: {} }
+                  return ws._cells[key]
+                } }
+              },
+              protect(password, opts) { this._protected = { password, opts } }
             }
             this._sheet = ws
             return ws
@@ -117,6 +127,21 @@ describe('ExcelImportExport integration', () => {
       expect(capturedWorkbook._sheet.rows).toEqual(rows)
       // Freeze panes were requested as a view
       expect(capturedWorkbook._sheet.views).toEqual([{ state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2' }])
+      // Column widths should be computed so that the widest cell is visible
+      expect(capturedWorkbook._sheet.columns).toBeTruthy()
+      // 'name' column has header length 4, values up to 5 -> width = max(5+2,10) = 10
+      // 'age' column header length 3 -> width = max(3+2,10) = 10
+      expect(capturedWorkbook._sheet.columns[0].width).toBe(10)
+      expect(capturedWorkbook._sheet.columns[1].width).toBe(10)
+
+      // sheet should have been protected and header/first-col cells locked
+      expect(capturedWorkbook._sheet._protected).toBeTruthy()
+      // header row locked
+      expect(capturedWorkbook._sheet.getRow(1).getCell(1).protection.locked).toBe(true)
+      expect(capturedWorkbook._sheet.getRow(1).getCell(2).protection.locked).toBe(true)
+      // first column locked in data rows, other cells unlocked
+      expect(capturedWorkbook._sheet.getRow(2).getCell(1).protection.locked).toBe(true)
+      expect(capturedWorkbook._sheet.getRow(2).getCell(2).protection.locked).toBe(false)
 
       // restore ExcelJS.Workbook
       ExcelJS.Workbook.mockRestore()

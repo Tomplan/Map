@@ -158,7 +158,6 @@ export default function useUserPreferences() {
       }
 
       const currentVersion = currentPrefs?.row_version || 0;
-      console.log(`useUserPreferences: Fetched current version for ${key}:`, currentVersion, 'currentPrefs:', currentPrefs);
 
       // Update with version check to avoid conflicts from concurrent debounced saves
       const { data, error } = await supabase
@@ -245,7 +244,6 @@ export default function useUserPreferences() {
       }
 
       const currentVersion = currentPrefs?.row_version || 0;
-      console.log(`useUserPreferences: Fetched current version for updates:`, currentVersion, 'currentPrefs:', currentPrefs);
 
       // Update with version check
       console.log(`useUserPreferences: Attempting updates with version ${currentVersion} -> ${currentVersion + 1}`);

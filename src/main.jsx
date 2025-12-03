@@ -15,6 +15,10 @@ if (typeof globalThis !== 'undefined' && typeof import.meta !== 'undefined' && i
 
 import App from './App.jsx';
 import L from 'leaflet';
+// `leaflet.browser.print` does not provide a package entry suitable for Vite's
+// ESM resolution. Import the distributed bundle file directly so the plugin
+// registers itself on the global Leaflet (`L.Control.BrowserPrint`) reliably.
+import 'leaflet.browser.print/dist/leaflet.browser.print.min.js';
 import { getBaseUrl } from './utils/getBaseUrl';
 
 const baseUrl = getBaseUrl();

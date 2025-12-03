@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from '@mdi/react';
 import { mdiDomain, mdiClose, mdiMagnify } from '@mdi/js';
-import { getLogoPath } from '../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 
 /**
  * MarkerContextMenu - Right-click context menu for marker-company assignment
@@ -113,7 +113,11 @@ function MarkerContextMenu({
                 <div className="flex items-center gap-2 flex-1 min-w-0">
                   {currentAssignment.company?.logo ? (
                     <img
-                      src={getLogoPath(currentAssignment.company.logo)}
+                      {...(() => {
+                        const r = getResponsiveLogoSources(currentAssignment.company.logo);
+                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                        return { src: getLogoPath(currentAssignment.company.logo) };
+                      })()}
                       alt={currentAssignment.company.name}
                       className="w-8 h-8 object-contain flex-shrink-0"
                     />
@@ -179,7 +183,11 @@ function MarkerContextMenu({
                 >
                   {company.logo ? (
                     <img
-                      src={getLogoPath(company.logo)}
+                      {...(() => {
+                        const r = getResponsiveLogoSources(company.logo);
+                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                        return { src: getLogoPath(company.logo) };
+                      })()}
                       alt={company.name}
                       className="w-8 h-8 object-contain flex-shrink-0"
                     />

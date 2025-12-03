@@ -86,10 +86,10 @@ export default function MapControls({
         <MdRemove size={28} color="#1976d2" aria-hidden="true" />
         <span className="sr-only">Zoom out</span>
       </button>
-      {/* Print button for admin, between zoom out and layers */}
-      {isAdminView && (
-        <PrintButton mapInstance={mapInstance} />
-      )}
+      {/* Print button intentionally hidden — the top header Print Map is the canonical entry point.
+          Keep the code available for future removal or re-enablement, but do not render the map-embedded
+          PrintButton in UI at this time. */}
+      {false && isAdminView && <PrintButton mapInstance={mapInstance} />}
 
       {/* Admin layers button and popover */}
       {isAdminView && (

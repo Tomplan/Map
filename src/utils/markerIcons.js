@@ -1,4 +1,4 @@
-import { getLogoPath } from './getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from './getLogoPath';
 import { getBaseUrl } from './getBaseUrl';
 import L from 'leaflet';
 import '../libs/Leaflet.Icon.Glyph.js';
@@ -12,9 +12,20 @@ import '../libs/Leaflet.Icon.Glyph.js';
 export function createMarkerPopupHTML(marker) {
   const { logo, name, website, info } = marker;
   const logoPath = logo ? getLogoPath(logo) : '';
+  // If we can resolve responsive sources prefer the optimized -128.webp src and add srcset/sizes
+  let popupImgAttrs = '';
+  if (logo) {
+    const r = getResponsiveLogoSources(logo);
+    if (r) {
+      popupImgAttrs = `src=\"${r.src}\" srcset=\"${r.srcSet}\" sizes=\"${r.sizes}\"`;
+    } else if (logoPath) {
+      popupImgAttrs = `src=\"${logoPath}\"`;
+    }
+  }
+
   return `
     <div class="marker-popup">
-      ${logoPath ? `<img src="${logoPath}" alt="${name || 'Logo'}" class="marker-popup-logo" style="max-width:64px;max-height:64px;margin-bottom:8px;" />` : ''}
+      ${popupImgAttrs ? `<img ${popupImgAttrs} alt="${name || 'Logo'}" class="marker-popup-logo" style="max-width:64px;max-height:64px;margin-bottom:8px;" />` : ''}
       ${name ? `<div class="marker-popup-name" style="font-weight:bold;font-size:1.1em;margin-bottom:4px;">${name}</div>` : ''}
       ${website ? `<div class="marker-popup-website" style="margin-bottom:4px;"><a href="${website}" target="_blank" rel="noopener" style="color:#1976d2;text-decoration:underline;">${website}</a></div>` : ''}
       ${info ? `<div class="marker-popup-info" style="font-size:0.95em;color:#444;">${info}</div>` : ''}

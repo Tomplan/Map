@@ -1,0 +1,63 @@
+name: Upload optimized logos
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - feature/development
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate SUPABASE secrets (masked)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ]; then echo "ERROR: SUPABASE_URL secret is empty"; exit 1; fi
+          if ! echo "$SUPABASE_URL" | grep -qE '^https?://'; then echo "ERROR: SUPABASE_URL doesn't start with http:// or https://"; echo "Value (masked): ${SUPABASE_URL:0:40}..."; exit 1; fi
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then echo "ERROR: SUPABASE_SERVICE_ROLE_KEY secret is empty"; exit 1; fi
+          # Print masked diagnostics to help debugging without exposing secrets
+          echo "OK: SUPABASE_URL present (masked): ${SUPABASE_URL:0:40}..."
+          echo "OK: SUPABASE_SERVICE_ROLE_KEY present (masked prefix): ${SUPABASE_SERVICE_ROLE_KEY:0:6}... (length: ${#SUPABASE_SERVICE_ROLE_KEY})"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate optimized variants
+        run: npm run images:optimize-logos
+
+      - name: Upload to Supabase Storage
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npm run images:upload-logos
+
+      - name: Verify uploaded objects (fast check)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # expected = number of files generated in workspace
+          expected=$(ls public/assets/logos/generated | wc -l | tr -d '[:space:]')
+          echo "Expected $expected objects in generated/"
+
+          # query supabase storage list API for objects under generated/
+          resp=$(curl -s -X GET "$SUPABASE_URL/storage/v1/object/list/Logos?prefix=generated/" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY")
+          actual=$(echo "$resp" | jq 'length')
+          echo "Supabase reported $actual objects under generated/"
+
+          if [ "$actual" -ne "$expected" ]; then
+            echo "ERROR: expected $expected uploaded objects but found $actual in Supabase storage. Showing first 40 chars of response (safe):"
+            echo "$resp" | sed -n '1,10p'
+            exit 1
+          fi

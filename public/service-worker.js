@@ -3,6 +3,7 @@ const PRECACHE_NAME = 'static-assets-v1';
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/assets/icons/default.svg',
   '/assets/icons/glyph-marker-icon-blue.svg',
   '/assets/icons/glyph-marker-icon-gray.svg',
   '/assets/icons/glyph-marker-icon-green.svg',
@@ -29,38 +30,19 @@ self.addEventListener('activate', () => {
 // Cache Carto Voyager map tiles
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
-  // Cache Carto Voyager tiles
+  // Cache Carto Voyager tiles — but be defensive.
+  // Many tile providers are cross-origin and fetches can fail or return opaque responses.
+  // To avoid breaking the page we either let the network handle cross-origin tiles, or
+  // if we attempt to cache them, don't throw on network failures and only cache good responses.
   if (url.includes('cartodb-basemaps')) {
-    event.respondWith(
-      caches.open('map-tiles').then((cache) => {
-        return cache.match(event.request).then((response) => {
-          return (
-            response ||
-            fetch(event.request).then((networkResponse) => {
-              cache.put(event.request, networkResponse.clone());
-              return networkResponse;
-            })
-          );
-        });
-      }),
-    );
+    // Don't intercept / proxy cross-origin tile requests in the service worker by default.
+    // Returning early lets the browser perform the network request (no extra risk of throwing
+    // from the worker). This prevents a failing worker fetch from turning into a blank map.
     return;
   }
   // Cache Esri World Imagery tiles
   if (url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery')) {
-    event.respondWith(
-      caches.open('map-tiles').then((cache) => {
-        return cache.match(event.request).then((response) => {
-          return (
-            response ||
-            fetch(event.request).then((networkResponse) => {
-              cache.put(event.request, networkResponse.clone());
-              return networkResponse;
-            })
-          );
-        });
-      }),
-    );
+    // Similar to cartodb: avoid intercepting cross-origin imagery in the SW.
     return;
   }
   // Cache marker icons and logos
@@ -68,13 +50,21 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.open('map-assets').then((cache) => {
         return cache.match(event.request).then((response) => {
-          return (
-            response ||
-            fetch(event.request).then((networkResponse) => {
-              cache.put(event.request, networkResponse.clone());
+          if (response) return response;
+
+          // Fetch from network and only cache successful (status 200) responses.
+          return fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse && networkResponse.ok) {
+                // Clone successful response to persist in cache
+                cache.put(event.request, networkResponse.clone()).catch(() => {});
+              }
               return networkResponse;
             })
-          );
+            .catch(() => {
+              // If network fetch fails, resolve with undefined so the browser can fallback as needed
+              return undefined;
+            });
         });
       }),
     );
