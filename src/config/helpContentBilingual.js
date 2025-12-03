@@ -3571,7 +3571,7 @@ The feedback system updates in real-time for all connected users:
 **Tips for Effective Requests:**
 
 **Good Bug Report:**
-```
+\`\`\`
 Title: Map markers disappear after zoom level 15
 Type: Bug
 
@@ -3585,10 +3585,10 @@ Steps to reproduce:
 Expected: Markers remain visible at all zoom levels
 Actual: Markers disappear above zoom 15
 Browser: Chrome 120
-```
+\`\`\`
 
 **Good Feature Request:**
-```
+\`\`\`
 Title: Add bulk category assignment for companies
 Type: Feature
 
@@ -3599,7 +3599,7 @@ which is time-consuming for 100+ exhibitors.
 
 Use case: Annual event setup when categorizing new exhibitors
 Benefit: Save 2-3 hours during event preparation
-```
+\`\`\`
 
 **Technical Details**
 
@@ -3905,7 +3905,7 @@ Het feedback systeem update real-time voor alle verbonden gebruikers:
 **Tips voor Effectieve Verzoeken:**
 
 **Goed Bug Rapport:**
-```
+\`\`\`
 Titel: Kaart markers verdwijnen na zoom level 15
 Type: Bug
 
@@ -3919,10 +3919,10 @@ Stappen om te reproduceren:
 Verwacht: Markers blijven zichtbaar op alle zoom levels
 Actueel: Markers verdwijnen boven zoom 15
 Browser: Chrome 120
-```
+\`\`\`
 
 **Goed Feature Verzoek:**
-```
+\`\`\`
 Titel: Voeg bulk categorie toewijzing toe voor bedrijven
 Type: Feature
 
@@ -3933,7 +3933,7 @@ worden bewerkt wat tijdrovend is voor 100+ standhouders.
 
 Use case: Jaarlijkse event setup bij categoriseren nieuwe standhouders
 Voordeel: Bespaar 2-3 uur tijdens event voorbereiding
-```
+\`\`\`
 
 **Technische Details**
 
