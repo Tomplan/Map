@@ -54,7 +54,8 @@ function basenameOf(name) {
 async function run() {
   console.log('Listing generated/ objects from Supabase (dry-run unless --confirm provided)');
   try {
-    const objects = await listGeneratedObjects();
+    const prefix = deleteArchivedFlag ? 'generated/archived/' : 'generated/';
+    const objects = await listGeneratedObjects(prefix);
 
     // Filter numeric-ish basenames
     const candidates = objects.filter(o => looksNumericBase(basenameOf(o.name)));
@@ -123,6 +124,40 @@ async function run() {
         }
       }
       console.log('Archiving complete.');
+      return;
+
+    // If delete-archived flag present and confirmed, remove objects under generated/archived/
+    if (deleteArchivedFlag) {
+      // list archived objects
+      const { data: archived, error: listErr } = await supabase.storage.from(BUCKET).list('generated/archived', { limit: 2000 });
+      if (listErr) {
+        console.error('Failed to list archived objects:', listErr.message || listErr);
+        return;
+      }
+
+      const candidatesArchived = (archived || []).filter(o => looksNumericBase(o.name.replace(/\.[^.]+$/, '')));
+      if (!candidatesArchived.length) {
+        console.log('No numeric-archived objects found. Nothing to do.');
+        return;
+      }
+
+      console.log(`Found ${candidatesArchived.length} numeric-archived objects:`);
+      candidatesArchived.forEach(o => console.log(' -', o.name));
+
+      if (!confirm) {
+        console.log('\nDry run for archived: no changes applied. Re-run with --confirm --delete-archived to apply.');
+        return;
+      }
+
+      // build list of paths to delete
+      const pathsToDelete = candidatesArchived.map(o => `generated/archived/${o.name}`);
+      console.log('\nDeleting archived numeric-generated objects (permanent)');
+      const { data: removedArchived, error: remArchErr } = await supabase.storage.from(BUCKET).remove(pathsToDelete);
+      if (remArchErr) {
+        console.error('Failed to remove archived objects:', remArchErr.message || remArchErr);
+      } else {
+        console.log('Removed archived objects:', removedArchived || []);
+      }
       return;
     }
 
