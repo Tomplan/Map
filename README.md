@@ -114,6 +114,10 @@ A mobile-first web application designed for event navigation, providing an inter
     ```
     The built files will be in the `dist` folder, ready for deployment.
 
+    ## 🔀 Branching workflow (recommended)
+
+    We follow a simple, safe workflow for branching and releases. See `docs/BRANCHING_WORKFLOW.md` for the full recommended policy (development as the primary working branch, main for production only, short-lived feature branches, release/staging branches for QA, and hotfix flow for emergencies).
+
 ## 📁 Project Structure
 
 ```
