@@ -10,11 +10,13 @@ import {
   mdiLightbulbOnOutline,
   mdiNewBox,
   mdiBookOpenPageVariant,
-  mdiChevronRight
+  mdiChevronRight,
+  mdiPlayCircleOutline
 } from '@mdi/js';
 import { getHelpContentByRoute } from '../config/helpContentBilingual';
 import { getRecentChanges } from '../config/whatsNewBilingual';
 import useUserRole from '../hooks/useUserRole';
+import TourList from './onboarding/TourList';
 
 /**
  * HelpPanel Component
@@ -94,10 +96,10 @@ export default function HelpPanel({ isOpen, onClose }) {
         )}
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-6 bg-white">
+        <div className="flex border-b border-gray-200 px-6 bg-white overflow-x-auto">
           <button
             onClick={() => setActiveTab('current')}
-            className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+            className={`px-4 py-3 font-medium text-sm transition-colors relative whitespace-nowrap ${
               activeTab === 'current'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
@@ -107,7 +109,7 @@ export default function HelpPanel({ isOpen, onClose }) {
           </button>
           <button
             onClick={() => setActiveTab('whats-new')}
-            className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+            className={`px-4 py-3 font-medium text-sm transition-colors relative whitespace-nowrap ${
               activeTab === 'whats-new'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
@@ -116,8 +118,19 @@ export default function HelpPanel({ isOpen, onClose }) {
             {t('helpPanel.tabs.whatsNew')}
           </button>
           <button
+            onClick={() => setActiveTab('interactive-tour')}
+            className={`px-4 py-3 font-medium text-sm transition-colors relative whitespace-nowrap flex items-center gap-1 ${
+              activeTab === 'interactive-tour'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            <Icon path={mdiPlayCircleOutline} size={0.6} />
+            {t('helpPanel.tabs.interactiveTour')}
+          </button>
+          <button
             onClick={() => setActiveTab('quick-start')}
-            className={`px-4 py-3 font-medium text-sm transition-colors relative ${
+            className={`px-4 py-3 font-medium text-sm transition-colors relative whitespace-nowrap ${
               activeTab === 'quick-start'
                 ? 'text-blue-600 border-b-2 border-blue-600'
                 : 'text-gray-600 hover:text-gray-800'
@@ -241,6 +254,18 @@ export default function HelpPanel({ isOpen, onClose }) {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Interactive Tour Tab */}
+          {activeTab === 'interactive-tour' && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-800 mb-2">{t('helpPanel.interactiveTourTitle')}</h3>
+                <p className="text-sm text-gray-600">{t('helpPanel.interactiveTourSubtitle')}</p>
+              </div>
+
+              <TourList />
             </div>
           )}
 

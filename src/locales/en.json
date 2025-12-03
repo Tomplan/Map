@@ -517,6 +517,7 @@
     "tabs": {
       "currentPage": "Current Page",
       "whatsNew": "What's New",
+      "interactiveTour": "Interactive Tours",
       "quickStart": "Quick Start"
     },
     "searchPlaceholder": "Search help content...",
@@ -524,6 +525,8 @@
     "quickTips": "Quick Tips",
     "whatsNewTitle": "What's New",
     "whatsNewSubtitle": "Recent updates and changes",
+    "interactiveTourTitle": "Interactive Tours",
+    "interactiveTourSubtitle": "Step-by-step guided tours to help you learn the application",
     "changeTypes": {
       "feature": "feature",
       "fix": "fix",
@@ -642,5 +645,20 @@
       "orPasteUrl": "Or paste URL",
       "organizationInfo": "Organization info"
     }
+  },
+  "tour": {
+    "skip": "Skip Tour",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Finish Tour",
+    "close": "Close",
+    "progress": "Step {{current}} of {{total}}",
+    "startTour": "Start Tour",
+    "restartTour": "Restart Tour",
+    "tourCompleted": "Completed",
+    "tourNew": "New",
+    "availableTours": "Available Tours",
+    "noToursAvailable": "No tours available for your current page",
+    "duration": "Duration: ~{{minutes}} min"
   }
 }

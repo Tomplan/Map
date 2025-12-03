@@ -110,6 +110,42 @@ npm install -g npm@10
 
 This issue was discovered during file-saver integration (Dec 2025) and affects all devDependencies including vite, @vitejs/plugin-react, and build tools.
 
+### Stale Vite Cache Issue
+
+⚠️ **Symptoms:**
+- Dev server fails with "Cannot find package 'vite'" error
+- `npm list vite` shows "(empty)" but vite directory exists in node_modules
+- `npx vite --version` works correctly
+- Error: `failed to load config from vite.config.js`
+
+**Root Cause:** Stale cache in `node_modules/.vite-temp` with incorrect references, even after devDependencies are installed.
+
+**Quick Fix:**
+```bash
+# Clear the stale Vite cache
+rm -rf node_modules/.vite-temp
+
+# Verify vite is working
+npx vite --version
+
+# Start dev server
+npm run dev
+```
+
+**Complete Fix (if issue persists):**
+```bash
+# 1. Ensure devDependencies are installed
+npm install --include=dev
+
+# 2. Clear Vite cache
+rm -rf node_modules/.vite-temp
+
+# 3. Start dev server
+npm run dev
+```
+
+This issue can occur after npm v11 devDependencies problems are resolved, as cached config files may still reference the broken state.
+
 ## 🎉 Success!
 
 Once configured correctly, you'll see:

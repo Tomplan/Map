@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
 import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
+import { OnboardingProvider } from './contexts/OnboardingContext';
 import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
@@ -185,24 +186,26 @@ function AppContent() {
   }, []);
 
   return (
-    <DialogProvider>
-      <OrganizationLogoProvider>
-        <HashRouter>
-          <AppRoutes
-            branding={branding}
-            user={user}
-            markersState={markersState}
-            updateMarker={updateMarker}
-            setMarkersState={setMarkersState}
-            onLogin={setUser}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            archiveMarkers={archiveMarkers}
-            copyMarkers={copyMarkers}
-          />
-        </HashRouter>
-      </OrganizationLogoProvider>
-    </DialogProvider>
+    <OnboardingProvider>
+      <DialogProvider>
+        <OrganizationLogoProvider>
+          <HashRouter>
+            <AppRoutes
+              branding={branding}
+              user={user}
+              markersState={markersState}
+              updateMarker={updateMarker}
+              setMarkersState={setMarkersState}
+              onLogin={setUser}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              archiveMarkers={archiveMarkers}
+              copyMarkers={copyMarkers}
+            />
+          </HashRouter>
+        </OrganizationLogoProvider>
+      </DialogProvider>
+    </OnboardingProvider>
   );
 }
 
