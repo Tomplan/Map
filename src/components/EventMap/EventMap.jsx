@@ -316,49 +316,45 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   useEffect(() => {
     if (!mapInstance) return;
 
-    // Setup browser print control only once
-    if (!mapInstance._printControl) {
-      // Check if BrowserPrint is available
-      if (window.L && window.L.Control && window.L.Control.BrowserPrint) {
-        const BrowserPrintControl = window.L.Control.BrowserPrint;
-        // Mode constructors live on L.BrowserPrint.Mode (not on the Control constructor),
-        // so reference the Mode class directly from the L namespace.
-        const BrowserPrintMode = window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode;
+    // Setup browser print interface (back-end) WITHOUT adding the on-map control UI.
+    // We create a backend `L.browserPrint` instance and attach it to the map so
+    // the MapManagement header button can programmatically call printing. The
+    // UI control (map-embedded) will be hidden for now per requirement.
 
-        const printControl = new BrowserPrintControl({
-          position: 'topright',
+    if (mapInstance._browserPrintInitialized) return;
+
+    if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+      const Mode = window.L.BrowserPrint.Mode;
+
+      const modes = [
+        Mode.Landscape('A4', { title: 'Current view — landscape' }),
+        Mode.Portrait('A4', { title: 'A4 — Portrait' }),
+        Mode.Landscape('A4', { title: 'A4 — Landscape' }),
+        Mode.Auto('A4', { title: 'Auto fit' }),
+        Mode.Custom('A4', { title: 'Select area', customArea: true }),
+      ];
+
+      // Create the backend browserPrint instance. Do NOT add the control UI to the map.
+      try {
+        const browserPrint = window.L.browserPrint(mapInstance, {
+          // Keep options so consumer can inspect available modes
+          printModes: modes,
           closePopupsOnPrint: false,
-          // Use common, supported mode constructors so the plugin executes the
-          // expected print flows (Portrait, Landscape, Auto, Custom).
-          printModes: BrowserPrintMode
-            ? [
-                // current view (use landscape page orientation)
-                BrowserPrintMode.Landscape('A4', { title: 'Current view — landscape' }),
-                BrowserPrintMode.Portrait('A4', { title: 'A4 — Portrait' }),
-                BrowserPrintMode.Landscape('A4', { title: 'A4 — Landscape' }),
-                BrowserPrintMode.Auto('A4', { title: 'Auto fit' }),
-                BrowserPrintMode.Custom('A4', { title: 'Select area', customArea: true }),
-              ]
-            : undefined,
         });
 
-        printControl.addTo(mapInstance);
-        mapInstance._printControl = printControl;
-        mapInstance.printControl = printControl; // Make it accessible to PrintButton
+        // Keep a lightweight facade so other components (PrintButton) can
+        // read available modes and call into either the control or backend.
+        mapInstance.printControl = {
+          browserPrint,
+          options: { printModes: modes },
+        };
 
-        // Set map view to hard-coded default before printing. The BrowserPrint
-        // control doesn't emit Evented-style events itself — the L.BrowserPrint
-        // instance fires lifecycle events on the map. Listen to the print init
-        // event on the map object instead.
-        if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
-          const evtName = window.L.BrowserPrint.Event.PrintInit || 'browser-print-init';
-          mapInstance.on(evtName, () => {
-            mapInstance.setView(MAP_CONFIG.DEFAULT_POSITION, MAP_CONFIG.DEFAULT_ZOOM);
-          });
-        }
-      } else {
-        console.warn('BrowserPrint not available, print button will use fallback');
+        mapInstance._browserPrintInitialized = true;
+      } catch (err) {
+        console.warn('Failed to initialize L.browserPrint backend:', err);
       }
+    } else {
+      console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
     }
   }, [mapInstance]);
 
@@ -392,6 +388,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
     setMapInstance(map);
+    // Inform parent components that the map instance is ready so they can
+    // register print actions or other map-specific interactions.
+    if (typeof props?.onMapReady === 'function') {
+      try { props.onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
+    }
     
     // Force a resize event to ensure proper tile loading
     setTimeout(() => {

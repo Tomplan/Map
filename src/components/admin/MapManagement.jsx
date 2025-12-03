@@ -8,6 +8,7 @@ import { getLogoPath } from '../../utils/getLogoPath';
 import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
+import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
 
@@ -28,6 +29,10 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
   const [defaultMarkers, setDefaultMarkers] = useState([]); // Defaults for booth markers (IDs -1, -2)
   const { confirm, toastError, toastSuccess } = useDialog();
+  const [mapInstance, setMapInstance] = useState(null);
+  const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  const [printModes, setPrintModes] = useState([]);
+  const [isPrintingHeader, setIsPrintingHeader] = useState(false);
 
   // Event managers have read-only access
   const isReadOnly = isEventManager;
@@ -256,6 +261,112 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
     window.print();
   };
 
+  // Programmatic print call for header presets — attempt plugin first, fallback to snapshot
+  const programmaticHeaderPrint = async (mode) => {
+    if (!mapInstance || !mapInstance.printControl || !mode) return;
+
+    setIsPrintingHeader(true);
+    const control = mapInstance.printControl;
+    const browserPrint = control?.browserPrint || control;
+
+    let timeoutId = null;
+    let started = false;
+    let finished = false;
+
+    const cleanup = () => {
+      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event)) return;
+      const Ev = window.L.BrowserPrint.Event;
+      try {
+        mapInstance.off(Ev.PrintStart, onStart);
+        mapInstance.off(Ev.PrintEnd, onEnd);
+        mapInstance.off(Ev.PrintCancel, onCancel);
+      } catch (e) {}
+      if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+    };
+
+    const onStart = () => { started = true; };
+    const onEnd = () => { finished = true; cleanup(); };
+    const onCancel = () => { finished = true; cleanup(); };
+
+    try {
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
+        const Ev = window.L.BrowserPrint.Event;
+        mapInstance.on(Ev.PrintStart, onStart);
+        mapInstance.on(Ev.PrintEnd, onEnd);
+        mapInstance.on(Ev.PrintCancel, onCancel);
+      }
+
+      try {
+        if (typeof browserPrint.print === 'function') {
+          browserPrint.print(mode);
+        } else if (typeof control?._printMode === 'function') {
+          control._printMode(mode);
+        } else {
+          throw new Error('No browser print API available');
+        }
+      } catch (err) {
+        console.warn('Header BrowserPrint call failed:', err);
+        cleanup();
+        await snapshotHeaderPrint();
+        return;
+      }
+
+      const waitStart = () => new Promise((resolve) => {
+        if (started) return resolve('started');
+        timeoutId = setTimeout(() => resolve('timeout'), 2500);
+        const poll = setInterval(() => {
+          if (started || finished) {
+            clearInterval(poll);
+            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
+            resolve(started ? 'started' : 'finished');
+          }
+        }, 80);
+      });
+
+      const result = await waitStart();
+      if (result === 'timeout') {
+        console.warn('Header BrowserPrint did not start; falling back to snapshot export');
+        cleanup();
+        await snapshotHeaderPrint();
+      }
+    } finally {
+      setIsPrintingHeader(false);
+    }
+  };
+
+  const snapshotHeaderPrint = async () => {
+    if (isPrintingHeader) return;
+    setIsPrintingHeader(true);
+    try {
+      const mapContainer = document.querySelector('#map-container') || document.querySelector('.leaflet-container');
+      if (!mapContainer) return;
+
+      await new Promise(r => setTimeout(r, 400));
+
+      const canvas = await html2canvas(mapContainer, {
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        scale: 2,
+        ignoreElements: (element) => element.classList?.contains('map-controls-print-hide')
+      });
+
+      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      if (!printWindow) return;
+
+      printWindow.document.write(`<!doctype html><html><head><title>Map Print</title><style>*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}</style></head><body><img src="${imageDataUrl}" alt="Map" onload="setTimeout(function(){ window.print(); }, 100);"/></body></html>`);
+      printWindow.document.close();
+      printWindow.onafterprint = () => printWindow.close();
+    } catch (err) {
+      console.error('Snapshot print failed:', err);
+      window.print();
+    } finally {
+      setIsPrintingHeader(false);
+    }
+  };
+
   const isDefaultMarker = selectedMarker && (selectedMarker.id === -1 || selectedMarker.id === -2);
   const isSpecialMarker = selectedMarker && selectedMarker.id >= 1000;
   const isBoothMarker = selectedMarker && selectedMarker.id > 0 && selectedMarker.id < 1000;
@@ -290,17 +401,55 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
               </div>
               {/* Read-only badge removed per request - keep header title behavior unchanged */}
             </div>
-            <div className="flex gap-2">
-              {isReadOnly ? (
+            <div className="flex gap-2 items-center">
+              {/* Canonical header print action for Event/Org roles */}
+              <div className="relative">
                 <button
-                  onClick={handlePrintMap}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  onClick={() => setPrintMenuOpen((v) => !v)}
+                  className={`flex items-center gap-2 px-4 py-2 ${isReadOnly ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'} rounded-lg`}
                   title="Print map"
+                  aria-haspopup="menu"
+                  aria-expanded={printMenuOpen}
                 >
                   <Icon path={mdiPrinter} size={0.8} />
                   Print Map
                 </button>
-              ) : (
+
+                {printMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden">
+                    {printModes.length > 0 ? (
+                      <div className="py-1">
+                        {printModes.map((m, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={async () => {
+                              setPrintMenuOpen(false);
+                              await programmaticHeaderPrint(m);
+                            }}
+                            className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                          >
+                            {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-1">
+                        <button
+                          type="button"
+                          onClick={async () => { setPrintMenuOpen(false); await snapshotHeaderPrint(); }}
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                        >
+                          Snapshot (PNG)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Maintain Copy and Archive buttons for full admin users */}
+              {!isReadOnly && (
                 <>
                   <button
                     onClick={handleCopyFromPreviousYear}
@@ -486,6 +635,11 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                     lng: newLng
                   }));
                 }
+              }}
+              onMapReady={(map) => {
+                setMapInstance(map);
+                const controlModes = map?.printControl?.options?.printModes || [];
+                setPrintModes(Array.isArray(controlModes) ? controlModes : []);
               }}
             />
           </div>
