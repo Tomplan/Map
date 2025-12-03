@@ -27,3 +27,7 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Ignore generated responsive logos once they are uploaded to the CDN
+# These are currently checked in for CI/dev. Remove from repo once CDN has all assets.
+public/assets/logos/generated/

@@ -40,7 +40,10 @@ export function getResponsiveLogoSources(iconUrl) {
   const filename = iconUrl.split('/').pop();
   const basename = filename.replace(/\.[^.]+$/, '');
 
-  const generatedBase = `${base}assets/logos/generated/${basename}`;
+  // Prefer CDN-hosted generated assets (Supabase public storage) if VITE_SUPABASE_URL exists
+  const supabaseUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL : null;
+  const cdnBase = supabaseUrl ? `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/Logos/generated/${basename}` : null;
+  const generatedBase = cdnBase || `${base}assets/logos/generated/${basename}`;
 
   const src = `${generatedBase}-128.webp`;
   const srcSet = `${generatedBase}-64.webp 64w, ${generatedBase}-128.webp 128w, ${generatedBase}-256.webp 256w, ${generatedBase}-512.webp 512w`;

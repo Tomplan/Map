@@ -31,7 +31,8 @@
     "images:optimize-logos": "node scripts/optimize-logos.mjs",
     "images:check-logos": "node scripts/check-logos.mjs"
     ,
-    "images:upload-logos": "node scripts/upload-logos.mjs"
+    "images:upload-logos": "node scripts/upload-logos.mjs",
+    "images:migrate-logos-to-cdn": "node scripts/migrate-logos-to-cdn.mjs"
   },
   "dependencies": {
     "@mdi/js": "^7.4.47",

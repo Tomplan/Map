@@ -41,3 +41,23 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: npm run images:upload-logos
+
+      - name: Verify uploaded objects (fast check)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          # expected = number of files generated in workspace
+          expected=$(ls public/assets/logos/generated | wc -l | tr -d '[:space:]')
+          echo "Expected $expected objects in generated/"
+
+          # query supabase storage list API for objects under generated/
+          resp=$(curl -s -X GET "$SUPABASE_URL/storage/v1/object/list/Logos?prefix=generated/" -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY")
+          actual=$(echo "$resp" | jq 'length')
+          echo "Supabase reported $actual objects under generated/"
+
+          if [ "$actual" -ne "$expected" ]; then
+            echo "ERROR: expected $expected uploaded objects but found $actual in Supabase storage. Showing first 40 chars of response (safe):"
+            echo "$resp" | sed -n '1,10p'
+            exit 1
+          fi
