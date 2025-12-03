@@ -320,19 +320,25 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     if (!mapInstance._printControl) {
       // Check if BrowserPrint is available
       if (window.L && window.L.Control && window.L.Control.BrowserPrint) {
-        const BrowserPrint = window.L.Control.BrowserPrint;
-        
-        const printControl = new BrowserPrint({
+        const BrowserPrintControl = window.L.Control.BrowserPrint;
+        // Mode constructors live on L.BrowserPrint.Mode (not on the Control constructor),
+        // so reference the Mode class directly from the L namespace.
+        const BrowserPrintMode = window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode;
+
+        const printControl = new BrowserPrintControl({
           position: 'topleft',
           closePopupsOnPrint: false,
           printModes: [
-            new BrowserPrint.Mode('MapOnly', {
-              title: 'Map Only',
-              pageSize: 'A4',
-              orientation: 'landscape',
-              mapOnly: true,
-              customArea: true,
-            })
+            // Use L.BrowserPrint.Mode constructor when available; otherwise the plugin will build defaults.
+            BrowserPrintMode
+              ? new BrowserPrintMode('MapOnly', {
+                  title: 'Map Only',
+                  pageSize: 'A4',
+                  orientation: 'landscape',
+                  mapOnly: true,
+                  customArea: true,
+                })
+              : 'MapOnly'
           ]
         });
 
