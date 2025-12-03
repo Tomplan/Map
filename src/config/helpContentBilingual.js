@@ -13,51 +13,97 @@ export const helpContentBilingual = {
     },
     content: {
       en: `
-The dashboard provides a quick overview of your event data:
+The dashboard provides a quick overview of your event data and metrics for the currently selected year.
 
 **Key Metrics:**
-- **Total Markers**: All map locations (booths, parking, facilities)
-- **Companies**: Registered exhibitor companies
+- **Total Assignable Booths**: All map locations marked as assignable booths
+- **Companies**: Total registered exhibitor companies (global, all years)
 - **Subscriptions**: Companies registered for the selected year
-- **Assignments**: Companies assigned to map locations
+- **Assignments**: Companies assigned to map locations for the selected year
 
-**Event Stats:**
-- View meal counts (breakfast, lunch, BBQ) for Saturday and Sunday
-- Track total coins distributed
-- All stats update in real-time as you make changes
+**Event Totals:**
+View detailed statistics for the selected year:
+- **Meal counts** per day (Saturday/Sunday): Breakfast, Lunch, BBQ
+- **Total coins** distributed across all subscriptions
+- All stats update in **real-time** as you make changes
 
-**Year Selector:**
-Use the year dropdown in the top navigation to switch between event years.
+**Year Scoping 📅** 🔓 *All Roles*
+
+The admin panel uses **year scoping** to separate data for different event years. Understanding which features are year-scoped helps you work efficiently across multiple years.
+
+**Year-Scoped Features** (change when you switch years):
+- **Event Subscriptions**: Each year has its own set of company subscriptions
+- **Booth Assignments**: Booth-to-company assignments are year-specific
+- **Program Management**: Activity schedules are organized by year
+
+**Global Features** (same across all years):
+- **Companies**: Company profiles exist across all years
+- **Map Management**: Map markers and booth locations are shared
+- **Categories**: Category definitions are organization-wide
+- **User Management**: Admin users and roles apply globally
+
+**Switching Years:**
+1. **Click the year dropdown** in the admin sidebar (top-left)
+2. **Select a different year** from the list
+3. **Review the confirmation modal** which shows what will/won't change
+4. **Click "Switch to [Year]"** to confirm
+
+The dashboard displays all key metrics for the selected year, and Quick Actions link to relevant management pages.
       `.trim(),
       nl: `
-Het dashboard biedt een snel overzicht van je event data:
+Het dashboard biedt een snel overzicht van je event data en statistieken voor het momenteel geselecteerde jaar.
 
 **Belangrijkste Cijfers:**
-- **Totaal Markers**: Alle kaartlocaties (stands, parkeren, faciliteiten)
-- **Bedrijven**: Geregistreerde exposanten
+- **Totaal Toewijsbare Stands**: Alle kaartlocaties gemarkeerd als toewijsbare stands
+- **Bedrijven**: Totaal geregistreerde exposanten (globaal, alle jaren)
 - **Inschrijvingen**: Bedrijven ingeschreven voor het geselecteerde jaar
-- **Toewijzingen**: Bedrijven toegewezen aan kaartlocaties
+- **Toewijzingen**: Bedrijven toegewezen aan kaartlocaties voor het geselecteerde jaar
 
-**Event Statistieken:**
-- Bekijk maaltijdaantallen (ontbijt, lunch, BBQ) voor zaterdag en zondag
-- Volg totaal uitgedeelde munten
-- Alle statistieken updaten real-time bij wijzigingen
+**Event Totalen:**
+Bekijk gedetailleerde statistieken voor het geselecteerde jaar:
+- **Maaltijdaantallen** per dag (Zaterdag/Zondag): Ontbijt, Lunch, BBQ
+- **Totaal munten** uitgedeeld over alle inschrijvingen
+- Alle statistieken updaten **real-time** bij wijzigingen
 
-**Jaarselector:**
-Gebruik de jaarkeuze in de topnavigatie om tussen evenementjaren te wisselen.
+**Jaar Scoping 📅** 🔓 *Alle Rollen*
+
+Het admin paneel gebruikt **jaar scoping** om data voor verschillende eventjaren te scheiden. Begrijpen welke functies jaar-gebonden zijn helpt je efficiënt werken over meerdere jaren.
+
+**Jaar-gebonden Functies** (veranderen wanneer je van jaar wisselt):
+- **Event Inschrijvingen**: Elk jaar heeft zijn eigen set bedrijfsinschrijvingen
+- **Stand Toewijzingen**: Stand-naar-bedrijf toewijzingen zijn jaar-specifiek
+- **Programma Beheer**: Activiteitenschema's zijn georganiseerd per jaar
+
+**Globale Functies** (hetzelfde voor alle jaren):
+- **Bedrijven**: Bedrijfsprofielen bestaan over alle jaren
+- **Kaartbeheer**: Kaartmarkers en standlocaties zijn gedeeld
+- **Categorieën**: Categoriedefinities zijn organisatie-breed
+- **Gebruikersbeheer**: Admin gebruikers en rollen gelden globaal
+
+**Jaar Wisselen:**
+1. **Klik op de jaarkeuze** in de admin zijbalk (linksboven)
+2. **Selecteer een ander jaar** uit de lijst
+3. **Bekijk de bevestigingsmodal** die toont wat wel/niet verandert
+4. **Klik "Wissel naar [Jaar]"** om te bevestigen
+
+Het dashboard toont alle belangrijke statistieken voor het geselecteerde jaar, en Snelle Acties linken naar relevante beheerpagina's.
       `.trim()
     },
-    updated: "2025-11-22",
+    updated: "2025-12-03",
     tips: {
       en: [
-        "Use the year selector to view past or future events",
-        "Stats update automatically when you make changes",
-        "Dashboard is read-only - go to specific tabs to edit data"
+        "Switch years using the year picker in the admin sidebar",
+        "Companies and map markers are global - they appear in all years",
+        "Subscriptions and assignments are year-scoped - they reset when switching years",
+        "All dashboard stats update automatically in real-time",
+        "Use Quick Actions to jump directly to common management tasks"
       ],
       nl: [
-        "Gebruik de jaarselector om verleden of toekomstige events te bekijken",
-        "Statistieken updaten automatisch bij wijzigingen",
-        "Dashboard is alleen-lezen - ga naar specifieke tabbladen om data te bewerken"
+        "Wissel van jaar met de jaarkeuze in de admin zijbalk",
+        "Bedrijven en kaartmarkers zijn globaal - ze verschijnen in alle jaren",
+        "Inschrijvingen en toewijzingen zijn jaar-gebonden - ze resetten bij wisselen van jaar",
+        "Alle dashboard statistieken updaten automatisch in real-time",
+        "Gebruik Snelle Acties om direct naar veelgebruikte beheertaken te gaan"
       ]
     }
   },
@@ -84,6 +130,33 @@ The Map Management page lets you place and configure map markers.
 - **Rotation**: Adjust booth rectangle angle (booths only)
 - **Lock**: Prevent accidental moves during event
 
+**Zoom Best Practices** 🗝️ *System Manager+*
+
+Zoom levels control when markers appear on the map. Leaflet uses zoom levels 0 (world view) to 19+ (building level). Setting appropriate zoom ranges keeps your map clean and prevents clutter.
+
+**Recommended Zoom Ranges by Marker Type:**
+
+**Booths** (High Detail):
+- **Min Zoom**: 17-18 (show when users zoom in close)
+- **Max Zoom**: 19+ (always visible at maximum zoom)
+- **Why**: Booth markers contain detailed info and should only appear when users zoom in to see individual stands.
+
+**Parking & Large Facilities** (Medium Detail):
+- **Min Zoom**: 15-16 (visible earlier than booths)
+- **Max Zoom**: 19+
+- **Why**: Larger areas need to be visible from farther out to help users orient themselves.
+
+**Event Landmarks & Main Areas** (Overview):
+- **Min Zoom**: 13-14 (visible from overview level)
+- **Max Zoom**: 19+
+- **Why**: Key landmarks guide users and should be visible early when planning their visit.
+
+**General Guidelines:**
+- **Test at different zoom levels** - zoom in/out to verify markers appear at the right time
+- **Avoid overlap** - if too many markers appear at the same zoom, increase min zoom for less important ones
+- **Progressive disclosure** - show general info first (parking, entrances), then details (booths) as users zoom in
+- **Lock before event** - prevents accidental changes during the live event
+
 **Tips:**
 - Lock markers before event day to prevent accidental changes
 - Use zoom visibility to keep map clean at different zoom levels
@@ -105,13 +178,40 @@ De Kaartbeheer pagina laat je kaartmarkers plaatsen en configureren.
 - **Rotatie**: Pas standhoek aan (alleen stands)
 - **Vergrendel**: Voorkom onbedoelde verplaatsingen tijdens event
 
+**Zoom Best Practices** 🗝️ *System Manager+*
+
+Zoomniveaus bepalen wanneer markers op de kaart verschijnen. Leaflet gebruikt zoomniveaus 0 (wereldweergave) tot 19+ (gebouwniveau). Het instellen van geschikte zoombereiken houdt je kaart overzichtelijk en voorkomt rommelighheid.
+
+**Aanbevolen Zoombereiken per Markertype:**
+
+**Stands** (Hoog Detail):
+- **Min Zoom**: 17-18 (toon wanneer gebruikers dichtbij inzoomen)
+- **Max Zoom**: 19+ (altijd zichtbaar bij maximale zoom)
+- **Waarom**: Standmarkers bevatten gedetailleerde info en moeten alleen verschijnen wanneer gebruikers inzoomen op individuele stands.
+
+**Parkeren & Grote Faciliteiten** (Medium Detail):
+- **Min Zoom**: 15-16 (eerder zichtbaar dan stands)
+- **Max Zoom**: 19+
+- **Waarom**: Grotere gebieden moeten vanaf verder weg zichtbaar zijn om gebruikers te helpen oriënteren.
+
+**Event Herkenningspunten & Hoofdgebieden** (Overzicht):
+- **Min Zoom**: 13-14 (zichtbaar vanaf overzichtsniveau)
+- **Max Zoom**: 19+
+- **Waarom**: Belangrijke herkenningspunten helpen gebruikers navigeren en moeten vroeg zichtbaar zijn bij het plannen van hun bezoek.
+
+**Algemene Richtlijnen:**
+- **Test op verschillende zoomniveaus** - zoom in/uit om te verifiëren dat markers op het juiste moment verschijnen
+- **Vermijd overlap** - als te veel markers tegelijk verschijnen, verhoog min zoom voor minder belangrijke markers
+- **Progressieve onthulling** - toon eerst algemene info (parkeren, ingangen), dan details (stands) wanneer gebruikers inzoomen
+- **Vergrendel voor event** - voorkomt onbedoelde wijzigingen tijdens het live event
+
 **Tips:**
 - Vergrendel markers voor de eventdag om ongelukken te voorkomen
 - Gebruik zoomzichtbaarheid om kaart overzichtelijk te houden
 - Rechthoeken (6m x 6m) tonen standcontouren - alleen zichtbaar in admin weergave
       `.trim()
     },
-    updated: "2025-11-22",
+    updated: "2025-12-03",
     tips: {
       en: [
         "Right-click on map for quick marker creation",
@@ -3916,6 +4016,37 @@ Welcome to the Event Map Admin Panel!
 - Monitor assignments in real-time
 - Public map and schedule update automatically
 
+**Quick Reference: Features by Role**
+
+| Feature | Event Manager 🔑 | System Manager 🗝️ | Super Admin 🔒 |
+|---------|:----------------:|:------------------:|:--------------:|
+| Dashboard | View | View | View |
+| Companies | Full Access | Full Access | Full Access |
+| Event Subscriptions | Full Access | Full Access | Full Access |
+| Booth Assignments | Full Access | Full Access | Full Access |
+| Program Management | Full Access | Full Access | Full Access |
+| Map Management | — | Full Access | Full Access |
+| Categories | — | Full Access | Full Access |
+| User Management | — | Full Access | Full Access |
+| Advanced Settings | — | — | Full Access |
+
+**Common Issues & Troubleshooting**
+
+**Can't see a menu item?**
+→ Check your role - some features require System Manager or Super Admin access.
+
+**Changes not saving?**
+→ Check your internet connection. Look for error messages in red at the top of the page.
+
+**Import failed with errors?**
+→ Review the error details in the preview step. Common issues: missing required columns, invalid data formats, or duplicate records.
+
+**Map markers not appearing?**
+→ Check the marker's min/max zoom settings. Zoom in/out to the appropriate level.
+
+**Year switch not showing my data?**
+→ Remember: Subscriptions/Assignments are year-scoped. Companies and Map are global.
+
 **Need Help?**
 - Hover over (?) icons for quick tips
 - Check "What's New" for recent changes
@@ -3953,13 +4084,44 @@ Welkom bij het Event Kaart Admin Paneel!
 - Monitor toewijzingen real-time
 - Publieke kaart en schema updaten automatisch
 
+**Snelle Referentie: Functies per Rol**
+
+| Functie | Event Manager 🔑 | System Manager 🗝️ | Super Admin 🔒 |
+|---------|:----------------:|:------------------:|:--------------:|
+| Dashboard | Bekijken | Bekijken | Bekijken |
+| Bedrijven | Volledige Toegang | Volledige Toegang | Volledige Toegang |
+| Event Inschrijvingen | Volledige Toegang | Volledige Toegang | Volledige Toegang |
+| Stand Toewijzingen | Volledige Toegang | Volledige Toegang | Volledige Toegang |
+| Programma Beheer | Volledige Toegang | Volledige Toegang | Volledige Toegang |
+| Kaartbeheer | — | Volledige Toegang | Volledige Toegang |
+| Categorieën | — | Volledige Toegang | Volledige Toegang |
+| Gebruikersbeheer | — | Volledige Toegang | Volledige Toegang |
+| Geavanceerde Instellingen | — | — | Volledige Toegang |
+
+**Veelvoorkomende Problemen & Oplossingen**
+
+**Kan een menu-item niet zien?**
+→ Controleer je rol - sommige functies vereisen System Manager of Super Admin toegang.
+
+**Wijzigingen worden niet opgeslagen?**
+→ Controleer je internetverbinding. Kijk naar foutmeldingen in rood bovenaan de pagina.
+
+**Import mislukt met fouten?**
+→ Bekijk de foutdetails in de preview stap. Veelvoorkomende problemen: ontbrekende vereiste kolommen, ongeldige dataformaten, of dubbele records.
+
+**Kaartmarkers verschijnen niet?**
+→ Controleer de min/max zoom instellingen van de marker. Zoom in/uit naar het juiste niveau.
+
+**Jaar wissel toont mijn data niet?**
+→ Onthoud: Inschrijvingen/Toewijzingen zijn jaar-gebonden. Bedrijven en Kaart zijn globaal.
+
 **Hulp Nodig?**
 - Hover over (?) iconen voor snelle tips
 - Check "Wat is Nieuw" voor recente wijzigingen
 - Neem contact op met systeembeheerder voor toegangsproblemen
       `.trim()
     },
-    updated: "2025-11-22",
+    updated: "2025-12-03",
     tips: {
       en: [
         "Start with dashboard to understand current status",
@@ -4008,9 +4170,11 @@ export function getHelpContentByRoute(pathname, language = 'en') {
     '/admin/map': 'mapManagement',
     '/admin/companies': 'companies',
     '/admin/subscriptions': 'subscriptions',
+    '/admin/program': 'programManagement',
     '/admin/assignments': 'assignments',
+    '/admin/categories': 'categories',
     '/admin/settings': 'settings',
-    '/admin/settings/program': 'programManagement',
+    '/admin/feedback': 'feedbackRequests',
   };
 
   const page = routeMap[pathname] || 'general';

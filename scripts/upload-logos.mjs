@@ -152,7 +152,7 @@ async function main() {
         const res = await fetch(fullUploadUrl, {
           method: 'PUT',
           headers: headersToSend,
-          body: body
+          body: payload
         });
 
         if (!res.ok) {
