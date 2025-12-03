@@ -510,6 +510,7 @@
     "tabs": {
       "currentPage": "Huidige Pagina",
       "whatsNew": "Wat is Nieuw",
+      "interactiveTour": "Interactieve Rondleidingen",
       "quickStart": "Snel Starten"
     },
     "searchPlaceholder": "Zoek hulp inhoud...",
@@ -517,6 +518,8 @@
     "quickTips": "Snelle Tips",
     "whatsNewTitle": "Wat is Nieuw",
     "whatsNewSubtitle": "Recente updates en wijzigingen",
+    "interactiveTourTitle": "Interactieve Rondleidingen",
+    "interactiveTourSubtitle": "Stapsgewijze begeleide rondleidingen om de applicatie te leren kennen",
     "changeTypes": {
       "feature": "functie",
       "fix": "fix",
@@ -634,5 +637,20 @@
       "orPasteUrl": "Of plak URL",
       "organizationInfo": "Organisatie info"
     }
+  },
+  "tour": {
+    "skip": "Rondleiding Overslaan",
+    "next": "Volgende",
+    "back": "Terug",
+    "finish": "Rondleiding Voltooien",
+    "close": "Sluiten",
+    "progress": "Stap {{current}} van {{total}}",
+    "startTour": "Start Rondleiding",
+    "restartTour": "Herstart Rondleiding",
+    "tourCompleted": "Voltooid",
+    "tourNew": "Nieuw",
+    "availableTours": "Beschikbare Rondleidingen",
+    "noToursAvailable": "Geen rondleidingen beschikbaar voor je huidige pagina",
+    "duration": "Duur: ~{{minutes}} min"
   }
 }
