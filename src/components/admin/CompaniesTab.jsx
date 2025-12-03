@@ -6,7 +6,8 @@ import useCompanyTranslations from '../../hooks/useCompanyTranslations';
 import useCategories from '../../hooks/useCategories';
 import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain, mdiTag } from '@mdi/js';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
+import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
 import LogoUploader from '../LogoUploader';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { useDialog } from '../../contexts/DialogContext';
@@ -510,7 +511,18 @@ export default function CompaniesTab() {
                   {/* Logo */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     <img
-                      src={getLogoPath((item.logo && item.logo.trim() !== '') ? item.logo : organizationLogo)}
+                      {...(() => {
+                        // Prefer an explicit default branding logo for organization-wide branding
+                        // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
+                        // when a specific company has no logo set.
+                        const fallback = getDefaultLogoPath();
+                        // For organization rows prefer the canonical default branding logo
+                        // (e.g. 4x4Vakantiebeurs-128.webp) rather than any uploaded org PNG filename.
+                        const source = isOrg ? fallback : ((item.logo && item.logo.trim() !== '') ? item.logo : fallback);
+                        const r = getResponsiveLogoSources(source);
+                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                        return { src: getLogoPath(source) };
+                      })()}
                       alt={item.name}
                       className="h-8 object-contain"
                     />

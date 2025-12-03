@@ -63,18 +63,27 @@ export function getResponsiveLogoSources(iconUrl) {
   if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://')) {
     try {
       const urlObj = new URL(iconUrl);
-      // detect Supabase storage public generated path
-      const generatedIndex = urlObj.pathname.indexOf('/storage/v1/object/public/Logos/generated/');
-      if (generatedIndex !== -1) {
-        const filename = urlObj.pathname.split('/').pop();
-        // if the filename already contains a size suffix (e.g. -128.webp) use it as-is
-        if (/-(?:64|128|256|512)\.(webp|avif)/i.test(filename)) {
-          return { src: iconUrl, srcSet: null, sizes: null };
-        }
+      // detect Supabase storage public path for Logos (generated or other folders)
+      const publicPrefix = '/storage/v1/object/public/Logos/';
+      const idx = urlObj.pathname.indexOf(publicPrefix);
+      if (idx !== -1) {
+        const remaining = urlObj.pathname.slice(idx + publicPrefix.length); // e.g. 'generated/foo.png' or 'companies/foo.png'
+        const parts = remaining.split('/');
+        const folder = parts[0];
+        const filename = parts.slice(1).join('/');
+        if (!filename) return { src: iconUrl, srcSet: null, sizes: null };
 
-        // strip extension to create basename
-        const basename = filename.replace(/\.[^.]+$/, '');
-        const genBase = `${urlObj.origin}/storage/v1/object/public/Logos/generated/${basename}`;
+        const decoded = decodeURIComponent(filename);
+        // If filename already contains a size suffix (e.g. -128.webp) we still want to
+        // return a full srcSet for all variants. Strip the size suffix to produce the
+        // canonical basename used by generated variants.
+        let basename = decoded.replace(/\.[^.]+$/, '');
+        const sizedMatch = basename.match(/^(.*)-(?:64|128|256|512)$/i);
+        if (sizedMatch) {
+          // remove the '-128' portion to get the original basename
+          basename = sizedMatch[1];
+        }
+        const genBase = `${urlObj.origin}${publicPrefix}generated/${encodeURIComponent(basename)}`;
         const src = `${genBase}-128.webp`;
         const srcSet = `${genBase}-64.webp 64w, ${genBase}-128.webp 128w, ${genBase}-256.webp 256w, ${genBase}-512.webp 512w`;
         const sizes = '(max-width: 640px) 64px, 128px';

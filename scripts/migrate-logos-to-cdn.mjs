@@ -140,7 +140,14 @@ async function migrateMarkers() {
 
 async function migrateOrganizationProfile() {
   // single-row branding table (id=1) - handle possible non-remote logo values
-  const rows = await fetchRowsForTable('organization_profile', 'id, logo', 'logo.not.ilike.%http%,logo.ilike.%assets/logos/%', 10);
+  // Match any organization_profile.logo that looks like a storage URL or local asset path
+  // include http URLs that reference /Logos/ or local assets/logos paths
+  const rows = await fetchRowsForTable(
+    'organization_profile',
+    'id, logo',
+    'logo.ilike.%/Logos/%,logo.ilike.%assets/logos/%,logo.ilike.%/Logos/organization/%',
+    10,
+  );
 
   if (!rows || rows.length === 0) {
     console.log('No candidate organization_profile rows found. Nothing to do.');
