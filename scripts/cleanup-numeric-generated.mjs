@@ -38,6 +38,7 @@ if (!url || !key) {
 const supabase = createClient(url, key, { auth: { persistSession: false } });
 const confirm = process.argv.includes('--confirm');
 const archiveFlag = process.argv.includes('--archive');
+  const deleteArchivedFlag = process.argv.includes('--delete-archived');
 const BUCKET = 'Logos';
 
 async function listGeneratedObjects(prefix = 'generated/', limit = 2000) {
@@ -71,6 +72,7 @@ async function run() {
       console.log('You may pass --archive to move objects into generated/archived/ instead of permanent delete.');
       return;
     }
+  console.log('Archiving numeric-generated objects to generated/archived/ (upsert)');
 
     if (archiveFlag) {
       console.log('\nArchiving numeric-generated objects to generated/archived/ (upsert)');
@@ -134,6 +136,45 @@ async function run() {
     } else {
       console.log('Removed objects:', removed || []);
     }
+    return;
+        console.log('Archiving complete.');
+        return;
+      }
+
+      // If delete-archived flag present and confirmed, remove objects under generated/archived/
+      if (deleteArchivedFlag) {
+        // list archived objects
+        const { data: archived, error: listErr } = await supabase.storage.from(BUCKET).list('generated/archived', { limit: 2000 });
+        if (listErr) {
+          console.error('Failed to list archived objects:', listErr.message || listErr);
+          return;
+        }
+
+        const candidatesArchived = (archived || []).filter(o => looksNumericBase(o.name.replace(/\.[^.]+$/, '')));
+        if (!candidatesArchived.length) {
+          console.log('No numeric-archived objects found. Nothing to do.');
+          return;
+        }
+
+        console.log(`Found ${candidatesArchived.length} numeric-archived objects:`);
+        candidatesArchived.forEach(o => console.log(' -', o.name));
+
+        if (!confirm) {
+          console.log('\nDry run for archived: no changes applied. Re-run with --confirm --delete-archived to apply.');
+          return;
+        }
+
+        // build list of paths to delete
+        const pathsToDelete = candidatesArchived.map(o => `generated/archived/${o.name}`);
+        console.log('\nDeleting archived numeric-generated objects (permanent)');
+        const { data: removedArchived, error: remArchErr } = await supabase.storage.from(BUCKET).remove(pathsToDelete);
+        if (remArchErr) {
+          console.error('Failed to remove archived objects:', remArchErr.message || remArchErr);
+        } else {
+          console.log('Removed archived objects:', removedArchived || []);
+        }
+        return;
+      }
   } catch (err) {
     console.error('Error during cleanup:', err.message || err);
     process.exit(1);
