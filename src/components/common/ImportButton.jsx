@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import Icon from '@mdi/react';
 import { mdiUpload } from '@mdi/js';
 import { getDataConfig } from '../../config/dataConfigs';
-import ImportModal from './ImportModal';
+const ImportModal = lazy(() => import('./ImportModal'));
 
 /**
  * ImportButton - Simple button that opens ImportModal
@@ -52,7 +52,8 @@ export default function ImportButton({
         <span>Import</span>
       </button>
 
-      <ImportModal
+      <Suspense fallback={null}>
+        <ImportModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         dataType={dataType}
@@ -61,7 +62,8 @@ export default function ImportButton({
         additionalData={additionalData}
         onImportComplete={handleImportComplete}
         onImportError={handleImportError}
-      />
+        />
+      </Suspense>
     </>
   );
 }

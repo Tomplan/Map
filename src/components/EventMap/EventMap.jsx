@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
-import AdminMarkerPlacement from '../AdminMarkerPlacement';
+const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
 import { useFavoritesContext } from '../../contexts/FavoritesContext';
@@ -500,11 +500,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       />
 
       {isAdminView && (
-        <AdminMarkerPlacement
-          mapInstance={mapInstance}
-          isAdminView={isAdminView}
-          updateMarker={updateMarker}
-        />
+        <Suspense fallback={null}>
+          <AdminMarkerPlacement
+            mapInstance={mapInstance}
+            isAdminView={isAdminView}
+            updateMarker={updateMarker}
+          />
+        </Suspense>
       )}
 
       {favorites.length > 0 && (

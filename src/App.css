@@ -88,7 +88,7 @@ body {
 
 /* Hide map controls and overlays during print (global fallback) */
 @media print {
-   .leaflet-control,
+  .leaflet-control,
   .leaflet-top,
   .leaflet-bottom,
   .leaflet-bar,
@@ -97,7 +97,8 @@ body {
   .leaflet-marker-icon {
     position: absolute !important;
     z-index: 100 !important;
-  },
+  }
+
   .leaflet-glyph-icon,
   .leaflet-pane {
     display: block !important;
