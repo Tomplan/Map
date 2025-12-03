@@ -3354,7 +3354,7 @@ All authenticated admin users can access Feedback Requests, regardless of role. 
 **Creating Requests** 🔓 *All Roles*
 
 **Step 1: Navigate to Feedback Tab**
-Click "Feedback" in the admin menu or navigate to `/admin/feedback`
+Click "Feedback" in the admin menu or navigate to \`/admin/feedback\`
 
 **Step 2: Switch to "Create" Tab**
 Click the "Create" or "New Request" tab at the top
@@ -3571,42 +3571,39 @@ The feedback system updates in real-time for all connected users:
 **Tips for Effective Requests:**
 
 **Good Bug Report:**
-```
-Title: Map markers disappear after zoom level 15
-Type: Bug
+  Title: Map markers disappear after zoom level 15
+  Type: Bug
 
-Description:
-Steps to reproduce:
-1. Navigate to Map Management
-2. Add markers at coordinates X,Y
-3. Zoom in beyond level 15
-4. Markers vanish from view
+  Description:
+  Steps to reproduce:
+  1. Navigate to Map Management
+  2. Add markers at coordinates X,Y
+  3. Zoom in beyond level 15
+  4. Markers vanish from view
 
-Expected: Markers remain visible at all zoom levels
-Actual: Markers disappear above zoom 15
-Browser: Chrome 120
-```
+  Expected: Markers remain visible at all zoom levels
+  Actual: Markers disappear above zoom 15
+  Browser: Chrome 120
 
 **Good Feature Request:**
-```
-Title: Add bulk category assignment for companies
-Type: Feature
+  Title: Add bulk category assignment for companies
+  Type: Feature
 
-Description:
-Allow selecting multiple companies and assigning categories
-in one action. Currently must edit each company individually
-which is time-consuming for 100+ exhibitors.
+  Description:
+  Allow selecting multiple companies and assigning categories
+  in one action. Currently must edit each company individually
+  which is time-consuming for 100+ exhibitors.
 
-Use case: Annual event setup when categorizing new exhibitors
+  Use case: Annual event setup when categorizing new exhibitors
 Benefit: Save 2-3 hours during event preparation
-```
+\`\`\`
 
 **Technical Details**
 
 **Data Storage:**
-- Requests stored in `feedback_requests` table
-- Votes in `feedback_votes` table (one per user per request)
-- Comments in `feedback_comments` table
+- Requests stored in \`feedback_requests\` table
+- Votes in \`feedback_votes\` table (one per user per request)
+- Comments in \`feedback_comments\` table
 - Real-time sync via Supabase subscriptions
 
 **Vote Mechanics:**
@@ -3688,7 +3685,7 @@ Alle geauthenticeerde admin gebruikers hebben toegang tot Feedback Verzoeken, on
 **Verzoeken Aanmaken** 🔓 *Alle Rollen*
 
 **Stap 1: Navigeer naar Feedback Tab**
-Klik "Feedback" in het admin menu of navigeer naar `/admin/feedback`
+Klik "Feedback" in het admin menu of navigeer naar \`/admin/feedback\`
 
 **Stap 2: Schakel naar "Create" Tab**
 Klik de "Create" of "Nieuw Verzoek" tab bovenaan
@@ -3905,42 +3902,38 @@ Het feedback systeem update real-time voor alle verbonden gebruikers:
 **Tips voor Effectieve Verzoeken:**
 
 **Goed Bug Rapport:**
-```
-Titel: Kaart markers verdwijnen na zoom level 15
-Type: Bug
+  Titel: Kaart markers verdwijnen na zoom level 15
+  Type: Bug
 
-Beschrijving:
-Stappen om te reproduceren:
-1. Navigeer naar Kaart Beheer
-2. Voeg markers toe op coördinaten X,Y
-3. Zoom in voorbij level 15
-4. Markers verdwijnen uit zicht
+  Beschrijving:
+  Stappen om te reproduceren:
+  1. Navigeer naar Kaart Beheer
+  2. Voeg markers toe op coördinaten X,Y
+  3. Zoom in voorbij level 15
+  4. Markers verdwijnen uit zicht
 
-Verwacht: Markers blijven zichtbaar op alle zoom levels
-Actueel: Markers verdwijnen boven zoom 15
-Browser: Chrome 120
-```
+  Verwacht: Markers blijven zichtbaar op alle zoom levels
+  Actueel: Markers verdwijnen boven zoom 15
+  Browser: Chrome 120
 
 **Goed Feature Verzoek:**
-```
-Titel: Voeg bulk categorie toewijzing toe voor bedrijven
-Type: Feature
+  Titel: Voeg bulk categorie toewijzing toe voor bedrijven
+  Type: Feature
 
-Beschrijving:
-Sta toe meerdere bedrijven te selecteren en categorieën
-in één actie toe te wijzen. Momenteel moet elk bedrijf individueel
-worden bewerkt wat tijdrovend is voor 100+ standhouders.
+  Beschrijving:
+  Sta toe meerdere bedrijven te selecteren en categorieën
+  in één actie toe te wijzen. Momenteel moet elk bedrijf individueel
+  worden bewerkt wat tijdrovend is voor 100+ standhouders.
 
-Use case: Jaarlijkse event setup bij categoriseren nieuwe standhouders
-Voordeel: Bespaar 2-3 uur tijdens event voorbereiding
-```
+  Use case: Jaarlijkse event setup bij categoriseren nieuwe standhouders
+  Voordeel: Bespaar 2-3 uur tijdens event voorbereiding
 
 **Technische Details**
 
 **Data Opslag:**
-- Verzoeken opgeslagen in `feedback_requests` tabel
-- Stemmen in `feedback_votes` tabel (één per gebruiker per verzoek)
-- Commentaren in `feedback_comments` tabel
+- Verzoeken opgeslagen in \`feedback_requests\` tabel
+- Stemmen in \`feedback_votes\` tabel (één per gebruiker per verzoek)
+- Commentaren in \`feedback_comments\` tabel
 - Real-time sync via Supabase subscriptions
 
 **Stem Mechanica:**

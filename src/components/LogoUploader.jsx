@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiUpload, mdiLoading, mdiCheck, mdiAlert, mdiDelete } from '@mdi/js';
 import { uploadLogo, validateLogoFile } from '../services/logoUploadService';
-import { getLogoPath } from '../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 
 /**
  * LogoUploader Component

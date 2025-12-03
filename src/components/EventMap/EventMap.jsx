@@ -11,7 +11,7 @@ import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
 import { useFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
 import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';

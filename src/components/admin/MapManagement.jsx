@@ -4,7 +4,7 @@ import Icon from '@mdi/react';
 import { mdiMagnify, mdiLock, mdiLockOpenVariant, mdiContentSave, mdiClose, mdiChevronUp, mdiChevronDown, mdiContentCopy, mdiArchive, mdiEye, mdiPrinter } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
@@ -797,12 +797,20 @@ function ViewPanel({ marker, isSpecialMarker, isDefaultMarker, isBoothMarker, ge
       </Section>
 
       {/* Content (Special Markers Only) */}
-      {isSpecialMarker && (
+          {isSpecialMarker && (
         <Section title="Content (Special Marker)">
           <Field label="Name" value={marker.name} />
           <Field label="Logo">
             {marker.logo && (
-              <img src={getLogoPath(marker.logo)} alt="logo" className="w-12 h-12" />
+              <img
+                {...(() => {
+                  const r = getResponsiveLogoSources(marker.logo);
+                  if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                  return { src: getLogoPath(marker.logo) };
+                })()}
+                alt="logo"
+                className="w-12 h-12"
+              />
             )}
           </Field>
           <Field label="Website" value={marker.website} />

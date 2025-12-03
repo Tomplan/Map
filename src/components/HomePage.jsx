@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
-import { getLogoPath } from '../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 import LanguageToggle from './LanguageToggle';
 import { useSubscriptionCount } from '../hooks/useCountViews';
 
@@ -37,7 +37,11 @@ export default function HomePage({ selectedYear, branding }) {
           {organizationLogo && (
             <div className="mb-6">
               <img
-                src={getLogoPath(organizationLogo)}
+                {...(() => {
+                  const r = getResponsiveLogoSources(organizationLogo);
+                  if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                  return { src: getLogoPath(organizationLogo) };
+                })()}
                 alt={eventInfo.name}
                 className="h-24 mx-auto object-contain"
               />

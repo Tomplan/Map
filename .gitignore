@@ -31,3 +31,7 @@ dist-ssr
 # Ignore generated responsive logos once they are uploaded to the CDN
 # These are currently checked in for CI/dev. Remove from repo once CDN has all assets.
 public/assets/logos/generated/
+
+# Local downloaded originals and temporary numeric-named logo files
+public/assets/logos/originals/
+public/assets/logos/*[0-9]*_*.*

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
-import { getLogoPath } from '../../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useAssignments from '../../hooks/useAssignments';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
@@ -91,7 +91,12 @@ export default function SubscriptionEditModal({
         <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
           <div className="flex items-center gap-4">
             <img
-              src={getLogoPath(subscription.company?.logo || organizationLogo)}
+              {...(() => {
+                const source = subscription.company?.logo || organizationLogo;
+                const r = getResponsiveLogoSources(source);
+                if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                return { src: getLogoPath(source) };
+              })()}
               alt={subscription.company?.name}
               className="w-16 h-16 object-contain"
             />

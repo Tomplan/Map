@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { getLogoPath } from '../utils/getLogoPath';
+import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 
 /**
  * Custom hook to preload marker logo images
@@ -10,7 +10,13 @@ export function useMarkerPreload(markers) {
     markers.forEach((marker) => {
       if (marker.logo) {
         const img = new window.Image();
-        img.src = getLogoPath(marker.logo);
+        const r = getResponsiveLogoSources(marker.logo);
+        if (r && r.src) {
+          img.src = r.src;
+          if (r.srcSet) img.srcset = r.srcSet;
+        } else {
+          img.src = getLogoPath(marker.logo);
+        }
       }
     });
   }, [markers]);
