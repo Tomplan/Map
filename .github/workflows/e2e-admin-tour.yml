@@ -42,6 +42,8 @@ jobs:
         run: npx wait-on http://127.0.0.1:5173/Map --timeout 120000
 
       - name: Run admin-tour E2E (Puppeteer)
+        # Only run admin E2E when admin credentials are provided via repo secrets
+        if: ${{ secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
           # Provide admin credentials through repo secrets so the E2E
@@ -53,6 +55,8 @@ jobs:
         run: npm run test:e2e:tour-admin
 
       - name: Run help-no-reopen E2E (Puppeteer)
+        # Only run help-related E2E when admin credentials are provided
+        if: ${{ secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
           E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
