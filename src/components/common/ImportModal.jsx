@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import Icon from '@mdi/react';
 import {
   mdiFileUpload,
@@ -60,7 +60,7 @@ export default function ImportModal({
   const config = getDataConfig(dataType);
 
   // Reset state when modal closes
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setStep(STEPS.FILE_SELECT);
     setSelectedFile(null);
     setParsedRows([]);
@@ -71,191 +71,211 @@ export default function ImportModal({
     setSuppressToasts(false);
     setImportProgress({ current: 0, total: 0, message: '' });
     onClose();
-  };
+  }, [onClose]);
 
   // Handle file selection
-  const handleFileSelect = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleFileSelect = useCallback(
+    async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
 
-    setSelectedFile(file);
-    setError(null);
-    setStep(STEPS.PARSING);
+      setSelectedFile(file);
+      setError(null);
+      setStep(STEPS.PARSING);
 
-    // Parse file (parseFile now returns optional metadata for XLSX files)
-    const { data, error: parseError, metadata } = await parseFile(file);
+      // Parse file (parseFile now returns optional metadata for XLSX files)
+      const { data, error: parseError, metadata } = await parseFile(file);
 
-    if (parseError || !data) {
-      setError(parseError || 'Failed to parse file');
-      setStep(STEPS.FILE_SELECT);
-      if (!suppressToasts) {
-        toastError(`Failed to parse file: ${parseError}`);
+      if (parseError || !data) {
+        setError(parseError || 'Failed to parse file');
+        setStep(STEPS.FILE_SELECT);
+        if (!suppressToasts) {
+          toastError(`Failed to parse file: ${parseError}`);
+        }
+        return;
       }
-      return;
-    }
 
-    if (data.length === 0) {
-      setError('File is empty or has no valid data');
-      setStep(STEPS.FILE_SELECT);
-      if (!suppressToasts) {
-        toastError('File is empty');
+      if (data.length === 0) {
+        setError('File is empty or has no valid data');
+        setStep(STEPS.FILE_SELECT);
+        if (!suppressToasts) {
+          toastError('File is empty');
+        }
+        return;
       }
-      return;
-    }
 
-    setParsedRows(data);
-    // Save metadata (if present) so the preview can render per-category columns
-    setParsedMeta(metadata || null);
-    // Note: parseFile now returns metadata on Excel; the returned object is
-    // { data, error, metadata } — but older code path may only provide data.
-    // We'll instead re-run the parseFile call to destructure metadata properly
-    // below. (See further handling immediately after.)
+      setParsedRows(data);
+      // Save metadata (if present) so the preview can render per-category columns
+      setParsedMeta(metadata || null);
+      // Note: parseFile now returns metadata on Excel; the returned object is
+      // { data, error, metadata } — but older code path may only provide data.
+      // We'll instead re-run the parseFile call to destructure metadata properly
+      // below. (See further handling immediately after.)
 
-    // Validate and match records
-    await validateAndMatch(data);
-  };
+      // Validate and match records
+      await validateAndMatch(data);
+    },
+    [suppressToasts, validateAndMatch, toastError],
+  );
 
   // Validate and match records
-  const validateAndMatch = async (data) => {
-    try {
-      // Build lookup maps if needed for validation
-      let companyMap = null;
-      let markerMap = null;
+  const validateAndMatch = useCallback(
+    async (data) => {
+      try {
+        // Build lookup maps if needed for validation
+        let companyMap = null;
+        let markerMap = null;
 
-      if (config.yearDependent) {
-        // Fetch companies for subscriptions and assignments
-        const { data: companies, error: companiesError } = await supabase
-          .from('companies')
-          .select('id, name');
+        if (config.yearDependent) {
+          // Fetch companies for subscriptions and assignments
+          const { data: companies, error: companiesError } = await supabase
+            .from('companies')
+            .select('id, name');
 
-        if (companiesError) throw companiesError;
+          if (companiesError) throw companiesError;
 
-        companyMap = buildLookupMap(companies, 'name', 'id', false);
+          companyMap = buildLookupMap(companies, 'name', 'id', false);
 
-        // For assignments, also fetch markers
-        if (dataType === 'assignments') {
-          const { data: markers, error: markersError } = await supabase
-            .from('markers_core')
-            .select('id, glyph')
-            .eq('event_year', eventYear);
+          // For assignments, also fetch markers
+          if (dataType === 'assignments') {
+            const { data: markers, error: markersError } = await supabase
+              .from('markers_core')
+              .select('id, glyph')
+              .eq('event_year', eventYear);
 
-          if (markersError) throw markersError;
+            if (markersError) throw markersError;
 
-          // Build marker map with both glyph and id as keys
-          markerMap = {};
-          markers.forEach((m) => {
-            if (m.glyph) {
-              markerMap[m.glyph.toLowerCase()] = m.id;
-            }
-            markerMap[m.id.toString()] = m.id;
-          });
-        }
-      }
-
-      // Validate each row
-      const validated = data.map((row, index) => {
-        const validation = config.validateRow(row, index, companyMap, markerMap);
-
-        // Determine action (CREATE, UPDATE, ERROR)
-        let action = 'ERROR';
-        let matchedRecord = null;
-
-        if (validation.valid) {
-          // Try to match with existing data
-          try {
-            const transformed = config.transformImport(
-              row,
-              companyMap,
-              markerMap || additionalData.markerMap,
-              eventYear,
-            );
-
-            // Match against existing data
-            if (config.matchStrategy.matchFields.includes('name')) {
-              // Companies matching by name
-              const matchName = row['Company Name']?.toLowerCase().trim();
-              matchedRecord = existingData.find((e) => e.name?.toLowerCase().trim() === matchName);
-            } else if (config.yearDependent && companyMap) {
-              // Subscriptions/assignments matching
-              const companyName = row['Company Name']?.toLowerCase().trim();
-              const companyId = companyMap[companyName];
-
-              if (dataType === 'event_subscriptions') {
-                matchedRecord = existingData.find(
-                  (e) => e.company_id === companyId && e.event_year === eventYear,
-                );
-              } else if (dataType === 'assignments') {
-                const boothLabel = row['Booth Label']?.toLowerCase().trim();
-                const markerId = markerMap[boothLabel];
-                matchedRecord = existingData.find(
-                  (e) =>
-                    e.company_id === companyId &&
-                    e.marker_id === markerId &&
-                    e.event_year === eventYear,
-                );
+            // Build marker map with both glyph and id as keys
+            markerMap = {};
+            markers.forEach((m) => {
+              if (m.glyph) {
+                markerMap[m.glyph.toLowerCase()] = m.id;
               }
-            }
-
-            action = matchedRecord ? 'UPDATE' : 'CREATE';
-          } catch (transformError) {
-            validation.valid = false;
-            validation.errors.push({
-              field: 'General',
-              message: transformError.message,
+              markerMap[m.id.toString()] = m.id;
             });
           }
         }
 
-        return {
-          index,
-          originalRow: row,
-          validation,
-          action,
-          matchedRecord,
-          selected: validation.valid, // Auto-select valid rows
-        };
-      });
+        // Validate each row
+        const validated = data.map((row, index) => {
+          const validation = config.validateRow(row, index, companyMap, markerMap);
 
-      setValidatedRows(validated);
+          // Determine action (CREATE, UPDATE, ERROR)
+          let action = 'ERROR';
+          let matchedRecord = null;
 
-      // Auto-select all valid rows
-      const validIndices = validated.filter((r) => r.validation.valid).map((r) => r.index);
-      setSelectedRows(new Set(validIndices));
+          if (validation.valid) {
+            // Try to match with existing data
+            try {
+              const transformed = config.transformImport(
+                row,
+                companyMap,
+                markerMap || additionalData.markerMap,
+                eventYear,
+              );
 
-      setStep(STEPS.PREVIEW);
+              // Match against existing data
+              if (config.matchStrategy.matchFields.includes('name')) {
+                // Companies matching by name
+                const matchName = row['Company Name']?.toLowerCase().trim();
+                matchedRecord = existingData.find(
+                  (e) => e.name?.toLowerCase().trim() === matchName,
+                );
+              } else if (config.yearDependent && companyMap) {
+                // Subscriptions/assignments matching
+                const companyName = row['Company Name']?.toLowerCase().trim();
+                const companyId = companyMap[companyName];
 
-      // Show summary only if not suppressed
-      if (!suppressToasts) {
-        const validCount = validated.filter((r) => r.validation.valid).length;
-        const errorCount = validated.filter((r) => !r.validation.valid).length;
+                if (dataType === 'event_subscriptions') {
+                  matchedRecord = existingData.find(
+                    (e) => e.company_id === companyId && e.event_year === eventYear,
+                  );
+                } else if (dataType === 'assignments') {
+                  const boothLabel = row['Booth Label']?.toLowerCase().trim();
+                  const markerId = markerMap[boothLabel];
+                  matchedRecord = existingData.find(
+                    (e) =>
+                      e.company_id === companyId &&
+                      e.marker_id === markerId &&
+                      e.event_year === eventYear,
+                  );
+                }
+              }
 
-        if (errorCount > 0) {
-          toastWarning(`Parsed ${data.length} rows: ${validCount} valid, ${errorCount} errors`);
-        } else {
-          toastSuccess(`Parsed ${data.length} rows - all valid`);
+              action = matchedRecord ? 'UPDATE' : 'CREATE';
+            } catch (transformError) {
+              validation.valid = false;
+              validation.errors.push({
+                field: 'General',
+                message: transformError.message,
+              });
+            }
+          }
+          return {
+            index,
+            originalRow: row,
+            validation,
+            action,
+            matchedRecord,
+            selected: validation.valid, // Auto-select valid rows
+          };
+        });
+
+        setValidatedRows(validated);
+
+        // Auto-select all valid rows
+        const validIndices = validated.filter((r) => r.validation.valid).map((r) => r.index);
+        setSelectedRows(new Set(validIndices));
+
+        setStep(STEPS.PREVIEW);
+
+        // Show summary only if not suppressed
+        if (!suppressToasts) {
+          const validCount = validated.filter((r) => r.validation.valid).length;
+          const errorCount = validated.filter((r) => !r.validation.valid).length;
+
+          if (errorCount > 0) {
+            toastWarning(`Parsed ${data.length} rows: ${validCount} valid, ${errorCount} errors`);
+          } else {
+            toastSuccess(`Parsed ${data.length} rows - all valid`);
+          }
         }
+      } catch (error) {
+        console.error('Validation error:', error);
+        setError(error.message);
+        setStep(STEPS.FILE_SELECT);
+        toastError(`Validation failed: ${error.message}`);
       }
-    } catch (error) {
-      console.error('Validation error:', error);
-      setError(error.message);
-      setStep(STEPS.FILE_SELECT);
-      toastError(`Validation failed: ${error.message}`);
-    }
-  };
+    },
+    [
+      config,
+      dataType,
+      eventYear,
+      existingData,
+      additionalData,
+      toastWarning,
+      toastSuccess,
+      toastError,
+      suppressToasts,
+    ],
+  );
 
   // Toggle row selection
-  const toggleRow = (index) => {
-    const newSelected = new Set(selectedRows);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
-    } else {
-      newSelected.add(index);
-    }
-    setSelectedRows(newSelected);
-  };
+  const toggleRow = useCallback(
+    (index) => {
+      const newSelected = new Set(selectedRows);
+      if (newSelected.has(index)) {
+        newSelected.delete(index);
+      } else {
+        newSelected.add(index);
+      }
+      setSelectedRows(newSelected);
+    },
+    [selectedRows],
+  );
 
   // Toggle all valid rows
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
     if (selectedRows.size === validatedRows.filter((r) => r.validation.valid).length) {
       // Deselect all
       setSelectedRows(new Set());
@@ -264,49 +284,52 @@ export default function ImportModal({
       const validIndices = validatedRows.filter((r) => r.validation.valid).map((r) => r.index);
       setSelectedRows(new Set(validIndices));
     }
-  };
+  }, [selectedRows, validatedRows]);
 
   // Helper: Assign categories to company
-  const assignCompanyCategories = async (companyId, categorySlugs, categorySlugToIdMap, errors) => {
-    if (!categorySlugs || categorySlugs.length === 0) return;
+  const assignCompanyCategories = useCallback(
+    async (companyId, categorySlugs, categorySlugToIdMap, errors) => {
+      if (!categorySlugs || categorySlugs.length === 0) return;
 
-    try {
-      // Map slugs to IDs
-      const categoryIds = categorySlugs
-        .map((slug) => categorySlugToIdMap[slug.toLowerCase()])
-        .filter((id) => id !== undefined);
+      try {
+        // Map slugs to IDs
+        const categoryIds = categorySlugs
+          .map((slug) => categorySlugToIdMap[slug.toLowerCase()])
+          .filter((id) => id !== undefined);
 
-      if (categoryIds.length === 0) return; // No valid categories
+        if (categoryIds.length === 0) return; // No valid categories
 
-      // Delete existing assignments
-      await supabase.from('company_categories').delete().eq('company_id', companyId);
+        // Delete existing assignments
+        await supabase.from('company_categories').delete().eq('company_id', companyId);
 
-      // Add new assignments
-      const assignments = categoryIds.map((categoryId) => ({
-        company_id: companyId,
-        category_id: categoryId,
-      }));
+        // Add new assignments
+        const assignments = categoryIds.map((categoryId) => ({
+          company_id: companyId,
+          category_id: categoryId,
+        }));
 
-      const { error } = await supabase.from('company_categories').insert(assignments);
+        const { error } = await supabase.from('company_categories').insert(assignments);
 
-      if (error) {
+        if (error) {
+          errors.push({
+            type: 'CATEGORY',
+            companyId,
+            message: `Failed to assign categories: ${error.message}`,
+          });
+        }
+      } catch (error) {
         errors.push({
           type: 'CATEGORY',
           companyId,
           message: `Failed to assign categories: ${error.message}`,
         });
       }
-    } catch (error) {
-      errors.push({
-        type: 'CATEGORY',
-        companyId,
-        message: `Failed to assign categories: ${error.message}`,
-      });
-    }
-  };
+    },
+    [],
+  );
 
   // Helper: Save company translations
-  const saveCompanyTranslations = async (companyId, translations, errors) => {
+  const saveCompanyTranslations = useCallback(async (companyId, translations, errors) => {
     if (!translations) return;
 
     const translationRecords = [];
@@ -353,10 +376,10 @@ export default function ImportModal({
         });
       }
     }
-  };
+  }, []);
 
   // Execute import
-  const handleImport = async () => {
+  const handleImport = useCallback(async () => {
     const rowsToImport = validatedRows.filter((r) => selectedRows.has(r.index));
 
     if (rowsToImport.length === 0) {
@@ -564,7 +587,20 @@ export default function ImportModal({
       if (onImportError) onImportError(error);
       setStep(STEPS.PREVIEW);
     }
-  };
+  }, [
+    validatedRows,
+    selectedRows,
+    config,
+    dataType,
+    eventYear,
+    toastError,
+    toastSuccess,
+    assignCompanyCategories,
+    saveCompanyTranslations,
+    onImportComplete,
+    onImportError,
+    toastWarning,
+  ]);
 
   // Memoized step content renderer to prevent unnecessary re-renders
   const renderStepContent = React.useMemo(
@@ -893,10 +929,17 @@ export default function ImportModal({
       selectedRows,
       validatedRows,
       parsedMeta,
-      selectedFile,
+      // selectedFile is intentionally excluded here — it's only used by input
+      // handlers and doesn't affect the rendered step content memoization.
       error,
       importResults,
       importProgress,
+      dataType,
+      handleClose,
+      handleFileSelect,
+      handleImport,
+      toggleAll,
+      toggleRow,
     ],
   );
 
