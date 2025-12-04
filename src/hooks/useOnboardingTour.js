@@ -29,11 +29,14 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   const { t, i18n } = useTranslation();
   const driverInstance = useRef(null);
   const hasAutoStarted = useRef(false);
+  const handleEscapeKeyRef = useRef(null);
+  const handleDocumentClickRef = useRef(null);
 
   // Get current language
   const currentLanguage = i18n.language;
 
   // Enhanced cleanup helper with better error handling and memory management
+  // Uses refs for handlers to avoid TDZ/circular deps
   const forceCleanup = useCallback((instance) => {
     try {
       const drv = instance || driverInstance.current;
@@ -101,8 +104,8 @@ export default function useOnboardingTour(tourConfig, options = {}) {
       // 6. Memory cleanup - remove event listeners
       try {
         // Remove any remaining event listeners on the document
-        document.removeEventListener('keydown', handleEscapeKey, true);
-        document.removeEventListener('click', handleDocumentClick, true);
+        document.removeEventListener('keydown', handleEscapeKeyRef.current, true);
+        document.removeEventListener('click', handleDocumentClickRef.current, true);
       } catch (e) {
         cleanupErrors.push('event-listeners');
         console.warn('Error removing event listeners:', e);
@@ -169,6 +172,33 @@ export default function useOnboardingTour(tourConfig, options = {}) {
     }
   }, [tourConfig, contextDismissTour, options, forceCleanup]);
 
+  // Key and document handlers used by driver and cleanup
+  const handleEscapeKey = useCallback(
+    (e) => {
+      if (e.key === 'Escape' && isRunning) {
+        console.log('[TOUR DEBUG] Escape key pressed - dismissing tour');
+        handleDismiss();
+      }
+    },
+    [isRunning, handleDismiss],
+  );
+
+  const handleDocumentClick = useCallback(
+    (e) => {
+      // Only handle clicks if tour is running and we're in an overlay
+      if (isRunning && document.body.classList.contains('driver-active')) {
+        // Let Driver.js handle clicks - don't interfere
+      }
+    },
+    [isRunning],
+  );
+
+  // Keep refs up-to-date so forceCleanup can access current handler functions
+  useEffect(() => {
+    handleEscapeKeyRef.current = handleEscapeKey;
+    handleDocumentClickRef.current = handleDocumentClick;
+  }, [handleEscapeKey, handleDocumentClick]);
+
   /**
    * Transform tour config steps to Driver.js format
    */
@@ -216,33 +246,14 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         };
       });
     },
-    [tourConfig, getLocalizedContent, t, handleDismiss, currentLanguage],
+    [tourConfig, getLocalizedContent, t, handleDismiss],
   );
 
   /**
    * Initialize Driver.js instance
    */
-  // Enhanced cleanup helper with better error handling and memory management
-  const handleEscapeKey = useCallback(
-    (e) => {
-      if (e.key === 'Escape' && isRunning) {
-        console.log('[TOUR DEBUG] Escape key pressed - dismissing tour');
-        handleDismiss();
-      }
-    },
-    [isRunning, handleDismiss],
-  );
-
-  // Document click handler
-  const handleDocumentClick = useCallback(
-    (e) => {
-      // Only handle clicks if tour is running and we're in an overlay
-      if (isRunning && document.body.classList.contains('driver-active')) {
-        // Let Driver.js handle clicks - don't interfere
-      }
-    },
-    [isRunning],
-  );
+  // Document/keyboard handlers are already declared above and used by this
+  // initialize/cleanup logic — duplicates removed.
 
   const initializeDriver = useCallback(
     (stepsOverride) => {
@@ -509,7 +520,15 @@ export default function useOnboardingTour(tourConfig, options = {}) {
 
       return driverInstance.current;
     },
-    [getDriverSteps, contextStopTour, handleComplete, handleDismiss, t, currentLanguage],
+    [
+      getDriverSteps,
+      contextStopTour,
+      handleComplete,
+      handleDismiss,
+      t,
+      currentLanguage,
+      forceCleanup,
+    ],
   );
 
   /**
@@ -888,7 +907,15 @@ export default function useOnboardingTour(tourConfig, options = {}) {
       // Success case
       return { success: true };
     },
-    [tourConfig, contextStartTour, contextStopTour, initializeDriver],
+    [
+      tourConfig,
+      contextStartTour,
+      contextStopTour,
+      initializeDriver,
+      getDriverSteps,
+      options,
+      forceCleanup,
+    ],
   );
 
   /**
@@ -1019,7 +1046,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         /* ignore */
       }
     };
-  }, []);
+  }, [forceCleanup]);
 
   return {
     start,

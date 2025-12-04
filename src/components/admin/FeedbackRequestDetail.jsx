@@ -65,7 +65,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
       setLoadingComments(false);
     };
     fetchComments();
-  }, [request.id]);
+  }, [request.id, loadComments]);
 
   // Handle vote toggle
   const handleVoteToggle = async () => {

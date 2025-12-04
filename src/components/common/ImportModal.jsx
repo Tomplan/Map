@@ -73,51 +73,6 @@ export default function ImportModal({
     onClose();
   }, [onClose]);
 
-  // Handle file selection
-  const handleFileSelect = useCallback(
-    async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-
-      setSelectedFile(file);
-      setError(null);
-      setStep(STEPS.PARSING);
-
-      // Parse file (parseFile now returns optional metadata for XLSX files)
-      const { data, error: parseError, metadata } = await parseFile(file);
-
-      if (parseError || !data) {
-        setError(parseError || 'Failed to parse file');
-        setStep(STEPS.FILE_SELECT);
-        if (!suppressToasts) {
-          toastError(`Failed to parse file: ${parseError}`);
-        }
-        return;
-      }
-
-      if (data.length === 0) {
-        setError('File is empty or has no valid data');
-        setStep(STEPS.FILE_SELECT);
-        if (!suppressToasts) {
-          toastError('File is empty');
-        }
-        return;
-      }
-
-      setParsedRows(data);
-      // Save metadata (if present) so the preview can render per-category columns
-      setParsedMeta(metadata || null);
-      // Note: parseFile now returns metadata on Excel; the returned object is
-      // { data, error, metadata } — but older code path may only provide data.
-      // We'll instead re-run the parseFile call to destructure metadata properly
-      // below. (See further handling immediately after.)
-
-      // Validate and match records
-      await validateAndMatch(data);
-    },
-    [suppressToasts, validateAndMatch, toastError],
-  );
-
   // Validate and match records
   const validateAndMatch = useCallback(
     async (data) => {
@@ -258,6 +213,50 @@ export default function ImportModal({
       toastError,
       suppressToasts,
     ],
+  );
+  // Handle file selection
+  const handleFileSelect = useCallback(
+    async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setSelectedFile(file);
+      setError(null);
+      setStep(STEPS.PARSING);
+
+      // Parse file (parseFile now returns optional metadata for XLSX files)
+      const { data, error: parseError, metadata } = await parseFile(file);
+
+      if (parseError || !data) {
+        setError(parseError || 'Failed to parse file');
+        setStep(STEPS.FILE_SELECT);
+        if (!suppressToasts) {
+          toastError(`Failed to parse file: ${parseError}`);
+        }
+        return;
+      }
+
+      if (data.length === 0) {
+        setError('File is empty or has no valid data');
+        setStep(STEPS.FILE_SELECT);
+        if (!suppressToasts) {
+          toastError('File is empty');
+        }
+        return;
+      }
+
+      setParsedRows(data);
+      // Save metadata (if present) so the preview can render per-category columns
+      setParsedMeta(metadata || null);
+      // Note: parseFile now returns metadata on Excel; the returned object is
+      // { data, error, metadata } — but older code path may only provide data.
+      // We'll instead re-run the parseFile call to destructure metadata properly
+      // below. (See further handling immediately after.)
+
+      // Validate and match records
+      await validateAndMatch(data);
+    },
+    [suppressToasts, validateAndMatch, toastError],
   );
 
   // Toggle row selection

@@ -371,7 +371,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       supabase.removeChannel(companiesChannel);
       supabase.removeChannel(subscriptionsChannel);
     };
-  }, [isOnline, loadMarkers]);
+  }, [isOnline, loadMarkers, eventYear]);
 
   // Reload markers when eventYear changes
   useEffect(() => {

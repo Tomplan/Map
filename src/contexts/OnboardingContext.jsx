@@ -149,7 +149,7 @@ export function OnboardingProvider({ children }) {
 
       stopTour();
     },
-    [user, preferences, updatePreferences, stopTour],
+    [user, preferences, updatePreferences, stopTour, activeTourSource],
   );
 
   // Keep a mutable ref to always read the latest activeTourSource synchronously
@@ -327,7 +327,7 @@ export function OnboardingProvider({ children }) {
         /* ignore */
       }
     };
-  }, [completeTour, resetAllTours]);
+  }, [completeTour, resetAllTours, startTour]);
 
   const value = {
     // State

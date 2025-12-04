@@ -121,7 +121,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
     if (!visibleSections.find((s) => s.id === activeSection)) {
       setActiveSection(visibleSections[0]?.id || 'event-defaults');
     }
-  }, [role]);
+  }, [role, visibleSections, activeSection]);
 
   const activeComponent = visibleSections.find((s) => s.id === activeSection)?.component;
 

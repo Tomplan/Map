@@ -255,7 +255,12 @@ function EventClusterMarkers({
   } catch (e) {
     // Context not available in admin view, ignore
   }
-  const isFavorite = favoritesContext?.isFavorite || (() => false);
+  // Stable reference to the favorites checker function to avoid changing
+  // identity between renders when favoritesContext is not present.
+  const isFavorite = React.useMemo(
+    () => (favoritesContext?.isFavorite ? favoritesContext.isFavorite : () => false),
+    [favoritesContext],
+  );
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState({

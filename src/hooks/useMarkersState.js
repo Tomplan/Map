@@ -1,6 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
 import { updateMarkerField } from '../services/markerUpdateService';
 
+const CORE_FIELDS = ['id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'];
+const APPEARANCE_FIELDS = [
+  'iconUrl',
+  'iconSize',
+  'iconColor',
+  'className',
+  'prefix',
+  'glyph',
+  'glyphColor',
+  'glyphSize',
+  'shadowScale',
+  'glyphAnchor',
+  'appearanceLocked',
+];
+const CONTENT_FIELDS = ['name', 'logo', 'website', 'info', 'contentLocked'];
+
 /**
  * Custom hook to manage an array of marker objects and their state.
  * Automatically syncs with incoming markers from useEventMarkers.
@@ -16,21 +32,7 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
       setMarkersState(markers);
     }
   }, [markers]);
-  const coreFields = ['id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'];
-  const appearanceFields = [
-    'iconUrl',
-    'iconSize',
-    'iconColor',
-    'className',
-    'prefix',
-    'glyph',
-    'glyphColor',
-    'glyphSize',
-    'shadowScale',
-    'glyphAnchor',
-    'appearanceLocked',
-  ];
-  const contentFields = ['name', 'logo', 'website', 'info', 'contentLocked'];
+
   // Note: Admin fields (contact, phone, meals, etc.) now managed via Event_Subscriptions
 
   // Update a marker by id, merging new props and syncing to Supabase
@@ -62,9 +64,9 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
         const { supabase } = await import('../supabaseClient');
         // Ensure marker exists in all tables before update/fetch
         const tables = [
-          { name: 'markers_core', fields: coreFields },
-          { name: 'markers_appearance', fields: appearanceFields },
-          { name: 'markers_content', fields: contentFields },
+          { name: 'markers_core', fields: CORE_FIELDS },
+          { name: 'markers_appearance', fields: APPEARANCE_FIELDS },
+          { name: 'markers_content', fields: CONTENT_FIELDS },
         ];
         for (const { name: table } of tables) {
           await ensureMarkerRow(supabase, table, intId);
@@ -75,11 +77,11 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
         const contentUpdates = {};
 
         for (const [key, value] of Object.entries(newProps)) {
-          if (coreFields.includes(key)) {
+          if (CORE_FIELDS.includes(key)) {
             coreUpdates[key] = value;
-          } else if (appearanceFields.includes(key)) {
+          } else if (APPEARANCE_FIELDS.includes(key)) {
             appearanceUpdates[key] = value;
-          } else if (contentFields.includes(key)) {
+          } else if (CONTENT_FIELDS.includes(key)) {
             contentUpdates[key] = value;
           }
           // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin

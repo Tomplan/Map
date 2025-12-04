@@ -41,14 +41,26 @@ export function DialogProvider({ children }) {
 
   // Handle confirm dialog actions
   const handleConfirm = useCallback(() => {
-    confirmState.resolve?.(true);
-    setConfirmState((prev) => ({ ...prev, isOpen: false }));
-  }, [confirmState.resolve]);
+    setConfirmState((prev) => {
+      try {
+        prev.resolve?.(true);
+      } catch (e) {
+        /* ignore */
+      }
+      return { ...prev, isOpen: false };
+    });
+  }, []);
 
   const handleCancel = useCallback(() => {
-    confirmState.resolve?.(false);
-    setConfirmState((prev) => ({ ...prev, isOpen: false }));
-  }, [confirmState.resolve]);
+    setConfirmState((prev) => {
+      try {
+        prev.resolve?.(false);
+      } catch (e) {
+        /* ignore */
+      }
+      return { ...prev, isOpen: false };
+    });
+  }, []);
 
   // Show toast notification
   const toast = useCallback(({ message, type = 'info', duration = 5000 } = {}) => {

@@ -233,9 +233,12 @@ export default function useOrganizationSettings() {
   }, [fetchSettings]);
 
   // Set up real-time subscription for cross-admin sync
-  useEffect(() => {
-    if (!settings) return;
+  // Use a primitive (rowVersion) in the dependency array so the effect
+  // doesn't need to include the whole `settings` object and trigger
+  // unnecessary resubscribes. This also satisfies react-hooks/exhaustive-deps.
+  const rowVersion = settings?.row_version ?? 0;
 
+  useEffect(() => {
     // Clean up existing subscription
     if (channelRef.current) {
       channelRef.current.unsubscribe();
@@ -255,7 +258,8 @@ export default function useOrganizationSettings() {
         },
         (payload) => {
           // Only apply update if newer version (prevents race conditions)
-          if (payload.new.row_version > (settings.row_version || 0)) {
+          // Compare against the stable primitive rowVersion captured above
+          if (payload.new.row_version > rowVersion) {
             setSettings(payload.new);
           }
         },
@@ -268,7 +272,7 @@ export default function useOrganizationSettings() {
         channelRef.current = null;
       }
     };
-  }, [settings?.row_version]);
+  }, [rowVersion]);
 
   return {
     settings,

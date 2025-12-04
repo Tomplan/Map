@@ -80,14 +80,25 @@ function EventMap({
   } catch (e) {
     // Context not available in admin view, ignore
   }
-  const favorites = favoritesContext?.favorites || [];
-  const isFavorite = favoritesContext?.isFavorite || (() => false);
+  // Keep favorites as a stable reference so hooks depending on it don't see
+  // a new empty array on every render when favoritesContext is missing.
+  const favorites = React.useMemo(
+    () => favoritesContext?.favorites || [],
+    [favoritesContext?.favorites],
+  );
+  // Ensure isFavorite is a stable function reference to avoid changing
+  // dependencies for hooks that depend on it.
+  const isFavorite = React.useMemo(
+    () => (favoritesContext?.isFavorite ? favoritesContext.isFavorite : () => false),
+    [favoritesContext],
+  );
 
   const { t } = useTranslation();
 
   const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
     textPlaceholder: t('map.searchPlaceholder'),
   });
+  const searchControlReady = Boolean(searchControlRef && searchControlRef.current);
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
@@ -226,7 +237,14 @@ function EventMap({
       updateMarker,
       rectangleLayerRef,
     });
-  }, [mapInstance, safeMarkers, isAdminView, showRectanglesAndHandles, updateMarker]);
+  }, [
+    mapInstance,
+    safeMarkers,
+    isAdminView,
+    showRectanglesAndHandles,
+    updateMarker,
+    MAP_CONFIG.RECTANGLE_SIZE,
+  ]);
 
   // Setup search layer and populate it with markers
   useEffect(() => {
@@ -280,13 +298,7 @@ function EventMap({
     return () => {
       control.off('search:locationfound', handleFound);
     };
-  }, [
-    mapInstance,
-    searchLayer,
-    /* track when control instance becomes available */ Boolean(
-      searchControlRef && searchControlRef.current,
-    ),
-  ]);
+  }, [mapInstance, searchLayer, searchControlRef, searchControlReady]);
 
   // Setup minimap control
   useEffect(() => {
@@ -330,7 +342,7 @@ function EventMap({
       miniMapControl.addTo(mapInstance);
       mapInstance._minimapControl = miniMapControl;
     }
-  }, [mapInstance]);
+  }, [mapInstance, MAP_LAYERS, MAP_CONFIG.MINIMAP, MAP_CONFIG.DEFAULT_POSITION]);
 
   // Setup browser print control for map-only export
   useEffect(() => {
@@ -403,7 +415,7 @@ function EventMap({
         setSearchParams({}, { replace: true });
       }
     }
-  }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
+  }, [mapInstance, safeMarkers, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
 
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;

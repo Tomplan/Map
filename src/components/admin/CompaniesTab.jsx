@@ -165,7 +165,7 @@ export default function CompaniesTab() {
       }
     };
     loadCompanyCategories();
-  }, [editingId]); // Only depend on editingId, not getCompanyCategories
+  }, [editingId, getCompanyCategories]);
 
   // Load categories for all companies when public tab is active
   useEffect(() => {
@@ -181,7 +181,7 @@ export default function CompaniesTab() {
     if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
     }
-  }, [activeTab, companies.length, companies]); // Add companies as dependency for proper refresh
+  }, [activeTab, companies.length, companies, getAllCompanyCategories]);
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {

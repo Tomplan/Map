@@ -34,11 +34,7 @@ export default function UserManagement() {
   const [editingUser, setEditingUser] = useState(null);
 
   // Fetch all users from Supabase auth
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
+  const fetchUsers = React.useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -95,7 +91,11 @@ export default function UserManagement() {
       setError(t('settings.userManagement.errors.fetchFailed'));
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const handleInviteUser = async (e) => {
     e.preventDefault();

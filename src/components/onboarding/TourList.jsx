@@ -79,7 +79,7 @@ export default function TourList({ startSource, onClose, onReopen }) {
       if (!aRelevant && bRelevant) return 1;
       return 0;
     });
-  }, [availableTours, location.pathname]);
+  }, [availableTours, location.pathname, location.hash]);
 
   if (availableTours.length === 0) {
     return (
@@ -134,7 +134,7 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
   // Determine whether required targets for this tour are likely present
   const requiredSteps = React.useMemo(
     () => (tour.steps || []).filter((s) => s.element && s.element !== 'body'),
-    [tour],
+    [tour.steps],
   );
   const allRequiredMissing = React.useMemo(
     () =>
@@ -158,7 +158,7 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
     if (!tour.scope && !/^admin-|visitor-/.test(tour.id)) return true;
 
     return false;
-  }, [allRequiredMissing, tour.scope]);
+  }, [allRequiredMissing, tour.scope, tour.id]);
 
   // Get localized title (if tour has title field)
   const title = getLocalizedContent(tour.title || tour.id, currentLanguage);

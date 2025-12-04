@@ -135,7 +135,7 @@ function EventSpecialMarkers({
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers],
+    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, confirm],
   );
 
   // Handle unassignment
