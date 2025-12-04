@@ -93,10 +93,14 @@ async function run() {
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
 
+  // prefer a small local sleep helper instead of page.waitForTimeout (some
+  // puppeteer versions in CI do not expose that method consistently)
+  const sleep = (ms = 200) => new Promise((r) => setTimeout(r, ms));
+
   try {
     console.log(`Navigating to admin: ${ADMIN_URL}`);
     await page.goto(ADMIN_URL, { waitUntil: 'networkidle2' });
-    await page.waitForTimeout(600);
+    await sleep(600);
 
     // Find and click the Help sidebar tile (ariaLabel="Help")
     const helpBtn = await page.$('button[aria-label="Help"]');
@@ -190,7 +194,7 @@ async function run() {
       ensure('.help-button', '<button class="help-button">Help</button>');
     });
 
-    await page.waitForTimeout(400);
+    await sleep(400);
 
     // Re-click first available "Start Tour" button to start again
     console.log('Attempting to start the tour again (with injected targets)...');
@@ -202,7 +206,7 @@ async function run() {
     });
 
     // Wait for driver to initialize
-    await page.waitForTimeout(800);
+    await sleep(800);
 
     // Query for tour popover and overlay
     const popoverCount = await page.evaluate(() => document.querySelectorAll('.onboarding-tour-popover').length);
@@ -214,14 +218,14 @@ async function run() {
     // Validate expected success
     if (popoverCount >= 1 && overlayCount >= 1 && driverActive) {
       console.log('E2E: Admin tour started and produced popover + overlay — success');
-      await page.waitForTimeout(400);
+      await sleep(400);
       // Click next to ensure second step is reachable
       await page.evaluate(() => {
         const next = document.querySelector('.driver-popover-next-btn');
         if (next) next.click();
       });
 
-      await page.waitForTimeout(400);
+      await sleep(400);
       // Check that a non-body step is displayed (e.g. .year-selector is present and popover attached)
       const activeIndex = await page.evaluate(() => window.__ONBOARDING_DRIVER_INSTANCE?.getActiveIndex?.() ?? -1);
       console.log('Driver activeIndex after next click:', activeIndex);
