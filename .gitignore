@@ -35,3 +35,7 @@ public/assets/logos/generated/
 # Local downloaded originals and temporary numeric-named logo files
 public/assets/logos/originals/
 public/assets/logos/*[0-9]*_*.*
+
+# Ignore process id files created by preview/dev servers
+*.pid
+preview.pid
