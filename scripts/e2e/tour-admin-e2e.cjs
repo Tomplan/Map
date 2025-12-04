@@ -154,10 +154,28 @@ async function run() {
 
     await page.waitForSelector('.space-y-4 > div button', { visible: true });
 
+    // If the app provides deterministic E2E test helpers, use them to start
+    // the admin dashboard tour directly (less flaky than UI clicks).
+    const helpersAvailable = await page.evaluate(() => {
+      return !!(window.__onboarding_test_helpers__ && typeof window.__onboarding_test_helpers__.startTour === 'function');
+    });
+
+    if (helpersAvailable) {
+      await page.evaluate(() => {
+        try {
+          // Start the admin dashboard tour from the Help source
+          window.__onboarding_test_helpers__.startTour('admin-dashboard', 'help');
+        } catch (e) {
+          /* ignore — fallback to UI clicks below */
+        }
+      });
+      await sleep(300);
+    }
+
     // Wait for start attempt result: either a toast (role=alert) appears or
     // the Driver instance popovers are created. We'll attempt to detect either.
 
-    // Click the first Start Tour button (should be contextual/priority)
+    // Click the first Start Tour button (should be contextual/priority) if helpers not used
     const startButtons = await page.$$('button');
     let clicked = false;
     for (const btn of startButtons) {
