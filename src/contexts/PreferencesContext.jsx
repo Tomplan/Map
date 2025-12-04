@@ -13,7 +13,9 @@ export function PreferencesProvider({ children }) {
   const { preferences, loading, updatePreference, updatePreferences } = useUserPreferences();
 
   return (
-    <PreferencesContext.Provider value={{ preferences, loading, updatePreference, updatePreferences }}>
+    <PreferencesContext.Provider
+      value={{ preferences, loading, updatePreference, updatePreferences }}
+    >
       {children}
     </PreferencesContext.Provider>
   );

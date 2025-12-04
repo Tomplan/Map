@@ -122,7 +122,9 @@ export default function MapDefaults() {
           <h2 className="text-xl font-bold text-gray-900">{t('settings.mapDefaults.title')}</h2>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
             <Icon path={mdiDomain} size={0.6} className="text-orange-600" />
-            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Organization Setting</span>
+            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+              Organization Setting
+            </span>
           </div>
         </div>
         <p className="text-sm text-gray-600">{t('settings.mapDefaults.description')}</p>
@@ -210,9 +212,7 @@ export default function MapDefaults() {
           {/* Info box */}
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
             <Icon path={mdiInformation} size={0.8} className="text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-800">
-              {t('settings.mapDefaults.mapCenter.hint')}
-            </p>
+            <p className="text-sm text-blue-800">{t('settings.mapDefaults.mapCenter.hint')}</p>
           </div>
         </div>
 
@@ -309,7 +309,9 @@ export default function MapDefaults() {
           {/* Zoom levels info */}
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-800">
-              <span className="font-medium">{t('settings.mapDefaults.zoomLevels.constraint')}:</span>{' '}
+              <span className="font-medium">
+                {t('settings.mapDefaults.zoomLevels.constraint')}:
+              </span>{' '}
               {t('settings.mapDefaults.zoomLevels.constraintDesc')}
             </p>
           </div>

@@ -5,7 +5,16 @@ import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiMagnify, mdiArchive, mdiContentCopy, mdiChevronUp, mdiChevronDown } from '@mdi/js';
+import {
+  mdiPlus,
+  mdiPencil,
+  mdiDelete,
+  mdiMagnify,
+  mdiArchive,
+  mdiContentCopy,
+  mdiChevronUp,
+  mdiChevronDown,
+} from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { supabase } from '../../supabaseClient';
@@ -53,14 +62,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Get list of available companies (not yet subscribed)
   const availableCompanies = useMemo(() => {
-    const subscribedIds = new Set(subscriptions.map(s => s.company_id));
-    return companies.filter(c => !subscribedIds.has(c.id));
+    const subscribedIds = new Set(subscriptions.map((s) => s.company_id));
+    return companies.filter((c) => !subscribedIds.has(c.id));
   }, [companies, subscriptions]);
 
   // Get booth assignments for each subscription
   const subscriptionAssignments = useMemo(() => {
     const map = {};
-    assignments.forEach(assignment => {
+    assignments.forEach((assignment) => {
       if (!map[assignment.company_id]) {
         map[assignment.company_id] = [];
       }
@@ -72,25 +81,30 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   // Create a map of marker ID to glyph text for quick lookup
   const markerGlyphMap = useMemo(() => {
     const map = {};
-    markers.forEach(marker => {
+    markers.forEach((marker) => {
       map[marker.id] = marker.glyph;
     });
     return map;
   }, [markers]);
 
   // Get booth labels for a subscription (actual glyph text)
-  const getBoothLabels = useCallback((companyId) => {
-    const companyAssignments = subscriptionAssignments[companyId] || [];
-    if (companyAssignments.length === 0) return '-';
+  const getBoothLabels = useCallback(
+    (companyId) => {
+      const companyAssignments = subscriptionAssignments[companyId] || [];
+      if (companyAssignments.length === 0) return '-';
 
-    // Get all booth labels for this company, sorted by marker_id
-    const labels = companyAssignments
-      .sort((a, b) => a.marker_id - b.marker_id)
-      .map(assignment => markerGlyphMap[assignment.marker_id] || assignment.marker_id.toString())
-      .filter(Boolean);
+      // Get all booth labels for this company, sorted by marker_id
+      const labels = companyAssignments
+        .sort((a, b) => a.marker_id - b.marker_id)
+        .map(
+          (assignment) => markerGlyphMap[assignment.marker_id] || assignment.marker_id.toString(),
+        )
+        .filter(Boolean);
 
-    return labels.length > 0 ? labels.join(', ') : '-';
-  }, [subscriptionAssignments, markerGlyphMap]);
+      return labels.length > 0 ? labels.join(', ') : '-';
+    },
+    [subscriptionAssignments, markerGlyphMap],
+  );
 
   // Filter and sort subscriptions
   const filteredSubscriptions = useMemo(() => {
@@ -99,8 +113,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     // Apply search filter
     if (searchTerm) {
       const lowercasedTerm = searchTerm.toLowerCase();
-      filtered = filtered.filter(sub =>
-        sub.company?.name?.toLowerCase().includes(lowercasedTerm)
+      filtered = filtered.filter((sub) =>
+        sub.company?.name?.toLowerCase().includes(lowercasedTerm),
       );
     }
 
@@ -135,24 +149,27 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Calculate totals for numeric columns
   const totals = useMemo(() => {
-    return filteredSubscriptions.reduce((acc, sub) => {
-      acc.booth_count += sub.booth_count || 0;
-      acc.breakfast_sat += sub.breakfast_sat || 0;
-      acc.lunch_sat += sub.lunch_sat || 0;
-      acc.bbq_sat += sub.bbq_sat || 0;
-      acc.breakfast_sun += sub.breakfast_sun || 0;
-      acc.lunch_sun += sub.lunch_sun || 0;
-      acc.coins += sub.coins || 0;
-      return acc;
-    }, {
-      booth_count: 0,
-      breakfast_sat: 0,
-      lunch_sat: 0,
-      bbq_sat: 0,
-      breakfast_sun: 0,
-      lunch_sun: 0,
-      coins: 0
-    });
+    return filteredSubscriptions.reduce(
+      (acc, sub) => {
+        acc.booth_count += sub.booth_count || 0;
+        acc.breakfast_sat += sub.breakfast_sat || 0;
+        acc.lunch_sat += sub.lunch_sat || 0;
+        acc.bbq_sat += sub.bbq_sat || 0;
+        acc.breakfast_sun += sub.breakfast_sun || 0;
+        acc.lunch_sun += sub.lunch_sun || 0;
+        acc.coins += sub.coins || 0;
+        return acc;
+      },
+      {
+        booth_count: 0,
+        breakfast_sat: 0,
+        lunch_sat: 0,
+        bbq_sat: 0,
+        breakfast_sun: 0,
+        lunch_sun: 0,
+        coins: 0,
+      },
+    );
   }, [filteredSubscriptions]);
 
   // Start editing - open modal
@@ -242,7 +259,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       title: 'Copy Subscriptions',
       message: `Copy all subscriptions from ${previousYear} to ${selectedYear}?`,
       confirmText: 'Copy',
-      variant: 'default'
+      variant: 'default',
     });
     if (!confirmed) return;
 
@@ -275,12 +292,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="subscriptions-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
+            data-testid="subscriptions-search"
             type="text"
             placeholder={t('helpPanel.subscriptions.searchPlaceholder')}
             value={searchTerm}
@@ -291,13 +309,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2" data-testid="import-export-buttons">
           <ExportButton
             dataType="event_subscriptions"
             data={subscriptions}
-            additionalData={{ 
+            additionalData={{
               supabase,
-              eventYear: selectedYear 
+              eventYear: selectedYear,
             }}
             filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
           />
@@ -307,7 +325,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             eventYear={selectedYear}
             additionalData={{
               supabase,
-              selectedYear
+              selectedYear,
             }}
             onImportComplete={async () => {
               // Reload subscriptions after import completes
@@ -316,6 +334,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           />
           <button
             onClick={handleCopyFromPreviousYear}
+            data-testid="copy-from-previous-year-button"
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             title={`Copy from ${selectedYear - 1}`}
           >
@@ -324,6 +343,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </button>
           <button
             onClick={handleArchive}
+            data-testid="archive-year-button"
             className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
           >
             <Icon path={mdiArchive} size={0.8} />
@@ -331,6 +351,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </button>
           <button
             onClick={() => setIsAdding(true)}
+            data-testid="subscribe-company-button"
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Icon path={mdiPlus} size={0.8} />
@@ -350,7 +371,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               className="flex-1 px-3 py-2 border rounded"
             >
               <option value="">Select a company...</option>
-              {availableCompanies.map(company => (
+              {availableCompanies.map((company) => (
                 <option key={company.id} value={company.id}>
                   {company.name}
                 </option>
@@ -375,13 +396,15 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             </button>
           </div>
           {availableCompanies.length === 0 && (
-            <p className="text-sm text-gray-600 mt-2">All companies are already subscribed to {selectedYear}</p>
+            <p className="text-sm text-gray-600 mt-2">
+              All companies are already subscribed to {selectedYear}
+            </p>
           )}
         </div>
       )}
 
       {/* Subscriptions table */}
-      <div className="flex-1 overflow-auto border rounded-lg">
+      <div className="flex-1 overflow-auto border rounded-lg" data-testid="subscriptions-table">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100 text-gray-900 sticky top-0 z-10">
             {/* Main header row with grouped columns */}
@@ -422,40 +445,121 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.contact')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.phone')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.email')}</th>
-              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.boothCount')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.area')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.contact')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.phone')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.email')}
+              </th>
+              <th className="p-2 text-center border-b bg-gray-100">
+                {t('helpPanel.subscriptions.boothCount')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.area')}
+              </th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
-                <span className="font-bold text-blue-700">{t('helpPanel.subscriptions.saturday')}</span>
+                <span className="font-bold text-blue-700">
+                  {t('helpPanel.subscriptions.saturday')}
+                </span>
               </th>
               <th className="p-2 text-center border-b bg-gray-100" colSpan={2}>
-                <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
+                <span className="font-bold text-green-700">
+                  {t('helpPanel.subscriptions.sunday')}
+                </span>
               </th>
-              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.notes')}</th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>{t('helpPanel.subscriptions.actions')}</th>
+              <th className="p-2 text-center border-b bg-gray-100">
+                {t('helpPanel.subscriptions.coins')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.notes')}
+              </th>
+              <th
+                className="p-2 text-center border-b bg-gray-100"
+                rowSpan={3}
+                style={{ minWidth: '80px' }}
+              >
+                {t('helpPanel.subscriptions.actions')}
+              </th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
-              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.bbq')}</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
-              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
+              <th
+                className="p-1 text-center border-b bg-gray-100 text-xs"
+                style={{ width: '60px' }}
+              ></th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.breakfast')}
+              </th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.lunch')}
+              </th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.bbq')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-50 text-xs"
+                style={{ width: '60px' }}
+              >
+                {t('helpPanel.subscriptions.breakfast')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-50 text-xs"
+                style={{ width: '60px' }}
+              >
+                {t('helpPanel.subscriptions.lunch')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-gray-100 text-xs"
+                style={{ width: '60px' }}
+              ></th>
             </tr>
             {/* Totals row */}
             <tr>
-              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.booth_count}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.breakfast_sat}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.lunch_sat}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.bbq_sat}</th>
-              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.breakfast_sun}</th>
-              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.lunch_sun}</th>
-              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.coins}</th>
+              <th
+                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
+                style={{ width: '60px' }}
+              >
+                {totals.booth_count}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.breakfast_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.lunch_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.bbq_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
+                style={{ width: '60px' }}
+              >
+                {totals.breakfast_sun}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
+                style={{ width: '60px' }}
+              >
+                {totals.lunch_sun}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
+                style={{ width: '60px' }}
+              >
+                {totals.coins}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -522,14 +626,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   </td>
 
                   {/* Meals - Saturday */}
-                  {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map(field => (
+                  {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map((field) => (
                     <td key={field} className="p-2 text-center bg-blue-50">
                       <span className="text-xs text-gray-700">{subscription[field]}</span>
                     </td>
                   ))}
 
                   {/* Meals - Sunday */}
-                  {['breakfast_sun', 'lunch_sun'].map(field => (
+                  {['breakfast_sun', 'lunch_sun'].map((field) => (
                     <td key={field} className="p-2 text-center bg-green-50">
                       <span className="text-xs text-gray-700">{subscription[field]}</span>
                     </td>

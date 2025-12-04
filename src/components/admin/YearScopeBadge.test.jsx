@@ -2,13 +2,15 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 // Mock i18n hook used by component
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => {
-    const map = {
-      'admin.yearScope.global': 'Global (all years)',
-      'admin.yearScope.eventSpecific': 'Event-specific (changes with year)'
-    };
-    return map[k] || k;
-  } })
+  useTranslation: () => ({
+    t: (k) => {
+      const map = {
+        'admin.yearScope.global': 'Global (all years)',
+        'admin.yearScope.eventSpecific': 'Event-specific (changes with year)',
+      };
+      return map[k] || k;
+    },
+  }),
 }));
 import '@testing-library/jest-dom';
 import YearScopeBadge from './YearScopeBadge';

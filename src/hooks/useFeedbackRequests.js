@@ -15,54 +15,61 @@ export default function useFeedbackRequests() {
   // Get current user
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
     };
     getCurrentUser();
   }, []);
 
   // Load all requests with optional filters
-  const loadRequests = useCallback(async (filters = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
+  const loadRequests = useCallback(
+    async (filters = {}) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      let query = supabase
-        .from('feedback_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
+        let query = supabase
+          .from('feedback_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      // Apply filters
-      if (filters.type) query = query.eq('type', filters.type);
-      if (filters.status) query = query.eq('status', filters.status);
-      if (filters.userId) query = query.eq('user_id', filters.userId);
+        // Apply filters
+        if (filters.type) query = query.eq('type', filters.type);
+        if (filters.status) query = query.eq('status', filters.status);
+        if (filters.userId) query = query.eq('user_id', filters.userId);
 
-      const { data, error: fetchError } = await query;
-      if (fetchError) throw fetchError;
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
 
-      setRequests(data || []);
+        setRequests(data || []);
 
-      // Load user's votes
-      if (currentUserId) {
-        const { data: votesData } = await supabase
-          .from('feedback_votes')
-          .select('request_id')
-          .eq('user_id', currentUserId);
-        
-        setUserVotes(new Set(votesData?.map(v => v.request_id) || []));
+        // Load user's votes
+        if (currentUserId) {
+          const { data: votesData } = await supabase
+            .from('feedback_votes')
+            .select('request_id')
+            .eq('user_id', currentUserId);
+
+          setUserVotes(new Set(votesData?.map((v) => v.request_id) || []));
+        }
+      } catch (err) {
+        console.error('Error loading feedback requests:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Error loading feedback requests:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [currentUserId]);
+    },
+    [currentUserId],
+  );
 
   // Create new request
   const createRequest = async (requestData) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error: insertError } = await supabase
@@ -128,22 +135,22 @@ export default function useFeedbackRequests() {
   // Add vote to request
   const addVote = async (requestId) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { error: insertError } = await supabase
-        .from('feedback_votes')
-        .insert({
-          request_id: requestId,
-          user_id: user.id,
-        });
+      const { error: insertError } = await supabase.from('feedback_votes').insert({
+        request_id: requestId,
+        user_id: user.id,
+      });
 
       if (insertError) throw insertError;
 
       // Update local state
-      setUserVotes(prev => new Set([...prev, requestId]));
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, votes: r.votes + 1 } : r)
+      setUserVotes((prev) => new Set([...prev, requestId]));
+      setRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, votes: r.votes + 1 } : r)),
       );
 
       return { error: null };
@@ -156,7 +163,9 @@ export default function useFeedbackRequests() {
   // Remove vote from request
   const removeVote = async (requestId) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { error: deleteError } = await supabase
@@ -168,13 +177,13 @@ export default function useFeedbackRequests() {
       if (deleteError) throw deleteError;
 
       // Update local state
-      setUserVotes(prev => {
+      setUserVotes((prev) => {
         const newSet = new Set(prev);
         newSet.delete(requestId);
         return newSet;
       });
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, votes: Math.max(0, r.votes - 1) } : r)
+      setRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, votes: Math.max(0, r.votes - 1) } : r)),
       );
 
       return { error: null };
@@ -205,7 +214,9 @@ export default function useFeedbackRequests() {
   // Add comment to request
   const addComment = async (requestId, commentText) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
       const { data, error: insertError } = await supabase
@@ -222,8 +233,8 @@ export default function useFeedbackRequests() {
       if (insertError) throw insertError;
 
       // Update comments count in local state
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, comments_count: r.comments_count + 1 } : r)
+      setRequests((prev) =>
+        prev.map((r) => (r.id === requestId ? { ...r, comments_count: r.comments_count + 1 } : r)),
       );
 
       return { data, error: null };
@@ -244,8 +255,10 @@ export default function useFeedbackRequests() {
       if (deleteError) throw deleteError;
 
       // Update comments count in local state
-      setRequests(prev => 
-        prev.map(r => r.id === requestId ? { ...r, comments_count: Math.max(0, r.comments_count - 1) } : r)
+      setRequests((prev) =>
+        prev.map((r) =>
+          r.id === requestId ? { ...r, comments_count: Math.max(0, r.comments_count - 1) } : r,
+        ),
       );
 
       return { error: null };
@@ -266,33 +279,41 @@ export default function useFeedbackRequests() {
 
     const votesChannel = supabase
       .channel('feedback_votes_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_votes' }, (payload) => {
-        // Optimistically adjust vote counts without full reload
-        if (payload?.new || payload?.old) {
-          setRequests(prev => {
-            const next = [...prev];
-            const id = (payload.new?.request_id) || (payload.old?.request_id);
-            const idx = next.findIndex(r => r.id === id);
-            if (idx !== -1) {
-              // Recompute by counting votes for that request? Simpler: trigger full reload.
-              // For now just trigger reload to ensure integrity.
-              loadRequests();
-            }
-            return next;
-          });
-        }
-      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_votes' },
+        (payload) => {
+          // Optimistically adjust vote counts without full reload
+          if (payload?.new || payload?.old) {
+            setRequests((prev) => {
+              const next = [...prev];
+              const id = payload.new?.request_id || payload.old?.request_id;
+              const idx = next.findIndex((r) => r.id === id);
+              if (idx !== -1) {
+                // Recompute by counting votes for that request? Simpler: trigger full reload.
+                // For now just trigger reload to ensure integrity.
+                loadRequests();
+              }
+              return next;
+            });
+          }
+        },
+      )
       .subscribe();
 
     const commentsChannel = supabase
       .channel('feedback_comments_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_comments' }, (payload) => {
-        if (payload?.new || payload?.old) {
-          const id = (payload.new?.request_id) || (payload.old?.request_id);
-          setRequests(prev => prev.map(r => r.id === id ? { ...r } : r));
-          loadRequests();
-        }
-      })
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_comments' },
+        (payload) => {
+          if (payload?.new || payload?.old) {
+            const id = payload.new?.request_id || payload.old?.request_id;
+            setRequests((prev) => prev.map((r) => (r.id === id ? { ...r } : r)));
+            loadRequests();
+          }
+        },
+      )
       .subscribe();
 
     return () => {

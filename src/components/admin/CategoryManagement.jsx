@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Icon from '@mdi/react';
-import {
-  mdiPlus,
-  mdiPencil,
-  mdiDelete,
-  mdiDragVertical,
-  mdiCheck,
-  mdiChartBar
-} from '@mdi/js';
+import { mdiPlus, mdiPencil, mdiDelete, mdiDragVertical, mdiCheck, mdiChartBar } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
 import Modal from '../common/Modal';
@@ -24,25 +17,45 @@ const AVAILABLE_ICONS = [
   { name: 'mdiAccountGroup', label: 'People' },
   { name: 'mdiTerrainIcon', label: 'Terrain' },
   { name: 'mdiCellphone', label: 'Phone' },
-  { name: 'mdiDotsHorizontal', label: 'Other' }
+  { name: 'mdiDotsHorizontal', label: 'Other' },
 ];
 
 const PRESET_COLORS = [
-  '#1976d2', '#2e7d32', '#f57c00', '#d32f2f',
-  '#00796b', '#5d4037', '#303f9f', '#689f38',
-  '#7b1fa2', '#616161', '#c62828', '#00897b',
-  '#5e35b1', '#455a64', '#6d4c41', '#d84315'
+  '#1976d2',
+  '#2e7d32',
+  '#f57c00',
+  '#d32f2f',
+  '#00796b',
+  '#5d4037',
+  '#303f9f',
+  '#689f38',
+  '#7b1fa2',
+  '#616161',
+  '#c62828',
+  '#00897b',
+  '#5e35b1',
+  '#455a64',
+  '#6d4c41',
+  '#d84315',
 ];
 
 export default function CategoryManagement() {
   const { t, i18n } = useTranslation();
-  const { categories, loading, error, createCategory, updateCategory, deleteCategory, getCategoryStats } = useCategories(i18n.language);
+  const {
+    categories,
+    loading,
+    error,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    getCategoryStats,
+  } = useCategories(i18n.language);
   const { confirm, toastSuccess, toastError } = useDialog();
-  
+
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [stats, setStats] = useState({});
-  
+
   const [formData, setFormData] = useState({
     slug: '',
     icon: 'mdiDotsHorizontal',
@@ -51,8 +64,8 @@ export default function CategoryManagement() {
     translations: {
       nl: { name: '', description: '' },
       en: { name: '', description: '' },
-      de: { name: '', description: '' }
-    }
+      de: { name: '', description: '' },
+    },
   });
 
   // Load stats
@@ -75,8 +88,8 @@ export default function CategoryManagement() {
       translations: {
         nl: { name: '', description: '' },
         en: { name: '', description: '' },
-        de: { name: '', description: '' }
-      }
+        de: { name: '', description: '' },
+      },
     });
     setEditingCategory(null);
   };
@@ -93,7 +106,7 @@ export default function CategoryManagement() {
     // category.translations is an array like [{ language: 'nl', name: '...', description: '...' }, ...]
     const translationsObj = { nl: {}, en: {}, de: {} };
     if (Array.isArray(category.translations)) {
-      category.translations.forEach(t => {
+      category.translations.forEach((t) => {
         if (translationsObj[t.language]) {
           translationsObj[t.language] = { name: t.name || '', description: t.description || '' };
         }
@@ -101,9 +114,12 @@ export default function CategoryManagement() {
     }
 
     // Fill in any missing languages with current display values
-    ['nl', 'en', 'de'].forEach(lang => {
+    ['nl', 'en', 'de'].forEach((lang) => {
       if (!translationsObj[lang].name) {
-        translationsObj[lang] = { name: category.name || '', description: category.description || '' };
+        translationsObj[lang] = {
+          name: category.name || '',
+          description: category.description || '',
+        };
       }
     });
 
@@ -112,7 +128,7 @@ export default function CategoryManagement() {
       icon: category.iconName,
       color: category.color,
       sort_order: category.sort_order,
-      translations: translationsObj
+      translations: translationsObj,
     });
     setShowModal(true);
   };
@@ -122,7 +138,7 @@ export default function CategoryManagement() {
       title: t('helpPanel.categories.deleteCategory'),
       message: t('helpPanel.categories.confirmDelete', { name: categoryName }),
       confirmText: t('common.delete'),
-      variant: 'danger'
+      variant: 'danger',
     });
     if (!confirmed) return;
 
@@ -136,13 +152,13 @@ export default function CategoryManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const categoryData = {
       slug: formData.slug,
       icon: formData.icon,
       color: formData.color,
       sort_order: formData.sort_order,
-      translations: formData.translations
+      translations: formData.translations,
     };
 
     let result;
@@ -155,7 +171,11 @@ export default function CategoryManagement() {
     if (result.success) {
       setShowModal(false);
       resetForm();
-      toastSuccess(editingCategory ? t('helpPanel.categories.updateSuccess') : t('helpPanel.categories.createSuccess'));
+      toastSuccess(
+        editingCategory
+          ? t('helpPanel.categories.updateSuccess')
+          : t('helpPanel.categories.createSuccess'),
+      );
     } else {
       toastError(t('helpPanel.categories.saveError', { error: result.error }));
     }
@@ -172,7 +192,9 @@ export default function CategoryManagement() {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{t('common.error')}: {error}</p>
+        <p className="text-red-800">
+          {t('common.error')}: {error}
+        </p>
       </div>
     );
   }
@@ -202,9 +224,7 @@ export default function CategoryManagement() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('helpPanel.categories.order')}
               </th>
-              <th className="px-3 py-3 w-12">
-                {/* Icon column */}
-              </th>
+              <th className="px-3 py-3 w-12">{/* Icon column */}</th>
               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('helpPanel.categories.category')}
               </th>
@@ -243,7 +263,9 @@ export default function CategoryManagement() {
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                  <code className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">{category.slug}</code>
+                  <code className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono">
+                    {category.slug}
+                  </code>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2">
@@ -282,8 +304,15 @@ export default function CategoryManagement() {
       {/* Create/Edit Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => { setShowModal(false); resetForm(); }}
-        title={editingCategory ? t('helpPanel.categories.editCategory') : t('helpPanel.categories.createCategory')}
+        onClose={() => {
+          setShowModal(false);
+          resetForm();
+        }}
+        title={
+          editingCategory
+            ? t('helpPanel.categories.editCategory')
+            : t('helpPanel.categories.createCategory')
+        }
         size="lg"
       >
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
@@ -314,8 +343,10 @@ export default function CategoryManagement() {
                   onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 >
-                  {AVAILABLE_ICONS.map(icon => (
-                    <option key={icon.name} value={icon.name}>{icon.label}</option>
+                  {AVAILABLE_ICONS.map((icon) => (
+                    <option key={icon.name} value={icon.name}>
+                      {icon.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -340,7 +371,7 @@ export default function CategoryManagement() {
                   />
                 </div>
                 <div className="flex gap-1 mt-2">
-                  {PRESET_COLORS.map(color => (
+                  {PRESET_COLORS.map((color) => (
                     <button
                       key={color}
                       type="button"
@@ -371,7 +402,7 @@ export default function CategoryManagement() {
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900">{t('helpPanel.categories.translations')}</h4>
 
-            {['nl', 'en', 'de'].map(lang => (
+            {['nl', 'en', 'de'].map((lang) => (
               <div key={lang} className="border border-gray-200 rounded-lg p-4 space-y-3">
                 <h5 className="font-medium text-gray-700 uppercase">{lang}</h5>
                 <div>
@@ -382,13 +413,15 @@ export default function CategoryManagement() {
                     type="text"
                     required
                     value={formData.translations[lang].name}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      translations: {
-                        ...formData.translations,
-                        [lang]: { ...formData.translations[lang], name: e.target.value }
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        translations: {
+                          ...formData.translations,
+                          [lang]: { ...formData.translations[lang], name: e.target.value },
+                        },
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -398,13 +431,15 @@ export default function CategoryManagement() {
                   </label>
                   <textarea
                     value={formData.translations[lang].description}
-                    onChange={(e) => setFormData({
-                      ...formData,
-                      translations: {
-                        ...formData.translations,
-                        [lang]: { ...formData.translations[lang], description: e.target.value }
-                      }
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        translations: {
+                          ...formData.translations,
+                          [lang]: { ...formData.translations[lang], description: e.target.value },
+                        },
+                      })
+                    }
                     rows={2}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
@@ -417,7 +452,10 @@ export default function CategoryManagement() {
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button
               type="button"
-              onClick={() => { setShowModal(false); resetForm(); }}
+              onClick={() => {
+                setShowModal(false);
+                resetForm();
+              }}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
             >
               {t('common.cancel')}

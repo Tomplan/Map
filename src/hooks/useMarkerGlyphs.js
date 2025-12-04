@@ -40,16 +40,16 @@ export function useMarkerGlyphs(selectedYear) {
 
         // Create a map of glyph text by marker id
         const glyphMap = {};
-        (appearanceData || []).forEach(row => {
+        (appearanceData || []).forEach((row) => {
           if (row && row.id) {
             glyphMap[row.id] = row.glyph || '';
           }
         });
 
         // Merge core and appearance data
-        const mergedMarkers = (coreData || []).map(marker => ({
+        const mergedMarkers = (coreData || []).map((marker) => ({
           id: marker.id,
-          glyph: glyphMap[marker.id] || marker.id.toString() // Fallback to ID if no glyph
+          glyph: glyphMap[marker.id] || marker.id.toString(), // Fallback to ID if no glyph
         }));
 
         setMarkers(mergedMarkers);

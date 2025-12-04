@@ -25,33 +25,42 @@ export function DialogProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   // Show confirm dialog and return a promise
-  const confirm = useCallback(
-    ({ title, message, confirmText, cancelText, variant } = {}) => {
-      return new Promise((resolve) => {
-        setConfirmState({
-          isOpen: true,
-          title: title || null,
-          message: message || '',
-          confirmText: confirmText || 'Confirm',
-          cancelText: cancelText || 'Cancel',
-          variant: variant || 'default',
-          resolve,
-        });
+  const confirm = useCallback(({ title, message, confirmText, cancelText, variant } = {}) => {
+    return new Promise((resolve) => {
+      setConfirmState({
+        isOpen: true,
+        title: title || null,
+        message: message || '',
+        confirmText: confirmText || 'Confirm',
+        cancelText: cancelText || 'Cancel',
+        variant: variant || 'default',
+        resolve,
       });
-    },
-    []
-  );
+    });
+  }, []);
 
   // Handle confirm dialog actions
   const handleConfirm = useCallback(() => {
-    confirmState.resolve?.(true);
-    setConfirmState((prev) => ({ ...prev, isOpen: false }));
-  }, [confirmState.resolve]);
+    setConfirmState((prev) => {
+      try {
+        prev.resolve?.(true);
+      } catch (e) {
+        /* ignore */
+      }
+      return { ...prev, isOpen: false };
+    });
+  }, []);
 
   const handleCancel = useCallback(() => {
-    confirmState.resolve?.(false);
-    setConfirmState((prev) => ({ ...prev, isOpen: false }));
-  }, [confirmState.resolve]);
+    setConfirmState((prev) => {
+      try {
+        prev.resolve?.(false);
+      } catch (e) {
+        /* ignore */
+      }
+      return { ...prev, isOpen: false };
+    });
+  }, []);
 
   // Show toast notification
   const toast = useCallback(({ message, type = 'info', duration = 5000 } = {}) => {
@@ -63,22 +72,22 @@ export function DialogProvider({ children }) {
   // Shorthand toast methods
   const toastSuccess = useCallback(
     (message, duration) => toast({ message, type: 'success', duration }),
-    [toast]
+    [toast],
   );
 
   const toastError = useCallback(
     (message, duration) => toast({ message, type: 'error', duration }),
-    [toast]
+    [toast],
   );
 
   const toastWarning = useCallback(
     (message, duration) => toast({ message, type: 'warning', duration }),
-    [toast]
+    [toast],
   );
 
   const toastInfo = useCallback(
     (message, duration) => toast({ message, type: 'info', duration }),
-    [toast]
+    [toast],
   );
 
   // Remove toast by id

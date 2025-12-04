@@ -10,7 +10,7 @@ if (typeof globalThis !== 'undefined' && typeof import.meta !== 'undefined' && i
   globalThis.__SUPABASE_CONFIG__ = {
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-  }
+  };
 }
 
 import App from './App.jsx';
@@ -43,7 +43,7 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   window.__SUPABASE_CONFIG__ = {
     VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
     VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY,
-  }
+  };
 }
 
 // Register service worker for offline support

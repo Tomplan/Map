@@ -2,11 +2,21 @@ import React from 'react';
 import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 
 // Keep translations and helpers minimal
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }) }));
-jest.mock('../../hooks/useCategories', () => () => ({ categories: [], loading: false, getAllCompanyCategories: async () => ({}) }));
-jest.mock('../../contexts/OrganizationLogoContext', () => ({ useOrganizationLogo: () => ({ organizationLogo: null }) }));
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }),
+}));
+jest.mock('../../hooks/useCategories', () => () => ({
+  categories: [],
+  loading: false,
+  getAllCompanyCategories: async () => ({}),
+}));
+jest.mock('../../contexts/OrganizationLogoContext', () => ({
+  useOrganizationLogo: () => ({ organizationLogo: null }),
+}));
 jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({ getTranslatedInfo: (m) => m }));
-jest.mock('../../utils/getDefaultLogo', () => ({ getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png' }));
+jest.mock('../../utils/getDefaultLogo', () => ({
+  getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png',
+}));
 
 // Avoid pulling react-router during tests
 jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn() }));
@@ -22,7 +32,10 @@ jest.mock('../../contexts/FavoritesContext', () => ({
 
 import ExhibitorListView from '../ExhibitorListView';
 
-afterEach(() => { cleanup(); localStorage.clear(); });
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+});
 
 describe('ExhibitorListView — clear persisted favorites-only when there are no favorites', () => {
   const selectedYear = 2025;

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import L from 'leaflet';
 import { MAP_CONFIG } from '../config/mapConfig';
 import { createSearchText } from '../utils/mapHelpers';
@@ -12,6 +12,7 @@ import { createSearchText } from '../utils/mapHelpers';
 export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
   const searchControlRef = useRef(null);
   const [searchLayer, setSearchLayer] = useState(null);
+  const optionsString = useMemo(() => JSON.stringify(options), [options]);
 
   // Create (or accept) search layer with invisible markers for searching.
   // markersOrLayer may be a Leaflet LayerGroup (then we reuse it), or an array
@@ -69,7 +70,11 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
     if (options && options.marker) {
       searchConfig.marker = Object.assign({}, defaultOptions.marker, options.marker);
       if (options.marker.circle) {
-        searchConfig.marker.circle = Object.assign({}, defaultOptions.marker.circle, options.marker.circle);
+        searchConfig.marker.circle = Object.assign(
+          {},
+          defaultOptions.marker.circle,
+          options.marker.circle,
+        );
       }
     }
 
@@ -137,7 +142,7 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
         searchControlRef.current = null;
       }
     };
-  }, [mapInstance, searchLayer, JSON.stringify(options)]);
+  }, [mapInstance, searchLayer, optionsString, options]);
 
   return searchControlRef;
 }

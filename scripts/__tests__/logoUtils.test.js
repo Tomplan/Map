@@ -23,7 +23,11 @@ describe('logoUtils.looksNumericBase', () => {
 
 describe('logoUtils.filenameFromUrl', () => {
   test('extracts filename from full url', () => {
-    expect(filenameFromUrl('https://host/storage/v1/object/public/Logos/generated/1762803399988_po4ce0.png')).toBe('1762803399988_po4ce0.png');
+    expect(
+      filenameFromUrl(
+        'https://host/storage/v1/object/public/Logos/generated/1762803399988_po4ce0.png',
+      ),
+    ).toBe('1762803399988_po4ce0.png');
     expect(filenameFromUrl('assets/logos/fallback.png')).toBe('fallback.png');
   });
 });

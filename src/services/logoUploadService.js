@@ -7,7 +7,14 @@ import { supabase } from '../supabaseClient';
 
 const STORAGE_BUCKET = 'Logos'; // Matches the bucket name in Supabase
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/avif', 'image/svg+xml'];
+const ALLOWED_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+  'image/avif',
+  'image/svg+xml',
+];
 
 /**
  * Upload a logo file to Supabase Storage
@@ -31,12 +38,10 @@ export async function uploadLogo(file, folder = 'companies') {
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .upload(filePath, file, {
-        cacheControl: '3600',
-        upsert: false
-      });
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    });
 
     if (error) {
       console.error('Upload error:', error);
@@ -44,16 +49,15 @@ export async function uploadLogo(file, folder = 'companies') {
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(STORAGE_BUCKET)
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
 
     return {
       url: publicUrl,
       path: filePath,
-      error: null
+      error: null,
     };
-
   } catch (err) {
     console.error('Upload service error:', err);
     return { error: `Upload failed: ${err.message}` };
@@ -74,7 +78,7 @@ export function validateLogoFile(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
     return {
       valid: false,
-      error: `Invalid file type. Allowed: PNG, JPG, WEBP, AVIF, SVG`
+      error: `Invalid file type. Allowed: PNG, JPG, WEBP, AVIF, SVG`,
     };
   }
 
@@ -82,7 +86,7 @@ export function validateLogoFile(file) {
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
-      error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`
+      error: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
     };
   }
 
@@ -97,29 +101,29 @@ export async function checkStorageBucket() {
   try {
     // List all buckets instead of getting specific one (more reliable)
     const { data, error } = await supabase.storage.listBuckets();
-    
+
     if (error) {
       return {
         exists: false,
-        error: `Error accessing storage: ${error.message}`
+        error: `Error accessing storage: ${error.message}`,
       };
     }
-    
+
     // Check if our bucket exists in the list
-    const bucketExists = data?.some(bucket => bucket.name === STORAGE_BUCKET);
-    
+    const bucketExists = data?.some((bucket) => bucket.name === STORAGE_BUCKET);
+
     if (!bucketExists) {
       return {
         exists: false,
-        error: `Storage bucket "${STORAGE_BUCKET}" not found. Available buckets: ${data?.map(b => b.name).join(', ') || 'none'}`
+        error: `Storage bucket "${STORAGE_BUCKET}" not found. Available buckets: ${data?.map((b) => b.name).join(', ') || 'none'}`,
       };
     }
-    
+
     return { exists: true, error: null };
   } catch (err) {
     return {
       exists: false,
-      error: `Error checking storage bucket: ${err.message}`
+      error: `Error checking storage bucket: ${err.message}`,
     };
   }
 }

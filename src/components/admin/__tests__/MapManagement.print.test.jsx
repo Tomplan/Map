@@ -9,7 +9,9 @@ jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 jest.mock('../../../supabaseClient');
 const { __resetMocks } = require('../../../supabaseClient');
 
-beforeEach(() => { __resetMocks(); });
+beforeEach(() => {
+  __resetMocks();
+});
 
 // Mock user role to be event_manager (read-only) — this role should see the header print
 jest.mock('../../../hooks/useUserRole', () => () => ({
@@ -20,12 +22,18 @@ jest.mock('../../../hooks/useUserRole', () => () => ({
   hasAnyRole: (roles) => Array.isArray(roles) && roles.includes('event_manager'),
 }));
 
-jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }) }));
+jest.mock('../../../contexts/DialogContext', () => ({
+  useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }),
+}));
 
 // Minimal mocks for other imports used by MapManagement
 jest.mock('../../../config/markerTabsConfig', () => ({ ICON_OPTIONS: ['default.svg'] }));
-jest.mock('../../../utils/getIconPath', () => ({ getIconPath: (file) => `/assets/${file || 'default.svg'}` }));
-jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: (file) => `/assets/${file || 'default.png'}` }));
+jest.mock('../../../utils/getIconPath', () => ({
+  getIconPath: (file) => `/assets/${file || 'default.svg'}`,
+}));
+jest.mock('../../../utils/getLogoPath', () => ({
+  getLogoPath: (file) => `/assets/${file || 'default.png'}`,
+}));
 
 // Mock EventMap so it calls onMapReady with a fake map on mount
 jest.mock('../../EventMap/EventMap', () => {
@@ -35,7 +43,7 @@ jest.mock('../../EventMap/EventMap', () => {
     React.useEffect(() => {
       if (props.onMapReady) {
         props.onMapReady({
-          printControl: { options: { printModes: [ { options: { title: 'A4 — Landscape' } } ] } }
+          printControl: { options: { printModes: [{ options: { title: 'A4 — Landscape' } }] } },
         });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,7 +57,14 @@ import MapManagement from '../MapManagement';
 
 test('header Print Map shows plugin preset when EventMap calls onMapReady', async () => {
   render(
-    <MapManagement markersState={[]} setMarkersState={jest.fn()} updateMarker={jest.fn()} selectedYear={2025} archiveMarkers={jest.fn()} copyMarkers={jest.fn()} />
+    <MapManagement
+      markersState={[]}
+      setMarkersState={jest.fn()}
+      updateMarker={jest.fn()}
+      selectedYear={2025}
+      archiveMarkers={jest.fn()}
+      copyMarkers={jest.fn()}
+    />,
   );
 
   // Print Map button should exist

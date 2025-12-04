@@ -5,7 +5,7 @@ import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 
 /**
  * MarkerContextMenu - Right-click context menu for marker-company assignment
- * 
+ *
  * Shows list of subscribed companies and allows quick assignment/unassignment
  * Only visible in manager view (isAdminView=true)
  */
@@ -28,25 +28,19 @@ function MarkerContextMenu({
   const availableCompanies = subscriptions
     .filter((sub) => {
       // Count current assignments for this company in this year
-      const companyAssignments = assignments.filter(
-        (a) => a.company_id === sub.company_id
-      );
+      const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
 
       const assignedBoothCount = companyAssignments.length;
       const totalBoothCount = sub.booth_count || 1;
 
       // Check if already assigned to this specific marker
-      const isAssignedToThisMarker = companyAssignments.some(
-        (a) => a.marker_id === marker.id
-      );
+      const isAssignedToThisMarker = companyAssignments.some((a) => a.marker_id === marker.id);
 
       // Show if: NOT assigned to this marker AND has available booths
       return !isAssignedToThisMarker && assignedBoothCount < totalBoothCount;
     })
     .map((sub) => {
-      const companyAssignments = assignments.filter(
-        (a) => a.company_id === sub.company_id
-      );
+      const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
       const assignedBoothCount = companyAssignments.length;
       const totalBoothCount = sub.booth_count || 1;
       const remainingBooths = totalBoothCount - assignedBoothCount;
@@ -61,10 +55,7 @@ function MarkerContextMenu({
         remainingBooths: remainingBooths,
       };
     })
-    .filter((company) =>
-      company.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    .filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   // Focus search input when menu opens
   useEffect(() => {
@@ -89,24 +80,25 @@ function MarkerContextMenu({
     <div className="p-2">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-300">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <Icon path={mdiDomain} size={0.8} className="text-blue-600" />
-            {marker.name || `Marker ${marker.id}`}
-          </h3>
-        </div>
+        <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Icon path={mdiDomain} size={0.8} className="text-blue-600" />
+          {marker.name || `Marker ${marker.id}`}
+        </h3>
+      </div>
 
-        {/* Current Assignment */}
-        {currentAssignment && (() => {
+      {/* Current Assignment */}
+      {currentAssignment &&
+        (() => {
           // Calculate booth usage for currently assigned company
           const companyAssignments = assignments.filter(
-            (a) => a.company_id === currentAssignment.company_id
+            (a) => a.company_id === currentAssignment.company_id,
           );
           const assignedCount = companyAssignments.length;
           const subscription = subscriptions.find(
-            (s) => s.company_id === currentAssignment.company_id
+            (s) => s.company_id === currentAssignment.company_id,
           );
           const totalBooths = subscription?.booth_count || 1;
-          
+
           return (
             <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
               <div className="flex items-center justify-between">
@@ -146,75 +138,70 @@ function MarkerContextMenu({
           );
         })()}
 
-        {/* Search Input */}
-        {availableCompanies.length > 5 && (
-          <div className="mb-2 relative">
-            <Icon path={mdiMagnify} size={0.65} className="absolute left-2 top-2 text-gray-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search companies..."
-              className="w-full pl-8 pr-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-          </div>
-        )}
+      {/* Search Input */}
+      {availableCompanies.length > 5 && (
+        <div className="mb-2 relative">
+          <Icon path={mdiMagnify} size={0.65} className="absolute left-2 top-2 text-gray-400" />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search companies..."
+            className="w-full pl-8 pr-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+      )}
 
-        {/* Available Companies List */}
-        <div className="max-h-64 overflow-y-auto">
-          {availableCompanies.length === 0 ? (
-            <div className="text-sm text-gray-500 text-center py-4">
-              {searchTerm
-                ? 'No companies match your search'
-                : currentAssignment
+      {/* Available Companies List */}
+      <div className="max-h-64 overflow-y-auto">
+        {availableCompanies.length === 0 ? (
+          <div className="text-sm text-gray-500 text-center py-4">
+            {searchTerm
+              ? 'No companies match your search'
+              : currentAssignment
                 ? 'No other companies available'
                 : 'No subscribed companies available'}
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {availableCompanies.map((company) => (
-                <button
-                  key={company.id}
-                  onClick={() => handleAssign(company.id)}
-                  disabled={isLoading}
-                  className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                  title={`Assign ${company.name} (${company.remainingBooths} booth${company.remainingBooths !== 1 ? 's' : ''} available)`}
-                >
-                  {company.logo ? (
-                    <img
-                      {...(() => {
-                        const r = getResponsiveLogoSources(company.logo);
-                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
-                        return { src: getLogoPath(company.logo) };
-                      })()}
-                      alt={company.name}
-                      className="w-8 h-8 object-contain flex-shrink-0"
-                    />
-                  ) : (
-                    <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-800 truncate">
-                      {company.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {company.remainingBooths} of {company.totalBooths} booth{company.totalBooths !== 1 ? 's' : ''} available
-                    </div>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {availableCompanies.map((company) => (
+              <button
+                key={company.id}
+                onClick={() => handleAssign(company.id)}
+                disabled={isLoading}
+                className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                title={`Assign ${company.name} (${company.remainingBooths} booth${company.remainingBooths !== 1 ? 's' : ''} available)`}
+              >
+                {company.logo ? (
+                  <img
+                    {...(() => {
+                      const r = getResponsiveLogoSources(company.logo);
+                      if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                      return { src: getLogoPath(company.logo) };
+                    })()}
+                    alt={company.name}
+                    className="w-8 h-8 object-contain flex-shrink-0"
+                  />
+                ) : (
+                  <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-gray-800 truncate">{company.name}</div>
+                  <div className="text-xs text-gray-500">
+                    {company.remainingBooths} of {company.totalBooths} booth
+                    {company.totalBooths !== 1 ? 's' : ''} available
                   </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Loading Indicator */}
-        {isLoading && (
-          <div className="mt-2 text-xs text-center text-blue-600">
-            Processing...
+                </div>
+              </button>
+            ))}
           </div>
         )}
       </div>
+
+      {/* Loading Indicator */}
+      {isLoading && <div className="mt-2 text-xs text-center text-blue-600">Processing...</div>}
+    </div>
   );
 }
 

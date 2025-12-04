@@ -20,7 +20,7 @@ export function useCompanyMutations({
   updateProfile,
   organizationLogo,
   confirm,
-  toastError
+  toastError,
 }) {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -29,7 +29,7 @@ export function useCompanyMutations({
     name: '',
     logo: organizationLogo || '',
     website: '',
-    info: ''
+    info: '',
   });
 
   // Start editing
@@ -88,7 +88,7 @@ export function useCompanyMutations({
         name: '',
         logo: organizationLogo,
         website: '',
-        info: ''
+        info: '',
       });
     } else {
       toastError(`Error creating company: ${error}`);
@@ -102,7 +102,7 @@ export function useCompanyMutations({
       name: '',
       logo: organizationLogo,
       website: '',
-      info: ''
+      info: '',
     });
   };
 
@@ -113,7 +113,7 @@ export function useCompanyMutations({
       name: '',
       logo: organizationLogo,
       website: '',
-      info: ''
+      info: '',
     });
   };
 

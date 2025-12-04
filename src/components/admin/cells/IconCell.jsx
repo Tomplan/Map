@@ -13,9 +13,7 @@ export function IconCell({ value, markerId, onIconClick }) {
       onClick={() => onIconClick(markerId)}
       title="Click to change icon"
     >
-      {value && (
-        <img src={getIconPath(value)} alt="Icon" style={{ width: 24, height: 24 }} />
-      )}
+      {value && <img src={getIconPath(value)} alt="Icon" style={{ width: 24, height: 24 }} />}
     </td>
   );
 }
@@ -25,12 +23,7 @@ export function IconCell({ value, markerId, onIconClick }) {
  */
 export function IconSelectorModal({ isOpen, onClose, onSelect, options, currentValue }) {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Select Icon"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Select Icon" size="md">
       <div className="p-6">
         <div className="grid grid-cols-4 gap-4">
           {options.map((iconFile) => {

@@ -31,16 +31,23 @@ describe('cleanup-numeric-generated helpers', () => {
       { name: '1762803420948_3cy65g-64.webp' },
       { name: 'slugified-name-128.webp' },
       { name: '12345678.webp' },
-      { name: 'normal.png' }
+      { name: 'normal.png' },
     ];
     const filtered = filterNumericCandidates(objs);
     expect(filtered.length).toBe(2);
-    expect(filtered.map(o => o.name)).toEqual(expect.arrayContaining(['1762803420948_3cy65g-64.webp', '12345678.webp']));
+    expect(filtered.map((o) => o.name)).toEqual(
+      expect.arrayContaining(['1762803420948_3cy65g-64.webp', '12345678.webp']),
+    );
   });
 });
 
 describe('run flow with mocked supabase client', () => {
-  const makeStorage = ({ listData = [], downloadBuffers = {}, uploadResult = { error: null }, removeResult = { data: [], error: null } } = {}) => {
+  const makeStorage = ({
+    listData = [],
+    downloadBuffers = {},
+    uploadResult = { error: null },
+    removeResult = { data: [], error: null },
+  } = {}) => {
     return {
       storage: {
         from: () => ({
@@ -53,9 +60,9 @@ describe('run flow with mocked supabase client', () => {
             return { data: { arrayBuffer: async () => buffer }, error: null };
           },
           upload: async (toPath, buffer, opts) => uploadResult,
-          remove: async (paths) => removeResult
-        })
-      }
+          remove: async (paths) => removeResult,
+        }),
+      },
     };
   };
 
@@ -68,7 +75,12 @@ describe('run flow with mocked supabase client', () => {
   test('archive flow uploads then deletes original', async () => {
     const item = { name: '1762803420948_abc-128.webp', size: 1234 };
     const fromPath = `generated/${item.name}`;
-    const supabase = makeStorage({ listData: [item], downloadBuffers: { [fromPath]: Buffer.from('ok') }, uploadResult: { error: null }, removeResult: { data: ['ok'], error: null } });
+    const supabase = makeStorage({
+      listData: [item],
+      downloadBuffers: { [fromPath]: Buffer.from('ok') },
+      uploadResult: { error: null },
+      removeResult: { data: ['ok'], error: null },
+    });
 
     const res = await run({ supabaseClient: supabase, confirm: true, archiveFlag: true });
     expect(res.status).toBe('archived');
@@ -78,10 +90,12 @@ describe('run flow with mocked supabase client', () => {
     const archived = [{ name: '1762803420948_abc-64.webp' }, { name: 'slug-1-64.webp' }];
     const supabase = makeStorage({ listData: [] });
     // override the from.list called for archived listing using custom table
-    supabase.storage = { from: () => ({
-      list: async (prefix) => ({ data: archived, error: null }),
-      remove: async (paths) => ({ data: paths, error: null })
-    }) };
+    supabase.storage = {
+      from: () => ({
+        list: async (prefix) => ({ data: archived, error: null }),
+        remove: async (paths) => ({ data: paths, error: null }),
+      }),
+    };
 
     const res = await run({ supabaseClient: supabase, deleteArchivedFlag: true });
     expect(res.status).toBe('dry-run-archived');
@@ -91,10 +105,12 @@ describe('run flow with mocked supabase client', () => {
   test('delete-archived confirm deletes archived objects', async () => {
     const archived = [{ name: '1762803420948_abc-64.webp' }];
     const supabase = makeStorage({ listData: [] });
-    supabase.storage = { from: () => ({
-      list: async () => ({ data: archived, error: null }),
-      remove: async (paths) => ({ data: paths, error: null })
-    }) };
+    supabase.storage = {
+      from: () => ({
+        list: async () => ({ data: archived, error: null }),
+        remove: async (paths) => ({ data: paths, error: null }),
+      }),
+    };
 
     const res = await run({ supabaseClient: supabase, deleteArchivedFlag: true, confirm: true });
     expect(res.status).toBe('deleted-archived');

@@ -106,7 +106,11 @@ function AppContent() {
   }, [selectedYear, preferencesLoading, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
-  const { markers, archiveCurrentYear: archiveMarkers, copyFromPreviousYear: copyMarkers } = useEventMarkers(selectedYear);
+  const {
+    markers,
+    archiveCurrentYear: archiveMarkers,
+    copyFromPreviousYear: copyMarkers,
+  } = useEventMarkers(selectedYear);
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, selectedYear);
 
@@ -120,7 +124,11 @@ function AppContent() {
   // Fetch branding from organization_profile and subscribe to changes
   useEffect(() => {
     async function fetchBranding() {
-      const { data, error } = await supabase.from('organization_profile').select('*').eq('id', 1).single();
+      const { data, error } = await supabase
+        .from('organization_profile')
+        .select('*')
+        .eq('id', 1)
+        .single();
       if (error) {
         console.error('Error fetching organization_profile:', error);
         // Keep default branding if table doesn't exist or has no data

@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
-import { MdEdit, MdDelete, MdAdd, MdDragIndicator, MdArchive, MdContentCopy, MdContentPaste, MdRestore } from 'react-icons/md';
+import {
+  MdEdit,
+  MdDelete,
+  MdAdd,
+  MdDragIndicator,
+  MdArchive,
+  MdContentCopy,
+  MdContentPaste,
+  MdRestore,
+} from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
 import YearScopeBadge from './admin/YearScopeBadge';
@@ -25,7 +34,7 @@ export default function ProgramManagement({ selectedYear }) {
     deleteActivity,
     archiveCurrentYear,
     copyFromPreviousYear,
-    refetch
+    refetch,
   } = useEventActivities(selectedYear);
   const [activeTab, setActiveTab] = useState('saturday');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
@@ -88,7 +97,7 @@ export default function ProgramManagement({ selectedYear }) {
       title: 'Copy Activities',
       message: `Copy all activities from ${previousYear} to ${selectedYear}?`,
       confirmText: 'Copy',
-      variant: 'default'
+      variant: 'default',
     });
     if (!confirmed) return;
 
@@ -194,7 +203,7 @@ export default function ProgramManagement({ selectedYear }) {
    */
   const handleDrop = async (e, dropIndex) => {
     e.preventDefault();
-    
+
     if (!draggedItem || draggedItem.index === dropIndex) {
       return;
     }
@@ -210,7 +219,7 @@ export default function ProgramManagement({ selectedYear }) {
       // Update display_order for all affected items
       const updates = items.map((activity, index) => ({
         id: activity.id,
-        display_order: index + 1
+        display_order: index + 1,
       }));
 
       // Batch update all display_orders
@@ -245,25 +254,28 @@ export default function ProgramManagement({ selectedYear }) {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{t('programManagement.error')}: {error.message}</p>
+        <p className="text-red-800">
+          {t('programManagement.error')}: {error.message}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm" data-testid="program-management-container">
       {/* Header */}
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {t('programManagement.title')}
-            </h2>
-            <div><YearScopeBadge scope="year" year={selectedYear} /></div>
+            <h2 className="text-xl font-semibold text-gray-900">{t('programManagement.title')}</h2>
+            <div>
+              <YearScopeBadge scope="year" year={selectedYear} />
+            </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleCopyFromPreviousYear}
+              data-testid="copy-from-previous-year-button"
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               title={`Copy from ${selectedYear - 1}`}
             >
@@ -272,6 +284,7 @@ export default function ProgramManagement({ selectedYear }) {
             </button>
             <button
               onClick={handleArchive}
+              data-testid="archive-year-button"
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={(activities.saturday?.length || 0) + (activities.sunday?.length || 0) === 0}
               title={`Archive all activities for ${selectedYear}`}
@@ -282,6 +295,7 @@ export default function ProgramManagement({ selectedYear }) {
             {copiedActivity && (
               <button
                 onClick={handlePasteActivity}
+                data-testid="paste-activity-button"
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 title="Paste copied activity"
               >
@@ -295,6 +309,7 @@ export default function ProgramManagement({ selectedYear }) {
                 setCopiedActivity(null); // Clear any copied data when adding new activity
                 setShowForm(true);
               }}
+              data-testid="add-activity-button"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <MdAdd className="text-xl" />
@@ -309,6 +324,7 @@ export default function ProgramManagement({ selectedYear }) {
         <div className="flex">
           <button
             onClick={() => setActiveTab('saturday')}
+            data-testid="saturday-tab"
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'saturday'
                 ? 'border-b-2 border-blue-600 text-blue-600'
@@ -319,6 +335,7 @@ export default function ProgramManagement({ selectedYear }) {
           </button>
           <button
             onClick={() => setActiveTab('sunday')}
+            data-testid="sunday-tab"
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'sunday'
                 ? 'border-b-2 border-blue-600 text-blue-600'
@@ -331,7 +348,7 @@ export default function ProgramManagement({ selectedYear }) {
       </div>
 
       {/* Activities List */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200" data-testid="activities-list">
         {currentActivities.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500">{t('programManagement.noActivitiesFound')}</p>
@@ -347,186 +364,238 @@ export default function ProgramManagement({ selectedYear }) {
             </button>
           </div>
         ) : (
-           <>
-           {currentActivities.map((activity, index) => {
-             const location = getActivityLocation(activity, i18n.language);
-             const lang = i18n.language || 'en';
-             const title = lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en;
-             const description = lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en;
-             const badge = lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en;
-             const isInactive = !activity.is_active;
+          <>
+            {currentActivities.map((activity, index) => {
+              const location = getActivityLocation(activity, i18n.language);
+              const lang = i18n.language || 'en';
+              const title =
+                lang === 'nl'
+                  ? activity.title_nl
+                  : lang === 'de'
+                    ? activity.title_de
+                    : activity.title_en;
+              const description =
+                lang === 'nl'
+                  ? activity.description_nl
+                  : lang === 'de'
+                    ? activity.description_de
+                    : activity.description_en;
+              const badge =
+                lang === 'nl'
+                  ? activity.badge_nl
+                  : lang === 'de'
+                    ? activity.badge_de
+                    : activity.badge_en;
+              const isInactive = !activity.is_active;
 
-             return (
-               <div key={`activity-${activity.id}`}>
-                 {/* Drop indicator */}
-                 {dropTargetIndex === index && draggedItem && (
-                   <div className="h-1 bg-blue-500 rounded-full mb-2 animate-pulse"></div>
-                 )}
+              return (
+                <div key={`activity-${activity.id}`}>
+                  {/* Drop indicator */}
+                  {dropTargetIndex === index && draggedItem && (
+                    <div className="h-1 bg-blue-500 rounded-full mb-2 animate-pulse"></div>
+                  )}
 
-                 <div
-                   draggable={!reordering && !isInactive}
-                   onDragStart={(e) => handleDragStart(e, activity, index)}
-                   onDragEnd={handleDragEnd}
-                   onDragOver={(e) => handleDragOver(e, index)}
-                   onDragLeave={handleDragLeave}
-                   onDrop={(e) => handleDrop(e, index)}
-                   className={`px-6 py-4 transition-colors ${
-                     isInactive
-                       ? 'bg-gray-100 border-l-4 border-gray-400 relative overflow-hidden'
-                       : reordering
-                       ? 'hover:bg-gray-50 opacity-50 cursor-wait'
-                       : 'hover:bg-gray-50 cursor-move'
-                   }`}
-                   style={isInactive ? {
-                     backgroundImage: `repeating-linear-gradient(
+                  <div
+                    draggable={!reordering && !isInactive}
+                    onDragStart={(e) => handleDragStart(e, activity, index)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`px-6 py-4 transition-colors ${
+                      isInactive
+                        ? 'bg-gray-100 border-l-4 border-gray-400 relative overflow-hidden'
+                        : reordering
+                          ? 'hover:bg-gray-50 opacity-50 cursor-wait'
+                          : 'hover:bg-gray-50 cursor-move'
+                    }`}
+                    style={
+                      isInactive
+                        ? {
+                            backgroundImage: `repeating-linear-gradient(
                        45deg,
                        transparent,
                        transparent 10px,
                        rgba(156, 163, 175, 0.1) 10px,
                        rgba(156, 163, 175, 0.1) 20px
-                     )`
-                   } : undefined}
-                 >
-                <div className="flex items-start gap-4">
-                  {/* Drag Handle */}
-                  <button
-                    className={`mt-1 ${
-                      isInactive
-                        ? 'text-gray-300 cursor-not-allowed'
-                        : reordering
-                        ? 'text-gray-400 cursor-wait'
-                        : 'text-gray-400 hover:text-gray-600 cursor-move'
-                    }`}
-                    title={isInactive ? t('programManagement.inactive') : t('programManagement.dragToReorder')}
-                    disabled={reordering || isInactive}
+                     )`,
+                          }
+                        : undefined
+                    }
                   >
-                    <MdDragIndicator className="text-2xl" />
-                  </button>
+                    <div className="flex items-start gap-4">
+                      {/* Drag Handle */}
+                      <button
+                        className={`mt-1 ${
+                          isInactive
+                            ? 'text-gray-300 cursor-not-allowed'
+                            : reordering
+                              ? 'text-gray-400 cursor-wait'
+                              : 'text-gray-400 hover:text-gray-600 cursor-move'
+                        }`}
+                        title={
+                          isInactive
+                            ? t('programManagement.inactive')
+                            : t('programManagement.dragToReorder')
+                        }
+                        disabled={reordering || isInactive}
+                      >
+                        <MdDragIndicator className="text-2xl" />
+                      </button>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        {/* Time and Badges */}
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className={`text-sm ${isInactive ? 'text-gray-600' : 'text-gray-500'}`}>
-                            {activity.start_time} - {activity.end_time}
-                          </span>
-                          {badge && (
-                            <span className={`px-2 py-1 text-xs font-medium rounded ${
-                              isInactive ? 'text-gray-600 bg-gray-200' : 'text-blue-700 bg-blue-100'
-                            }`}>
-                              {badge}
-                            </span>
-                          )}
-                          {isInactive && (
-                            <span className="px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded">
-                              {t('programManagement.inactive')}
-                            </span>
-                          )}
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            {/* Time and Badges */}
+                            <div className="flex items-center gap-3 mb-2">
+                              <span
+                                className={`text-sm ${isInactive ? 'text-gray-600' : 'text-gray-500'}`}
+                              >
+                                {activity.start_time} - {activity.end_time}
+                              </span>
+                              {badge && (
+                                <span
+                                  className={`px-2 py-1 text-xs font-medium rounded ${
+                                    isInactive
+                                      ? 'text-gray-600 bg-gray-200'
+                                      : 'text-blue-700 bg-blue-100'
+                                  }`}
+                                >
+                                  {badge}
+                                </span>
+                              )}
+                              {isInactive && (
+                                <span className="px-2 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded">
+                                  {t('programManagement.inactive')}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Title */}
+                            <h3
+                              className={`text-lg font-semibold mb-1 ${isInactive ? 'text-gray-700' : 'text-gray-900'}`}
+                            >
+                              {title}
+                            </h3>
+
+                            {/* Description */}
+                            <p
+                              className={`text-sm mb-2 line-clamp-2 ${isInactive ? 'text-gray-600' : 'text-gray-600'}`}
+                            >
+                              {description}
+                            </p>
+
+                            {/* Location */}
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className={isInactive ? 'text-gray-600' : 'text-gray-500'}>
+                                {t('programManagement.location')}:
+                              </span>
+                              <span
+                                className={`font-medium ${isInactive ? 'text-gray-700' : 'text-gray-700'}`}
+                              >
+                                {location.text}
+                              </span>
+                              {activity.show_location_type_badge && (
+                                <span
+                                  className={`px-2 py-0.5 text-xs rounded ${
+                                    isInactive
+                                      ? activity.location_type === 'exhibitor' ||
+                                        activity.location_type === 'company'
+                                        ? 'bg-green-50 text-green-600'
+                                        : 'bg-gray-50 text-gray-600'
+                                      : activity.location_type === 'exhibitor' ||
+                                          activity.location_type === 'company'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-gray-100 text-gray-700'
+                                  }`}
+                                >
+                                  {activity.location_type === 'exhibitor' ||
+                                  activity.location_type === 'company'
+                                    ? t('programManagement.exhibitor')
+                                    : t('programManagement.venue')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleCopyActivity(activity)}
+                              data-testid="copy-activity-button"
+                              className={`p-2 rounded-lg transition-colors ${
+                                isInactive
+                                  ? 'text-gray-400 hover:bg-gray-50 cursor-not-allowed'
+                                  : 'text-gray-600 hover:bg-gray-50'
+                              }`}
+                              title="Copy activity"
+                              disabled={isInactive}
+                            >
+                              <MdContentCopy className="text-xl" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditActivity(activity);
+                                setShowForm(true);
+                              }}
+                              className={`p-2 rounded-lg transition-colors ${
+                                isInactive
+                                  ? 'text-blue-400 hover:bg-blue-50'
+                                  : 'text-blue-600 hover:bg-blue-50'
+                              }`}
+                              title={t('programManagement.edit')}
+                            >
+                              <MdEdit className="text-xl" />
+                            </button>
+                            {isInactive ? (
+                              <button
+                                onClick={() => handleReactivate(activity.id)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title={t('programManagement.reactivate')}
+                              >
+                                <MdRestore className="text-xl" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => setDeleteConfirm({ id: activity.id, title })}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title={t('programManagement.delete')}
+                              >
+                                <MdDelete className="text-xl" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Title */}
-                        <h3 className={`text-lg font-semibold mb-1 ${isInactive ? 'text-gray-700' : 'text-gray-900'}`}>
-                          {title}
-                        </h3>
-
-                        {/* Description */}
-                        <p className={`text-sm mb-2 line-clamp-2 ${isInactive ? 'text-gray-600' : 'text-gray-600'}`}>
-                          {description}
-                        </p>
-
-                        {/* Location */}
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className={isInactive ? 'text-gray-600' : 'text-gray-500'}>{t('programManagement.location')}:</span>
-                          <span className={`font-medium ${isInactive ? 'text-gray-700' : 'text-gray-700'}`}>
-                            {location.text}
-                          </span>
-                          {activity.show_location_type_badge && (
-                            <span className={`px-2 py-0.5 text-xs rounded ${
-                              isInactive
-                                ? ((activity.location_type === 'exhibitor' || activity.location_type === 'company')
-                                    ? 'bg-green-50 text-green-600'
-                                    : 'bg-gray-50 text-gray-600')
-                                : ((activity.location_type === 'exhibitor' || activity.location_type === 'company')
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-gray-100 text-gray-700')
-                            }`}>
-                              {(activity.location_type === 'exhibitor' || activity.location_type === 'company') ? t('programManagement.exhibitor') : t('programManagement.venue')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleCopyActivity(activity)}
-                          className={`p-2 rounded-lg transition-colors ${
-                            isInactive
-                              ? 'text-gray-400 hover:bg-gray-50 cursor-not-allowed'
-                              : 'text-gray-600 hover:bg-gray-50'
-                          }`}
-                          title="Copy activity"
-                          disabled={isInactive}
-                        >
-                          <MdContentCopy className="text-xl" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setEditActivity(activity);
-                            setShowForm(true);
-                          }}
-                          className={`p-2 rounded-lg transition-colors ${
-                            isInactive
-                              ? 'text-blue-400 hover:bg-blue-50'
-                              : 'text-blue-600 hover:bg-blue-50'
-                          }`}
-                          title={t('programManagement.edit')}
-                        >
-                          <MdEdit className="text-xl" />
-                        </button>
-                        {isInactive ? (
-                          <button
-                            onClick={() => handleReactivate(activity.id)}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title={t('programManagement.reactivate')}
-                          >
-                            <MdRestore className="text-xl" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => setDeleteConfirm({ id: activity.id, title })}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title={t('programManagement.delete')}
-                          >
-                            <MdDelete className="text-xl" />
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
-        </>
-      )}
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Footer Stats */}
       {currentActivities.length > 0 && (
-        <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div className="border-t border-gray-200 px-6 py-3 bg-gray-50" data-testid="program-stats">
           <div className="flex gap-6 text-sm">
             <p className="text-gray-600">
-              {t('programManagement.totalActivities')}: <span className="font-medium">{currentActivities.length}</span>
+              {t('programManagement.totalActivities')}:{' '}
+              <span className="font-medium">{currentActivities.length}</span>
             </p>
             <p className="text-gray-600">
-              {t('programManagement.activeActivities')}: <span className="font-medium text-green-600">{currentActivities.filter(a => a.is_active).length}</span>
+              {t('programManagement.activeActivities')}:{' '}
+              <span className="font-medium text-green-600">
+                {currentActivities.filter((a) => a.is_active).length}
+              </span>
             </p>
             <p className="text-gray-600">
-              {t('programManagement.inactiveActivities')}: <span className="font-medium text-orange-600">{currentActivities.filter(a => !a.is_active).length}</span>
+              {t('programManagement.inactiveActivities')}:{' '}
+              <span className="font-medium text-orange-600">
+                {currentActivities.filter((a) => !a.is_active).length}
+              </span>
             </p>
           </div>
         </div>
@@ -540,12 +609,8 @@ export default function ProgramManagement({ selectedYear }) {
         size="md"
       >
         <div className="p-6">
-          <p className="text-gray-700">
-            {t('programManagement.confirmDeleteMessage')}
-          </p>
-          <p className="mt-2 font-medium text-gray-900">
-            "{deleteConfirm?.title}"
-          </p>
+          <p className="text-gray-700">{t('programManagement.confirmDeleteMessage')}</p>
+          <p className="mt-2 font-medium text-gray-900">"{deleteConfirm?.title}"</p>
         </div>
         <div className="px-6 py-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-200">
           <button

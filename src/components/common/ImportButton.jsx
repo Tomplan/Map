@@ -23,7 +23,7 @@ export default function ImportButton({
   additionalData = {},
   onImportComplete,
   onImportError,
-  className = ''
+  className = '',
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const config = getDataConfig(dataType);
@@ -54,14 +54,14 @@ export default function ImportButton({
 
       <Suspense fallback={null}>
         <ImportModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        dataType={dataType}
-        eventYear={eventYear}
-        existingData={existingData}
-        additionalData={additionalData}
-        onImportComplete={handleImportComplete}
-        onImportError={handleImportError}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          dataType={dataType}
+          eventYear={eventYear}
+          existingData={existingData}
+          additionalData={additionalData}
+          onImportComplete={handleImportComplete}
+          onImportError={handleImportError}
         />
       </Suspense>
     </>

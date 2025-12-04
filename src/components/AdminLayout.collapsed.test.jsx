@@ -15,13 +15,18 @@ jest.mock('@mdi/react', () => ({
 
 // Mock react-router-dom components used by AdminLayout
 jest.mock('react-router-dom', () => ({
-  Link: ({ children, to, ...props }) => require('react').createElement('a', { href: to, ...props }, children),
+  Link: ({ children, to, ...props }) =>
+    require('react').createElement('a', { href: to, ...props }, children),
   Outlet: () => null,
   useLocation: () => ({ pathname: '/admin' }),
 }));
 
 // Mock useUserRole hook to make nav items visible
-jest.mock('../hooks/useUserRole', () => () => ({ role: 'event_manager', loading: false, hasAnyRole: () => true }));
+jest.mock('../hooks/useUserRole', () => () => ({
+  role: 'event_manager',
+  loading: false,
+  hasAnyRole: () => true,
+}));
 
 // Ensure collapsed state is simulated by setting localStorage
 beforeEach(() => {
@@ -39,10 +44,10 @@ describe('AdminLayout (collapsed sidebar code presence)', () => {
     const file = fs.readFileSync(path.resolve(__dirname, './admin/CollapsedShortcuts.jsx'), 'utf8');
 
     // verify collapsed shortcuts file contains the compact links and expected classes
-      // CollapsedShortcuts includes the year-scoped shortcuts (subscriptions, assignments, program)
-      expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
-      expect(file).toMatch(/to=\"\/admin\/assignments\"/);
-      expect(file).toMatch(/to=\"\/admin\/program\"/);
+    // CollapsedShortcuts includes the year-scoped shortcuts (subscriptions, assignments, program)
+    expect(file).toMatch(/to=\"\/admin\/subscriptions\"/);
+    expect(file).toMatch(/to=\"\/admin\/assignments\"/);
+    expect(file).toMatch(/to=\"\/admin\/program\"/);
     // collapsed component should use vertical padding at the container level (px handled inside tiles)
     expect(file).toMatch(/py-3/);
     // compact mode triggers `isCollapsed={true}` on the tiles (icons size controlled in SidebarTile)

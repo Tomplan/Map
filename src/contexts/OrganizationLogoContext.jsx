@@ -59,7 +59,7 @@ export function OrganizationLogoProvider({ children }) {
               setOrganizationLogo(BRANDING_CONFIG.DEFAULT_LOGO);
             }
           }
-        }
+        },
       )
       .subscribe();
 
