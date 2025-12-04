@@ -70,6 +70,7 @@ async function run() {
       break;
     }
   }
+  }
 
   if (!chosenBase) {
     console.error(`Dev server not responding at any candidate: ${baseCandidates.join(', ')}. Start the dev server (npm run dev) and retry.`);
@@ -109,16 +110,8 @@ async function run() {
 
     await page.waitForSelector('.space-y-4 > div button', { visible: true });
 
-    // Hook to intercept alert calls for scenario 1
-    await page.exposeFunction('__captureAlert', (msg) => {
-      // store temporarily on window
-      if (!window.__E2E_ALERTS) window.__E2E_ALERTS = [];
-      window.__E2E_ALERTS.push(msg);
-    });
-    await page.evaluate(() => {
-      window.__E2E_ALERTS = [];
-      window.alert = (m) => window.__captureAlert(m);
-    });
+    // Wait for start attempt result: either a toast (role=alert) appears or
+    // the Driver instance popovers are created. We'll attempt to detect either.
 
     // Click the first Start Tour button (should be contextual/priority)
     const startButtons = await page.$$('button');
@@ -138,18 +131,30 @@ async function run() {
       process.exit(1);
     }
 
-    // Wait a bit for start() resolution (the handler will call alert() if start() returns false)
-    await page.waitForTimeout(1200);
+    // Wait for either a toast (role=alert) or driver popover to appear.
+    let firstResult = null;
+    try {
+      // Short window for toast/popover appearance
+      await Promise.race([
+        page.waitForSelector('.onboarding-tour-popover', { timeout: 1500 }),
+        page.waitForSelector('div[role="alert"]', { timeout: 1500 }),
+      ]);
 
-    // Read captured alerts
-    const alerts = await page.evaluate(() => window.__E2E_ALERTS || []);
-    console.log('Alerts captured after first start attempt:', alerts);
+      // Determine which happened
+      const toast = await page.$('div[role="alert"]');
+      const pop = await page.$('.onboarding-tour-popover');
 
-    if (alerts.length === 0) {
-      // No alert — maybe the tour actually started despite missing targets. Check driver instance
-      const driverExists = await page.evaluate(() => !!window.__ONBOARDING_DRIVER_INSTANCE);
-      console.log('Driver instance present after first start?', driverExists);
+      if (toast) {
+        firstResult = { type: 'toast', text: await (await toast.getProperty('innerText')).jsonValue() };
+      } else if (pop) {
+        firstResult = { type: 'popover' };
+      }
+    } catch (e) {
+      // Nothing appeared quickly
+      firstResult = { type: 'none' };
     }
+
+    console.log('Start attempt result:', firstResult);
 
     // Scenario 2: Inject missing admin selectors into the page so the tour has real targets
     console.log('Injecting admin dashboard target elements to simulate correct page DOM...');
