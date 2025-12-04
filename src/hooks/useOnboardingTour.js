@@ -291,7 +291,9 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   /**
    * Start the tour with comprehensive error handling
    */
-  const start = useCallback(async () => {
+  // start accepts options so callers can override the wait window when
+  // retrying after navigation (helpful for slow/lazy loaded admin views).
+  const start = useCallback(async (opts = {}) => {
     try {
       if (!tourConfig?.id) {
         console.error('Tour ID is required to start a tour');
@@ -310,6 +312,11 @@ export default function useOnboardingTour(tourConfig, options = {}) {
 
       const missingElements = requiredSteps.filter(step => !document.querySelector(step.element));
 
+      // DIAGNOSTIC: log required steps and which selectors are present/absent
+      try {
+        console.debug('[onboarding:start] tourId=', tourConfig?.id, 'requiredSteps=', requiredSteps.map(s => s.element), 'present=', requiredSteps.map(s => !!document.querySelector(s.element)));
+      } catch (e) { /* ignore logging errors */ }
+
       // If none of the required targets exist (i.e. we're in the wrong page/context)
       // then don't start the tour — this avoids showing a useless popover attached
       // to the dummy/body element and confusing users.
@@ -317,7 +324,8 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         // If everything is missing, wait briefly (in case the admin page
         // or lazy-loaded components haven't rendered yet) and then re-check.
         // This avoids false negatives due to small load/timing differences.
-        const waitForTargets = (ms = 3000, checkInterval = 100) => new Promise((resolve) => {
+        const waitMs = typeof opts.waitMs === 'number' ? opts.waitMs : 3000;
+        const waitForTargets = (ms = waitMs, checkInterval = 100) => new Promise((resolve) => {
           let elapsed = 0;
 
           const check = () => {
@@ -336,6 +344,11 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         try {
           // Wait a short period for elements to appear
           const appeared = await waitForTargets(3000, 100);
+
+          // DIAGNOSTIC: record the wait result and snapshot available selectors
+          try {
+            console.debug('[onboarding:start] waitForTargets result=', appeared, 'missingElementsAtTimeout=', requiredSteps.filter(s => !document.querySelector(s.element)).map(s => s.element));
+          } catch (e) { /* ignore */ }
 
           if (!appeared) {
             console.warn('Tour elements not found (all required targets missing):', requiredSteps.map(s => s.element));
