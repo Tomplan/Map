@@ -101,7 +101,7 @@ function TourCard({ tour }) {
   const { isTourCompleted } = useOnboarding();
   const navigate = useNavigate();
   const { start } = useOnboardingTour(tour);
-  const { toastWarning } = useDialog();
+  const { toastWarning, confirm } = useDialog();
 
   const completed = isTourCompleted(tour.id);
   const currentLanguage = i18n.language;
@@ -170,7 +170,7 @@ function TourCard({ tour }) {
               onClick={() => {
                 // start() now returns a Promise<boolean|void>. Handle the result async and show
                 // a friendly message if the tour couldn't start due to missing targets.
-                start().then((result) => {
+                start().then(async (result) => {
                   if (result === false) {
                   // Friendly UX: advise the user that this tour requires the related page/context
                   // We use a simple alert here so we don't need to add UI components — can be replaced
@@ -180,34 +180,50 @@ function TourCard({ tour }) {
                     : 'This tour needs to be started from the relevant page. Please navigate to the correct page and try again.';
                   // Use the app's toast system rather than a blocking alert so the
                   // user gets non-disruptive feedback inside the app UI.
+                  // Use a confirm dialog to let the user decide to navigate and retry
+                  // when this tour is scoped to a different area (eg. admin).
                   try {
-                    toastWarning(ctxMessage);
-                  } catch (e) {
-                    // Fallback to global alert in case the Toast system isn't
-                    // available (very defensive for tests/environments).
-                    window.alert?.(ctxMessage);
-                  }
+                    // For admin tours started from a non-admin route, offer to
+                    // navigate then retry. This is explicit and avoids surprising
+                    // auto-redirects.
+                    if ((tour.scope === 'admin' || tour.id.startsWith('admin-')) && currentScope !== 'admin' && typeof confirm === 'function') {
+                      const routeMap = {
+                        'admin-dashboard': '/admin',
+                        'admin-map-management': '/admin/map',
+                        'admin-data-management': '/admin/companies',
+                      };
 
-                  // Helpful UX: if this is an admin-only tour and we're currently
-                  // on a visitor route, attempt to navigate to the relevant admin
-                  // route and re-attempt the tour automatically. Keep this very
-                  // lightweight (no infinite retry) — only one retry is performed.
-                  if (tour.id.startsWith('admin-') && currentScope !== 'admin') {
-                    // Choose the primary route for admin tours (falls back to /admin)
-                    const routeMap = {
-                      'admin-dashboard': '/admin',
-                      'admin-map-management': '/admin/map',
-                      'admin-data-management': '/admin/companies',
-                    };
+                      const targetRoute = routeMap[tour.id] || '/admin';
 
-                    const targetRoute = routeMap[tour.id] || '/admin';
-                    try {
-                      navigate(targetRoute);
-                      // Retry after a short delay to allow the route to render
-                      setTimeout(() => { try { start(); } catch (_) { /* ignore */ } }, 350);
-                    } catch (e) {
-                      // navigation failed — ignore and let user navigate manually
+                      // Ask the user whether they'd like to open the admin view
+                      // and re-attempt the tour. If they confirm, navigate and retry.
+                      const shouldOpen = await confirm({
+                        title: t('tour.openAdminTitle') || 'Open admin and start',
+                        message: ctxMessage,
+                        confirmText: t('tour.openAdmin'),
+                        cancelText: t('tour.cancel'),
+                      });
+
+                      if (shouldOpen) {
+                        try {
+                          navigate(targetRoute);
+                          // Give additional time for admin route to render before retrying
+                          setTimeout(() => { try { start(); } catch (_) { /* ignore */ } }, 750);
+                        } catch (e) {
+                          // navigation failed — show a friendly toast
+                          toastWarning(t('tour.navigationFailed') || 'Navigation failed — please navigate manually and try again.');
+                        }
+                      } else {
+                        toastWarning(ctxMessage);
+                      }
+
+                    } else {
+                      // Default: show a gentle toast explaining the missing context
+                      toastWarning(ctxMessage);
                     }
+                  } catch (e) {
+                    // defensive fallback if confirm isn't available or something throws
+                    try { toastWarning(ctxMessage); } catch (_) { window.alert?.(ctxMessage); }
                   }
                   }
                 });

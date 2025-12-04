@@ -42,9 +42,10 @@ jest.mock('../../config/tourSteps/adminTourSteps', () => ({
 const mockStart = jest.fn();
 jest.mock('../../hooks/useOnboardingTour', () => ({ __esModule: true, default: (tour) => ({ start: mockStart }) }))
 
-// Mock dialog context (toast helpers)
+// Mock dialog context (toast helpers and confirm)
 const mockToastWarning = jest.fn();
-jest.mock('../../contexts/DialogContext', () => ({ __esModule: true, useDialog: () => ({ toastWarning: mockToastWarning, toastInfo: jest.fn(), toastSuccess: jest.fn() }), DialogProvider: ({ children }) => children }))
+const mockConfirm = jest.fn(async () => true);
+jest.mock('../../contexts/DialogContext', () => ({ __esModule: true, useDialog: () => ({ toastWarning: mockToastWarning, toastInfo: jest.fn(), toastSuccess: jest.fn(), confirm: mockConfirm }), DialogProvider: ({ children }) => children }))
 
 import TourList from '../onboarding/TourList'
 
@@ -129,8 +130,8 @@ describe('TourList', () => {
     const btns = getAllByRole('button');
     btns[0].click();
 
-    // Wait for retry delay + promise chain
-    await new Promise((r) => setTimeout(r, 550));
+    // Wait for retry delay + promise chain (longer since UI shows a confirm first)
+    await new Promise((r) => setTimeout(r, 1000));
 
     // Expect navigate to have been called to '/admin' and start retried
     const { useNavigate } = require('react-router-dom');
