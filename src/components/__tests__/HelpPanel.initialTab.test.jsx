@@ -2,7 +2,7 @@ import React from 'react';
 // jsdom in some environments doesn't provide TextEncoder — polyfill for react-router
 const { TextEncoder } = require('util');
 global.TextEncoder = global.TextEncoder || TextEncoder;
-import { render, fireEvent } from '@testing-library/react';
+import { render, fireEvent, waitFor } from '@testing-library/react';
 
 // Mock translations
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }) }));
@@ -56,11 +56,10 @@ describe('HelpPanel', () => {
     console.log('AFTER CLICK:', document.body.innerHTML);
 
     // The local hook is absent so TourList should call the onboarding
-    // context `startTour` fallback — assert that it was invoked with the
-    // expected tour id and source.
+    // context `startTour` fallback — wait for the async flow and assert
+    // that it was invoked with the expected tour id and source.
     const { __mockStartTour } = require('../../contexts/OnboardingContext');
-    console.log('mockStartTourCalls:', __mockStartTour.mock.calls.length);
-    expect(__mockStartTour).toHaveBeenCalled();
+    await waitFor(() => expect(__mockStartTour).toHaveBeenCalled());
     const calledWith = __mockStartTour.mock.calls[0] || [];
     expect(calledWith[0]).toBe('visitor-welcome');
     expect(calledWith[1]).toBe('help');
