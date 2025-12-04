@@ -5,6 +5,7 @@
  */
 
 export const adminDashboardTour = {
+  scope: 'admin',
   id: 'admin-dashboard',
   autoStart: true,
   roles: ['super_admin', 'system_manager', 'event_manager', 'content_editor'],
@@ -118,6 +119,7 @@ export const adminDashboardTour = {
 };
 
 export const adminMapManagementTour = {
+  scope: 'admin',
   id: 'admin-map-management',
   autoStart: false,
   roles: ['super_admin', 'system_manager'],
@@ -216,6 +218,7 @@ export const adminMapManagementTour = {
 };
 
 export const adminDataManagementTour = {
+  scope: 'admin',
   id: 'admin-data-management',
   autoStart: false,
   roles: ['super_admin', 'event_manager'],

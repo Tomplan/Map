@@ -81,6 +81,8 @@ export function OnboardingProvider({ children }) {
    * Stop the current tour
    */
   const stopTour = useCallback(() => {
+    // Ensure driver-active class is removed (defensive cleanup)
+    document.body.classList.remove('driver-active');
     setActiveTour(null);
     setIsRunning(false);
   }, []);

@@ -1,11 +1,13 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useOnboardingTour from '../../hooks/useOnboardingTour';
+import TourErrorBoundary from './TourErrorBoundary';
 
 /**
  * OnboardingTour Component
  *
  * Wrapper component for Driver.js tours that handles auto-start and lifecycle
+ * Includes error boundary for robust error handling
  *
  * @param {Object} tourConfig - Tour configuration
  * @param {string} tourConfig.id - Unique tour ID
@@ -20,12 +22,41 @@ export default function OnboardingTour({ tourConfig, onComplete, onDismiss, chil
     onDismiss,
   });
 
-  // Expose start/stop functions to children if it's a function (render prop pattern)
-  if (typeof children === 'function') {
-    return children({ start, stop, isActive });
-  }
+  // Handle tour-specific retry logic
+  const handleRetry = () => {
+    if (start) {
+      start();
+    }
+  };
 
-  return children || null;
+  // Handle tour-specific dismiss logic
+  const handleDismiss = () => {
+    if (stop) {
+      stop();
+    }
+    if (onDismiss) {
+      onDismiss();
+    }
+  };
+
+  // Create the tour content with error boundary
+  const tourContent = () => {
+    // Expose start/stop functions to children if it's a function (render prop pattern)
+    if (typeof children === 'function') {
+      return children({ start, stop, isActive });
+    }
+
+    return children || null;
+  };
+
+  return (
+    <TourErrorBoundary 
+      onRetry={handleRetry}
+      onDismiss={handleDismiss}
+    >
+      {tourContent()}
+    </TourErrorBoundary>
+  );
 }
 
 OnboardingTour.propTypes = {

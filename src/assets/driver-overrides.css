@@ -1,0 +1,139 @@
+/* Driver.js CSS Overrides - Comprehensive Fix for Tour Popup Freezing */
+/* Fix critical pointer-events and interaction issues that cause tour to freeze */
+
+/* === CRITICAL: Force pointer-events for ALL tour UI elements === */
+.driver-active .driver-popover,
+.driver-active .driver-popover *,
+.driver-active .driver-popover button,
+.driver-active .driver-popover-close-btn,
+.driver-active .driver-popover-footer button,
+.driver-active .driver-popover-navigation-btns button,
+.driver-active .driver-popover-navigation-btns *,
+.driver-active .driver-popover-description,
+.driver-active .driver-popover-title,
+.driver-active .driver-popover-footer,
+.driver-active .driver-popover-arrow {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  user-select: text !important;
+}
+
+/* === CRITICAL: Ensure buttons are explicitly clickable === */
+.driver-active .driver-popover-navigation-btns button,
+.driver-active .driver-popover-close-btn {
+  display: inline-block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  text-decoration: none !important;
+}
+
+/* === CRITICAL: Fix button hover states === */
+.driver-active .driver-popover-navigation-btns button:hover,
+.driver-active .driver-popover-close-btn:hover {
+  opacity: 0.8 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* === CRITICAL: Remove any conflicting styles that might block interaction === */
+.driver-active .driver-popover button:disabled {
+  opacity: 0.5 !important;
+  pointer-events: none !important;
+}
+
+/* === CRITICAL: Overlay should pass ALL clicks through === */
+.driver-active .driver-overlay {
+  pointer-events: none !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* === CRITICAL: Active element should allow interaction === */
+.driver-active .driver-active-element,
+.driver-active .driver-active-element * {
+  pointer-events: auto !important;
+}
+
+/* === CRITICAL: Ensure popover is always on top and visible === */
+.driver-popover {
+  z-index: 2147483647 !important;
+  position: fixed !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+/* === CRITICAL: Fix popover content layout === */
+.driver-active .driver-popover-wrapper {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 2147483647 !important;
+}
+
+/* === CRITICAL: Prevent any CSS transforms that might break interaction === */
+.driver-active .driver-popover,
+.driver-active .driver-popover * {
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* === CRITICAL: Force text selection to work properly === */
+.driver-active .driver-popover-title,
+.driver-active .driver-popover-description {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+}
+
+/* === CRITICAL: Ensure arrow doesn't block interaction === */
+.driver-active .driver-popover-arrow {
+  pointer-events: none !important;
+}
+
+/* === BROWSER-SPECIFIC FIXES === */
+
+/* Safari/Firefox specific fixes */
+@supports (-webkit-appearance: none) {
+  .driver-active .driver-popover button {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+  }
+}
+
+/* Chrome specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .driver-active .driver-popover button {
+    outline: none !important;
+    border-radius: 0 !important;
+  }
+}
+
+/* === MOBILE FIXES === */
+@media (max-width: 768px) {
+  .driver-active .driver-popover {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    max-width: none !important;
+    width: auto !important;
+  }
+  
+  .driver-active .driver-popover-navigation-btns {
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+  
+  .driver-active .driver-popover-navigation-btns button {
+    flex: 1 !important;
+    margin: 0 5px !important;
+  }
+}

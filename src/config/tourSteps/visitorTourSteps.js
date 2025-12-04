@@ -5,6 +5,7 @@
  */
 
 export const visitorWelcomeTour = {
+  scope: 'visitor',
   id: 'visitor-welcome',
   autoStart: true,
   roles: null, // Available to all users
@@ -73,6 +74,7 @@ export const visitorWelcomeTour = {
 };
 
 export const visitorMapTour = {
+  scope: 'visitor',
   id: 'visitor-map',
   autoStart: false,
   roles: null,
@@ -171,6 +173,7 @@ export const visitorMapTour = {
 };
 
 export const visitorExhibitorsTour = {
+  scope: 'visitor',
   id: 'visitor-exhibitors',
   autoStart: false,
   roles: null,

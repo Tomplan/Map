@@ -1,11 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
 import { mdiCheckCircle, mdiPlayCircle, mdiRestart, mdiMapMarker, mdiViewDashboard, mdiAccountGroup } from '@mdi/js';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import useOnboardingTour from '../../hooks/useOnboardingTour';
+import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
 import { getAllVisitorTours } from '../../config/tourSteps/visitorTourSteps';
 import { getAllAdminTours } from '../../config/tourSteps/adminTourSteps';
@@ -25,11 +26,23 @@ export default function TourList() {
   const visitorTours = getAllVisitorTours();
   const adminTours = getAllAdminTours();
 
-  // Filter tours based on user role
+  // Determine app scope from current route (admin vs visitor)
+  const currentScope = React.useMemo(() => (
+    location.pathname.startsWith('/admin') ? 'admin' : 'visitor'
+  ), [location.pathname]);
+
+  // Filter tours based on user role and current route scope
   const availableTours = React.useMemo(() => {
     const allTours = [...visitorTours, ...adminTours];
 
-    return allTours.filter(tour => {
+    return allTours
+      .filter(tour => {
+        // Scope filtering: if the tour has an explicit `scope`, only show it in matching routes.
+        if (tour.scope && tour.scope !== currentScope) return false;
+
+        return true;
+      })
+      .filter(tour => {
       // No role restriction - available to all
       if (!tour.roles) return true;
 
@@ -39,7 +52,7 @@ export default function TourList() {
       // Check if user has required role
       return tour.roles.includes(role);
     });
-  }, [visitorTours, adminTours, role]);
+  }, [visitorTours, adminTours, role, currentScope]);
 
   // Prioritize tours relevant to current route
   const sortedTours = React.useMemo(() => {
@@ -81,11 +94,41 @@ export default function TourList() {
  */
 function TourCard({ tour }) {
   const { t, i18n } = useTranslation();
+  const location = useLocation();
+  const currentScope = React.useMemo(() => (
+    location.pathname.startsWith('/admin') ? 'admin' : 'visitor'
+  ), [location.pathname]);
   const { isTourCompleted } = useOnboarding();
+  const navigate = useNavigate();
   const { start } = useOnboardingTour(tour);
+  const { toastWarning } = useDialog();
 
   const completed = isTourCompleted(tour.id);
   const currentLanguage = i18n.language;
+
+  // Determine whether required targets for this tour are likely present
+  const requiredSteps = React.useMemo(() => (tour.steps || []).filter(s => s.element && s.element !== 'body'), [tour]);
+  const allRequiredMissing = React.useMemo(() => (
+    requiredSteps.length > 0 && requiredSteps.every(s => !document.querySelector(s.element))
+  ), [requiredSteps]);
+
+  // Decide whether the Start button should be disabled.
+  // Behaviour: only disable when ALL required targets are missing and
+  // there is no known scope to navigate to. If the tour has an explicit
+  // `scope` (for example `admin`) we will allow the Start button to be
+  // actionable so the UI can navigate the user to the correct context and
+  // re-attempt the tour. This avoids showing greyed-out Start buttons
+  // in the Help Panel and lets the app provide a better guidance flow.
+  const shouldDisableStart = React.useMemo(() => {
+    if (!allRequiredMissing) return false;
+    // If no explicit scope is provided and the tour doesn't follow the
+    // well-known 'admin-' / 'visitor-' naming convention, disable the
+    // Start button — otherwise keep it actionable so the app can
+    // navigate or let the tour start() preflight decide.
+    if (!tour.scope && !/^admin-|visitor-/.test(tour.id)) return true;
+
+    return false;
+  }, [allRequiredMissing, tour.scope]);
 
   // Get localized title (if tour has title field)
   const title = getLocalizedContent(tour.title || tour.id, currentLanguage);
@@ -124,8 +167,55 @@ function TourCard({ tour }) {
             </span>
 
             <button
-              onClick={() => start()}
-              className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+              onClick={() => {
+                // start() now returns a Promise<boolean|void>. Handle the result async and show
+                // a friendly message if the tour couldn't start due to missing targets.
+                start().then((result) => {
+                  if (result === false) {
+                  // Friendly UX: advise the user that this tour requires the related page/context
+                  // We use a simple alert here so we don't need to add UI components — can be replaced
+                  // with a nicer toast/modal if desired.
+                  const ctxMessage = tour.id.startsWith('admin-')
+                    ? 'This tour only works from the Admin dashboard. Please navigate to the admin view and try again.'
+                    : 'This tour needs to be started from the relevant page. Please navigate to the correct page and try again.';
+                  // Use the app's toast system rather than a blocking alert so the
+                  // user gets non-disruptive feedback inside the app UI.
+                  try {
+                    toastWarning(ctxMessage);
+                  } catch (e) {
+                    // Fallback to global alert in case the Toast system isn't
+                    // available (very defensive for tests/environments).
+                    window.alert?.(ctxMessage);
+                  }
+
+                  // Helpful UX: if this is an admin-only tour and we're currently
+                  // on a visitor route, attempt to navigate to the relevant admin
+                  // route and re-attempt the tour automatically. Keep this very
+                  // lightweight (no infinite retry) — only one retry is performed.
+                  if (tour.id.startsWith('admin-') && currentScope !== 'admin') {
+                    // Choose the primary route for admin tours (falls back to /admin)
+                    const routeMap = {
+                      'admin-dashboard': '/admin',
+                      'admin-map-management': '/admin/map',
+                      'admin-data-management': '/admin/companies',
+                    };
+
+                    const targetRoute = routeMap[tour.id] || '/admin';
+                    try {
+                      navigate(targetRoute);
+                      // Retry after a short delay to allow the route to render
+                      setTimeout(() => { try { start(); } catch (_) { /* ignore */ } }, 350);
+                    } catch (e) {
+                      // navigation failed — ignore and let user navigate manually
+                    }
+                  }
+                  }
+                });
+              }}
+              disabled={shouldDisableStart}
+              aria-disabled={shouldDisableStart}
+              title={shouldDisableStart ? 'This tour requires a specific page to be visible for this tour' : undefined}
+              className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${shouldDisableStart ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
             >
               <Icon path={completed ? mdiRestart : mdiPlayCircle} size={0.6} />
               {completed ? t('tour.restartTour') : t('tour.startTour')}
