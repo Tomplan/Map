@@ -8,7 +8,15 @@
  */
 
 const puppeteer = require('puppeteer');
-const fetch = require('node-fetch');
+
+// Use the built-in global fetch on Node 18+, otherwise dynamically import
+// node-fetch. We can't use top-level await in CommonJS, so expose an async
+// helper function and call it where needed.
+const fetchFn = async (...args) => {
+  if (typeof globalThis.fetch === 'function') return globalThis.fetch(...args);
+  const { default: nodeFetch } = await import('node-fetch');
+  return nodeFetch(...args);
+};
 const path = require('path');
 
 // We'll auto-detect the best base URL at runtime. Pass E2E_BASE or
@@ -24,7 +32,7 @@ async function waitForServer(u, timeout = 20000) {
       // Some dev servers don't respond reliably to HEAD — try HEAD then GET.
       let res;
       try {
-        res = await fetch(u, { method: 'HEAD' });
+        res = await fetchFn(u, { method: 'HEAD' });
       } catch (e) {
         res = null;
       }
@@ -32,7 +40,7 @@ async function waitForServer(u, timeout = 20000) {
       if (!res || (!res.ok && res.status !== 404)) {
         // HEAD failed or not informative — try GET as fallback
         try {
-          res = await fetch(u, { method: 'GET' });
+          res = await fetchFn(u, { method: 'GET' });
         } catch (e) {
           res = null;
         }

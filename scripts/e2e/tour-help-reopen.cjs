@@ -5,7 +5,13 @@
  */
 
 const puppeteer = require('puppeteer');
-const fetch = require('node-fetch');
+
+// Node 18+ exposes a global fetch; if not present dynamically import node-fetch.
+const fetchFn = async (...args) => {
+  if (typeof globalThis.fetch === 'function') return globalThis.fetch(...args);
+  const { default: nodeFetch } = await import('node-fetch');
+  return nodeFetch(...args);
+};
 
 const DEFAULT_HOST = process.env.E2E_HOST || 'http://localhost:5173';
 const baseCandidates = [process.env.E2E_BASE, `${DEFAULT_HOST}/Map`, `${DEFAULT_HOST}/Map/`, `${DEFAULT_HOST}`, `${DEFAULT_HOST}/index.html`].filter(Boolean);
@@ -15,9 +21,17 @@ async function waitForServer(u, timeout = 20000) {
   while (Date.now() - start < timeout) {
     try {
       let res;
-      try { res = await fetch(u, { method: 'HEAD' }); } catch (e) { res = null; }
+      try {
+        res = await fetchFn(u, { method: 'HEAD' });
+      } catch (e) {
+        res = null;
+      }
       if (!res || (!res.ok && res.status !== 404)) {
-        try { res = await fetch(u, { method: 'GET' }); } catch (e) { res = null; }
+        try {
+          res = await fetchFn(u, { method: 'GET' });
+        } catch (e) {
+          res = null;
+        }
       }
       if (res && (res.ok || res.status === 200 || res.status === 404)) return true;
     } catch (e) { /* ignore */ }
