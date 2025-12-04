@@ -17,6 +17,7 @@ import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
+import { useOnboarding } from '../contexts/OnboardingContext';
 import YearScopeSidebar from './admin/YearScopeSidebar';
 import CollapsedShortcuts from './admin/CollapsedShortcuts';
 import SidebarTile from './admin/SidebarTile';
@@ -42,6 +43,20 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
   // Help panel state
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [initialHelpTab, setInitialHelpTab] = useState(null);
+  const { lastCompletedTour, clearLastCompletedTour } = useOnboarding();
+
+  // When a tour completes *and* it was started from the Help panel, reopen
+  // the Help panel to the interactive-tour tab so the user can review or
+  // restart the content they just finished. We only do this for tours that
+  // were started from Help (safer behavior) and we clear the marker once used.
+  useEffect(() => {
+    if (lastCompletedTour?.source === 'help' && !isHelpOpen) {
+      setInitialHelpTab('interactive-tour');
+      setIsHelpOpen(true);
+      clearLastCompletedTour();
+    }
+  }, [lastCompletedTour, isHelpOpen, clearLastCompletedTour]);
   // Year change confirmation state
   const [pendingYear, setPendingYear] = useState(null);
   const [showYearModal, setShowYearModal] = useState(false);
@@ -114,7 +129,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         full email address on a single line while still keeping the compact
         collapsed state at w-16.
       */}
-      <aside className={`${isCollapsed ? 'w-[66px]' : 'w-[340px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
+      <aside className={`admin-sidebar ${isCollapsed ? 'w-[66px]' : 'w-[340px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
         {/* Header */}
         <div className={`p-4 border-b border-gray-200 flex items-center h-[88px] ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           <div className={`${isCollapsed ? 'opacity-0 w-0 h-0 overflow-hidden' : 'opacity-100 flex-1 min-w-0'}`}>
@@ -259,7 +274,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         </div>
 
         {/* Help Button */}
-        <div className="p-2 border-t border-gray-200">
+        <div className="help-button p-2 border-t border-gray-200">
           <SidebarTile
             onClick={() => setIsHelpOpen(true)}
             icon={mdiHelpCircleOutline}
@@ -289,7 +304,15 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       </main>
 
       {/* Help Panel */}
-      <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      <HelpPanel
+        isOpen={isHelpOpen}
+        onClose={() => setIsHelpOpen(false)}
+        onReopen={() => {
+          console.log('[ADMIN DEBUG] HelpPanel onReopen called, setting isHelpOpen to true');
+          setIsHelpOpen(true);
+        }}
+        initialTab={initialHelpTab}
+      />
       {/* Year change confirmation modal (prevent surprising context switches) */}
       <YearChangeModal
         isOpen={showYearModal}

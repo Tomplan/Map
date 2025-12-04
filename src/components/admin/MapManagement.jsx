@@ -418,7 +418,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
   return (
     <ProtectedSection requiredRole={['super_admin', 'system_manager', 'event_manager']}>
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow" data-testid="map-management-container">
         <div className="p-6 border-b border-gray-200">
           {/* Header with year info and actions */}
           <div className="flex justify-between items-center mb-4">
@@ -483,6 +483,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 <>
                   <button
                     onClick={handleCopyFromPreviousYear}
+                    data-testid="copy-from-year-button"
                     className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                     title={`Copy markers from ${selectedYear - 1}`}
                   >
@@ -676,7 +677,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
 
           {/* RIGHT: Detail/Edit Panel */}
           {!isReadOnly && (
-            <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
+            <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0" data-testid="marker-properties-panel">
             {!selectedMarker ? (
               <div className="flex items-center justify-center h-full text-gray-500">
                 {t('mapManagement.selectMarker')}

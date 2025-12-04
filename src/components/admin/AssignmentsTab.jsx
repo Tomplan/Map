@@ -375,12 +375,13 @@ export default function AssignmentsTab({ selectedYear }) {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="assignments-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
+            data-testid="assignments-search"
             type="text"
             placeholder={t('helpPanel.assignments.searchPlaceholder')}
             value={searchTerm}
@@ -394,6 +395,7 @@ export default function AssignmentsTab({ selectedYear }) {
         <div className="flex gap-2">
           <button
             onClick={() => handleViewArchived(selectedYear)}
+            data-testid="view-archived-button"
             className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
             title={`View archived assignments for ${selectedYear}`}
           >
@@ -402,6 +404,7 @@ export default function AssignmentsTab({ selectedYear }) {
           </button>
           <button
             onClick={handleArchive}
+            data-testid="archive-assignments-button"
             className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={assignments.length === 0}
             title={`Archive all assignments for ${selectedYear}`}
@@ -416,6 +419,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
+                    data-testid="sort-companies-dropdown"
                     className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                     title="Sort table rows"
                   >
@@ -425,6 +429,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   </select>
                   <button
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    data-testid="sort-companies-direction"
                     className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                     title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
                   >
@@ -438,6 +443,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   <select
                     value={columnSort}
                     onChange={(e) => setColumnSort(e.target.value)}
+                    data-testid="sort-markers-dropdown"
                     className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
                     title="Sort table columns"
                   >
@@ -446,6 +452,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   </select>
                   <button
                     onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
+                    data-testid="sort-markers-direction"
                     className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                     title={columnSortDirection === 'asc' ? 'Ascending' : 'Descending'}
                   >
@@ -458,7 +465,7 @@ export default function AssignmentsTab({ selectedYear }) {
         </div>
 
       {/* Assignment Matrix */}
-      <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+      <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }} data-testid="assignments-matrix">
         <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100">
             <tr className="text-gray-900">
@@ -544,7 +551,7 @@ export default function AssignmentsTab({ selectedYear }) {
       </div>
 
       {/* Legend and Stats */}
-      <div className="mt-4 p-3 bg-gray-100 rounded-lg space-y-2">
+      <div className="mt-4 p-3 bg-gray-100 rounded-lg space-y-2" data-testid="assignments-legend">
         <div className="flex items-center gap-4 text-sm text-gray-900">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-green-100 border border-green-200 rounded flex items-center justify-center">

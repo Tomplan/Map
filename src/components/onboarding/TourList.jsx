@@ -16,20 +16,27 @@ import { getAllAdminTours } from '../../config/tourSteps/adminTourSteps';
  *
  * Displays available tours with completion status and start buttons
  */
-export default function TourList() {
+export default function TourList({ startSource, onClose, onReopen }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { role } = useUserRole();
-  const { isTourCompleted } = useOnboarding();
+  const { isTourCompleted, startTour, tours } = useOnboarding();
 
   // Get all available tours
   const visitorTours = getAllVisitorTours();
   const adminTours = getAllAdminTours();
 
   // Determine app scope from current route (admin vs visitor)
-  const currentScope = React.useMemo(() => (
-    location.pathname.startsWith('/admin') ? 'admin' : 'visitor'
-  ), [location.pathname]);
+  // Detect scope from both pathname and hash. The app sometimes uses a
+  // base path like "/Map/" with hash routing ("#/admin") so a plain
+  // pathname check will miss admin routes. Use pathname OR hash to derive
+  // the current scope reliably.
+  const currentScope = React.useMemo(() => {
+    const path = location.pathname || '';
+    const hash = location.hash || '';
+    const isAdmin = path.startsWith('/admin') || hash.startsWith('#/admin') || hash.startsWith('#/admin/');
+    return isAdmin ? 'admin' : 'visitor';
+  }, [location.pathname, location.hash]);
 
   // Filter tours based on user role and current route scope
   const availableTours = React.useMemo(() => {
@@ -57,8 +64,8 @@ export default function TourList() {
   // Prioritize tours relevant to current route
   const sortedTours = React.useMemo(() => {
     return [...availableTours].sort((a, b) => {
-      const aRelevant = isRelevantToRoute(a.id, location.pathname);
-      const bRelevant = isRelevantToRoute(b.id, location.pathname);
+      const aRelevant = isRelevantToRoute(a.id, location.pathname, location.hash);
+      const bRelevant = isRelevantToRoute(b.id, location.pathname, location.hash);
 
       if (aRelevant && !bRelevant) return -1;
       if (!aRelevant && bRelevant) return 1;
@@ -75,33 +82,43 @@ export default function TourList() {
   }
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-gray-600 mb-4">
-        {t('tour.availableTours')}
-      </p>
-
+    <div className="space-y-3">
       {sortedTours.map(tour => (
-        <TourCard key={tour.id} tour={tour} />
+        <TourCard 
+          key={tour.id} 
+          tour={tour} 
+          startTour={startTour} 
+          isTourCompleted={isTourCompleted}
+          startSource={startSource}
+          onClose={onClose}
+        />
       ))}
     </div>
   );
 }
+
+TourList.propTypes = {
+  startSource: PropTypes.string.isRequired,
+  onClose: PropTypes.func,
+  onReopen: PropTypes.func,
+};
+
+TourList.defaultProps = {
+  onClose: () => {},
+  onReopen: null,
+};
 
 /**
  * TourCard Component
  *
  * Individual tour card with title, description, and start button
  */
-function TourCard({ tour }) {
+function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const currentScope = React.useMemo(() => (
-    location.pathname.startsWith('/admin') ? 'admin' : 'visitor'
-  ), [location.pathname]);
-  const { isTourCompleted } = useOnboarding();
   const navigate = useNavigate();
+  const { confirm, toastWarning } = useDialog();
   const { start } = useOnboardingTour(tour);
-  const { toastWarning, confirm } = useDialog();
 
   const completed = isTourCompleted(tour.id);
   const currentLanguage = i18n.language;
@@ -139,6 +156,134 @@ function TourCard({ tour }) {
   const icon = getTourIcon(tour.id);
   const duration = getTourDuration(tour.id);
 
+  const handleStartTour = async () => {
+    // DEBUG: trace when start flow is triggered (tests rely on this)
+    console.log('[TOUR DEBUG] handleStartTour clicked for', tour.id, 'source:', startSource);
+    console.log('[TOUR DEBUG] start function type:', typeof start);
+    try {
+      if (typeof startTour === 'function') {
+        const stsrc = (startTour && startTour.toString && startTour.toString().slice(0, 240)) || String(startTour);
+        console.log('[TOUR DEBUG] startTour function source preview:', stsrc);
+      } else {
+        console.log('[TOUR DEBUG] startTour type:', typeof startTour);
+      }
+    } catch (err) {
+      /* ignore */
+    }
+    try {
+      // Diagnostic: print a short prefix of the function source so we can
+      // identify whether the `start` function is the test mock or a real
+      // implementation during unit tests.
+      if (typeof start === 'function') {
+        const src = (start && start.toString && start.toString().slice(0, 240)) || String(start);
+        console.log('[TOUR DEBUG] start function source preview:', src);
+      }
+    } catch (err) {
+      /* ignore diagnostics */
+    }
+    // Determine the target path: prefer explicit tour.path, otherwise
+    // infer from well-known tour id patterns (visitor- / admin- prefixes)
+    const targetPath = tour.path || inferPathFromTourId(tour.id);
+    console.log('[TOUR DEBUG] targetPath:', targetPath, 'current location:', location.pathname, location.hash);
+
+    // Helper to determine whether current location is already the
+    // requested target. This considers both hash and pathname forms
+    // to correctly handle deployments where the app is served from
+    // a base path (e.g. /Map/#/admin) or direct paths (/#/admin).
+    const isAlreadyOnTarget = (() => {
+      if (!targetPath) return false;
+
+      // Check the hash-based route: '#/admin' -> '/admin'
+      const currentHash = (location.hash || '').startsWith('#') ? location.hash.substring(1) : location.hash || '';
+
+      // Check pathname as well (some builds use /admin directly)
+      const currentPathname = location.pathname || '';
+
+      const normalize = p => (p ? (p.endsWith('/') ? p.slice(0, -1) : p) : '');
+
+      const currentHashNorm = normalize(currentHash);
+      const currentPathnameNorm = normalize(currentPathname);
+      const targetNorm = normalize(targetPath);
+
+      // If either the hash or pathname matches the target, consider us already there
+      const result = currentHashNorm === targetNorm || currentPathnameNorm.endsWith(targetNorm) || currentPathnameNorm === targetNorm;
+      console.log('[TOUR DEBUG] isAlreadyOnTarget:', result, '(currentHash:', currentHashNorm, 'currentPath:', currentPathnameNorm, 'target:', targetNorm + ')');
+      return result;
+    })();
+
+    // Check page location FIRST before attempting to start the tour.
+    // If we need to navigate to a different page, show confirmation immediately.
+    try {
+      // If tour requires a specific page AND we're not on that page,
+      // show confirmation dialog FIRST (don't waste time trying to start)
+      if (targetPath && !isAlreadyOnTarget) {
+        // Close help panel first so dialog appears on top layer (no greyout)
+        if (onClose) onClose();
+
+        const tourTitle = getLocalizedContent(tour.title || tour.id, i18n.language);
+        const confirmed = await confirm({
+          title: t('tour.navigationRequiredTitle'),
+          message: t('tour.navigationRequiredText', { page: tourTitle }),
+        });
+
+        if (confirmed) {
+          // User confirmed - navigate to target page and start tour
+          try { sessionStorage.setItem('onboarding:startAfterNav', JSON.stringify({ id: tour.id, source: startSource })); } catch (e) { /* ignore */ }
+          navigate(targetPath);
+          // In environments where the Help panel remains mounted (tests or
+          // special routing), attempt a retry start after navigation so
+          // the tour can begin without relying on external page listeners.
+          if (typeof start === 'function') {
+            setTimeout(() => {
+              try { start({ source: startSource, waitMs: 7000 }); } catch (e) { /* ignore */ }
+            }, 900);
+          }
+          return;
+        } else {
+          // User cancelled - reopen help panel if tour was started from help
+          console.log('[TOUR DEBUG] User cancelled navigation. startSource:', startSource, 'onReopen:', typeof onReopen);
+          if (startSource === 'help' && onReopen) {
+            console.log('[TOUR DEBUG] Calling onReopen to restore help panel');
+            onReopen();
+          } else {
+            console.log('[TOUR DEBUG] Not calling onReopen. startSource === "help":', startSource === 'help', 'onReopen exists:', !!onReopen);
+          }
+          return;
+        }
+      }
+
+      // We're already on the target page - try to start the tour
+      const startResult = await start ? await start({ source: startSource }) : null;
+
+      // Normalize the result so callers can check success consistently
+      const startFailed = startResult === false || (startResult && typeof startResult === 'object' && startResult.success === false);
+
+      if (!startFailed) {
+        // Started successfully (or there was no local start function), nothing more to do
+        if (!startResult) {
+          // If start() didn't exist we still want to signal the onboarding
+          // context so other components can pick up the active tour.
+          startTour(tour.id, startSource);
+        }
+        return;
+      }
+
+      // Start failed even though we're on the right page - show error
+      try {
+        toastWarning(t('tour.startFailed', 'This tour could not be started because required page elements are not present.'));
+      } catch (e) {
+        console.warn('Failed to show tour failure toast', e);
+      }
+
+      return;
+    } catch (e) {
+      // Non-fatal: fall back to the old context start which will try to start
+      // the tour globally. This preserves backward-compatibility.
+      try { startTour(tour.id, startSource); } catch (e2) { console.warn('Fallback start failed', e2); }
+      return;
+    }
+  };
+
   return (
     <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
       <div className="flex items-start gap-3">
@@ -167,67 +312,7 @@ function TourCard({ tour }) {
             </span>
 
             <button
-              onClick={() => {
-                // start() now returns a Promise<boolean|void>. Handle the result async and show
-                // a friendly message if the tour couldn't start due to missing targets.
-                start().then(async (result) => {
-                  if (result === false) {
-                  // Friendly UX: advise the user that this tour requires the related page/context
-                  // We use a simple alert here so we don't need to add UI components — can be replaced
-                  // with a nicer toast/modal if desired.
-                  const ctxMessage = tour.id.startsWith('admin-')
-                    ? 'This tour only works from the Admin dashboard. Please navigate to the admin view and try again.'
-                    : 'This tour needs to be started from the relevant page. Please navigate to the correct page and try again.';
-                  // Use the app's toast system rather than a blocking alert so the
-                  // user gets non-disruptive feedback inside the app UI.
-                  // Use a confirm dialog to let the user decide to navigate and retry
-                  // when this tour is scoped to a different area (eg. admin).
-                  try {
-                    // For admin tours started from a non-admin route, offer to
-                    // navigate then retry. This is explicit and avoids surprising
-                    // auto-redirects.
-                    if ((tour.scope === 'admin' || tour.id.startsWith('admin-')) && currentScope !== 'admin' && typeof confirm === 'function') {
-                      const routeMap = {
-                        'admin-dashboard': '/admin',
-                        'admin-map-management': '/admin/map',
-                        'admin-data-management': '/admin/companies',
-                      };
-
-                      const targetRoute = routeMap[tour.id] || '/admin';
-
-                      // Ask the user whether they'd like to open the admin view
-                      // and re-attempt the tour. If they confirm, navigate and retry.
-                      const shouldOpen = await confirm({
-                        title: t('tour.openAdminTitle') || 'Open admin and start',
-                        message: ctxMessage,
-                        confirmText: t('tour.openAdmin'),
-                        cancelText: t('tour.cancel'),
-                      });
-
-                      if (shouldOpen) {
-                        try {
-                          navigate(targetRoute);
-                          // Give additional time for admin route to render before retrying
-                          setTimeout(() => { try { start(); } catch (_) { /* ignore */ } }, 750);
-                        } catch (e) {
-                          // navigation failed — show a friendly toast
-                          toastWarning(t('tour.navigationFailed') || 'Navigation failed — please navigate manually and try again.');
-                        }
-                      } else {
-                        toastWarning(ctxMessage);
-                      }
-
-                    } else {
-                      // Default: show a gentle toast explaining the missing context
-                      toastWarning(ctxMessage);
-                    }
-                  } catch (e) {
-                    // defensive fallback if confirm isn't available or something throws
-                    try { toastWarning(ctxMessage); } catch (_) { window.alert?.(ctxMessage); }
-                  }
-                  }
-                });
-              }}
+              onClick={handleStartTour}
               disabled={shouldDisableStart}
               aria-disabled={shouldDisableStart}
               title={shouldDisableStart ? 'This tour requires a specific page to be visible for this tour' : undefined}
@@ -245,6 +330,14 @@ function TourCard({ tour }) {
 
 TourCard.propTypes = {
   tour: PropTypes.object.isRequired,
+  startTour: PropTypes.func.isRequired,
+  startSource: PropTypes.string.isRequired,
+  onClose: PropTypes.func,
+  isTourCompleted: PropTypes.func.isRequired,
+};
+
+TourCard.defaultProps = {
+  onClose: () => {},
 };
 
 /**
@@ -270,7 +363,14 @@ function isRelevantToRoute(tourId, pathname) {
   };
 
   const relevantRoutes = routeMap[tourId] || [];
-  return relevantRoutes.some(route => pathname.startsWith(route));
+  const path = pathname || '';
+  // If app uses hash routing (eg /Map/#/admin) the relevant route might be
+  // in the location.hash rather than pathname. When possible pass the hash
+  // as the third argument so we inspect it as well.
+  const hash = arguments.length > 2 ? arguments[2] : '';
+
+  // Check both pathname and hash for the route candidate.
+  return relevantRoutes.some(route => path.startsWith(route) || hash.startsWith('#' + route) || hash.startsWith('#' + route + '/'));
 }
 
 function getTourIcon(tourId) {
@@ -328,4 +428,31 @@ function getTourDuration(tourId) {
   };
 
   return durationMap[tourId] || 2;
+}
+
+/**
+ * Infer a reasonable target path from a tour ID when the tour config
+ * does not include an explicit `path` property. This supports older test
+ * fixtures and keeps behaviour predictable for common admin/visitor ids.
+ */
+function inferPathFromTourId(tourId) {
+  if (!tourId || typeof tourId !== 'string') return null;
+
+  if (tourId.startsWith('admin-')) {
+    if (tourId === 'admin-dashboard') return '/admin';
+    if (tourId === 'admin-map-management') return '/admin/map';
+    if (tourId === 'admin-data-management') return '/admin/companies';
+    // generic admin fallback
+    return '/admin';
+  }
+
+  if (tourId.startsWith('visitor-')) {
+    if (tourId === 'visitor-map') return '/map';
+    if (tourId === 'visitor-exhibitors') return '/exhibitors';
+    if (tourId === 'visitor-welcome') return '/';
+    // generic visitor fallback
+    return '/';
+  }
+
+  return null;
 }

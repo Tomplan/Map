@@ -91,8 +91,8 @@ describe('duplicate popover guard', () => {
     const nextBtn = popovers[0].querySelector('.driver-popover-next-btn');
     expect(nextBtn).not.toBeNull();
 
-    // wait for our fail-safe handler to be attached
-    await waitFor(() => expect(nextBtn.hasAttribute('data-tour-handler')).toBe(true));
+    // wait for our delegated wrapper handler to be attached
+    await waitFor(() => expect(popovers[0]._tourDelegationAttached === true || popovers[0].hasAttribute('data-tour-handler')).toBeTruthy());
 
     fireEvent.click(nextBtn);
 

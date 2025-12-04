@@ -19,7 +19,7 @@ jest.mock('react-router-dom', () => ({ useLocation: () => mockUseLocation(), use
 
 // Mock onboarding context and hooks
 jest.mock('../../contexts/OnboardingContext', () => ({
-  useOnboarding: () => ({ isTourCompleted: (id) => id === 'completed-tour' })
+  useOnboarding: () => ({ isTourCompleted: (id) => id === 'completed-tour', startTour: jest.fn() })
 }))
 
 // Tunable mock for user role so tests can flip roles
@@ -63,7 +63,7 @@ describe('TourList', () => {
   })
 
   test('on admin route visitor tours are hidden and admin tours are shown', () => {
-    mockUseLocation.mockReturnValue({ pathname: '/admin' });
+    mockUseLocation.mockReturnValue({ pathname: '/admin', hash: '' });
     mockUseUserRole.mockReturnValue({ role: 'super_admin' });
 
     const { queryByText, getByText } = render(<TourList />);
@@ -112,7 +112,7 @@ describe('TourList', () => {
 
   test('when admin tour is visible and start fails it navigates to admin and retries', async () => {
     // Ensure we're on a visitor route to demonstrate auto-navigate
-    mockUseLocation.mockReturnValue({ pathname: '/' });
+    mockUseLocation.mockReturnValue({ pathname: '/', hash: '' });
     mockUseUserRole.mockReturnValue({ role: 'super_admin' });
 
     // Replace tour lists so an admin tour (without scope) is visible on any route
@@ -130,8 +130,9 @@ describe('TourList', () => {
     const btns = getAllByRole('button');
     btns[0].click();
 
-    // Wait for retry delay + promise chain (longer since UI shows a confirm first)
-    await new Promise((r) => setTimeout(r, 1000));
+    // Wait for retry delay + promise chain (longer since UI shows a confirm first
+    // and we now wait longer for start retry with increased waitMs)
+    await new Promise((r) => setTimeout(r, 2200));
 
     // Expect navigate to have been called to '/admin' and start retried
     const { useNavigate } = require('react-router-dom');
@@ -146,7 +147,7 @@ describe('TourList', () => {
   
 
   test('start remains actionable for admin-prefixed tours even when required targets are missing', () => {
-    mockUseLocation.mockReturnValue({ pathname: '/admin' });
+    mockUseLocation.mockReturnValue({ pathname: '/admin', hash: '' });
     mockUseUserRole.mockReturnValue({ role: 'super_admin' });
 
     // Admin tour requires a .year-selector element which is absent
@@ -167,8 +168,18 @@ describe('TourList', () => {
     visitorSpy.mockRestore();
   })
 
+  test('hash-based admin route shows admin tours (path with hash)', () => {
+    // Simulate a base path with hash routing like /Map/#/admin
+    mockUseLocation.mockReturnValue({ pathname: '/Map/', hash: '#/admin' });
+    mockUseUserRole.mockReturnValue({ role: 'super_admin' });
+
+    const { queryByText, getByText } = render(<TourList />);
+    expect(queryByText('Welcome')).not.toBeInTheDocument();
+    expect(getByText('Admin')).toBeInTheDocument();
+  })
+
   test('enables Start when required targets are present', () => {
-    mockUseLocation.mockReturnValue({ pathname: '/admin' });
+    mockUseLocation.mockReturnValue({ pathname: '/admin', hash: '' });
     mockUseUserRole.mockReturnValue({ role: 'super_admin' });
 
     // Inject the required target into the DOM

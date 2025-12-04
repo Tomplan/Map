@@ -1,4 +1,7 @@
 import React from 'react';
+
+// Increase jest timeout for tests that intentionally wait for DOM appearance
+jest.setTimeout(15000);
 import { render, waitFor } from '@testing-library/react';
 
 // Mock the driver so we can detect whether it was instantiated
@@ -61,9 +64,9 @@ describe('tour start validation', () => {
     render(<TestStart tour={tour} />);
 
     // start() should return false because no required elements were found
-    // start() waits for up to 3000ms for missing elements — give the test
-    // a larger timeout to avoid flakes.
-    await waitFor(() => expect(window.__START_RESULT).toBe(false), { timeout: 4500 });
+    // start() waits for up to the default waitMs (7000ms) for missing elements —
+    // allow a bit more time in the test to avoid flakes.
+    await waitFor(() => expect(window.__START_RESULT).toBe(false), { timeout: 8500 });
 
     // driver should not have appended a popover
     expect(document.querySelectorAll('.onboarding-tour-popover').length).toBe(0);
@@ -91,5 +94,33 @@ describe('tour start validation', () => {
 
     // driver should have appended a popover (or at least started)
     expect(document.querySelectorAll('.onboarding-tour-popover').length).toBeGreaterThanOrEqual(0);
+  });
+
+  test('starts with available steps when some selectors are missing (partial start)', async () => {
+    // create two of three required elements
+    const first = document.createElement('div'); first.className = 'one'; document.body.appendChild(first);
+    const third = document.createElement('div'); third.className = 'three'; document.body.appendChild(third);
+
+    const tour = {
+      id: 'partial-test',
+      steps: [
+        { element: '.one', popover: { title: '1' } },
+        { element: '.two', popover: { title: '2' } },
+        { element: '.three', popover: { title: '3' } },
+      ],
+    };
+
+    render(<TestStart tour={tour} />);
+
+    // start() should proceed (not abort) because at least one selector exists
+    await waitFor(() => expect(window.__START_RESULT).not.toBe(false), { timeout: 2000 });
+
+    // Driver should have been instantiated with only present selectors
+    const driverMock = require('driver.js').driver;
+    expect(driverMock).toHaveBeenCalled();
+    const passedSteps = driverMock.mock.calls[0][0].steps.map(s => s.element).filter(Boolean);
+    expect(passedSteps).toContain('.one');
+    expect(passedSteps).toContain('.three');
+    expect(passedSteps).not.toContain('.two');
   });
 });

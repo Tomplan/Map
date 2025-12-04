@@ -652,13 +652,16 @@
     "back": "Back",
     "finish": "Finish Tour",
     "close": "Close",
-    "progress": "Step {{current}} of {{total}}",
+    "progressText": "Step {{current}} of {{total}}",
     "startTour": "Start Tour",
     "restartTour": "Restart Tour",
     "tourCompleted": "Completed",
     "tourNew": "New",
     "availableTours": "Available Tours",
     "noToursAvailable": "No tours available for your current page",
+    "navigationRequiredTitle": "Navigate to the required page",
+    "navigationRequiredText": "To run the tour we need to navigate to {{page}}. Do you want to continue?",
+    "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
   }
 }

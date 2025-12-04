@@ -275,12 +275,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="subscriptions-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
+            data-testid="subscriptions-search"
             type="text"
             placeholder={t('helpPanel.subscriptions.searchPlaceholder')}
             value={searchTerm}
@@ -291,7 +292,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2" data-testid="import-export-buttons">
           <ExportButton
             dataType="event_subscriptions"
             data={subscriptions}
@@ -316,6 +317,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           />
           <button
             onClick={handleCopyFromPreviousYear}
+            data-testid="copy-from-previous-year-button"
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             title={`Copy from ${selectedYear - 1}`}
           >
@@ -324,6 +326,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </button>
           <button
             onClick={handleArchive}
+            data-testid="archive-year-button"
             className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
           >
             <Icon path={mdiArchive} size={0.8} />
@@ -331,6 +334,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           </button>
           <button
             onClick={() => setIsAdding(true)}
+            data-testid="subscribe-company-button"
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             <Icon path={mdiPlus} size={0.8} />
@@ -381,7 +385,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       )}
 
       {/* Subscriptions table */}
-      <div className="flex-1 overflow-auto border rounded-lg">
+      <div className="flex-1 overflow-auto border rounded-lg" data-testid="subscriptions-table">
         <table className="w-full" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100 text-gray-900 sticky top-0 z-10">
             {/* Main header row with grouped columns */}

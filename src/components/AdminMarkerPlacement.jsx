@@ -91,6 +91,7 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
       <button
         onClick={handleAdminAddMarker}
         aria-label="Add marker"
+        data-testid="add-marker-button"
         className="bg-white rounded-full shadow p-2 flex items-center justify-center print-hide"
         style={{
           position: 'absolute',

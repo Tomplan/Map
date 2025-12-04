@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -17,25 +17,42 @@ import { getHelpContentByRoute } from '../config/helpContentBilingual';
 import { getRecentChanges } from '../config/whatsNewBilingual';
 import useUserRole from '../hooks/useUserRole';
 import TourList from './onboarding/TourList';
+import { useOnboarding } from '../contexts/OnboardingContext';
 
 /**
  * HelpPanel Component
- * 
+ *
  * Collapsible help panel with tabs for:
  * - Current page help
  * - What's New
  * - Quick Start
  * - Search
- * 
+ *
  * @param {boolean} isOpen - Panel visibility
  * @param {function} onClose - Close callback
+ * @param {function} onReopen - Reopen callback (optional)
  */
-export default function HelpPanel({ isOpen, onClose }) {
+export default function HelpPanel({ isOpen, onClose, onReopen, initialTab }) {
   const location = useLocation();
   const { t, i18n } = useTranslation();
   const { role } = useUserRole();
+  const { isRunning } = useOnboarding();
   const [activeTab, setActiveTab] = useState('current');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Auto-close help panel when tour starts
+  useEffect(() => {
+    if (isRunning && isOpen) {
+      onClose();
+    }
+  }, [isRunning, isOpen, onClose]);
+
+  // When the panel opens, allow consumers to set an initial tab (eg 'interactive-tour')
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   // Get help content for current page in current language
   const currentPageHelp = getHelpContentByRoute(location.pathname, i18n.language);
@@ -265,7 +282,7 @@ export default function HelpPanel({ isOpen, onClose }) {
                 <p className="text-sm text-gray-600">{t('helpPanel.interactiveTourSubtitle')}</p>
               </div>
 
-              <TourList />
+              <TourList startSource="help" onClose={onClose} onReopen={onReopen} />
             </div>
           )}
 
@@ -334,4 +351,5 @@ export default function HelpPanel({ isOpen, onClose }) {
 HelpPanel.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  initialTab: PropTypes.string,
 };

@@ -226,9 +226,9 @@ export default function FeedbackRequests() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="feedback-requests-container">
       {/* Header */}
-      <div>
+      <div data-testid="feedback-header">
         <h2 className="text-2xl font-bold text-gray-900">
           {t('settings.feedbackRequests.title')}
         </h2>
@@ -238,10 +238,11 @@ export default function FeedbackRequests() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200" data-testid="feedback-tabs">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('all')}
+            data-testid="feedback-tab-all"
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'all'
                 ? 'border-blue-500 text-blue-600'
@@ -252,6 +253,7 @@ export default function FeedbackRequests() {
           </button>
           <button
             onClick={() => setActiveTab('my')}
+            data-testid="feedback-tab-my"
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'my'
                 ? 'border-blue-500 text-blue-600'
@@ -262,6 +264,7 @@ export default function FeedbackRequests() {
           </button>
           <button
             onClick={() => setActiveTab('submit')}
+            data-testid="feedback-tab-submit"
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'submit'
                 ? 'border-blue-500 text-blue-600'
@@ -276,7 +279,7 @@ export default function FeedbackRequests() {
 
       {/* Filters (only show on list tabs) */}
       {(activeTab === 'all' || activeTab === 'my') && (
-        <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+        <div className="bg-gray-50 p-4 rounded-lg space-y-4" data-testid="feedback-filters">
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Icon path={mdiFilterVariant} size={0.8} />
             <span className="font-medium">{t('settings.feedbackRequests.filters.title')}</span>
@@ -289,11 +292,12 @@ export default function FeedbackRequests() {
               placeholder={t('settings.feedbackRequests.filters.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              data-testid="feedback-search"
               className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             {/* Type filter - Multi-select with checkboxes */}
-            <div className="relative" ref={typeDropdownRef}>
+            <div className="relative" ref={typeDropdownRef} data-testid="feedback-type-filter">
               <button
                 type="button"
                 onClick={() => setShowTypeDropdown(!showTypeDropdown)}
@@ -350,7 +354,7 @@ export default function FeedbackRequests() {
             </div>
 
             {/* Status filter - Multi-select with checkboxes */}
-            <div className="relative" ref={statusDropdownRef}>
+            <div className="relative" ref={statusDropdownRef} data-testid="feedback-status-filter">
               <button
                 type="button"
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
@@ -412,7 +416,7 @@ export default function FeedbackRequests() {
       {/* Content based on active tab */}
       {activeTab === 'submit' ? (
         /* Submit Form */
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-6" data-testid="feedback-submit-form">
           <h3 className="text-lg font-semibold mb-4">
             {t('settings.feedbackRequests.submit.title')}
           </h3>
@@ -423,8 +427,8 @@ export default function FeedbackRequests() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t('settings.feedbackRequests.submit.type')}
               </label>
-              <div className="flex gap-4">
-                <label className="flex items-center">
+              <div className="flex gap-4" data-testid="feedback-submit-type">
+                <label className="flex items-center" data-testid="feedback-type-feature">
                   <input
                     type="radio"
                     value="feature"
@@ -435,7 +439,7 @@ export default function FeedbackRequests() {
                   <Icon path={mdiLightbulbOn} size={0.8} className="mr-1 text-blue-600" />
                   {t('settings.feedbackRequests.types.feature')}
                 </label>
-                <label className="flex items-center">
+                <label className="flex items-center" data-testid="feedback-type-issue">
                   <input
                     type="radio"
                     value="issue"
@@ -459,6 +463,7 @@ export default function FeedbackRequests() {
                 value={newRequestTitle}
                 onChange={(e) => setNewRequestTitle(e.target.value)}
                 placeholder={t('settings.feedbackRequests.submit.titlePlaceholder')}
+                data-testid="feedback-submit-title"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -474,6 +479,7 @@ export default function FeedbackRequests() {
                 onChange={(e) => setNewRequestDescription(e.target.value)}
                 placeholder={t('settings.feedbackRequests.submit.descriptionPlaceholder')}
                 rows={5}
+                data-testid="feedback-submit-description"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -489,6 +495,7 @@ export default function FeedbackRequests() {
             <button
               type="submit"
               disabled={submitting || !newRequestTitle.trim()}
+              data-testid="feedback-submit-button"
               className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? t('common.saving') : t('settings.feedbackRequests.submit.button')}
@@ -497,7 +504,7 @@ export default function FeedbackRequests() {
         </div>
       ) : (
         /* Request List */
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="feedback-requests-list">
           {error && (
             <div className="bg-red-50 text-red-800 p-4 rounded-lg">
               {error}
@@ -512,6 +519,7 @@ export default function FeedbackRequests() {
             filteredRequests.map((request) => (
               <div
                 key={request.id}
+                data-testid={`feedback-request-${request.id}`}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedRequest(request)}
               >
@@ -574,6 +582,7 @@ export default function FeedbackRequests() {
                         e.stopPropagation();
                         handleVoteToggle(request.id);
                       }}
+                      data-testid="feedback-vote-button"
                       className={`flex items-center gap-1 px-3 py-1 rounded-full border ${
                         userVotes.has(request.id)
                           ? 'bg-blue-50 border-blue-500 text-blue-700'
@@ -583,8 +592,8 @@ export default function FeedbackRequests() {
                       <Icon path={mdiThumbUp} size={0.6} />
                       <span className="font-medium">{request.votes}</span>
                     </button>
-                    
-                    <div className="flex items-center gap-1 text-gray-600">
+
+                    <div className="flex items-center gap-1 text-gray-600" data-testid="feedback-comments-count">
                       <Icon path={mdiComment} size={0.6} />
                       <span className="text-sm">{request.comments_count}</span>
                     </div>

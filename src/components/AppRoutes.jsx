@@ -1,6 +1,10 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
+import { useLocation } from 'react-router-dom';
+import { useOnboarding } from '../contexts/OnboardingContext';
+import { getAllAdminTours } from '../config/tourSteps/adminTourSteps';
+import { getAllVisitorTours } from '../config/tourSteps/visitorTourSteps';
 import OfflineStatus from './OfflineStatus';
 import BrandingBar from './BrandingBar';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
@@ -31,6 +35,46 @@ const Settings = lazy(() => import('./admin/Settings'));
 const FeedbackRequests = lazy(() => import('./admin/FeedbackRequests'));
 
 function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear, archiveMarkers, copyMarkers }) {
+  const location = useLocation();
+  const { startTour } = useOnboarding();
+
+  // If a tab has previously requested a tour start after navigation
+  // (set by the Help panel before performing a redirect), read the
+  // session flag here and start the tour once the destination route
+  // has been mounted and matches the requested tour path.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('onboarding:startAfterNav');
+      if (!raw) return;
+      const payload = JSON.parse(raw);
+      if (!payload?.id) {
+        sessionStorage.removeItem('onboarding:startAfterNav');
+        return;
+      }
+
+      const allTours = [...getAllVisitorTours(), ...getAllAdminTours()];
+      const config = allTours.find(t => t.id === payload.id);
+      if (!config) {
+        sessionStorage.removeItem('onboarding:startAfterNav');
+        return;
+      }
+
+      const normalize = p => (p ? (p.startsWith('#') ? p.substring(1) : p) : '');
+      const currentHash = normalize(location.hash || '');
+      const currentPath = normalize(location.pathname || '');
+      const target = normalize(config.path || '');
+
+      // Only start when we've arrived on the expected path
+      if (currentHash === target || currentPath.endsWith(target) || currentPath === target) {
+        startTour(config.id, payload.source);
+        sessionStorage.removeItem('onboarding:startAfterNav');
+      }
+    } catch (e) {
+      // Failure is non-fatal; clean up the session key to avoid retry loops
+      try { sessionStorage.removeItem('onboarding:startAfterNav'); } catch (e2) {}
+    }
+    // Run when location changes / mounts
+  }, [location.pathname, location.hash, startTour]);
   // Shared visitor layout with offline status, favorites context, and tab navigation
   // Mobile-only design - bottom tabs always visible
   const VisitorLayout = ({ children }) => (

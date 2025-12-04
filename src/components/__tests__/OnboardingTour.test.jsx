@@ -7,6 +7,9 @@ jest.mock('../../hooks/useOnboardingTour', () => ({
   default: jest.fn(() => ({ start: jest.fn(), stop: jest.fn(), isActive: false }))
 }))
 
+// Mock onboarding context to avoid provider requirement in tests
+jest.mock('../../contexts/OnboardingContext', () => ({ useOnboarding: () => ({ activeTour: null }) }))
+
 import OnboardingTour from '../onboarding/OnboardingTour'
 
 describe('OnboardingTour component', () => {

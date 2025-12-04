@@ -33,6 +33,93 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   // Get current language
   const currentLanguage = i18n.language;
 
+  // Enhanced cleanup helper with better error handling and memory management
+  const forceCleanup = useCallback((instance) => {
+    try {
+      const drv = instance || driverInstance.current;
+      let cleanupErrors = [];
+
+      // 1. Destroy driver instance first
+      if (drv && typeof drv.destroy === 'function') {
+        try {
+          drv.destroy();
+          console.log('[TOUR DEBUG] Driver instance destroyed');
+        } catch (e) {
+          cleanupErrors.push('driver-destroy');
+          console.warn('Error destroying driver instance:', e);
+        }
+      }
+
+      // 2. Remove DOM elements
+      try {
+        cleanupOldTourDOM();
+        console.log('[TOUR DEBUG] Tour DOM elements cleaned up');
+      } catch (e) {
+        cleanupErrors.push('dom-cleanup');
+        console.warn('Error cleaning up DOM:', e);
+      }
+
+      // 3. Remove body classes
+      try {
+        if (document.body.classList.contains('driver-active')) {
+          document.body.classList.remove('driver-active');
+        }
+        // Also remove any driver-related classes
+        document.body.classList.remove('driver-overlay', 'driver-fade');
+      } catch (e) {
+        cleanupErrors.push('body-classes');
+        console.warn('Error removing body classes:', e);
+      }
+
+      // 4. Clear global references
+      try {
+        if (typeof window !== 'undefined') {
+          if (window.__ONBOARDING_DRIVER_INSTANCE === drv) {
+            delete window.__ONBOARDING_DRIVER_INSTANCE;
+          }
+          // Clear any other tour-related globals
+          delete window.__onboarding_test_helpers__;
+          delete window.__onboarding_active_source__;
+          delete window.__onboarding_last_completed__;
+        }
+      } catch (e) {
+        cleanupErrors.push('globals');
+        console.warn('Error clearing globals:', e);
+      }
+
+      // 5. Clear local references
+      try {
+        if (driverInstance.current === drv) {
+          driverInstance.current = null;
+        }
+        hasAutoStarted.current = false;
+      } catch (e) {
+        cleanupErrors.push('local-refs');
+        console.warn('Error clearing local refs:', e);
+      }
+
+      // 6. Memory cleanup - remove event listeners
+      try {
+        // Remove any remaining event listeners on the document
+        document.removeEventListener('keydown', handleEscapeKey, true);
+        document.removeEventListener('click', handleDocumentClick, true);
+      } catch (e) {
+        cleanupErrors.push('event-listeners');
+        console.warn('Error removing event listeners:', e);
+      }
+
+      // Log cleanup summary
+      if (cleanupErrors.length > 0) {
+        console.warn(`Tour cleanup completed with ${cleanupErrors.length} minor errors:`, cleanupErrors);
+      } else {
+        console.log('[TOUR DEBUG] Tour cleanup completed successfully');
+      }
+
+    } catch (e) {
+      console.error('Critical error in forceCleanup:', e);
+    }
+  }, []);
+
   /**
    * Get bilingual content based on current language
    */
@@ -66,16 +153,27 @@ export default function useOnboardingTour(tourConfig, options = {}) {
     if (options.onDismiss) {
       options.onDismiss();
     }
-  }, [tourConfig, contextDismissTour, options]);
+    // Force cleanup when dismissed
+    if (driverInstance.current) {
+      try {
+        driverInstance.current.destroy();
+      } catch (e) {
+        console.warn('Error destroying driver on dismiss:', e);
+        forceCleanup();
+      }
+    }
+  }, [tourConfig, contextDismissTour, options, forceCleanup]);
 
   /**
    * Transform tour config steps to Driver.js format
    */
-  const getDriverSteps = useCallback(() => {
+  const getDriverSteps = useCallback((stepsOverride) => {
     if (!tourConfig?.steps) return [];
 
-    return tourConfig.steps.map((step, index) => {
-      const isLast = index === tourConfig.steps.length - 1;
+    const stepsSource = Array.isArray(stepsOverride) ? stepsOverride : tourConfig.steps;
+
+    return stepsSource.map((step, index) => {
+      const isLast = index === stepsSource.length - 1;
 
       // Handle both flat and nested popover structures
       const title = step.popover?.title || step.title;
@@ -90,6 +188,9 @@ export default function useOnboardingTour(tourConfig, options = {}) {
           description: getLocalizedContent(description),
           side,
           align,
+          // Explicitly disable default close button; we use a custom one
+          showCloseBtn: false,
+          // Show standard nav buttons; Driver.js handles last step automatically
           showButtons: step.showButtons !== false ? ['next', 'previous'] : [],
           disableButtons: step.disableButtons || [],
           nextBtnText: isLast ? t('tour.finish') : t('tour.next'),
@@ -97,10 +198,8 @@ export default function useOnboardingTour(tourConfig, options = {}) {
           doneBtnText: t('tour.finish'),
           closeBtnText: t('tour.close'),
           showProgress: true,
-          // Driver.js will replace {{current}} and {{total}} automatically
-          progressText: currentLanguage === 'nl' ? 'Stap {{current}} van {{total}}' : 'Step {{current}} of {{total}}',
-          onNextClick: step.onNextClick || step.popover?.onNextClick,
-          onPrevClick: step.onPrevClick || step.popover?.onPrevClick,
+          // Let Driver.js handle default navigation via event delegation
+          // Don't override with custom callbacks as they interfere with click handling
           onCloseClick: () => {
             handleDismiss();
           },
@@ -115,31 +214,38 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   /**
    * Initialize Driver.js instance
    */
-  const initializeDriver = useCallback(() => {
-    const steps = getDriverSteps();
+  // Enhanced cleanup helper with better error handling and memory management
+  const handleEscapeKey = useCallback((e) => {
+    if (e.key === 'Escape' && isRunning) {
+      console.log('[TOUR DEBUG] Escape key pressed - dismissing tour');
+      handleDismiss();
+    }
+  }, [isRunning, handleDismiss]);
+
+  // Document click handler
+  const handleDocumentClick = useCallback((e) => {
+    // Only handle clicks if tour is running and we're in an overlay
+    if (isRunning && document.body.classList.contains('driver-active')) {
+      // Let Driver.js handle clicks - don't interfere
+    }
+  }, [isRunning]);
+
+  const initializeDriver = useCallback((stepsOverride) => {
+    const steps = getDriverSteps(stepsOverride);
 
     if (driverInstance.current) {
-      try {
-        driverInstance.current.destroy();
-      } catch (e) {
-        console.warn('Error while destroying existing driver instance:', e);
-      }
-
-      // Defensive cleanup: ensure any leftover popovers or overlays from
-      // previous driver instances are removed before we create a new one.
-      try {
-        // Use cleanup helper to remove leftover DOM created by previous driver instances
-        cleanupOldTourDOM();
-      } catch (e) {
-        console.warn('Error cleaning up old tour DOM elements:', e);
-      }
+      // Use the unified cleanup helper to ensure the previous instance is
+      // fully torn down and its DOM removed before creating a new driver.
+      try { forceCleanup(driverInstance.current); } catch (e) { /* ignore */ }
     }
 
     // Prevent multiple driver instances from co-existing.
     try {
       if (typeof window !== 'undefined' && window.__ONBOARDING_DRIVER_INSTANCE && window.__ONBOARDING_DRIVER_INSTANCE !== driverInstance.current) {
-        try { window.__ONBOARDING_DRIVER_INSTANCE.destroy && window.__ONBOARDING_DRIVER_INSTANCE.destroy(); } catch (e) { /* ignore */ }
-        cleanupOldTourDOM();
+        // If another instance is present (from a prior page), force it
+        // to fully cleanup. This avoids leftover DOM from other tabs or
+        // earlier runs.
+        try { forceCleanup(window.__ONBOARDING_DRIVER_INSTANCE); } catch (e) { /* ignore */ }
       }
     } catch (e) {
       // continue — non-fatal
@@ -148,20 +254,30 @@ export default function useOnboardingTour(tourConfig, options = {}) {
 
     driverInstance.current = driver({
       showProgress: true,
-      showButtons: ['next', 'previous', 'close'],
+      // Remove 'close' from here to avoid a redundant footer button
+      showButtons: ['next', 'previous'],
       nextBtnText: t('tour.next'),
       prevBtnText: t('tour.back'),
       doneBtnText: t('tour.finish'),
-      closeBtnText: t('tour.close'),
-      // Driver.js will replace {{current}} and {{total}} automatically
-      progressText: currentLanguage === 'nl' ? 'Stap {{current}} van {{total}}' : 'Step {{current}} of {{total}}',
-      popoverClass: 'onboarding-tour-popover',
-      // Guard against environments (like some test runners) that don't implement matchMedia
-      animate: (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? false : true,
-      overlayOpacity: 0.7,
-      smoothScroll: true,
+      // This is for the 'x' button, which we handle via popover config
       allowClose: true,
-      disableActiveInteraction: true,
+      disableActiveInteraction: false,
+      progressText: currentLanguage === 'nl' ? 'Stap {{current}} van {{total}}' : 'Step {{current}} of {{total}}',
+
+      // Handle close button clicks at driver level
+      onCloseClick: () => {
+        console.log('[TOUR DEBUG] Close button clicked - dismissing tour');
+        handleDismiss();
+        try {
+          if (driverInstance.current && typeof driverInstance.current.destroy === 'function') {
+            driverInstance.current.destroy();
+          }
+        } catch (error) {
+          console.error('Error destroying tour on close:', error);
+          forceCleanup();
+          contextStopTour();
+        }
+      },
 
       onPopoverRender: (popover) => {
         try {
@@ -169,79 +285,71 @@ export default function useOnboardingTour(tourConfig, options = {}) {
           if (!document.body.classList.contains('driver-active')) {
             document.body.classList.add('driver-active');
           }
-          
-          // Force pointer-events on popover wrapper and all interactive elements
-          if (popover && popover.wrapper) {
-            popover.wrapper.style.pointerEvents = 'auto';
-            
-            // Force pointer events on all buttons and interactive elements
-            const interactiveElements = popover.wrapper.querySelectorAll('button, [role="button"], .driver-popover-navigation-btns button');
-            interactiveElements.forEach(element => {
-              if (element) {
-                element.style.pointerEvents = 'auto';
-                element.style.cursor = 'pointer';
-                element.style.userSelect = 'none';
+
+          // Add missing DOM elements as fallbacks if they don't exist
+          const addMissingElements = () => {
+            const missingElements = [
+              { selector: '.year-selector', content: 'Year Selector', fallback: '[data-testid="year-selector"]' },
+              { selector: '.stats-grid', content: 'Statistics Grid', fallback: '[data-testid="stats-grid"]' },
+              { selector: '.event-totals', content: 'Event Totals', fallback: '[data-testid="event-totals"]' },
+              { selector: '.quick-actions', content: 'Quick Actions', fallback: '[data-testid="quick-actions"]' },
+              { selector: '.admin-sidebar', content: 'Admin Sidebar', fallback: '[data-testid="admin-sidebar"]' },
+              { selector: '.help-button', content: 'Help Button', fallback: '[data-testid="help-button"]' },
+              { selector: '.tab-navigation', content: 'Tab Navigation', fallback: '[data-testid="tab-navigation"]' },
+              { selector: '.language-selector', content: 'Language Selector', fallback: '[data-testid="language-selector"]' },
+              { selector: '.leaflet-container', content: 'Map Container', fallback: '[data-testid="map-container"]' },
+              { selector: '.favorites-toggle', content: 'Favorites Toggle', fallback: '[data-testid="favorites-toggle"]' }
+            ];
+
+            missingElements.forEach(({ selector, fallback }) => {
+              if (!document.querySelector(selector)) {
+                // Create a temporary fallback element for tour purposes
+                const fallbackElement = document.querySelector(fallback);
+                if (fallbackElement && !fallbackElement.getAttribute('data-tour-fallback')) {
+                  fallbackElement.setAttribute('data-tour-fallback', selector);
+                }
               }
             });
-            
-            // Ensure popover content is not blocked
-            const contentElements = popover.wrapper.querySelectorAll('.driver-popover-title, .driver-popover-description');
-            contentElements.forEach(element => {
-              if (element) {
-                element.style.pointerEvents = 'auto';
-                element.style.userSelect = 'text';
-              }
-            });
-          }
-          
-            // Defensive: Ensure no conflicting event listeners
-          setTimeout(() => {
-            // Ensure interactive buttons in the popover are enabled and visually clickable.
-            // NOTE: Replacing nodes with clones removes existing event listeners and can
-            // cause the tour UI to become unresponsive. Do NOT clone or replace elements here.
-            const buttons = document.querySelectorAll('.driver-popover button, .driver-popover-navigation-btns button, .driver-popover-close-btn');
-            buttons.forEach(button => {
-              if (button && !button.hasAttribute('data-tour-fixed')) {
-                button.setAttribute('data-tour-fixed', 'true');
-                button.style.pointerEvents = 'auto';
-                button.style.cursor = 'pointer';
-                // Keep existing event handlers intact — do not replace the node.
-                // If additional behavior is required, attach non-destructive listeners here.
-              }
-            });
-            
-            // Robustness: Attach fail-safe handlers to next/prev/close buttons
-            // so clicks will still control the driver instance even if driver's
-            // internal listeners are missing (race conditions, DOM replacements, etc.)
-            try {
-              const nextBtn = document.querySelector('.driver-popover-next-btn');
-              const prevBtn = document.querySelector('.driver-popover-prev-btn');
-              const closeBtn = document.querySelector('.driver-popover-close-btn');
+          };
 
-              if (nextBtn && !nextBtn.hasAttribute('data-tour-handler')) {
-                nextBtn.setAttribute('data-tour-handler', 'true');
-                nextBtn.addEventListener('click', () => {
-                  try { driverInstance.current?.moveNext?.(); } catch (e) { /* swallow */ }
-                });
-              }
+          addMissingElements();
 
-              if (prevBtn && !prevBtn.hasAttribute('data-tour-handler')) {
-                prevBtn.setAttribute('data-tour-handler', 'true');
-                prevBtn.addEventListener('click', () => {
-                  try { driverInstance.current?.movePrevious?.(); } catch (e) { /* swallow */ }
-                });
-              }
+          // Attach delegated click handlers on the popover wrapper so UI
+          // controls inside the driver-produced popover (prev/next buttons)
+          // are routed to the driver instance. We also mark the wrapper so
+          // tests can detect that delegation has been attached.
+          try {
+            if (popover?.wrapper) {
+              const wrapper = popover.wrapper;
 
-              if (closeBtn && !closeBtn.hasAttribute('data-tour-handler')) {
-                closeBtn.setAttribute('data-tour-handler', 'true');
-                closeBtn.addEventListener('click', () => {
-                  try { driverInstance.current?.destroy?.(); } catch (e) { /* swallow */ }
-                });
+              // Avoid attaching the delegation multiple times
+              if (!wrapper._tourDelegationAttached) {
+                const handleWrapperClicks = (ev) => {
+                  try {
+                    const nextBtn = ev.target.closest?.('.driver-popover-next-btn') || (ev.target.matches && ev.target.matches('.driver-popover-next-btn') ? ev.target : null);
+                    const prevBtn = ev.target.closest?.('.driver-popover-prev-btn') || (ev.target.matches && ev.target.matches('.driver-popover-prev-btn') ? ev.target : null);
+
+                    if (nextBtn && driverInstance.current && typeof driverInstance.current.moveNext === 'function') {
+                      driverInstance.current.moveNext();
+                    }
+
+                    if (prevBtn && driverInstance.current && typeof driverInstance.current.movePrevious === 'function') {
+                      driverInstance.current.movePrevious();
+                    }
+                  } catch (e) {
+                    // swallow errors from delegation handlers
+                  }
+                };
+
+                try {
+                  wrapper.addEventListener('click', handleWrapperClicks, true);
+                } catch (e) { /* ignore */ }
+
+                try { wrapper._tourDelegationAttached = true; } catch (e) { /* ignore */ }
+                try { wrapper.setAttribute('data-tour-handler', '1'); } catch (e) { /* ignore */ }
               }
-            } catch (e) {
-              // non-fatal
             }
-          }, 50);
+          } catch (e) { /* ignore */ }
           
         } catch (error) {
           console.warn('Tour popover render error:', error);
@@ -252,16 +360,10 @@ export default function useOnboardingTour(tourConfig, options = {}) {
       steps,
 
       onDestroyed: () => {
-        document.body.classList.remove('driver-active');
+        // Make sure any remnants are forcefully removed — this call is
+        // idempotent and safe even if destroy() has already run.
+        try { forceCleanup(driverInstance.current); } catch (e) { /* ignore */ }
         contextStopTour();
-        // If this instance was the global instance, clear it
-        try {
-          if (typeof window !== 'undefined' && window.__ONBOARDING_DRIVER_INSTANCE === driverInstance.current) {
-            delete window.__ONBOARDING_DRIVER_INSTANCE;
-          }
-        } catch (e) {
-          /* ignore */
-        }
       },
 
       onDestroyStarted: () => {
@@ -271,10 +373,16 @@ export default function useOnboardingTour(tourConfig, options = {}) {
 
         if (currentStepIndex === totalSteps - 1) {
           handleComplete();
+          try { cleanupOldTourDOM(); } catch (e) { /* ignore */ }
         } else {
           // User closed tour early - treat as dismissal
           handleDismiss();
+          try { cleanupOldTourDOM(); } catch (e) { /* ignore */ }
         }
+
+        // In addition to the contextual cleanup above, forcefully clear any
+        // leftover driver DOM and references (idempotent).
+        try { forceCleanup(driverInstance.current); } catch (e) { /* ignore */ }
       },
     });
 
@@ -306,11 +414,39 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         return;
       }
 
-      // Check if target elements exist before starting
+      // Check if target elements exist before starting (with fallback support)
       const requiredSteps = tourConfig.steps
         .filter(step => step.element && step.element !== 'body');
 
-      const missingElements = requiredSteps.filter(step => !document.querySelector(step.element));
+      const missingElements = requiredSteps.filter(step => {
+        const primaryExists = !!document.querySelector(step.element);
+        if (primaryExists) return false;
+        
+        // Check for fallback selectors based on the missing element
+        const fallbackMap = {
+          '.year-selector': '[data-testid="year-selector"]',
+          '.stats-grid': '[data-testid="stats-grid"]',
+          '.event-totals': '[data-testid="event-totals"]',
+          '.quick-actions': '[data-testid="quick-actions"]',
+          '.admin-sidebar': '[data-testid="admin-sidebar"]',
+          '.help-button': '[data-testid="help-button"]',
+          '.tab-navigation': '[data-testid="tab-navigation"]',
+          '.language-selector': '[data-testid="language-selector"]',
+          '.leaflet-container': '[data-testid="map-container"]',
+          '.favorites-toggle': '[data-testid="favorites-toggle"]',
+          '.leaflet-control-search': '[data-testid="search-control"]',
+          '.exhibitors-list': '[data-testid="exhibitors-list"]',
+          '.exhibitors-search': '[data-testid="exhibitors-search"]',
+          '.category-filter': '[data-testid="category-filter"]',
+          '.exhibitor-card': '[data-testid="exhibitor-card"]'
+        };
+        
+        const fallbackSelector = fallbackMap[step.element];
+        const fallbackExists = fallbackSelector ? !!document.querySelector(fallbackSelector) : false;
+        
+        // If neither primary nor fallback exists, consider it missing
+        return !primaryExists && !fallbackExists;
+      });
 
       // DIAGNOSTIC: log required steps and which selectors are present/absent
       try {
@@ -324,26 +460,54 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         // If everything is missing, wait briefly (in case the admin page
         // or lazy-loaded components haven't rendered yet) and then re-check.
         // This avoids false negatives due to small load/timing differences.
-        const waitMs = typeof opts.waitMs === 'number' ? opts.waitMs : 3000;
+        const waitMs = typeof opts.waitMs === 'number' ? opts.waitMs : 7000;
         const waitForTargets = (ms = waitMs, checkInterval = 100) => new Promise((resolve) => {
           let elapsed = 0;
+          let timeoutId = null;
+          let intervalId = null;
 
-          const check = () => {
-            const found = requiredSteps.some(step => !!document.querySelector(step.element));
-            if (found) return resolve(true);
-
-            elapsed += checkInterval;
-            if (elapsed >= ms) return resolve(false);
-
-            setTimeout(check, checkInterval);
+          const cleanup = () => {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (intervalId) clearInterval(intervalId);
           };
 
+          const check = () => {
+            try {
+              const found = requiredSteps.some(step => !!document.querySelector(step.element));
+              if (found) {
+                cleanup();
+                return resolve(true);
+              }
+
+              elapsed += checkInterval;
+              if (elapsed >= ms) {
+                cleanup();
+                return resolve(false);
+              }
+            } catch (error) {
+              console.warn('Error checking for tour targets:', error);
+              cleanup();
+              return resolve(false);
+            }
+          };
+
+          // Check immediately
           check();
+
+          // Set up interval for periodic checks
+          intervalId = setInterval(check, checkInterval);
+
+          // Set up timeout to prevent infinite waiting
+          timeoutId = setTimeout(() => {
+            cleanup();
+            resolve(false);
+          }, ms);
         });
 
         try {
-          // Wait a short period for elements to appear
-          const appeared = await waitForTargets(3000, 100);
+          // Wait a short period for elements to appear. Honor caller's waitMs option
+          // so callers (like the admin retry flow) can request a longer window.
+          const appeared = await waitForTargets(waitMs, 100);
 
           // DIAGNOSTIC: record the wait result and snapshot available selectors
           try {
@@ -365,50 +529,172 @@ export default function useOnboardingTour(tourConfig, options = {}) {
         }
       }
 
-      contextStartTour(tourConfig.id);
+      // Propagate any source metadata (eg. started from Help panel) to the
+      // onboarding context so higher-level UI can react to completion events.
+      const startMeta = typeof opts.source !== 'undefined' ? { source: opts.source } : (options?.source ? { source: options.source } : undefined);
+      contextStartTour(tourConfig.id, startMeta);
 
-      // Initialize with error handling
-      const driverObj = initializeDriver();
+      // Before initializing, prune any steps that reference missing elements
+      // so driver.js doesn't attach popovers to the document/body for absent
+      // selectors. Callers may override behavior with opts.forceAbortOnMissing
+      // or opts.allowPartial.
+      const allowPartial = typeof opts.allowPartial === 'boolean' ? opts.allowPartial : true;
+      const forceAbortOnMissing = !!opts.forceAbortOnMissing;
+
+      // Helper function to check if element exists (with fallbacks)
+      const elementExists = (element) => {
+        if (!element || element === 'body') return true;
+        
+        const primaryExists = !!document.querySelector(element);
+        if (primaryExists) return true;
+        
+        // Check for fallback selectors
+        const fallbackMap = {
+          '.year-selector': '[data-testid="year-selector"]',
+          '.stats-grid': '[data-testid="stats-grid"]',
+          '.event-totals': '[data-testid="event-totals"]',
+          '.quick-actions': '[data-testid="quick-actions"]',
+          '.admin-sidebar': '[data-testid="admin-sidebar"]',
+          '.help-button': '[data-testid="help-button"]',
+          '.tab-navigation': '[data-testid="tab-navigation"]',
+          '.language-selector': '[data-testid="language-selector"]',
+          '.leaflet-container': '[data-testid="map-container"]',
+          '.favorites-toggle': '[data-testid="favorites-toggle"]',
+          '.leaflet-control-search': '[data-testid="search-control"]',
+          '.exhibitors-list': '[data-testid="exhibitors-list"]',
+          '.exhibitors-search': '[data-testid="exhibitors-search"]',
+          '.category-filter': '[data-testid="category-filter"]',
+          '.exhibitor-card': '[data-testid="exhibitor-card"]'
+        };
+        
+        const fallbackSelector = fallbackMap[element];
+        return fallbackSelector ? !!document.querySelector(fallbackSelector) : false;
+      };
+
+      const fullDriverSteps = getDriverSteps();
+      const presentSteps = fullDriverSteps.filter(s => !s.element || s.element === 'body' || elementExists(s.element));
+      const missingSteps = fullDriverSteps.filter(s => s.element && s.element !== 'body' && !elementExists(s.element));
+
+      if (missingSteps.length > 0) {
+        // If caller requested abort on any missing step, treat this as failure
+        if (forceAbortOnMissing) {
+          console.warn('Tour start aborted because some required steps are missing:', missingSteps.map(s => s.element));
+          if (opts.onMissingTargets) {
+            try { opts.onMissingTargets(missingSteps.map(s => s.element)); } catch (e) { /* ignore */ }
+          }
+          return false;
+        }
+
+        if (presentSteps.length === 0) {
+          // Nothing to show — behave as before: abort
+          console.warn('Tour elements not found (all required targets missing):', missingSteps.map(s => s.element));
+          if (options.onMissingTargets) {
+            try { options.onMissingTargets(missingSteps.map(s => s.element)); } catch (e) { /* ignore */ }
+          }
+          return false;
+        }
+
+        // Some steps are missing but we have at least one step to show —
+        // if partial starts are allowed, proceed with only the present steps.
+        if (!allowPartial) {
+          console.warn('Tour start requires all steps but some are missing:', missingSteps.map(s => s.element));
+          if (opts.onMissingTargets) {
+            try { opts.onMissingTargets(missingSteps.map(s => s.element)); } catch (e) { /* ignore */ }
+          }
+          return false;
+        }
+
+        console.warn('Some tour steps are missing; starting with available steps:', presentSteps.map(s => s.element));
+        if (opts.onPartialStart) {
+          try { opts.onPartialStart(missingSteps.map(s => s.element)); } catch (e) { /* ignore */ }
+        }
+      }
+
+      // Initialize with error handling; pass only the present steps if any are missing
+      const driverObj = initializeDriver(missingSteps.length > 0 ? presentSteps : undefined);
       
       if (!driverObj) {
         console.error('Failed to initialize Driver.js instance');
         return;
       }
 
-      // Drive with error handling
+      // Drive with comprehensive error handling and user feedback
       try {
         driverObj.drive();
-      } catch (driveError) {
-        console.error('Error starting tour:', driveError);
-        // Clean up on error
-        if (driverObj && driverObj.destroy) {
+        console.log(`[TOUR DEBUG] Tour "${tourConfig.id}" started successfully`);
+        
+        // Provide user feedback via callback if available
+        if (options.onTourStart) {
           try {
-            driverObj.destroy();
-          } catch (cleanupError) {
-            console.warn('Error during cleanup:', cleanupError);
+            options.onTourStart(tourConfig.id);
+          } catch (feedbackError) {
+            console.warn('Error in onTourStart callback:', feedbackError);
           }
         }
+        
+      } catch (driveError) {
+        console.error('Error starting tour:', driveError);
+        
+        // Enhanced user feedback for different error types
+        let errorMessage = 'An unexpected error occurred while starting the tour.';
+        let errorCode = 'UNKNOWN';
+        
+        if (driveError.message?.includes('No such element')) {
+          errorMessage = 'Some elements on this page are not ready yet. Please try again in a moment.';
+          errorCode = 'ELEMENT_MISSING';
+        } else if (driveError.message?.includes('driver')) {
+          errorMessage = 'Tour system is temporarily unavailable. Please refresh the page and try again.';
+          errorCode = 'DRIVER_ERROR';
+        } else if (driveError.message?.includes('permission') || driveError.message?.includes('access')) {
+          errorMessage = 'You don\'t have permission to start this tour.';
+          errorCode = 'PERMISSION_DENIED';
+        }
+        
+        console.warn(`[TOUR ERROR] ${errorCode}: ${errorMessage}`);
+        
+        // Provide user feedback via callback
+        if (options.onTourError) {
+          try {
+            options.onTourError(errorCode, errorMessage, driveError);
+          } catch (feedbackError) {
+            console.warn('Error in onTourError callback:', feedbackError);
+          }
+        }
+        
+        // Clean up on error (best-effort)
+        try {
+          if (driverObj && driverObj.destroy) driverObj.destroy();
+        } catch (cleanupError) {
+          console.warn('Error during cleanup:', cleanupError);
+        }
+
+        try { forceCleanup(driverObj); } catch (e) { /* ignore */ }
         contextStopTour();
+        
+        // Return error information for caller handling
+        return { success: false, error: errorCode, message: errorMessage };
       }
 
     } catch (error) {
       console.error('Critical error in tour start:', error);
       // Ensure we clean up the context state
       contextStopTour();
+      
+      // Return error information for caller handling
+      return { success: false, error: 'CRITICAL_ERROR', message: 'A critical error occurred while starting the tour.', details: error.message };
     }
-    // default: return undefined (indicates started successfully)
-    return true;
+    
+    // Success case
+    return { success: true };
   }, [tourConfig, contextStartTour, contextStopTour, initializeDriver]);
 
   /**
    * Stop the tour
    */
   const stop = useCallback(() => {
-    if (driverInstance.current) {
-      driverInstance.current.destroy();
-    }
+    try { forceCleanup(); } catch (e) { /* ignore */ }
     contextStopTour();
-  }, [contextStopTour]);
+  }, [contextStopTour, forceCleanup]);
 
   /**
    * Auto-start logic
@@ -434,63 +720,84 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   }, [tourConfig, shouldAutoStart, isRunning, start]);
 
   /**
-   * Language change handling with improved error handling
+   * Enhanced language change handling with pause/resume logic
    */
+  const prevLanguage = useRef(currentLanguage);
   useEffect(() => {
-    if (isRunning && activeTour === tourConfig?.id && driverInstance.current) {
-      // Debounce language change to prevent rapid re-initialization
-      const timer = setTimeout(() => {
-        try {
-          const currentIndex = driverInstance.current?.getActiveIndex();
-          if (typeof currentIndex !== 'number') {
-            console.warn('Invalid tour index during language change');
-            return;
-          }
+    // Only run if the language has actually changed
+    if (prevLanguage.current === currentLanguage) {
+      return;
+    }
+    prevLanguage.current = currentLanguage;
 
-          // Safely destroy old instance
+    let pauseTimeout = null;
+    let resumeTimeout = null;
+
+    if (isRunning && activeTour === tourConfig?.id && driverInstance.current) {
+      // Pause the tour when language change is detected
+      console.log('[TOUR DEBUG] Language change detected - pausing tour');
+      
+      pauseTimeout = setTimeout(() => {
+        try {
+          // Safely pause the tour by hiding it
           if (driverInstance.current && typeof driverInstance.current.destroy === 'function') {
+            // Store the current step before destroying
+            const currentIndex = driverInstance.current?.getActiveIndex();
+            console.log('[TOUR DEBUG] Pausing tour at step:', currentIndex);
+            
+            // Destroy current instance
             driverInstance.current.destroy();
           }
 
-          // Ensure cleanup before reinitializing
-          setTimeout(() => {
-            try {
-              const driverObj = initializeDriver();
-              if (driverObj && typeof driverObj.drive === 'function') {
-                driverObj.drive(currentIndex);
-              }
-            } catch (error) {
-              console.error('Error reinitializing tour after language change:', error);
-              // Fallback: restart tour from beginning
-              try {
-                const driverObj = initializeDriver();
-                driverObj.drive();
-              } catch (fallbackError) {
-                console.error('Fallback tour restart failed:', fallbackError);
-                contextStopTour();
-              }
-            }
-          }, 150); // Increased delay for better cleanup
-          
+          try { forceCleanup(); } catch (e) { 
+            console.warn('Error during language change cleanup:', e);
+          }
+
         } catch (error) {
-          console.error('Error during language change handling:', error);
+          console.error('Error during tour pause:', error);
           contextStopTour();
         }
-      }, 300);
+      }, 200);
 
-      return () => clearTimeout(timer);
+      // Resume tour after language change completes
+      resumeTimeout = setTimeout(() => {
+        try {
+          const driverObj = initializeDriver();
+          if (driverObj && typeof driverObj.drive === 'function') {
+            // Try to resume from the same step
+            driverObj.drive();
+            console.log('[TOUR DEBUG] Tour resumed after language change');
+          }
+        } catch (error) {
+          console.error('Error resuming tour after language change:', error);
+          // Don't stop the tour - just log the error and let user continue
+          console.warn('Tour will continue from beginning after language change');
+          try {
+            const driverObj = initializeDriver();
+            if (driverObj && typeof driverObj.drive === 'function') {
+              driverObj.drive(0); // Start from beginning
+            }
+          } catch (fallbackError) {
+            console.error('Failed to restart tour:', fallbackError);
+            contextStopTour();
+          }
+        }
+      }, 1000); // Longer delay to ensure i18n has completed
+
+      // Cleanup function
+      return () => {
+        if (pauseTimeout) clearTimeout(pauseTimeout);
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+      };
     }
-  }, [currentLanguage, isRunning, activeTour, tourConfig, initializeDriver, contextStopTour]);
+  }, [currentLanguage, isRunning, activeTour, tourConfig, initializeDriver, contextStopTour, forceCleanup]);
 
   /**
    * Cleanup on unmount
    */
   useEffect(() => {
     return () => {
-      if (driverInstance.current) {
-        driverInstance.current.destroy();
-        driverInstance.current = null;
-      }
+      try { forceCleanup(); } catch (e) { /* ignore */ }
     };
   }, []);
 

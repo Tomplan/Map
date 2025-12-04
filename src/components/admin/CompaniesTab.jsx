@@ -215,7 +215,7 @@ export default function CompaniesTab() {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="companies-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -233,7 +233,7 @@ export default function CompaniesTab() {
         </div>
 
         {/* Action buttons: Export, Import, Add */}
-        <div className="flex gap-2">
+        <div className="flex gap-2" data-testid="import-export-buttons">
           <ExportButton
             dataType="companies"
             data={companies}
@@ -250,6 +250,7 @@ export default function CompaniesTab() {
           />
           <button
             onClick={handleStartCreate}
+            data-testid="add-company-button"
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Icon path={mdiPlus} size={0.8} />
@@ -262,6 +263,7 @@ export default function CompaniesTab() {
       <div className="flex gap-2 mb-4 border-b flex-shrink-0">
         <button
           onClick={() => setActiveTab('public')}
+          data-testid="public-info-tab"
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'public'
               ? 'text-blue-600 border-b-2 border-blue-600'
@@ -272,6 +274,7 @@ export default function CompaniesTab() {
         </button>
         <button
           onClick={() => setActiveTab('manager')}
+          data-testid="private-info-tab"
           className={`px-4 py-2 font-medium transition-colors ${
             activeTab === 'manager'
               ? 'text-green-600 border-b-2 border-green-600'

@@ -251,7 +251,7 @@ export default function ProgramManagement({ selectedYear }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm">
+    <div className="bg-white rounded-lg shadow-sm" data-testid="program-management-container">
       {/* Header */}
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex justify-between items-center">
@@ -264,6 +264,7 @@ export default function ProgramManagement({ selectedYear }) {
           <div className="flex gap-2">
             <button
               onClick={handleCopyFromPreviousYear}
+              data-testid="copy-from-previous-year-button"
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               title={`Copy from ${selectedYear - 1}`}
             >
@@ -272,6 +273,7 @@ export default function ProgramManagement({ selectedYear }) {
             </button>
             <button
               onClick={handleArchive}
+              data-testid="archive-year-button"
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={(activities.saturday?.length || 0) + (activities.sunday?.length || 0) === 0}
               title={`Archive all activities for ${selectedYear}`}
@@ -282,6 +284,7 @@ export default function ProgramManagement({ selectedYear }) {
             {copiedActivity && (
               <button
                 onClick={handlePasteActivity}
+                data-testid="paste-activity-button"
                 className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                 title="Paste copied activity"
               >
@@ -295,6 +298,7 @@ export default function ProgramManagement({ selectedYear }) {
                 setCopiedActivity(null); // Clear any copied data when adding new activity
                 setShowForm(true);
               }}
+              data-testid="add-activity-button"
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <MdAdd className="text-xl" />
@@ -309,6 +313,7 @@ export default function ProgramManagement({ selectedYear }) {
         <div className="flex">
           <button
             onClick={() => setActiveTab('saturday')}
+            data-testid="saturday-tab"
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'saturday'
                 ? 'border-b-2 border-blue-600 text-blue-600'
@@ -319,6 +324,7 @@ export default function ProgramManagement({ selectedYear }) {
           </button>
           <button
             onClick={() => setActiveTab('sunday')}
+            data-testid="sunday-tab"
             className={`px-6 py-3 font-medium transition-colors ${
               activeTab === 'sunday'
                 ? 'border-b-2 border-blue-600 text-blue-600'
@@ -331,7 +337,7 @@ export default function ProgramManagement({ selectedYear }) {
       </div>
 
       {/* Activities List */}
-      <div className="divide-y divide-gray-200">
+      <div className="divide-y divide-gray-200" data-testid="activities-list">
         {currentActivities.length === 0 ? (
           <div className="px-6 py-12 text-center">
             <p className="text-gray-500">{t('programManagement.noActivitiesFound')}</p>
@@ -462,6 +468,7 @@ export default function ProgramManagement({ selectedYear }) {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleCopyActivity(activity)}
+                          data-testid="copy-activity-button"
                           className={`p-2 rounded-lg transition-colors ${
                             isInactive
                               ? 'text-gray-400 hover:bg-gray-50 cursor-not-allowed'
@@ -517,7 +524,7 @@ export default function ProgramManagement({ selectedYear }) {
 
       {/* Footer Stats */}
       {currentActivities.length > 0 && (
-        <div className="border-t border-gray-200 px-6 py-3 bg-gray-50">
+        <div className="border-t border-gray-200 px-6 py-3 bg-gray-50" data-testid="program-stats">
           <div className="flex gap-6 text-sm">
             <p className="text-gray-600">
               {t('programManagement.totalActivities')}: <span className="font-medium">{currentActivities.length}</span>

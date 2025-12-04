@@ -96,14 +96,14 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     <div>
       {/* Year-scoped UI is handled in the admin sidebar (AdminLayout) — removed inline Dashboard card */}
       {/* Event Totals - Combined Stats and Meal/Coin Data */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="event-totals bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">
           {selectedYear} {t('dashboard.eventTotals')}
           {(loading || statsLoading || assignmentsLoading) && <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>}
         </h2>
 
         {/* Stats Grid - Inside Event Totals */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -207,7 +207,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="quick-actions bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link

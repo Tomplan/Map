@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import useOnboardingTour from '../../hooks/useOnboardingTour';
+import { useOnboarding } from '../../contexts/OnboardingContext';
 import TourErrorBoundary from './TourErrorBoundary';
 
 /**
@@ -21,6 +22,20 @@ export default function OnboardingTour({ tourConfig, onComplete, onDismiss, chil
     onComplete,
     onDismiss,
   });
+
+  const { activeTour } = useOnboarding();
+
+  // If some other part of the app set the active tour (for example a
+  // navigation + retry flow), automatically start when our tour becomes
+  // the active one. This allows the Help panel to request navigation and
+  // then rely on the mounted page to start the tour when it arrives.
+  React.useEffect(() => {
+    if (activeTour === tourConfig?.id && !isActive && typeof start === 'function') {
+      // Start with the default options — callers (Help panel) will request
+      // nav + set context activeTour when appropriate.
+      start();
+    }
+  }, [activeTour, isActive, start, tourConfig]);
 
   // Handle tour-specific retry logic
   const handleRetry = () => {
