@@ -37,7 +37,12 @@ const DEFAULT_ICON = {
   GLYPH_ANCHOR: [0, -4],
 };
 
-const getIconFile = (marker, isFavorited = false, assignedDefault = null, unassignedDefault = null) => {
+const getIconFile = (
+  marker,
+  isFavorited = false,
+  assignedDefault = null,
+  unassignedDefault = null,
+) => {
   // If favorited, always use yellow marker
   if (isFavorited) {
     return getIconPath('glyph-marker-icon-yellow.svg');
@@ -59,14 +64,25 @@ const getIconFile = (marker, isFavorited = false, assignedDefault = null, unassi
   return getIconPath(`${marker.type || 'default'}.svg`);
 };
 
-const createIcon = (marker, isActive = false, isFavorited = false, currentZoom = 17, isAdminView = false, assignedDefault = null, unassignedDefault = null) => {
+const createIcon = (
+  marker,
+  isActive = false,
+  isFavorited = false,
+  currentZoom = 17,
+  isAdminView = false,
+  assignedDefault = null,
+  unassignedDefault = null,
+) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
   if (isActive) className += ' marker-active';
   if (isFavorited) className += ' marker-favorited';
 
   // Use marker.iconSize as the single source of truth for base sizes; fall back to default
   // Ensure iconSize is normalized - if height missing derive it from width
-  const baseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+  const baseSize = normalizeIconSize(
+    Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
+    DEFAULT_ICON.SIZE,
+  );
 
   // Calculate size based on zoom (disabled in admin view)
   const iconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
@@ -87,11 +103,16 @@ const createIcon = (marker, isActive = false, isFavorited = false, currentZoom =
         // parse numeric px value
         let baseGlyphPx = null;
         if (typeof marker.glyphSize === 'number') baseGlyphPx = marker.glyphSize;
-        else if (typeof marker.glyphSize === 'string') baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
+        else if (typeof marker.glyphSize === 'string')
+          baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
 
         // Determine marker's stored base icon height
-        const markerBaseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
-        const baseIconHeight = markerBaseSize && markerBaseSize[1] ? markerBaseSize[1] : DEFAULT_ICON.SIZE[1];
+        const markerBaseSize = normalizeIconSize(
+          Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
+          DEFAULT_ICON.SIZE,
+        );
+        const baseIconHeight =
+          markerBaseSize && markerBaseSize[1] ? markerBaseSize[1] : DEFAULT_ICON.SIZE[1];
 
         if (baseGlyphPx && baseIconHeight) {
           const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
@@ -112,7 +133,10 @@ const createIcon = (marker, isActive = false, isFavorited = false, currentZoom =
     })(),
     glyphAnchor: (() => {
       // Scale glyphAnchor (x,y) proportional to marker's stored iconSize -> current iconSize.
-      const baseMarkerSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE);
+      const baseMarkerSize = normalizeIconSize(
+        Array.isArray(marker.iconSize) ? marker.iconSize : DEFAULT_ICON.SIZE,
+        DEFAULT_ICON.SIZE,
+      );
       const baseW = baseMarkerSize[0] || DEFAULT_ICON.SIZE[0];
       const baseH = baseMarkerSize[1] || DEFAULT_ICON.SIZE[1];
 
@@ -126,13 +150,13 @@ const createIcon = (marker, isActive = false, isFavorited = false, currentZoom =
       }
 
       // default anchor scales with current icon size proportionally
-      return [parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[0] * scaleX).toFixed(2)), parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[1] * scaleY).toFixed(2))];
+      return [
+        parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[0] * scaleX).toFixed(2)),
+        parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[1] * scaleY).toFixed(2)),
+      ];
     })(),
   });
 };
-
-
-
 
 // Optimized marker key - only includes properties that affect visual rendering
 // Excludes metadata (companyId, assignmentId, name, locks) to prevent unnecessary unmount/remount
@@ -140,60 +164,88 @@ const getMarkerKey = (marker) =>
   `${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
 
 // Memoized individual marker component to prevent unnecessary re-renders
-const MemoizedMarker = memo(({ marker, isDraggable, icon, eventHandlers, markerRef, isMobile, organizationLogo, onMarkerSelect }) => (
-  <Marker
-    position={[marker.lat, marker.lng]}
-    icon={icon}
-    draggable={isDraggable}
-    eventHandlers={eventHandlers}
-    ref={markerRef}
-  >
-    <MarkerUI
-      marker={marker}
-      isMobile={isMobile}
-      organizationLogo={organizationLogo}
-      onMoreInfo={() => onMarkerSelect(marker)}
-    />
-  </Marker>
-), (prevProps, nextProps) => {
-  // Return true to SKIP re-render, false to re-render
-  // Check if cached icon is the same object (meaning visual properties haven't changed)
-  const iconUnchanged = prevProps.icon === nextProps.icon;
-  const draggableUnchanged = prevProps.isDraggable === nextProps.isDraggable;
-  const handlersUnchanged = prevProps.eventHandlers === nextProps.eventHandlers;
+const MemoizedMarker = memo(
+  ({
+    marker,
+    isDraggable,
+    icon,
+    eventHandlers,
+    markerRef,
+    isMobile,
+    organizationLogo,
+    onMarkerSelect,
+  }) => (
+    <Marker
+      position={[marker.lat, marker.lng]}
+      icon={icon}
+      draggable={isDraggable}
+      eventHandlers={eventHandlers}
+      ref={markerRef}
+    >
+      <MarkerUI
+        marker={marker}
+        isMobile={isMobile}
+        organizationLogo={organizationLogo}
+        onMoreInfo={() => onMarkerSelect(marker)}
+      />
+    </Marker>
+  ),
+  (prevProps, nextProps) => {
+    // Return true to SKIP re-render, false to re-render
+    // Check if cached icon is the same object (meaning visual properties haven't changed)
+    const iconUnchanged = prevProps.icon === nextProps.icon;
+    const draggableUnchanged = prevProps.isDraggable === nextProps.isDraggable;
+    const handlersUnchanged = prevProps.eventHandlers === nextProps.eventHandlers;
 
-  // If visual properties unchanged, check if tooltip content needs update
-  if (iconUnchanged && draggableUnchanged && handlersUnchanged) {
-    // Allow tooltip/popup content to update without remounting marker
-    // Check if metadata changed (name, logo, website, info)
-    const metadataChanged =
-      prevProps.marker.name !== nextProps.marker.name ||
-      prevProps.marker.logo !== nextProps.marker.logo ||
-      prevProps.marker.website !== nextProps.marker.website ||
-      prevProps.marker.info !== nextProps.marker.info;
+    // If visual properties unchanged, check if tooltip content needs update
+    if (iconUnchanged && draggableUnchanged && handlersUnchanged) {
+      // Allow tooltip/popup content to update without remounting marker
+      // Check if metadata changed (name, logo, website, info)
+      const metadataChanged =
+        prevProps.marker.name !== nextProps.marker.name ||
+        prevProps.marker.logo !== nextProps.marker.logo ||
+        prevProps.marker.website !== nextProps.marker.website ||
+        prevProps.marker.info !== nextProps.marker.info;
 
-    // If only metadata changed, allow re-render (return false)
-    // If nothing changed, skip re-render (return true)
-    return !metadataChanged;
-  }
+      // If only metadata changed, allow re-render (return false)
+      // If nothing changed, skip re-render (return true)
+      return !metadataChanged;
+    }
 
-  // Visual properties changed, must re-render
-  return false;
-});
+    // Visual properties changed, must re-render
+    return false;
+  },
+);
 
-function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, iconCreateFunction, selectedYear, isAdminView, selectedMarkerId, onMarkerSelect, focusMarkerId, onFocusHandled, currentZoom, applyVisitorSizing = false, onMarkerDrag = null }) {
+function EventClusterMarkers({
+  safeMarkers,
+  updateMarker,
+  isMarkerDraggable,
+  iconCreateFunction,
+  selectedYear,
+  isAdminView,
+  selectedMarkerId,
+  onMarkerSelect,
+  focusMarkerId,
+  onFocusHandled,
+  currentZoom,
+  applyVisitorSizing = false,
+  onMarkerDrag = null,
+}) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
 
   // In admin view with external selection, use selectedMarkerId; otherwise use internal state
-  const selectedMarker = isAdminView && selectedMarkerId !== undefined
-    ? safeMarkers.find(m => m.id === selectedMarkerId)
-    : internalSelectedMarker;
+  const selectedMarker =
+    isAdminView && selectedMarkerId !== undefined
+      ? safeMarkers.find((m) => m.id === selectedMarkerId)
+      : internalSelectedMarker;
 
-  const setSelectedMarker = isAdminView && onMarkerSelect
-    ? (marker) => onMarkerSelect(marker ? marker.id : null)
-    : setInternalSelectedMarker;
+  const setSelectedMarker =
+    isAdminView && onMarkerSelect
+      ? (marker) => onMarkerSelect(marker ? marker.id : null)
+      : setInternalSelectedMarker;
   const { organizationLogo, loading: logoLoading } = useOrganizationLogo();
 
   // Favorites context (only available in visitor view)
@@ -215,7 +267,9 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
-  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
+  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(
+    selectedYear || new Date().getFullYear(),
+  );
 
   // Load default markers for fallback colors
   const [defaultMarkers, setDefaultMarkers] = useState({ assigned: null, unassigned: null });
@@ -230,8 +284,8 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
 
         if (error) throw error;
 
-        const assigned = data.find(d => d.id === -1) || {};
-        const unassigned = data.find(d => d.id === -2) || {};
+        const assigned = data.find((d) => d.id === -1) || {};
+        const unassigned = data.find((d) => d.id === -2) || {};
 
         setDefaultMarkers({ assigned, unassigned });
       } catch (error) {
@@ -244,14 +298,18 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     // Subscribe to default marker changes
     const subscription = supabase
       .channel('default-markers-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'markers_appearance',
-        filter: 'event_year=eq.0'
-      }, () => {
-        loadDefaults();
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'markers_appearance',
+          filter: 'event_year=eq.0',
+        },
+        () => {
+          loadDefaults();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -264,7 +322,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
 
   const filteredMarkers = useMemo(
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
-    [safeMarkers]
+    [safeMarkers],
   );
 
   const handleDragEnd = useCallback(
@@ -276,7 +334,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         onMarkerDrag(markerId, lat, lng);
       }
     },
-    [updateMarker, onMarkerDrag]
+    [updateMarker, onMarkerDrag],
   );
 
   const getMarkerRef = useCallback((markerId) => {
@@ -296,29 +354,29 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         timestamp: Date.now(), // Force React to recognize as new state
       });
     },
-    [isAdminView]
+    [isAdminView],
   );
 
   // Handle assignment
   const handleAssign = useCallback(
     async (markerId, companyId) => {
       // Check if marker exists in current markers
-      const markerExists = safeMarkers.some(m => m.id === markerId);
+      const markerExists = safeMarkers.some((m) => m.id === markerId);
       if (!markerExists) {
         toastError(`Cannot assign to marker ${markerId} - marker does not exist`);
         return;
       }
 
       // Check if marker already has assignments
-      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+      const existingAssignments = assignments.filter((a) => a.marker_id === markerId);
 
       if (existingAssignments.length > 0) {
         // Get company name being assigned
-        const newCompany = subscriptions.find(s => s.company_id === companyId)?.company;
+        const newCompany = subscriptions.find((s) => s.company_id === companyId)?.company;
         const newCompanyName = newCompany?.name || 'this company';
 
         // Get booth number/glyph from marker
-        const marker = safeMarkers.find(m => m.id === markerId);
+        const marker = safeMarkers.find((m) => m.id === markerId);
         const boothLabel = marker?.glyph || marker?.id || 'this booth';
 
         // Build warning message
@@ -328,7 +386,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
           warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
         } else {
           const companyNames = existingAssignments
-            .map(a => a.company?.name)
+            .map((a) => a.company?.name)
             .filter(Boolean)
             .join(', ');
           warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
@@ -355,7 +413,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, toastError, confirm]
+    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, toastError, confirm],
   );
 
   // Handle unassignment
@@ -370,7 +428,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         setContextMenuLoading(false);
       }
     },
-    [unassignCompanyFromMarker]
+    [unassignCompanyFromMarker],
   );
 
   // Memoize event handlers by marker ID to prevent recreation
@@ -382,7 +440,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
         };
-        
+
         // Only add handlers if they are defined
         if (isMarkerDraggable) {
           handlers.dragend = handleDragEnd(marker.id);
@@ -390,33 +448,44 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
         if (isAdminView) {
           handlers.contextmenu = handleContextMenu(marker);
         }
-        
+
         eventHandlersByMarker.current[key] = handlers;
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu]
+    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu],
   );
 
   // Memoize icons by marker visual properties to prevent recreation
   const iconsByMarker = useRef({});
-  const getIcon = useCallback((marker, isSelected) => {
-    const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
-    const zoomBucket = getZoomBucket(currentZoom);
-    const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
-    const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize||DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}-${marker.assignments?.length || 0}`;
-    if (!iconsByMarker.current[key]) {
-      iconsByMarker.current[key] = createIcon(marker, isSelected, markerIsFavorited, currentZoom, effectiveAdminSizing, defaultMarkers.assigned, defaultMarkers.unassigned);
-    }
-    return iconsByMarker.current[key];
-  }, [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers]);
+  const getIcon = useCallback(
+    (marker, isSelected) => {
+      const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
+      const zoomBucket = getZoomBucket(currentZoom);
+      const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
+      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}-${marker.assignments?.length || 0}`;
+      if (!iconsByMarker.current[key]) {
+        iconsByMarker.current[key] = createIcon(
+          marker,
+          isSelected,
+          markerIsFavorited,
+          currentZoom,
+          effectiveAdminSizing,
+          defaultMarkers.assigned,
+          defaultMarkers.unassigned,
+        );
+      }
+      return iconsByMarker.current[key];
+    },
+    [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers],
+  );
 
   // Clean up stale cache entries when markers change to prevent memory leaks
   useEffect(() => {
-    const currentMarkerIds = new Set(filteredMarkers.map(m => m.id));
+    const currentMarkerIds = new Set(filteredMarkers.map((m) => m.id));
 
     // Clean up event handlers cache
-    Object.keys(eventHandlersByMarker.current).forEach(key => {
+    Object.keys(eventHandlersByMarker.current).forEach((key) => {
       const markerId = parseInt(key.split('-')[0], 10);
       if (!currentMarkerIds.has(markerId)) {
         delete eventHandlersByMarker.current[key];
@@ -424,7 +493,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
     });
 
     // Clean up icons cache
-    Object.keys(iconsByMarker.current).forEach(key => {
+    Object.keys(iconsByMarker.current).forEach((key) => {
       const markerId = parseInt(key.split('-')[0], 10);
       if (!currentMarkerIds.has(markerId)) {
         delete iconsByMarker.current[key];
@@ -442,7 +511,7 @@ function EventClusterMarkers({ safeMarkers, updateMarker, isMarkerDraggable, ico
       if (markerRef?.current) {
         // Open popup (small popup on both mobile and desktop)
         markerRef.current.openPopup();
-        
+
         // Clear focus after handling
         if (onFocusHandled) {
           onFocusHandled();
@@ -546,7 +615,7 @@ EventClusterMarkers.propTypes = {
       website: PropTypes.string,
       info: PropTypes.string,
       companyId: PropTypes.number,
-    })
+    }),
   ).isRequired,
   updateMarker: PropTypes.func.isRequired,
   isMarkerDraggable: PropTypes.func.isRequired,

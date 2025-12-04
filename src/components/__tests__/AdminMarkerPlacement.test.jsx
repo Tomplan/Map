@@ -3,7 +3,9 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
-jest.mock('@mdi/react', () => ({ Icon: (props) => require('react').createElement('svg', null, props.children) }));
+jest.mock('@mdi/react', () => ({
+  Icon: (props) => require('react').createElement('svg', null, props.children),
+}));
 
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
 

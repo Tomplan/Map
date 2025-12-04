@@ -8,11 +8,16 @@ import {
   mdiRefresh,
   mdiClose,
   mdiCheckCircle,
-  mdiAlertCircle
+  mdiAlertCircle,
 } from '@mdi/js';
 import Modal from './Modal';
 import { useDialog } from '../../contexts/DialogContext';
-import { parseFile, matchRecords, buildLookupMap, sanitizeDbPayload } from '../../utils/dataExportImport';
+import {
+  parseFile,
+  matchRecords,
+  buildLookupMap,
+  sanitizeDbPayload,
+} from '../../utils/dataExportImport';
 import { getDataConfig } from '../../config/dataConfigs';
 import { supabase } from '../../supabaseClient';
 
@@ -21,7 +26,7 @@ const STEPS = {
   PARSING: 'parsing',
   PREVIEW: 'preview',
   IMPORTING: 'importing',
-  COMPLETE: 'complete'
+  COMPLETE: 'complete',
 };
 
 /**
@@ -37,7 +42,7 @@ export default function ImportModal({
   existingData = [],
   additionalData = {},
   onImportComplete,
-  onImportError
+  onImportError,
 }) {
   const [step, setStep] = useState(STEPS.FILE_SELECT);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -138,7 +143,7 @@ export default function ImportModal({
 
           // Build marker map with both glyph and id as keys
           markerMap = {};
-          markers.forEach(m => {
+          markers.forEach((m) => {
             if (m.glyph) {
               markerMap[m.glyph.toLowerCase()] = m.id;
             }
@@ -162,32 +167,31 @@ export default function ImportModal({
               row,
               companyMap,
               markerMap || additionalData.markerMap,
-              eventYear
+              eventYear,
             );
 
             // Match against existing data
             if (config.matchStrategy.matchFields.includes('name')) {
               // Companies matching by name
               const matchName = row['Company Name']?.toLowerCase().trim();
-              matchedRecord = existingData.find(e =>
-                e.name?.toLowerCase().trim() === matchName
-              );
+              matchedRecord = existingData.find((e) => e.name?.toLowerCase().trim() === matchName);
             } else if (config.yearDependent && companyMap) {
               // Subscriptions/assignments matching
               const companyName = row['Company Name']?.toLowerCase().trim();
               const companyId = companyMap[companyName];
 
               if (dataType === 'event_subscriptions') {
-                matchedRecord = existingData.find(e =>
-                  e.company_id === companyId && e.event_year === eventYear
+                matchedRecord = existingData.find(
+                  (e) => e.company_id === companyId && e.event_year === eventYear,
                 );
               } else if (dataType === 'assignments') {
                 const boothLabel = row['Booth Label']?.toLowerCase().trim();
                 const markerId = markerMap[boothLabel];
-                matchedRecord = existingData.find(e =>
-                  e.company_id === companyId &&
-                  e.marker_id === markerId &&
-                  e.event_year === eventYear
+                matchedRecord = existingData.find(
+                  (e) =>
+                    e.company_id === companyId &&
+                    e.marker_id === markerId &&
+                    e.event_year === eventYear,
                 );
               }
             }
@@ -197,7 +201,7 @@ export default function ImportModal({
             validation.valid = false;
             validation.errors.push({
               field: 'General',
-              message: transformError.message
+              message: transformError.message,
             });
           }
         }
@@ -208,24 +212,22 @@ export default function ImportModal({
           validation,
           action,
           matchedRecord,
-          selected: validation.valid // Auto-select valid rows
+          selected: validation.valid, // Auto-select valid rows
         };
       });
 
       setValidatedRows(validated);
 
       // Auto-select all valid rows
-      const validIndices = validated
-        .filter(r => r.validation.valid)
-        .map(r => r.index);
+      const validIndices = validated.filter((r) => r.validation.valid).map((r) => r.index);
       setSelectedRows(new Set(validIndices));
 
       setStep(STEPS.PREVIEW);
 
       // Show summary only if not suppressed
       if (!suppressToasts) {
-        const validCount = validated.filter(r => r.validation.valid).length;
-        const errorCount = validated.filter(r => !r.validation.valid).length;
+        const validCount = validated.filter((r) => r.validation.valid).length;
+        const errorCount = validated.filter((r) => !r.validation.valid).length;
 
         if (errorCount > 0) {
           toastWarning(`Parsed ${data.length} rows: ${validCount} valid, ${errorCount} errors`);
@@ -254,14 +256,12 @@ export default function ImportModal({
 
   // Toggle all valid rows
   const toggleAll = () => {
-    if (selectedRows.size === validatedRows.filter(r => r.validation.valid).length) {
+    if (selectedRows.size === validatedRows.filter((r) => r.validation.valid).length) {
       // Deselect all
       setSelectedRows(new Set());
     } else {
       // Select all valid
-      const validIndices = validatedRows
-        .filter(r => r.validation.valid)
-        .map(r => r.index);
+      const validIndices = validatedRows.filter((r) => r.validation.valid).map((r) => r.index);
       setSelectedRows(new Set(validIndices));
     }
   };
@@ -273,39 +273,34 @@ export default function ImportModal({
     try {
       // Map slugs to IDs
       const categoryIds = categorySlugs
-        .map(slug => categorySlugToIdMap[slug.toLowerCase()])
-        .filter(id => id !== undefined);
+        .map((slug) => categorySlugToIdMap[slug.toLowerCase()])
+        .filter((id) => id !== undefined);
 
       if (categoryIds.length === 0) return; // No valid categories
 
       // Delete existing assignments
-      await supabase
-        .from('company_categories')
-        .delete()
-        .eq('company_id', companyId);
+      await supabase.from('company_categories').delete().eq('company_id', companyId);
 
       // Add new assignments
-      const assignments = categoryIds.map(categoryId => ({
+      const assignments = categoryIds.map((categoryId) => ({
         company_id: companyId,
-        category_id: categoryId
+        category_id: categoryId,
       }));
 
-      const { error } = await supabase
-        .from('company_categories')
-        .insert(assignments);
+      const { error } = await supabase.from('company_categories').insert(assignments);
 
       if (error) {
         errors.push({
           type: 'CATEGORY',
           companyId,
-          message: `Failed to assign categories: ${error.message}`
+          message: `Failed to assign categories: ${error.message}`,
         });
       }
     } catch (error) {
       errors.push({
         type: 'CATEGORY',
         companyId,
-        message: `Failed to assign categories: ${error.message}`
+        message: `Failed to assign categories: ${error.message}`,
       });
     }
   };
@@ -322,7 +317,7 @@ export default function ImportModal({
         company_id: companyId,
         language_code: 'nl',
         info: translations.nl.trim(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
     }
 
@@ -331,7 +326,7 @@ export default function ImportModal({
         company_id: companyId,
         language_code: 'en',
         info: translations.en.trim(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
     }
 
@@ -340,23 +335,21 @@ export default function ImportModal({
         company_id: companyId,
         language_code: 'de',
         info: translations.de.trim(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       });
     }
 
     // Upsert translations (insert or update)
     if (translationRecords.length > 0) {
-      const { error } = await supabase
-        .from('company_translations')
-        .upsert(translationRecords, {
-          onConflict: 'company_id,language_code'
-        });
+      const { error } = await supabase.from('company_translations').upsert(translationRecords, {
+        onConflict: 'company_id,language_code',
+      });
 
       if (error) {
         errors.push({
           type: 'TRANSLATION',
           companyId,
-          message: `Failed to save translations: ${error.message}`
+          message: `Failed to save translations: ${error.message}`,
         });
       }
     }
@@ -364,7 +357,7 @@ export default function ImportModal({
 
   // Execute import
   const handleImport = async () => {
-    const rowsToImport = validatedRows.filter(r => selectedRows.has(r.index));
+    const rowsToImport = validatedRows.filter((r) => selectedRows.has(r.index));
 
     if (rowsToImport.length === 0) {
       toastError('No rows selected for import');
@@ -382,9 +375,7 @@ export default function ImportModal({
       let markerMap = null;
 
       if (config.yearDependent) {
-        const { data: companies } = await supabase
-          .from('companies')
-          .select('id, name');
+        const { data: companies } = await supabase.from('companies').select('id, name');
         companyMap = buildLookupMap(companies, 'name', 'id', false);
 
         if (dataType === 'assignments') {
@@ -393,7 +384,7 @@ export default function ImportModal({
             .select('id, glyph')
             .eq('event_year', eventYear);
           markerMap = {};
-          markers.forEach(m => {
+          markers.forEach((m) => {
             if (m.glyph) markerMap[m.glyph.toLowerCase()] = m.id;
             markerMap[m.id.toString()] = m.id;
           });
@@ -408,14 +399,16 @@ export default function ImportModal({
           .select('id, slug');
 
         if (!categoriesError && categories) {
-          categories.forEach(cat => {
+          categories.forEach((cat) => {
             categorySlugToIdMap[cat.slug.toLowerCase()] = cat.id;
           });
         }
       }
 
       // Get user for created_by field
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const created_by = user?.email || 'unknown';
 
       // Separate creates and updates.
@@ -431,7 +424,7 @@ export default function ImportModal({
           row.originalRow,
           companyMap,
           markerMap,
-          eventYear
+          eventYear,
         );
 
         if (row.action === 'CREATE') {
@@ -460,25 +453,22 @@ export default function ImportModal({
 
       // Batch insert creates
       if (creates.length > 0) {
-        setImportProgress({ 
-          current: 0, 
-          total: rowsToImport.length, 
-          message: `Creating ${creates.length} new records...` 
+        setImportProgress({
+          current: 0,
+          total: rowsToImport.length,
+          message: `Creating ${creates.length} new records...`,
         });
 
-        const { data, error } = await supabase
-          .from(config.table)
-          .insert(creates)
-          .select();
+        const { data, error } = await supabase.from(config.table).insert(creates).select();
 
         if (error) {
           errors.push({ type: 'CREATE_BATCH', message: error.message });
         } else {
           createdCount = data?.length || 0;
-          setImportProgress({ 
-            current: createdCount, 
-            total: rowsToImport.length, 
-            message: `Created ${createdCount} records. Processing additional data...` 
+          setImportProgress({
+            current: createdCount,
+            total: rowsToImport.length,
+            message: `Created ${createdCount} records. Processing additional data...`,
           });
 
           // For companies: Save translations and assign categories after successful creation
@@ -492,7 +482,12 @@ export default function ImportModal({
               }
 
               if (originalData && originalData._categorySlugs) {
-                await assignCompanyCategories(company.id, originalData._categorySlugs, categorySlugToIdMap, errors);
+                await assignCompanyCategories(
+                  company.id,
+                  originalData._categorySlugs,
+                  categorySlugToIdMap,
+                  errors,
+                );
               }
             }
           }
@@ -500,26 +495,23 @@ export default function ImportModal({
       }
 
       // Individual updates (Supabase doesn't support batch updates with different values)
-      setImportProgress({ 
-        current: createdCount, 
-        total: rowsToImport.length, 
-        message: `Updating ${updates.length} existing records...` 
+      setImportProgress({
+        current: createdCount,
+        total: rowsToImport.length,
+        message: `Updating ${updates.length} existing records...`,
       });
 
       for (let i = 0; i < updates.length; i++) {
         const update = updates[i];
         const progressPercent = Math.round(((createdCount + i) / rowsToImport.length) * 100);
-        
-        setImportProgress({ 
-          current: createdCount + i, 
-          total: rowsToImport.length, 
-          message: `Updating record ${i + 1} of ${updates.length}... (${progressPercent}%)` 
+
+        setImportProgress({
+          current: createdCount + i,
+          total: rowsToImport.length,
+          message: `Updating record ${i + 1} of ${updates.length}... (${progressPercent}%)`,
         });
 
-        const { error } = await supabase
-          .from(config.table)
-          .update(update.data)
-          .eq('id', update.id);
+        const { error } = await supabase.from(config.table).update(update.data).eq('id', update.id);
 
         if (error) {
           errors.push({ type: 'UPDATE', id: update.id, message: error.message });
@@ -528,12 +520,17 @@ export default function ImportModal({
 
           // For companies: Save translations and assign categories after successful update
           if (dataType === 'companies') {
-            const orig = updatesMeta.find(u => u.id === update.id)?.original || null;
+            const orig = updatesMeta.find((u) => u.id === update.id)?.original || null;
             if (orig && orig._translations) {
               await saveCompanyTranslations(update.id, orig._translations, errors);
             }
             if (orig && orig._categorySlugs) {
-              await assignCompanyCategories(update.id, orig._categorySlugs, categorySlugToIdMap, errors);
+              await assignCompanyCategories(
+                update.id,
+                orig._categorySlugs,
+                categorySlugToIdMap,
+                errors,
+              );
             }
           }
         }
@@ -544,22 +541,20 @@ export default function ImportModal({
         created: createdCount,
         updated: updatedCount,
         failed: errors.length,
-        errors
+        errors,
       });
 
       setStep(STEPS.COMPLETE);
 
       // Show toast
       if (errors.length === 0) {
-        toastSuccess(
-          `Import complete: ${createdCount} created, ${updatedCount} updated`
-        );
+        toastSuccess(`Import complete: ${createdCount} created, ${updatedCount} updated`);
         if (onImportComplete) {
           onImportComplete({ created: createdCount, updated: updatedCount });
         }
       } else {
         toastWarning(
-          `Import partial: ${createdCount} created, ${updatedCount} updated, ${errors.length} failed`
+          `Import partial: ${createdCount} created, ${updatedCount} updated, ${errors.length} failed`,
         );
       }
     } catch (error) {
@@ -572,301 +567,338 @@ export default function ImportModal({
   };
 
   // Memoized step content renderer to prevent unnecessary re-renders
-  const renderStepContent = React.useMemo(() => function() {
-    switch (step) {
-      case STEPS.FILE_SELECT:
-        return (
-          <div className="p-6 transition-all duration-200 ease-in-out">
-            <div className="text-center">
-              <Icon path={mdiFileUpload} size={3} className="mx-auto text-gray-400 mb-4 transition-transform duration-200" />
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                Select a file to import
-              </h4>
-              <p className="text-sm text-gray-600 mb-6">
-                Supported formats: Excel (.xlsx), CSV (.csv), JSON (.json)
-              </p>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx,.xls,.csv,.json"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
-              >
-                Choose File
-              </button>
-
-              {error && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-pulse">
-                  {error}
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case STEPS.PARSING:
-        return (
-          <div className="p-6 transition-all duration-200 ease-in-out">
-            <div className="text-center">
-              <Icon path={mdiLoading} size={3} className="mx-auto text-blue-600 mb-4 transition-transform duration-200" spin />
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                Parsing file...
-              </h4>
-              <p className="text-sm text-gray-600">
-                Please wait while we process your file
-              </p>
-            </div>
-          </div>
-        );
-
-      case STEPS.PREVIEW:
-        return (
-          <div className="flex flex-col h-full transition-all duration-200 ease-in-out">
-            {/* Summary */}
-            <div className="p-6 border-b border-gray-200 flex-shrink-0">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h4 className="text-lg font-medium text-gray-900">
-                    Import Preview
+  const renderStepContent = React.useMemo(
+    () =>
+      function () {
+        switch (step) {
+          case STEPS.FILE_SELECT:
+            return (
+              <div className="p-6 transition-all duration-200 ease-in-out">
+                <div className="text-center">
+                  <Icon
+                    path={mdiFileUpload}
+                    size={3}
+                    className="mx-auto text-gray-400 mb-4 transition-transform duration-200"
+                  />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">
+                    Select a file to import
                   </h4>
-                  <p className="text-sm text-gray-600">
-                    {validatedRows.length} rows parsed,{' '}
-                    {validatedRows.filter(r => r.validation.valid).length} valid,{' '}
-                    {validatedRows.filter(r => !r.validation.valid).length} errors
+                  <p className="text-sm text-gray-600 mb-6">
+                    Supported formats: Excel (.xlsx), CSV (.csv), JSON (.json)
                   </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={selectedRows.size === validatedRows.filter(r => r.validation.valid).length && selectedRows.size > 0}
-                      onChange={toggleAll}
-                      className="rounded"
-                    />
-                    <span>Select All ({selectedRows.size} selected)</span>
-                  </label>
-                </div>
-              </div>
-            </div>
 
-            {/* Preview Table */}
-            <div className="flex-1 overflow-auto p-6">
-              <div className="transition-all duration-200 ease-in-out">
-                <table className="w-full text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left p-2 font-medium text-gray-700">Select</th>
-                      <th className="text-left p-2 font-medium text-gray-700">Row</th>
-                      <th className="text-left p-2 font-medium text-gray-700">Status</th>
-                      {(() => {
-                          // Build preview columns from config export columns
-                          let base;
-                          if (dataType === 'event_subscriptions') {
-                            // Use all configured export columns for subscriptions
-                            base = config.exportColumns;
-                          } else {
-                            // Default: show first 6 columns for better visibility
-                            base = config.exportColumns.slice(0, 6);
-                          }
-                          const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
-                            ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
-                            : []
-                          const previewCols = [...base, ...extra]
-                          return previewCols.map(col => (
-                            <th key={col.key} className="text-left p-2 font-medium text-gray-700">
-                              {col.header}
-                            </th>
-                          ))
-                        })()}
-                      <th className="text-left p-2 font-medium text-gray-700">Errors</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {validatedRows.map((row) => (
-                      <tr
-                        key={row.index}
-                        className={`border-b border-gray-100 transition-colors duration-150 ${
-                          row.validation.valid ? 'hover:bg-gray-50' : 'bg-red-50'
-                        }`}
-                      >
-                        <td className="p-2">
-                          <input
-                            type="checkbox"
-                            checked={selectedRows.has(row.index)}
-                            onChange={() => toggleRow(row.index)}
-                            disabled={!row.validation.valid}
-                            className="rounded"
-                          />
-                        </td>
-                        <td className="p-2 text-gray-600">{row.index + 1}</td>
-                        <td className="p-2">
-                          {row.validation.valid ? (
-                            <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
-                              row.action === 'CREATE'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}>
-                              <Icon
-                                path={row.action === 'CREATE' ? mdiCheck : mdiRefresh}
-                                size={0.5}
-                              />
-                              {row.action}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-700">
-                              <Icon path={mdiAlert} size={0.5} />
-                              ERROR
-                            </span>
-                          )}
-                        </td>
-                        {(() => {
-                          // Build preview columns from config export columns
-                          let base;
-                          if (dataType === 'event_subscriptions') {
-                            // Use all configured export columns for subscriptions
-                            base = config.exportColumns;
-                          } else {
-                            // Default: show first 6 columns for better visibility
-                            base = config.exportColumns.slice(0, 6);
-                          }
-                          const extra = (parsedMeta && Array.isArray(parsedMeta.columns))
-                            ? parsedMeta.columns.filter(c => c.key && String(c.key).startsWith('category:'))
-                            : []
-                          const previewCols = [...base, ...extra]
-                          return previewCols.map(col => (
-                            <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
-                              {row.originalRow[col.header] || '-'}
-                            </td>
-                          ))
-                        })()}
-                        <td className="p-2">
-                          {row.validation.errors.length > 0 && (
-                            <div className="text-xs text-red-600">
-                              {row.validation.errors.map((err, i) => (
-                                <div key={i}>• {err.message}</div>
-                              ))}
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv,.json"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
 
-            {/* Actions */}
-            <div className="p-6 border-t border-gray-200 flex justify-between flex-shrink-0">
-              <button
-                onClick={handleClose}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleImport}
-                disabled={selectedRows.size === 0}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
-              >
-                Import Selected ({selectedRows.size})
-              </button>
-            </div>
-          </div>
-        );
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
+                  >
+                    Choose File
+                  </button>
 
-      case STEPS.IMPORTING:
-        const progressPercent = importProgress.total > 0 ? Math.round((importProgress.current / importProgress.total) * 100) : 0;
-        return (
-          <div className="p-6 transition-all duration-200 ease-in-out">
-            <div className="text-center">
-              <div className="w-full max-w-md mx-auto">
-                <h4 className="text-lg font-medium text-gray-900 mb-4">
-                  Importing data...
-                </h4>
-                
-                {/* Progress Bar */}
-                <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
-                  <div 
-                    className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${progressPercent}%` }}
-                  ></div>
-                </div>
-                
-                {/* Progress Details */}
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-600">
-                    {importProgress.message || `Processing ${selectedRows.size} records`}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {importProgress.current} of {importProgress.total} records ({progressPercent}%)
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-
-      case STEPS.COMPLETE:
-        return (
-          <div className="p-6 transition-all duration-200 ease-in-out">
-            <div className="text-center">
-              {importResults.failed === 0 ? (
-                <Icon path={mdiCheckCircle} size={3} className="mx-auto text-green-600 mb-4 transition-transform duration-200" />
-              ) : (
-                <Icon path={mdiAlertCircle} size={3} className="mx-auto text-orange-600 mb-4 transition-transform duration-200" />
-              )}
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
-                Import Complete
-              </h4>
-
-              <div className="mt-6 space-y-2 text-sm">
-                <div className="flex items-center justify-center gap-2 transition-colors duration-200">
-                  <span className="text-green-600">✓ Created:</span>
-                  <span className="font-medium">{importResults.created}</span>
-                </div>
-                <div className="flex items-center justify-center gap-2 transition-colors duration-200">
-                  <span className="text-blue-600">⟳ Updated:</span>
-                  <span className="font-medium">{importResults.updated}</span>
-                </div>
-                {importResults.failed > 0 && (
-                  <div className="flex items-center justify-center gap-2 transition-colors duration-200">
-                    <span className="text-red-600">✗ Failed:</span>
-                    <span className="font-medium">{importResults.failed}</span>
-                  </div>
-                )}
-              </div>
-
-              {importResults.errors.length > 0 && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-sm transition-colors duration-200">
-                  <div className="font-medium text-red-900 mb-2">Errors:</div>
-                  {importResults.errors.map((err, i) => (
-                    <div key={i} className="text-red-700">
-                      • {err.message}
+                  {error && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm animate-pulse">
+                      {error}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
+              </div>
+            );
 
-              <button
-                onClick={handleClose}
-                className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        );
+          case STEPS.PARSING:
+            return (
+              <div className="p-6 transition-all duration-200 ease-in-out">
+                <div className="text-center">
+                  <Icon
+                    path={mdiLoading}
+                    size={3}
+                    className="mx-auto text-blue-600 mb-4 transition-transform duration-200"
+                    spin
+                  />
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Parsing file...</h4>
+                  <p className="text-sm text-gray-600">Please wait while we process your file</p>
+                </div>
+              </div>
+            );
 
-      default:
-        return null;
-    }
-  }, [step, config, selectedRows, validatedRows, parsedMeta, selectedFile, error, importResults, importProgress]);
+          case STEPS.PREVIEW:
+            return (
+              <div className="flex flex-col h-full transition-all duration-200 ease-in-out">
+                {/* Summary */}
+                <div className="p-6 border-b border-gray-200 flex-shrink-0">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-lg font-medium text-gray-900">Import Preview</h4>
+                      <p className="text-sm text-gray-600">
+                        {validatedRows.length} rows parsed,{' '}
+                        {validatedRows.filter((r) => r.validation.valid).length} valid,{' '}
+                        {validatedRows.filter((r) => !r.validation.valid).length} errors
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 text-sm">
+                        <input
+                          type="checkbox"
+                          checked={
+                            selectedRows.size ===
+                              validatedRows.filter((r) => r.validation.valid).length &&
+                            selectedRows.size > 0
+                          }
+                          onChange={toggleAll}
+                          className="rounded"
+                        />
+                        <span>Select All ({selectedRows.size} selected)</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preview Table */}
+                <div className="flex-1 overflow-auto p-6">
+                  <div className="transition-all duration-200 ease-in-out">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-200">
+                          <th className="text-left p-2 font-medium text-gray-700">Select</th>
+                          <th className="text-left p-2 font-medium text-gray-700">Row</th>
+                          <th className="text-left p-2 font-medium text-gray-700">Status</th>
+                          {(() => {
+                            // Build preview columns from config export columns
+                            let base;
+                            if (dataType === 'event_subscriptions') {
+                              // Use all configured export columns for subscriptions
+                              base = config.exportColumns;
+                            } else {
+                              // Default: show first 6 columns for better visibility
+                              base = config.exportColumns.slice(0, 6);
+                            }
+                            const extra =
+                              parsedMeta && Array.isArray(parsedMeta.columns)
+                                ? parsedMeta.columns.filter(
+                                    (c) => c.key && String(c.key).startsWith('category:'),
+                                  )
+                                : [];
+                            const previewCols = [...base, ...extra];
+                            return previewCols.map((col) => (
+                              <th key={col.key} className="text-left p-2 font-medium text-gray-700">
+                                {col.header}
+                              </th>
+                            ));
+                          })()}
+                          <th className="text-left p-2 font-medium text-gray-700">Errors</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {validatedRows.map((row) => (
+                          <tr
+                            key={row.index}
+                            className={`border-b border-gray-100 transition-colors duration-150 ${
+                              row.validation.valid ? 'hover:bg-gray-50' : 'bg-red-50'
+                            }`}
+                          >
+                            <td className="p-2">
+                              <input
+                                type="checkbox"
+                                checked={selectedRows.has(row.index)}
+                                onChange={() => toggleRow(row.index)}
+                                disabled={!row.validation.valid}
+                                className="rounded"
+                              />
+                            </td>
+                            <td className="p-2 text-gray-600">{row.index + 1}</td>
+                            <td className="p-2">
+                              {row.validation.valid ? (
+                                <span
+                                  className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded ${
+                                    row.action === 'CREATE'
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-blue-100 text-blue-700'
+                                  }`}
+                                >
+                                  <Icon
+                                    path={row.action === 'CREATE' ? mdiCheck : mdiRefresh}
+                                    size={0.5}
+                                  />
+                                  {row.action}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded bg-red-100 text-red-700">
+                                  <Icon path={mdiAlert} size={0.5} />
+                                  ERROR
+                                </span>
+                              )}
+                            </td>
+                            {(() => {
+                              // Build preview columns from config export columns
+                              let base;
+                              if (dataType === 'event_subscriptions') {
+                                // Use all configured export columns for subscriptions
+                                base = config.exportColumns;
+                              } else {
+                                // Default: show first 6 columns for better visibility
+                                base = config.exportColumns.slice(0, 6);
+                              }
+                              const extra =
+                                parsedMeta && Array.isArray(parsedMeta.columns)
+                                  ? parsedMeta.columns.filter(
+                                      (c) => c.key && String(c.key).startsWith('category:'),
+                                    )
+                                  : [];
+                              const previewCols = [...base, ...extra];
+                              return previewCols.map((col) => (
+                                <td key={col.key} className="p-2 text-gray-900 truncate max-w-xs">
+                                  {row.originalRow[col.header] || '-'}
+                                </td>
+                              ));
+                            })()}
+                            <td className="p-2">
+                              {row.validation.errors.length > 0 && (
+                                <div className="text-xs text-red-600">
+                                  {row.validation.errors.map((err, i) => (
+                                    <div key={i}>• {err.message}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="p-6 border-t border-gray-200 flex justify-between flex-shrink-0">
+                  <button
+                    onClick={handleClose}
+                    className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-150"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleImport}
+                    disabled={selectedRows.size === 0}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                  >
+                    Import Selected ({selectedRows.size})
+                  </button>
+                </div>
+              </div>
+            );
+
+          case STEPS.IMPORTING:
+            const progressPercent =
+              importProgress.total > 0
+                ? Math.round((importProgress.current / importProgress.total) * 100)
+                : 0;
+            return (
+              <div className="p-6 transition-all duration-200 ease-in-out">
+                <div className="text-center">
+                  <div className="w-full max-w-md mx-auto">
+                    <h4 className="text-lg font-medium text-gray-900 mb-4">Importing data...</h4>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                      <div
+                        className="bg-blue-600 h-3 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+
+                    {/* Progress Details */}
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">
+                        {importProgress.message || `Processing ${selectedRows.size} records`}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {importProgress.current} of {importProgress.total} records (
+                        {progressPercent}%)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+
+          case STEPS.COMPLETE:
+            return (
+              <div className="p-6 transition-all duration-200 ease-in-out">
+                <div className="text-center">
+                  {importResults.failed === 0 ? (
+                    <Icon
+                      path={mdiCheckCircle}
+                      size={3}
+                      className="mx-auto text-green-600 mb-4 transition-transform duration-200"
+                    />
+                  ) : (
+                    <Icon
+                      path={mdiAlertCircle}
+                      size={3}
+                      className="mx-auto text-orange-600 mb-4 transition-transform duration-200"
+                    />
+                  )}
+                  <h4 className="text-lg font-medium text-gray-900 mb-2">Import Complete</h4>
+
+                  <div className="mt-6 space-y-2 text-sm">
+                    <div className="flex items-center justify-center gap-2 transition-colors duration-200">
+                      <span className="text-green-600">✓ Created:</span>
+                      <span className="font-medium">{importResults.created}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 transition-colors duration-200">
+                      <span className="text-blue-600">⟳ Updated:</span>
+                      <span className="font-medium">{importResults.updated}</span>
+                    </div>
+                    {importResults.failed > 0 && (
+                      <div className="flex items-center justify-center gap-2 transition-colors duration-200">
+                        <span className="text-red-600">✗ Failed:</span>
+                        <span className="font-medium">{importResults.failed}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {importResults.errors.length > 0 && (
+                    <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-left text-sm transition-colors duration-200">
+                      <div className="font-medium text-red-900 mb-2">Errors:</div>
+                      {importResults.errors.map((err, i) => (
+                        <div key={i} className="text-red-700">
+                          • {err.message}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <button
+                    onClick={handleClose}
+                    className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-150"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            );
+
+          default:
+            return null;
+        }
+      },
+    [
+      step,
+      config,
+      selectedRows,
+      validatedRows,
+      parsedMeta,
+      selectedFile,
+      error,
+      importResults,
+      importProgress,
+    ],
+  );
 
   // Call the memoized function
   const stepContent = renderStepContent();
@@ -880,9 +912,7 @@ export default function ImportModal({
       closeOnBackdrop={step !== STEPS.IMPORTING}
       className="transition-all duration-200 ease-in-out"
     >
-      <div className="transition-all duration-200 ease-in-out">
-        {stepContent}
-      </div>
+      <div className="transition-all duration-200 ease-in-out">{stepContent}</div>
     </Modal>
   );
 }

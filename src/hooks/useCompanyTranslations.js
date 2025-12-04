@@ -30,7 +30,7 @@ export default function useCompanyTranslations(companyId) {
 
       // Convert array to object: { 'nl': 'text...', 'en': 'text...' }
       const translationsMap = {};
-      (data || []).forEach(t => {
+      (data || []).forEach((t) => {
         translationsMap[t.language_code] = t.info;
       });
 
@@ -50,24 +50,22 @@ export default function useCompanyTranslations(companyId) {
     try {
       setError(null);
 
-      const { error: upsertError } = await supabase
-        .from('company_translations')
-        .upsert(
-          {
-            company_id: companyId,
-            language_code: languageCode,
-            info: info,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: 'company_id,language_code',
-          }
-        );
+      const { error: upsertError } = await supabase.from('company_translations').upsert(
+        {
+          company_id: companyId,
+          language_code: languageCode,
+          info: info,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: 'company_id,language_code',
+        },
+      );
 
       if (upsertError) throw upsertError;
 
       // Update local state
-      setTranslations(prev => ({
+      setTranslations((prev) => ({
         ...prev,
         [languageCode]: info,
       }));
@@ -96,7 +94,7 @@ export default function useCompanyTranslations(companyId) {
       if (deleteError) throw deleteError;
 
       // Update local state
-      setTranslations(prev => {
+      setTranslations((prev) => {
         const updated = { ...prev };
         delete updated[languageCode];
         return updated;

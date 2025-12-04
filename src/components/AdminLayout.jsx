@@ -74,7 +74,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       console.error('Logout error:', error);
       // Continue with redirect even if signOut fails
     }
-    
+
     // Redirect to admin login using hash route (app uses HashRouter)
     const base = import.meta.env.BASE_URL || '/';
     // Ensure base ends with / before appending path
@@ -129,17 +129,25 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
         full email address on a single line while still keeping the compact
         collapsed state at w-16.
       */}
-      <aside className={`admin-sidebar ${isCollapsed ? 'w-[66px]' : 'w-[340px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}>
+      <aside
+        className={`admin-sidebar ${isCollapsed ? 'w-[66px]' : 'w-[340px]'} bg-white border-r border-gray-200 flex flex-col transition-all duration-500 ease-in-out overflow-hidden`}
+      >
         {/* Header */}
-        <div className={`p-4 border-b border-gray-200 flex items-center h-[88px] ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-          <div className={`${isCollapsed ? 'opacity-0 w-0 h-0 overflow-hidden' : 'opacity-100 flex-1 min-w-0'}`}>
+        <div
+          className={`p-4 border-b border-gray-200 flex items-center h-[88px] ${isCollapsed ? 'justify-center' : 'justify-between'}`}
+        >
+          <div
+            className={`${isCollapsed ? 'opacity-0 w-0 h-0 overflow-hidden' : 'opacity-100 flex-1 min-w-0'}`}
+          >
             <h1 className="text-xl font-bold text-gray-900 truncate">{t('adminNav.adminPanel')}</h1>
             {(userInfo?.name || userInfo?.email) && (
               // Keep the small/collapsed behavior unchanged (truncate). When
               // expanded, prefer a single-line email so it stays readable on
               // one line: `whitespace-nowrap` ensures no wrap and relies on the
               // expanded (now flexible) sidebar width to display the full text.
-              <p className={`text-sm text-gray-700 mt-1 font-medium ${isCollapsed ? 'truncate' : 'whitespace-nowrap'}`}>
+              <p
+                className={`text-sm text-gray-700 mt-1 font-medium ${isCollapsed ? 'truncate' : 'whitespace-nowrap'}`}
+              >
                 {userInfo.name || userInfo.email}
               </p>
             )}
@@ -154,7 +162,11 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
             className={`p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            <Icon path={isCollapsed ? mdiChevronRight : mdiChevronLeft} size={1} className="text-gray-700" />
+            <Icon
+              path={isCollapsed ? mdiChevronRight : mdiChevronLeft}
+              size={1}
+              className="text-gray-700"
+            />
           </button>
         </div>
 
@@ -175,7 +187,9 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                       isActive={isActive}
                       isCollapsed={isCollapsed}
                       // keep Dashboard exactly aligned: force icon & label wrappers
-                      {...(item.path === '/admin' ? { iconClass: 'w-8 h-8', labelClass: 'text-sm font-medium text-left' } : {})}
+                      {...(item.path === '/admin'
+                        ? { iconClass: 'w-8 h-8', labelClass: 'text-sm font-medium text-left' }
+                        : {})}
                     />
                   </li>
                 );
@@ -185,50 +199,54 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
 
           {/* Year-Scoped Operations - Moved up for better workflow visibility */}
           <div className="p-2 border-t border-gray-200">
-              {/* keep both mounted and toggle visibility with CSS so we avoid
+            {/* keep both mounted and toggle visibility with CSS so we avoid
                   mount/dismount flicker during the sidebar expand animation */}
-              <div className={`${isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'}`}>
-                <YearScopeSidebar
-                  selectedYear={selectedYear}
-                  onYearChange={(newY) => {
-                    if (newY === selectedYear) return;
-                    setPendingYear(newY);
-                    setShowYearModal(true);
-                  }}
+            <div
+              className={`${isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'}`}
+            >
+              <YearScopeSidebar
+                selectedYear={selectedYear}
+                onYearChange={(newY) => {
+                  if (newY === selectedYear) return;
+                  setPendingYear(newY);
+                  setShowYearModal(true);
+                }}
+              />
+
+              {/* Map Management - Now year-scoped since markers are per-year */}
+              {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
+                <SidebarTile
+                  to="/admin/map"
+                  icon={mdiMap}
+                  label={t('adminNav.mapManagement')}
+                  isActive={location.pathname === '/admin/map'}
                 />
+              )}
+            </div>
 
-                {/* Map Management - Now year-scoped since markers are per-year */}
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
-                  <SidebarTile
-                    to="/admin/map"
-                    icon={mdiMap}
-                    label={t('adminNav.mapManagement')}
-                    isActive={location.pathname === '/admin/map'}
-                  />
-                )}
-              </div>
+            <div
+              className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}
+            >
+              <CollapsedShortcuts selectedYear={selectedYear} t={t} />
 
-              <div className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}>
-                <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-
-                {/* Map Management - Collapsed state */}
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
-                  <SidebarTile
-                    to="/admin/map"
-                    icon={mdiMap}
-                    label={t('adminNav.mapManagement')}
-                    isCollapsed={isCollapsed}
-                    isActive={location.pathname === '/admin/map'}
-                  />
-                )}
-              </div>
+              {/* Map Management - Collapsed state */}
+              {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
+                <SidebarTile
+                  to="/admin/map"
+                  icon={mdiMap}
+                  label={t('adminNav.mapManagement')}
+                  isCollapsed={isCollapsed}
+                  isActive={location.pathname === '/admin/map'}
+                />
+              )}
+            </div>
           </div>
 
           {/* Settings + System Administration */}
           <div className="p-2 border-t border-gray-200">
             {!isCollapsed ? (
               <div className="py-3 space-y-2">
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
                   <SidebarTile
                     to="/admin/settings"
                     icon={mdiCog}
@@ -237,7 +255,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   />
                 )}
 
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
                   <SidebarTile
                     to="/admin/feedback"
                     icon={mdiCommentAlertOutline}
@@ -249,7 +267,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
             ) : (
               // Collapsed state: show icons for Settings
               <div className="py-3 space-y-2">
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
                   <SidebarTile
                     to="/admin/settings"
                     icon={mdiCog}
@@ -259,7 +277,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   />
                 )}
 
-                {hasAnyRole(['super_admin','system_manager','event_manager']) && (
+                {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
                   <SidebarTile
                     to="/admin/feedback"
                     icon={mdiCommentAlertOutline}

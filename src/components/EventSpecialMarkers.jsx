@@ -31,13 +31,15 @@ function EventSpecialMarkers({
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
 
   // In admin view with external selection, use selectedMarkerId; otherwise use internal state
-  const selectedMarker = isAdminView && selectedMarkerId !== undefined
-    ? safeMarkers.find(m => m.id === selectedMarkerId)
-    : internalSelectedMarker;
+  const selectedMarker =
+    isAdminView && selectedMarkerId !== undefined
+      ? safeMarkers.find((m) => m.id === selectedMarkerId)
+      : internalSelectedMarker;
 
-  const setSelectedMarker = isAdminView && onMarkerSelect
-    ? (marker) => onMarkerSelect(marker ? marker.id : null)
-    : setInternalSelectedMarker;
+  const setSelectedMarker =
+    isAdminView && onMarkerSelect
+      ? (marker) => onMarkerSelect(marker ? marker.id : null)
+      : setInternalSelectedMarker;
   const { organizationLogo } = useOrganizationLogo();
 
   // Context menu state
@@ -50,7 +52,9 @@ function EventSpecialMarkers({
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
-  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(selectedYear || new Date().getFullYear());
+  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(
+    selectedYear || new Date().getFullYear(),
+  );
 
   // Dialog context for confirmations
   const { confirm } = useDialog();
@@ -64,7 +68,7 @@ function EventSpecialMarkers({
         onMarkerDrag(markerId, lat, lng);
       }
     },
-    [updateMarker, onMarkerDrag]
+    [updateMarker, onMarkerDrag],
   );
 
   // Handle context menu open
@@ -79,22 +83,22 @@ function EventSpecialMarkers({
         timestamp: Date.now(), // Force React to recognize as new state
       });
     },
-    [isAdminView]
+    [isAdminView],
   );
 
   // Handle assignment
   const handleAssign = useCallback(
     async (markerId, companyId) => {
       // Check if marker already has assignments
-      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+      const existingAssignments = assignments.filter((a) => a.marker_id === markerId);
 
       if (existingAssignments.length > 0) {
         // Get company name being assigned
-        const newCompany = subscriptions.find(s => s.company_id === companyId)?.company;
+        const newCompany = subscriptions.find((s) => s.company_id === companyId)?.company;
         const newCompanyName = newCompany?.name || 'this company';
 
         // Get booth number/glyph from marker
-        const marker = safeMarkers.find(m => m.id === markerId);
+        const marker = safeMarkers.find((m) => m.id === markerId);
         const boothLabel = marker?.glyph || marker?.id || 'this booth';
 
         // Build warning message
@@ -104,7 +108,7 @@ function EventSpecialMarkers({
           warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
         } else {
           const companyNames = existingAssignments
-            .map(a => a.company?.name)
+            .map((a) => a.company?.name)
             .filter(Boolean)
             .join(', ');
           warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
@@ -131,7 +135,7 @@ function EventSpecialMarkers({
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers]
+    [assignCompanyToMarker, assignments, subscriptions, safeMarkers],
   );
 
   // Handle unassignment
@@ -146,7 +150,7 @@ function EventSpecialMarkers({
         setContextMenuLoading(false);
       }
     },
-    [unassignCompanyFromMarker]
+    [unassignCompanyFromMarker],
   );
 
   return (
@@ -158,7 +162,10 @@ function EventSpecialMarkers({
 
           // Use marker.iconSize as the single source of truth for base sizes; fall back to sensible default
           // Normalize iconSize: if height is missing, compute from width using sensible default.
-          const baseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28], [17, 28]);
+          const baseSize = normalizeIconSize(
+            Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
+            [17, 28],
+          );
           const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
           const iconSize = getIconSizeForZoom(currentZoom, baseSize, true, effectiveAdminSizing);
 
@@ -177,9 +184,13 @@ function EventSpecialMarkers({
               if (marker.glyphSize) {
                 let baseGlyphPx = null;
                 if (typeof marker.glyphSize === 'number') baseGlyphPx = marker.glyphSize;
-                else if (typeof marker.glyphSize === 'string') baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
+                else if (typeof marker.glyphSize === 'string')
+                  baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
 
-                const markerBaseSize = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28], [17, 28]);
+                const markerBaseSize = normalizeIconSize(
+                  Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
+                  [17, 28],
+                );
                 const baseIconHeight = markerBaseSize && markerBaseSize[1] ? markerBaseSize[1] : 28;
 
                 if (baseGlyphPx && baseIconHeight) {
@@ -199,7 +210,10 @@ function EventSpecialMarkers({
               return `${Math.round(iconSize[1] * 0.36)}px`;
             })(),
             glyphAnchor: (() => {
-              const markerBase = normalizeIconSize(Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28], [17, 28]);
+              const markerBase = normalizeIconSize(
+                Array.isArray(marker.iconSize) ? marker.iconSize : [17, 28],
+                [17, 28],
+              );
               const baseW = markerBase[0] || 17;
               const baseH = markerBase[1] || 28;
               const scaleX = baseW ? iconSize[0] / baseW : 1;
@@ -211,7 +225,7 @@ function EventSpecialMarkers({
                 return [parseFloat((ax * scaleX).toFixed(2)), parseFloat((ay * scaleY).toFixed(2))];
               }
 
-              return [parseFloat((0 * scaleX).toFixed(2)), parseFloat(( -5 * scaleY).toFixed(2))];
+              return [parseFloat((0 * scaleX).toFixed(2)), parseFloat((-5 * scaleY).toFixed(2))];
             })(),
             isActive: selectedMarker?.id === marker.id,
           });

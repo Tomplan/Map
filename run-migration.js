@@ -19,15 +19,13 @@ async function runMigration() {
     console.log('Inserting default marker appearance entries...');
 
     // Insert assigned default (blue)
-    const { error: error1 } = await supabase
-      .from('markers_appearance')
-      .upsert({
-        id: -1,
-        event_year: 0,
-        iconUrl: 'glyph-marker-icon-blue.svg',
-        appearanceLocked: true,
-        shadowScale: 1
-      });
+    const { error: error1 } = await supabase.from('markers_appearance').upsert({
+      id: -1,
+      event_year: 0,
+      iconUrl: 'glyph-marker-icon-blue.svg',
+      appearanceLocked: true,
+      shadowScale: 1,
+    });
 
     if (error1) {
       console.error('Error inserting assigned default:', error1);
@@ -35,15 +33,13 @@ async function runMigration() {
     }
 
     // Insert unassigned default (gray)
-    const { error: error2 } = await supabase
-      .from('markers_appearance')
-      .upsert({
-        id: -2,
-        event_year: 0,
-        iconUrl: 'glyph-marker-icon-gray.svg',
-        appearanceLocked: true,
-        shadowScale: 1
-      });
+    const { error: error2 } = await supabase.from('markers_appearance').upsert({
+      id: -2,
+      event_year: 0,
+      iconUrl: 'glyph-marker-icon-gray.svg',
+      appearanceLocked: true,
+      shadowScale: 1,
+    });
 
     if (error2) {
       console.error('Error inserting unassigned default:', error2);

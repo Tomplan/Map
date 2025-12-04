@@ -1,6 +1,6 @@
 /**
  * Tour Freeze Fix Verification Tests
- * 
+ *
  * Tests to verify the tour popup freezing issue has been resolved
  */
 
@@ -59,14 +59,14 @@ describe('Tour Freeze Fix Verification', () => {
   describe('CSS Overrides', () => {
     test('driver-active class is applied correctly', () => {
       document.body.classList.add('driver-active');
-      
+
       const style = document.createElement('style');
       style.textContent = `
         .driver-active .driver-popover { z-index: 2147483647; }
         .driver-active .driver-popover button { pointer-events: auto; }
       `;
       document.head.appendChild(style);
-      
+
       expect(document.body.classList.contains('driver-active')).toBe(true);
       expect(style.textContent).toContain('pointer-events: auto');
       expect(style.textContent).toContain('z-index: 2147483647');
@@ -81,7 +81,7 @@ describe('Tour Freeze Fix Verification', () => {
         }
       `;
       document.head.appendChild(style);
-      
+
       expect(style.textContent).toContain('pointer-events: auto !important');
       expect(style.textContent).toContain('cursor: pointer !important');
     });
@@ -90,14 +90,14 @@ describe('Tour Freeze Fix Verification', () => {
   describe('Tour Configuration Validation', () => {
     test('visitor tours have valid steps', () => {
       const tours = getAllVisitorTours();
-      
-      tours.forEach(tour => {
+
+      tours.forEach((tour) => {
         expect(tour).toHaveProperty('id');
         expect(tour).toHaveProperty('steps');
         expect(Array.isArray(tour.steps)).toBe(true);
         expect(tour.steps.length).toBeGreaterThan(0);
-        
-        tour.steps.forEach(step => {
+
+        tour.steps.forEach((step) => {
           expect(step).toHaveProperty('element');
           expect(step).toHaveProperty('popover');
         });
@@ -106,14 +106,14 @@ describe('Tour Freeze Fix Verification', () => {
 
     test('admin tours have valid steps', () => {
       const tours = getAllAdminTours();
-      
-      tours.forEach(tour => {
+
+      tours.forEach((tour) => {
         expect(tour).toHaveProperty('id');
         expect(tour).toHaveProperty('steps');
         expect(Array.isArray(tour.steps)).toBe(true);
         expect(tour.steps.length).toBeGreaterThan(0);
-        
-        tour.steps.forEach(step => {
+
+        tour.steps.forEach((step) => {
           expect(step).toHaveProperty('element');
           expect(step).toHaveProperty('popover');
         });
@@ -124,13 +124,13 @@ describe('Tour Freeze Fix Verification', () => {
   describe('Error Boundary Integration', () => {
     test('TourErrorBoundary renders children when no error', () => {
       const TestChild = () => <div data-testid="test-child">Test Content</div>;
-      
+
       render(
         <TourErrorBoundary>
           <TestChild />
-        </TourErrorBoundary>
+        </TourErrorBoundary>,
       );
-      
+
       expect(screen.getByTestId('test-child')).toBeInTheDocument();
     });
 
@@ -142,9 +142,9 @@ describe('Tour Freeze Fix Verification', () => {
       render(
         <TourErrorBoundary>
           <ErrorChild />
-        </TourErrorBoundary>
+        </TourErrorBoundary>,
       );
-      
+
       // i18n is mocked to return keys, so check for the keys rather than translated strings
       expect(screen.getByText('tour.error.title')).toBeInTheDocument();
       expect(screen.getByText('common.retry')).toBeInTheDocument();
@@ -152,13 +152,13 @@ describe('Tour Freeze Fix Verification', () => {
 
     test('TourErrorBoundary retry functionality works', () => {
       const onRetry = jest.fn();
-      
+
       render(
         <TourErrorBoundary onRetry={onRetry}>
           <div>Content</div>
-        </TourErrorBoundary>
+        </TourErrorBoundary>,
       );
-      
+
       // Initially no error, so retry button shouldn't be visible
       expect(screen.queryByText('Try Again')).not.toBeInTheDocument();
     });
@@ -182,9 +182,9 @@ describe('Tour Freeze Fix Verification', () => {
       render(
         <OnboardingTour tourConfig={tourConfig}>
           <div>Tour Content</div>
-        </OnboardingTour>
+        </OnboardingTour>,
       );
-      
+
       expect(screen.getByText('Tour Content')).toBeInTheDocument();
     });
 
@@ -203,9 +203,9 @@ describe('Tour Freeze Fix Verification', () => {
               Active: {isActive.toString()}
             </div>
           )}
-        </OnboardingTour>
+        </OnboardingTour>,
       );
-      
+
       expect(screen.getByTestId('render-prop')).toBeInTheDocument();
     });
   });
@@ -222,7 +222,7 @@ describe('Tour Freeze Fix Verification', () => {
         }
       `;
       document.head.appendChild(style);
-      
+
       expect(style.textContent).toContain('z-index: 2147483647 !important');
     });
 
@@ -239,7 +239,7 @@ describe('Tour Freeze Fix Verification', () => {
         }
       `;
       document.head.appendChild(style);
-      
+
       expect(style.textContent).toContain('@media (max-width: 768px)');
       expect(style.textContent).toContain('position: fixed !important');
     });
@@ -251,18 +251,18 @@ describe('Integration Tests', () => {
     const visitorTours = getAllVisitorTours();
     const adminTours = getAllAdminTours();
     const allTours = [...visitorTours, ...adminTours];
-    
+
     // Check for common configuration issues
-    allTours.forEach(tour => {
+    allTours.forEach((tour) => {
       // Ensure all popover elements have required properties
-      tour.steps.forEach(step => {
+      tour.steps.forEach((step) => {
         if (step.popover) {
           expect(step.popover.title).toBeDefined();
           expect(step.popover.description).toBeDefined();
         }
       });
     });
-    
+
     expect(allTours.length).toBeGreaterThan(0);
   });
 });

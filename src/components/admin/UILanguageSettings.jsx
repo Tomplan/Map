@@ -24,7 +24,9 @@ export default function UILanguageSettings() {
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg">
           <Icon path={mdiAccountCircle} size={0.6} className="text-blue-600" />
-          <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Personal Setting</span>
+          <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
+            Personal Setting
+          </span>
         </div>
       </div>
 

@@ -111,19 +111,19 @@ export default function Settings({ selectedYear, setSelectedYear }) {
   ];
 
   // Filter sections by user role
-  const visibleSections = sections.filter(section => {
+  const visibleSections = sections.filter((section) => {
     if (isSuperAdmin) return true; // Super admin sees all
     return section.roles.includes(role);
   });
 
   // Set first visible section as active if current is not visible
   React.useEffect(() => {
-    if (!visibleSections.find(s => s.id === activeSection)) {
+    if (!visibleSections.find((s) => s.id === activeSection)) {
       setActiveSection(visibleSections[0]?.id || 'event-defaults');
     }
   }, [role]);
 
-  const activeComponent = visibleSections.find(s => s.id === activeSection)?.component;
+  const activeComponent = visibleSections.find((s) => s.id === activeSection)?.component;
 
   return (
     <div className="h-full flex flex-col" data-testid="settings-container">
@@ -131,7 +131,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       <div className="bg-white border-b border-gray-200 px-6 py-4" data-testid="settings-header">
         <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('settings.subtitle')} 
+          {t('settings.subtitle')}
           <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium capitalize">
             {role?.replace('_', ' ')}
           </span>
@@ -141,12 +141,18 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       {/* Layout: Sidebar + Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Section Navigation */}
-        <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto" data-testid="settings-sidebar">
+        <aside
+          className="w-64 bg-white border-r border-gray-200 overflow-y-auto"
+          data-testid="settings-sidebar"
+        >
           <nav className="p-4 space-y-4">
             {/* Personal Settings Group */}
-            {visibleSections.filter(s => s.scope === 'personal').length > 0 && (
+            {visibleSections.filter((s) => s.scope === 'personal').length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-4 py-2 mb-1" data-testid="personal-settings-group">
+                <div
+                  className="flex items-center gap-2 px-4 py-2 mb-1"
+                  data-testid="personal-settings-group"
+                >
                   <Icon path={mdiAccountCircle} size={0.7} className="text-blue-600" />
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Personal Settings
@@ -154,8 +160,8 @@ export default function Settings({ selectedYear, setSelectedYear }) {
                 </div>
                 <div className="space-y-1">
                   {visibleSections
-                    .filter(s => s.scope === 'personal')
-                    .map(section => (
+                    .filter((s) => s.scope === 'personal')
+                    .map((section) => (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
@@ -179,9 +185,12 @@ export default function Settings({ selectedYear, setSelectedYear }) {
             )}
 
             {/* Organization Settings Group */}
-            {visibleSections.filter(s => s.scope === 'organization').length > 0 && (
+            {visibleSections.filter((s) => s.scope === 'organization').length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-4 py-2 mb-1" data-testid="organization-settings-group">
+                <div
+                  className="flex items-center gap-2 px-4 py-2 mb-1"
+                  data-testid="organization-settings-group"
+                >
                   <Icon path={mdiDomain} size={0.7} className="text-orange-600" />
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Organization Settings
@@ -189,8 +198,8 @@ export default function Settings({ selectedYear, setSelectedYear }) {
                 </div>
                 <div className="space-y-1">
                   {visibleSections
-                    .filter(s => s.scope === 'organization')
-                    .map(section => (
+                    .filter((s) => s.scope === 'organization')
+                    .map((section) => (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}

@@ -5,14 +5,14 @@ import { formatPhoneForDisplay } from '../../utils/formatPhone';
 
 // Country flag emojis
 const FLAGS = {
-  'NL': '🇳🇱',
-  'BE': '🇧🇪',
-  'DE': '🇩🇪',
-  'FR': '🇫🇷',
-  'GB': '🇬🇧',
-  'US': '🇺🇸',
-  'ES': '🇪🇸',
-  'IT': '🇮🇹',
+  NL: '🇳🇱',
+  BE: '🇧🇪',
+  DE: '🇩🇪',
+  FR: '🇫🇷',
+  GB: '🇬🇧',
+  US: '🇺🇸',
+  ES: '🇪🇸',
+  IT: '🇮🇹',
 };
 
 /**
@@ -36,7 +36,7 @@ export default function PhoneInput({
   onChange,
   placeholder = 'Phone number (e.g., +31 (0)6-21165748)',
   className = '',
-  defaultCountry = 'NL'
+  defaultCountry = 'NL',
 }) {
   const [inputValue, setInputValue] = useState('');
   const [isValid, setIsValid] = useState(null); // null = untouched, true = valid, false = invalid
@@ -162,16 +162,10 @@ export default function PhoneInput({
       )}
 
       {isValid === false && inputValue && (
-        <div className="text-xs mt-1 text-red-600">
-          ✗ Invalid phone number
-        </div>
+        <div className="text-xs mt-1 text-red-600">✗ Invalid phone number</div>
       )}
 
-      {!inputValue && (
-        <div className="text-xs mt-1 text-gray-500">
-          Format: +31 (0)6-12345678
-        </div>
-      )}
+      {!inputValue && <div className="text-xs mt-1 text-gray-500">Format: +31 (0)6-12345678</div>}
     </div>
   );
 }

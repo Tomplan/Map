@@ -3,7 +3,14 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
-import { mdiCheckCircle, mdiPlayCircle, mdiRestart, mdiMapMarker, mdiViewDashboard, mdiAccountGroup } from '@mdi/js';
+import {
+  mdiCheckCircle,
+  mdiPlayCircle,
+  mdiRestart,
+  mdiMapMarker,
+  mdiViewDashboard,
+  mdiAccountGroup,
+} from '@mdi/js';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import useOnboardingTour from '../../hooks/useOnboardingTour';
 import { useDialog } from '../../contexts/DialogContext';
@@ -34,7 +41,8 @@ export default function TourList({ startSource, onClose, onReopen }) {
   const currentScope = React.useMemo(() => {
     const path = location.pathname || '';
     const hash = location.hash || '';
-    const isAdmin = path.startsWith('/admin') || hash.startsWith('#/admin') || hash.startsWith('#/admin/');
+    const isAdmin =
+      path.startsWith('/admin') || hash.startsWith('#/admin') || hash.startsWith('#/admin/');
     return isAdmin ? 'admin' : 'visitor';
   }, [location.pathname, location.hash]);
 
@@ -43,22 +51,22 @@ export default function TourList({ startSource, onClose, onReopen }) {
     const allTours = [...visitorTours, ...adminTours];
 
     return allTours
-      .filter(tour => {
+      .filter((tour) => {
         // Scope filtering: if the tour has an explicit `scope`, only show it in matching routes.
         if (tour.scope && tour.scope !== currentScope) return false;
 
         return true;
       })
-      .filter(tour => {
-      // No role restriction - available to all
-      if (!tour.roles) return true;
+      .filter((tour) => {
+        // No role restriction - available to all
+        if (!tour.roles) return true;
 
-      // Super admin sees everything
-      if (role === 'super_admin') return true;
+        // Super admin sees everything
+        if (role === 'super_admin') return true;
 
-      // Check if user has required role
-      return tour.roles.includes(role);
-    });
+        // Check if user has required role
+        return tour.roles.includes(role);
+      });
   }, [visitorTours, adminTours, role, currentScope]);
 
   // Prioritize tours relevant to current route
@@ -83,11 +91,11 @@ export default function TourList({ startSource, onClose, onReopen }) {
 
   return (
     <div className="space-y-3">
-      {sortedTours.map(tour => (
-        <TourCard 
-          key={tour.id} 
-          tour={tour} 
-          startTour={startTour} 
+      {sortedTours.map((tour) => (
+        <TourCard
+          key={tour.id}
+          tour={tour}
+          startTour={startTour}
           isTourCompleted={isTourCompleted}
           startSource={startSource}
           onClose={onClose}
@@ -124,10 +132,15 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
   const currentLanguage = i18n.language;
 
   // Determine whether required targets for this tour are likely present
-  const requiredSteps = React.useMemo(() => (tour.steps || []).filter(s => s.element && s.element !== 'body'), [tour]);
-  const allRequiredMissing = React.useMemo(() => (
-    requiredSteps.length > 0 && requiredSteps.every(s => !document.querySelector(s.element))
-  ), [requiredSteps]);
+  const requiredSteps = React.useMemo(
+    () => (tour.steps || []).filter((s) => s.element && s.element !== 'body'),
+    [tour],
+  );
+  const allRequiredMissing = React.useMemo(
+    () =>
+      requiredSteps.length > 0 && requiredSteps.every((s) => !document.querySelector(s.element)),
+    [requiredSteps],
+  );
 
   // Decide whether the Start button should be disabled.
   // Behaviour: only disable when ALL required targets are missing and
@@ -151,7 +164,7 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
   const title = getLocalizedContent(tour.title || tour.id, currentLanguage);
   const description = getLocalizedContent(
     tour.description || getTourDescription(tour.id),
-    currentLanguage
+    currentLanguage,
   );
   const icon = getTourIcon(tour.id);
   const duration = getTourDuration(tour.id);
@@ -162,7 +175,9 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
     console.log('[TOUR DEBUG] start function type:', typeof start);
     try {
       if (typeof startTour === 'function') {
-        const stsrc = (startTour && startTour.toString && startTour.toString().slice(0, 240)) || String(startTour);
+        const stsrc =
+          (startTour && startTour.toString && startTour.toString().slice(0, 240)) ||
+          String(startTour);
         console.log('[TOUR DEBUG] startTour function source preview:', stsrc);
       } else {
         console.log('[TOUR DEBUG] startTour type:', typeof startTour);
@@ -184,7 +199,13 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
     // Determine the target path: prefer explicit tour.path, otherwise
     // infer from well-known tour id patterns (visitor- / admin- prefixes)
     const targetPath = tour.path || inferPathFromTourId(tour.id);
-    console.log('[TOUR DEBUG] targetPath:', targetPath, 'current location:', location.pathname, location.hash);
+    console.log(
+      '[TOUR DEBUG] targetPath:',
+      targetPath,
+      'current location:',
+      location.pathname,
+      location.hash,
+    );
 
     // Helper to determine whether current location is already the
     // requested target. This considers both hash and pathname forms
@@ -194,20 +215,34 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
       if (!targetPath) return false;
 
       // Check the hash-based route: '#/admin' -> '/admin'
-      const currentHash = (location.hash || '').startsWith('#') ? location.hash.substring(1) : location.hash || '';
+      const currentHash = (location.hash || '').startsWith('#')
+        ? location.hash.substring(1)
+        : location.hash || '';
 
       // Check pathname as well (some builds use /admin directly)
       const currentPathname = location.pathname || '';
 
-      const normalize = p => (p ? (p.endsWith('/') ? p.slice(0, -1) : p) : '');
+      const normalize = (p) => (p ? (p.endsWith('/') ? p.slice(0, -1) : p) : '');
 
       const currentHashNorm = normalize(currentHash);
       const currentPathnameNorm = normalize(currentPathname);
       const targetNorm = normalize(targetPath);
 
       // If either the hash or pathname matches the target, consider us already there
-      const result = currentHashNorm === targetNorm || currentPathnameNorm.endsWith(targetNorm) || currentPathnameNorm === targetNorm;
-      console.log('[TOUR DEBUG] isAlreadyOnTarget:', result, '(currentHash:', currentHashNorm, 'currentPath:', currentPathnameNorm, 'target:', targetNorm + ')');
+      const result =
+        currentHashNorm === targetNorm ||
+        currentPathnameNorm.endsWith(targetNorm) ||
+        currentPathnameNorm === targetNorm;
+      console.log(
+        '[TOUR DEBUG] isAlreadyOnTarget:',
+        result,
+        '(currentHash:',
+        currentHashNorm,
+        'currentPath:',
+        currentPathnameNorm,
+        'target:',
+        targetNorm + ')',
+      );
       return result;
     })();
 
@@ -228,35 +263,58 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
 
         if (confirmed) {
           // User confirmed - navigate to target page and start tour
-          try { sessionStorage.setItem('onboarding:startAfterNav', JSON.stringify({ id: tour.id, source: startSource })); } catch (e) { /* ignore */ }
+          try {
+            sessionStorage.setItem(
+              'onboarding:startAfterNav',
+              JSON.stringify({ id: tour.id, source: startSource }),
+            );
+          } catch (e) {
+            /* ignore */
+          }
           navigate(targetPath);
           // In environments where the Help panel remains mounted (tests or
           // special routing), attempt a retry start after navigation so
           // the tour can begin without relying on external page listeners.
           if (typeof start === 'function') {
             setTimeout(() => {
-              try { start({ source: startSource, waitMs: 7000 }); } catch (e) { /* ignore */ }
+              try {
+                start({ source: startSource, waitMs: 7000 });
+              } catch (e) {
+                /* ignore */
+              }
             }, 900);
           }
           return;
         } else {
           // User cancelled - reopen help panel if tour was started from help
-          console.log('[TOUR DEBUG] User cancelled navigation. startSource:', startSource, 'onReopen:', typeof onReopen);
+          console.log(
+            '[TOUR DEBUG] User cancelled navigation. startSource:',
+            startSource,
+            'onReopen:',
+            typeof onReopen,
+          );
           if (startSource === 'help' && onReopen) {
             console.log('[TOUR DEBUG] Calling onReopen to restore help panel');
             onReopen();
           } else {
-            console.log('[TOUR DEBUG] Not calling onReopen. startSource === "help":', startSource === 'help', 'onReopen exists:', !!onReopen);
+            console.log(
+              '[TOUR DEBUG] Not calling onReopen. startSource === "help":',
+              startSource === 'help',
+              'onReopen exists:',
+              !!onReopen,
+            );
           }
           return;
         }
       }
 
       // We're already on the target page - try to start the tour
-      const startResult = await start ? await start({ source: startSource }) : null;
+      const startResult = (await start) ? await start({ source: startSource }) : null;
 
       // Normalize the result so callers can check success consistently
-      const startFailed = startResult === false || (startResult && typeof startResult === 'object' && startResult.success === false);
+      const startFailed =
+        startResult === false ||
+        (startResult && typeof startResult === 'object' && startResult.success === false);
 
       if (!startFailed) {
         // Started successfully (or there was no local start function), nothing more to do
@@ -270,7 +328,12 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
 
       // Start failed even though we're on the right page - show error
       try {
-        toastWarning(t('tour.startFailed', 'This tour could not be started because required page elements are not present.'));
+        toastWarning(
+          t(
+            'tour.startFailed',
+            'This tour could not be started because required page elements are not present.',
+          ),
+        );
       } catch (e) {
         console.warn('Failed to show tour failure toast', e);
       }
@@ -279,7 +342,11 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
     } catch (e) {
       // Non-fatal: fall back to the old context start which will try to start
       // the tour globally. This preserves backward-compatibility.
-      try { startTour(tour.id, startSource); } catch (e2) { console.warn('Fallback start failed', e2); }
+      try {
+        startTour(tour.id, startSource);
+      } catch (e2) {
+        console.warn('Fallback start failed', e2);
+      }
       return;
     }
   };
@@ -315,7 +382,11 @@ function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
               onClick={handleStartTour}
               disabled={shouldDisableStart}
               aria-disabled={shouldDisableStart}
-              title={shouldDisableStart ? 'This tour requires a specific page to be visible for this tour' : undefined}
+              title={
+                shouldDisableStart
+                  ? 'This tour requires a specific page to be visible for this tour'
+                  : undefined
+              }
               className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${shouldDisableStart ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
             >
               <Icon path={completed ? mdiRestart : mdiPlayCircle} size={0.6} />
@@ -370,7 +441,10 @@ function isRelevantToRoute(tourId, pathname) {
   const hash = arguments.length > 2 ? arguments[2] : '';
 
   // Check both pathname and hash for the route candidate.
-  return relevantRoutes.some(route => path.startsWith(route) || hash.startsWith('#' + route) || hash.startsWith('#' + route + '/'));
+  return relevantRoutes.some(
+    (route) =>
+      path.startsWith(route) || hash.startsWith('#' + route) || hash.startsWith('#' + route + '/'),
+  );
 }
 
 function getTourIcon(tourId) {

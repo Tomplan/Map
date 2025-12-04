@@ -95,105 +95,124 @@ export function OnboardingProvider({ children }) {
   /**
    * Mark a tour as completed
    */
-  const completeTour = useCallback(async (tourId) => {
-    if (user && updatePreferences) {
-      // Logged-in user: Update Supabase
-      const currentCompleted = preferences?.tours_completed || [];
-      if (!currentCompleted.includes(tourId)) {
-        await updatePreferences({
-          tours_completed: [...currentCompleted, tourId],
-          last_tour_date: new Date().toISOString(),
-        });
-      }
-    } else {
-      // Anonymous user: Update localStorage
-      const key = `onboarding_${tourId}`;
-      const existing = localStorage.getItem(key);
-      const data = existing ? JSON.parse(existing) : {};
-      localStorage.setItem(key, JSON.stringify({
-        ...data,
-        completed: true,
-        lastSeen: Date.now(),
-      }));
-    }
-
-    // Record the last completed tour alongside its starting source
-    try {
-      const source = activeTourSourceRef?.current ?? activeTourSource ?? null;
-      const payload = { id: tourId, source };
-      setLastCompletedTour(payload);
-      try {
-        if (typeof window !== 'undefined') {
-          try { window.__onboarding_last_completed__ = payload; } catch (e) { /* ignore */ }
-          if (typeof window.dispatchEvent === 'function') {
-            window.dispatchEvent(new CustomEvent('onboarding:completed', { detail: payload }));
-          }
+  const completeTour = useCallback(
+    async (tourId) => {
+      if (user && updatePreferences) {
+        // Logged-in user: Update Supabase
+        const currentCompleted = preferences?.tours_completed || [];
+        if (!currentCompleted.includes(tourId)) {
+          await updatePreferences({
+            tours_completed: [...currentCompleted, tourId],
+            last_tour_date: new Date().toISOString(),
+          });
         }
-      } catch (e) { /* ignore */ }
-    } catch (e) {
-      // non-fatal
-    }
+      } else {
+        // Anonymous user: Update localStorage
+        const key = `onboarding_${tourId}`;
+        const existing = localStorage.getItem(key);
+        const data = existing ? JSON.parse(existing) : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...data,
+            completed: true,
+            lastSeen: Date.now(),
+          }),
+        );
+      }
 
-    // Reset running source state
-    setActiveTourSource(null);
+      // Record the last completed tour alongside its starting source
+      try {
+        const source = activeTourSourceRef?.current ?? activeTourSource ?? null;
+        const payload = { id: tourId, source };
+        setLastCompletedTour(payload);
+        try {
+          if (typeof window !== 'undefined') {
+            try {
+              window.__onboarding_last_completed__ = payload;
+            } catch (e) {
+              /* ignore */
+            }
+            if (typeof window.dispatchEvent === 'function') {
+              window.dispatchEvent(new CustomEvent('onboarding:completed', { detail: payload }));
+            }
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      } catch (e) {
+        // non-fatal
+      }
 
-    stopTour();
-  }, [user, preferences, updatePreferences, stopTour]);
+      // Reset running source state
+      setActiveTourSource(null);
 
-    // Keep a mutable ref to always read the latest activeTourSource synchronously
-    useEffect(() => {
-      activeTourSourceRef.current = activeTourSource;
-    }, [activeTourSource]);
+      stopTour();
+    },
+    [user, preferences, updatePreferences, stopTour],
+  );
 
-  
+  // Keep a mutable ref to always read the latest activeTourSource synchronously
+  useEffect(() => {
+    activeTourSourceRef.current = activeTourSource;
+  }, [activeTourSource]);
 
   /**
    * Permanently dismiss a tour
    */
-  const dismissTour = useCallback(async (tourId) => {
-    if (user && updatePreferences) {
-      // Logged-in user: Update Supabase
-      const currentDismissed = preferences?.tours_dismissed || [];
-      if (!currentDismissed.includes(tourId)) {
-        await updatePreferences({
-          tours_dismissed: [...currentDismissed, tourId],
-          last_tour_date: new Date().toISOString(),
-        });
+  const dismissTour = useCallback(
+    async (tourId) => {
+      if (user && updatePreferences) {
+        // Logged-in user: Update Supabase
+        const currentDismissed = preferences?.tours_dismissed || [];
+        if (!currentDismissed.includes(tourId)) {
+          await updatePreferences({
+            tours_dismissed: [...currentDismissed, tourId],
+            last_tour_date: new Date().toISOString(),
+          });
+        }
+      } else {
+        // Anonymous user: Update localStorage
+        const key = `onboarding_${tourId}`;
+        const existing = localStorage.getItem(key);
+        const data = existing ? JSON.parse(existing) : {};
+        localStorage.setItem(
+          key,
+          JSON.stringify({
+            ...data,
+            dismissed: true,
+            lastSeen: Date.now(),
+          }),
+        );
       }
-    } else {
-      // Anonymous user: Update localStorage
-      const key = `onboarding_${tourId}`;
-      const existing = localStorage.getItem(key);
-      const data = existing ? JSON.parse(existing) : {};
-      localStorage.setItem(key, JSON.stringify({
-        ...data,
-        dismissed: true,
-        lastSeen: Date.now(),
-      }));
-    }
 
-    stopTour();
-  }, [user, preferences, updatePreferences, stopTour]);
+      stopTour();
+    },
+    [user, preferences, updatePreferences, stopTour],
+  );
 
   /**
    * Reset a tour (clear completion/dismissal status)
    */
-  const resetTour = useCallback(async (tourId) => {
-    if (user && updatePreferences) {
-      // Logged-in user: Update Supabase
-      const currentCompleted = preferences?.tours_completed || [];
-      const currentDismissed = preferences?.tours_dismissed || [];
+  const resetTour = useCallback(
+    async (tourId) => {
+      if (user && updatePreferences) {
+        // Logged-in user: Update Supabase
+        const currentCompleted = preferences?.tours_completed || [];
+        const currentDismissed = preferences?.tours_dismissed || [];
 
-      await updatePreferences({
-        tours_completed: currentCompleted.filter(id => id !== tourId),
-        tours_dismissed: currentDismissed.filter(id => id !== tourId),
-      });
-    } else {
-      // Anonymous user: Remove from localStorage
-      const key = `onboarding_${tourId}`;
-      localStorage.removeItem(key);
-    }
-  }, [user, preferences, updatePreferences]);
+        await updatePreferences({
+          tours_completed: currentCompleted.filter((id) => id !== tourId),
+          tours_dismissed: currentDismissed.filter((id) => id !== tourId),
+        });
+      } else {
+        // Anonymous user: Remove from localStorage
+        const key = `onboarding_${tourId}`;
+        localStorage.removeItem(key);
+      }
+    },
+    [user, preferences, updatePreferences],
+  );
 
   // Last completed tour metadata (id + source) so consumers can react to
   // completion events (for example, reopen help when the user completed a
@@ -205,23 +224,32 @@ export function OnboardingProvider({ children }) {
   /**
    * Check if a tour has been completed
    */
-  const isTourCompleted = useCallback((tourId) => {
-    return completedTours.includes(tourId);
-  }, [completedTours]);
+  const isTourCompleted = useCallback(
+    (tourId) => {
+      return completedTours.includes(tourId);
+    },
+    [completedTours],
+  );
 
   /**
    * Check if a tour has been dismissed
    */
-  const isTourDismissed = useCallback((tourId) => {
-    return dismissedTours.includes(tourId);
-  }, [dismissedTours]);
+  const isTourDismissed = useCallback(
+    (tourId) => {
+      return dismissedTours.includes(tourId);
+    },
+    [dismissedTours],
+  );
 
   /**
    * Check if a tour should auto-start (not completed and not dismissed)
    */
-  const shouldAutoStart = useCallback((tourId) => {
-    return !completedTours.includes(tourId) && !dismissedTours.includes(tourId);
-  }, [completedTours, dismissedTours]);
+  const shouldAutoStart = useCallback(
+    (tourId) => {
+      return !completedTours.includes(tourId) && !dismissedTours.includes(tourId);
+    },
+    [completedTours, dismissedTours],
+  );
 
   /**
    * Reset all tours (admin function)
@@ -243,7 +271,7 @@ export function OnboardingProvider({ children }) {
           keysToRemove.push(key);
         }
       }
-      keysToRemove.forEach(key => localStorage.removeItem(key));
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
     }
   }, [user, updatePreferences]);
 
@@ -259,17 +287,22 @@ export function OnboardingProvider({ children }) {
     // We avoid using `import.meta` directly so Jest (node) won't fail parsing.
     // Support multiple opt-ins so CI can enable test helpers during a preview
     // build by setting VITE_E2E_TEST_HELPERS or E2E_TEST_HELPERS in the build env.
-    const envOptIn = typeof process !== 'undefined' && (
-      process.env?.VITE_E2E_TEST_HELPERS === '1' || process.env?.E2E_TEST_HELPERS === '1'
-    );
+    const envOptIn =
+      typeof process !== 'undefined' &&
+      (process.env?.VITE_E2E_TEST_HELPERS === '1' || process.env?.E2E_TEST_HELPERS === '1');
 
-    const allowTestHelpers = (typeof window !== 'undefined' &&
-      (process.env.NODE_ENV !== 'production' || envOptIn || globalThis?.__E2E_TEST_HELPERS__ === '1'));
+    const allowTestHelpers =
+      typeof window !== 'undefined' &&
+      (process.env.NODE_ENV !== 'production' ||
+        envOptIn ||
+        globalThis?.__E2E_TEST_HELPERS__ === '1');
     if (allowTestHelpers) {
       try {
         window.__onboarding_test_helpers__ = {
           startTour: (id, source = null) => {
-            try { window.__onboarding_active_source__ = source; } catch (e) {}
+            try {
+              window.__onboarding_active_source__ = source;
+            } catch (e) {}
             return startTour(id, { source });
           },
           getActiveSource: () => activeTourSourceRef.current,
@@ -285,10 +318,14 @@ export function OnboardingProvider({ children }) {
       try {
         try {
           if (typeof window !== 'undefined' && window.__onboarding_test_helpers__) {
-          delete window.__onboarding_test_helpers__;
+            delete window.__onboarding_test_helpers__;
           }
-        } catch (e) { /* ignore */ }
-      } catch (e) { /* ignore */ }
+        } catch (e) {
+          /* ignore */
+        }
+      } catch (e) {
+        /* ignore */
+      }
     };
   }, [completeTour, resetAllTours]);
 
@@ -319,11 +356,7 @@ export function OnboardingProvider({ children }) {
     shouldAutoStart,
   };
 
-  return (
-    <OnboardingContext.Provider value={value}>
-      {children}
-    </OnboardingContext.Provider>
-  );
+  return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
 }
 
 OnboardingProvider.propTypes = {

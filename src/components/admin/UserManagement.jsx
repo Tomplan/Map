@@ -46,7 +46,7 @@ export default function UserManagement() {
       // Try to use the function first (if migration 011 has been run)
       let usersData;
       let usersError;
-      
+
       try {
         const result = await supabase.rpc('get_user_roles_with_email');
         usersData = result.data;
@@ -58,7 +58,7 @@ export default function UserManagement() {
           .from('user_roles')
           .select('user_id, role, created_at, updated_at')
           .order('created_at', { ascending: false });
-        
+
         usersData = result.data;
         usersError = result.error;
       }
@@ -68,17 +68,22 @@ export default function UserManagement() {
       }
 
       // Get current user
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
       // Build user list
       const userList = (usersData || []).map((userData) => {
         const isCurrentUser = currentUser?.id === userData.user_id;
         return {
           id: userData.user_id,
-          email: userData.email || (isCurrentUser ? currentUser.email : `user-${userData.user_id.substring(0, 8)}...`),
+          email:
+            userData.email ||
+            (isCurrentUser ? currentUser.email : `user-${userData.user_id.substring(0, 8)}...`),
           role: userData.role,
           created_at: userData.created_at,
-          last_sign_in_at: userData.last_sign_in_at || (isCurrentUser ? currentUser.last_sign_in_at : null),
+          last_sign_in_at:
+            userData.last_sign_in_at || (isCurrentUser ? currentUser.last_sign_in_at : null),
           isCurrentUser,
         };
       });
@@ -101,14 +106,14 @@ export default function UserManagement() {
       // Build redirect URL for password setup
       const isProd = import.meta.env.PROD;
       const base = import.meta.env.BASE_URL || '/';
-      const redirectUrl = isProd 
+      const redirectUrl = isProd
         ? `${window.location.origin}${base}#/reset-password`
         : `${window.location.origin}${base}reset-password`;
 
       // Use Supabase Admin API to invite user
       // Note: This requires server-side implementation or Supabase service role key
       // For now, using resetPasswordForEmail as a workaround to send invite
-      
+
       // Proper implementation would be:
       // const { data, error } = await supabase.auth.admin.inviteUserByEmail(inviteEmail, {
       //   data: { role: inviteRole },
@@ -117,7 +122,7 @@ export default function UserManagement() {
 
       // Create user account and send password reset email
       const tempPassword = Math.random().toString(36).slice(-12) + 'A1!'; // Random temp password
-      
+
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: inviteEmail,
         password: tempPassword,
@@ -135,12 +140,10 @@ export default function UserManagement() {
 
       // Add user to user_roles table
       if (signUpData?.user?.id) {
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: signUpData.user.id,
-            role: inviteRole,
-          });
+        const { error: roleError } = await supabase.from('user_roles').insert({
+          user_id: signUpData.user.id,
+          role: inviteRole,
+        });
 
         if (roleError) {
           console.warn('Failed to add user to user_roles:', roleError);
@@ -166,7 +169,6 @@ export default function UserManagement() {
         setInviteRole('event_manager');
         fetchUsers(); // Refresh user list
       }, 8000);
-
     } catch (err) {
       console.error('Error inviting user:', err);
       setError(err.message || t('settings.userManagement.errors.inviteFailed'));
@@ -182,9 +184,9 @@ export default function UserManagement() {
       // Update role in user_roles table
       const { error: updateError } = await supabase
         .from('user_roles')
-        .update({ 
+        .update({
           role: newRole,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', userId);
 
@@ -195,7 +197,6 @@ export default function UserManagement() {
       // Refresh user list
       await fetchUsers();
       setEditingUser(null);
-      
     } catch (err) {
       console.error('Error updating role:', err);
       setError(t('settings.userManagement.errors.updateFailed'));
@@ -207,7 +208,7 @@ export default function UserManagement() {
       title: t('settings.userManagement.deleteUser'),
       message: t('settings.userManagement.confirmDelete', { email: userEmail }),
       confirmText: t('common.delete'),
-      variant: 'danger'
+      variant: 'danger',
     });
     if (!confirmed) return;
 
@@ -227,7 +228,6 @@ export default function UserManagement() {
 
       // Refresh user list
       await fetchUsers();
-
     } catch (err) {
       console.error('Error deleting user:', err);
       setError(t('settings.userManagement.errors.deleteFailed'));
@@ -318,7 +318,9 @@ export default function UserManagement() {
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${roleColors[user.role] || 'bg-gray-100 text-gray-800'}`}>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${roleColors[user.role] || 'bg-gray-100 text-gray-800'}`}
+                    >
                       {roleLabels[user.role] || user.role}
                     </span>
                   </td>
@@ -326,7 +328,9 @@ export default function UserManagement() {
                     {new Date(user.created_at).toLocaleDateString()}
                   </td>
                   <td className="py-3 px-4 text-sm text-gray-600">
-                    {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString() : '-'}
+                    {user.last_sign_in_at
+                      ? new Date(user.last_sign_in_at).toLocaleDateString()
+                      : '-'}
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -364,50 +368,46 @@ export default function UserManagement() {
       >
         <div className="p-6">
           {inviteSuccess ? (
-              <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg">
-                <div className="flex items-center">
-                  <Icon path={mdiCheck} size={0.8} className="mr-2" />
-                  <div>
-                    <p className="font-semibold">{t('settings.userManagement.inviteSuccess')}</p>
-                    <p className="text-sm mt-1">{t('settings.userManagement.inviteSuccessMessage')}</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleInviteUser} className="space-y-4">
+            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg">
+              <div className="flex items-center">
+                <Icon path={mdiCheck} size={0.8} className="mr-2" />
                 <div>
-                  <label className="label-base">
-                    {t('settings.userManagement.emailLabel')}
-                  </label>
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="input-base"
-                    placeholder="manager@example.com"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="label-base">
-                    {t('settings.userManagement.roleLabel')}
-                  </label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value)}
-                    className="input-base"
-                  >
-                    <option value="event_manager">{roleLabels.event_manager}</option>
-                    <option value="system_manager">{roleLabels.system_manager}</option>
-                    {isSuperAdmin && (
-                      <option value="super_admin">{roleLabels.super_admin}</option>
-                    )}
-                  </select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t(`settings.userManagement.roleDescriptions.${inviteRole}`)}
+                  <p className="font-semibold">{t('settings.userManagement.inviteSuccess')}</p>
+                  <p className="text-sm mt-1">
+                    {t('settings.userManagement.inviteSuccessMessage')}
                   </p>
                 </div>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleInviteUser} className="space-y-4">
+              <div>
+                <label className="label-base">{t('settings.userManagement.emailLabel')}</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="input-base"
+                  placeholder="manager@example.com"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="label-base">{t('settings.userManagement.roleLabel')}</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                  className="input-base"
+                >
+                  <option value="event_manager">{roleLabels.event_manager}</option>
+                  <option value="system_manager">{roleLabels.system_manager}</option>
+                  {isSuperAdmin && <option value="super_admin">{roleLabels.super_admin}</option>}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t(`settings.userManagement.roleDescriptions.${inviteRole}`)}
+                </p>
+              </div>
 
               <div className="flex gap-3">
                 <button
@@ -417,12 +417,10 @@ export default function UserManagement() {
                 >
                   {t('settings.userManagement.cancel')}
                 </button>
-                <button
-                  type="submit"
-                  disabled={inviteLoading}
-                  className="flex-1 btn-primary"
-                >
-                  {inviteLoading ? t('settings.userManagement.sending') : t('settings.userManagement.sendInvite')}
+                <button type="submit" disabled={inviteLoading} className="flex-1 btn-primary">
+                  {inviteLoading
+                    ? t('settings.userManagement.sending')
+                    : t('settings.userManagement.sendInvite')}
                 </button>
               </div>
             </form>

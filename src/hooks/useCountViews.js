@@ -46,25 +46,29 @@ export function useSubscriptionCount(eventYear) {
     // Subscribe to real-time changes on the count table directly
     const channel = supabase
       .channel(`subscription-count-${eventYear}-${Date.now()}-${Math.random()}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'subscription_counts'
-      }, (payload) => {
-        // Check if this update is for our event year
-        const isRelevantUpdate =
-          (payload.new && payload.new.event_year === eventYear) ||
-          (payload.old && payload.old.event_year === eventYear);
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'subscription_counts',
+        },
+        (payload) => {
+          // Check if this update is for our event year
+          const isRelevantUpdate =
+            (payload.new && payload.new.event_year === eventYear) ||
+            (payload.old && payload.old.event_year === eventYear);
 
-        if (isRelevantUpdate) {
-          // Update local state directly from the payload
-          if (payload.new) {
-            setCount(payload.new.count);
-          } else if (payload.eventType === 'DELETE') {
-            setCount(0);
+          if (isRelevantUpdate) {
+            // Update local state directly from the payload
+            if (payload.new) {
+              setCount(payload.new.count);
+            } else if (payload.eventType === 'DELETE') {
+              setCount(0);
+            }
           }
-        }
-      })
+        },
+      )
       .subscribe();
 
     return () => {
@@ -115,25 +119,29 @@ export function useAssignmentCount(eventYear) {
     // Subscribe to real-time changes on the count table directly
     const channel = supabase
       .channel(`assignment-count-${eventYear}-${Date.now()}-${Math.random()}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'assignment_counts'
-      }, (payload) => {
-        // Check if this update is for our event year
-        const isRelevantUpdate =
-          (payload.new && payload.new.event_year === eventYear) ||
-          (payload.old && payload.old.event_year === eventYear);
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'assignment_counts',
+        },
+        (payload) => {
+          // Check if this update is for our event year
+          const isRelevantUpdate =
+            (payload.new && payload.new.event_year === eventYear) ||
+            (payload.old && payload.old.event_year === eventYear);
 
-        if (isRelevantUpdate) {
-          // Update local state directly from the payload
-          if (payload.new) {
-            setCount(payload.new.count);
-          } else if (payload.eventType === 'DELETE') {
-            setCount(0);
+          if (isRelevantUpdate) {
+            // Update local state directly from the payload
+            if (payload.new) {
+              setCount(payload.new.count);
+            } else if (payload.eventType === 'DELETE') {
+              setCount(0);
+            }
           }
-        }
-      })
+        },
+      )
       .subscribe();
 
     return () => {
@@ -181,14 +189,18 @@ export function useMarkerCount(eventYear) {
     // Subscribe to real-time changes
     const channel = supabase
       .channel(`marker-count-${eventYear}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'marker_counts'
-      }, (payload) => {
-        // Reload count when view changes
-        loadCount();
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'marker_counts',
+        },
+        (payload) => {
+          // Reload count when view changes
+          loadCount();
+        },
+      )
       .subscribe();
 
     return () => {
@@ -213,10 +225,7 @@ export function useCompanyCount() {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('company_counts')
-          .select('count')
-          .single();
+        const { data, error } = await supabase.from('company_counts').select('count').single();
 
         if (error) throw error;
         setCount(data?.count || 0);
@@ -234,14 +243,18 @@ export function useCompanyCount() {
     // Subscribe to real-time changes
     const channel = supabase
       .channel('company-count')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'company_counts'
-      }, (payload) => {
-        // Reload count when view changes
-        loadCount();
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'company_counts',
+        },
+        (payload) => {
+          // Reload count when view changes
+          loadCount();
+        },
+      )
       .subscribe();
 
     return () => {

@@ -15,22 +15,21 @@ export default function useOrganizationProfile() {
   const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('organization_profile')
-        .select('*')
-        .single(); // We only expect one row
+      const { data, error } = await supabase.from('organization_profile').select('*').single(); // We only expect one row
 
       if (error) {
         // If no row is found, it might not be an error, but we should log it.
         // Supabase returns an error if .single() finds no rows.
         if (error.code === 'PGRST116') {
-          console.warn('No organization profile found. A default one should be created by the migration.');
+          console.warn(
+            'No organization profile found. A default one should be created by the migration.',
+          );
           setProfile(null);
         } else {
           throw error;
         }
       }
-      
+
       setProfile(data);
       setError(null);
     } catch (err) {
@@ -54,7 +53,7 @@ export default function useOrganizationProfile() {
           if (payload.new) {
             setProfile(payload.new);
           }
-        }
+        },
       )
       .subscribe();
 

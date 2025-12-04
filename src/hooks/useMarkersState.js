@@ -34,65 +34,68 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
   // Note: Admin fields (contact, phone, meals, etc.) now managed via Event_Subscriptions
 
   // Update a marker by id, merging new props and syncing to Supabase
-  const updateMarker = useCallback(async (id, newProps) => {
-    // Helper: ensure marker exists in table
-    async function ensureMarkerRow(supabase, table, intId) {
-      const { data: exists, error: existsError } = await supabase
-        .from(table)
-        .select('id')
-        .eq('id', intId);
-      if (!existsError && (!exists || exists.length === 0)) {
-        // Insert with default values for NOT NULL columns
-        let row = { id: intId, event_year: selectedYear };
-        if (table === 'markers_core') row.coreLocked = false;
-        if (table === 'markers_appearance') row.appearanceLocked = false;
-        if (table === 'markers_content') row.contentLocked = false;
-        await supabase.from(table).insert([row]);
+  const updateMarker = useCallback(
+    async (id, newProps) => {
+      // Helper: ensure marker exists in table
+      async function ensureMarkerRow(supabase, table, intId) {
+        const { data: exists, error: existsError } = await supabase
+          .from(table)
+          .select('id')
+          .eq('id', intId);
+        if (!existsError && (!exists || exists.length === 0)) {
+          // Insert with default values for NOT NULL columns
+          let row = { id: intId, event_year: selectedYear };
+          if (table === 'markers_core') row.coreLocked = false;
+          if (table === 'markers_appearance') row.appearanceLocked = false;
+          if (table === 'markers_content') row.contentLocked = false;
+          await supabase.from(table).insert([row]);
+          return true;
+        }
         return true;
       }
-      return true;
-    }
-    // Ensure id is always an integer for Supabase queries
-    const intId = typeof id === 'string' && id.startsWith('m') ? parseInt(id.slice(1), 10) : id;
-    setMarkersState((prev) =>
-      prev.map((marker) => (marker.id === id ? { ...marker, ...newProps } : marker)),
-    );
-    try {
-      const { supabase } = await import('../supabaseClient');
-      // Ensure marker exists in all tables before update/fetch
-      const tables = [
-        { name: 'markers_core', fields: coreFields },
-        { name: 'markers_appearance', fields: appearanceFields },
-        { name: 'markers_content', fields: contentFields },
-      ];
-      for (const { name: table } of tables) {
-        await ensureMarkerRow(supabase, table, intId);
-      }
-      // Group fields by table for batched updates
-      const coreUpdates = {};
-      const appearanceUpdates = {};
-      const contentUpdates = {};
-
-      for (const [key, value] of Object.entries(newProps)) {
-        if (coreFields.includes(key)) {
-          coreUpdates[key] = value;
-        } else if (appearanceFields.includes(key)) {
-          appearanceUpdates[key] = value;
-        } else if (contentFields.includes(key)) {
-          contentUpdates[key] = value;
+      // Ensure id is always an integer for Supabase queries
+      const intId = typeof id === 'string' && id.startsWith('m') ? parseInt(id.slice(1), 10) : id;
+      setMarkersState((prev) =>
+        prev.map((marker) => (marker.id === id ? { ...marker, ...newProps } : marker)),
+      );
+      try {
+        const { supabase } = await import('../supabaseClient');
+        // Ensure marker exists in all tables before update/fetch
+        const tables = [
+          { name: 'markers_core', fields: coreFields },
+          { name: 'markers_appearance', fields: appearanceFields },
+          { name: 'markers_content', fields: contentFields },
+        ];
+        for (const { name: table } of tables) {
+          await ensureMarkerRow(supabase, table, intId);
         }
-        // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin
-      }
+        // Group fields by table for batched updates
+        const coreUpdates = {};
+        const appearanceUpdates = {};
+        const contentUpdates = {};
 
-      // Update each field individually using the proper service with event_year filtering
-      const allUpdates = { ...coreUpdates, ...appearanceUpdates, ...contentUpdates };
-      for (const [key, value] of Object.entries(allUpdates)) {
-        await updateMarkerField(intId, key, value, selectedYear);
+        for (const [key, value] of Object.entries(newProps)) {
+          if (coreFields.includes(key)) {
+            coreUpdates[key] = value;
+          } else if (appearanceFields.includes(key)) {
+            appearanceUpdates[key] = value;
+          } else if (contentFields.includes(key)) {
+            contentUpdates[key] = value;
+          }
+          // Note: Admin fields are managed via Event_Subscriptions, not Markers_Admin
+        }
+
+        // Update each field individually using the proper service with event_year filtering
+        const allUpdates = { ...coreUpdates, ...appearanceUpdates, ...contentUpdates };
+        for (const [key, value] of Object.entries(allUpdates)) {
+          await updateMarkerField(intId, key, value, selectedYear);
+        }
+      } catch (err) {
+        // Silently ignore errors in production
       }
-    } catch (err) {
-      // Silently ignore errors in production
-    }
-  }, [selectedYear]);
+    },
+    [selectedYear],
+  );
 
   return [markersState, updateMarker, setMarkersState];
 }

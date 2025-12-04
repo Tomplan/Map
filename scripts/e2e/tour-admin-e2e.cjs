@@ -62,7 +62,7 @@ async function run() {
     // reuse waitForServer logic (shorter timeout for probes)
     // If the candidate includes a hash, remove it for the probe
     const probeUrl = candidate.split('#')[0];
-    // eslint-disable-next-line no-await-in-loop
+     
     const up = await waitForServer(probeUrl, 1500);
     console.log('probe', probeUrl, '=>', up ? 'up' : 'down');
     if (up) {

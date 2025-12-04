@@ -4,17 +4,17 @@ import useFeedbackRequests from '../../hooks/useFeedbackRequests';
 import useUserRole from '../../hooks/useUserRole';
 import useUserPreferences from '../../hooks/useUserPreferences';
 import FeedbackRequestDetail from './FeedbackRequestDetail';
-import { 
-  mdiBug, 
-  mdiLightbulbOn, 
-  mdiThumbUp, 
+import {
+  mdiBug,
+  mdiLightbulbOn,
+  mdiThumbUp,
   mdiComment,
   mdiFilterVariant,
   mdiPlus,
   mdiCheckCircle,
   mdiProgressClock,
   mdiCircleOutline,
-  mdiArchive
+  mdiArchive,
 } from '@mdi/js';
 import Icon from '@mdi/react';
 
@@ -88,13 +88,18 @@ export default function FeedbackRequests() {
     const filters = {};
     // Remove type and status filters from server-side filtering - we'll filter client-side for multiple selections
     if (activeTab === 'my' && currentUserId) filters.userId = currentUserId;
-    
+
     loadRequests(filters);
   }, [activeTab, currentUserId, loadRequests]);
 
   // Save preferences when they change (only after preferences are loaded)
   useEffect(() => {
-    if (preferences && !preferencesLoading && hasInitializedFromPreferences && activeTab !== preferences.feedback_active_tab) {
+    if (
+      preferences &&
+      !preferencesLoading &&
+      hasInitializedFromPreferences &&
+      activeTab !== preferences.feedback_active_tab
+    ) {
       console.log('FeedbackRequests: Saving activeTab', activeTab);
       const timer = setTimeout(() => {
         updatePreference('feedback_active_tab', activeTab);
@@ -105,7 +110,12 @@ export default function FeedbackRequests() {
   }, [activeTab, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
 
   useEffect(() => {
-    if (preferences && !preferencesLoading && hasInitializedFromPreferences && JSON.stringify(filterTypes) !== JSON.stringify(preferences.feedback_filter_types)) {
+    if (
+      preferences &&
+      !preferencesLoading &&
+      hasInitializedFromPreferences &&
+      JSON.stringify(filterTypes) !== JSON.stringify(preferences.feedback_filter_types)
+    ) {
       console.log('FeedbackRequests: Saving filterTypes', filterTypes);
       const timer = setTimeout(() => {
         updatePreference('feedback_filter_types', filterTypes);
@@ -113,10 +123,21 @@ export default function FeedbackRequests() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [filterTypes, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
+  }, [
+    filterTypes,
+    preferences,
+    preferencesLoading,
+    hasInitializedFromPreferences,
+    updatePreference,
+  ]);
 
   useEffect(() => {
-    if (preferences && !preferencesLoading && hasInitializedFromPreferences && JSON.stringify(filterStatuses) !== JSON.stringify(preferences.feedback_filter_statuses)) {
+    if (
+      preferences &&
+      !preferencesLoading &&
+      hasInitializedFromPreferences &&
+      JSON.stringify(filterStatuses) !== JSON.stringify(preferences.feedback_filter_statuses)
+    ) {
       console.log('FeedbackRequests: Saving filterStatuses', filterStatuses);
       const timer = setTimeout(() => {
         updatePreference('feedback_filter_statuses', filterStatuses);
@@ -124,32 +145,37 @@ export default function FeedbackRequests() {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [filterStatuses, preferences, preferencesLoading, hasInitializedFromPreferences, updatePreference]);
+  }, [
+    filterStatuses,
+    preferences,
+    preferencesLoading,
+    hasInitializedFromPreferences,
+    updatePreference,
+  ]);
 
   // Filter requests by search query, type, and status
-  const filteredRequests = requests.filter(req => {
+  const filteredRequests = requests.filter((req) => {
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const matchesSearch = (
+      const matchesSearch =
         req.title.toLowerCase().includes(query) ||
         req.description?.toLowerCase().includes(query) ||
-        req.user_email.toLowerCase().includes(query)
-      );
+        req.user_email.toLowerCase().includes(query);
       if (!matchesSearch) return false;
     }
-    
+
     // Type filter - if types are selected, only show requests with those types
     if (filterTypes.length > 0) {
       if (!filterTypes.includes(req.type)) return false;
     }
-    
+
     // Status filter - if statuses are selected, only show requests with those statuses
     if (filterStatuses.length > 0) {
       const requestStatus = req.status || 'open';
       if (!filterStatuses.includes(requestStatus)) return false;
     }
-    
+
     return true;
   });
 
@@ -185,20 +211,28 @@ export default function FeedbackRequests() {
   // Get status icon
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'completed': return mdiCheckCircle;
-      case 'in_progress': return mdiProgressClock;
-      case 'archived': return mdiArchive;
-      default: return mdiCircleOutline;
+      case 'completed':
+        return mdiCheckCircle;
+      case 'in_progress':
+        return mdiProgressClock;
+      case 'archived':
+        return mdiArchive;
+      default:
+        return mdiCircleOutline;
     }
   };
 
   // Get status color
   const getStatusColor = (status) => {
     switch (status) {
-      case 'completed': return 'text-green-600';
-      case 'in_progress': return 'text-blue-600';
-      case 'archived': return 'text-gray-400';
-      default: return 'text-yellow-600';
+      case 'completed':
+        return 'text-green-600';
+      case 'in_progress':
+        return 'text-blue-600';
+      case 'archived':
+        return 'text-gray-400';
+      default:
+        return 'text-yellow-600';
     }
   };
 
@@ -229,12 +263,8 @@ export default function FeedbackRequests() {
     <div className="space-y-6" data-testid="feedback-requests-container">
       {/* Header */}
       <div data-testid="feedback-header">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {t('settings.feedbackRequests.title')}
-        </h2>
-        <p className="mt-1 text-sm text-gray-600">
-          {t('settings.feedbackRequests.description')}
-        </p>
+        <h2 className="text-2xl font-bold text-gray-900">{t('settings.feedbackRequests.title')}</h2>
+        <p className="mt-1 text-sm text-gray-600">{t('settings.feedbackRequests.description')}</p>
       </div>
 
       {/* Tabs */}
@@ -284,7 +314,7 @@ export default function FeedbackRequests() {
             <Icon path={mdiFilterVariant} size={0.8} />
             <span className="font-medium">{t('settings.feedbackRequests.filters.title')}</span>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <input
@@ -304,18 +334,27 @@ export default function FeedbackRequests() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
               >
                 <span className="text-sm text-gray-900">
-                  {filterTypes.length === 0 
+                  {filterTypes.length === 0
                     ? t('settings.feedbackRequests.filters.allTypes')
                     : filterTypes.length === 1
-                    ? t(`settings.feedbackRequests.types.${filterTypes[0]}`)
-                    : `${filterTypes.length} ${t('settings.feedbackRequests.filters.selectedTypes') || 'selected types'}`
-                  }
+                      ? t(`settings.feedbackRequests.types.${filterTypes[0]}`)
+                      : `${filterTypes.length} ${t('settings.feedbackRequests.filters.selectedTypes') || 'selected types'}`}
                 </span>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               {showTypeDropdown && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
                   <div className="p-2 space-y-1">
@@ -327,12 +366,17 @@ export default function FeedbackRequests() {
                         onChange={() => setFilterTypes([])}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-900">{t('settings.feedbackRequests.filters.allTypes')}</span>
+                      <span className="text-sm text-gray-900">
+                        {t('settings.feedbackRequests.filters.allTypes')}
+                      </span>
                     </label>
-                    
+
                     {/* Individual type options */}
-                    {['issue', 'feature'].map(type => (
-                      <label key={type} className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                    {['issue', 'feature'].map((type) => (
+                      <label
+                        key={type}
+                        className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={filterTypes.includes(type)}
@@ -340,12 +384,14 @@ export default function FeedbackRequests() {
                             if (e.target.checked) {
                               setFilterTypes([...filterTypes, type]);
                             } else {
-                              setFilterTypes(filterTypes.filter(t => t !== type));
+                              setFilterTypes(filterTypes.filter((t) => t !== type));
                             }
                           }}
                           className="mr-2"
                         />
-                        <span className="text-sm text-gray-900">{t(`settings.feedbackRequests.types.${type}`)}</span>
+                        <span className="text-sm text-gray-900">
+                          {t(`settings.feedbackRequests.types.${type}`)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -361,18 +407,29 @@ export default function FeedbackRequests() {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
               >
                 <span className="text-sm text-gray-900">
-                  {filterStatuses.length === 0 
+                  {filterStatuses.length === 0
                     ? t('settings.feedbackRequests.filters.allStatuses')
                     : filterStatuses.length === 1
-                    ? t(`settings.feedbackRequests.statuses.${statusTranslationKey(filterStatuses[0])}`)
-                    : `${filterStatuses.length} ${t('settings.feedbackRequests.filters.selectedStatuses')}`
-                  }
+                      ? t(
+                          `settings.feedbackRequests.statuses.${statusTranslationKey(filterStatuses[0])}`,
+                        )
+                      : `${filterStatuses.length} ${t('settings.feedbackRequests.filters.selectedStatuses')}`}
                 </span>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               {showStatusDropdown && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg">
                   <div className="p-2 space-y-1">
@@ -384,12 +441,17 @@ export default function FeedbackRequests() {
                         onChange={() => setFilterStatuses([])}
                         className="mr-2"
                       />
-                      <span className="text-sm text-gray-900">{t('settings.feedbackRequests.filters.allStatuses')}</span>
+                      <span className="text-sm text-gray-900">
+                        {t('settings.feedbackRequests.filters.allStatuses')}
+                      </span>
                     </label>
-                    
+
                     {/* Individual status options */}
-                    {['open', 'in_progress', 'completed', 'archived'].map(status => (
-                      <label key={status} className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer">
+                    {['open', 'in_progress', 'completed', 'archived'].map((status) => (
+                      <label
+                        key={status}
+                        className="flex items-center px-2 py-1 hover:bg-gray-50 cursor-pointer"
+                      >
                         <input
                           type="checkbox"
                           checked={filterStatuses.includes(status)}
@@ -397,12 +459,14 @@ export default function FeedbackRequests() {
                             if (e.target.checked) {
                               setFilterStatuses([...filterStatuses, status]);
                             } else {
-                              setFilterStatuses(filterStatuses.filter(s => s !== status));
+                              setFilterStatuses(filterStatuses.filter((s) => s !== status));
                             }
                           }}
                           className="mr-2"
                         />
-                        <span className="text-sm text-gray-900">{t(`settings.feedbackRequests.statuses.${statusTranslationKey(status)}`)}</span>
+                        <span className="text-sm text-gray-900">
+                          {t(`settings.feedbackRequests.statuses.${statusTranslationKey(status)}`)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -416,11 +480,14 @@ export default function FeedbackRequests() {
       {/* Content based on active tab */}
       {activeTab === 'submit' ? (
         /* Submit Form */
-        <div className="bg-white border border-gray-200 rounded-lg p-6" data-testid="feedback-submit-form">
+        <div
+          className="bg-white border border-gray-200 rounded-lg p-6"
+          data-testid="feedback-submit-form"
+        >
           <h3 className="text-lg font-semibold mb-4">
             {t('settings.feedbackRequests.submit.title')}
           </h3>
-          
+
           <form onSubmit={handleSubmitRequest} className="space-y-4">
             {/* Type selection */}
             <div>
@@ -505,11 +572,7 @@ export default function FeedbackRequests() {
       ) : (
         /* Request List */
         <div className="space-y-3" data-testid="feedback-requests-list">
-          {error && (
-            <div className="bg-red-50 text-red-800 p-4 rounded-lg">
-              {error}
-            </div>
-          )}
+          {error && <div className="bg-red-50 text-red-800 p-4 rounded-lg">{error}</div>}
 
           {filteredRequests.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
@@ -527,10 +590,12 @@ export default function FeedbackRequests() {
                   <div className="flex-1">
                     {/* Type badge and status */}
                     <div className="flex items-center gap-2 mb-2">
-                      <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getTypeBadgeColor(request.type)}`}>
-                        <Icon 
-                          path={request.type === 'issue' ? mdiBug : mdiLightbulbOn} 
-                          size={0.5} 
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getTypeBadgeColor(request.type)}`}
+                      >
+                        <Icon
+                          path={request.type === 'issue' ? mdiBug : mdiLightbulbOn}
+                          size={0.5}
                           className="mr-1"
                         />
                         {t(`settings.feedbackRequests.types.${request.type}`)}
@@ -542,7 +607,9 @@ export default function FeedbackRequests() {
                         aria-label={`Status: ${t(`settings.feedbackRequests.statuses.${statusTranslationKey(request.status)}`)}`}
                       >
                         <Icon path={getStatusIcon(request.status)} size={0.6} />
-                        {t(`settings.feedbackRequests.statuses.${statusTranslationKey(request.status)}`)}
+                        {t(
+                          `settings.feedbackRequests.statuses.${statusTranslationKey(request.status)}`,
+                        )}
                       </span>
                       {request.priority && isSuperAdmin && (
                         <span className="text-xs text-gray-500">
@@ -552,9 +619,7 @@ export default function FeedbackRequests() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                      {request.title}
-                    </h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{request.title}</h3>
 
                     {/* Description preview */}
                     {request.description && (
@@ -593,7 +658,10 @@ export default function FeedbackRequests() {
                       <span className="font-medium">{request.votes}</span>
                     </button>
 
-                    <div className="flex items-center gap-1 text-gray-600" data-testid="feedback-comments-count">
+                    <div
+                      className="flex items-center gap-1 text-gray-600"
+                      data-testid="feedback-comments-count"
+                    >
                       <Icon path={mdiComment} size={0.6} />
                       <span className="text-sm">{request.comments_count}</span>
                     </div>
@@ -614,7 +682,7 @@ export default function FeedbackRequests() {
             // Optimistically merge updated record into local list
             if (updated) {
               // Create shallow copy with merged values
-              const idx = requests.findIndex(r => r.id === updated.id);
+              const idx = requests.findIndex((r) => r.id === updated.id);
               if (idx !== -1) {
                 requests[idx] = { ...requests[idx], ...updated };
               }

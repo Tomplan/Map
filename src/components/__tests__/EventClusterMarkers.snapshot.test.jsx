@@ -3,20 +3,43 @@ import { render, waitFor } from '@testing-library/react';
 
 // Reuse the same lightweight mocks as the zoom test
 jest.mock('react-leaflet', () => ({
-  Marker: ({ children }) => require('react').createElement('div', { 'data-testid': 'marker' }, children),
-  Popup: ({ children }) => require('react').createElement('div', { 'data-testid': 'popup' }, children),
+  Marker: ({ children }) =>
+    require('react').createElement('div', { 'data-testid': 'marker' }, children),
+  Popup: ({ children }) =>
+    require('react').createElement('div', { 'data-testid': 'popup' }, children),
 }));
-jest.mock('react-leaflet-markercluster', () => ({ __esModule: true, default: ({ children }) => require('react').createElement('div', { 'data-testid': 'cluster' }, children) }));
+jest.mock('react-leaflet-markercluster', () => ({
+  __esModule: true,
+  default: ({ children }) =>
+    require('react').createElement('div', { 'data-testid': 'cluster' }, children),
+}));
 jest.mock('../../utils/markerIcons', () => ({ createMarkerIcon: () => ({ _iconObject: true }) }));
-jest.mock('../../utils/getIconPath', () => ({ getIconPath: (f) => `/assets/${f || 'default.svg'}` }));
-jest.mock('../../utils/getDefaultLogo', () => ({ getLogoWithFallback: () => '/assets/default-logo.png' }));
-jest.mock('../../utils/markerSizing', () => ({ getIconSizeForZoom: () => [10, 16], getZoomBucket: (z) => (z < 18 ? 'A' : 'B') }));
+jest.mock('../../utils/getIconPath', () => ({
+  getIconPath: (f) => `/assets/${f || 'default.svg'}`,
+}));
+jest.mock('../../utils/getDefaultLogo', () => ({
+  getLogoWithFallback: () => '/assets/default-logo.png',
+}));
+jest.mock('../../utils/markerSizing', () => ({
+  getIconSizeForZoom: () => [10, 16],
+  getZoomBucket: (z) => (z < 18 ? 'A' : 'B'),
+}));
 jest.mock('../../hooks/useIsMobile', () => () => false);
-jest.mock('../../contexts/OrganizationLogoContext', () => ({ useOrganizationLogo: () => ({ organizationLogo: null, loading: false }) }));
-jest.mock('../../contexts/FavoritesContext', () => ({ useFavoritesContext: () => ({ isFavorite: () => false }) }));
+jest.mock('../../contexts/OrganizationLogoContext', () => ({
+  useOrganizationLogo: () => ({ organizationLogo: null, loading: false }),
+}));
+jest.mock('../../contexts/FavoritesContext', () => ({
+  useFavoritesContext: () => ({ isFavorite: () => false }),
+}));
 jest.mock('../../hooks/useEventSubscriptions', () => () => ({ subscriptions: [] }));
-jest.mock('../../hooks/useAssignments', () => () => ({ assignments: [], assignCompanyToMarker: async () => {}, unassignCompanyFromMarker: async () => {} }));
-jest.mock('../../contexts/DialogContext', () => ({ useDialog: () => ({ confirm: async () => true }) }));
+jest.mock('../../hooks/useAssignments', () => () => ({
+  assignments: [],
+  assignCompanyToMarker: async () => {},
+  unassignCompanyFromMarker: async () => {},
+}));
+jest.mock('../../contexts/DialogContext', () => ({
+  useDialog: () => ({ confirm: async () => true }),
+}));
 jest.mock('../MobileBottomSheet', () => () => null);
 jest.mock('../MarkerDetailsUI', () => ({ MarkerUI: () => null }));
 jest.mock('../MarkerContextMenu', () => () => null);

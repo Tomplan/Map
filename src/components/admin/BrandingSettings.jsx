@@ -84,15 +84,13 @@ export default function BrandingSettings() {
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
             <Icon path={mdiDomain} size={0.6} className="text-orange-600" />
-            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Organization Setting</span>
+            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+              Organization Setting
+            </span>
           </div>
         </div>
-        <p className="text-sm text-gray-600">
-          {t('settings.branding.description')}
-        </p>
-        <p className="mt-2 text-xs text-gray-500">
-          💡 {t('settings.branding.note')}
-        </p>
+        <p className="text-sm text-gray-600">{t('settings.branding.description')}</p>
+        <p className="mt-2 text-xs text-gray-500">💡 {t('settings.branding.note')}</p>
       </div>
 
       {/* Branding Form */}
@@ -123,10 +121,11 @@ export default function BrandingSettings() {
           </div>
           {/* Color preview */}
           <div className="mt-3 space-y-2">
-            <div className="p-4 rounded-lg border-2" style={{ backgroundColor: themeColor, borderColor: themeColor }}>
-              <p className="font-bold text-white text-lg">
-                Preview Text (White on Color)
-              </p>
+            <div
+              className="p-4 rounded-lg border-2"
+              style={{ backgroundColor: themeColor, borderColor: themeColor }}
+            >
+              <p className="font-bold text-white text-lg">Preview Text (White on Color)</p>
               <p className="text-white text-sm opacity-90">
                 The quick brown fox jumps over the lazy dog
               </p>
@@ -166,13 +165,14 @@ export default function BrandingSettings() {
             <option value="Impact, sans-serif">Impact</option>
           </select>
           {/* Font preview */}
-          <div className="mt-3 p-4 rounded-lg border border-gray-300 bg-white" style={{ fontFamily }}>
+          <div
+            className="mt-3 p-4 rounded-lg border border-gray-300 bg-white"
+            style={{ fontFamily }}
+          >
             <p className="text-lg text-gray-900 font-semibold">
               The quick brown fox jumps over the lazy dog
             </p>
-            <p className="text-sm text-gray-700 mt-1">
-              1234567890 !@#$%^&*()
-            </p>
+            <p className="text-sm text-gray-700 mt-1">1234567890 !@#$%^&*()</p>
           </div>
         </div>
       </div>

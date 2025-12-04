@@ -4,27 +4,29 @@ import '@testing-library/jest-dom';
 
 // Mock i18n
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k, opts) => {
-    const map = {
-      'admin.yearScope.title': 'Year-scoped data',
-      'admin.yearScope.viewingYear': 'Viewing year',
-      'admin.yearScope.subscriptions': 'Subscriptions',
-      'admin.yearScope.assignments': 'Assignments',
-      'admin.yearScope.program': 'Program',
-      'admin.yearScope.preview': 'Preview changes',
-      'admin.yearSwitcher.modalTitle': `Switch to ${opts?.year || 'year'}?`,
-      'admin.yearSwitcher.modalIntro': `Changing to ${opts?.year || 'year'} will affect subscriptions`,
-      'admin.yearSwitcher.willChange.subscriptions': 'Subscriptions',
-      'admin.yearSwitcher.willChange.assignments': 'Assignments',
-      'admin.yearSwitcher.willChange.program': 'Program',
-      'admin.yearSwitcher.wontChange.companies': 'Companies',
-      'admin.yearSwitcher.wontChange.companiesDesc': 'Companies are global',
-      'common.cancel': 'Cancel',
-      'admin.yearSwitcher.switchButton': 'Switch',
-      'dashboard.subscriptions': 'Subscriptions'
-    };
-    return map[k] || k;
-  } }),
+  useTranslation: () => ({
+    t: (k, opts) => {
+      const map = {
+        'admin.yearScope.title': 'Year-scoped data',
+        'admin.yearScope.viewingYear': 'Viewing year',
+        'admin.yearScope.subscriptions': 'Subscriptions',
+        'admin.yearScope.assignments': 'Assignments',
+        'admin.yearScope.program': 'Program',
+        'admin.yearScope.preview': 'Preview changes',
+        'admin.yearSwitcher.modalTitle': `Switch to ${opts?.year || 'year'}?`,
+        'admin.yearSwitcher.modalIntro': `Changing to ${opts?.year || 'year'} will affect subscriptions`,
+        'admin.yearSwitcher.willChange.subscriptions': 'Subscriptions',
+        'admin.yearSwitcher.willChange.assignments': 'Assignments',
+        'admin.yearSwitcher.willChange.program': 'Program',
+        'admin.yearSwitcher.wontChange.companies': 'Companies',
+        'admin.yearSwitcher.wontChange.companiesDesc': 'Companies are global',
+        'common.cancel': 'Cancel',
+        'admin.yearSwitcher.switchButton': 'Switch',
+        'dashboard.subscriptions': 'Subscriptions',
+      };
+      return map[k] || k;
+    },
+  }),
   Trans: ({ children }) => children,
 }));
 
@@ -42,8 +44,12 @@ const { __setQueryResponse, __resetMocks } = require('../../supabaseClient');
 
 beforeEach(() => {
   __resetMocks();
-  __setQueryResponse('markers_core', 'select', { gt: () => ({ single: () => Promise.resolve({ data: { count: 10 }, error: null }) }) });
-  __setQueryResponse('assignment_counts', 'select', { eq: () => ({ single: () => Promise.resolve({ data: { count: 12 }, error: null }) }) });
+  __setQueryResponse('markers_core', 'select', {
+    gt: () => ({ single: () => Promise.resolve({ data: { count: 10 }, error: null }) }),
+  });
+  __setQueryResponse('assignment_counts', 'select', {
+    eq: () => ({ single: () => Promise.resolve({ data: { count: 12 }, error: null }) }),
+  });
 });
 
 // Mock react-router-dom to avoid pulling in router implementation (TextEncoder issues in jest env)
@@ -58,7 +64,6 @@ jest.mock('react-router-dom', () => {
 
 // Node (Jest) doesn't always provide TextEncoder/Decoder used by some deps
 if (typeof TextEncoder === 'undefined') {
-  // eslint-disable-next-line global-require
   const { TextEncoder, TextDecoder } = require('util');
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;

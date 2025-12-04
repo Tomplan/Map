@@ -2,7 +2,7 @@ import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react';
 
 jest.mock('../contexts/PreferencesContext', () => ({
-  usePreferences: () => ({ preferences: null, loading: false, updatePreferences: jest.fn() })
+  usePreferences: () => ({ preferences: null, loading: false, updatePreferences: jest.fn() }),
 }));
 
 // mock supabase auth to avoid network calls
@@ -11,21 +11,31 @@ jest.mock('../supabaseClient', () => ({
     auth: {
       getUser: jest.fn(() => Promise.resolve({ data: { user: null } })),
       onAuthStateChange: jest.fn(() => ({ subscription: { unsubscribe: jest.fn() } })),
-    }
-  }
+    },
+  },
 }));
 
 import { OnboardingProvider, useOnboarding } from '../contexts/OnboardingContext';
 
 function TestConsumer() {
-  const { activeTour, activeTourSource, isRunning, lastCompletedTour, startTour, completeTour, clearLastCompletedTour } = useOnboarding();
+  const {
+    activeTour,
+    activeTourSource,
+    isRunning,
+    lastCompletedTour,
+    startTour,
+    completeTour,
+    clearLastCompletedTour,
+  } = useOnboarding();
 
   return (
     <div>
       <div data-testid="active">{activeTour || 'none'}</div>
       <div data-testid="source">{activeTourSource || 'none'}</div>
       <div data-testid="running">{isRunning ? 'yes' : 'no'}</div>
-      <div data-testid="last">{lastCompletedTour ? `${lastCompletedTour.id}:${lastCompletedTour.source}` : 'none'}</div>
+      <div data-testid="last">
+        {lastCompletedTour ? `${lastCompletedTour.id}:${lastCompletedTour.source}` : 'none'}
+      </div>
 
       <button onClick={() => startTour('tour-1', { source: 'help' })}>start</button>
       <button onClick={() => completeTour('tour-1')}>complete</button>
@@ -39,7 +49,7 @@ describe('OnboardingContext', () => {
     const { getByText, getByTestId } = render(
       <OnboardingProvider>
         <TestConsumer />
-      </OnboardingProvider>
+      </OnboardingProvider>,
     );
 
     // start

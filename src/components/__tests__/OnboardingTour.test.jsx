@@ -1,19 +1,21 @@
-import React from 'react'
-import { render } from '@testing-library/react'
+import React from 'react';
+import { render } from '@testing-library/react';
 
 // Mock the hook used inside the component so we can assert render prop values
 jest.mock('../../hooks/useOnboardingTour', () => ({
   __esModule: true,
-  default: jest.fn(() => ({ start: jest.fn(), stop: jest.fn(), isActive: false }))
-}))
+  default: jest.fn(() => ({ start: jest.fn(), stop: jest.fn(), isActive: false })),
+}));
 
 // Mock onboarding context to avoid provider requirement in tests
-jest.mock('../../contexts/OnboardingContext', () => ({ useOnboarding: () => ({ activeTour: null }) }))
+jest.mock('../../contexts/OnboardingContext', () => ({
+  useOnboarding: () => ({ activeTour: null }),
+}));
 
-import OnboardingTour from '../onboarding/OnboardingTour'
+import OnboardingTour from '../onboarding/OnboardingTour';
 
 describe('OnboardingTour component', () => {
-  afterEach(() => jest.clearAllMocks())
+  afterEach(() => jest.clearAllMocks());
 
   test('renders children as function with start/stop/isActive', () => {
     const { getByText } = render(
@@ -25,21 +27,21 @@ describe('OnboardingTour component', () => {
             <span>{isActive ? 'active' : 'inactive'}</span>
           </div>
         )}
-      </OnboardingTour>
-    )
+      </OnboardingTour>,
+    );
 
-    expect(getByText('start')).toBeInTheDocument()
-    expect(getByText('stop')).toBeInTheDocument()
-    expect(getByText('inactive')).toBeInTheDocument()
-  })
+    expect(getByText('start')).toBeInTheDocument();
+    expect(getByText('stop')).toBeInTheDocument();
+    expect(getByText('inactive')).toBeInTheDocument();
+  });
 
   test('renders children node when provided', () => {
     const { getByText } = render(
       <OnboardingTour tourConfig={{ id: 't2', steps: [] }}>
         <div>plain-child</div>
-      </OnboardingTour>
-    )
+      </OnboardingTour>,
+    );
 
-    expect(getByText('plain-child')).toBeInTheDocument()
-  })
-})
+    expect(getByText('plain-child')).toBeInTheDocument();
+  });
+});

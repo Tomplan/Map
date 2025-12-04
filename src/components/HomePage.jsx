@@ -17,7 +17,8 @@ export default function HomePage({ selectedYear, branding }) {
   const { organizationLogo } = useOrganizationLogo();
 
   // Get subscribed companies count for the selected year
-  const { count: exhibitorCount, loading: subscriptionsLoading } = useSubscriptionCount(selectedYear);
+  const { count: exhibitorCount, loading: subscriptionsLoading } =
+    useSubscriptionCount(selectedYear);
 
   // Event info from actual website
   const eventInfo = {
@@ -52,16 +53,17 @@ export default function HomePage({ selectedYear, branding }) {
           <p className="text-sm text-orange-600 mb-2" style={{ fontFamily: branding?.fontFamily }}>
             {t('homePage.subtitle')}
           </p>
-          
+
           {/* Main Title */}
-          <h1 className="text-4xl font-bold text-orange-600 mb-4" style={{ fontFamily: branding?.fontFamily }}>
+          <h1
+            className="text-4xl font-bold text-orange-600 mb-4"
+            style={{ fontFamily: branding?.fontFamily }}
+          >
             {t('homePage.title')}
           </h1>
-          
+
           {/* Event Date */}
-          <p className="text-lg text-gray-600 mb-6">
-            {t('homePage.eventDate')}
-          </p>
+          <p className="text-lg text-gray-600 mb-6">{t('homePage.eventDate')}</p>
 
           {/* Quick Stats - Placeholder */}
           <div className="flex justify-center gap-6">
@@ -109,7 +111,6 @@ export default function HomePage({ selectedYear, branding }) {
             <p className="text-gray-700">{t('homePage.parkingInfo')}</p>
           </div>
         </div>
-
       </div>
     </div>
   );

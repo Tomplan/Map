@@ -34,7 +34,18 @@ const CategoryManagement = lazy(() => import('./admin/CategoryManagement'));
 const Settings = lazy(() => import('./admin/Settings'));
 const FeedbackRequests = lazy(() => import('./admin/FeedbackRequests'));
 
-function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState, onLogin, selectedYear, setSelectedYear, archiveMarkers, copyMarkers }) {
+function AppRoutes({
+  branding,
+  user,
+  markersState,
+  updateMarker,
+  setMarkersState,
+  onLogin,
+  selectedYear,
+  setSelectedYear,
+  archiveMarkers,
+  copyMarkers,
+}) {
   const location = useLocation();
   const { startTour } = useOnboarding();
 
@@ -53,13 +64,13 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
       }
 
       const allTours = [...getAllVisitorTours(), ...getAllAdminTours()];
-      const config = allTours.find(t => t.id === payload.id);
+      const config = allTours.find((t) => t.id === payload.id);
       if (!config) {
         sessionStorage.removeItem('onboarding:startAfterNav');
         return;
       }
 
-      const normalize = p => (p ? (p.startsWith('#') ? p.substring(1) : p) : '');
+      const normalize = (p) => (p ? (p.startsWith('#') ? p.substring(1) : p) : '');
       const currentHash = normalize(location.hash || '');
       const currentPath = normalize(location.pathname || '');
       const target = normalize(config.path || '');
@@ -71,7 +82,9 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
       }
     } catch (e) {
       // Failure is non-fatal; clean up the session key to avoid retry loops
-      try { sessionStorage.removeItem('onboarding:startAfterNav'); } catch (e2) {}
+      try {
+        sessionStorage.removeItem('onboarding:startAfterNav');
+      } catch (e2) {}
     }
     // Run when location changes / mounts
   }, [location.pathname, location.hash, startTour]);
@@ -81,9 +94,7 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
     <ErrorBoundary>
       <FavoritesProvider selectedYear={selectedYear}>
         <OfflineStatus />
-        <main className="pb-16">
-          {children}
-        </main>
+        <main className="pb-16">{children}</main>
         <TabNavigation />
       </FavoritesProvider>
     </ErrorBoundary>
@@ -96,7 +107,11 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/"
         element={
           <VisitorLayout>
-            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">Loading...</div>
+              }
+            >
               <HomePage selectedYear={selectedYear} branding={branding} />
             </Suspense>
           </VisitorLayout>
@@ -122,11 +137,14 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/exhibitors"
         element={
           <VisitorLayout>
-            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading exhibitors...</div>}>
-              <ExhibitorListView
-                markersState={markersState}
-                selectedYear={selectedYear}
-              />
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                  Loading exhibitors...
+                </div>
+              }
+            >
+              <ExhibitorListView markersState={markersState} selectedYear={selectedYear} />
             </Suspense>
           </VisitorLayout>
         }
@@ -135,7 +153,11 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/dev/excel"
         element={
           <VisitorLayout>
-            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">Loading...</div>
+              }
+            >
               <ExcelImportExportDemo />
             </Suspense>
           </VisitorLayout>
@@ -145,7 +167,13 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/schedule"
         element={
           <VisitorLayout>
-            <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading schedule...</div>}>
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-screen">
+                  Loading schedule...
+                </div>
+              }
+            >
               <EventSchedule selectedYear={selectedYear} />
             </Suspense>
           </VisitorLayout>
@@ -156,7 +184,11 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         path="/reset-password"
         element={
           <ErrorBoundary>
-            <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center">Loading...</div>
+              }
+            >
               <ResetPassword branding={branding} />
             </Suspense>
           </ErrorBoundary>
@@ -168,24 +200,37 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
         element={
           user ? (
             <FavoritesProvider selectedYear={selectedYear}>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading admin...</div>}>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    Loading admin...
+                  </div>
+                }
+              >
                 <AdminLayout selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
               </Suspense>
             </FavoritesProvider>
           ) : (
             <ErrorBoundary>
-              <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+              <Suspense
+                fallback={
+                  <div className="min-h-screen flex items-center justify-center">Loading...</div>
+                }
+              >
                 <AdminLogin onLogin={onLogin} branding={branding} />
               </Suspense>
             </ErrorBoundary>
           )
         }
       >
-        <Route index element={
-          <Suspense fallback={<div className="p-4">Loading dashboard...</div>}>
-            <Dashboard selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-          </Suspense>
-        } />
+        <Route
+          index
+          element={
+            <Suspense fallback={<div className="p-4">Loading dashboard...</div>}>
+              <Dashboard selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+            </Suspense>
+          }
+        />
         <Route
           path="map"
           element={
@@ -201,11 +246,14 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
             </Suspense>
           }
         />
-        <Route path="companies" element={
-          <Suspense fallback={<div className="p-4">Loading companies...</div>}>
-            <CompaniesTab />
-          </Suspense>
-        } />
+        <Route
+          path="companies"
+          element={
+            <Suspense fallback={<div className="p-4">Loading companies...</div>}>
+              <CompaniesTab />
+            </Suspense>
+          }
+        />
         <Route
           path="subscriptions"
           element={
@@ -214,11 +262,14 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
             </Suspense>
           }
         />
-        <Route path="program" element={
-          <Suspense fallback={<div className="p-4">Loading program...</div>}>
-            <ProgramManagement selectedYear={selectedYear} />
-          </Suspense>
-        } />
+        <Route
+          path="program"
+          element={
+            <Suspense fallback={<div className="p-4">Loading program...</div>}>
+              <ProgramManagement selectedYear={selectedYear} />
+            </Suspense>
+          }
+        />
         <Route
           path="assignments"
           element={
@@ -227,28 +278,45 @@ function AppRoutes({ branding, user, markersState, updateMarker, setMarkersState
             </Suspense>
           }
         />
-        <Route path="categories" element={
-          <Suspense fallback={<div className="p-4">Loading categories...</div>}>
-            <CategoryManagement />
-          </Suspense>
-        } />
-        <Route path="settings" element={
-          <Suspense fallback={<div className="p-4">Loading settings...</div>}>
-            <Settings selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-          </Suspense>
-        } />
-        <Route path="feedback" element={
-          <Suspense fallback={<div className="p-4">Loading feedback...</div>}>
-            <FeedbackRequests />
-          </Suspense>
-        } />
+        <Route
+          path="categories"
+          element={
+            <Suspense fallback={<div className="p-4">Loading categories...</div>}>
+              <CategoryManagement />
+            </Suspense>
+          }
+        />
+        <Route
+          path="settings"
+          element={
+            <Suspense fallback={<div className="p-4">Loading settings...</div>}>
+              <Settings selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+            </Suspense>
+          }
+        />
+        <Route
+          path="feedback"
+          element={
+            <Suspense fallback={<div className="p-4">Loading feedback...</div>}>
+              <FeedbackRequests />
+            </Suspense>
+          }
+        />
       </Route>
-      <Route path="/storage-test" element={
-        <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading test page...</div>}>
-          <StorageTestPage />
-        </Suspense>
-      } />
-
+      <Route
+        path="/storage-test"
+        element={
+          <Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center">
+                Loading test page...
+              </div>
+            }
+          >
+            <StorageTestPage />
+          </Suspense>
+        }
+      />
     </Routes>
   );
 }

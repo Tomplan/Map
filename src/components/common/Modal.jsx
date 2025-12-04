@@ -15,7 +15,7 @@ function Modal({
   size = 'md',
   showCloseButton = true,
   closeOnBackdrop = true,
-  className = ''
+  className = '',
 }) {
   if (!isOpen) return null;
 
@@ -24,7 +24,7 @@ function Modal({
     md: 'max-w-md',
     lg: 'max-w-2xl',
     xl: 'max-w-4xl',
-    full: 'max-w-[90vw]'
+    full: 'max-w-[90vw]',
   };
 
   const handleBackdropClick = (e) => {

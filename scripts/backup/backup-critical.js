@@ -2,14 +2,14 @@
 
 /**
  * Supabase Critical Data Backup Script
- * 
+ *
  * This script creates daily backups of critical tables:
  * - companies
- * - event_subscriptions  
+ * - event_subscriptions
  * - assignments
  * - organization_profile
  * - user_preferences
- * 
+ *
  * Usage:
  *   node backup-critical.js [--output-dir ./backups] [--compress]
  *   npm run backup:critical
@@ -37,12 +37,12 @@ class SupabaseBackup {
 
   setupLogging() {
     const logDir = './logs';
-    
+
     return {
       info: (msg) => console.log(`[INFO] ${msg}`),
       error: (msg) => console.error(`[ERROR] ${msg}`),
       warn: (msg) => console.warn(`[WARN] ${msg}`),
-      success: (msg) => console.log(`[SUCCESS] ${msg}`)
+      success: (msg) => console.log(`[SUCCESS] ${msg}`),
     };
   }
 
@@ -63,15 +63,13 @@ class SupabaseBackup {
 
   async backupTable(tableName, backupPath) {
     const tableFile = path.join(backupPath, `${tableName}.json`);
-    
+
     try {
       this.logger.info(`Backing up table: ${tableName}`);
-      
+
       // Fetch all data from the table
-      const { data, error } = await this.supabase
-        .from(tableName)
-        .select('*');
-      
+      const { data, error } = await this.supabase.from(tableName).select('*');
+
       if (error) {
         throw new Error(`Failed to fetch data from ${tableName}: ${error.message}`);
       }
@@ -81,12 +79,12 @@ class SupabaseBackup {
         table: tableName,
         timestamp: this.timestamp,
         recordCount: data.length,
-        data: data
+        data: data,
       };
 
       await fs.writeFile(tableFile, JSON.stringify(backupData, null, 2));
       this.logger.info(`Successfully backed up table: ${tableName} (${data.length} records)`);
-      
+
       return tableFile;
     } catch (error) {
       this.logger.error(`Error backing up table ${tableName}: ${error.message}`);
@@ -103,7 +101,7 @@ class SupabaseBackup {
       version: '2.0',
       generated_by: 'Supabase Backup Script',
       method: 'JavaScript Client',
-      notes: 'This backup was created using Supabase JavaScript client instead of pg_dump'
+      notes: 'This backup was created using Supabase JavaScript client instead of pg_dump',
     };
 
     const metadataFile = path.join(backupPath, 'metadata.json');
@@ -121,19 +119,19 @@ class SupabaseBackup {
     try {
       const files = await fs.readdir(this.backupDir);
       const backupFiles = files
-        .filter(f => f.startsWith('critical-'))
-        .map(f => ({
+        .filter((f) => f.startsWith('critical-'))
+        .map((f) => ({
           name: f,
           path: path.join(this.backupDir, f),
-          mtime: fs.stat(path.join(this.backupDir, f)).then(s => s.mtime)
+          mtime: fs.stat(path.join(this.backupDir, f)).then((s) => s.mtime),
         }));
 
       // Get file stats
       const filesWithStats = await Promise.all(
         backupFiles.map(async (file) => ({
           ...file,
-          mtime: await file.mtime
-        }))
+          mtime: await file.mtime,
+        })),
       );
 
       // Sort by modification time (newest first)
@@ -141,13 +139,15 @@ class SupabaseBackup {
 
       // Keep only the latest 7 backups
       const toDelete = filesWithStats.slice(this.config.backup.retention.daily);
-      
+
       for (const file of toDelete) {
         await fs.rm(file.path, { recursive: true, force: true });
         this.logger.info(`Deleted old backup: ${file.name}`);
       }
 
-      this.logger.info(`Cleanup completed. Kept ${this.config.backup.retention.daily} latest backups`);
+      this.logger.info(
+        `Cleanup completed. Kept ${this.config.backup.retention.daily} latest backups`,
+      );
     } catch (error) {
       this.logger.warn(`Cleanup failed: ${error.message}`);
     }
@@ -155,7 +155,7 @@ class SupabaseBackup {
 
   async sendNotification(status, message) {
     const { notifications } = this.config;
-    
+
     if (notifications.email.enabled && status === 'error') {
       // TODO: Implement email notification
       this.logger.warn('Email notification not implemented yet');
@@ -170,13 +170,15 @@ class SupabaseBackup {
   async run() {
     try {
       this.logger.info('Starting Supabase critical data backup');
-      
+
       // Validate configuration
       validateConfig();
-      
+
       // Validate Supabase credentials
       if (!this.supabaseUrl || !this.supabaseKey) {
-        throw new Error('Missing SUPABASE_URL or Supabase API key (service_role or anon) environment variables');
+        throw new Error(
+          'Missing SUPABASE_URL or Supabase API key (service_role or anon) environment variables',
+        );
       }
 
       // Ensure backup directory exists
@@ -200,22 +202,21 @@ class SupabaseBackup {
       await this.cleanupOldBackups();
 
       this.logger.success(`Critical backup completed successfully: ${finalBackup}`);
-      
+
       return {
         success: true,
         backupPath: finalBackup,
         timestamp: this.timestamp,
-        tables: this.config.backup.criticalTables
+        tables: this.config.backup.criticalTables,
       };
-
     } catch (error) {
       this.logger.error(`Backup failed: ${error.message}`);
       await this.sendNotification('error', error.message);
-      
+
       return {
         success: false,
         error: error.message,
-        timestamp: this.timestamp
+        timestamp: this.timestamp,
       };
     }
   }
@@ -224,22 +225,25 @@ class SupabaseBackup {
 // Main execution
 if (import.meta.url === `file://${process.argv[1]}`) {
   const backup = new SupabaseBackup();
-  
+
   // Parse command line arguments
   const args = process.argv.slice(2);
-  const outputDir = args.find(arg => arg.startsWith('--output-dir='))?.split('=')[1];
+  const outputDir = args.find((arg) => arg.startsWith('--output-dir='))?.split('=')[1];
   const compress = args.includes('--compress');
-  
+
   if (outputDir) {
     backup.backupDir = outputDir;
   }
-  
-  backup.run().then(result => {
-    process.exit(result.success ? 0 : 1);
-  }).catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-  });
+
+  backup
+    .run()
+    .then((result) => {
+      process.exit(result.success ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Fatal error:', error);
+      process.exit(1);
+    });
 }
 
 export default SupabaseBackup;

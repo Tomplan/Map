@@ -10,14 +10,15 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   const { t } = useTranslation();
   const tSafe = (key, fallback = '') => {
     const v = t(key);
-    return (!v || v === key) ? fallback : v;
+    return !v || v === key ? fallback : v;
   };
 
   // Use real-time count hooks
-  const { count: subscriptionCount, loading: subscriptionsLoading } = useSubscriptionCount(selectedYear);
+  const { count: subscriptionCount, loading: subscriptionsLoading } =
+    useSubscriptionCount(selectedYear);
   const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
 
-  const yearOptions = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i));
+  const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 2 + i);
 
   return (
     <div className="py-3">
@@ -25,11 +26,20 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
 
       <div className="mb-2">
         {/* visually remove the label (it's clear in the UI) but keep an sr-only label for screen readers */}
-        <label htmlFor="sidebar-year-select" className="sr-only">{tSafe('admin.yearScope.viewingYear', 'Viewing year')}</label>
+        <label htmlFor="sidebar-year-select" className="sr-only">
+          {tSafe('admin.yearScope.viewingYear', 'Viewing year')}
+        </label>
         <div className="text-sm text-left">
-          <select id="sidebar-year-select" value={selectedYear} onChange={(e) => onYearChange?.(parseInt(e.target.value, 10))} className="year-selector text-base font-semibold px-3 py-1 h-8 border rounded transition-all duration-300 text-left">
+          <select
+            id="sidebar-year-select"
+            value={selectedYear}
+            onChange={(e) => onYearChange?.(parseInt(e.target.value, 10))}
+            className="year-selector text-base font-semibold px-3 py-1 h-8 border rounded transition-all duration-300 text-left"
+          >
             {yearOptions.map((y) => (
-              <option key={y} value={y}>{y}</option>
+              <option key={y} value={y}>
+                {y}
+              </option>
             ))}
           </select>
         </div>
@@ -39,25 +49,25 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
         <SidebarTile
           to="/admin/subscriptions"
           icon={mdiCalendarCheck}
-          label={tSafe('adminNav.eventSubscriptions','Subscriptions')}
+          label={tSafe('adminNav.eventSubscriptions', 'Subscriptions')}
           badge={subscriptionsLoading ? '...' : subscriptionCount.toString()}
           isActive={location.pathname === '/admin/subscriptions'}
-          ariaLabel={`${tSafe('adminNav.eventSubscriptions','Subscriptions')} ${subscriptionsLoading ? '...' : subscriptionCount}`}
+          ariaLabel={`${tSafe('adminNav.eventSubscriptions', 'Subscriptions')} ${subscriptionsLoading ? '...' : subscriptionCount}`}
         />
 
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
-          label={tSafe('adminNav.assignments','Assignments')}
+          label={tSafe('adminNav.assignments', 'Assignments')}
           badge={assignmentsLoading ? '...' : assignmentCount.toString()}
           isActive={location.pathname === '/admin/assignments'}
-          ariaLabel={`${tSafe('adminNav.assignments','Assignments')} ${assignmentsLoading ? '...' : assignmentCount}`}
+          ariaLabel={`${tSafe('adminNav.assignments', 'Assignments')} ${assignmentsLoading ? '...' : assignmentCount}`}
         />
 
         <SidebarTile
           to="/admin/program"
           icon={mdiCalendarClock}
-          label={tSafe('adminNav.programManagement','Program Management')}
+          label={tSafe('adminNav.programManagement', 'Program Management')}
           isActive={location.pathname === '/admin/program'}
         />
       </div>

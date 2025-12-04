@@ -29,9 +29,7 @@ export default function ContentLanguageTabs({
             type="button"
             onClick={() => onLanguageChange(lang.code)}
             className={`px-2 py-1 rounded text-xs font-medium transition flex items-center gap-1 ${
-              isActive
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              isActive ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             <span>{lang.flag}</span>
@@ -52,14 +50,14 @@ export default function ContentLanguageTabs({
  */
 export function LanguageIndicator({ translations = {} }) {
   const languageCount = Object.keys(translations).filter(
-    key => translations[key] && translations[key].trim() !== ''
+    (key) => translations[key] && translations[key].trim() !== '',
   ).length;
 
   if (languageCount <= 1) return null;
 
   return (
-    <span 
-      className="inline-block ml-1 text-blue-600" 
+    <span
+      className="inline-block ml-1 text-blue-600"
       title={`Available in ${languageCount} languages`}
     >
       🌐

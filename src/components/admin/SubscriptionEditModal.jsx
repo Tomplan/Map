@@ -11,12 +11,7 @@ import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
  * SubscriptionEditModal - Modal for editing subscription details
  * Provides a better UX than inline editing with organized form sections
  */
-export default function SubscriptionEditModal({
-  isOpen,
-  onClose,
-  subscription,
-  onSave
-}) {
+export default function SubscriptionEditModal({ isOpen, onClose, subscription, onSave }) {
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
   const [editForm, setEditForm] = useState({});
@@ -29,7 +24,7 @@ export default function SubscriptionEditModal({
   // Build marker glyph map
   const markerGlyphMap = useMemo(() => {
     const map = {};
-    markers.forEach(marker => {
+    markers.forEach((marker) => {
       map[marker.id] = marker.glyph;
     });
     return map;
@@ -39,15 +34,13 @@ export default function SubscriptionEditModal({
   const boothLabels = useMemo(() => {
     if (!subscription || !assignments) return '-';
 
-    const companyAssignments = assignments.filter(
-      a => a.company_id === subscription.company_id
-    );
+    const companyAssignments = assignments.filter((a) => a.company_id === subscription.company_id);
 
     if (companyAssignments.length === 0) return '-';
 
     const labels = companyAssignments
       .sort((a, b) => a.marker_id - b.marker_id)
-      .map(assignment => markerGlyphMap[assignment.marker_id] || assignment.marker_id.toString())
+      .map((assignment) => markerGlyphMap[assignment.marker_id] || assignment.marker_id.toString())
       .filter(Boolean);
 
     return labels.length > 0 ? labels.join(', ') : '-';
@@ -68,7 +61,7 @@ export default function SubscriptionEditModal({
         breakfast_sun: subscription.breakfast_sun || 0,
         lunch_sun: subscription.lunch_sun || 0,
         coins: subscription.coins || 0,
-        notes: subscription.notes || ''
+        notes: subscription.notes || '',
       });
     }
   }, [subscription]);
@@ -101,9 +94,7 @@ export default function SubscriptionEditModal({
               className="w-16 h-16 object-contain"
             />
             <div className="flex-1">
-              <h3 className="font-bold text-lg text-gray-900">
-                {subscription.company?.name}
-              </h3>
+              <h3 className="font-bold text-lg text-gray-900">{subscription.company?.name}</h3>
               <div className="text-sm text-gray-600 mt-1">
                 <span className="font-medium">Event Year:</span> {subscription.event_year}
               </div>
@@ -174,7 +165,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="1"
                 value={editForm.booth_count || 1}
-                onChange={(e) => setEditForm({ ...editForm, booth_count: parseInt(e.target.value) || 1 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, booth_count: parseInt(e.target.value) || 1 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -207,7 +200,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="0"
                 value={editForm.breakfast_sat || 0}
-                onChange={(e) => setEditForm({ ...editForm, breakfast_sat: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, breakfast_sat: parseInt(e.target.value) || 0 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -219,7 +214,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="0"
                 value={editForm.lunch_sat || 0}
-                onChange={(e) => setEditForm({ ...editForm, lunch_sat: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, lunch_sat: parseInt(e.target.value) || 0 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -231,7 +228,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="0"
                 value={editForm.bbq_sat || 0}
-                onChange={(e) => setEditForm({ ...editForm, bbq_sat: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, bbq_sat: parseInt(e.target.value) || 0 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -252,7 +251,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="0"
                 value={editForm.breakfast_sun || 0}
-                onChange={(e) => setEditForm({ ...editForm, breakfast_sun: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, breakfast_sun: parseInt(e.target.value) || 0 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -264,7 +265,9 @@ export default function SubscriptionEditModal({
                 type="number"
                 min="0"
                 value={editForm.lunch_sun || 0}
-                onChange={(e) => setEditForm({ ...editForm, lunch_sun: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, lunch_sun: parseInt(e.target.value) || 0 })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

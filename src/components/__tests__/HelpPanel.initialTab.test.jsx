@@ -5,46 +5,88 @@ global.TextEncoder = global.TextEncoder || TextEncoder;
 import { render, fireEvent, waitFor } from '@testing-library/react';
 
 // Mock translations
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }) }));
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }),
+}));
 
 // Mock react-router so HelpPanel imports succeed without pulling in the full library
-jest.mock('react-router-dom', () => ({ useLocation: () => ({ pathname: '/', hash: '' }), useNavigate: () => jest.fn() }));
+jest.mock('react-router-dom', () => ({
+  useLocation: () => ({ pathname: '/', hash: '' }),
+  useNavigate: () => jest.fn(),
+}));
 
 // Mock onboarding hook. Export the mock startTour so tests can assert calls reliably.
 jest.mock('../../contexts/OnboardingContext', () => {
   const mockStartTour = jest.fn();
-  return { useOnboarding: () => ({ isRunning: false, isTourCompleted: () => false, startTour: mockStartTour }), __mockStartTour: mockStartTour };
+  return {
+    useOnboarding: () => ({
+      isRunning: false,
+      isTourCompleted: () => false,
+      startTour: mockStartTour,
+    }),
+    __mockStartTour: mockStartTour,
+  };
 });
 
 // Avoid supabase network calls used in some hooks (useUserRole)
-jest.mock('../../supabaseClient', () => ({ supabase: { auth: { getUser: jest.fn(() => Promise.resolve({ data: { user: null } })), onAuthStateChange: jest.fn(() => ({ subscription: { unsubscribe: jest.fn() } })) } } }));
+jest.mock('../../supabaseClient', () => ({
+  supabase: {
+    auth: {
+      getUser: jest.fn(() => Promise.resolve({ data: { user: null } })),
+      onAuthStateChange: jest.fn(() => ({ subscription: { unsubscribe: jest.fn() } })),
+    },
+  },
+}));
 
 // Mock user role to keep UI lightweight
-jest.mock('../../hooks/useUserRole', () => ({ __esModule: true, default: () => ({ role: 'visitor', loading: false, hasAnyRole: () => false, userInfo: {} }) }));
+jest.mock('../../hooks/useUserRole', () => ({
+  __esModule: true,
+  default: () => ({ role: 'visitor', loading: false, hasAnyRole: () => false, userInfo: {} }),
+}));
 
 // Mock tours/data used by TourList
-jest.mock('../../config/tourSteps/visitorTourSteps', () => ({ getAllVisitorTours: () => ([{ id: 'visitor-welcome', title: 'Welcome', description: 'Welcome', scope: 'visitor' }]) }));
-jest.mock('../../config/tourSteps/adminTourSteps', () => ({ getAllAdminTours: () => ([]) }));
+jest.mock('../../config/tourSteps/visitorTourSteps', () => ({
+  getAllVisitorTours: () => [
+    { id: 'visitor-welcome', title: 'Welcome', description: 'Welcome', scope: 'visitor' },
+  ],
+}));
+jest.mock('../../config/tourSteps/adminTourSteps', () => ({ getAllAdminTours: () => [] }));
 
 // Mock the onboarding hook return used by TourList — return *no* local
 // start function to force TrekList into the context-based start path.
-jest.mock('../../hooks/useOnboardingTour', () => ({ __esModule: true, default: () => ({ start: undefined }) }));
+jest.mock('../../hooks/useOnboardingTour', () => ({
+  __esModule: true,
+  default: () => ({ start: undefined }),
+}));
 
 // Mock dialog context (toast helpers and confirm) used by the TourList implementation
-jest.mock('../../contexts/DialogContext', () => ({ __esModule: true, useDialog: () => ({ toastWarning: jest.fn(), toastInfo: jest.fn(), toastSuccess: jest.fn(), confirm: jest.fn(async () => true) }), DialogProvider: ({ children }) => children }));
+jest.mock('../../contexts/DialogContext', () => ({
+  __esModule: true,
+  useDialog: () => ({
+    toastWarning: jest.fn(),
+    toastInfo: jest.fn(),
+    toastSuccess: jest.fn(),
+    confirm: jest.fn(async () => true),
+  }),
+  DialogProvider: ({ children }) => children,
+}));
 
 import HelpPanel from '../HelpPanel';
 
 describe('HelpPanel', () => {
   test('respects initialTab on open and renders interactive-tour content', () => {
-    const { getByText } = render(<HelpPanel isOpen={true} onClose={() => {}} initialTab="interactive-tour" />);
+    const { getByText } = render(
+      <HelpPanel isOpen={true} onClose={() => {}} initialTab="interactive-tour" />,
+    );
 
     // The interactive-tour tab content title should be present
     expect(getByText('helpPanel.interactiveTourTitle')).toBeInTheDocument();
   });
 
   test('TourList inside HelpPanel stamps start with source=help', async () => {
-    const { getByText } = render(<HelpPanel isOpen={true} onClose={() => {}} initialTab="interactive-tour" />);
+    const { getByText } = render(
+      <HelpPanel isOpen={true} onClose={() => {}} initialTab="interactive-tour" />,
+    );
     // dump the mocked useOnboardingTour module so we can inspect the exported mock
     console.log('useOnboardingTour module:', require('../../hooks/useOnboardingTour'));
 

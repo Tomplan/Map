@@ -31,7 +31,11 @@ export function useMarkerSorting(markers, activeTab) {
   // Sort markers based on current tab and sort state
   const sortedMarkers = useMemo(() => {
     // Skip sorting for tabs that don't use markers
-    if (activeTab === 'companies' || activeTab === 'assignments' || activeTab === 'eventSubscriptions') {
+    if (
+      activeTab === 'companies' ||
+      activeTab === 'assignments' ||
+      activeTab === 'eventSubscriptions'
+    ) {
       return [];
     }
 

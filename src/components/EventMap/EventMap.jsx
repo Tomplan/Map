@@ -37,7 +37,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null, onMapReady = null }) {
+function EventMap({
+  isAdminView,
+  markersState,
+  updateMarker,
+  selectedYear,
+  selectedMarkerId,
+  onMarkerSelect,
+  previewUseVisitorSizing = false,
+  editMode = false,
+  onMarkerDrag = null,
+  onMapReady = null,
+}) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
@@ -84,16 +95,15 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
     () => createIconCreateFunction(organizationLogo),
-    [organizationLogo]
+    [organizationLogo],
   );
-  
-  
+
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
   const safeMarkers = useMemo(
     () => (Array.isArray(markersState) ? markersState : []),
-    [markersState]
+    [markersState],
   );
 
   // Filter markers based on favorites toggle
@@ -179,9 +189,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       // Development-only: log zoom level for debugging
       try {
         if (process.env.NODE_ENV !== 'production') {
-          /* eslint-disable no-console */
           console.debug(`[Map] zoom: ${zoom}`);
-          /* eslint-enable no-console */
         }
       } catch (err) {
         // safe fallback if console isn't available
@@ -226,7 +234,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
     // Create and populate search layer
     const layerGroup = L.layerGroup();
-    
+
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
@@ -272,7 +280,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     return () => {
       control.off('search:locationfound', handleFound);
     };
-  }, [mapInstance, searchLayer, /* track when control instance becomes available */ Boolean(searchControlRef && searchControlRef.current)]);
+  }, [
+    mapInstance,
+    searchLayer,
+    /* track when control instance becomes available */ Boolean(
+      searchControlRef && searchControlRef.current,
+    ),
+  ]);
 
   // Setup minimap control
   useEffect(() => {
@@ -397,9 +411,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     // Inform parent components that the map instance is ready so they can
     // register print actions or other map-specific interactions.
     if (typeof onMapReady === 'function') {
-      try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
+      try {
+        onMapReady(map);
+      } catch (err) {
+        /* ignore parent handler errors */
+      }
     }
-    
+
     // Force a resize event to ensure proper tile loading
     setTimeout(() => {
       if (map) {
@@ -424,7 +442,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         // Debounce a bit to avoid thrashing during continuous resize
         if (mapInstance._invalidateTimeout) clearTimeout(mapInstance._invalidateTimeout);
         mapInstance._invalidateTimeout = setTimeout(() => {
-          try { mapInstance.invalidateSize(); } catch (err) { /* ignore */ }
+          try {
+            mapInstance.invalidateSize();
+          } catch (err) {
+            /* ignore */
+          }
           mapInstance._invalidateTimeout = null;
         }, 120);
       } catch (err) {
@@ -449,7 +471,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     window.addEventListener('resize', onWinResize);
 
     return () => {
-      try { window.removeEventListener('resize', onWinResize); } catch (e) { /* ignore */ }
+      try {
+        window.removeEventListener('resize', onWinResize);
+      } catch (e) {
+        /* ignore */
+      }
       if (cleanup) cleanup();
     };
   }, [mapInstance]);
@@ -477,12 +503,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       };
 
   return (
-    <div
-      style={containerStyle}
-      tabIndex={0}
-      aria-label="Event Map"
-      role="region"
-    >
+    <div style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}
@@ -520,7 +541,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
       <div
         id="map-container"
-        className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
+        className={isAdminView ? 'w-full h-full' : 'fixed inset-0 w-full h-full'}
         style={{
           zIndex: isAdminView ? 1 : 1, // Ensure admin map stays below modals
           height: isAdminView ? '100%' : '100svh',
@@ -540,7 +561,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           style={{
             width: isAdminView ? '100%' : '100vw',
             height: isAdminView ? '100%' : '100svh',
-            minHeight: isAdminView ? '400px' : '100svh'
+            minHeight: isAdminView ? '400px' : '100svh',
           }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
@@ -548,12 +569,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
-                key={layer.key}
-                attribution={layer.attribution}
-                url={layer.url}
-                crossOrigin="anonymous"
-                maxZoom={MAP_CONFIG.MAX_ZOOM}
-              />
+              key={layer.key}
+              attribution={layer.attribution}
+              url={layer.url}
+              crossOrigin="anonymous"
+              maxZoom={MAP_CONFIG.MAX_ZOOM}
+            />
           ))}
 
           <EventClusterMarkers
@@ -562,7 +583,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
+            isMarkerDraggable={(marker) =>
+              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+            }
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
@@ -582,7 +605,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
+            isMarkerDraggable={(marker) =>
+              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+            }
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}

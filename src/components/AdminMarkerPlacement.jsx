@@ -104,7 +104,11 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
           cursor: isPlacingMarker ? 'crosshair' : 'pointer',
           background: isPlacingMarker ? '#e3f2fd' : 'white',
         }}
-        title={isPlacingMarker ? t('mapManagement.addMarkerTooltipActive') : t('mapManagement.addMarkerTooltip')}
+        title={
+          isPlacingMarker
+            ? t('mapManagement.addMarkerTooltipActive')
+            : t('mapManagement.addMarkerTooltip')
+        }
       >
         <Icon
           path={mdiMapMarkerPlus}
@@ -143,7 +147,9 @@ export default function AdminMarkerPlacement({ isAdminView, mapInstance, updateM
               alignItems: 'center',
             }}
           >
-            <h2 style={{ color: '#1976d2', fontWeight: 700, marginBottom: 16 }}>{t('mapManagement.enterMarkerId')}</h2>
+            <h2 style={{ color: '#1976d2', fontWeight: 700, marginBottom: 16 }}>
+              {t('mapManagement.enterMarkerId')}
+            </h2>
             <input
               type="number"
               value={pendingMarkerId}

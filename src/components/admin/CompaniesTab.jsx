@@ -5,7 +5,16 @@ import { useCompanyMutations } from '../../hooks/useCompanyMutations';
 import useCompanyTranslations from '../../hooks/useCompanyTranslations';
 import useCategories from '../../hooks/useCategories';
 import Icon from '@mdi/react';
-import { mdiPlus, mdiPencil, mdiDelete, mdiCheck, mdiClose, mdiMagnify, mdiDomain, mdiTag } from '@mdi/js';
+import {
+  mdiPlus,
+  mdiPencil,
+  mdiDelete,
+  mdiCheck,
+  mdiClose,
+  mdiMagnify,
+  mdiDomain,
+  mdiTag,
+} from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
 import LogoUploader from '../LogoUploader';
@@ -63,9 +72,7 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
         placeholder={`Enter info in ${editingLanguage === 'nl' ? 'Dutch' : 'English'}...`}
         disabled={isSaving}
       />
-      {isSaving && (
-        <span className="text-xs text-gray-500 italic">Saving...</span>
-      )}
+      {isSaving && <span className="text-xs text-gray-500 italic">Saving...</span>}
     </div>
   );
 }
@@ -92,12 +99,27 @@ function InfoFieldDisplay({ companyId, currentLanguage }) {
  * Companies are reusable across years
  */
 export default function CompaniesTab() {
-  const { companies, loading: loadingCompanies, error: errorCompanies, createCompany, updateCompany, deleteCompany, searchCompanies, reload: reloadCompanies } = useCompanies();
-  const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
+  const {
+    companies,
+    loading: loadingCompanies,
+    error: errorCompanies,
+    createCompany,
+    updateCompany,
+    deleteCompany,
+    searchCompanies,
+    reload: reloadCompanies,
+  } = useCompanies();
+  const {
+    profile: organizationProfile,
+    loading: loadingProfile,
+    error: errorProfile,
+    updateProfile,
+  } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
   const { i18n, t } = useTranslation();
-  const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } = useCategories();
+  const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } =
+    useCategories();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
@@ -127,7 +149,7 @@ export default function CompaniesTab() {
     updateProfile,
     organizationLogo,
     confirm,
-    toastError
+    toastError,
   });
 
   // Load categories when editing a company (only when editingId changes)
@@ -135,7 +157,7 @@ export default function CompaniesTab() {
     const loadCompanyCategories = async () => {
       if (editingId && editingId !== 'organization') {
         const cats = await getCompanyCategories(editingId);
-        const categoryIds = cats.map(c => c.id);
+        const categoryIds = cats.map((c) => c.id);
         setEditingCategories(categoryIds);
       } else if (!editingId) {
         // Clear when not editing
@@ -149,12 +171,12 @@ export default function CompaniesTab() {
   useEffect(() => {
     const loadAllCategories = async () => {
       if (companies.length > 0) {
-        const companyIds = companies.map(c => c.id);
+        const companyIds = companies.map((c) => c.id);
         const categoriesMap = await getAllCompanyCategories(companyIds);
         setCompanyCategories(categoriesMap);
       }
     };
-    
+
     // Load when public tab is active and companies are available
     if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
@@ -174,9 +196,9 @@ export default function CompaniesTab() {
       } else {
         // Reload categories for this company to update display
         const updatedCats = await getCompanyCategories(editingId);
-        setCompanyCategories(prev => ({
+        setCompanyCategories((prev) => ({
           ...prev,
-          [editingId]: updatedCats
+          [editingId]: updatedCats,
         }));
       }
     }
@@ -200,7 +222,7 @@ export default function CompaniesTab() {
     if (!searchTerm) return allItems;
 
     const lowercasedTerm = searchTerm.toLowerCase();
-    return allItems.filter(item => item.name?.toLowerCase().includes(lowercasedTerm));
+    return allItems.filter((item) => item.name?.toLowerCase().includes(lowercasedTerm));
   }, [organizationProfile, companies, searchTerm]);
 
   const loading = loadingCompanies || loadingProfile;
@@ -289,170 +311,187 @@ export default function CompaniesTab() {
       <Modal
         isOpen={isCreating || !!editingId}
         onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
-        title={isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
+        title={
+          isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`
+        }
         size="lg"
       >
         <div className="p-6">
-
-              {/* Public Information Section */}
-              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-blue-800">Public Info (visible to attendees)</h4>
-                <div className="space-y-3">
-                  <input
-                    type="text"
-                    placeholder={t('helpPanel.companies.companyNamePlaceholder')}
-                    value={isCreating ? newCompanyForm.name : editForm.name}
-                    onChange={(e) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
-                      : setEditForm({ ...editForm, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+          {/* Public Information Section */}
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-sm mb-3 text-blue-800">
+              Public Info (visible to attendees)
+            </h4>
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder={t('helpPanel.companies.companyNamePlaceholder')}
+                value={isCreating ? newCompanyForm.name : editForm.name}
+                onChange={(e) =>
+                  isCreating
+                    ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
+                    : setEditForm({ ...editForm, name: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+              />
+              <div>
+                <label className="block text-sm font-medium mb-1 text-gray-900">
+                  {t('helpPanel.companies.companyLogo')}
+                </label>
+                <LogoUploader
+                  currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
+                  onUploadComplete={(url, path) => {
+                    isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, logo: url })
+                      : setEditForm({ ...editForm, logo: url });
+                  }}
+                  folder={editingId === 'organization' ? 'organization' : 'companies'}
+                  label="Upload Logo"
+                  showPreview={true}
+                  allowDelete={true}
+                  onDelete={() => {
+                    isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo })
+                      : setEditForm({ ...editForm, logo: organizationLogo });
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
+                  value={isCreating ? newCompanyForm.logo : editForm.logo || ''}
+                  onChange={(e) =>
+                    isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
+                      : setEditForm({ ...editForm, logo: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded mt-2 text-sm bg-white text-gray-900"
+                />
+              </div>
+              <input
+                type="text"
+                placeholder="Website URL"
+                value={isCreating ? newCompanyForm.website : editForm.website || ''}
+                onChange={(e) =>
+                  isCreating
+                    ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
+                    : setEditForm({ ...editForm, website: e.target.value })
+                }
+                className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+              />
+              {editingId === 'organization' ? (
+                <textarea
+                  placeholder={t('helpPanel.companies.infoPlaceholder')}
+                  value={isCreating ? newCompanyForm.info : editForm.info || ''}
+                  onChange={(e) =>
+                    isCreating
+                      ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
+                      : setEditForm({ ...editForm, info: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+                  rows={3}
+                />
+              ) : !isCreating ? (
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-900">
+                    Info (Multi-language)
+                  </label>
+                  <InfoFieldWithTranslations
+                    companyId={editingId}
+                    editingLanguage={editingContentLanguage}
+                    onLanguageChange={setEditingContentLanguage}
                   />
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-900">{t('helpPanel.companies.companyLogo')}</label>
-                    <LogoUploader
-                      currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
-                      onUploadComplete={(url, path) => {
-                        isCreating
-                          ? setNewCompanyForm({ ...newCompanyForm, logo: url })
-                          : setEditForm({ ...editForm, logo: url });
-                      }}
-                      folder={editingId === 'organization' ? "organization" : "companies"}
-                      label="Upload Logo"
-                      showPreview={true}
-                      allowDelete={true}
-                      onDelete={() => {
-                        isCreating
-                          ? setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo })
-                          : setEditForm({ ...editForm, logo: organizationLogo });
-                      }}
-                    />
-                    <input
-                      type="text"
-                      placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
-                      value={isCreating ? newCompanyForm.logo : (editForm.logo || '')}
-                      onChange={(e) => isCreating
-                        ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
-                        : setEditForm({ ...editForm, logo: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border rounded mt-2 text-sm bg-white text-gray-900"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Website URL"
-                    value={isCreating ? newCompanyForm.website : (editForm.website || '')}
-                    onChange={(e) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
-                      : setEditForm({ ...editForm, website: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-                  />
-                  {editingId === 'organization' ? (
-                    <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
-                      value={isCreating ? newCompanyForm.info : (editForm.info || '')}
-                      onChange={(e) => isCreating
-                        ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
-                        : setEditForm({ ...editForm, info: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-                      rows={3}
-                    />
-                  ) : !isCreating ? (
-                    <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-900">Info (Multi-language)</label>
-                      <InfoFieldWithTranslations
-                        companyId={editingId}
-                        editingLanguage={editingContentLanguage}
-                        onLanguageChange={setEditingContentLanguage}
-                      />
+                </div>
+              ) : (
+                <textarea
+                  placeholder={t('helpPanel.companies.infoPlaceholder')}
+                  value={newCompanyForm.info}
+                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
+                  className="w-full px-3 py-2 border rounded bg-white text-gray-900"
+                  rows={3}
+                />
+              )}
+              {/* Categories - only for companies, not organization */}
+              {!isCreating && editingId !== 'organization' && (
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-900">Categories</label>
+                  {categories.length > 0 ? (
+                    <div className="flex flex-col gap-1.5">
+                      {categories.map((cat) => (
+                        <label
+                          key={cat.id}
+                          className="inline-flex items-center gap-2 cursor-pointer px-2.5 py-1.5 rounded text-sm"
+                          style={{
+                            backgroundColor: editingCategories.includes(cat.id)
+                              ? cat.color + '30'
+                              : cat.color + '15',
+                            color: cat.color,
+                            border: `1px solid ${cat.color}40`,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={editingCategories.includes(cat.id)}
+                            onChange={(e) => {
+                              const newCategories = e.target.checked
+                                ? [...editingCategories, cat.id]
+                                : editingCategories.filter((id) => id !== cat.id);
+                              setEditingCategories(newCategories);
+                            }}
+                            className="cursor-pointer"
+                          />
+                          {cat.icon && <Icon path={cat.icon} size={0.6} />}
+                          {cat.name}
+                        </label>
+                      ))}
                     </div>
                   ) : (
-                    <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
-                      value={newCompanyForm.info}
-                      onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
-                      className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-                      rows={3}
-                    />
-                  )}
-                  {/* Categories - only for companies, not organization */}
-                  {!isCreating && editingId !== 'organization' && (
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Categories</label>
-                      {categories.length > 0 ? (
-                        <div className="flex flex-col gap-1.5">
-                          {categories.map(cat => (
-                            <label
-                              key={cat.id}
-                              className="inline-flex items-center gap-2 cursor-pointer px-2.5 py-1.5 rounded text-sm"
-                              style={{
-                                backgroundColor: editingCategories.includes(cat.id) ? cat.color + '30' : cat.color + '15',
-                                color: cat.color,
-                                border: `1px solid ${cat.color}40`
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={editingCategories.includes(cat.id)}
-                                onChange={(e) => {
-                                  const newCategories = e.target.checked
-                                    ? [...editingCategories, cat.id]
-                                    : editingCategories.filter(id => id !== cat.id);
-                                  setEditingCategories(newCategories);
-                                }}
-                                className="cursor-pointer"
-                              />
-                              {cat.icon && <Icon path={cat.icon} size={0.6} />}
-                              {cat.name}
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-red-500 text-sm italic">No categories available</span>
-                      )}
-                    </div>
+                    <span className="text-red-500 text-sm italic">No categories available</span>
                   )}
                 </div>
-              </div>
+              )}
+            </div>
+          </div>
 
-              {/* Manager-Only Information Section */}
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-green-800">Manager-Only Info (default contact info)</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Contact Person"
-                    value={isCreating ? (newCompanyForm.contact || '') : (editForm.contact || '')}
-                    onChange={(e) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
-                      : setEditForm({ ...editForm, contact: e.target.value })
-                    }
-                    className="px-3 py-2 border rounded bg-white text-gray-900"
-                  />
-                  <PhoneInput
-                    value={isCreating ? (newCompanyForm.phone || '') : (editForm.phone || '')}
-                    onChange={(value) => isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, phone: value })
-                      : setEditForm({ ...editForm, phone: value })
-                    }
-                    placeholder="Phone (e.g., +31612345678)"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={isCreating ? (newCompanyForm.email || '') : (editForm.email || '')}
-                    onChange={(e) => {
-                      const email = e.target.value.toLowerCase();
-                      isCreating
-                        ? setNewCompanyForm({ ...newCompanyForm, email })
-                        : setEditForm({ ...editForm, email });
-                    }}
-                    className="px-3 py-2 border rounded bg-white text-gray-900"
-                  />
-                </div>
-              </div>
+          {/* Manager-Only Information Section */}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-semibold text-sm mb-3 text-green-800">
+              Manager-Only Info (default contact info)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input
+                type="text"
+                placeholder="Contact Person"
+                value={isCreating ? newCompanyForm.contact || '' : editForm.contact || ''}
+                onChange={(e) =>
+                  isCreating
+                    ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
+                    : setEditForm({ ...editForm, contact: e.target.value })
+                }
+                className="px-3 py-2 border rounded bg-white text-gray-900"
+              />
+              <PhoneInput
+                value={isCreating ? newCompanyForm.phone || '' : editForm.phone || ''}
+                onChange={(value) =>
+                  isCreating
+                    ? setNewCompanyForm({ ...newCompanyForm, phone: value })
+                    : setEditForm({ ...editForm, phone: value })
+                }
+                placeholder="Phone (e.g., +31612345678)"
+              />
+              <input
+                type="email"
+                placeholder="Email"
+                value={isCreating ? newCompanyForm.email || '' : editForm.email || ''}
+                onChange={(e) => {
+                  const email = e.target.value.toLowerCase();
+                  isCreating
+                    ? setNewCompanyForm({ ...newCompanyForm, email })
+                    : setEditForm({ ...editForm, email });
+                }}
+                className="px-3 py-2 border rounded bg-white text-gray-900"
+              />
+            </div>
+          </div>
 
           {/* Action buttons */}
           <div className="flex gap-3 mt-6 justify-end">
@@ -493,13 +532,20 @@ export default function CompaniesTab() {
                   <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
                 </>
               )}
-              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+              <th
+                className="p-2 bg-gray-100 border-b font-semibold text-gray-900"
+                style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}
+              >
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
             {filteredItems.map((item) => {
               const isOrg = item.isOrganization;
-              const rowClass = isOrg ? 'bg-gray-700 text-white' : 'bg-white text-gray-900 hover:bg-gray-50';
+              const rowClass = isOrg
+                ? 'bg-gray-700 text-white'
+                : 'bg-white text-gray-900 hover:bg-gray-50';
               const bgColor = activeTab === 'public' ? 'bg-blue-50' : 'bg-green-50';
 
               return (
@@ -511,102 +557,128 @@ export default function CompaniesTab() {
 
                   {activeTab === 'public' ? (
                     <>
-                  {/* Logo */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    <img
-                      {...(() => {
-                        // Prefer an explicit default branding logo for organization-wide branding
-                        // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
-                        // when a specific company has no logo set.
-                        const fallback = getDefaultLogoPath();
-                        // For organization rows prefer the canonical default branding logo
-                        // (e.g. 4x4Vakantiebeurs-128.webp) rather than any uploaded org PNG filename.
-                        const source = isOrg ? fallback : ((item.logo && item.logo.trim() !== '') ? item.logo : fallback);
-                        const r = getResponsiveLogoSources(source);
-                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
-                        return { src: getLogoPath(source) };
-                      })()}
-                      alt={item.name}
-                      className="h-8 object-contain"
-                    />
-                  </td>
+                      {/* Logo */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                        <img
+                          {...(() => {
+                            // Prefer an explicit default branding logo for organization-wide branding
+                            // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
+                            // when a specific company has no logo set.
+                            const fallback = getDefaultLogoPath();
+                            // For organization rows prefer the canonical default branding logo
+                            // (e.g. 4x4Vakantiebeurs-128.webp) rather than any uploaded org PNG filename.
+                            const source = isOrg
+                              ? fallback
+                              : item.logo && item.logo.trim() !== ''
+                                ? item.logo
+                                : fallback;
+                            const r = getResponsiveLogoSources(source);
+                            if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                            return { src: getLogoPath(source) };
+                          })()}
+                          alt={item.name}
+                          className="h-8 object-contain"
+                        />
+                      </td>
 
-                  {/* Website */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {item.website ? (
-                      <a href={item.website.startsWith('http') ? item.website : `https://${item.website}`} target="_blank" rel="noopener noreferrer" className={isOrg ? "text-blue-300 hover:underline" : "text-blue-600 hover:underline"}>
-                        {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
-                      </a>
-                    ) : (
-                      <span className="text-gray-400 text-sm italic">Not set</span>
-                    )}
-                  </td>
+                      {/* Website */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                        {item.website ? (
+                          <a
+                            href={
+                              item.website.startsWith('http')
+                                ? item.website
+                                : `https://${item.website}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={
+                              isOrg
+                                ? 'text-blue-300 hover:underline'
+                                : 'text-blue-600 hover:underline'
+                            }
+                          >
+                            {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-sm italic">Not set</span>
+                        )}
+                      </td>
 
-                  {/* Info - Multi-language */}
-                  <td className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {isOrg ? (
-                      <p className="line-clamp-3 whitespace-pre-wrap">
-                        {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
-                      </p>
-                    ) : (
-                      <InfoFieldDisplay
-                        companyId={item.id}
-                        /*
+                      {/* Info - Multi-language */}
+                      <td
+                        className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}
+                      >
+                        {isOrg ? (
+                          <p className="line-clamp-3 whitespace-pre-wrap">
+                            {item.info || (
+                              <span className="text-gray-400 text-sm italic">Not set</span>
+                            )}
+                          </p>
+                        ) : (
+                          <InfoFieldDisplay
+                            companyId={item.id}
+                            /*
                           Show Dutch (nl) in the admin list when row is NOT being edited.
                           When the row is opened for editing the modal controls editingLanguage
                           so the textarea there remains language-aware.
                         */
-                        currentLanguage={editingId === item.id ? i18n.language : 'nl'}
-                      />
-                    )}
-                  </td>
-
-                  {/* Categories */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                    {isOrg ? (
-                      <span className="text-gray-400 text-xs italic">N/A</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {(companyCategories[item.id] || []).map(cat => (
-                          <span
-                            key={cat.id}
-                            className="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1"
-                            style={{ backgroundColor: cat.color + '20', color: cat.color }}
-                          >
-                            {cat.icon && <Icon path={cat.icon} size={0.5} />}
-                            {cat.name}
-                          </span>
-                        ))}
-                        {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
-                          <span className="text-gray-400 text-xs italic">None</span>
+                            currentLanguage={editingId === item.id ? i18n.language : 'nl'}
+                          />
                         )}
-                      </div>
-                    )}
-                  </td>
+                      </td>
+
+                      {/* Categories */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
+                        {isOrg ? (
+                          <span className="text-gray-400 text-xs italic">N/A</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {(companyCategories[item.id] || []).map((cat) => (
+                              <span
+                                key={cat.id}
+                                className="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1"
+                                style={{ backgroundColor: cat.color + '20', color: cat.color }}
+                              >
+                                {cat.icon && <Icon path={cat.icon} size={0.5} />}
+                                {cat.name}
+                              </span>
+                            ))}
+                            {(!companyCategories[item.id] ||
+                              companyCategories[item.id].length === 0) && (
+                              <span className="text-gray-400 text-xs italic">None</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
                     </>
                   ) : (
                     <>
-                  {/* Contact */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
-                  </td>
+                      {/* Contact */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                        <span className="text-xs">
+                          {item.contact || <span className="text-gray-400 italic">Not set</span>}
+                        </span>
+                      </td>
 
-                  {/* Phone */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    {item.phone ? (
-                      <span className="text-xs flex items-center gap-1">
-                        <span>{getPhoneFlag(item.phone)}</span>
-                        <span>{formatPhoneForDisplay(item.phone)}</span>
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 italic text-xs">Not set</span>
-                    )}
-                  </td>
+                      {/* Phone */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                        {item.phone ? (
+                          <span className="text-xs flex items-center gap-1">
+                            <span>{getPhoneFlag(item.phone)}</span>
+                            <span>{formatPhoneForDisplay(item.phone)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic text-xs">Not set</span>
+                        )}
+                      </td>
 
-                  {/* Email */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
-                  </td>
+                      {/* Email */}
+                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
+                        <span className="text-xs">
+                          {item.email || <span className="text-gray-400 italic">Not set</span>}
+                        </span>
+                      </td>
                     </>
                   )}
 

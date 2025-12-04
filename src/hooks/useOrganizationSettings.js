@@ -78,7 +78,9 @@ export default function useOrganizationSettings() {
 
       if (!data) {
         // This should never happen (migration 25 creates the row)
-        console.warn('Organization settings row not found (id=1). Database migration may not have run.');
+        console.warn(
+          'Organization settings row not found (id=1). Database migration may not have run.',
+        );
         setSettings(null);
         setError(null); // Don't treat as error, app should still work with defaults
         setLoading(false);
@@ -103,56 +105,63 @@ export default function useOrganizationSettings() {
    * @returns {Promise<boolean>} Success status
    * @throws {Error} If conflict detected (another admin updated first)
    */
-  const updateSetting = useCallback(async (key, value) => {
-    if (!settings) {
-      console.error('Cannot update setting: Settings not loaded');
-      return false;
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('Cannot update setting: No user logged in');
+  const updateSetting = useCallback(
+    async (key, value) => {
+      if (!settings) {
+        console.error('Cannot update setting: Settings not loaded');
         return false;
       }
 
-      const currentVersion = settings.row_version || 0;
-
-      // Optimistic concurrency: increment version and check old version matches
-      const { data, error: updateError } = await supabase
-        .from('organization_settings')
-        .update({
-          [key]: value,
-          row_version: currentVersion + 1,
-          updated_by: user.id,
-        })
-        .eq('id', 1)
-        .eq('row_version', currentVersion) // Only update if version matches
-        .select()
-        .single();
-
-      if (updateError) {
-        // Check if it's a permission error
-        if (updateError.code === 'PGRST301' || updateError.message?.includes('permission')) {
-          throw new Error('Permission denied. Only super_admin or system_manager can update organization settings.');
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          console.error('Cannot update setting: No user logged in');
+          return false;
         }
-        console.error(`Error updating setting ${key}:`, updateError);
-        throw new Error(updateError.message || `Failed to update setting: ${key}`);
-      }
 
-      if (!data) {
-        // No rows updated = conflict detected
-        await fetchSettings();
-        throw new Error('Organization settings were updated by another admin. Please try again.');
-      }
+        const currentVersion = settings.row_version || 0;
 
-      setSettings(data);
-      return true;
-    } catch (error) {
-      console.error('Error in updateSetting:', error);
-      throw error;
-    }
-  }, [settings, fetchSettings]);
+        // Optimistic concurrency: increment version and check old version matches
+        const { data, error: updateError } = await supabase
+          .from('organization_settings')
+          .update({
+            [key]: value,
+            row_version: currentVersion + 1,
+            updated_by: user.id,
+          })
+          .eq('id', 1)
+          .eq('row_version', currentVersion) // Only update if version matches
+          .select()
+          .single();
+
+        if (updateError) {
+          // Check if it's a permission error
+          if (updateError.code === 'PGRST301' || updateError.message?.includes('permission')) {
+            throw new Error(
+              'Permission denied. Only super_admin or system_manager can update organization settings.',
+            );
+          }
+          console.error(`Error updating setting ${key}:`, updateError);
+          throw new Error(updateError.message || `Failed to update setting: ${key}`);
+        }
+
+        if (!data) {
+          // No rows updated = conflict detected
+          await fetchSettings();
+          throw new Error('Organization settings were updated by another admin. Please try again.');
+        }
+
+        setSettings(data);
+        return true;
+      } catch (error) {
+        console.error('Error in updateSetting:', error);
+        throw error;
+      }
+    },
+    [settings, fetchSettings],
+  );
 
   /**
    * Update multiple organization settings at once with optimistic concurrency control
@@ -160,56 +169,63 @@ export default function useOrganizationSettings() {
    * @returns {Promise<boolean>} Success status
    * @throws {Error} If conflict detected (another admin updated first)
    */
-  const updateSettings = useCallback(async (updates) => {
-    if (!settings) {
-      console.error('Cannot update settings: Settings not loaded');
-      return false;
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('Cannot update settings: No user logged in');
+  const updateSettings = useCallback(
+    async (updates) => {
+      if (!settings) {
+        console.error('Cannot update settings: Settings not loaded');
         return false;
       }
 
-      const currentVersion = settings.row_version || 0;
-
-      // Optimistic concurrency: increment version and check old version matches
-      const { data, error: updateError } = await supabase
-        .from('organization_settings')
-        .update({
-          ...updates,
-          row_version: currentVersion + 1,
-          updated_by: user.id,
-        })
-        .eq('id', 1)
-        .eq('row_version', currentVersion) // Only update if version matches
-        .select()
-        .single();
-
-      if (updateError) {
-        // Check if it's a permission error
-        if (updateError.code === 'PGRST301' || updateError.message?.includes('permission')) {
-          throw new Error('Permission denied. Only super_admin or system_manager can update organization settings.');
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          console.error('Cannot update settings: No user logged in');
+          return false;
         }
-        console.error('Error updating settings:', updateError);
-        throw new Error(updateError.message || 'Failed to update organization settings');
-      }
 
-      if (!data) {
-        // No rows updated = conflict detected
-        await fetchSettings();
-        throw new Error('Organization settings were updated by another admin. Please try again.');
-      }
+        const currentVersion = settings.row_version || 0;
 
-      setSettings(data);
-      return true;
-    } catch (error) {
-      console.error('Error in updateSettings:', error);
-      throw error;
-    }
-  }, [settings, fetchSettings]);
+        // Optimistic concurrency: increment version and check old version matches
+        const { data, error: updateError } = await supabase
+          .from('organization_settings')
+          .update({
+            ...updates,
+            row_version: currentVersion + 1,
+            updated_by: user.id,
+          })
+          .eq('id', 1)
+          .eq('row_version', currentVersion) // Only update if version matches
+          .select()
+          .single();
+
+        if (updateError) {
+          // Check if it's a permission error
+          if (updateError.code === 'PGRST301' || updateError.message?.includes('permission')) {
+            throw new Error(
+              'Permission denied. Only super_admin or system_manager can update organization settings.',
+            );
+          }
+          console.error('Error updating settings:', updateError);
+          throw new Error(updateError.message || 'Failed to update organization settings');
+        }
+
+        if (!data) {
+          // No rows updated = conflict detected
+          await fetchSettings();
+          throw new Error('Organization settings were updated by another admin. Please try again.');
+        }
+
+        setSettings(data);
+        return true;
+      } catch (error) {
+        console.error('Error in updateSettings:', error);
+        throw error;
+      }
+    },
+    [settings, fetchSettings],
+  );
 
   // Initial fetch on mount
   useEffect(() => {
@@ -229,17 +245,21 @@ export default function useOrganizationSettings() {
     // Subscribe to settings changes with version checking
     channelRef.current = supabase
       .channel('organization-settings-changes')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'organization_settings',
-        filter: 'id=eq.1'
-      }, (payload) => {
-        // Only apply update if newer version (prevents race conditions)
-        if (payload.new.row_version > (settings.row_version || 0)) {
-          setSettings(payload.new);
-        }
-      })
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'organization_settings',
+          filter: 'id=eq.1',
+        },
+        (payload) => {
+          // Only apply update if newer version (prevents race conditions)
+          if (payload.new.row_version > (settings.row_version || 0)) {
+            setSettings(payload.new);
+          }
+        },
+      )
       .subscribe();
 
     return () => {

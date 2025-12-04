@@ -65,10 +65,7 @@ export default function OnboardingTour({ tourConfig, onComplete, onDismiss, chil
   };
 
   return (
-    <TourErrorBoundary 
-      onRetry={handleRetry}
-      onDismiss={handleDismiss}
-    >
+    <TourErrorBoundary onRetry={handleRetry} onDismiss={handleDismiss}>
       {tourContent()}
     </TourErrorBoundary>
   );
@@ -77,16 +74,18 @@ export default function OnboardingTour({ tourConfig, onComplete, onDismiss, chil
 OnboardingTour.propTypes = {
   tourConfig: PropTypes.shape({
     id: PropTypes.string.isRequired,
-    steps: PropTypes.arrayOf(PropTypes.shape({
-      target: PropTypes.string,
-      element: PropTypes.string,
-      title: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-      content: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-      description: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-      placement: PropTypes.string,
-      side: PropTypes.string,
-      align: PropTypes.string,
-    })).isRequired,
+    steps: PropTypes.arrayOf(
+      PropTypes.shape({
+        target: PropTypes.string,
+        element: PropTypes.string,
+        title: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        content: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        description: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
+        placement: PropTypes.string,
+        side: PropTypes.string,
+        align: PropTypes.string,
+      }),
+    ).isRequired,
     autoStart: PropTypes.bool,
   }).isRequired,
   onComplete: PropTypes.func,

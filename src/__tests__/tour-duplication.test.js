@@ -20,12 +20,22 @@ jest.mock('driver.js', () => ({ driver: jest.fn() }));
 import useOnboardingTour from '../hooks/useOnboardingTour';
 
 function TestHarness() {
-  const { start } = useOnboardingTour({ id: 'test-dup', steps: [{ element: 'body', popover: { title: 't', description: 'd' } }] });
-  return <button data-testid="start" onClick={start}>Start</button>;
+  const { start } = useOnboardingTour({
+    id: 'test-dup',
+    steps: [{ element: 'body', popover: { title: 't', description: 'd' } }],
+  });
+  return (
+    <button data-testid="start" onClick={start}>
+      Start
+    </button>
+  );
 }
 
 function AutoStartHarness() {
-  const { start } = useOnboardingTour({ id: 'test-dup', steps: [{ element: 'body', popover: { title: 't', description: 'd' } }] });
+  const { start } = useOnboardingTour({
+    id: 'test-dup',
+    steps: [{ element: 'body', popover: { title: 't', description: 'd' } }],
+  });
 
   React.useEffect(() => {
     // simulate rapid double-starts
@@ -61,13 +71,17 @@ describe('duplicate popover guard', () => {
         if (p) p.remove();
       }),
       getActiveIndex: jest.fn(() => 0),
-      moveNext: jest.fn(() => { window.__TEST_NEXT_CLICKED = (window.__TEST_NEXT_CLICKED || 0) + 1; }),
-      movePrevious: jest.fn(() => { window.__TEST_PREV_CLICKED = (window.__TEST_PREV_CLICKED || 0) + 1; }),
+      moveNext: jest.fn(() => {
+        window.__TEST_NEXT_CLICKED = (window.__TEST_NEXT_CLICKED || 0) + 1;
+      }),
+      movePrevious: jest.fn(() => {
+        window.__TEST_PREV_CLICKED = (window.__TEST_PREV_CLICKED || 0) + 1;
+      }),
     }));
 
     // reset test counters and DOM
     window.__TEST_NEXT_CLICKED = 0;
-    document.querySelectorAll('.onboarding-tour-popover').forEach(n => n.remove());
+    document.querySelectorAll('.onboarding-tour-popover').forEach((n) => n.remove());
   });
 
   test('starting twice quickly does not create duplicate popovers and nav works', async () => {
@@ -82,7 +96,9 @@ describe('duplicate popover guard', () => {
     expect(typeof window.__ONBOARDING_DRIVER_INSTANCE).not.toBe('undefined');
 
     // Some environments will create the popover slightly asynchronously
-    await waitFor(() => expect(document.querySelectorAll('.onboarding-tour-popover').length).toBeLessThanOrEqual(1));
+    await waitFor(() =>
+      expect(document.querySelectorAll('.onboarding-tour-popover').length).toBeLessThanOrEqual(1),
+    );
 
     const popovers = document.querySelectorAll('.onboarding-tour-popover');
     expect(popovers.length).toBe(1);
@@ -92,7 +108,12 @@ describe('duplicate popover guard', () => {
     expect(nextBtn).not.toBeNull();
 
     // wait for our delegated wrapper handler to be attached
-    await waitFor(() => expect(popovers[0]._tourDelegationAttached === true || popovers[0].hasAttribute('data-tour-handler')).toBeTruthy());
+    await waitFor(() =>
+      expect(
+        popovers[0]._tourDelegationAttached === true ||
+          popovers[0].hasAttribute('data-tour-handler'),
+      ).toBeTruthy(),
+    );
 
     fireEvent.click(nextBtn);
 

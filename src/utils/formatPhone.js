@@ -46,14 +46,14 @@ export function formatPhoneForDisplay(phoneNumber) {
  */
 export function getPhoneFlag(phoneNumber) {
   const FLAGS = {
-    'NL': '🇳🇱',
-    'BE': '🇧🇪',
-    'DE': '🇩🇪',
-    'FR': '🇫🇷',
-    'GB': '🇬🇧',
-    'US': '🇺🇸',
-    'ES': '🇪🇸',
-    'IT': '🇮🇹',
+    NL: '🇳🇱',
+    BE: '🇧🇪',
+    DE: '🇩🇪',
+    FR: '🇫🇷',
+    GB: '🇬🇧',
+    US: '🇺🇸',
+    ES: '🇪🇸',
+    IT: '🇮🇹',
   };
 
   if (!phoneNumber) return '';

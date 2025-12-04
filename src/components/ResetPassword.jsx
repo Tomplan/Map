@@ -34,9 +34,9 @@ export default function ResetPassword({ branding }) {
       // Handle HashRouter URL parsing
       // Can be: /#error=... OR /#/reset-password#access_token=...
       const fullHash = window.location.hash; // e.g., "#/reset-password#access_token=..."
-      
+
       let urlParams;
-      
+
       // First check if error params are at root level: /#error=...
       if (fullHash.includes('error=')) {
         const errorPart = fullHash.substring(1); // Remove leading #
@@ -52,12 +52,12 @@ export default function ResetPassword({ branding }) {
           urlParams = new URLSearchParams(window.location.search);
         }
       }
-      
+
       const accessToken = urlParams.get('access_token');
       const refreshToken = urlParams.get('refresh_token');
       const errorParam = urlParams.get('error');
       const errorDescription = urlParams.get('error_description');
-      
+
       // Check for error parameters first
       if (errorParam) {
         if (errorParam === 'access_denied' || errorDescription?.includes('expired')) {
@@ -67,14 +67,17 @@ export default function ResetPassword({ branding }) {
         }
         return;
       }
-      
+
       // If we have tokens in URL, exchange them for a session
       if (accessToken && refreshToken) {
-        const { data: { session }, error } = await supabase.auth.setSession({
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         });
-        
+
         if (error || !session) {
           console.error('Failed to set session:', error);
           setTokenError(t('resetPassword.errors.invalidToken'));
@@ -82,9 +85,11 @@ export default function ResetPassword({ branding }) {
         // If successful, session is now set and form will be shown
         return;
       }
-      
+
       // No tokens in URL, check if we already have a session from previous page load
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         setTokenError(t('resetPassword.errors.invalidToken'));
       }
@@ -138,7 +143,7 @@ export default function ResetPassword({ branding }) {
           <div className="flex justify-end mb-6">
             <LanguageToggle />
           </div>
-          
+
           <div className="flex flex-col items-center mb-8">
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-3 rounded-xl shadow-lg mb-4">
               <img src={logoUrl} alt="Event Logo" className="h-12 w-12 object-contain" />
@@ -174,7 +179,9 @@ export default function ResetPassword({ branding }) {
                 <div className="flex items-start">
                   <span className="text-xl mr-3">⚠</span>
                   <div className="flex-1">
-                    <p className="font-semibold mb-1">{t('resetPassword.errors.linkExpiredTitle')}</p>
+                    <p className="font-semibold mb-1">
+                      {t('resetPassword.errors.linkExpiredTitle')}
+                    </p>
                     <p className="text-sm">{tokenError}</p>
                   </div>
                 </div>
@@ -211,12 +218,18 @@ export default function ResetPassword({ branding }) {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors text-sm"
-                    aria-label={showPassword ? t('resetPassword.hidePassword') : t('resetPassword.showPassword')}
+                    aria-label={
+                      showPassword
+                        ? t('resetPassword.hidePassword')
+                        : t('resetPassword.showPassword')
+                    }
                   >
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{t('resetPassword.passwordRequirements')}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t('resetPassword.passwordRequirements')}
+                </p>
               </div>
 
               <div>
@@ -250,11 +263,7 @@ export default function ResetPassword({ branding }) {
                 </div>
               )}
 
-              <button
-                type="submit"
-                className="btn-primary w-full"
-                disabled={loading}
-              >
+              <button type="submit" className="btn-primary w-full" disabled={loading}>
                 {loading ? t('resetPassword.updating') : t('resetPassword.updatePassword')}
               </button>
 

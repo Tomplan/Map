@@ -69,7 +69,11 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
     if (options && options.marker) {
       searchConfig.marker = Object.assign({}, defaultOptions.marker, options.marker);
       if (options.marker.circle) {
-        searchConfig.marker.circle = Object.assign({}, defaultOptions.marker.circle, options.marker.circle);
+        searchConfig.marker.circle = Object.assign(
+          {},
+          defaultOptions.marker.circle,
+          options.marker.circle,
+        );
       }
     }
 

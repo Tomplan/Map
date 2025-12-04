@@ -6,7 +6,7 @@ import { mdiAlertCircle, mdiRefresh, mdiClose } from '@mdi/js';
 
 /**
  * TourErrorBoundary
- * 
+ *
  * Catches and handles errors that occur during tour initialization and execution.
  * Provides user-friendly error messages and recovery options.
  */
@@ -28,7 +28,7 @@ export default class TourErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // Log the error to console for debugging
     console.error('Tour Error Boundary caught an error:', error, errorInfo);
-    
+
     this.setState({
       error: error,
       errorInfo: errorInfo,
@@ -41,7 +41,7 @@ export default class TourErrorBoundary extends React.Component {
       error: null,
       errorInfo: null,
     });
-    
+
     // Trigger a retry if a retry callback was provided
     if (this.props.onRetry) {
       this.props.onRetry();
@@ -57,11 +57,13 @@ export default class TourErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
-      return <TourErrorFallback 
-        error={this.state.error}
-        onRetry={this.handleRetry}
-        onDismiss={this.handleDismiss}
-      />;
+      return (
+        <TourErrorFallback
+          error={this.state.error}
+          onRetry={this.handleRetry}
+          onDismiss={this.handleDismiss}
+        />
+      );
     }
 
     return this.props.children;
@@ -76,7 +78,7 @@ TourErrorBoundary.propTypes = {
 
 /**
  * TourErrorFallback
- * 
+ *
  * User-friendly error display component for tour failures.
  */
 function TourErrorFallback({ error, onRetry, onDismiss }) {
@@ -91,11 +93,14 @@ function TourErrorFallback({ error, onRetry, onDismiss }) {
             {t('tour.error.title', 'Tour Temporarily Unavailable')}
           </h3>
         </div>
-        
+
         <p className="text-gray-600 mb-4">
-          {t('tour.error.message', 'We encountered an issue starting the interactive tour. This can happen due to browser compatibility or temporary technical issues.')}
+          {t(
+            'tour.error.message',
+            'We encountered an issue starting the interactive tour. This can happen due to browser compatibility or temporary technical issues.',
+          )}
         </p>
-        
+
         <div className="flex gap-3 justify-end">
           <button
             onClick={onDismiss}
@@ -104,7 +109,7 @@ function TourErrorFallback({ error, onRetry, onDismiss }) {
             <Icon path={mdiClose} size={0.8} />
             {t('common.cancel', 'Cancel')}
           </button>
-          
+
           <button
             onClick={onRetry}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center gap-2"

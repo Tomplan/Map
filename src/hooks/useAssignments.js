@@ -35,7 +35,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (markersError) throw markersError;
 
-        const validMarkerIds = validMarkers?.map(m => m.id) || [];
+        const validMarkerIds = validMarkers?.map((m) => m.id) || [];
 
         // Only load assignments for markers that exist in this year's markers
         const { data, error: fetchError } = await supabase
@@ -45,7 +45,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:markers_core(id, lat, lng)
-        `
+        `,
           )
           .eq('event_year', targetYear)
           .in('marker_id', validMarkerIds)
@@ -65,7 +65,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         setLoading(false);
       }
     },
-    [] // eventYear removed from dependencies
+    [], // eventYear removed from dependencies
   );
 
   // Create new assignment
@@ -85,7 +85,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:markers_core(id, lat, lng)
-        `
+        `,
           )
           .single();
 
@@ -98,7 +98,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         return { data: null, error: err.message };
       }
     },
-    [eventYear]
+    [eventYear],
   );
 
   // Update assignment (change booth number or company)
@@ -113,14 +113,14 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info)),
           marker:markers_core(id, lat, lng)
-        `
+        `,
         )
         .single();
 
       if (updateError) throw updateError;
 
       setAssignments((prev) =>
-        prev.map((a) => (a.id === id ? data : a)).sort((a, b) => a.marker_id - b.marker_id)
+        prev.map((a) => (a.id === id ? data : a)).sort((a, b) => a.marker_id - b.marker_id),
       );
       return { data, error: null };
     } catch (err) {
@@ -153,7 +153,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         // Note: booth_number removed - now using glyphText from Markers_Appearance
       });
     },
-    [createAssignment]
+    [createAssignment],
   );
 
   // Unassign company from marker
@@ -170,7 +170,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         if (deleteError) throw deleteError;
 
         setAssignments((prev) =>
-          prev.filter((a) => !(a.marker_id === markerId && a.company_id === companyId))
+          prev.filter((a) => !(a.marker_id === markerId && a.company_id === companyId)),
         );
         return { error: null };
       } catch (err) {
@@ -178,7 +178,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         return { error: err.message };
       }
     },
-    [eventYear]
+    [eventYear],
   );
 
   // Get assignments for a specific marker
@@ -186,7 +186,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     (markerId) => {
       return assignments.filter((a) => a.marker_id === markerId);
     },
-    [assignments]
+    [assignments],
   );
 
   // Get assignments for a specific company
@@ -194,7 +194,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     (companyId) => {
       return assignments.filter((a) => a.company_id === companyId);
     },
-    [assignments]
+    [assignments],
   );
 
   // Archive current year and prepare for next year
@@ -224,7 +224,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           `
           *,
           company:companies(id, name, logo, website, info, company_translations(language_code, info))
-        `
+        `,
         )
         .eq('event_year', year)
         .order('marker_id', { ascending: true });
@@ -266,7 +266,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           if (payload.eventType === 'INSERT' && payload.new) {
             setAssignments((prev) => {
               // Check if this assignment already exists
-              const exists = prev.some(a => a.id === payload.new.id);
+              const exists = prev.some((a) => a.id === payload.new.id);
               if (exists) {
                 // We already have it (we created it locally), no need to reload
                 return prev;
@@ -279,7 +279,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
             // For UPDATE/DELETE, always reload
             loadAssignments();
           }
-        }
+        },
       )
       .subscribe();
 

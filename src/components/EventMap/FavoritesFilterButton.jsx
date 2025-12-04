@@ -13,12 +13,7 @@ import { mdiStar } from '@mdi/js';
  * - Inactive: White background, gray star icon
  * - Matches ExhibitorListView yellow active state
  */
-export default function FavoritesFilterButton({
-  isActive,
-  onClick,
-  favoritesCount,
-  isAdminView
-}) {
+export default function FavoritesFilterButton({ isActive, onClick, favoritesCount, isAdminView }) {
   return (
     <button
       onClick={onClick}
@@ -26,9 +21,10 @@ export default function FavoritesFilterButton({
         rounded-full shadow-md
         flex items-center justify-center
         transition-all duration-200
-        ${isActive
-          ? 'bg-yellow-100 border-2 border-yellow-300'
-          : 'bg-white border-2 border-transparent hover:bg-gray-50'
+        ${
+          isActive
+            ? 'bg-yellow-100 border-2 border-yellow-300'
+            : 'bg-white border-2 border-transparent hover:bg-gray-50'
         }
       `}
       style={{
@@ -44,18 +40,10 @@ export default function FavoritesFilterButton({
           ? `Showing ${favoritesCount} favorite${favoritesCount !== 1 ? 's' : ''} only`
           : `Show ${favoritesCount} favorite${favoritesCount !== 1 ? 's' : ''} only`
       }
-      aria-label={
-        isActive
-          ? 'Show all exhibitors'
-          : 'Show favorites only'
-      }
+      aria-label={isActive ? 'Show all exhibitors' : 'Show favorites only'}
       aria-pressed={isActive}
     >
-      <Icon
-        path={mdiStar}
-        size={1}
-        className={isActive ? 'text-yellow-600' : 'text-gray-400'}
-      />
+      <Icon path={mdiStar} size={1} className={isActive ? 'text-yellow-600' : 'text-gray-400'} />
     </button>
   );
 }

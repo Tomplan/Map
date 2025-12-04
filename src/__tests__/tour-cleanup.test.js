@@ -3,8 +3,8 @@ import { cleanupOldTourDOM } from '../hooks/useOnboardingTour';
 describe('cleanupOldTourDOM', () => {
   beforeEach(() => {
     // ensure document is clean
-    document.querySelectorAll('.onboarding-tour-popover').forEach(n => n.remove());
-    document.querySelectorAll('.driver-overlay').forEach(n => n.remove());
+    document.querySelectorAll('.onboarding-tour-popover').forEach((n) => n.remove());
+    document.querySelectorAll('.driver-overlay').forEach((n) => n.remove());
   });
 
   test('removes leftover popovers and overlays from the document', () => {

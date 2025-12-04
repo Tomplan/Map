@@ -7,7 +7,8 @@ import { useTranslation } from 'react-i18next';
  */
 export default function YearScopeBadge({ scope = 'global' }) {
   const { t } = useTranslation();
-  const label = scope === 'global' ? t('admin.yearScope.global') : t('admin.yearScope.eventSpecific');
+  const label =
+    scope === 'global' ? t('admin.yearScope.global') : t('admin.yearScope.eventSpecific');
   const color = scope === 'global' ? 'bg-green-100 text-green-800' : 'bg-blue-50 text-blue-800';
 
   return (
