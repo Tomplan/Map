@@ -20,7 +20,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
   // Pre-cache essential icons and logo assets for offline/stable loading
   event.waitUntil(
-    caches.open(PRECACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {}))
+    caches.open(PRECACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {})),
   );
 });
 self.addEventListener('activate', () => {
@@ -76,8 +76,8 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('activate', (event) => {
   const keep = [PRECACHE_NAME, 'map-assets', 'map-tiles'];
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(
-      keys.map((k) => (keep.includes(k) ? null : caches.delete(k)))
-    ))
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.map((k) => (keep.includes(k) ? null : caches.delete(k))))),
   );
 });

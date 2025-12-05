@@ -1,1 +1,0 @@
-import{ab as r,c as a,B as e}from"./index-f3aaddb5.js";function o(s){const t=s||e.DEFAULT_LOGO;return t.startsWith("http://")||t.startsWith("https://")?t:`${r()}assets/logos/${t}`}function n(s,t){return s&&s.trim()!==""?a(s):o(t)}export{o as a,n as g};
