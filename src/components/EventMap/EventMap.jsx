@@ -371,7 +371,9 @@ function EventMap({
         const browserPrint = window.L.browserPrint(mapInstance, {
           // Keep options so consumer can inspect available modes
           printModes: modes,
-          closePopupsOnPrint: false,
+          // Ensure popups/tooltips are closed when the plugin starts a print
+          // so they don't appear in printed output.
+          closePopupsOnPrint: true,
         });
 
         // Keep a lightweight facade so other components (PrintButton) can
@@ -380,6 +382,70 @@ function EventMap({
           browserPrint,
           options: { printModes: modes },
         };
+
+        // Listen for the plugin lifecycle events to make sure any transient
+        // UI (tooltips/popups/controls) is hidden during a print and restored
+        // afterwards. Some tile providers / plugin clones can include control
+        // elements in the print frame if they aren't removed before cloning.
+        try {
+          if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
+            const Ev = window.L.BrowserPrint.Event;
+
+            // On PrintStart, close popups/tooltips and add a print-hide class
+            // to common control elements so snapshots / cloned frames omit them.
+            const onStart = () => {
+              try {
+                // Close any active popups/tooltips
+                if (typeof mapInstance.closePopup === 'function') mapInstance.closePopup();
+                mapInstance.eachLayer((layer) => {
+                  try {
+                    if (layer.closePopup) layer.closePopup();
+                    if (layer.closeTooltip) layer.closeTooltip();
+                  } catch (e) {
+                    /* ignore */
+                  }
+                });
+
+                // Add print-hide class to Leaflet controls so they won't be
+                // included when the plugin clones the map for printing.
+                const container = mapInstance.getContainer?.();
+                if (container) {
+                  const hideTargets = container.querySelectorAll(
+                    '.leaflet-control, .leaflet-top, .leaflet-bottom, .map-controls-print-hide, .leaflet-control-minimap, .leaflet-control-zoom, .leaflet-control-layers, .leaflet-control-attribution',
+                  );
+                  hideTargets.forEach((el) => el.classList.add('print-hide'));
+                  // Remember we hid these so we can restore cleanly later
+                  mapInstance._browserPrintHidden = true;
+                }
+              } catch (err) {
+                /* ignore */
+              }
+            };
+
+            // On end/cancel restore any hidden UI
+            const onEndOrCancel = () => {
+              try {
+                if (mapInstance._browserPrintHidden) {
+                  const container = mapInstance.getContainer?.();
+                  if (container) {
+                    const hideTargets = container.querySelectorAll('.print-hide');
+                    hideTargets.forEach((el) => el.classList.remove('print-hide'));
+                  }
+                  mapInstance._browserPrintHidden = false;
+                }
+              } catch (err) {
+                /* ignore */
+              }
+            };
+
+            mapInstance.on(Ev.PrintStart, onStart);
+            mapInstance.on(Ev.PrintEnd, onEndOrCancel);
+            mapInstance.on(Ev.PrintCancel, onEndOrCancel);
+          }
+        } catch (err) {
+          // Non-fatal: if we fail to attach listeners, printing still works.
+          console.warn('Failed to attach BrowserPrint lifecycle listeners', err);
+        }
 
         mapInstance._browserPrintInitialized = true;
       } catch (err) {

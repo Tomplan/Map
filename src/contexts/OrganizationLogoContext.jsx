@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { BRANDING_CONFIG } from '../config/mapConfig';
+import { getLogoPath } from '../utils/getLogoPath';
+import { getDefaultLogoPath } from '../utils/getDefaultLogo';
 
 const OrganizationLogoContext = createContext();
 
@@ -9,7 +11,11 @@ const OrganizationLogoContext = createContext();
  * throughout the entire application
  */
 export function OrganizationLogoProvider({ children }) {
-  const [organizationLogo, setOrganizationLogo] = useState(BRANDING_CONFIG.DEFAULT_LOGO);
+  // Keep both the raw DB value and a resolved path so consumers can choose
+  // which form they need. Some consumers (like HomePage) need the original
+  // DB value to attempt fallback when a generated variant doesn't exist.
+  const [organizationLogoRaw, setOrganizationLogoRaw] = useState(BRANDING_CONFIG.DEFAULT_LOGO);
+  const [organizationLogo, setOrganizationLogo] = useState(getDefaultLogoPath());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -27,8 +33,20 @@ export function OrganizationLogoProvider({ children }) {
           return;
         }
 
+        console.log('[OrganizationLogoContext] Fetched data:', data);
+        console.log('[OrganizationLogoContext] data.logo:', data?.logo);
+
         if (data && data.logo && data.logo.trim() !== '') {
-          setOrganizationLogo(data.logo);
+          // Keep the raw DB value and provide a resolved variant for consumers
+          // that prefer a predictable URL.
+          const raw = data.logo;
+          const normalized = getLogoPath(raw);
+          console.log('[OrganizationLogoContext] Setting logo raw:', raw);
+          console.log('[OrganizationLogoContext] Setting logo to:', normalized);
+          setOrganizationLogoRaw(raw);
+          setOrganizationLogo(normalized);
+        } else {
+          console.log('[OrganizationLogoContext] Keeping default logo:', BRANDING_CONFIG.DEFAULT_LOGO);
         }
       } catch (err) {
         console.error('Error fetching organization logo:', err);
@@ -51,12 +69,17 @@ export function OrganizationLogoProvider({ children }) {
           filter: 'id=eq.1',
         },
         (payload) => {
-          if (payload.new && payload.new.logo) {
-            if (payload.new.logo.trim() !== '') {
-              setOrganizationLogo(payload.new.logo);
+          if (payload.new) {
+            // If the new value is empty/cleared, fall back to static default path
+            if (!payload.new.logo || payload.new.logo.trim() === '') {
+              // Cleared -> restore raw default & resolved default
+              setOrganizationLogoRaw(BRANDING_CONFIG.DEFAULT_LOGO);
+              setOrganizationLogo(getDefaultLogoPath());
             } else {
-              // If logo is cleared, fall back to static default
-              setOrganizationLogo(BRANDING_CONFIG.DEFAULT_LOGO);
+              const raw = payload.new.logo;
+              const normalized = getLogoPath(raw);
+              setOrganizationLogoRaw(raw);
+              setOrganizationLogo(normalized);
             }
           }
         },
@@ -69,7 +92,7 @@ export function OrganizationLogoProvider({ children }) {
   }, []);
 
   return (
-    <OrganizationLogoContext.Provider value={{ organizationLogo, loading }}>
+    <OrganizationLogoContext.Provider value={{ organizationLogo, organizationLogoRaw, loading }}>
       {children}
     </OrganizationLogoContext.Provider>
   );

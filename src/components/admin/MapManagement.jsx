@@ -387,16 +387,10 @@ export default function MapManagement({
 
       await new Promise((r) => setTimeout(r, 400));
 
-      const canvas = await html2canvas(mapContainer, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scale: 2,
-        ignoreElements: (element) => element.classList?.contains('map-controls-print-hide'),
-      });
-
-      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      // Create PNG via shared helper to make a testable, smaller footprint
+      const imageDataUrl = await import('../../utils/printHelpers').then((m) =>
+        m.snapshotElementToDataUrl(mapContainer, { scale: 2 }),
+      );
       const printWindow = window.open('', '_blank', 'width=900,height=700');
       if (!printWindow) return;
 

@@ -382,6 +382,20 @@
     "selectMarker": "Select a marker to view details"
   },
   "programManagement": {
+    "eventDates": {
+      "title": "Veranstaltungsdaten",
+      "description": "Legen Sie die offiziellen Start- und Enddaten für dieses Veranstaltungsjahr fest.",
+      "startLabel": "Start",
+      "endLabel": "Ende",
+      "save": "Daten speichern",
+      "resetToGlobal": "Auf Organisationsstandard zurücksetzen",
+      "saveSuccess": "Veranstaltungsdaten gespeichert",
+      "saveError": "Speichern der Veranstaltungsdaten fehlgeschlagen",
+      "resetSuccess": "Veranstaltungsdaten auf Organisationsstandard zurückgesetzt",
+      "resetError": "Zurücksetzen der Veranstaltungsdaten fehlgeschlagen"
+      ,
+      "invalidRange": "Startdatum muss vor oder gleich der Enddatum sein"
+    },
     "title": "Program Management",
     "addActivity": "Add Activity",
     "addFirstActivity": "Add Your First Activity",

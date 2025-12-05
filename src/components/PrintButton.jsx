@@ -52,24 +52,10 @@ export default function PrintButton({ mapInstance }) {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Capture the map container as a canvas
-      const canvas = await html2canvas(mapContainer, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scale: 2, // Higher quality for print
-        // Ignore elements that shouldn't be printed
-        ignoreElements: (element) => {
-          return (
-            element.classList?.contains('map-controls-print-hide') ||
-            element.classList?.contains('leaflet-control-zoom') ||
-            element.classList?.contains('leaflet-control-minimap')
-          );
-        },
-      });
-
-      // Convert canvas to image data URL
-      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      // Convert container to an image using the shared helper (testable)
+      const imageDataUrl = await import('../utils/printHelpers').then((m) =>
+        m.snapshotElementToDataUrl(mapContainer, { scale: 2 }),
+      );
 
       // Open a new window with just the map image
       const printWindow = window.open('', '_blank', 'width=900,height=700');

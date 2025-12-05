@@ -390,6 +390,20 @@
     "schedule": "Schedule"
   },
   "programManagement": {
+    "eventDates": {
+      "title": "Event Dates",
+      "description": "Set the official start and end dates for this event year.",
+      "startLabel": "Start",
+      "endLabel": "End",
+      "save": "Save Dates",
+      "resetToGlobal": "Reset to Organization Default",
+      "saveSuccess": "Event dates saved",
+      "saveError": "Failed to save event dates",
+      "resetSuccess": "Event dates reset to organization defaults",
+      "resetError": "Failed to reset event dates"
+      ,
+      "invalidRange": "Start date must be before or equal to end date"
+    },
     "title": "Program Management",
     "addActivity": "Add Activity",
     "addFirstActivity": "Add Your First Activity",
