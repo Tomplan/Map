@@ -1,5 +1,6 @@
 import React from 'react';
 import LanguageToggle from './LanguageToggle';
+import { getLogoPath } from '../utils/getLogoPath';
 
 export default function BrandingBar({ logo, themeColor, fontFamily, eventName }) {
   // Match dashboard/zoom button style
@@ -30,7 +31,7 @@ export default function BrandingBar({ logo, themeColor, fontFamily, eventName })
     >
       {logo && (
         <img
-          src={logo}
+          src={getLogoPath(logo)}
           alt="Event Logo"
           style={{ height: 20, width: 20, objectFit: 'contain', marginRight: 2 }}
         />

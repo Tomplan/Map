@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventActivities from '../hooks/useEventActivities';
+import useEventMapSettings from '../hooks/useEventMapSettings';
 import {
   MdEdit,
   MdDelete,
@@ -36,6 +37,72 @@ export default function ProgramManagement({ selectedYear }) {
     copyFromPreviousYear,
     refetch,
   } = useEventActivities(selectedYear);
+  const {
+    settings: eventSettings,
+    loading: eventSettingsLoading,
+    updateSettings: updateEventSettings,
+    resetToGlobal: resetEventSettings,
+  } = useEventMapSettings(selectedYear);
+
+  // Local state for editing event date fields before save
+  const [startDate, setStartDate] = useState(eventSettings?.event_start_date ?? '');
+  const [endDate, setEndDate] = useState(eventSettings?.event_end_date ?? '');
+  const [isSavingEventDates, setIsSavingEventDates] = useState(false);
+
+  // Keep local date inputs in sync when settings load/refetch
+  React.useEffect(() => {
+    if (!eventSettings) {
+      setStartDate('');
+      setEndDate('');
+      return;
+    }
+    setStartDate(eventSettings.event_start_date || '');
+    setEndDate(eventSettings.event_end_date || '');
+  }, [eventSettings]);
+
+  const updateEventSettingsLocal = (which, value) => {
+    if (which === 'start') setStartDate(value);
+    else setEndDate(value);
+  };
+
+  const handleSaveEventDates = async () => {
+    // Validation: if both start and end provided, start must be <= end
+    if (startDate && endDate) {
+      const s = new Date(startDate);
+      const e = new Date(endDate);
+      if (s > e) {
+        toastError(t('programManagement.eventDates.invalidRange'));
+        return;
+      }
+    }
+    setIsSavingEventDates(true);
+    try {
+      await updateEventSettings({
+        event_start_date: startDate || null,
+        event_end_date: endDate || null,
+      });
+      toastSuccess(t('programManagement.eventDates.saveSuccess'));
+      // refetch is done by the hook internally via setState; optimistic sync handled
+    } catch (err) {
+      console.error('Error updating event dates:', err);
+      toastError(t('programManagement.eventDates.saveError') + ': ' + (err.message || err));
+    } finally {
+      setIsSavingEventDates(false);
+    }
+  };
+
+  const handleResetEventDates = async () => {
+    setIsSavingEventDates(true);
+    try {
+      await resetEventSettings();
+      toastSuccess(t('programManagement.eventDates.resetSuccess'));
+    } catch (err) {
+      console.error('Error resetting event dates:', err);
+      toastError(t('programManagement.eventDates.resetError') + ': ' + (err.message || err));
+    } finally {
+      setIsSavingEventDates(false);
+    }
+  };
   const [activeTab, setActiveTab] = useState('saturday');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
   const [deleting, setDeleting] = useState(false);
@@ -319,7 +386,57 @@ export default function ProgramManagement({ selectedYear }) {
         </div>
       </div>
 
-      {/* Day Tabs */}
+      {/* Event Dates editor (per-year) */}
+      <div className="border-b border-gray-200 px-6 py-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h3 className="text-md font-semibold text-gray-700">{t('programManagement.eventDates.title')}</h3>
+            <p className="text-sm text-gray-500">{t('programManagement.eventDates.description')}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="text-xs">{t('programManagement.eventDates.startLabel')}</span>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => updateEventSettingsLocal('start', e.target.value)}
+                className="input-base"
+                data-testid="event-start-date-input"
+              />
+            </label>
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="text-xs">{t('programManagement.eventDates.endLabel')}</span>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => updateEventSettingsLocal('end', e.target.value)}
+                className="input-base"
+                data-testid="event-end-date-input"
+              />
+            </label>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleSaveEventDates}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                disabled={eventSettingsLoading || isSavingEventDates}
+                data-testid="save-event-dates-button"
+              >
+                {isSavingEventDates ? t('common.saving') : t('programManagement.eventDates.save')}
+              </button>
+              <button
+                type="button"
+                onClick={handleResetEventDates}
+                className="px-3 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200"
+                disabled={eventSettingsLoading || isSavingEventDates}
+                data-testid="reset-event-dates-button"
+              >
+                {t('programManagement.eventDates.resetToGlobal')}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
       <div className="border-b border-gray-200">
         <div className="flex">
           <button

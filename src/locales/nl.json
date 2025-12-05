@@ -384,6 +384,20 @@
     "schedule": "Programma"
   },
   "programManagement": {
+    "eventDates": {
+      "title": "Evenementdata",
+      "description": "Stel de officiële begin- en einddatum voor dit evenementjaar in.",
+      "startLabel": "Begin",
+      "endLabel": "Eind",
+      "save": "Data opslaan",
+      "resetToGlobal": "Terug naar organisatie-instelling",
+      "saveSuccess": "Evenementdata opgeslagen",
+      "saveError": "Kon evenementdata niet opslaan",
+      "resetSuccess": "Evenementdata teruggezet naar organisatie-standaard",
+      "resetError": "Kon evenementdata niet terugzetten"
+      ,
+      "invalidRange": "Begin-datum moet voor of gelijk aan de eind-datum zijn"
+    },
     "title": "Programma Beheer",
     "addActivity": "Activiteit Toevoegen",
     "addFirstActivity": "Voeg Je Eerste Activiteit Toe",

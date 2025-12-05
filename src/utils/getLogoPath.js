@@ -25,7 +25,9 @@ export function getLogoPath(logo) {
         // decode then re-encode as basename (strip extension)
         const decoded = decodeURIComponent(filename);
         // If filename already looks like a sized generated variant, return the original url
-        if (/(?:-64| -128|-256|-512)\.(webp|avif)$/i.test(decoded)) {
+        // If filename already looks like a sized generated variant, return the original url
+        // (match '-64', '-128', '-256', or '-512' followed by .webp or .avif)
+        if (/-(?:64|128|256|512)\.(webp|avif)$/i.test(decoded)) {
           return logo;
         }
 
