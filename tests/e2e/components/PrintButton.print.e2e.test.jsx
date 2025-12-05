@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import PrintButton from '../../src/components/PrintButton';
+import PrintButton from '../../../src/components/PrintButton';
 import { waitFor } from '@testing-library/react';
 
 jest.mock('html2canvas', () => jest.fn());
