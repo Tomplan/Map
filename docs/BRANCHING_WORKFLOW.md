@@ -37,6 +37,8 @@ Release flow (recommended)
 
 Branch protection & automation
 - Protect `main` to require status checks, minimum review approvals, and disallow force pushes.
+  - NOTE (solo workflow): This repository has been configured to allow single-person workflows — the `main` branch currently does not require a human approving review before merge. CI status checks (build/tests) remain required and continue acting as the primary quality gate.
+    - To reinstate a review requirement later, re-enable `required_pull_request_reviews` (e.g. set `required_approving_review_count: 1`) via the GitHub branch protection UI or the `scripts/setup-branch-protection.sh` helper.
 - Optionally protect `development` to require PRs for changes and passing CI, but allow regular merges for day-to-day work.
 
 Automation helper
