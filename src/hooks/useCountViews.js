@@ -17,6 +17,16 @@ export function useSubscriptionCount(eventYear) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Guard: if eventYear isn't a number, avoid running queries that will produce invalid SQL
+    // (e.g. .eq('event_year', undefined) leads to REST query ?event_year=eq.undefined)
+    // In that case we return early and keep counts at zero / not-loading.
+    if (eventYear == null || Number.isNaN(Number(eventYear))) {
+      setLoading(false);
+      setCount(0);
+      setError(null);
+      return undefined; // no effect to clean up
+    }
+
     // Load initial count
     const loadCount = async () => {
       try {
@@ -90,6 +100,14 @@ export function useAssignmentCount(eventYear) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Guard for invalid eventYear
+    if (eventYear == null || Number.isNaN(Number(eventYear))) {
+      setLoading(false);
+      setCount(0);
+      setError(null);
+      return undefined;
+    }
+
     // Load initial count
     const loadCount = async () => {
       try {
@@ -163,6 +181,14 @@ export function useMarkerCount(eventYear) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Guard for invalid eventYear
+    if (eventYear == null || Number.isNaN(Number(eventYear))) {
+      setLoading(false);
+      setCount(0);
+      setError(null);
+      return undefined;
+    }
+
     // Load initial count
     const loadCount = async () => {
       try {

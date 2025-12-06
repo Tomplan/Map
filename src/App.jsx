@@ -5,6 +5,8 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
+import useOrganizationSettings from './hooks/useOrganizationSettings';
+import resolvePublicYear from './utils/resolvePublicYear';
 import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import AppRoutes from './components/AppRoutes';
@@ -192,6 +194,12 @@ function AppContent() {
       listener?.subscription?.unsubscribe();
     };
   }, []);
+
+  // Load organization settings so we can determine the public-facing default year
+  const { settings: orgSettings } = useOrganizationSettings();
+
+  // public-facing year: prefer organization setting when present; otherwise fall back to selectedYear
+  const publicYear = resolvePublicYear(selectedYear, orgSettings);
 
   return (
     <OnboardingProvider>

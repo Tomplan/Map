@@ -43,6 +43,7 @@ function AppRoutes({
   onLogin,
   selectedYear,
   setSelectedYear,
+  publicYear,
   archiveMarkers,
   copyMarkers,
 }) {
@@ -92,7 +93,7 @@ function AppRoutes({
   // Mobile-only design - bottom tabs always visible
   const VisitorLayout = ({ children }) => (
     <ErrorBoundary>
-      <FavoritesProvider selectedYear={selectedYear}>
+      <FavoritesProvider selectedYear={publicYear}>
         <OfflineStatus />
         <main className="pb-16">{children}</main>
         <TabNavigation />
@@ -112,7 +113,7 @@ function AppRoutes({
                 <div className="flex items-center justify-center min-h-screen">Loading...</div>
               }
             >
-              <HomePage selectedYear={selectedYear} branding={branding} />
+              <HomePage selectedYear={publicYear} branding={branding} />
             </Suspense>
           </VisitorLayout>
         }
@@ -127,7 +128,7 @@ function AppRoutes({
                 markersState={markersState}
                 updateMarker={updateMarker}
                 setMarkersState={setMarkersState}
-                selectedYear={selectedYear}
+                selectedYear={publicYear}
               />
             </Suspense>
           </VisitorLayout>
@@ -144,7 +145,7 @@ function AppRoutes({
                 </div>
               }
             >
-              <ExhibitorListView markersState={markersState} selectedYear={selectedYear} />
+              <ExhibitorListView markersState={markersState} selectedYear={publicYear} />
             </Suspense>
           </VisitorLayout>
         }
@@ -174,7 +175,7 @@ function AppRoutes({
                 </div>
               }
             >
-              <EventSchedule selectedYear={selectedYear} />
+              <EventSchedule selectedYear={publicYear} />
             </Suspense>
           </VisitorLayout>
         }
