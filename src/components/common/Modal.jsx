@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose } from '@mdi/js';
@@ -27,11 +27,29 @@ function Modal({
     full: 'max-w-[90vw]',
   };
 
+  // track when the modal mounted in high-res time so we can ignore click-throughs
+  const mountedAtRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
+  useEffect(() => {
+    mountedAtRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  }, []);
+
   const handleBackdropClick = (e) => {
+    // Prevent immediate click-throughs that happen when the modal is mounted
+    // synchronously while the user is still pressing the mouse (pointerdown)
+    // and releases the pointer (pointerup) over the newly-mounted overlay.
+    // Ignore backdrop clicks that occur within the first 150ms after mount.
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    if (now - mountedAtRef.current < 150) {
+      // swallow the event
+      e.stopPropagation();
+      return;
+    }
+
     if (closeOnBackdrop && onClose) {
       onClose();
     }
   };
+
 
   return (
     <div
