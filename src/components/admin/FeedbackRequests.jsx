@@ -584,7 +584,15 @@ export default function FeedbackRequests() {
                 key={request.id}
                 data-testid={`feedback-request-${request.id}`}
                 className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => setSelectedRequest(request)}
+                onClick={(e) => {
+                  // Avoid immediate backdrop click on modal which can close it in the
+                  // same event loop when the modal is mounted synchronously.
+                  // Delay opening to next tick so the original click doesn't
+                  // inadvertently target the new overlay/backdrop.
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setTimeout(() => setSelectedRequest(request), 0);
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
