@@ -268,7 +268,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('helpPanel.companies.publicInfoTab', 'Public Info')}
+          {t('companies.publicInfoTab')}
         </button>
         <button
           onClick={() => setActiveTab('manager')}
@@ -278,7 +278,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('helpPanel.companies.privateInfoTab', 'Private Info')}
+          {t('companies.privateInfoTab')}
         </button>
       </div>
 
@@ -286,7 +286,7 @@ export default function CompaniesTab() {
       <Modal
         isOpen={isCreating || !!editingId}
         onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
-        title={isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
+        title={isCreating ? t('companies.newCompany') : `Edit: ${editForm.name || t('companies.newCompany')}`}
         size="lg"
       >
         <div className="p-6">
@@ -297,7 +297,7 @@ export default function CompaniesTab() {
                 <div className="space-y-3">
                   <input
                     type="text"
-                    placeholder={t('helpPanel.companies.companyNamePlaceholder')}
+                    placeholder={t('companies.companyNamePlaceholder')}
                     value={isCreating ? newCompanyForm.name : editForm.name}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
@@ -306,7 +306,7 @@ export default function CompaniesTab() {
                     className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-900">{t('helpPanel.companies.companyLogo')}</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-900">{t('companies.companyLogo')}</label>
                     <LogoUploader
                       currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
                       onUploadComplete={(url, path) => {
@@ -326,7 +326,7 @@ export default function CompaniesTab() {
                     />
                     <input
                       type="text"
-                      placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
+                      placeholder={t('companies.logoUrlPlaceholder')}
                       value={isCreating ? newCompanyForm.logo : (editForm.logo || '')}
                       onChange={(e) => isCreating
                         ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
@@ -347,7 +347,7 @@ export default function CompaniesTab() {
                   />
                   {editingId === 'organization' ? (
                     <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      placeholder={t('companies.infoPlaceholder')}
                       value={isCreating ? newCompanyForm.info : (editForm.info || '')}
                       onChange={(e) => isCreating
                         ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
@@ -367,7 +367,7 @@ export default function CompaniesTab() {
                     </div>
                   ) : (
                     <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      placeholder={t('companies.infoPlaceholder')}
                       value={newCompanyForm.info}
                       onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
                       className="w-full px-3 py-2 border rounded bg-white text-gray-900"
@@ -641,7 +641,7 @@ export default function CompaniesTab() {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm ? t('helpPanel.companies.noResults') : t('helpPanel.companies.noCompanies')}
+            {searchTerm ? t('companies.noResults') : t('companies.noCompanies')}
           </div>
         )}
       </div>
