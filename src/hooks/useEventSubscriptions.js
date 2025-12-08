@@ -62,7 +62,7 @@ export default function useEventSubscriptions(eventYear) {
       // Fetch organization defaults for meal counts (separate Saturday/Sunday)
       const { data: orgProfile } = await supabase
         .from('organization_profile')
-        .select('default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun')
+        .select('default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins')
         .eq('id', 1)
         .single();
 
@@ -71,6 +71,7 @@ export default function useEventSubscriptions(eventYear) {
       const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
       const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
       const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
+      const defaultCoins = typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
 
       // Normalize phone before inserting
       const phoneToInsert = subscriptionData.phone ? normalizePhone(subscriptionData.phone) : (company?.phone ? normalizePhone(company.phone) : '');
@@ -92,7 +93,7 @@ export default function useEventSubscriptions(eventYear) {
           bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
           breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
           lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
-          coins: subscriptionData.coins || 0,
+          coins: subscriptionData.coins ?? defaultCoins,
           notes: subscriptionData.notes || '',
           created_by,
         })
