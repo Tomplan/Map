@@ -293,7 +293,7 @@ export default function CompaniesTab() {
 
               {/* Public Information Section */}
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-blue-800">Public Info (visible to attendees)</h4>
+                <h4 className="font-semibold text-sm mb-3 text-blue-800">{t('companies.modal.publicInfoHeading', 'Public Info (visible to attendees)')}</h4>
                 <div className="space-y-3">
                   <input
                     type="text"
@@ -337,7 +337,7 @@ export default function CompaniesTab() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Website URL"
+                    placeholder={t('companies.websiteUrlPlaceholder')}
                     value={isCreating ? newCompanyForm.website : (editForm.website || '')}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
@@ -416,11 +416,11 @@ export default function CompaniesTab() {
 
               {/* Manager-Only Information Section */}
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-green-800">Manager-Only Info (default contact info)</h4>
+                <h4 className="font-semibold text-sm mb-3 text-green-800">{t('companies.modal.managerInfoHeading', 'Manager-only Info (default contact info)')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <input
                     type="text"
-                    placeholder="Contact Person"
+                    placeholder={t('companies.contactPlaceholder')}
                     value={isCreating ? (newCompanyForm.contact || '') : (editForm.contact || '')}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
@@ -463,7 +463,7 @@ export default function CompaniesTab() {
               onClick={isCreating ? handleCreate : handleSaveWithCategories}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              {isCreating ? 'Create' : 'Save'}
+              {isCreating ? t('companies.create', 'Create') : t('save')}
             </button>
           </div>
         </div>

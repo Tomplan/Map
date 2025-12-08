@@ -243,6 +243,11 @@
         "assignmentChange": "Toewijzingswijzigingen",
         "assignmentChangeDesc": "Ontvang een melding wanneer standtoewijzingen worden gewijzigd"
       },
+      "coins": {
+        "title": "Standaard munten",
+        "description": "Aantal standaardmunten dat aan een nieuwe inschrijving wordt toegekend bij het aanmaken.",
+        "label": "Standaard munten"
+      },
       "errors": {
         "loadFailed": "Kon instellingen niet laden. Probeer het opnieuw.",
         "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
@@ -635,7 +640,12 @@
       "notSet": "Niet ingesteld",
       "none": "Geen",
       "orPasteUrl": "Of plak URL",
-      "organizationInfo": "Organisatie info"
+      "organizationInfo": "Organisatie info",
+      "modal": {
+        "publicInfoHeading": "Publieke informatie (zichtbaar voor bezoekers)",
+        "managerInfoHeading": "Alleen managers (stand contactgegevens)"
+      },
+      "create": "Aanmaken"
     }
   },
   "tour": {
