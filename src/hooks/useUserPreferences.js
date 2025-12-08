@@ -84,7 +84,8 @@ export default function useUserPreferences() {
           preferred_language: preferredLanguage,
           assignments_sort_by: 'alphabetic',
           assignments_sort_direction: 'asc',
-          assignments_column_sort: 'marker_id',
+          // Default to human-friendly label/glyph sorting for assignments columns
+          assignments_column_sort: 'glyph_text',
           assignments_column_sort_direction: 'asc',
           dashboard_visible_cards: ['stats', 'recent', 'actions'],
           default_rows_per_page: 25,

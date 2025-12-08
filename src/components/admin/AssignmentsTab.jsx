@@ -39,7 +39,8 @@ export default function AssignmentsTab({ selectedYear }) {
     return {
       sortBy: 'alphabetic',
       sortDirection: 'asc',
-      columnSort: 'marker_id',
+      // Default to label/glyph-based sorting (human-friendly) instead of marker_id
+      columnSort: 'glyph_text',
       columnSortDirection: 'asc'
     };
   };
@@ -55,7 +56,8 @@ export default function AssignmentsTab({ selectedYear }) {
     if (!preferencesLoading && preferences) {
       const dbSortBy = preferences.assignments_sort_by || 'alphabetic';
       const dbSortDirection = preferences.assignments_sort_direction || 'asc';
-      const dbColumnSort = preferences.assignments_column_sort || 'marker_id';
+      // Prefer glyph_text (label) sorting by default for a more human-friendly order
+      const dbColumnSort = preferences.assignments_column_sort || 'glyph_text';
       const dbColumnSortDirection = preferences.assignments_column_sort_direction || 'asc';
 
       // Track what we synced from database
