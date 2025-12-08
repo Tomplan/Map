@@ -17,4 +17,10 @@ i18n.use(initReactI18next).init({
   },
 });
 
+// Expose i18n on window for easy debugging in development (reversible)
+if (typeof window !== 'undefined') {
+  // Avoid clobbering an existing debug value
+  if (!window.__i18n) window.__i18n = i18n;
+}
+
 export default i18n;
