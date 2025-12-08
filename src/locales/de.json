@@ -608,6 +608,7 @@
       "notAssigned": "Not assigned"
     },
     "companies": {
+      "saving": "Speichern...",
       "publicInfoTab": "Public Info",
       "privateInfoTab": "Private Info",
       "categoriesLabel": "Categories",
@@ -640,7 +641,26 @@
       "modal": {
         "publicInfoHeading": "Öffentliche Informationen (für Besucher sichtbar)",
         "managerInfoHeading": "Nur Manager (Standard-Kontaktdaten)",
+        "infoMultiLanguageLabel": "Info (mehrsprachig)",
+        "enterInfoInLanguage": "Informationen eingeben in {{lang}}...",
+        "uploadLogo": "Logo hochladen",
+        "categoriesLabel": "Kategorien",
         "editTitle": "Bearbeiten: {{name}}"
+      },
+      "noCategoriesAvailable": "Keine Kategorien verfügbar",
+      "notApplicable": "Nicht zutreffend",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "table": {
+        "name": "Name",
+        "logo": "Logo",
+        "website": "Website",
+        "info": "Info",
+        "categories": "Kategorien",
+        "contact": "Kontakt",
+        "phone": "Telefon",
+        "email": "E-Mail",
+        "actions": "Aktionen"
       },
       "create": "Erstellen"
     }
@@ -649,5 +669,10 @@
     "nl": "Niederländisch",
     "en": "Englisch",
     "de": "Deutsch"
+  }
+  ,
+  "languages": {
+    "english": "Englisch",
+    "dutch": "Niederländisch"
   }
 }

@@ -24,6 +24,10 @@
       "content_editor": "Content Editor"
     }
   },
+  "languages": {
+    "english": "English",
+    "dutch": "Dutch"
+  },
   "navigation": {
     "home": "Home",
     "map": "Map",
@@ -620,6 +624,7 @@
       "notAssigned": "Not assigned"
     },
     "companies": {
+      "saving": "Saving...",
       "publicInfoTab": "Public Info",
       "privateInfoTab": "Private Info",
       "categoriesLabel": "Categories",
@@ -653,7 +658,26 @@
     "modal": {
       "publicInfoHeading": "Public Info (visible to attendees)",
       "managerInfoHeading": "Manager-only Info (default contact info)",
+      "infoMultiLanguageLabel": "Info (Multi-language)",
+      "enterInfoInLanguage": "Enter info in {{lang}}...",
+      "uploadLogo": "Upload Logo",
+      "categoriesLabel": "Categories",
       "editTitle": "Edit: {{name}}"
+    },
+    "noCategoriesAvailable": "No categories available",
+    "notApplicable": "N/A",
+    "edit": "Edit",
+    "delete": "Delete",
+    "table": {
+      "name": "Name",
+      "logo": "Logo",
+      "website": "Website",
+      "info": "Info",
+      "categories": "Categories",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "actions": "Actions"
     },
     "create": "Create"
     }

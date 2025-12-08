@@ -25,6 +25,7 @@ import { supabase } from '../../supabaseClient';
  */
 function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChange }) {
   const { translations, saveTranslation } = useCompanyTranslations(companyId);
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,11 +61,11 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
         onBlur={handleBlur}
         className="w-full bg-white text-gray-900 border rounded px-2 py-1"
         rows={4}
-        placeholder={`Enter info in ${editingLanguage === 'nl' ? 'Dutch' : 'English'}...`}
+        placeholder={t('companies.modal.enterInfoInLanguage', { lang: editingLanguage === 'nl' ? t('languages.dutch') : t('languages.english') })}
         disabled={isSaving}
       />
       {isSaving && (
-        <span className="text-xs text-gray-500 italic">Saving...</span>
+        <span className="text-xs text-gray-500 italic">{t('companies.saving')}</span>
       )}
     </div>
   );
@@ -75,12 +76,13 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
  */
 function InfoFieldDisplay({ companyId, currentLanguage }) {
   const { translations, getTranslation } = useCompanyTranslations(companyId);
+  const { t } = useTranslation();
   const displayText = getTranslation(currentLanguage, 'nl');
 
   return (
     <div className="flex items-start gap-2">
       <p className="line-clamp-3 whitespace-pre-wrap flex-1">
-        {displayText || <span className="text-gray-400 text-sm italic">Not set</span>}
+        {displayText || <span className="text-gray-400 text-sm italic">{t('companies.notSet')}</span>}
       </p>
       <LanguageIndicator translations={translations} />
     </div>
@@ -220,9 +222,9 @@ export default function CompaniesTab() {
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
-          <input
+            <input
             type="text"
-            placeholder={t('helpPanel.companies.searchPlaceholder')}
+            placeholder={t('companies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -253,7 +255,7 @@ export default function CompaniesTab() {
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Icon path={mdiPlus} size={0.8} />
-            {t('helpPanel.companies.addCompany')}
+            {t('companies.addCompany')}
           </button>
         </div>
       </div>
@@ -315,7 +317,7 @@ export default function CompaniesTab() {
                           : setEditForm({ ...editForm, logo: url });
                       }}
                       folder={editingId === 'organization' ? "organization" : "companies"}
-                      label="Upload Logo"
+                      label={t('companies.modal.uploadLogo')}
                       showPreview={true}
                       allowDelete={true}
                       onDelete={() => {
@@ -358,7 +360,7 @@ export default function CompaniesTab() {
                     />
                   ) : !isCreating ? (
                     <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-900">Info (Multi-language)</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-900">{t('companies.modal.infoMultiLanguageLabel')}</label>
                       <InfoFieldWithTranslations
                         companyId={editingId}
                         editingLanguage={editingContentLanguage}
@@ -377,7 +379,7 @@ export default function CompaniesTab() {
                   {/* Categories - only for companies, not organization */}
                   {!isCreating && editingId !== 'organization' && (
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Categories</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">{t('companies.modal.categoriesLabel')}</label>
                       {categories.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                           {categories.map(cat => (
@@ -407,7 +409,7 @@ export default function CompaniesTab() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-red-500 text-sm italic">No categories available</span>
+                        <span className="text-red-500 text-sm italic">{t('companies.noCategoriesAvailable')}</span>
                       )}
                     </div>
                   )}
@@ -434,11 +436,11 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, phone: value })
                       : setEditForm({ ...editForm, phone: value })
                     }
-                    placeholder="Phone (e.g., +31612345678)"
+                    placeholder={t('companies.phonePlaceholder')}
                   />
                   <input
                     type="email"
-                    placeholder="Email"
+                    placeholder={t('companies.emailPlaceholder')}
                     value={isCreating ? (newCompanyForm.email || '') : (editForm.email || '')}
                     onChange={(e) => {
                       const email = e.target.value.toLowerCase();
@@ -457,7 +459,7 @@ export default function CompaniesTab() {
               onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               onClick={isCreating ? handleCreate : handleSaveWithCategories}
@@ -476,21 +478,21 @@ export default function CompaniesTab() {
             <tr>
               {activeTab === 'public' ? (
                 <>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Categories</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{t('companies.table.name')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{t('companies.table.logo')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{t('companies.table.website')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{t('companies.table.info')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{t('companies.table.categories')}</th>
                 </>
               ) : (
                 <>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Name</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{t('companies.table.name')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{t('companies.table.contact')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{t('companies.table.phone')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{t('companies.table.email')}</th>
                 </>
               )}
-              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>{t('companies.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -535,7 +537,7 @@ export default function CompaniesTab() {
                         {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm italic">Not set</span>
+                      <span className="text-gray-400 text-sm italic">{t('companies.notSet')}</span>
                     )}
                   </td>
 
@@ -561,7 +563,7 @@ export default function CompaniesTab() {
                   {/* Categories */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isOrg ? (
-                      <span className="text-gray-400 text-xs italic">N/A</span>
+                      <span className="text-gray-400 text-xs italic">{t('companies.notApplicable')}</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {(companyCategories[item.id] || []).map(cat => (
@@ -575,7 +577,7 @@ export default function CompaniesTab() {
                           </span>
                         ))}
                         {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
-                          <span className="text-gray-400 text-xs italic">None</span>
+                          <span className="text-gray-400 text-xs italic">{t('companies.none')}</span>
                         )}
                       </div>
                     )}
@@ -585,7 +587,7 @@ export default function CompaniesTab() {
                     <>
                   {/* Contact */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
+                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">{t('companies.notSet')}</span>}</span>
                   </td>
 
                   {/* Phone */}
@@ -596,13 +598,13 @@ export default function CompaniesTab() {
                         <span>{formatPhoneForDisplay(item.phone)}</span>
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic text-xs">Not set</span>
+                      <span className="text-gray-400 italic text-xs">{t('companies.notSet')}</span>
                     )}
                   </td>
 
                   {/* Email */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
+                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">{t('companies.notSet')}</span>}</span>
                   </td>
                     </>
                   )}
@@ -613,7 +615,7 @@ export default function CompaniesTab() {
                       <button
                         onClick={() => handleEdit(item)}
                         className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        title="Edit"
+                        title={t('companies.edit')}
                       >
                         <Icon path={mdiPencil} size={0.8} />
                       </button>
@@ -621,7 +623,7 @@ export default function CompaniesTab() {
                         <button
                           onClick={() => handleDelete(item.id, item.name)}
                           className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                          title="Delete"
+                          title={t('companies.delete')}
                         >
                           <Icon path={mdiDelete} size={0.8} />
                         </button>

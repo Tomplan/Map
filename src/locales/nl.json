@@ -24,6 +24,10 @@
       "content_editor": "Contentbeheerder"
     }
   },
+  "languages": {
+    "english": "Engels",
+    "dutch": "Nederlands"
+  },
   "common": {
     "loading": "Laden...",
     "saving": "Opslaan...",
@@ -612,6 +616,7 @@
       "notAssigned": "Niet toegewezen"
     },
     "companies": {
+      "saving": "Opslaan...",
       "publicInfoTab": "Publieke Info",
       "privateInfoTab": "Privé Info",
       "categoriesLabel": "Categorieën",
@@ -644,7 +649,26 @@
       "modal": {
         "publicInfoHeading": "Publieke informatie (zichtbaar voor bezoekers)",
         "managerInfoHeading": "Alleen managers (stand contactgegevens)",
+        "infoMultiLanguageLabel": "Info (Meertalige invoer)",
+        "enterInfoInLanguage": "Voer info in {{lang}}...",
+        "uploadLogo": "Upload logo",
+        "categoriesLabel": "Categorieën",
         "editTitle": "Bewerken: {{name}}"
+      },
+      "noCategoriesAvailable": "Geen categorieën beschikbaar",
+      "notApplicable": "N/B",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "table": {
+        "name": "Naam",
+        "logo": "Logo",
+        "website": "Website",
+        "info": "Info",
+        "categories": "Categorieën",
+        "contact": "Contact",
+        "phone": "Telefoon",
+        "email": "E-mail",
+        "actions": "Acties"
       },
       "create": "Aanmaken"
     }
