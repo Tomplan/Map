@@ -7,10 +7,13 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k, opts) => {
       const map = {
-        'companies.publicInfoTab': 'Publiek',
-        'companies.privateInfoTab': 'Alleen managers',
-        'companies.modal.publicInfoHeading': 'Publieke info (zichtbaar voor deelnemers)',
-      };
+          'companies.publicInfoTab': 'Publiek',
+          'companies.privateInfoTab': 'Alleen managers',
+          'companies.modal.publicInfoHeading': 'Publieke info (zichtbaar voor deelnemers)',
+          'companies.create': 'Aanmaken',
+          'companies.loadingData': 'Gegevens laden...',
+          'companies.errorWithMessage': 'Fout: {{message}}'
+        };
       return map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
     },
     i18n: { language: 'nl' }
@@ -39,11 +42,11 @@ jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
 
 jest.mock('../../../hooks/useCompanyMutations', () => ({
   useCompanyMutations: () => ({
-    editingId: null,
-    editForm: {},
-    setEditForm: jest.fn(),
-    isCreating: false,
-    newCompanyForm: {},
+  editingId: null,
+  editForm: {},
+  setEditForm: jest.fn(),
+  isCreating: true,
+  newCompanyForm: { name: 'NewCo' },
     setNewCompanyForm: jest.fn(),
     handleEdit: jest.fn(),
     handleSave: jest.fn(),
@@ -69,4 +72,7 @@ test('renders companies tab labels in Dutch (i18n) and modal heading', async () 
   // Tabs should show Dutch labels from mocked t()
   expect(await screen.findByText('Publiek')).toBeInTheDocument();
   expect(await screen.findByText('Alleen managers')).toBeInTheDocument();
+
+  // Modal action should show the Dutch Create label when creating
+  expect(await screen.findByText('Aanmaken')).toBeInTheDocument();
 });

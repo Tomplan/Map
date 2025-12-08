@@ -160,6 +160,8 @@
       "loading": "Loading settings...",
       "save": "Save Changes",
       "saving": "Saving...",
+      "loadingData": "Loading data...",
+      "errorWithMessage": "Error: {{message}}",
       "reset": "Reset to Defaults",
       "saveSuccess": "Saved!",
       "themeColor": {

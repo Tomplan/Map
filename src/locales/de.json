@@ -186,6 +186,8 @@
       "loading": "Karteneinstellungen laden...",
       "save": "Änderungen Speichern",
       "saving": "Speichern...",
+      "loadingData": "Daten werden geladen...",
+      "errorWithMessage": "Fehler: {{message}}",
       "reset": "Zurücksetzen",
       "saveSuccess": "Karteneinstellungen erfolgreich gespeichert",
       "saveSuccessMessage": "Ihre Kartenkonfiguration wurde aktualisiert.",

@@ -154,6 +154,8 @@
       "loading": "Instellingen laden...",
       "save": "Wijzigingen Opslaan",
       "saving": "Opslaan...",
+      "loadingData": "Gegevens laden...",
+      "errorWithMessage": "Fout: {{message}}",
       "reset": "Standaardinstellingen Herstellen",
       "saveSuccess": "Opgeslagen!",
       "themeColor": {

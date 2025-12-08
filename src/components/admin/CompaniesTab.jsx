@@ -209,11 +209,11 @@ export default function CompaniesTab() {
   const error = errorCompanies || errorProfile;
 
   if (loading) {
-    return <div className="p-4">Loading data...</div>;
+    return <div className="p-4">{t('companies.loadingData')}</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-600">Error: {error}</div>;
+    return <div className="p-4 text-red-600">{t('companies.errorWithMessage', { message: error })}</div>;
   }
 
   return (
@@ -545,7 +545,7 @@ export default function CompaniesTab() {
                   <td className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isOrg ? (
                       <p className="line-clamp-3 whitespace-pre-wrap">
-                        {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
+                        {item.info || <span className="text-gray-400 text-sm italic">{t('companies.notSet')}</span>}
                       </p>
                     ) : (
                       <InfoFieldDisplay
