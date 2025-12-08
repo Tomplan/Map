@@ -9,6 +9,7 @@ import {
   mdiAlertCircle,
   mdiTranslate,
   mdiTag,
+  mdiCalendarEdit,
   mdiAccountCircle,
   mdiDomain,
 } from '@mdi/js';
@@ -16,6 +17,7 @@ import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
+import PublicDefaultYear from './PublicDefaultYear';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
@@ -98,6 +100,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       component: <EventDefaults />,
       scope: 'organization',
       description: 'Default meal counts for events',
+    },
+    {
+      id: 'public-default-year',
+      label: t('settings.publicDefaultYear.title'),
+      icon: mdiCalendarEdit,
+      roles: ['super_admin', 'system_manager'],
+      component: <PublicDefaultYear />,
+      scope: 'organization',
+      description: 'Global public-facing default event year',
     },
     {
       id: 'advanced',

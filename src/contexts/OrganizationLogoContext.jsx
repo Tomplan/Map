@@ -33,18 +33,16 @@ export function OrganizationLogoProvider({ children }) {
           return;
         }
 
-        console.log('[OrganizationLogoContext] Fetched data:', data);
-        console.log('[OrganizationLogoContext] data.logo:', data?.logo);
+        // fetched data may be delivered twice in React Strict Mode — avoid noisy logging
 
         if (data && data.logo && data.logo.trim() !== '') {
           // Keep the raw DB value and provide a resolved variant for consumers
           // that prefer a predictable URL.
           const raw = data.logo;
           const normalized = getLogoPath(raw);
-          console.log('[OrganizationLogoContext] Setting logo raw:', raw);
-          console.log('[OrganizationLogoContext] Setting logo to:', normalized);
-          setOrganizationLogoRaw(raw);
-          setOrganizationLogo(normalized);
+          // Only update state when values actually change to avoid extra re-renders
+          setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
+          setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
         } else {
           console.log('[OrganizationLogoContext] Keeping default logo:', BRANDING_CONFIG.DEFAULT_LOGO);
         }
@@ -73,13 +71,17 @@ export function OrganizationLogoProvider({ children }) {
             // If the new value is empty/cleared, fall back to static default path
             if (!payload.new.logo || payload.new.logo.trim() === '') {
               // Cleared -> restore raw default & resolved default
-              setOrganizationLogoRaw(BRANDING_CONFIG.DEFAULT_LOGO);
-              setOrganizationLogo(getDefaultLogoPath());
+              setOrganizationLogoRaw((prev) =>
+                prev === BRANDING_CONFIG.DEFAULT_LOGO ? prev : BRANDING_CONFIG.DEFAULT_LOGO,
+              );
+              setOrganizationLogo((prev) =>
+                prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
+              );
             } else {
               const raw = payload.new.logo;
               const normalized = getLogoPath(raw);
-              setOrganizationLogoRaw(raw);
-              setOrganizationLogo(normalized);
+              setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
+              setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
             }
           }
         },

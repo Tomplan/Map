@@ -7,6 +7,8 @@ import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
 import {
   mdiPlus,
+  mdiCheck,
+  mdiClose,
   mdiPencil,
   mdiDelete,
   mdiMagnify,
