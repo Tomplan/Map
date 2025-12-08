@@ -13,9 +13,36 @@ import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { useDialog } from '../../contexts/DialogContext';
 import ContentLanguageTabs, { LanguageIndicator } from './ContentLanguageTabs';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import enLocales from '../../locales/en.json';
 import nlLocales from '../../locales/nl.json';
 import deLocales from '../../locales/de.json';
+
+// static locales used as a last-resort fallback when runtime i18n resources
+// are partially missing (e.g. HMR or old service-worker caches during dev).
+const staticLocales = { en: enLocales, nl: nlLocales, de: deLocales };
+
+function translateSafe(key, opts) {
+  try {
+    // Prefer the runtime translation if available
+    if (i18n && i18n.exists(key)) return i18n.t(key, opts);
+
+    // Fallback to static JSON for current language
+    const lang = i18n?.language || 'nl';
+    const parts = key.split('.');
+    let cursor = staticLocales[lang] || staticLocales.nl;
+    for (const p of parts) {
+      if (!cursor || typeof cursor !== 'object') { cursor = undefined; break; }
+      cursor = cursor[p];
+    }
+    if (cursor !== undefined) return typeof cursor === 'string' ? cursor : JSON.stringify(cursor);
+
+    // Last-resort: return literal key
+    return i18n?.t ? i18n.t(key, opts) : key;
+  } catch (e) {
+    return i18n?.t ? i18n.t(key, opts) : key;
+  }
+}
 import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
@@ -101,34 +128,7 @@ export default function CompaniesTab() {
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
-  const { i18n, t } = useTranslation();
-
-  // Safe translator helper: when the runtime i18n bundle is missing a nested
-  // block like `companies` (HMR / caching issues in dev can cause this), we
-  // fall back to the static JSON files shipped with the app. This keeps the UI
-  // usable even when runtime resources are incomplete.
-  const staticLocales = { en: enLocales, nl: nlLocales, de: deLocales };
-  const translateSafe = (key, opts) => {
-    try {
-      // Prefer the runtime translation if available
-      if (i18n.exists(key)) return t(key, opts);
-
-      // Fallback to static JSON for current language
-      const lang = i18n.language || 'nl';
-      const parts = key.split('.');
-      let cursor = staticLocales[lang] || staticLocales.nl;
-      for (const p of parts) {
-        if (!cursor || typeof cursor !== 'object') { cursor = undefined; break; }
-        cursor = cursor[p];
-      }
-      if (cursor !== undefined) return typeof cursor === 'string' ? cursor : JSON.stringify(cursor);
-
-      // Last-resort: return standard t() (may be literal key)
-      return t(key, opts);
-    } catch (e) {
-      return t(key, opts);
-    }
-  };
+  const { i18n: i18nHook, t } = useTranslation();
   const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState('');
