@@ -652,7 +652,8 @@
     ,
     "modal": {
       "publicInfoHeading": "Public Info (visible to attendees)",
-      "managerInfoHeading": "Manager-only Info (default contact info)"
+      "managerInfoHeading": "Manager-only Info (default contact info)",
+      "editTitle": "Edit: {{name}}"
     },
     "create": "Create"
     }

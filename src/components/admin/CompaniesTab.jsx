@@ -286,7 +286,7 @@ export default function CompaniesTab() {
       <Modal
         isOpen={isCreating || !!editingId}
         onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
-        title={isCreating ? t('companies.newCompany') : `Edit: ${editForm.name || t('companies.newCompany')}`}
+        title={isCreating ? t('companies.newCompany') : t('companies.modal.editTitle', { name: editForm.name || t('companies.newCompany') })}
         size="lg"
       >
         <div className="p-6">

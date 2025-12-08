@@ -639,7 +639,8 @@
       "organizationInfo": "Organization info",
       "modal": {
         "publicInfoHeading": "Öffentliche Informationen (für Besucher sichtbar)",
-        "managerInfoHeading": "Nur Manager (Standard-Kontaktdaten)"
+        "managerInfoHeading": "Nur Manager (Standard-Kontaktdaten)",
+        "editTitle": "Bearbeiten: {{name}}"
       },
       "create": "Erstellen"
     }

@@ -643,7 +643,8 @@
       "organizationInfo": "Organisatie info",
       "modal": {
         "publicInfoHeading": "Publieke informatie (zichtbaar voor bezoekers)",
-        "managerInfoHeading": "Alleen managers (stand contactgegevens)"
+        "managerInfoHeading": "Alleen managers (stand contactgegevens)",
+        "editTitle": "Bewerken: {{name}}"
       },
       "create": "Aanmaken"
     }
