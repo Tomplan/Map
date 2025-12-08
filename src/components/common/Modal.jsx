@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import Icon from '@mdi/react';
 import { mdiClose } from '@mdi/js';
@@ -15,6 +15,8 @@ function Modal({
   size = 'md',
   showCloseButton = true,
   closeOnBackdrop = true,
+  testMountedAt,
+  testNow,
   className = '',
 }) {
   if (!isOpen) return null;
@@ -27,19 +29,34 @@ function Modal({
     full: 'max-w-[90vw]',
   };
 
-  // track when the modal mounted in high-res time so we can ignore click-throughs
-  const mountedAtRef = useRef(typeof performance !== 'undefined' ? performance.now() : Date.now());
-  useEffect(() => {
-    mountedAtRef.current = typeof performance !== 'undefined' ? performance.now() : Date.now();
-  }, []);
+  // track when the modal opened in high-res time so we can ignore click-throughs
+  // We MUST refresh this timestamp every time the modal opens — commit a2164c6
+  // set it only on initial mount which caused subsequent opens to have no
+  // protection window. Set synchronously during render so the guard applies
+  // on every open/close cycle.
+  const mountedAtRef = useRef(0);
+  const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+  if (isOpen) {
+    // Preserve the earliest mount timestamp in case of strict-mode double renders
+    // so the protection window is calculated from the first render time.
+    mountedAtRef.current = mountedAtRef.current || now;
+  } else {
+    mountedAtRef.current = 0;
+  }
 
   const handleBackdropClick = (e) => {
     // Prevent immediate click-throughs that happen when the modal is mounted
     // synchronously while the user is still pressing the mouse (pointerdown)
     // and releases the pointer (pointerup) over the newly-mounted overlay.
     // Ignore backdrop clicks that occur within the first 150ms after mount.
-    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    if (now - mountedAtRef.current < 150) {
+    const now = typeof testNow === 'number'
+      ? testNow
+      : (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const mountAt = typeof testMountedAt === 'number' ? testMountedAt : mountedAtRef.current;
+    const timeSinceMount = now - mountAt;
+
+    // If the modal was opened just now, ignore very-early backdrop clicks (click-through)
+    if (timeSinceMount < 150) {
       // swallow the event
       e.stopPropagation();
       return;
@@ -95,6 +112,8 @@ Modal.propTypes = {
   size: PropTypes.oneOf(['sm', 'md', 'lg', 'xl', 'full']),
   showCloseButton: PropTypes.bool,
   closeOnBackdrop: PropTypes.bool,
+  testMountedAt: PropTypes.number,
+  testNow: PropTypes.number,
   className: PropTypes.string,
 };
 
@@ -105,6 +124,7 @@ Modal.defaultProps = {
   showCloseButton: true,
   closeOnBackdrop: true,
   className: '',
+  testNow: undefined,
 };
 
 export default Modal;

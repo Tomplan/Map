@@ -65,7 +65,7 @@ export default function useFeedbackRequests() {
   );
 
   // Create new request
-  const createRequest = async (requestData) => {
+  const createRequest = useCallback(async (requestData) => {
     try {
       const {
         data: { user },
@@ -92,10 +92,10 @@ export default function useFeedbackRequests() {
       console.error('Error creating request:', err);
       return { data: null, error: err.message };
     }
-  };
+  }, [loadRequests]);
 
   // Update request (super admin can update status, priority, version; users can update own title/description)
-  const updateRequest = async (requestId, updates) => {
+  const updateRequest = useCallback(async (requestId, updates) => {
     try {
       const { data, error: updateError } = await supabase
         .from('feedback_requests')
@@ -112,10 +112,10 @@ export default function useFeedbackRequests() {
       console.error('Error updating request:', err);
       return { data: null, error: err.message };
     }
-  };
+  }, [loadRequests]);
 
   // Delete request (super admin only)
-  const deleteRequest = async (requestId) => {
+  const deleteRequest = useCallback(async (requestId) => {
     try {
       const { error: deleteError } = await supabase
         .from('feedback_requests')
@@ -130,10 +130,10 @@ export default function useFeedbackRequests() {
       console.error('Error deleting request:', err);
       return { error: err.message };
     }
-  };
+  }, [loadRequests]);
 
   // Add vote to request
-  const addVote = async (requestId) => {
+  const addVote = useCallback(async (requestId) => {
     try {
       const {
         data: { user },
@@ -158,10 +158,10 @@ export default function useFeedbackRequests() {
       console.error('Error adding vote:', err);
       return { error: err.message };
     }
-  };
+  }, [setUserVotes]);
 
   // Remove vote from request
-  const removeVote = async (requestId) => {
+  const removeVote = useCallback(async (requestId) => {
     try {
       const {
         data: { user },
@@ -191,10 +191,10 @@ export default function useFeedbackRequests() {
       console.error('Error removing vote:', err);
       return { error: err.message };
     }
-  };
+  }, [setUserVotes]);
 
   // Load comments for a request
-  const loadComments = async (requestId) => {
+  const loadComments = useCallback(async (requestId) => {
     try {
       const { data, error: fetchError } = await supabase
         .from('feedback_comments')
@@ -209,10 +209,10 @@ export default function useFeedbackRequests() {
       console.error('Error loading comments:', err);
       return { data: [], error: err.message };
     }
-  };
+  }, []);
 
   // Add comment to request
-  const addComment = async (requestId, commentText) => {
+  const addComment = useCallback(async (requestId, commentText) => {
     try {
       const {
         data: { user },
@@ -242,10 +242,10 @@ export default function useFeedbackRequests() {
       console.error('Error adding comment:', err);
       return { data: null, error: err.message };
     }
-  };
+  }, []);
 
   // Delete comment (own comments or super admin)
-  const deleteComment = async (commentId, requestId) => {
+  const deleteComment = useCallback(async (commentId, requestId) => {
     try {
       const { error: deleteError } = await supabase
         .from('feedback_comments')
@@ -266,14 +266,40 @@ export default function useFeedbackRequests() {
       console.error('Error deleting comment:', err);
       return { error: err.message };
     }
-  };
+  }, []);
 
   // Set up real-time subscription for requests
   useEffect(() => {
     const requestsChannel = supabase
       .channel('feedback_requests_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_requests' }, () => {
-        loadRequests();
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_requests' }, (payload) => {
+        // Apply targeted changes to local requests array instead of triggering a full reload.
+        if (!payload) return;
+        setRequests((prev) => {
+          const next = [...prev];
+          const newRow = payload.new;
+          const oldRow = payload.old;
+          const id = newRow?.id || oldRow?.id;
+          const idx = next.findIndex((r) => r.id === id);
+
+          if (newRow && !oldRow) {
+            // INSERT
+            return [newRow, ...next];
+          }
+
+          if (newRow && oldRow) {
+            // UPDATE
+            if (idx !== -1) next[idx] = { ...next[idx], ...newRow };
+            return next;
+          }
+
+          if (oldRow && !newRow) {
+            // DELETE
+            return next.filter((r) => r.id !== oldRow.id);
+          }
+
+          return next;
+        });
       })
       .subscribe();
 
@@ -283,20 +309,27 @@ export default function useFeedbackRequests() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'feedback_votes' },
         (payload) => {
-          // Optimistically adjust vote counts without full reload
-          if (payload?.new || payload?.old) {
-            setRequests((prev) => {
-              const next = [...prev];
-              const id = payload.new?.request_id || payload.old?.request_id;
-              const idx = next.findIndex((r) => r.id === id);
-              if (idx !== -1) {
-                // Recompute by counting votes for that request? Simpler: trigger full reload.
-                // For now just trigger reload to ensure integrity.
-                loadRequests();
+          if (!payload) return;
+          const newRow = payload.new;
+          const oldRow = payload.old;
+          const id = newRow?.request_id || oldRow?.request_id;
+          if (!id) return;
+
+          setRequests((prev) =>
+            prev.map((r) => {
+              if (r.id !== id) return r;
+              if (newRow && !oldRow) {
+                // INSERT -> increment
+                return { ...r, votes: (r.votes || 0) + 1 };
               }
-              return next;
-            });
-          }
+              if (!newRow && oldRow) {
+                // DELETE -> decrement
+                return { ...r, votes: Math.max(0, (r.votes || 0) - 1) };
+              }
+              // UPDATE or unknown -> return as-is
+              return r;
+            }),
+          );
         },
       )
       .subscribe();
@@ -307,11 +340,26 @@ export default function useFeedbackRequests() {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'feedback_comments' },
         (payload) => {
-          if (payload?.new || payload?.old) {
-            const id = payload.new?.request_id || payload.old?.request_id;
-            setRequests((prev) => prev.map((r) => (r.id === id ? { ...r } : r)));
-            loadRequests();
-          }
+          if (!payload) return;
+          const newRow = payload.new;
+          const oldRow = payload.old;
+          const id = newRow?.request_id || oldRow?.request_id;
+          if (!id) return;
+
+          setRequests((prev) =>
+            prev.map((r) => {
+              if (r.id !== id) return r;
+              if (newRow && !oldRow) {
+                // INSERT comment -> increment comments_count
+                return { ...r, comments_count: (r.comments_count || 0) + 1 };
+              }
+              if (!newRow && oldRow) {
+                // DELETE comment -> decrement
+                return { ...r, comments_count: Math.max(0, (r.comments_count || 0) - 1) };
+              }
+              return r;
+            }),
+          );
         },
       )
       .subscribe();

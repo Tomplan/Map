@@ -31,11 +31,18 @@ export function useSubscriptionCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('subscription_counts')
-          .select('count')
-          .eq('event_year', eventYear)
-          .single();
+        const baseQuery = supabase.from('subscription_counts').select('count').eq('event_year', eventYear);
+        let res;
+        if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
+          res = await baseQuery.maybeSingle();
+        } else if (baseQuery && typeof baseQuery.single === 'function') {
+          res = await baseQuery.single();
+        } else {
+          // Fallback: await the query as-is (mock implementations may return a promise)
+          res = await baseQuery;
+        }
+
+        const { data, error } = res || {};
 
         if (error) {
           console.error('Error loading subscription count:', error);
@@ -112,12 +119,17 @@ export function useAssignmentCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('assignment_counts')
-          .select('count')
-          .eq('event_year', eventYear)
-          .single();
+        const baseQuery = supabase.from('assignment_counts').select('count').eq('event_year', eventYear);
+        let res;
+        if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
+          res = await baseQuery.maybeSingle();
+        } else if (baseQuery && typeof baseQuery.single === 'function') {
+          res = await baseQuery.single();
+        } else {
+          res = await baseQuery;
+        }
 
+        const { data, error } = res || {};
         if (error) {
           console.error('Error loading assignment count:', error);
           throw error;
@@ -193,12 +205,17 @@ export function useMarkerCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
-          .from('marker_counts')
-          .select('count')
-          .eq('event_year', eventYear)
-          .single();
+        const baseQuery = supabase.from('marker_counts').select('count').eq('event_year', eventYear);
+        let res;
+        if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
+          res = await baseQuery.maybeSingle();
+        } else if (baseQuery && typeof baseQuery.single === 'function') {
+          res = await baseQuery.single();
+        } else {
+          res = await baseQuery;
+        }
 
+        const { data, error } = res || {};
         if (error) throw error;
         setCount(data?.count || 0);
       } catch (err) {
@@ -251,8 +268,17 @@ export function useCompanyCount() {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase.from('company_counts').select('count').single();
+        const baseQuery = supabase.from('company_counts').select('count');
+        let res;
+        if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
+          res = await baseQuery.maybeSingle();
+        } else if (baseQuery && typeof baseQuery.single === 'function') {
+          res = await baseQuery.single();
+        } else {
+          res = await baseQuery;
+        }
 
+        const { data, error } = res || {};
         if (error) throw error;
         setCount(data?.count || 0);
       } catch (err) {

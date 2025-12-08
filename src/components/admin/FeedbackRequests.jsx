@@ -23,7 +23,11 @@ export default function FeedbackRequests() {
   const { role } = useUserRole();
   const isSuperAdmin = role === 'super_admin';
 
-  const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+  // TEMPORARILY DISABLED - debugging infinite loop
+  // const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
+  const preferences = null;
+  const preferencesLoading = false;
+  const updatePreference = () => {};
 
   const {
     requests,
@@ -51,16 +55,17 @@ export default function FeedbackRequests() {
 
   const [hasInitializedFromPreferences, setHasInitializedFromPreferences] = useState(false);
 
+  // TEMPORARILY DISABLED - debugging infinite loop
   // Always sync local state with preferences after real-time updates
-  useEffect(() => {
-    if (preferences && !preferencesLoading) {
-      setActiveTab(preferences.feedback_active_tab || 'all');
-      setFilterTypes(preferences.feedback_filter_types || []);
-      setFilterStatuses(preferences.feedback_filter_statuses || []);
-      setHasInitializedFromPreferences(true);
-      console.log('FeedbackRequests: Preferences loaded and applied (sync)');
-    }
-  }, [preferences, preferencesLoading]);
+  // useEffect(() => {
+  //   if (preferences && !preferencesLoading) {
+  //     setActiveTab(preferences.feedback_active_tab || 'all');
+  //     setFilterTypes(preferences.feedback_filter_types || []);
+  //     setFilterStatuses(preferences.feedback_filter_statuses || []);
+  //     setHasInitializedFromPreferences(true);
+  //     console.log('FeedbackRequests: Preferences loaded and applied (sync)');
+  //   }
+  // }, [preferences, preferencesLoading]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -89,6 +94,7 @@ export default function FeedbackRequests() {
     // Remove type and status filters from server-side filtering - we'll filter client-side for multiple selections
     if (activeTab === 'my' && currentUserId) filters.userId = currentUserId;
 
+    // Explicitly request the current data set whenever the relevant inputs change
     loadRequests(filters);
   }, [activeTab, currentUserId, loadRequests]);
 
@@ -591,7 +597,10 @@ export default function FeedbackRequests() {
                   // inadvertently target the new overlay/backdrop.
                   e.preventDefault();
                   e.stopPropagation();
-                  setTimeout(() => setSelectedRequest(request), 0);
+                  // (click handling) schedule modal opening on next tick
+                  setTimeout(() => {
+                    setSelectedRequest(request);
+                  }, 0);
                 }}
               >
                 <div className="flex items-start justify-between">
@@ -687,16 +696,10 @@ export default function FeedbackRequests() {
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
           onUpdate={(updated) => {
-            // Optimistically merge updated record into local list
-            if (updated) {
-              // Create shallow copy with merged values
-              const idx = requests.findIndex((r) => r.id === updated.id);
-              if (idx !== -1) {
-                requests[idx] = { ...requests[idx], ...updated };
-              }
-            }
+            // Close modal and refresh requests from server
+            // Note: We don't optimistically update to avoid mutation issues
             setSelectedRequest(null);
-            // Background refresh to ensure consistency
+            // Background refresh to get latest data
             loadRequests();
           }}
         />
