@@ -30,16 +30,17 @@ export default i18n;
 // setups can end up with partially-loaded resource bundles; this merges any
 // missing keys from the static JSON files into the runtime store without
 // overwriting existing keys.
-// Use the statically-imported locale objects to merge in the companies block
-// only if it's not already present in the runtime store. This is a safe
-// best-effort merge (non-destructive) to unblock the UI while debugging root
-// causes where resources can sometimes be partially loaded in dev/HMR.
+// Extract companies from helpPanel.companies (where it actually exists in the JSON)
+// and merge it as a top-level namespace so component code can use 'companies.*' keys.
 const _pkgs = { en, nl, de };
 ['en', 'nl', 'de'].forEach((lang) => {
   try {
     const pkg = _pkgs[lang];
-    if (pkg && pkg.companies && (!i18n.store?.data?.[lang]?.translation?.companies)) {
-      i18n.addResourceBundle(lang, 'translation', { companies: pkg.companies }, true, true);
+    // Extract companies from helpPanel.companies (where it actually exists)
+    const companiesData = pkg?.helpPanel?.companies;
+
+    if (companiesData && (!i18n.store?.data?.[lang]?.translation?.companies)) {
+      i18n.addResourceBundle(lang, 'translation', { companies: companiesData }, true, true);
     }
   } catch (e) {
     // best-effort - do not throw during startup
