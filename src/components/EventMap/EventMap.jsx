@@ -6,6 +6,7 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
+import { cloneMarkerLayer, cloneMarkerClusterLayer } from './printCloners';
 const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
@@ -318,51 +319,8 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }
   }, [mapInstance]);
 
-  // Setup browser print control for map-only export
-  useEffect(() => {
-    if (!mapInstance) return;
-
-    // Setup browser print interface (back-end) WITHOUT adding the on-map control UI.
-    // We create a backend `L.browserPrint` instance and attach it to the map so
-    // the MapManagement header button can programmatically call printing. The
-    // UI control (map-embedded) will be hidden for now per requirement.
-
-    if (mapInstance._browserPrintInitialized) return;
-
-    if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
-      const Mode = window.L.BrowserPrint.Mode;
-
-      const modes = [
-        Mode.Landscape('A4', { title: 'Current view — landscape' }),
-        Mode.Portrait('A4', { title: 'A4 — Portrait' }),
-        Mode.Landscape('A4', { title: 'A4 — Landscape' }),
-        Mode.Auto('A4', { title: 'Auto fit' }),
-        Mode.Custom('A4', { title: 'Select area', customArea: true }),
-      ];
-
-      // Create the backend browserPrint instance. Do NOT add the control UI to the map.
-      try {
-        const browserPrint = window.L.browserPrint(mapInstance, {
-          // Keep options so consumer can inspect available modes
-          printModes: modes,
-          closePopupsOnPrint: false,
-        });
-
-        // Keep a lightweight facade so other components (PrintButton) can
-        // read available modes and call into either the control or backend.
-        mapInstance.printControl = {
-          browserPrint,
-          options: { printModes: modes },
-        };
-
-        mapInstance._browserPrintInitialized = true;
-      } catch (err) {
-        console.warn('Failed to initialize L.browserPrint backend:', err);
-      }
-    } else {
-      console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
-    }
-  }, [mapInstance]);
+  // Browser print is now initialized synchronously in handleMapCreated
+  // to ensure printControl is available before onMapReady is called
 
   // Handle focus parameter from URL (navigate from exhibitor list)
   useEffect(() => {
@@ -393,18 +351,178 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
+
+    // Initialize browserPrint BEFORE calling onMapReady so printControl is available
+    if (!map._browserPrintInitialized) {
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+        const Mode = window.L.BrowserPrint.Mode;
+
+        const modes = [
+          Mode.Landscape('A4', { title: 'Current view — landscape' }),
+          Mode.Portrait('A4', { title: 'A4 — Portrait', margin: 4 }),
+          Mode.Landscape('A4', { title: 'A4 — Landscape' }),
+          Mode.Auto('A4', { title: 'Auto fit' }),
+          Mode.Custom('A4', { title: 'Select area', customArea: true }),
+        ];
+
+        // Register custom marker cloner to preserve icon properties
+        if (window.L.BrowserPrint && window.L.BrowserPrint.Utils) {
+          window.L.BrowserPrint.Utils.registerLayer(L.Marker, 'L.Marker', cloneMarkerLayer);
+
+          // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
+          if (window.L.MarkerClusterGroup) {
+            window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
+            console.log('[Print] Registered MarkerClusterGroup cloner');
+          }
+
+          console.log('[Print] Registered custom marker cloner for glyph icons');
+        }
+
+        try {
+          const browserPrint = window.L.browserPrint(map, {
+            printModes: modes,
+            closePopupsOnPrint: false,
+          });
+
+          map.printControl = {
+            browserPrint,
+            options: { printModes: modes },
+          };
+
+          map._browserPrintInitialized = true;
+          console.log('✓ BrowserPrint plugin initialized successfully with', modes.length, 'modes');
+
+          // Configure Portrait/Landscape presets to use home center before printing
+          // Store original view to restore after printing (Option B: Jump and Restore)
+          let originalView = null;
+
+          // Listen to the PrePrint event to intercept before printing starts
+          // PrePrint fires before the print overlay is created
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrePrint, (event) => {
+            const orientation = event.pageOrientation; // "Portrait" or "Landscape"
+
+            // Only modify Portrait and Landscape orientations (not Auto)
+            // Auto and Custom modes should auto-fit layers as normal
+            if (orientation === 'Portrait' || orientation === 'Landscape') {
+              console.log('[Print] Setting home center for:', orientation);
+
+              // Save current view to restore after printing
+              originalView = {
+                center: browserPrint._map.getCenter(),
+                zoom: browserPrint._map.getZoom(),
+              };
+
+              // Use different center and zoom for Portrait vs Landscape
+              const centerPosition = orientation === 'Portrait'
+                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+              const zoomLevel = orientation === 'Portrait'
+                ? 18 // Portrait uses zoom 17.8
+                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+
+              // Move the real map to the target position
+              // The plugin will then use this view when creating the print overlay
+              // (because Portrait/Landscape modes have invalidateBounds: false)
+              browserPrint._map.setView(centerPosition, zoomLevel, {
+                animate: false // Instant jump, no animation
+              });
+            }
+          });
+
+          // PrintStart handler REMOVED - icon cloning now handled by custom cloner
+          // Redundant code that used unreliable coordinate matching
+          // Keep commented for rollback if needed
+          /*
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintStart, (event) => {
+            console.log('[Print] PrintStart event - updating marker icons for print');
+
+            // Get all markers from the original map
+            const originalMarkers = new Map();
+            browserPrint._map.eachLayer((layer) => {
+              if (layer instanceof L.Marker && layer.options && layer.options.icon) {
+                // Use lat/lng as key to match markers between original and print map
+                const key = `${layer.getLatLng().lat.toFixed(8)},${layer.getLatLng().lng.toFixed(8)}`;
+                originalMarkers.set(key, layer);
+              }
+            });
+
+            // Update print overlay markers to match original markers
+            if (event.printObjects && event.printObjects['L.Marker']) {
+              const printMarkers = event.printObjects['L.Marker'];
+              console.log(`[Print] Updating ${printMarkers.length} markers in print overlay`);
+
+              printMarkers.forEach((printMarker) => {
+                const key = `${printMarker.getLatLng().lat.toFixed(8)},${printMarker.getLatLng().lng.toFixed(8)}`;
+                const originalMarker = originalMarkers.get(key);
+
+                if (originalMarker && originalMarker.options.icon && originalMarker.options.icon.options) {
+                  // Clone the icon with all original properties
+                  const iconOpts = originalMarker.options.icon.options;
+                  const newIcon = L.icon.glyph({
+                    iconUrl: iconOpts.iconUrl,
+                    iconSize: iconOpts.iconSize,
+                    iconAnchor: iconOpts.iconAnchor,
+                    popupAnchor: iconOpts.popupAnchor,
+                    shadowUrl: iconOpts.shadowUrl,
+                    shadowSize: iconOpts.shadowSize,
+                    shadowAnchor: iconOpts.shadowAnchor,
+                    prefix: iconOpts.prefix || '',
+                    glyph: iconOpts.glyph || '',
+                    glyphColor: iconOpts.glyphColor || 'white',
+                    bgColor: iconOpts.bgColor,
+                    glyphSize: iconOpts.glyphSize || '11px',
+                    glyphAnchor: iconOpts.glyphAnchor || [0, 0],
+                    className: iconOpts.className || '',
+                  });
+
+                  // Update the print marker with the correct icon
+                  printMarker.setIcon(newIcon);
+                }
+              });
+            }
+          });
+          */
+
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
+            console.log('PrintEnd event fired!');
+            // Restore original view after printing completes
+            if (originalView) {
+              console.log('Restoring original view after printing');
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              originalView = null;
+            }
+          });
+
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
+            console.log('PrintCancel event fired!');
+            // Restore original view if user cancels print
+            if (originalView) {
+              console.log('Restoring original view after print cancel');
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              originalView = null;
+            }
+          });
+        } catch (err) {
+          console.error('Failed to initialize L.browserPrint backend:', err);
+        }
+      } else {
+        console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
+      }
+    }
+
     setMapInstance(map);
+
     // Inform parent components that the map instance is ready so they can
     // register print actions or other map-specific interactions.
     if (typeof onMapReady === 'function') {
       try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
     }
-    
+
     // Force a resize event to ensure proper tile loading
     setTimeout(() => {
       if (map) {
         map.invalidateSize();
-        console.log('Map resized and tiles should be loaded');
       }
     }, 100);
   };
