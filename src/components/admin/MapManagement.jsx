@@ -446,7 +446,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                 </button>
 
                 {printMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden border border-gray-200">
                     {printModes.length > 0 ? (
                       <div className="py-1">
                         {printModes.map((m, idx) => (
@@ -457,7 +457,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                               setPrintMenuOpen(false);
                               await programmaticHeaderPrint(m);
                             }}
-                            className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                            className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
                           >
                             {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
                           </button>
@@ -468,7 +468,7 @@ export default function MapManagement({ markersState, setMarkersState, updateMar
                         <button
                           type="button"
                           onClick={async () => { setPrintMenuOpen(false); await snapshotHeaderPrint(); }}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50"
+                          className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
                         >
                           Snapshot (PNG)
                         </button>

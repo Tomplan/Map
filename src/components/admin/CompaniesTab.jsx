@@ -300,7 +300,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {translateSafe('companies.publicInfoTab')}
+          {t('companies.publicInfoTab')}
         </button>
         <button
           onClick={() => setActiveTab('manager')}
@@ -310,7 +310,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {translateSafe('companies.privateInfoTab')}
+          {t('companies.privateInfoTab')}
         </button>
       </div>
 
@@ -495,7 +495,7 @@ export default function CompaniesTab() {
               onClick={isCreating ? handleCreate : handleSaveWithCategories}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              {isCreating ? translateSafe('companies.create', 'Create') : t('save')}
+              {isCreating ? t('companies.create') : t('save')}
             </button>
           </div>
         </div>
