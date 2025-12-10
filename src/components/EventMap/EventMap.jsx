@@ -6,7 +6,6 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
-import { cloneMarkerLayer, cloneMarkerClusterLayer } from './printCloners';
 const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
@@ -349,12 +348,14 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     }
   }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
 
-  const handleMapCreated = (mapOrEvent) => {
+  const handleMapCreated = async (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
 
-    // Initialize browserPrint BEFORE calling onMapReady so printControl is available
-    if (!map._browserPrintInitialized) {
+    // Initialize browserPrint ONLY for admin view (print is admin-only feature)
+    if (isAdminView && !map._browserPrintInitialized) {
       if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+        // Dynamically import print cloners only when needed
+        const { cloneMarkerLayer, cloneMarkerClusterLayer } = await import('./printCloners');
         const Mode = window.L.BrowserPrint.Mode;
 
         // Extended paper presets for high-quality printing
@@ -378,10 +379,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
           if (window.L.MarkerClusterGroup) {
             window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
-            console.log('[Print] ✓ Registered MarkerClusterGroup cloner');
           }
-
-          console.log('[Print] ✓ Registered custom marker cloner (absolute URLs + font preservation)');
         }
 
         try {
@@ -396,7 +394,6 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           };
 
           map._browserPrintInitialized = true;
-          console.log('✓ BrowserPrint plugin initialized successfully with', modes.length, 'modes');
 
           // Configure Portrait/Landscape presets to use home center before printing
           // Store original view to restore after printing (Option B: Jump and Restore)
@@ -407,8 +404,6 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           browserPrint._map.on(window.L.BrowserPrint.Event.PrePrint, (event) => {
             const orientation = event.pageOrientation; // "Portrait" or "Landscape"
             const modeTitle = event.mode?.options?.title || 'unknown';
-            
-            console.log('[Print] PrePrint event - mode:', modeTitle, '| orientation:', orientation);
 
             // Inject Material Design Icons stylesheet into print iframe for glyph rendering
             // This ensures icon fonts load correctly in the print document
@@ -423,11 +418,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
                   mdiLink.rel = 'stylesheet';
                   mdiLink.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css';
                   printDocument.head.appendChild(mdiLink);
-                  console.log('[Print] ✓ Injected Material Design Icons stylesheet');
                 }
               }
             } catch (e) {
-              console.warn('[Print] Could not inject MDI stylesheet:', e);
+              // MDI stylesheet injection failed - icons may not render correctly in print
             }
 
             // CRITICAL: Only change center for specific print modes that need a fixed home view
@@ -438,14 +432,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             
             // Skip center change for current view, auto, and custom modes
             if (isCurrentViewMode || isAutoMode || isCustomMode) {
-              console.log('[Print] ✓ Using current map position (no center change)');
               return;
             }
             
             // Only modify Portrait and Landscape orientations with fixed home positions
             if (orientation === 'Portrait' || orientation === 'Landscape') {
-              console.log('[Print] Setting fixed home center for:', modeTitle);
-
               // Save current view to restore after printing
               originalView = {
                 center: browserPrint._map.getCenter(),
@@ -525,29 +516,23 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           */
 
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
-            console.log('PrintEnd event fired!');
             // Restore original view after printing completes
             if (originalView) {
-              console.log('Restoring original view after printing');
               browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
               originalView = null;
             }
           });
 
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
-            console.log('PrintCancel event fired!');
             // Restore original view if user cancels print
             if (originalView) {
-              console.log('Restoring original view after print cancel');
               browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
               originalView = null;
             }
           });
         } catch (err) {
-          console.error('Failed to initialize L.browserPrint backend:', err);
+          // Print initialization failed - fallback to snapshot will be used
         }
-      } else {
-        console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
       }
     }
 
