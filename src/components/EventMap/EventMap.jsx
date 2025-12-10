@@ -6,6 +6,7 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
+import { cloneMarkerLayer, cloneMarkerClusterLayer } from './printCloners';
 const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
@@ -37,18 +38,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function EventMap({
-  isAdminView,
-  markersState,
-  updateMarker,
-  selectedYear,
-  selectedMarkerId,
-  onMarkerSelect,
-  previewUseVisitorSizing = false,
-  editMode = false,
-  onMarkerDrag = null,
-  onMapReady = null,
-}) {
+function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null, onMapReady = null }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
@@ -80,25 +70,14 @@ function EventMap({
   } catch (e) {
     // Context not available in admin view, ignore
   }
-  // Keep favorites as a stable reference so hooks depending on it don't see
-  // a new empty array on every render when favoritesContext is missing.
-  const favorites = React.useMemo(
-    () => favoritesContext?.favorites || [],
-    [favoritesContext?.favorites],
-  );
-  // Ensure isFavorite is a stable function reference to avoid changing
-  // dependencies for hooks that depend on it.
-  const isFavorite = React.useMemo(
-    () => (favoritesContext?.isFavorite ? favoritesContext.isFavorite : () => false),
-    [favoritesContext],
-  );
+  const favorites = favoritesContext?.favorites || [];
+  const isFavorite = favoritesContext?.isFavorite || (() => false);
 
   const { t } = useTranslation();
 
   const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
     textPlaceholder: t('map.searchPlaceholder'),
   });
-  const searchControlReady = Boolean(searchControlRef && searchControlRef.current);
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
@@ -106,15 +85,16 @@ function EventMap({
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
     () => createIconCreateFunction(organizationLogo),
-    [organizationLogo],
+    [organizationLogo]
   );
-
+  
+  
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
   const safeMarkers = useMemo(
     () => (Array.isArray(markersState) ? markersState : []),
-    [markersState],
+    [markersState]
   );
 
   // Filter markers based on favorites toggle
@@ -200,7 +180,9 @@ function EventMap({
       // Development-only: log zoom level for debugging
       try {
         if (process.env.NODE_ENV !== 'production') {
+          /* eslint-disable no-console */
           console.debug(`[Map] zoom: ${zoom}`);
+          /* eslint-enable no-console */
         }
       } catch (err) {
         // safe fallback if console isn't available
@@ -237,14 +219,7 @@ function EventMap({
       updateMarker,
       rectangleLayerRef,
     });
-  }, [
-    mapInstance,
-    safeMarkers,
-    isAdminView,
-    showRectanglesAndHandles,
-    updateMarker,
-    MAP_CONFIG.RECTANGLE_SIZE,
-  ]);
+  }, [mapInstance, safeMarkers, isAdminView, showRectanglesAndHandles, updateMarker]);
 
   // Setup search layer and populate it with markers
   useEffect(() => {
@@ -252,7 +227,7 @@ function EventMap({
 
     // Create and populate search layer
     const layerGroup = L.layerGroup();
-
+    
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
@@ -298,7 +273,7 @@ function EventMap({
     return () => {
       control.off('search:locationfound', handleFound);
     };
-  }, [mapInstance, searchLayer, searchControlRef, searchControlReady]);
+  }, [mapInstance, searchLayer, /* track when control instance becomes available */ Boolean(searchControlRef && searchControlRef.current)]);
 
   // Setup minimap control
   useEffect(() => {
@@ -342,119 +317,10 @@ function EventMap({
       miniMapControl.addTo(mapInstance);
       mapInstance._minimapControl = miniMapControl;
     }
-  }, [mapInstance, MAP_LAYERS, MAP_CONFIG.MINIMAP, MAP_CONFIG.DEFAULT_POSITION]);
-
-  // Setup browser print control for map-only export
-  useEffect(() => {
-    if (!mapInstance) return;
-
-    // Setup browser print interface (back-end) WITHOUT adding the on-map control UI.
-    // We create a backend `L.browserPrint` instance and attach it to the map so
-    // the MapManagement header button can programmatically call printing. The
-    // UI control (map-embedded) will be hidden for now per requirement.
-
-    if (mapInstance._browserPrintInitialized) return;
-
-    if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
-      const Mode = window.L.BrowserPrint.Mode;
-
-      const modes = [
-        Mode.Landscape('A4', { title: 'Current view — landscape' }),
-        Mode.Portrait('A4', { title: 'A4 — Portrait' }),
-        Mode.Landscape('A4', { title: 'A4 — Landscape' }),
-        Mode.Auto('A4', { title: 'Auto fit' }),
-        Mode.Custom('A4', { title: 'Select area', customArea: true }),
-      ];
-
-      // Create the backend browserPrint instance. Do NOT add the control UI to the map.
-      try {
-        const browserPrint = window.L.browserPrint(mapInstance, {
-          // Keep options so consumer can inspect available modes
-          printModes: modes,
-          // Ensure popups/tooltips are closed when the plugin starts a print
-          // so they don't appear in printed output.
-          closePopupsOnPrint: true,
-        });
-
-        // Keep a lightweight facade so other components (PrintButton) can
-        // read available modes and call into either the control or backend.
-        mapInstance.printControl = {
-          browserPrint,
-          options: { printModes: modes },
-        };
-
-        // Listen for the plugin lifecycle events to make sure any transient
-        // UI (tooltips/popups/controls) is hidden during a print and restored
-        // afterwards. Some tile providers / plugin clones can include control
-        // elements in the print frame if they aren't removed before cloning.
-        try {
-          if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
-            const Ev = window.L.BrowserPrint.Event;
-
-            // On PrintStart, close popups/tooltips and add a print-hide class
-            // to common control elements so snapshots / cloned frames omit them.
-            const onStart = () => {
-              try {
-                // Close any active popups/tooltips
-                if (typeof mapInstance.closePopup === 'function') mapInstance.closePopup();
-                mapInstance.eachLayer((layer) => {
-                  try {
-                    if (layer.closePopup) layer.closePopup();
-                    if (layer.closeTooltip) layer.closeTooltip();
-                  } catch (e) {
-                    /* ignore */
-                  }
-                });
-
-                // Add print-hide class to Leaflet controls so they won't be
-                // included when the plugin clones the map for printing.
-                const container = mapInstance.getContainer?.();
-                if (container) {
-                  const hideTargets = container.querySelectorAll(
-                    '.leaflet-control, .leaflet-top, .leaflet-bottom, .map-controls-print-hide, .leaflet-control-minimap, .leaflet-control-zoom, .leaflet-control-layers, .leaflet-control-attribution',
-                  );
-                  hideTargets.forEach((el) => el.classList.add('print-hide'));
-                  // Remember we hid these so we can restore cleanly later
-                  mapInstance._browserPrintHidden = true;
-                }
-              } catch (err) {
-                /* ignore */
-              }
-            };
-
-            // On end/cancel restore any hidden UI
-            const onEndOrCancel = () => {
-              try {
-                if (mapInstance._browserPrintHidden) {
-                  const container = mapInstance.getContainer?.();
-                  if (container) {
-                    const hideTargets = container.querySelectorAll('.print-hide');
-                    hideTargets.forEach((el) => el.classList.remove('print-hide'));
-                  }
-                  mapInstance._browserPrintHidden = false;
-                }
-              } catch (err) {
-                /* ignore */
-              }
-            };
-
-            mapInstance.on(Ev.PrintStart, onStart);
-            mapInstance.on(Ev.PrintEnd, onEndOrCancel);
-            mapInstance.on(Ev.PrintCancel, onEndOrCancel);
-          }
-        } catch (err) {
-          // Non-fatal: if we fail to attach listeners, printing still works.
-          console.warn('Failed to attach BrowserPrint lifecycle listeners', err);
-        }
-
-        mapInstance._browserPrintInitialized = true;
-      } catch (err) {
-        console.warn('Failed to initialize L.browserPrint backend:', err);
-      }
-    } else {
-      console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
-    }
   }, [mapInstance]);
+
+  // Browser print is now initialized synchronously in handleMapCreated
+  // to ensure printControl is available before onMapReady is called
 
   // Handle focus parameter from URL (navigate from exhibitor list)
   useEffect(() => {
@@ -481,26 +347,222 @@ function EventMap({
         setSearchParams({}, { replace: true });
       }
     }
-  }, [mapInstance, safeMarkers, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
+  }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
 
   const handleMapCreated = (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
+
+    // Initialize browserPrint BEFORE calling onMapReady so printControl is available
+    if (!map._browserPrintInitialized) {
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+        const Mode = window.L.BrowserPrint.Mode;
+
+        // Extended paper presets for high-quality printing
+        // Ordered from largest to smallest for easy selection
+        const modes = [
+          Mode.Landscape('A2', { title: 'A2 — Landscape (large floor plan)' }),
+          Mode.Portrait('A2', { title: 'A2 — Portrait (large floor plan)' }),
+          Mode.Landscape('A3', { title: 'A3 — Landscape' }),
+          Mode.Portrait('A3', { title: 'A3 — Portrait' }),
+          Mode.Landscape('A4', { title: 'A4 — Landscape' }),
+          Mode.Portrait('A4', { title: 'A4 — Portrait' }),
+          Mode.Landscape('A4', { title: 'Current view — landscape' }),
+          Mode.Auto('A4', { title: 'Auto fit' }),
+          Mode.Custom('A4', { title: 'Select area', customArea: true }),
+        ];
+
+        // Register custom marker cloner to preserve icon properties
+        if (window.L.BrowserPrint && window.L.BrowserPrint.Utils) {
+          window.L.BrowserPrint.Utils.registerLayer(L.Marker, 'L.Marker', cloneMarkerLayer);
+
+          // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
+          if (window.L.MarkerClusterGroup) {
+            window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
+            console.log('[Print] ✓ Registered MarkerClusterGroup cloner');
+          }
+
+          console.log('[Print] ✓ Registered custom marker cloner (absolute URLs + font preservation)');
+        }
+
+        try {
+          const browserPrint = window.L.browserPrint(map, {
+            printModes: modes,
+            closePopupsOnPrint: false,
+          });
+
+          map.printControl = {
+            browserPrint,
+            options: { printModes: modes },
+          };
+
+          map._browserPrintInitialized = true;
+          console.log('✓ BrowserPrint plugin initialized successfully with', modes.length, 'modes');
+
+          // Configure Portrait/Landscape presets to use home center before printing
+          // Store original view to restore after printing (Option B: Jump and Restore)
+          let originalView = null;
+
+          // Listen to the PrePrint event to intercept before printing starts
+          // PrePrint fires before the print overlay is created
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrePrint, (event) => {
+            const orientation = event.pageOrientation; // "Portrait" or "Landscape"
+            const modeTitle = event.mode?.options?.title || 'unknown';
+            
+            console.log('[Print] PrePrint event - mode:', modeTitle, '| orientation:', orientation);
+
+            // Inject Material Design Icons stylesheet into print iframe for glyph rendering
+            // This ensures icon fonts load correctly in the print document
+            try {
+              const printDocument = event.printLayer?._container?.ownerDocument || 
+                                   event.printMap?._container?.ownerDocument;
+              if (printDocument && printDocument.head) {
+                // Check if MDI stylesheet already exists
+                const existingLink = printDocument.querySelector('link[href*="materialdesignicons"]');
+                if (!existingLink) {
+                  const mdiLink = printDocument.createElement('link');
+                  mdiLink.rel = 'stylesheet';
+                  mdiLink.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css';
+                  printDocument.head.appendChild(mdiLink);
+                  console.log('[Print] ✓ Injected Material Design Icons stylesheet');
+                }
+              }
+            } catch (e) {
+              console.warn('[Print] Could not inject MDI stylesheet:', e);
+            }
+
+            // CRITICAL: Only change center for specific print modes that need a fixed home view
+            // "Current view" mode should preserve the current map position to avoid marker misplacement
+            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
+            const isAutoMode = modeTitle.toLowerCase().includes('auto');
+            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
+            
+            // Skip center change for current view, auto, and custom modes
+            if (isCurrentViewMode || isAutoMode || isCustomMode) {
+              console.log('[Print] ✓ Using current map position (no center change)');
+              return;
+            }
+            
+            // Only modify Portrait and Landscape orientations with fixed home positions
+            if (orientation === 'Portrait' || orientation === 'Landscape') {
+              console.log('[Print] Setting fixed home center for:', modeTitle);
+
+              // Save current view to restore after printing
+              originalView = {
+                center: browserPrint._map.getCenter(),
+                zoom: browserPrint._map.getZoom(),
+              };
+
+              // Use different center and zoom for Portrait vs Landscape
+              const centerPosition = orientation === 'Portrait'
+                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+              const zoomLevel = orientation === 'Portrait'
+                ? 18 // Portrait uses zoom 17.8
+                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+
+              // Move the real map to the target position
+              // The plugin will then use this view when creating the print overlay
+              // (because Portrait/Landscape modes have invalidateBounds: false)
+              browserPrint._map.setView(centerPosition, zoomLevel, {
+                animate: false // Instant jump, no animation
+              });
+            }
+          });
+
+          // PrintStart handler REMOVED - icon cloning now handled by custom cloner
+          // Redundant code that used unreliable coordinate matching
+          // Keep commented for rollback if needed
+          /*
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintStart, (event) => {
+            console.log('[Print] PrintStart event - updating marker icons for print');
+
+            // Get all markers from the original map
+            const originalMarkers = new Map();
+            browserPrint._map.eachLayer((layer) => {
+              if (layer instanceof L.Marker && layer.options && layer.options.icon) {
+                // Use lat/lng as key to match markers between original and print map
+                const key = `${layer.getLatLng().lat.toFixed(8)},${layer.getLatLng().lng.toFixed(8)}`;
+                originalMarkers.set(key, layer);
+              }
+            });
+
+            // Update print overlay markers to match original markers
+            if (event.printObjects && event.printObjects['L.Marker']) {
+              const printMarkers = event.printObjects['L.Marker'];
+              console.log(`[Print] Updating ${printMarkers.length} markers in print overlay`);
+
+              printMarkers.forEach((printMarker) => {
+                const key = `${printMarker.getLatLng().lat.toFixed(8)},${printMarker.getLatLng().lng.toFixed(8)}`;
+                const originalMarker = originalMarkers.get(key);
+
+                if (originalMarker && originalMarker.options.icon && originalMarker.options.icon.options) {
+                  // Clone the icon with all original properties
+                  const iconOpts = originalMarker.options.icon.options;
+                  const newIcon = L.icon.glyph({
+                    iconUrl: iconOpts.iconUrl,
+                    iconSize: iconOpts.iconSize,
+                    iconAnchor: iconOpts.iconAnchor,
+                    popupAnchor: iconOpts.popupAnchor,
+                    shadowUrl: iconOpts.shadowUrl,
+                    shadowSize: iconOpts.shadowSize,
+                    shadowAnchor: iconOpts.shadowAnchor,
+                    prefix: iconOpts.prefix || '',
+                    glyph: iconOpts.glyph || '',
+                    glyphColor: iconOpts.glyphColor || 'white',
+                    bgColor: iconOpts.bgColor,
+                    glyphSize: iconOpts.glyphSize || '11px',
+                    glyphAnchor: iconOpts.glyphAnchor || [0, 0],
+                    className: iconOpts.className || '',
+                  });
+
+                  // Update the print marker with the correct icon
+                  printMarker.setIcon(newIcon);
+                }
+              });
+            }
+          });
+          */
+
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
+            console.log('PrintEnd event fired!');
+            // Restore original view after printing completes
+            if (originalView) {
+              console.log('Restoring original view after printing');
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              originalView = null;
+            }
+          });
+
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
+            console.log('PrintCancel event fired!');
+            // Restore original view if user cancels print
+            if (originalView) {
+              console.log('Restoring original view after print cancel');
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              originalView = null;
+            }
+          });
+        } catch (err) {
+          console.error('Failed to initialize L.browserPrint backend:', err);
+        }
+      } else {
+        console.warn('BrowserPrint not available, print functionality will fallback to snapshot');
+      }
+    }
+
     setMapInstance(map);
+
     // Inform parent components that the map instance is ready so they can
     // register print actions or other map-specific interactions.
     if (typeof onMapReady === 'function') {
-      try {
-        onMapReady(map);
-      } catch (err) {
-        /* ignore parent handler errors */
-      }
+      try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
     }
 
     // Force a resize event to ensure proper tile loading
     setTimeout(() => {
       if (map) {
         map.invalidateSize();
-        console.log('Map resized and tiles should be loaded');
       }
     }, 100);
   };
@@ -520,11 +582,7 @@ function EventMap({
         // Debounce a bit to avoid thrashing during continuous resize
         if (mapInstance._invalidateTimeout) clearTimeout(mapInstance._invalidateTimeout);
         mapInstance._invalidateTimeout = setTimeout(() => {
-          try {
-            mapInstance.invalidateSize();
-          } catch (err) {
-            /* ignore */
-          }
+          try { mapInstance.invalidateSize(); } catch (err) { /* ignore */ }
           mapInstance._invalidateTimeout = null;
         }, 120);
       } catch (err) {
@@ -549,11 +607,7 @@ function EventMap({
     window.addEventListener('resize', onWinResize);
 
     return () => {
-      try {
-        window.removeEventListener('resize', onWinResize);
-      } catch (e) {
-        /* ignore */
-      }
+      try { window.removeEventListener('resize', onWinResize); } catch (e) { /* ignore */ }
       if (cleanup) cleanup();
     };
   }, [mapInstance]);
@@ -581,7 +635,12 @@ function EventMap({
       };
 
   return (
-    <div style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
+    <div
+      style={containerStyle}
+      tabIndex={0}
+      aria-label="Event Map"
+      role="region"
+    >
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}
@@ -619,7 +678,7 @@ function EventMap({
 
       <div
         id="map-container"
-        className={isAdminView ? 'w-full h-full' : 'fixed inset-0 w-full h-full'}
+        className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
         style={{
           zIndex: isAdminView ? 1 : 1, // Ensure admin map stays below modals
           height: isAdminView ? '100%' : '100svh',
@@ -639,7 +698,7 @@ function EventMap({
           style={{
             width: isAdminView ? '100%' : '100vw',
             height: isAdminView ? '100%' : '100svh',
-            minHeight: isAdminView ? '400px' : '100svh',
+            minHeight: isAdminView ? '400px' : '100svh'
           }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
@@ -647,12 +706,12 @@ function EventMap({
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
-              key={layer.key}
-              attribution={layer.attribution}
-              url={layer.url}
-              crossOrigin="anonymous"
-              maxZoom={MAP_CONFIG.MAX_ZOOM}
-            />
+                key={layer.key}
+                attribution={layer.attribution}
+                url={layer.url}
+                crossOrigin="anonymous"
+                maxZoom={MAP_CONFIG.MAX_ZOOM}
+              />
           ))}
 
           <EventClusterMarkers
@@ -661,9 +720,7 @@ function EventMap({
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) =>
-              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
-            }
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
@@ -683,9 +740,7 @@ function EventMap({
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) =>
-              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
-            }
+            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}

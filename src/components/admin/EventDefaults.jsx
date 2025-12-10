@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle, mdiDomain } from '@mdi/js';
+import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle, mdiDomain, mdiCurrencyUsd } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
+import useOrganizationProfile from '../../hooks/useOrganizationProfile';
+import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
 
 /**
@@ -36,6 +38,8 @@ export default function EventDefaults() {
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [newSubscriptionNotify, setNewSubscriptionNotify] = useState(true);
   const [assignmentChangeNotify, setAssignmentChangeNotify] = useState(true);
+  // Event default coins (stored on organization_profile)
+  const [defaultCoins, setDefaultCoins] = useState(0);
 
   // Sync local state with organization settings when they load
   useEffect(() => {
@@ -58,6 +62,14 @@ export default function EventDefaults() {
       }
     }
   }, [settings]);
+
+  // Read default_coins from organization_profile (it lives in a different table)
+  const { profile: orgProfile } = useOrganizationProfile();
+  useEffect(() => {
+    if (typeof orgProfile?.default_coins === 'number') {
+      setDefaultCoins(orgProfile.default_coins);
+    }
+  }, [orgProfile]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -85,6 +97,21 @@ export default function EventDefaults() {
 
       if (!result) {
         throw new Error('Failed to update settings');
+      }
+
+      // Save default_coins back to organization_profile as well
+      try {
+        // Best-effort update — do not block the overall save flow if this fails
+        const { error: coinsError } = await supabase
+          .from('organization_profile')
+          .update({ default_coins: defaultCoins })
+          .eq('id', 1);
+
+        if (coinsError) {
+          console.warn('Failed to persist default_coins to organization_profile:', coinsError);
+        }
+      } catch (err) {
+        console.warn('Failed to persist default_coins to organization_profile:', err);
       }
 
       setSuccess(true);
@@ -121,6 +148,10 @@ export default function EventDefaults() {
         setEmailNotifications(notifSettings.emailNotifications ?? true);
         setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
         setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
+      }
+      // Reset coins from orgProfile if available
+      if (orgProfile && typeof orgProfile.default_coins === 'number') {
+        setDefaultCoins(orgProfile.default_coins);
       }
     }
   };
@@ -300,6 +331,36 @@ export default function EventDefaults() {
                   {t('settings.eventDefaults.mealDefaults.sundayNoBbq')}
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Default Coins (stored on organization_profile) */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Icon path={mdiCurrencyUsd} size={1} className="text-orange-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('settings.eventDefaults.coins.title', 'Default coins')}
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            {t('settings.eventDefaults.coins.description', 'Number of default coins assigned to a new subscription when created.')}
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-sm">
+            <div>
+              <label htmlFor="defaultCoins" className="label-base">
+                {t('settings.eventDefaults.coins.label', 'Default coins')}
+              </label>
+              <input
+                type="number"
+                id="defaultCoins"
+                min="0"
+                max="9999"
+                value={defaultCoins}
+                onChange={(e) => setDefaultCoins(parseInt(e.target.value) || 0)}
+                className="input-base"
+              />
             </div>
           </div>
         </div>

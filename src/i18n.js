@@ -17,4 +17,34 @@ i18n.use(initReactI18next).init({
   },
 });
 
+// Expose i18n on window for easy debugging in development (reversible)
+if (typeof window !== 'undefined') {
+  // Avoid clobbering an existing debug value
+  if (!window.__i18n) window.__i18n = i18n;
+}
+
 export default i18n;
+
+// Temporary safety: ensure important nested blocks (e.g. companies) are present
+// in the active translation namespace for each supported language. Some dev/HMR
+// setups can end up with partially-loaded resource bundles; this merges any
+// missing keys from the static JSON files into the runtime store without
+// overwriting existing keys.
+// Extract companies from helpPanel.companies (where it actually exists in the JSON)
+// and merge it as a top-level namespace so component code can use 'companies.*' keys.
+const _pkgs = { en, nl, de };
+['en', 'nl', 'de'].forEach((lang) => {
+  try {
+    const pkg = _pkgs[lang];
+    // Extract companies from helpPanel.companies (where it actually exists)
+    const companiesData = pkg?.helpPanel?.companies;
+
+    if (companiesData && (!i18n.store?.data?.[lang]?.translation?.companies)) {
+      i18n.addResourceBundle(lang, 'translation', { companies: companiesData }, true, true);
+    }
+  } catch (e) {
+    // best-effort - do not throw during startup
+    // eslint-disable-next-line no-console
+    console.debug('[i18n] failed to merge companies for', lang, e && e.message);
+  }
+});

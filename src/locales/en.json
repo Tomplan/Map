@@ -24,6 +24,10 @@
       "content_editor": "Content Editor"
     }
   },
+  "languages": {
+    "english": "English",
+    "dutch": "Dutch"
+  },
   "navigation": {
     "home": "Home",
     "map": "Map",
@@ -156,6 +160,8 @@
       "loading": "Loading settings...",
       "save": "Save Changes",
       "saving": "Saving...",
+      "loadingData": "Loading data...",
+      "errorWithMessage": "Error: {{message}}",
       "reset": "Reset to Defaults",
       "saveSuccess": "Saved!",
       "themeColor": {
@@ -249,6 +255,11 @@
         "assignmentChange": "Assignment Changes",
         "assignmentChangeDesc": "Get notified when booth assignments are modified"
       },
+        "coins": {
+          "title": "Default coins",
+          "description": "Number of default coins assigned to a new subscription when created.",
+          "label": "Default coins"
+        },
       "errors": {
         "loadFailed": "Failed to load settings. Please try again.",
         "saveFailed": "Failed to save settings. Please check your connection."
@@ -629,6 +640,7 @@
       "notAssigned": "Not assigned"
     },
     "companies": {
+      "saving": "Saving...",
       "publicInfoTab": "Public Info",
       "privateInfoTab": "Private Info",
       "categoriesLabel": "Categories",
@@ -658,6 +670,32 @@
       "none": "None",
       "orPasteUrl": "Or paste URL",
       "organizationInfo": "Organization info"
+    ,
+    "modal": {
+      "publicInfoHeading": "Public Info (visible to attendees)",
+      "managerInfoHeading": "Manager-only Info (default contact info)",
+      "infoMultiLanguageLabel": "Info (Multi-language)",
+      "enterInfoInLanguage": "Enter info in {{lang}}...",
+      "uploadLogo": "Upload Logo",
+      "categoriesLabel": "Categories",
+      "editTitle": "Edit: {{name}}"
+    },
+    "noCategoriesAvailable": "No categories available",
+    "notApplicable": "N/A",
+    "edit": "Edit",
+    "delete": "Delete",
+    "table": {
+      "name": "Name",
+      "logo": "Logo",
+      "website": "Website",
+      "info": "Info",
+      "categories": "Categories",
+      "contact": "Contact",
+      "phone": "Phone",
+      "email": "Email",
+      "actions": "Actions"
+    },
+    "create": "Create"
     }
   },
   "tour": {
