@@ -48,11 +48,11 @@ export default defineConfig({
             )
               return 'vendor-ui';
 
-            // react runtime
+            // react runtime - be specific to avoid matching react-leaflet, react-router, etc.
             if (
-              id.includes('/react/') ||
-              id.includes('node_modules/react') ||
-              id.includes('node_modules/react-dom')
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/')
             )
               return 'vendor-react';
 
