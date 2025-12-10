@@ -1,1 +1,0 @@
-import{b2 as n}from"./vendor-3047817a.js";function f(e,l="NL"){if(!e&&e!=="")return null;const t=String(e).trim();if(t==="")return null;let r=n(t,l);if(r&&r.isValid())return r.format("E.164");let i=t.replace(/[()\s.-]+/g,"");return i.startsWith("00")&&(i="+"+i.slice(2)),r=n(i),r&&r.isValid()?r.format("E.164"):t.replace(/[^0-9+]+/g,"")||t}export{f as n};
