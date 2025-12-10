@@ -51,6 +51,38 @@ export const BRANDING_CONFIG = {
   },
 };
 
+// Print configuration - single source of truth for all print modes
+export const PRINT_CONFIG = {
+  margin: { top: 3, right: 3, bottom: 3, left: 3 },
+  maxZoom: 25, // Temporarily allow higher zoom during printing
+  modes: {
+    'A2 — Landscape (large floor plan)': {
+      center: [51.898095078807025, 5.772961378097534],
+      zoom: 17,
+    },
+    'A2 — Portrait (large floor plan)': {
+      center: [51.89664504222346, 5.775062626578228],
+      zoom: 18,
+    },
+    'A3 — Landscape': {
+      center: [51.89689783985157, 5.7757150597931615],
+      zoom: 18.5,
+    },
+    'A3 — Portrait': {
+      center: [51.89664504222346, 5.775062626578228],
+      zoom: 18.5,
+    },
+    'A4 — Landscape': {
+      center: [51.89676207833922, 5.7757150597931615],
+      zoom: 18,
+    },
+    'A4 — Portrait': {
+      center: [51.89668717526025, 5.775062626578228],
+      zoom: 18,
+    },
+  },
+};
+
 // Available map tile layers
 export const MAP_LAYERS = [
   {
