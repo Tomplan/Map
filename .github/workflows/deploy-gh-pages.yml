@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [ development ]
   # Allow manual (on-demand) deployments from the Actions UI
   workflow_dispatch:
     inputs:
@@ -11,9 +11,9 @@ on:
         required: false
         default: 'manual'
       branch:
-        description: 'Which branch should be built and deployed (e.g. development or main). Defaults to main.'
+        description: 'Which branch should be built and deployed (e.g. development or main). Defaults to development.'
         required: false
-        default: 'main'
+        default: 'development'
 
 jobs:
   build_and_deploy:
