@@ -357,10 +357,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
         const Mode = window.L.BrowserPrint.Mode;
 
+        // Extended paper presets for high-quality printing
+        // Ordered from largest to smallest for easy selection
         const modes = [
-          Mode.Landscape('A4', { title: 'Current view — landscape' }),
-          Mode.Portrait('A4', { title: 'A4 — Portrait', margin: 4 }),
+          Mode.Landscape('A2', { title: 'A2 — Landscape (large floor plan)' }),
+          Mode.Portrait('A2', { title: 'A2 — Portrait (large floor plan)' }),
+          Mode.Landscape('A3', { title: 'A3 — Landscape' }),
+          Mode.Portrait('A3', { title: 'A3 — Portrait' }),
           Mode.Landscape('A4', { title: 'A4 — Landscape' }),
+          Mode.Portrait('A4', { title: 'A4 — Portrait' }),
+          Mode.Landscape('A4', { title: 'Current view — landscape' }),
           Mode.Auto('A4', { title: 'Auto fit' }),
           Mode.Custom('A4', { title: 'Select area', customArea: true }),
         ];
@@ -372,10 +378,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
           if (window.L.MarkerClusterGroup) {
             window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
-            console.log('[Print] Registered MarkerClusterGroup cloner');
+            console.log('[Print] ✓ Registered MarkerClusterGroup cloner');
           }
 
-          console.log('[Print] Registered custom marker cloner for glyph icons');
+          console.log('[Print] ✓ Registered custom marker cloner (absolute URLs + font preservation)');
         }
 
         try {
@@ -400,11 +406,45 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           // PrePrint fires before the print overlay is created
           browserPrint._map.on(window.L.BrowserPrint.Event.PrePrint, (event) => {
             const orientation = event.pageOrientation; // "Portrait" or "Landscape"
+            const modeTitle = event.mode?.options?.title || 'unknown';
+            
+            console.log('[Print] PrePrint event - mode:', modeTitle, '| orientation:', orientation);
 
-            // Only modify Portrait and Landscape orientations (not Auto)
-            // Auto and Custom modes should auto-fit layers as normal
+            // Inject Material Design Icons stylesheet into print iframe for glyph rendering
+            // This ensures icon fonts load correctly in the print document
+            try {
+              const printDocument = event.printLayer?._container?.ownerDocument || 
+                                   event.printMap?._container?.ownerDocument;
+              if (printDocument && printDocument.head) {
+                // Check if MDI stylesheet already exists
+                const existingLink = printDocument.querySelector('link[href*="materialdesignicons"]');
+                if (!existingLink) {
+                  const mdiLink = printDocument.createElement('link');
+                  mdiLink.rel = 'stylesheet';
+                  mdiLink.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css';
+                  printDocument.head.appendChild(mdiLink);
+                  console.log('[Print] ✓ Injected Material Design Icons stylesheet');
+                }
+              }
+            } catch (e) {
+              console.warn('[Print] Could not inject MDI stylesheet:', e);
+            }
+
+            // CRITICAL: Only change center for specific print modes that need a fixed home view
+            // "Current view" mode should preserve the current map position to avoid marker misplacement
+            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
+            const isAutoMode = modeTitle.toLowerCase().includes('auto');
+            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
+            
+            // Skip center change for current view, auto, and custom modes
+            if (isCurrentViewMode || isAutoMode || isCustomMode) {
+              console.log('[Print] ✓ Using current map position (no center change)');
+              return;
+            }
+            
+            // Only modify Portrait and Landscape orientations with fixed home positions
             if (orientation === 'Portrait' || orientation === 'Landscape') {
-              console.log('[Print] Setting home center for:', orientation);
+              console.log('[Print] Setting fixed home center for:', modeTitle);
 
               // Save current view to restore after printing
               originalView = {

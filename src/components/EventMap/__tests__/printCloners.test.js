@@ -1,86 +1,167 @@
 import L from 'leaflet';
+
+// Mock getBaseUrl module to avoid import.meta.env issues in Jest
+jest.mock('../../../utils/getBaseUrl', () => ({
+  getAbsoluteUrl: (url) => url || '',
+  getBaseUrl: () => '/',
+}));
+
+// Mock L.icon.glyph for testing since the plugin isn't loaded in Jest
+L.icon.glyph = jest.fn((opts) => {
+  // Return an L.Icon instance with all the glyph options stored
+  const icon = L.icon({
+    iconUrl: opts.iconUrl,
+    iconSize: opts.iconSize,
+    iconAnchor: opts.iconAnchor,
+    popupAnchor: opts.popupAnchor,
+    shadowUrl: opts.shadowUrl,
+    shadowSize: opts.shadowSize,
+    shadowAnchor: opts.shadowAnchor,
+    className: opts.className,
+  });
+  // Store glyph-specific options on the icon
+  icon.options.glyph = opts.glyph;
+  icon.options.glyphColor = opts.glyphColor;
+  icon.options.glyphSize = opts.glyphSize;
+  icon.options.glyphAnchor = opts.glyphAnchor;
+  icon.options.prefix = opts.prefix;
+  icon.options.bgColor = opts.bgColor;
+  return icon;
+});
+
 import { cloneMarkerLayer } from '../printCloners';
 
 describe('printCloners.cloneMarkerLayer', () => {
-  it('extracts glyph and iconUrl from DOM-based glyph icon when options missing', () => {
-    // Build DOM-based icon like Leaflet.Icon.Glyph would produce
-    const div = document.createElement('div');
-    // Simulate computed style (no inline style) by not setting style.backgroundImage
-    // We will mock getComputedStyle later in this test to return our url
-
-    const span = document.createElement('span');
-    span.innerHTML = '3A';
-    span.style.color = 'magenta';
-    span.style.fontSize = '14px';
-    span.style.left = '5px';
-    span.style.top = '7px';
-    span.className = 'fa someprefix';
-    div.appendChild(span);
-
-    const layer = {
-      options: {},
-      _icon: div,
-      getLatLng: () => L.latLng(1, 2),
-    };
-
-    // Mock getComputedStyle to emulate CSS-provided background-image
-    const realGetComputedStyle = window.getComputedStyle;
-    window.getComputedStyle = () => ({ backgroundImage: "url('https://cdn.example.com/glyph.svg')" });
-    const marker = cloneMarkerLayer(layer);
-    // restore
-    window.getComputedStyle = realGetComputedStyle;
-    // Debug: expose icon options shape when running locally
-    // eslint-disable-next-line no-console
-    console.log('DOM-based cloned icon:', marker.options && marker.options.icon && marker.options.icon.options);
-
-    // (test environment may not have L.icon.glyph registered)
-    expect(marker).toBeDefined();
-    // When created via L.icon.glyph, Leaflet stores options on marker.options.icon.options
-    expect(marker.options).toBeDefined();
-    expect(marker.options.icon).toBeDefined();
-    const iconOpts = marker.options.icon.options || marker.options.icon;
-    // If we created a divIcon copy of the DOM, the serialized HTML will be available
-    if (iconOpts && typeof iconOpts.html === 'string') {
-      expect(iconOpts.html).toMatch(/https:\/\/cdn.example.com\/glyph.svg/);
-      expect(iconOpts.html).toMatch(/3A/);
-      expect(iconOpts.html).toMatch(/magenta/);
-    } else {
-      expect(iconOpts.iconUrl || iconOpts.iconUrl).toMatch(/https:\/\/cdn.example.com\/glyph.svg/);
-    }
-    // glyph should be present from span content
-    // Glyph properties may only be present in environments where L.icon.glyph is registered
-    if (iconOpts.glyph !== undefined) {
-      expect(iconOpts.glyph).toBe('3A');
-      expect(iconOpts.glyphColor || iconOpts.glyphColor).toBe('magenta');
-      expect(iconOpts.glyphSize || iconOpts.glyphSize).toBe('14px');
-    }
-  });
-
-  it('prefers icon options when present on the layer', () => {
+  it('recreates glyph icon from layer.options.icon.options', () => {
+    // Simulate a marker with full glyph icon options (as created by createMarkerIcon)
     const layer = {
       options: {
         icon: {
           options: {
-            iconUrl: 'https://cdn.example.com/explicit.svg',
-            glyph: 'OK',
-            glyphColor: 'blue',
-            glyphSize: '12px',
+            iconUrl: 'https://cdn.example.com/marker.svg',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            glyph: '42',
+            glyphColor: 'white',
+            glyphSize: '10px',
+            glyphAnchor: [0, -7],
+            prefix: '',
+            className: 'booth-marker',
           },
         },
       },
-      getLatLng: () => L.latLng(5, 6),
+      getLatLng: () => L.latLng(51.896, 5.774),
+      getPopup: () => null,
     };
 
     const marker = cloneMarkerLayer(layer);
-    // eslint-disable-next-line no-console
-    console.log('explicit cloned icon:', marker.options && marker.options.icon && marker.options.icon.options);
+    
     expect(marker).toBeDefined();
-    const iconOpts = marker.options.icon.options || marker.options.icon;
-    expect(iconOpts.iconUrl).toBe('https://cdn.example.com/explicit.svg');
-    if (iconOpts.glyph !== undefined) {
-      expect(iconOpts.glyph).toBe('OK');
-      expect(iconOpts.glyphColor).toBe('blue');
-      expect(iconOpts.glyphSize).toBe('12px');
-    }
+    expect(marker.options).toBeDefined();
+    expect(marker.options.icon).toBeDefined();
+    
+    const iconOpts = marker.options.icon.options;
+    expect(iconOpts.iconUrl).toBe('https://cdn.example.com/marker.svg');
+    expect(iconOpts.glyph).toBe('42');
+    expect(iconOpts.glyphColor).toBe('white');
+    expect(iconOpts.iconSize).toEqual([25, 41]);
+    expect(iconOpts.iconAnchor).toEqual([12, 41]);
+  });
+
+  it('falls back to L.icon for markers without glyph options', () => {
+    const layer = {
+      options: {
+        icon: {
+          options: {
+            iconUrl: 'https://cdn.example.com/simple.png',
+            iconSize: [20, 30],
+            iconAnchor: [10, 30],
+          },
+        },
+      },
+      getLatLng: () => L.latLng(51.9, 5.8),
+      getPopup: () => null,
+    };
+
+    const marker = cloneMarkerLayer(layer);
+    
+    expect(marker).toBeDefined();
+    const iconOpts = marker.options.icon.options;
+    expect(iconOpts.iconUrl).toBe('https://cdn.example.com/simple.png');
+    expect(iconOpts.iconSize).toEqual([20, 30]);
+  });
+
+  it('uses L.Icon.Default when no icon options available', () => {
+    const layer = {
+      options: {},
+      getLatLng: () => L.latLng(51.85, 5.75),
+      getPopup: () => null,
+    };
+
+    const marker = cloneMarkerLayer(layer);
+    
+    expect(marker).toBeDefined();
+    // Should have created a marker with default icon
+    expect(marker.options.icon).toBeDefined();
+  });
+
+  it('copies popup content when present', () => {
+    const layer = {
+      options: {
+        icon: {
+          options: {
+            iconUrl: 'https://cdn.example.com/marker.svg',
+            glyph: 'A1',
+          },
+        },
+      },
+      getLatLng: () => L.latLng(51.89, 5.77),
+      getPopup: () => ({ getContent: () => '<div>Test Popup</div>' }),
+    };
+
+    const marker = cloneMarkerLayer(layer);
+    
+    expect(marker).toBeDefined();
+    // Popup should be bound
+    expect(marker.getPopup()).toBeDefined();
+  });
+
+  it('returns null for invisible markers (opacity: 0)', () => {
+    const layer = {
+      options: {
+        opacity: 0,
+        interactive: false,
+        icon: {
+          options: {
+            iconUrl: 'https://cdn.example.com/search-marker.png',
+          },
+        },
+      },
+      getLatLng: () => L.latLng(51.89, 5.77),
+      getPopup: () => null,
+    };
+
+    const result = cloneMarkerLayer(layer);
+    
+    expect(result).toBeNull();
+  });
+
+  it('returns null for non-interactive markers', () => {
+    const layer = {
+      options: {
+        interactive: false,
+        icon: {
+          options: {
+            iconUrl: 'https://cdn.example.com/marker.svg',
+          },
+        },
+      },
+      getLatLng: () => L.latLng(51.89, 5.77),
+      getPopup: () => null,
+    };
+
+    const result = cloneMarkerLayer(layer);
+    
+    expect(result).toBeNull();
   });
 });
