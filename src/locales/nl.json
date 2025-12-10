@@ -24,6 +24,10 @@
       "content_editor": "Contentbeheerder"
     }
   },
+  "languages": {
+    "english": "Engels",
+    "dutch": "Nederlands"
+  },
   "common": {
     "loading": "Laden...",
     "saving": "Opslaan...",
@@ -150,6 +154,8 @@
       "loading": "Instellingen laden...",
       "save": "Wijzigingen Opslaan",
       "saving": "Opslaan...",
+      "loadingData": "Gegevens laden...",
+      "errorWithMessage": "Fout: {{message}}",
       "reset": "Standaardinstellingen Herstellen",
       "saveSuccess": "Opgeslagen!",
       "themeColor": {
@@ -242,6 +248,11 @@
         "newSubscriptionDesc": "Ontvang een melding wanneer bedrijven zich registreren voor het evenement",
         "assignmentChange": "Toewijzingswijzigingen",
         "assignmentChangeDesc": "Ontvang een melding wanneer standtoewijzingen worden gewijzigd"
+      },
+      "coins": {
+        "title": "Standaard munten",
+        "description": "Aantal standaardmunten dat aan een nieuwe inschrijving wordt toegekend bij het aanmaken.",
+        "label": "Standaard munten"
       },
       "errors": {
         "loadFailed": "Kon instellingen niet laden. Probeer het opnieuw.",
@@ -607,6 +618,7 @@
       "notAssigned": "Niet toegewezen"
     },
     "companies": {
+      "saving": "Opslaan...",
       "publicInfoTab": "Publieke Info",
       "privateInfoTab": "Privé Info",
       "categoriesLabel": "Categorieën",
@@ -635,7 +647,32 @@
       "notSet": "Niet ingesteld",
       "none": "Geen",
       "orPasteUrl": "Of plak URL",
-      "organizationInfo": "Organisatie info"
+      "organizationInfo": "Organisatie info",
+      "modal": {
+        "publicInfoHeading": "Publieke informatie (zichtbaar voor bezoekers)",
+        "managerInfoHeading": "Alleen managers (stand contactgegevens)",
+        "infoMultiLanguageLabel": "Info (Meertalige invoer)",
+        "enterInfoInLanguage": "Voer info in {{lang}}...",
+        "uploadLogo": "Upload logo",
+        "categoriesLabel": "Categorieën",
+        "editTitle": "Bewerken: {{name}}"
+      },
+      "noCategoriesAvailable": "Geen categorieën beschikbaar",
+      "notApplicable": "N/B",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "table": {
+        "name": "Naam",
+        "logo": "Logo",
+        "website": "Website",
+        "info": "Info",
+        "categories": "Categorieën",
+        "contact": "Contact",
+        "phone": "Telefoon",
+        "email": "E-mail",
+        "actions": "Acties"
+      },
+      "create": "Aanmaken"
     }
   },
   "tour": {

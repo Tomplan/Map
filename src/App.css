@@ -99,14 +99,29 @@ body {
     z-index: 100 !important;
   }
 
+  /* Force marker icons to print with background images and colors */
   .leaflet-glyph-icon,
+  .leaflet-marker-icon {
+    display: block !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
   .leaflet-pane {
     display: block !important;
-    background: inherit !important;
     opacity: 1 !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  /* Force background images to print for marker icons */
+  .leaflet-glyph-icon {
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+  }
+
   .leaflet-marker-icon svg {
     display: block !important;
     opacity: 1 !important;

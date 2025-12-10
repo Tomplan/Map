@@ -13,6 +13,36 @@ import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import { useDialog } from '../../contexts/DialogContext';
 import ContentLanguageTabs, { LanguageIndicator } from './ContentLanguageTabs';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import enLocales from '../../locales/en.json';
+import nlLocales from '../../locales/nl.json';
+import deLocales from '../../locales/de.json';
+
+// static locales used as a last-resort fallback when runtime i18n resources
+// are partially missing (e.g. HMR or old service-worker caches during dev).
+const staticLocales = { en: enLocales, nl: nlLocales, de: deLocales };
+
+function translateSafe(key, opts) {
+  try {
+    // Prefer the runtime translation if available
+    if (i18n && i18n.exists(key)) return i18n.t(key, opts);
+
+    // Fallback to static JSON for current language
+    const lang = i18n?.language || 'nl';
+    const parts = key.split('.');
+    let cursor = staticLocales[lang] || staticLocales.nl;
+    for (const p of parts) {
+      if (!cursor || typeof cursor !== 'object') { cursor = undefined; break; }
+      cursor = cursor[p];
+    }
+    if (cursor !== undefined) return typeof cursor === 'string' ? cursor : JSON.stringify(cursor);
+
+    // Last-resort: return literal key
+    return i18n?.t ? i18n.t(key, opts) : key;
+  } catch (e) {
+    return i18n?.t ? i18n.t(key, opts) : key;
+  }
+}
 import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
@@ -25,6 +55,7 @@ import { supabase } from '../../supabaseClient';
  */
 function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChange }) {
   const { translations, saveTranslation } = useCompanyTranslations(companyId);
+  const { t } = useTranslation();
   const [localValue, setLocalValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -60,11 +91,11 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
         onBlur={handleBlur}
         className="w-full bg-white text-gray-900 border rounded px-2 py-1"
         rows={4}
-        placeholder={`Enter info in ${editingLanguage === 'nl' ? 'Dutch' : 'English'}...`}
+        placeholder={translateSafe('companies.modal.enterInfoInLanguage', { lang: editingLanguage === 'nl' ? t('languages.dutch') : t('languages.english') })}
         disabled={isSaving}
       />
       {isSaving && (
-        <span className="text-xs text-gray-500 italic">Saving...</span>
+        <span className="text-xs text-gray-500 italic">{translateSafe('companies.saving')}</span>
       )}
     </div>
   );
@@ -75,12 +106,13 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
  */
 function InfoFieldDisplay({ companyId, currentLanguage }) {
   const { translations, getTranslation } = useCompanyTranslations(companyId);
+  const { t } = useTranslation();
   const displayText = getTranslation(currentLanguage, 'nl');
 
   return (
     <div className="flex items-start gap-2">
       <p className="line-clamp-3 whitespace-pre-wrap flex-1">
-        {displayText || <span className="text-gray-400 text-sm italic">Not set</span>}
+        {displayText || <span className="text-gray-400 text-sm italic">{translateSafe('companies.notSet')}</span>}
       </p>
       <LanguageIndicator translations={translations} />
     </div>
@@ -96,7 +128,7 @@ export default function CompaniesTab() {
   const { profile: organizationProfile, loading: loadingProfile, error: errorProfile, updateProfile } = useOrganizationProfile();
   const { organizationLogo } = useOrganizationLogo();
   const { confirm, toastError } = useDialog();
-  const { i18n, t } = useTranslation();
+  const { i18n: i18nHook, t } = useTranslation();
   const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } = useCategories();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -207,11 +239,11 @@ export default function CompaniesTab() {
   const error = errorCompanies || errorProfile;
 
   if (loading) {
-    return <div className="p-4">Loading data...</div>;
+    return <div className="p-4">{translateSafe('companies.loadingData')}</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-600">Error: {error}</div>;
+    return <div className="p-4 text-red-600">{translateSafe('companies.errorWithMessage', { message: error })}</div>;
   }
 
   return (
@@ -220,9 +252,9 @@ export default function CompaniesTab() {
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
-          <input
+            <input
             type="text"
-            placeholder={t('helpPanel.companies.searchPlaceholder')}
+            placeholder={translateSafe('companies.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -253,7 +285,7 @@ export default function CompaniesTab() {
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Icon path={mdiPlus} size={0.8} />
-            {t('helpPanel.companies.addCompany')}
+            {translateSafe('companies.addCompany')}
           </button>
         </div>
       </div>
@@ -268,7 +300,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('helpPanel.companies.publicInfoTab', 'Public Info')}
+          {t('companies.publicInfoTab')}
         </button>
         <button
           onClick={() => setActiveTab('manager')}
@@ -278,7 +310,7 @@ export default function CompaniesTab() {
               : 'text-gray-600 hover:text-gray-900'
           }`}
         >
-          {t('helpPanel.companies.privateInfoTab', 'Private Info')}
+          {t('companies.privateInfoTab')}
         </button>
       </div>
 
@@ -286,18 +318,18 @@ export default function CompaniesTab() {
       <Modal
         isOpen={isCreating || !!editingId}
         onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
-        title={isCreating ? t('helpPanel.companies.newCompany') : `Edit: ${editForm.name || 'Company'}`}
+        title={isCreating ? translateSafe('companies.newCompany') : translateSafe('companies.modal.editTitle', { name: editForm.name || translateSafe('companies.newCompany') })}
         size="lg"
       >
         <div className="p-6">
 
               {/* Public Information Section */}
               <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-blue-800">Public Info (visible to attendees)</h4>
+                <h4 className="font-semibold text-sm mb-3 text-blue-800">{translateSafe('companies.modal.publicInfoHeading', 'Public Info (visible to attendees)')}</h4>
                 <div className="space-y-3">
                   <input
                     type="text"
-                    placeholder={t('helpPanel.companies.companyNamePlaceholder')}
+                    placeholder={translateSafe('companies.companyNamePlaceholder')}
                     value={isCreating ? newCompanyForm.name : editForm.name}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
@@ -306,7 +338,7 @@ export default function CompaniesTab() {
                     className="w-full px-3 py-2 border rounded bg-white text-gray-900"
                   />
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-900">{t('helpPanel.companies.companyLogo')}</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-900">{translateSafe('companies.companyLogo')}</label>
                     <LogoUploader
                       currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
                       onUploadComplete={(url, path) => {
@@ -315,7 +347,7 @@ export default function CompaniesTab() {
                           : setEditForm({ ...editForm, logo: url });
                       }}
                       folder={editingId === 'organization' ? "organization" : "companies"}
-                      label="Upload Logo"
+                      label={translateSafe('companies.modal.uploadLogo')}
                       showPreview={true}
                       allowDelete={true}
                       onDelete={() => {
@@ -326,7 +358,7 @@ export default function CompaniesTab() {
                     />
                     <input
                       type="text"
-                      placeholder={t('helpPanel.companies.logoUrlPlaceholder')}
+                      placeholder={translateSafe('companies.logoUrlPlaceholder')}
                       value={isCreating ? newCompanyForm.logo : (editForm.logo || '')}
                       onChange={(e) => isCreating
                         ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
@@ -337,7 +369,7 @@ export default function CompaniesTab() {
                   </div>
                   <input
                     type="text"
-                    placeholder="Website URL"
+                    placeholder={translateSafe('companies.websiteUrlPlaceholder')}
                     value={isCreating ? newCompanyForm.website : (editForm.website || '')}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
@@ -347,7 +379,7 @@ export default function CompaniesTab() {
                   />
                   {editingId === 'organization' ? (
                     <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      placeholder={translateSafe('companies.infoPlaceholder')}
                       value={isCreating ? newCompanyForm.info : (editForm.info || '')}
                       onChange={(e) => isCreating
                         ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
@@ -358,7 +390,7 @@ export default function CompaniesTab() {
                     />
                   ) : !isCreating ? (
                     <div>
-                      <label className="block text-sm font-medium mb-1 text-gray-900">Info (Multi-language)</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-900">{translateSafe('companies.modal.infoMultiLanguageLabel')}</label>
                       <InfoFieldWithTranslations
                         companyId={editingId}
                         editingLanguage={editingContentLanguage}
@@ -367,7 +399,7 @@ export default function CompaniesTab() {
                     </div>
                   ) : (
                     <textarea
-                      placeholder={t('helpPanel.companies.infoPlaceholder')}
+                      placeholder={translateSafe('companies.infoPlaceholder')}
                       value={newCompanyForm.info}
                       onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
                       className="w-full px-3 py-2 border rounded bg-white text-gray-900"
@@ -377,7 +409,7 @@ export default function CompaniesTab() {
                   {/* Categories - only for companies, not organization */}
                   {!isCreating && editingId !== 'organization' && (
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-900">Categories</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-900">{translateSafe('companies.modal.categoriesLabel')}</label>
                       {categories.length > 0 ? (
                         <div className="flex flex-col gap-1.5">
                           {categories.map(cat => (
@@ -407,7 +439,7 @@ export default function CompaniesTab() {
                           ))}
                         </div>
                       ) : (
-                        <span className="text-red-500 text-sm italic">No categories available</span>
+                        <span className="text-red-500 text-sm italic">{translateSafe('companies.noCategoriesAvailable')}</span>
                       )}
                     </div>
                   )}
@@ -416,11 +448,11 @@ export default function CompaniesTab() {
 
               {/* Manager-Only Information Section */}
               <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-semibold text-sm mb-3 text-green-800">Manager-Only Info (default contact info)</h4>
+                <h4 className="font-semibold text-sm mb-3 text-green-800">{translateSafe('companies.modal.managerInfoHeading', 'Manager-only Info (default contact info)')}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <input
                     type="text"
-                    placeholder="Contact Person"
+                    placeholder={translateSafe('companies.contactPlaceholder')}
                     value={isCreating ? (newCompanyForm.contact || '') : (editForm.contact || '')}
                     onChange={(e) => isCreating
                       ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
@@ -434,11 +466,11 @@ export default function CompaniesTab() {
                       ? setNewCompanyForm({ ...newCompanyForm, phone: value })
                       : setEditForm({ ...editForm, phone: value })
                     }
-                    placeholder="Phone (e.g., +31612345678)"
+                    placeholder={translateSafe('companies.phonePlaceholder')}
                   />
                   <input
                     type="email"
-                    placeholder="Email"
+                    placeholder={translateSafe('companies.emailPlaceholder')}
                     value={isCreating ? (newCompanyForm.email || '') : (editForm.email || '')}
                     onChange={(e) => {
                       const email = e.target.value.toLowerCase();
@@ -457,13 +489,13 @@ export default function CompaniesTab() {
               onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('cancel')}
             </button>
             <button
               onClick={isCreating ? handleCreate : handleSaveWithCategories}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              {isCreating ? 'Create' : 'Save'}
+              {isCreating ? t('companies.create') : t('save')}
             </button>
           </div>
         </div>
@@ -476,21 +508,21 @@ export default function CompaniesTab() {
             <tr>
               {activeTab === 'public' ? (
                 <>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Name</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Logo</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Website</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Info</th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">Categories</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{translateSafe('companies.table.name')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{translateSafe('companies.table.logo')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{translateSafe('companies.table.website')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{translateSafe('companies.table.info')}</th>
+                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">{translateSafe('companies.table.categories')}</th>
                 </>
               ) : (
                 <>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Name</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Contact</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Phone</th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">Email</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{translateSafe('companies.table.name')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{translateSafe('companies.table.contact')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{translateSafe('companies.table.phone')}</th>
+                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">{translateSafe('companies.table.email')}</th>
                 </>
               )}
-              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>Actions</th>
+              <th className="p-2 bg-gray-100 border-b font-semibold text-gray-900" style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}>{translateSafe('companies.table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -535,7 +567,7 @@ export default function CompaniesTab() {
                         {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
                       </a>
                     ) : (
-                      <span className="text-gray-400 text-sm italic">Not set</span>
+                          <span className="text-gray-400 text-sm italic">{translateSafe('companies.notSet')}</span>
                     )}
                   </td>
 
@@ -543,7 +575,7 @@ export default function CompaniesTab() {
                   <td className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isOrg ? (
                       <p className="line-clamp-3 whitespace-pre-wrap">
-                        {item.info || <span className="text-gray-400 text-sm italic">Not set</span>}
+                        {item.info || <span className="text-gray-400 text-sm italic">{translateSafe('companies.notSet')}</span>}
                       </p>
                     ) : (
                       <InfoFieldDisplay
@@ -561,7 +593,7 @@ export default function CompaniesTab() {
                   {/* Categories */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
                     {isOrg ? (
-                      <span className="text-gray-400 text-xs italic">N/A</span>
+                      <span className="text-gray-400 text-xs italic">{translateSafe('companies.notApplicable')}</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
                         {(companyCategories[item.id] || []).map(cat => (
@@ -575,7 +607,7 @@ export default function CompaniesTab() {
                           </span>
                         ))}
                         {(!companyCategories[item.id] || companyCategories[item.id].length === 0) && (
-                          <span className="text-gray-400 text-xs italic">None</span>
+                          <span className="text-gray-400 text-xs italic">{translateSafe('companies.none')}</span>
                         )}
                       </div>
                     )}
@@ -585,7 +617,7 @@ export default function CompaniesTab() {
                     <>
                   {/* Contact */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">Not set</span>}</span>
+                    <span className="text-xs">{item.contact || <span className="text-gray-400 italic">{translateSafe('companies.notSet')}</span>}</span>
                   </td>
 
                   {/* Phone */}
@@ -596,13 +628,13 @@ export default function CompaniesTab() {
                         <span>{formatPhoneForDisplay(item.phone)}</span>
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic text-xs">Not set</span>
+                      <span className="text-gray-400 italic text-xs">{translateSafe('companies.notSet')}</span>
                     )}
                   </td>
 
                   {/* Email */}
                   <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">Not set</span>}</span>
+                    <span className="text-xs">{item.email || <span className="text-gray-400 italic">{translateSafe('companies.notSet')}</span>}</span>
                   </td>
                     </>
                   )}
@@ -613,7 +645,7 @@ export default function CompaniesTab() {
                       <button
                         onClick={() => handleEdit(item)}
                         className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        title="Edit"
+                        title={translateSafe('companies.edit')}
                       >
                         <Icon path={mdiPencil} size={0.8} />
                       </button>
@@ -621,7 +653,7 @@ export default function CompaniesTab() {
                         <button
                           onClick={() => handleDelete(item.id, item.name)}
                           className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                          title="Delete"
+                          title={translateSafe('companies.delete')}
                         >
                           <Icon path={mdiDelete} size={0.8} />
                         </button>
@@ -641,7 +673,7 @@ export default function CompaniesTab() {
 
         {filteredItems.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            {searchTerm ? t('helpPanel.companies.noResults') : t('helpPanel.companies.noCompanies')}
+            {searchTerm ? translateSafe('companies.noResults') : translateSafe('companies.noCompanies')}
           </div>
         )}
       </div>
