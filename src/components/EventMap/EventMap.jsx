@@ -634,8 +634,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
     // Force a resize event to ensure proper tile loading
     setTimeout(() => {
-      if (map) {
-        map.invalidateSize();
+      try {
+        if (map && map.getContainer && map.getContainer()) {
+          map.invalidateSize();
+        }
+      } catch (err) {
+        // Ignore - map may have been unmounted
       }
     }, 100);
   };
