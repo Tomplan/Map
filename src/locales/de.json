@@ -261,6 +261,23 @@
         "saveFailed": "Failed to save settings. Please check your connection."
       }
     },
+    "publicDefaultYear": {
+      "title": "Öffentliches Standardjahr",
+      "description": "Legen Sie das Standard-Veranstaltungsjahr fest, das Besuchern auf der öffentlichen Startseite angezeigt wird. Leer lassen, um das vom Admin ausgewählte Jahr zu verwenden.",
+      "inputLabel": "Öffentliches Standardjahr",
+      "placeholder": "z.B. 2025",
+      "hint": "Geben Sie ein Jahr zwischen 2000 und 2100 ein, oder lassen Sie es für dynamische Auswahl leer.",
+      "loading": "Laden...",
+      "save": "Speichern",
+      "saving": "Speichern...",
+      "reset": "Zurücksetzen",
+      "saveSuccess": "Öffentliches Standardjahr erfolgreich gespeichert!",
+      "error": "Fehler",
+      "errors": {
+        "invalid": "Bitte geben Sie ein gültiges Jahr zwischen 2000 und 2100 ein.",
+        "saveFailed": "Öffentliches Standardjahr konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+      }
+    },
     "feedbackRequests": {
       "title": "Feedback & Feature-Anfragen",
       "description": "Probleme melden, Features anfragen und Fortschritt verfolgen",
@@ -327,7 +344,7 @@
   "homePage": {
     "subtitle": "Dein nächstes Abenteuer beginnt hier!",
     "title": "Die 4x4 Ferienmesse",
-    "eventDate": "10.-11. Oktober 2026",
+    "eventDate": "Datum wird noch bekannt gegeben",
     "exhibitors": "Aussteller",
     "days": "Tage",
     "openingHours": "Öffnungszeiten",
