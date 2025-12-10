@@ -153,4 +153,23 @@ body {
   .leaflet-tooltip {
     display: none !important;
   }
+
+  /* Force single page printing - prevent page breaks and hide overflow */
+  html, body {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .leaflet-print-overlay,
+  .grid-print-container,
+  .pages-print-container {
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    break-after: avoid !important;
+    break-before: avoid !important;
+    break-inside: avoid !important;
+    overflow: hidden !important;
+    max-height: 100vh !important;
+  }
 }

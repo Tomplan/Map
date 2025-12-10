@@ -19,6 +19,7 @@ import useIsMobile from '../../hooks/useIsMobile';
 import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
+import { PRINT_CONFIG } from '../../config/mapConfig';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -360,16 +361,16 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
         // Extended paper presets for high-quality printing
         // Ordered from largest to smallest for easy selection
+        // Settings centralized in PRINT_CONFIG (mapConfig.js)
+        const { margin, modes: modeSettings } = PRINT_CONFIG;
         const modes = [
-          Mode.Landscape('A2', { title: 'A2 — Landscape (large floor plan)' }),
-          Mode.Portrait('A2', { title: 'A2 — Portrait (large floor plan)' }),
-          Mode.Landscape('A3', { title: 'A3 — Landscape' }),
-          Mode.Portrait('A3', { title: 'A3 — Portrait' }),
-          Mode.Landscape('A4', { title: 'A4 — Landscape' }),
-          Mode.Portrait('A4', { title: 'A4 — Portrait' }),
-          Mode.Landscape('A4', { title: 'Current view — landscape' }),
-          Mode.Auto('A4', { title: 'Auto fit' }),
-          Mode.Custom('A4', { title: 'Select area', customArea: true }),
+          Mode.Landscape('A3', { title: 'A3 — Landscape', margin, zoom: modeSettings['A3 — Landscape'].zoom, invalidateBounds: false }),
+          Mode.Portrait('A3', { title: 'A3 — Portrait', margin, zoom: modeSettings['A3 — Portrait'].zoom, invalidateBounds: false }),
+          Mode.Landscape('A4', { title: 'A4 — Landscape', margin, zoom: modeSettings['A4 — Landscape'].zoom, invalidateBounds: false }),
+          Mode.Portrait('A4', { title: 'A4 — Portrait', margin, zoom: modeSettings['A4 — Portrait'].zoom, invalidateBounds: false }),
+          Mode.Landscape('A4', { title: 'Current view — landscape', margin }),
+          Mode.Auto('A4', { title: 'Auto fit', margin }),
+          Mode.Custom('A4', { title: 'Select area', customArea: true, margin }),
         ];
 
         // Register custom marker cloner to preserve icon properties
@@ -396,13 +397,89 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           map._browserPrintInitialized = true;
 
           // Configure Portrait/Landscape presets to use home center before printing
-          // Store original view to restore after printing (Option B: Jump and Restore)
+          // Store original view to restore after printing
           let originalView = null;
+          let pendingPrintConfig = null;
 
-          // Listen to the PrePrint event to intercept before printing starts
-          // PrePrint fires before the print overlay is created
+          // Helper: normalize mode titles to unify different dash/hyphen characters
+          const normalizeModeTitle = (t) => (t || '').replace(/[\-\u2013\u2014]/g, '—').replace(/\s+/g, ' ').trim();
+
+          // Helper: find print config for a given mode title
+          const findPrintConfig = (modeTitleRaw) => {
+            const modeTitle = normalizeModeTitle(modeTitleRaw);
+            // Normalized exact lookup
+            let config = PRINT_CONFIG.modes[modeTitle];
+            // Fallback: try raw title
+            if (!config) config = PRINT_CONFIG.modes[modeTitleRaw];
+            // Fallback: try partial Paper+Orientation match (A4 + Portrait)
+            if (!config) {
+              const paperMatch = (modeTitleRaw || '').match(/\b(A2|A3|A4)\b/i);
+              const orientationMatch = (modeTitleRaw || '').match(/\b(Landscape|Portrait)\b/i);
+              if (paperMatch && orientationMatch) {
+                const partial = Object.keys(PRINT_CONFIG.modes).find((k) =>
+                  k.toLowerCase().includes(paperMatch[0].toLowerCase()) && k.toLowerCase().includes(orientationMatch[0].toLowerCase())
+                );
+                if (partial) config = PRINT_CONFIG.modes[partial];
+              }
+            }
+            return config;
+          };
+
+          // PrintInit fires BEFORE the print overlay is created
+          // This is our chance to set the SOURCE map's center so the plugin captures it
+          // The plugin uses map.getCenter() when invalidateBounds:false
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintInit, (event) => {
+            const modeTitleRaw = event.mode?.options?.title || 'unknown';
+            const printConfig = findPrintConfig(modeTitleRaw);
+
+            if (printConfig && printConfig.center) {
+              // Save original view for restore if not saved yet
+              if (!originalView) {
+                const c = browserPrint._map.getCenter();
+                originalView = {
+                  center: [c.lat, c.lng],
+                  zoom: browserPrint._map.getZoom(),
+                  maxZoom: browserPrint._map.getMaxZoom(),
+                };
+                console.log('[Print] PrintInit - saved original view', originalView);
+              }
+              
+              // Set source map to desired center - plugin will use this when creating print map
+              // The zoom is handled via mode options, we just need to set the center
+              console.log('[Print] PrintInit - setting source map center:', printConfig.center, 'for mode:', modeTitleRaw);
+              browserPrint._map.setView(printConfig.center, browserPrint._map.getZoom(), { animate: false });
+              
+              // Store config for Print event fallback
+              pendingPrintConfig = printConfig;
+            }
+          });
+
+          // Print event fires right before window.print() - final chance to set view
+          // At this point the plugin has already set its view and waited for tiles
+          // We apply our custom center/zoom here as a fallback verification
+          browserPrint._map.on(window.L.BrowserPrint.Event.Print, (event) => {
+            if (!pendingPrintConfig) {
+              console.log('[Print] Print - no pending config');
+              return;
+            }
+            
+            const { center, zoom } = pendingPrintConfig;
+            const printMap = event.printMap;
+            
+            console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
+            
+            if (printMap) {
+              // Apply our desired view - this ensures the correct center is used
+              printMap.setView(center, zoom, { animate: false });
+              printMap.invalidateSize({ reset: true, animate: false, pan: false });
+              console.log('[Print] Print - view applied');
+            }
+            
+            pendingPrintConfig = null;
+          });
+
+          // Listen to the PrePrint event - only used for MDI stylesheet injection
           browserPrint._map.on(window.L.BrowserPrint.Event.PrePrint, (event) => {
-            const orientation = event.pageOrientation; // "Portrait" or "Landscape"
             const modeTitle = event.mode?.options?.title || 'unknown';
 
             // Inject Material Design Icons stylesheet into print iframe for glyph rendering
@@ -424,40 +501,41 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
               // MDI stylesheet injection failed - icons may not render correctly in print
             }
 
-            // CRITICAL: Only change center for specific print modes that need a fixed home view
-            // "Current view" mode should preserve the current map position to avoid marker misplacement
-            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
-            const isAutoMode = modeTitle.toLowerCase().includes('auto');
-            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
-            
-            // Skip center change for current view, auto, and custom modes
-            if (isCurrentViewMode || isAutoMode || isCustomMode) {
-              return;
+            // Save original maxZoom to restore after printing
+            const modeTitleNormalized = normalizeModeTitle(modeTitle);
+            let printModeConfig = PRINT_CONFIG.modes[modeTitleNormalized];
+            if (!printModeConfig) printModeConfig = PRINT_CONFIG.modes[modeTitle];
+            // fallback to partial match
+            if (!printModeConfig) {
+              const paperMatch = (modeTitle || '').match(/\b(A2|A3|A4)\b/i);
+              const orientationMatch = (modeTitle || '').match(/\b(Landscape|Portrait)\b/i);
+              if (paperMatch && orientationMatch) {
+                const partial = Object.keys(PRINT_CONFIG.modes).find((k) =>
+                  k.toLowerCase().includes(paperMatch[0].toLowerCase()) && k.toLowerCase().includes(orientationMatch[0].toLowerCase())
+                );
+                if (partial) printModeConfig = PRINT_CONFIG.modes[partial];
+              }
             }
-            
-            // Only modify Portrait and Landscape orientations with fixed home positions
-            if (orientation === 'Portrait' || orientation === 'Landscape') {
-              // Save current view to restore after printing
-              originalView = {
-                center: browserPrint._map.getCenter(),
-                zoom: browserPrint._map.getZoom(),
-              };
+            if (printModeConfig) {
+              if (!originalView) {
+                originalView = { maxZoom: browserPrint._map.getMaxZoom() };
+              } else if (!originalView.maxZoom) {
+                originalView.maxZoom = browserPrint._map.getMaxZoom();
+              }
+              // Temporarily increase maxZoom for printing
+              browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
+            }
+          });
 
-              // Use different center and zoom for Portrait vs Landscape
-              const centerPosition = orientation === 'Portrait'
-                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
-                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
-
-              const zoomLevel = orientation === 'Portrait'
-                ? 18 // Portrait uses zoom 17.8
-                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
-
-              // Move the real map to the target position
-              // The plugin will then use this view when creating the print overlay
-              // (because Portrait/Landscape modes have invalidateBounds: false)
-              browserPrint._map.setView(centerPosition, zoomLevel, {
-                animate: false // Instant jump, no animation
-              });
+          // Restore original maxZoom after printing ends or is cancelled
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
+            if (originalView && originalView.maxZoom) {
+              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            }
+          });
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
+            if (originalView && originalView.maxZoom) {
+              browserPrint._map.setMaxZoom(originalView.maxZoom);
             }
           });
 
@@ -518,7 +596,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
             // Restore original view after printing completes
             if (originalView) {
-              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              if (originalView.center && typeof originalView.zoom !== 'undefined') {
+                browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              }
+              if (originalView.maxZoom) {
+                browserPrint._map.setMaxZoom(originalView.maxZoom);
+              }
               originalView = null;
             }
           });
@@ -526,7 +609,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
             // Restore original view if user cancels print
             if (originalView) {
-              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              if (originalView.center && typeof originalView.zoom !== 'undefined') {
+                browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+              }
+              if (originalView.maxZoom) {
+                browserPrint._map.setMaxZoom(originalView.maxZoom);
+              }
               originalView = null;
             }
           });
