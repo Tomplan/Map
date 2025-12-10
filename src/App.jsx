@@ -5,6 +5,8 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
+import useOrganizationSettings from './hooks/useOrganizationSettings';
+import resolvePublicYear from './utils/resolvePublicYear';
 import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import AppRoutes from './components/AppRoutes';
@@ -106,7 +108,11 @@ function AppContent() {
   }, [selectedYear, preferencesLoading, updatePreference]);
 
   // Fetch marker data from Supabase filtered by selected year
-  const { markers, archiveCurrentYear: archiveMarkers, copyFromPreviousYear: copyMarkers } = useEventMarkers(selectedYear);
+  const {
+    markers,
+    archiveCurrentYear: archiveMarkers,
+    copyFromPreviousYear: copyMarkers,
+  } = useEventMarkers(selectedYear);
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, selectedYear);
 
@@ -120,7 +126,11 @@ function AppContent() {
   // Fetch branding from organization_profile and subscribe to changes
   useEffect(() => {
     async function fetchBranding() {
-      const { data, error } = await supabase.from('organization_profile').select('*').eq('id', 1).single();
+      const { data, error } = await supabase
+        .from('organization_profile')
+        .select('*')
+        .eq('id', 1)
+        .single();
       if (error) {
         console.error('Error fetching organization_profile:', error);
         // Keep default branding if table doesn't exist or has no data
@@ -184,6 +194,12 @@ function AppContent() {
       listener?.subscription?.unsubscribe();
     };
   }, []);
+
+  // Load organization settings so we can determine the public-facing default year
+  const { settings: orgSettings } = useOrganizationSettings();
+
+  // public-facing year: prefer organization setting when present; otherwise fall back to selectedYear
+  const publicYear = resolvePublicYear(selectedYear, orgSettings);
 
   return (
     <OnboardingProvider>

@@ -2,8 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 // Lightweight mocks used across the repo
-jest.mock('../../hooks/useCategories', () => () => ({ categories: [], loading: false, getAllCompanyCategories: async () => ({}) }));
-jest.mock('../../contexts/OrganizationLogoContext', () => ({ useOrganizationLogo: () => ({ organizationLogo: null }) }));
+jest.mock('../../hooks/useCategories', () => () => ({
+  categories: [],
+  loading: false,
+  getAllCompanyCategories: async () => ({}),
+}));
+jest.mock('../../contexts/OrganizationLogoContext', () => ({
+  useOrganizationLogo: () => ({ organizationLogo: null }),
+}));
 jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({ getTranslatedInfo: (m) => m }));
 
 // Favorities context - return a single favorite (companyId 100)
@@ -16,11 +22,15 @@ jest.mock('../../contexts/FavoritesContext', () => ({
 }));
 
 // Keep translation simple - return key
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }) }));
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }),
+}));
 
 // Avoid pulling in full react-router which expects browser globals in tests
 jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn() }));
-jest.mock('../../utils/getDefaultLogo', () => ({ getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png' }));
+jest.mock('../../utils/getDefaultLogo', () => ({
+  getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png',
+}));
 
 import ExhibitorListView from '../ExhibitorListView';
 
@@ -44,7 +54,9 @@ describe('ExhibitorListView — favorites-only persistence', () => {
     // Step 1: Simulate user previously enabled favorites-only for this year
     localStorage.setItem(`exhibitors_showFavoritesOnly_${selectedYear}`, 'true');
 
-    const { unmount } = render(<ExhibitorListView markersState={markersState} selectedYear={selectedYear} />);
+    const { unmount } = render(
+      <ExhibitorListView markersState={markersState} selectedYear={selectedYear} />,
+    );
 
     // Only the favorited company should be visible (grouped by companyId)
     // Wait for the async categories load / state updates to settle

@@ -5,7 +5,7 @@ import { checkStorageBucket } from '../services/logoUploadService';
 
 /**
  * StorageTestPage - Test and verify Supabase Storage setup
- * 
+ *
  * This component helps admins verify that:
  * 1. The 'logos' bucket exists
  * 2. Upload functionality works
@@ -30,12 +30,14 @@ export default function StorageTestPage() {
     setBucketStatus({
       checking: false,
       exists: result.exists,
-      error: result.error
+      error: result.error,
     });
   };
 
   const checkAuth = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     setUser(user);
   };
 
@@ -46,16 +48,16 @@ export default function StorageTestPage() {
         timestamp: new Date().toISOString(),
         url,
         path,
-        success: true
+        success: true,
       },
-      ...uploadResults
+      ...uploadResults,
     ]);
   };
 
   return (
     <div className="max-w-4xl mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6">Supabase Storage Test Page</h1>
-      
+
       {/* Authentication Status */}
       <div className="mb-6 p-4 border rounded-lg bg-gray-50">
         <h2 className="text-xl font-semibold mb-3">Authentication Status</h2>
@@ -83,7 +85,7 @@ export default function StorageTestPage() {
             Recheck
           </button>
         </div>
-        
+
         {bucketStatus.checking ? (
           <div className="text-gray-600">Checking bucket...</div>
         ) : bucketStatus.exists ? (
@@ -98,9 +100,7 @@ export default function StorageTestPage() {
               <span>Bucket 'logos' not found or inaccessible</span>
             </div>
             {bucketStatus.error && (
-              <div className="text-sm text-gray-600 ml-6">
-                Error: {bucketStatus.error}
-              </div>
+              <div className="text-sm text-gray-600 ml-6">Error: {bucketStatus.error}</div>
             )}
             <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
               <p className="font-semibold mb-2">Setup Required:</p>
@@ -122,7 +122,7 @@ export default function StorageTestPage() {
           <p className="text-sm text-gray-600 mb-4">
             Upload a test image to verify everything works correctly.
           </p>
-          
+
           <LogoUploader
             currentLogo={testLogo}
             onUploadComplete={handleTestUpload}
@@ -149,8 +149,12 @@ export default function StorageTestPage() {
                   </span>
                 </div>
                 <div className="text-gray-600">
-                  <div><strong>URL:</strong> {result.url}</div>
-                  <div><strong>Path:</strong> {result.path}</div>
+                  <div>
+                    <strong>URL:</strong> {result.url}
+                  </div>
+                  <div>
+                    <strong>Path:</strong> {result.path}
+                  </div>
                 </div>
                 {result.url && (
                   <img
@@ -168,9 +172,7 @@ export default function StorageTestPage() {
       {/* Documentation Link */}
       <div className="p-4 border rounded-lg bg-blue-50">
         <h2 className="text-xl font-semibold mb-2">Documentation</h2>
-        <p className="text-sm text-gray-700 mb-2">
-          For complete setup instructions, see:
-        </p>
+        <p className="text-sm text-gray-700 mb-2">For complete setup instructions, see:</p>
         <ul className="list-disc ml-5 text-sm text-gray-700">
           <li>SUPABASE_STORAGE_SETUP.md - Bucket configuration and policies</li>
           <li>LOGO_UPLOADER_INTEGRATION.md - Integration examples</li>

@@ -32,7 +32,8 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
       // TODO: Remove fallback logic after event_year column is added
       let query = supabase
         .from('event_activities')
-        .select(`
+        .select(
+          `
           id, organization_id, day, start_time, end_time, display_order,
           title_nl, title_en, title_de,
           description_nl, description_en, description_de,
@@ -45,7 +46,8 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             id,
             name
           )
-        `)
+        `,
+        )
         .order('display_order', { ascending: true });
 
       // Only filter by event_year if the column exists (after migration)
@@ -66,8 +68,8 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
       // For now, we'll use the company name from the companies table directly.
 
       // Group activities by day
-      const saturday = activitiesData?.filter(a => a.day === 'saturday') || [];
-      const sunday = activitiesData?.filter(a => a.day === 'sunday') || [];
+      const saturday = activitiesData?.filter((a) => a.day === 'saturday') || [];
+      const sunday = activitiesData?.filter((a) => a.day === 'sunday') || [];
 
       setActivities({ saturday, sunday });
     } catch (err) {
@@ -79,17 +81,19 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
   }, []);
 
   // Create new activity
-  const createActivity = useCallback(async (activityData) => {
-    try {
-      const dataWithYear = {
-        ...activityData,
-        event_year: activityData.event_year || eventYear,
-      };
+  const createActivity = useCallback(
+    async (activityData) => {
+      try {
+        const dataWithYear = {
+          ...activityData,
+          event_year: activityData.event_year || eventYear,
+        };
 
-      const { data, error: insertError } = await supabase
-        .from('event_activities')
-        .insert([dataWithYear])
-        .select(`
+        const { data, error: insertError } = await supabase
+          .from('event_activities')
+          .insert([dataWithYear])
+          .select(
+            `
           id, organization_id, day, start_time, end_time, display_order,
           title_nl, title_en, title_de,
           description_nl, description_en, description_de,
@@ -102,24 +106,27 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             id,
             name
           )
-        `)
-        .single();
+        `,
+          )
+          .single();
 
-      if (insertError) throw insertError;
+        if (insertError) throw insertError;
 
-      // Update local state
-      const day = data.day;
-      setActivities(prev => ({
-        ...prev,
-        [day]: [...prev[day], data].sort((a, b) => a.display_order - b.display_order)
-      }));
+        // Update local state
+        const day = data.day;
+        setActivities((prev) => ({
+          ...prev,
+          [day]: [...prev[day], data].sort((a, b) => a.display_order - b.display_order),
+        }));
 
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error creating activity:', err);
-      return { data: null, error: err.message };
-    }
-  }, [eventYear]);
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error creating activity:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [eventYear],
+  );
 
   // Update activity
   const updateActivity = useCallback(async (id, updates) => {
@@ -128,7 +135,8 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
         .from('event_activities')
         .update(updates)
         .eq('id', id)
-        .select(`
+        .select(
+          `
           id, organization_id, day, start_time, end_time, display_order,
           title_nl, title_en, title_de,
           description_nl, description_en, description_de,
@@ -141,16 +149,17 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             id,
             name
           )
-        `)
+        `,
+        )
         .single();
 
       if (updateError) throw updateError;
 
       // Update local state
-      setActivities(prev => {
+      setActivities((prev) => {
         const newActivities = { ...prev };
         for (const day of ['saturday', 'sunday']) {
-          newActivities[day] = newActivities[day].map(a => a.id === id ? data : a);
+          newActivities[day] = newActivities[day].map((a) => (a.id === id ? data : a));
         }
         return newActivities;
       });
@@ -165,18 +174,15 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
   // Delete activity
   const deleteActivity = useCallback(async (id) => {
     try {
-      const { error: deleteError } = await supabase
-        .from('event_activities')
-        .delete()
-        .eq('id', id);
+      const { error: deleteError } = await supabase.from('event_activities').delete().eq('id', id);
 
       if (deleteError) throw deleteError;
 
       // Update local state
-      setActivities(prev => {
+      setActivities((prev) => {
         const newActivities = { ...prev };
         for (const day of ['saturday', 'sunday']) {
-          newActivities[day] = newActivities[day].filter(a => a.id !== id);
+          newActivities[day] = newActivities[day].filter((a) => a.id !== id);
         }
         return newActivities;
       });
@@ -211,21 +217,23 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
     try {
       const { data, error: fetchError } = await supabase
         .from('event_activities_archive')
-        .select(`
+        .select(
+          `
           *,
           companies!event_activities_archive_company_id_fkey (
             id,
             name
           )
-        `)
+        `,
+        )
         .eq('event_year', year)
         .order('display_order', { ascending: true });
 
       if (fetchError) throw fetchError;
 
       // Group archived activities by day
-      const saturday = data?.filter(a => a.day === 'saturday') || [];
-      const sunday = data?.filter(a => a.day === 'sunday') || [];
+      const saturday = data?.filter((a) => a.day === 'saturday') || [];
+      const sunday = data?.filter((a) => a.day === 'sunday') || [];
 
       return { data: { saturday, sunday }, error: null };
     } catch (err) {
@@ -235,44 +243,47 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
   }, []);
 
   // Copy activities from previous year
-  const copyFromPreviousYear = useCallback(async (sourceYear) => {
-    try {
-      // Fetch activities from source year
-      const { data: sourceActivities, error: fetchError } = await supabase
-        .from('event_activities')
-        .select('*')
-        .eq('event_year', sourceYear);
+  const copyFromPreviousYear = useCallback(
+    async (sourceYear) => {
+      try {
+        // Fetch activities from source year
+        const { data: sourceActivities, error: fetchError } = await supabase
+          .from('event_activities')
+          .select('*')
+          .eq('event_year', sourceYear);
 
-      if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
 
-      if (!sourceActivities || sourceActivities.length === 0) {
-        return { data: null, error: 'No activities found for source year' };
+        if (!sourceActivities || sourceActivities.length === 0) {
+          return { data: null, error: 'No activities found for source year' };
+        }
+
+        // Copy activities to current year
+        const newActivities = sourceActivities.map((activity) => {
+          // Remove id, created_at, updated_at to let database generate them
+          const { id, created_at, updated_at, ...activityData } = activity;
+          return {
+            ...activityData,
+            event_year: eventYear,
+          };
+        });
+
+        const { data, error: insertError } = await supabase
+          .from('event_activities')
+          .insert(newActivities)
+          .select();
+
+        if (insertError) throw insertError;
+
+        await loadActivities();
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error copying activities from previous year:', err);
+        return { data: null, error: err.message };
       }
-
-      // Copy activities to current year
-      const newActivities = sourceActivities.map(activity => {
-        // Remove id, created_at, updated_at to let database generate them
-        const { id, created_at, updated_at, ...activityData } = activity;
-        return {
-          ...activityData,
-          event_year: eventYear,
-        };
-      });
-
-      const { data, error: insertError } = await supabase
-        .from('event_activities')
-        .insert(newActivities)
-        .select();
-
-      if (insertError) throw insertError;
-
-      await loadActivities();
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error copying activities from previous year:', err);
-      return { data: null, error: err.message };
-    }
-  }, [eventYear, loadActivities]);
+    },
+    [eventYear, loadActivities],
+  );
 
   // Initial load
   useEffect(() => {
@@ -302,7 +313,7 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             setActivities((prev) => {
               // Check if this activity already exists
               const day = payload.new.day;
-              const exists = prev[day]?.some(a => a.id === payload.new.id);
+              const exists = prev[day]?.some((a) => a.id === payload.new.id);
               if (exists) {
                 // We already have it (we created it locally), no need to reload
                 return prev;
@@ -315,7 +326,7 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
             // For UPDATE/DELETE, always reload
             loadActivities();
           }
-        }
+        },
       )
       .subscribe();
 
@@ -340,12 +351,12 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
   function getActivityLocation(activity, language) {
     if (activity.location_type === 'exhibitor' && activity.companies) {
       const company = activity.companies;
-      
+
       // Note: company_translations table only contains 'info' (descriptions), not company names.
       // Company names are stored directly in the companies table.
       // Booth numbers would require joining through assignments table to markers.
       // For now, just show company name from companies table.
-      
+
       return {
         text: company.name,
         boothNumber: null, // Would need to query assignments + markers to get glyph
@@ -355,7 +366,12 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
 
     // Venue location - use static text
     return {
-      text: language === 'nl' ? activity.location_nl : language === 'de' ? activity.location_de : activity.location_en,
+      text:
+        language === 'nl'
+          ? activity.location_nl
+          : language === 'de'
+            ? activity.location_de
+            : activity.location_en,
       boothNumber: null,
       companyId: null,
     };

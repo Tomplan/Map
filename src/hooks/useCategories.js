@@ -10,21 +10,21 @@ import {
   mdiAccountGroup,
   mdiTerrain,
   mdiCellphone,
-  mdiDotsHorizontal
+  mdiDotsHorizontal,
 } from '@mdi/js';
 
 // Map icon names to actual icon paths
 const ICON_MAP = {
-  'mdiCarOutline': mdiCarOutline,
-  'mdiTent': mdiTent,
-  'mdiTrailer': mdiTruckTrailer,
-  'mdiCarCog': mdiCarCog,
-  'mdiAirplane': mdiAirplane,
-  'mdiHomeCity': mdiHomeCity,
-  'mdiAccountGroup': mdiAccountGroup,
-  'mdiTerrainIcon': mdiTerrain,
-  'mdiCellphone': mdiCellphone,
-  'mdiDotsHorizontal': mdiDotsHorizontal
+  mdiCarOutline: mdiCarOutline,
+  mdiTent: mdiTent,
+  mdiTrailer: mdiTruckTrailer,
+  mdiCarCog: mdiCarCog,
+  mdiAirplane: mdiAirplane,
+  mdiHomeCity: mdiHomeCity,
+  mdiAccountGroup: mdiAccountGroup,
+  mdiTerrainIcon: mdiTerrain,
+  mdiCellphone: mdiCellphone,
+  mdiDotsHorizontal: mdiDotsHorizontal,
 };
 
 /**
@@ -45,7 +45,8 @@ export function useCategories(language = 'nl') {
       // Fetch categories with their translations
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
-        .select(`
+        .select(
+          `
           id,
           slug,
           icon,
@@ -57,18 +58,20 @@ export function useCategories(language = 'nl') {
             name,
             description
           )
-        `)
+        `,
+        )
         .eq('active', true)
         .order('sort_order');
 
       if (categoriesError) throw categoriesError;
 
       // Transform data to include localized fields
-      const transformed = categoriesData.map(cat => {
-        const translation = cat.category_translations.find(t => t.language === language) ||
-                          cat.category_translations.find(t => t.language === 'nl') ||
-                          cat.category_translations[0];
-        
+      const transformed = categoriesData.map((cat) => {
+        const translation =
+          cat.category_translations.find((t) => t.language === language) ||
+          cat.category_translations.find((t) => t.language === 'nl') ||
+          cat.category_translations[0];
+
         return {
           id: cat.id,
           slug: cat.slug,
@@ -79,7 +82,7 @@ export function useCategories(language = 'nl') {
           active: cat.active,
           name: translation?.name || cat.slug,
           description: translation?.description || '',
-          translations: cat.category_translations
+          translations: cat.category_translations,
         };
       });
 
@@ -106,13 +109,13 @@ export function useCategories(language = 'nl') {
   useEffect(() => {
     const channel = supabase
       .channel('categories-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'categories' },
-        () => loadCategories()
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
+        loadCategories(),
       )
-      .on('postgres_changes',
+      .on(
+        'postgres_changes',
         { event: '*', schema: 'public', table: 'category_translations' },
-        () => loadCategories()
+        () => loadCategories(),
       )
       .subscribe();
 
@@ -131,7 +134,7 @@ export function useCategories(language = 'nl') {
           slug: categoryData.slug,
           icon: categoryData.icon,
           color: categoryData.color,
-          sort_order: categoryData.sort_order || 0
+          sort_order: categoryData.sort_order || 0,
         })
         .select()
         .single();
@@ -143,7 +146,7 @@ export function useCategories(language = 'nl') {
         category_id: category.id,
         language: lang,
         name: trans.name,
-        description: trans.description || null
+        description: trans.description || null,
       }));
 
       if (translations.length > 0) {
@@ -172,7 +175,7 @@ export function useCategories(language = 'nl') {
           icon: updates.icon,
           color: updates.color,
           sort_order: updates.sort_order,
-          active: updates.active
+          active: updates.active,
         })
         .eq('id', categoryId);
 
@@ -181,16 +184,17 @@ export function useCategories(language = 'nl') {
       // Update translations if provided
       if (updates.translations) {
         for (const [lang, trans] of Object.entries(updates.translations)) {
-          const { error: transError } = await supabase
-            .from('category_translations')
-            .upsert({
+          const { error: transError } = await supabase.from('category_translations').upsert(
+            {
               category_id: categoryId,
               language: lang,
               name: trans.name,
-              description: trans.description || null
-            }, {
-              onConflict: 'category_id,language'
-            });
+              description: trans.description || null,
+            },
+            {
+              onConflict: 'category_id,language',
+            },
+          );
 
           if (transError) throw transError;
         }
@@ -207,10 +211,7 @@ export function useCategories(language = 'nl') {
   // Delete category
   const deleteCategory = async (categoryId) => {
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', categoryId);
+      const { error } = await supabase.from('categories').delete().eq('id', categoryId);
 
       if (error) throw error;
 
@@ -223,11 +224,13 @@ export function useCategories(language = 'nl') {
   };
 
   // Get company categories
-  const getCompanyCategories = useCallback(async (companyId) => {
-    try {
-      const { data, error } = await supabase
-        .from('company_categories')
-        .select(`
+  const getCompanyCategories = useCallback(
+    async (companyId) => {
+      try {
+        const { data, error } = await supabase
+          .from('company_categories')
+          .select(
+            `
           category_id,
           categories(
             id,
@@ -236,36 +239,42 @@ export function useCategories(language = 'nl') {
             color,
             category_translations(language, name)
           )
-        `)
-        .eq('company_id', companyId);
+        `,
+          )
+          .eq('company_id', companyId);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      return data.map(cc => {
-        const cat = cc.categories;
-        const translation = cat.category_translations.find(t => t.language === language) ||
-                          cat.category_translations[0];
-        return {
-          id: cat.id,
-          slug: cat.slug,
-          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
-          iconName: cat.icon,
-          color: cat.color,
-          name: translation?.name || cat.slug
-        };
-      });
-    } catch (err) {
-      console.error('Error fetching company categories:', err);
-      return [];
-    }
-  }, [language]);
+        return data.map((cc) => {
+          const cat = cc.categories;
+          const translation =
+            cat.category_translations.find((t) => t.language === language) ||
+            cat.category_translations[0];
+          return {
+            id: cat.id,
+            slug: cat.slug,
+            icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+            iconName: cat.icon,
+            color: cat.color,
+            name: translation?.name || cat.slug,
+          };
+        });
+      } catch (err) {
+        console.error('Error fetching company categories:', err);
+        return [];
+      }
+    },
+    [language],
+  );
 
   // Get all company categories in one query (optimized for bulk loading)
-  const getAllCompanyCategories = useCallback(async (companyIds) => {
-    try {
-      const { data, error } = await supabase
-        .from('company_categories')
-        .select(`
+  const getAllCompanyCategories = useCallback(
+    async (companyIds) => {
+      try {
+        const { data, error } = await supabase
+          .from('company_categories')
+          .select(
+            `
           company_id,
           category_id,
           categories(
@@ -275,56 +284,55 @@ export function useCategories(language = 'nl') {
             color,
             category_translations(language, name)
           )
-        `)
-        .in('company_id', companyIds);
+        `,
+          )
+          .in('company_id', companyIds);
 
-      if (error) throw error;
+        if (error) throw error;
 
-      // Group by company_id
-      const grouped = {};
-      data.forEach(cc => {
-        if (!grouped[cc.company_id]) {
-          grouped[cc.company_id] = [];
-        }
-        const cat = cc.categories;
-        const translation = cat.category_translations.find(t => t.language === language) ||
-                          cat.category_translations[0];
-        grouped[cc.company_id].push({
-          id: cat.id,
-          slug: cat.slug,
-          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
-          iconName: cat.icon,
-          color: cat.color,
-          name: translation?.name || cat.slug
+        // Group by company_id
+        const grouped = {};
+        data.forEach((cc) => {
+          if (!grouped[cc.company_id]) {
+            grouped[cc.company_id] = [];
+          }
+          const cat = cc.categories;
+          const translation =
+            cat.category_translations.find((t) => t.language === language) ||
+            cat.category_translations[0];
+          grouped[cc.company_id].push({
+            id: cat.id,
+            slug: cat.slug,
+            icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+            iconName: cat.icon,
+            color: cat.color,
+            name: translation?.name || cat.slug,
+          });
         });
-      });
 
-      return grouped;
-    } catch (err) {
-      console.error('Error fetching all company categories:', err);
-      return {};
-    }
-  }, [language]);
+        return grouped;
+      } catch (err) {
+        console.error('Error fetching all company categories:', err);
+        return {};
+      }
+    },
+    [language],
+  );
 
   // Assign categories to company
   const assignCategoriesToCompany = async (companyId, categoryIds) => {
     try {
       // Remove existing assignments
-      await supabase
-        .from('company_categories')
-        .delete()
-        .eq('company_id', companyId);
+      await supabase.from('company_categories').delete().eq('company_id', companyId);
 
       // Add new assignments
       if (categoryIds.length > 0) {
-        const assignments = categoryIds.map(categoryId => ({
+        const assignments = categoryIds.map((categoryId) => ({
           company_id: companyId,
-          category_id: categoryId
+          category_id: categoryId,
         }));
 
-        const { error } = await supabase
-          .from('company_categories')
-          .insert(assignments);
+        const { error } = await supabase.from('company_categories').insert(assignments);
 
         if (error) throw error;
       }
@@ -339,15 +347,13 @@ export function useCategories(language = 'nl') {
   // Get category statistics (indexed by category_id)
   const getCategoryStats = async () => {
     try {
-      const { data, error } = await supabase
-        .from('company_categories')
-        .select('category_id');
+      const { data, error } = await supabase.from('company_categories').select('category_id');
 
       if (error) throw error;
 
       // Count occurrences by category_id
       const stats = {};
-      data.forEach(cc => {
+      data.forEach((cc) => {
         if (!stats[cc.category_id]) {
           stats[cc.category_id] = 0;
         }
@@ -372,7 +378,7 @@ export function useCategories(language = 'nl') {
     getAllCompanyCategories,
     assignCategoriesToCompany,
     getCategoryStats,
-    refetch: loadCategories
+    refetch: loadCategories,
   };
 }
 

@@ -25,12 +25,7 @@ function ConfirmDialog({
   const buttonStyle = variantStyles[variant] || variantStyles.default;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onCancel}
-      title={title}
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onCancel} title={title} size="md">
       <div className="p-6">
         <p className="text-gray-600 mb-6 whitespace-pre-wrap">{message}</p>
         <div className="flex justify-end gap-3">

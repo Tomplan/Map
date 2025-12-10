@@ -1,6 +1,6 @@
 /**
  * Bilingual Help Content Configuration (EN/NL)
- * 
+ *
  * Complete help content for all admin pages in both English and Dutch.
  * Structure: Each section has title, content, updated date, and tips in both languages.
  */
@@ -8,8 +8,8 @@
 export const helpContentBilingual = {
   dashboard: {
     title: {
-      en: "Dashboard Overview",
-      nl: "Dashboard Overzicht"
+      en: 'Dashboard Overview',
+      nl: 'Dashboard Overzicht',
     },
     content: {
       en: `
@@ -87,31 +87,31 @@ Het admin paneel gebruikt **jaar scoping** om data voor verschillende eventjaren
 4. **Klik "Wissel naar [Jaar]"** om te bevestigen
 
 Het dashboard toont alle belangrijke statistieken voor het geselecteerde jaar, en Snelle Acties linken naar relevante beheerpagina's.
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-03",
+    updated: '2025-12-03',
     tips: {
       en: [
-        "Switch years using the year picker in the admin sidebar",
-        "Companies and map markers are global - they appear in all years",
-        "Subscriptions and assignments are year-scoped - they reset when switching years",
-        "All dashboard stats update automatically in real-time",
-        "Use Quick Actions to jump directly to common management tasks"
+        'Switch years using the year picker in the admin sidebar',
+        'Companies and map markers are global - they appear in all years',
+        'Subscriptions and assignments are year-scoped - they reset when switching years',
+        'All dashboard stats update automatically in real-time',
+        'Use Quick Actions to jump directly to common management tasks',
       ],
       nl: [
-        "Wissel van jaar met de jaarkeuze in de admin zijbalk",
-        "Bedrijven en kaartmarkers zijn globaal - ze verschijnen in alle jaren",
-        "Inschrijvingen en toewijzingen zijn jaar-gebonden - ze resetten bij wisselen van jaar",
-        "Alle dashboard statistieken updaten automatisch in real-time",
-        "Gebruik Snelle Acties om direct naar veelgebruikte beheertaken te gaan"
-      ]
-    }
+        'Wissel van jaar met de jaarkeuze in de admin zijbalk',
+        'Bedrijven en kaartmarkers zijn globaal - ze verschijnen in alle jaren',
+        'Inschrijvingen en toewijzingen zijn jaar-gebonden - ze resetten bij wisselen van jaar',
+        'Alle dashboard statistieken updaten automatisch in real-time',
+        'Gebruik Snelle Acties om direct naar veelgebruikte beheertaken te gaan',
+      ],
+    },
   },
 
   mapManagement: {
     title: {
-      en: "Map Management",
-      nl: "Kaartbeheer"
+      en: 'Map Management',
+      nl: 'Kaartbeheer',
     },
     content: {
       en: `
@@ -209,29 +209,29 @@ Zoomniveaus bepalen wanneer markers op de kaart verschijnen. Leaflet gebruikt zo
 - Vergrendel markers voor de eventdag om ongelukken te voorkomen
 - Gebruik zoomzichtbaarheid om kaart overzichtelijk te houden
 - Rechthoeken (6m x 6m) tonen standcontouren - alleen zichtbaar in admin weergave
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-03",
+    updated: '2025-12-03',
     tips: {
       en: [
-        "Right-click on map for quick marker creation",
-        "Lock markers before going live to prevent accidents",
-        "Adjust min/max zoom to control marker visibility",
-        "Use rectangles to visualize booth layouts"
+        'Right-click on map for quick marker creation',
+        'Lock markers before going live to prevent accidents',
+        'Adjust min/max zoom to control marker visibility',
+        'Use rectangles to visualize booth layouts',
       ],
       nl: [
-        "Rechts-klik op kaart voor snelle marker creatie",
-        "Vergrendel markers voor go-live om ongelukken te voorkomen",
-        "Pas min/max zoom aan om marker zichtbaarheid te regelen",
-        "Gebruik rechthoeken om standindelingen te visualiseren"
-      ]
-    }
+        'Rechts-klik op kaart voor snelle marker creatie',
+        'Vergrendel markers voor go-live om ongelukken te voorkomen',
+        'Pas min/max zoom aan om marker zichtbaarheid te regelen',
+        'Gebruik rechthoeken om standindelingen te visualiseren',
+      ],
+    },
   },
 
   companies: {
     title: {
-      en: "Companies Management",
-      nl: "Bedrijvenbeheer"
+      en: 'Companies Management',
+      nl: 'Bedrijvenbeheer',
     },
     content: {
       en: `
@@ -657,31 +657,31 @@ Beheer efficiënt bulk bedrijfsdata:
 4. Klik "Bewerken" op bedrijfsrij
 5. Update gewijzigde informatie
 6. Klik "Opslaan" (synchroniseert direct naar alle gebruikers)
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Add multi-language info to improve attendee experience for international visitors",
-        "Use categories consistently to enable future filtering features",
-        "Upload square transparent PNG logos for best map marker display",
-        "Phone numbers auto-format but must include country code (+31...)",
-        "Export companies regularly as backup before major changes"
+        'Add multi-language info to improve attendee experience for international visitors',
+        'Use categories consistently to enable future filtering features',
+        'Upload square transparent PNG logos for best map marker display',
+        'Phone numbers auto-format but must include country code (+31...)',
+        'Export companies regularly as backup before major changes',
       ],
       nl: [
-        "Voeg meertalige info toe om bezoeker ervaring te verbeteren voor internationale bezoekers",
-        "Gebruik categorieën consistent om toekomstige filter features mogelijk te maken",
+        'Voeg meertalige info toe om bezoeker ervaring te verbeteren voor internationale bezoekers',
+        'Gebruik categorieën consistent om toekomstige filter features mogelijk te maken',
         "Upload vierkante transparante PNG logo's voor beste kaart marker weergave",
-        "Telefoonnummers auto-formatteren maar moeten landcode bevatten (+31...)",
-        "Exporteer bedrijven regelmatig als backup voor grote wijzigingen"
-      ]
-    }
+        'Telefoonnummers auto-formatteren maar moeten landcode bevatten (+31...)',
+        'Exporteer bedrijven regelmatig als backup voor grote wijzigingen',
+      ],
+    },
   },
 
   subscriptions: {
     title: {
-      en: "Event Subscriptions",
-      nl: "Event Inschrijvingen"
+      en: 'Event Subscriptions',
+      nl: 'Event Inschrijvingen',
     },
     content: {
       en: `
@@ -841,31 +841,31 @@ Beheer efficiënt bulkdata:
 - Gebruik "Kopiëren van Vorig Jaar" voor terugkerende events met dezelfde exposanten
 - Archiveer voltooide jaren om systeem georganiseerd te houden
 - Exporteer regelmatig voor backup en rapportage
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Booth display updates automatically when assignments change",
-        "Sort by booth requirements to identify unassigned companies",
-        "Use Copy from Previous Year for events with recurring exhibitors",
-        "Archive completed years to keep active data manageable",
-        "Export before making bulk changes as backup"
+        'Booth display updates automatically when assignments change',
+        'Sort by booth requirements to identify unassigned companies',
+        'Use Copy from Previous Year for events with recurring exhibitors',
+        'Archive completed years to keep active data manageable',
+        'Export before making bulk changes as backup',
       ],
       nl: [
-        "Standweergave update automatisch wanneer toewijzingen wijzigen",
-        "Sorteer op standvereisten om niet-toegewezen bedrijven te identificeren",
-        "Gebruik Kopiëren van Vorig Jaar voor events met terugkerende exposanten",
-        "Archiveer voltooide jaren om actieve data beheersbaar te houden",
-        "Exporteer voor bulkwijzigingen als backup"
-      ]
-    }
+        'Standweergave update automatisch wanneer toewijzingen wijzigen',
+        'Sorteer op standvereisten om niet-toegewezen bedrijven te identificeren',
+        'Gebruik Kopiëren van Vorig Jaar voor events met terugkerende exposanten',
+        'Archiveer voltooide jaren om actieve data beheersbaar te houden',
+        'Exporteer voor bulkwijzigingen als backup',
+      ],
+    },
   },
 
   assignments: {
     title: {
-      en: "Booth Assignments",
-      nl: "Standtoewijzingen"
+      en: 'Booth Assignments',
+      nl: 'Standtoewijzingen',
     },
     content: {
       en: `
@@ -1075,31 +1075,31 @@ Bulk toewijzingsbeheer:
 - Zoek specifieke bedrijven bij grote events
 - Exporteer voor bulkwijzigingen (backup)
 - Archiveer voltooide jaren jaarlijks om systeem georganiseerd te houden
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
         "Use 'Unassigned First' sort to quickly complete all assignments",
-        "Sort preferences save automatically across sessions",
-        "Search filters rows - useful with many companies",
-        "One booth per company per year rule is enforced",
-        "Archive completed years to preserve historical data"
+        'Sort preferences save automatically across sessions',
+        'Search filters rows - useful with many companies',
+        'One booth per company per year rule is enforced',
+        'Archive completed years to preserve historical data',
       ],
       nl: [
         "Gebruik 'Niet-toegewezen Eerst' sortering om snel alle toewijzingen te voltooien",
-        "Sorteervoorkeuren slaan automatisch op over sessies",
-        "Zoeken filtert rijen - handig bij veel bedrijven",
-        "Eén stand per bedrijf per jaar regel is afgedwongen",
-        "Archiveer voltooide jaren om historische data te bewaren"
-      ]
-    }
+        'Sorteervoorkeuren slaan automatisch op over sessies',
+        'Zoeken filtert rijen - handig bij veel bedrijven',
+        'Eén stand per bedrijf per jaar regel is afgedwongen',
+        'Archiveer voltooide jaren om historische data te bewaren',
+      ],
+    },
   },
 
   settings: {
     title: {
-      en: "System Settings",
-      nl: "Systeeminstellingen"
+      en: 'System Settings',
+      nl: 'Systeeminstellingen',
     },
     content: {
       en: `
@@ -1387,31 +1387,31 @@ Systeemconfiguratie en danger zone operaties:
 3. Voer gebruiker email adres in
 4. Wijs passende rol toe op basis van verantwoordelijkheden
 5. Stuur uitnodiging en verifieer dat gebruiker toegang ontvangt
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Personal settings only affect your account, organization settings affect everyone",
-        "Test branding changes before applying to production",
-        "Review user roles quarterly for security hygiene",
-        "Use categories consistently across all company assignments",
-        "Set Event Defaults before bulk-subscribing companies"
+        'Personal settings only affect your account, organization settings affect everyone',
+        'Test branding changes before applying to production',
+        'Review user roles quarterly for security hygiene',
+        'Use categories consistently across all company assignments',
+        'Set Event Defaults before bulk-subscribing companies',
       ],
       nl: [
-        "Persoonlijke instellingen beïnvloeden alleen jouw account, organisatie instellingen iedereen",
-        "Test branding wijzigingen voordat je ze toepast op productie",
-        "Review gebruikersrollen elk kwartaal voor security hygiëne",
-        "Gebruik categorieën consistent over alle bedrijfstoewijzingen",
-        "Stel Event Standaarden in voordat je bulk-inschrijvingen doet"
-      ]
-    }
+        'Persoonlijke instellingen beïnvloeden alleen jouw account, organisatie instellingen iedereen',
+        'Test branding wijzigingen voordat je ze toepast op productie',
+        'Review gebruikersrollen elk kwartaal voor security hygiëne',
+        'Gebruik categorieën consistent over alle bedrijfstoewijzingen',
+        'Stel Event Standaarden in voordat je bulk-inschrijvingen doet',
+      ],
+    },
   },
 
   programManagement: {
     title: {
-      en: "Program Management",
-      nl: "Programma Beheer"
+      en: 'Program Management',
+      nl: 'Programma Beheer',
     },
     content: {
       en: `
@@ -1885,31 +1885,31 @@ Stats updaten automatisch wanneer activiteiten toegevoegd, bewerkt of status wij
 3. Sleep activiteiten om ruimtelijke flow te matchen (entree → midden → eind)
 4. Of organiseer op tijd indien chronologische volgorde geprefereerd
 5. Test publiek schema om logische progressie te verifiëren
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Fill all three languages (NL/EN/DE) for international events",
-        "Use copy/paste to efficiently create recurring hourly activities",
-        "Set activities inactive instead of deleting to preserve history",
-        "Drag-to-reorder only works on active activities",
-        "Copy from previous year saves hours when setting up annual events"
+        'Fill all three languages (NL/EN/DE) for international events',
+        'Use copy/paste to efficiently create recurring hourly activities',
+        'Set activities inactive instead of deleting to preserve history',
+        'Drag-to-reorder only works on active activities',
+        'Copy from previous year saves hours when setting up annual events',
       ],
       nl: [
-        "Vul alle drie talen (NL/EN/DE) in voor internationale events",
-        "Gebruik kopiëren/plakken om efficiënt terugkerende uurlijkse activiteiten te creëren",
-        "Zet activiteiten inactief in plaats van verwijderen om geschiedenis te bewaren",
-        "Sleep-om-te-herschikken werkt alleen op actieve activiteiten",
-        "Kopiëren van vorig jaar bespaart uren bij opzetten jaarlijkse events"
-      ]
-    }
+        'Vul alle drie talen (NL/EN/DE) in voor internationale events',
+        'Gebruik kopiëren/plakken om efficiënt terugkerende uurlijkse activiteiten te creëren',
+        'Zet activiteiten inactief in plaats van verwijderen om geschiedenis te bewaren',
+        'Sleep-om-te-herschikken werkt alleen op actieve activiteiten',
+        'Kopiëren van vorig jaar bespaart uren bij opzetten jaarlijkse events',
+      ],
+    },
   },
 
   userRoles: {
     title: {
-      en: "User Roles & Permissions",
-      nl: "Gebruikersrollen & Rechten"
+      en: 'User Roles & Permissions',
+      nl: 'Gebruikersrollen & Rechten',
     },
     content: {
       en: `
@@ -2197,31 +2197,31 @@ Als je andere rechten nodig hebt:
 - Log uit wanneer je klaar bent, vooral op gedeelde computers
 - Meld toegangsproblemen bij je beheerder
 - Begrijp de mogelijkheden en beperkingen van je rol
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Your current role is always displayed in the top-right corner of the admin panel",
+        'Your current role is always displayed in the top-right corner of the admin panel',
         "If you see a lock icon on a feature, it means you don't have permission to access it",
-        "Event Managers handle event data; System Managers handle the map and settings",
-        "Super Admin should be limited to 1-2 trusted individuals in your organization",
-        "Role changes require logging out and back in to take effect"
+        'Event Managers handle event data; System Managers handle the map and settings',
+        'Super Admin should be limited to 1-2 trusted individuals in your organization',
+        'Role changes require logging out and back in to take effect',
       ],
       nl: [
-        "Je huidige rol wordt altijd rechtsboven in het admin paneel weergegeven",
-        "Als je een slotpictogram bij een functie ziet, heb je geen toegang",
-        "Event Managers beheren eventdata; System Managers beheren kaart en instellingen",
-        "Super Admin moet beperkt zijn tot 1-2 vertrouwde personen in je organisatie",
-        "Rolwijzigingen vereisen uitloggen en opnieuw inloggen om actief te worden"
-      ]
-    }
+        'Je huidige rol wordt altijd rechtsboven in het admin paneel weergegeven',
+        'Als je een slotpictogram bij een functie ziet, heb je geen toegang',
+        'Event Managers beheren eventdata; System Managers beheren kaart en instellingen',
+        'Super Admin moet beperkt zijn tot 1-2 vertrouwde personen in je organisatie',
+        'Rolwijzigingen vereisen uitloggen en opnieuw inloggen om actief te worden',
+      ],
+    },
   },
 
   categories: {
     title: {
-      en: "Categories Management",
-      nl: "Categorieën Beheer"
+      en: 'Categories Management',
+      nl: 'Categorieën Beheer',
     },
     content: {
       en: `
@@ -2649,31 +2649,31 @@ Beschikbare pictogrammen zijn: Auto, Tent, Aanhanger, Auto-onderdelen, Vliegtuig
 - 16 vooraf ingestelde kleuren beschikbaar
 - Aangepaste kleuren ondersteund
 - Gebruikt voor badge achtergronden en visuele groepering
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Create categories before importing companies to assign them during import",
-        "Use distinct colors and icons to make categories instantly recognizable",
+        'Create categories before importing companies to assign them during import',
+        'Use distinct colors and icons to make categories instantly recognizable',
         "Check the exhibitor count before deleting - you can't delete categories in use",
-        "Provide all three language translations for international events",
-        "Review category statistics regularly to identify underutilized categories"
+        'Provide all three language translations for international events',
+        'Review category statistics regularly to identify underutilized categories',
       ],
       nl: [
-        "Maak categorieën aan voor het importeren van bedrijven om ze tijdens import toe te wijzen",
-        "Gebruik onderscheidende kleuren en pictogrammen om categorieën direct herkenbaar te maken",
-        "Controleer het standhouderaantal voor verwijderen - je kunt categorieën in gebruik niet verwijderen",
-        "Geef alle drie taalvertalingen voor internationale events",
-        "Bekijk categoriestatistieken regelmatig om ondergebruikte categorieën te identificeren"
-      ]
-    }
+        'Maak categorieën aan voor het importeren van bedrijven om ze tijdens import toe te wijzen',
+        'Gebruik onderscheidende kleuren en pictogrammen om categorieën direct herkenbaar te maken',
+        'Controleer het standhouderaantal voor verwijderen - je kunt categorieën in gebruik niet verwijderen',
+        'Geef alle drie taalvertalingen voor internationale events',
+        'Bekijk categoriestatistieken regelmatig om ondergebruikte categorieën te identificeren',
+      ],
+    },
   },
 
   importExport: {
     title: {
-      en: "Import & Export Workflow",
-      nl: "Import & Export Workflow"
+      en: 'Import & Export Workflow',
+      nl: 'Import & Export Workflow',
     },
     content: {
       en: `
@@ -3263,31 +3263,31 @@ Het systeem transformeert automatisch data tijdens import:
 - Voortgang updates elke 10 records
 - Gemiddelde snelheid: 100-200 records per seconde
 - Grote imports (1000+ rijen): ~5-10 seconden
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Always export before bulk changes to create a safety backup",
-        "Use Excel format for imports - it provides the best validation and preview",
-        "Test imports with small batches (10-20 rows) before importing large datasets",
-        "Review the preview carefully - check CREATE vs UPDATE counts match expectations",
-        "Fix all validation errors in your source file rather than skipping error rows"
+        'Always export before bulk changes to create a safety backup',
+        'Use Excel format for imports - it provides the best validation and preview',
+        'Test imports with small batches (10-20 rows) before importing large datasets',
+        'Review the preview carefully - check CREATE vs UPDATE counts match expectations',
+        'Fix all validation errors in your source file rather than skipping error rows',
       ],
       nl: [
-        "Exporteer altijd voor bulk wijzigingen om een veiligheidsbackup te maken",
-        "Gebruik Excel formaat voor imports - het biedt de beste validatie en preview",
-        "Test imports met kleine batches (10-20 rijen) voor het importeren van grote datasets",
-        "Review de preview zorgvuldig - controleer CREATE vs UPDATE aantallen matchen verwachtingen",
-        "Repareer alle validatiefouten in je bronbestand i.p.v. foutrijen overslaan"
-      ]
-    }
+        'Exporteer altijd voor bulk wijzigingen om een veiligheidsbackup te maken',
+        'Gebruik Excel formaat voor imports - het biedt de beste validatie en preview',
+        'Test imports met kleine batches (10-20 rijen) voor het importeren van grote datasets',
+        'Review de preview zorgvuldig - controleer CREATE vs UPDATE aantallen matchen verwachtingen',
+        'Repareer alle validatiefouten in je bronbestand i.p.v. foutrijen overslaan',
+      ],
+    },
   },
 
   feedbackRequests: {
     title: {
-      en: "Feedback & Feature Requests",
-      nl: "Feedback & Functieverzoeken"
+      en: 'Feedback & Feature Requests',
+      nl: 'Feedback & Functieverzoeken',
     },
     content: {
       en: `
@@ -3950,31 +3950,31 @@ Het feedback systeem update real-time voor alle verbonden gebruikers:
 - Client-side filtering voor instant resultaten
 - Zoekt titel, beschrijving en indiener email velden
 - Hoofdletter-ongevoelig gedeeltelijk matchen
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-02",
+    updated: '2025-12-02',
     tips: {
       en: [
-        "Search existing requests before creating new ones to avoid duplicates",
-        "Vote actively on requests that would improve your workflow",
-        "Provide detailed steps to reproduce when reporting bugs",
-        "Use comments to discuss and refine feature requests before voting",
-        "Check Feedback regularly - popular requests get prioritized for development"
+        'Search existing requests before creating new ones to avoid duplicates',
+        'Vote actively on requests that would improve your workflow',
+        'Provide detailed steps to reproduce when reporting bugs',
+        'Use comments to discuss and refine feature requests before voting',
+        'Check Feedback regularly - popular requests get prioritized for development',
       ],
       nl: [
-        "Zoek bestaande verzoeken voor het aanmaken van nieuwe om duplicaten te vermijden",
-        "Stem actief op verzoeken die je workflow zouden verbeteren",
-        "Geef gedetailleerde stappen om te reproduceren bij het rapporteren van bugs",
-        "Gebruik commentaren om feature verzoeken te bespreken en verfijnen voor stemmen",
-        "Check Feedback regelmatig - populaire verzoeken krijgen prioriteit voor ontwikkeling"
-      ]
-    }
+        'Zoek bestaande verzoeken voor het aanmaken van nieuwe om duplicaten te vermijden',
+        'Stem actief op verzoeken die je workflow zouden verbeteren',
+        'Geef gedetailleerde stappen om te reproduceren bij het rapporteren van bugs',
+        'Gebruik commentaren om feature verzoeken te bespreken en verfijnen voor stemmen',
+        'Check Feedback regelmatig - populaire verzoeken krijgen prioriteit voor ontwikkeling',
+      ],
+    },
   },
 
   general: {
     title: {
-      en: "Getting Started",
-      nl: "Aan de Slag"
+      en: 'Getting Started',
+      nl: 'Aan de Slag',
     },
     content: {
       en: `
@@ -4112,26 +4112,26 @@ Welkom bij het Event Kaart Admin Paneel!
 - Hover over (?) iconen voor snelle tips
 - Check "Wat is Nieuw" voor recente wijzigingen
 - Neem contact op met systeembeheerder voor toegangsproblemen
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-12-03",
+    updated: '2025-12-03',
     tips: {
       en: [
-        "Start with dashboard to understand current status",
-        "Use year selector to switch between events",
-        "Lock markers before going live",
-        "Import data saves time vs manual entry",
-        "Program management updates public schedule instantly"
+        'Start with dashboard to understand current status',
+        'Use year selector to switch between events',
+        'Lock markers before going live',
+        'Import data saves time vs manual entry',
+        'Program management updates public schedule instantly',
       ],
       nl: [
-        "Start met dashboard om huidige status te begrijpen",
-        "Gebruik jaarselector om tussen events te wisselen",
-        "Vergrendel markers voor go-live",
-        "Data importeren bespaart tijd vs handmatige invoer",
-        "Programma beheer update publiek schema instant"
-      ]
-    }
-  }
+        'Start met dashboard om huidige status te begrijpen',
+        'Gebruik jaarselector om tussen events te wisselen',
+        'Vergrendel markers voor go-live',
+        'Data importeren bespaart tijd vs handmatige invoer',
+        'Programma beheer update publiek schema instant',
+      ],
+    },
+  },
 };
 
 /**
@@ -4142,12 +4142,12 @@ Welkom bij het Event Kaart Admin Paneel!
  */
 export function getHelpContent(page, language = 'en') {
   const content = helpContentBilingual[page] || helpContentBilingual.general;
-  
+
   return {
     title: content.title[language] || content.title.en,
     content: content.content[language] || content.content.en,
     updated: content.updated,
-    tips: content.tips[language] || content.tips.en
+    tips: content.tips[language] || content.tips.en,
   };
 }
 

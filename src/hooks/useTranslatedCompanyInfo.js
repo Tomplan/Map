@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * useTranslatedCompanyInfo - Get translated company info for public display
- * 
+ *
  * For markers with company data, returns the info in the user's current language
  * with fallback to Dutch.
- * 
+ *
  * @param {Object} marker - Marker object with company_translations array
  * @returns {string} Translated info text or empty string
  */
@@ -22,7 +22,7 @@ export function useTranslatedCompanyInfo(marker) {
 
     // Find translation for current language
     const currentTranslation = marker.company_translations.find(
-      t => t.language_code === currentLanguage
+      (t) => t.language_code === currentLanguage,
     );
 
     if (currentTranslation?.info) {
@@ -30,16 +30,14 @@ export function useTranslatedCompanyInfo(marker) {
     }
 
     // Fallback to Dutch
-    const dutchTranslation = marker.company_translations.find(
-      t => t.language_code === 'nl'
-    );
+    const dutchTranslation = marker.company_translations.find((t) => t.language_code === 'nl');
 
     if (dutchTranslation?.info) {
       return dutchTranslation.info;
     }
 
     // Fallback to any available translation
-    const anyTranslation = marker.company_translations.find(t => t.info);
+    const anyTranslation = marker.company_translations.find((t) => t.info);
     return anyTranslation?.info || '';
   }, [marker, currentLanguage]);
 
@@ -49,7 +47,7 @@ export function useTranslatedCompanyInfo(marker) {
 /**
  * getTranslatedInfo - Static helper for getting translated info from company data
  * Use this when you don't have access to hooks (e.g., in utility functions)
- * 
+ *
  * @param {Array} translations - Array of translation objects
  * @param {string} languageCode - Preferred language code
  * @param {string} deprecatedInfo - Fallback info from Companies.info (deprecated)
@@ -61,24 +59,20 @@ export function getTranslatedInfo(translations, languageCode = 'nl', deprecatedI
   }
 
   // Find translation for requested language
-  const currentTranslation = translations.find(
-    t => t.language_code === languageCode
-  );
+  const currentTranslation = translations.find((t) => t.language_code === languageCode);
 
   if (currentTranslation?.info) {
     return currentTranslation.info;
   }
 
   // Fallback to Dutch
-  const dutchTranslation = translations.find(
-    t => t.language_code === 'nl'
-  );
+  const dutchTranslation = translations.find((t) => t.language_code === 'nl');
 
   if (dutchTranslation?.info) {
     return dutchTranslation.info;
   }
 
   // Fallback to any available translation
-  const anyTranslation = translations.find(t => t.info);
+  const anyTranslation = translations.find((t) => t.info);
   return anyTranslation?.info || deprecatedInfo || '';
 }

@@ -9,6 +9,7 @@ import {
   mdiAlertCircle,
   mdiTranslate,
   mdiTag,
+  mdiCalendarEdit,
   mdiAccountCircle,
   mdiDomain,
 } from '@mdi/js';
@@ -16,6 +17,7 @@ import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
+import PublicDefaultYear from './PublicDefaultYear';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
@@ -100,6 +102,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       description: 'Default meal counts for events',
     },
     {
+      id: 'public-default-year',
+      label: t('settings.publicDefaultYear.title'),
+      icon: mdiCalendarEdit,
+      roles: ['super_admin', 'system_manager'],
+      component: <PublicDefaultYear />,
+      scope: 'organization',
+      description: 'Global public-facing default event year',
+    },
+    {
       id: 'advanced',
       label: t('settings.advanced.title'),
       icon: mdiAlertCircle,
@@ -111,27 +122,27 @@ export default function Settings({ selectedYear, setSelectedYear }) {
   ];
 
   // Filter sections by user role
-  const visibleSections = sections.filter(section => {
+  const visibleSections = sections.filter((section) => {
     if (isSuperAdmin) return true; // Super admin sees all
     return section.roles.includes(role);
   });
 
   // Set first visible section as active if current is not visible
   React.useEffect(() => {
-    if (!visibleSections.find(s => s.id === activeSection)) {
+    if (!visibleSections.find((s) => s.id === activeSection)) {
       setActiveSection(visibleSections[0]?.id || 'event-defaults');
     }
-  }, [role]);
+  }, [role, visibleSections, activeSection]);
 
-  const activeComponent = visibleSections.find(s => s.id === activeSection)?.component;
+  const activeComponent = visibleSections.find((s) => s.id === activeSection)?.component;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col" data-testid="settings-container">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4" data-testid="settings-header">
         <h1 className="text-2xl font-bold text-gray-900">{t('settings.title')}</h1>
         <p className="text-sm text-gray-500 mt-1">
-          {t('settings.subtitle')} 
+          {t('settings.subtitle')}
           <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium capitalize">
             {role?.replace('_', ' ')}
           </span>
@@ -141,12 +152,18 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       {/* Layout: Sidebar + Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Section Navigation */}
-        <aside className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
+        <aside
+          className="w-64 bg-white border-r border-gray-200 overflow-y-auto"
+          data-testid="settings-sidebar"
+        >
           <nav className="p-4 space-y-4">
             {/* Personal Settings Group */}
-            {visibleSections.filter(s => s.scope === 'personal').length > 0 && (
+            {visibleSections.filter((s) => s.scope === 'personal').length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-4 py-2 mb-1">
+                <div
+                  className="flex items-center gap-2 px-4 py-2 mb-1"
+                  data-testid="personal-settings-group"
+                >
                   <Icon path={mdiAccountCircle} size={0.7} className="text-blue-600" />
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Personal Settings
@@ -154,11 +171,12 @@ export default function Settings({ selectedYear, setSelectedYear }) {
                 </div>
                 <div className="space-y-1">
                   {visibleSections
-                    .filter(s => s.scope === 'personal')
-                    .map(section => (
+                    .filter((s) => s.scope === 'personal')
+                    .map((section) => (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
+                        data-testid={`settings-section-${section.id}`}
                         className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                           activeSection === section.id
                             ? 'bg-blue-50 text-blue-700 font-medium'
@@ -178,9 +196,12 @@ export default function Settings({ selectedYear, setSelectedYear }) {
             )}
 
             {/* Organization Settings Group */}
-            {visibleSections.filter(s => s.scope === 'organization').length > 0 && (
+            {visibleSections.filter((s) => s.scope === 'organization').length > 0 && (
               <div>
-                <div className="flex items-center gap-2 px-4 py-2 mb-1">
+                <div
+                  className="flex items-center gap-2 px-4 py-2 mb-1"
+                  data-testid="organization-settings-group"
+                >
                   <Icon path={mdiDomain} size={0.7} className="text-orange-600" />
                   <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Organization Settings
@@ -188,11 +209,12 @@ export default function Settings({ selectedYear, setSelectedYear }) {
                 </div>
                 <div className="space-y-1">
                   {visibleSections
-                    .filter(s => s.scope === 'organization')
-                    .map(section => (
+                    .filter((s) => s.scope === 'organization')
+                    .map((section) => (
                       <button
                         key={section.id}
                         onClick={() => setActiveSection(section.id)}
+                        data-testid={`settings-section-${section.id}`}
                         className={`w-full flex items-start gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                           activeSection === section.id
                             ? 'bg-orange-50 text-orange-700 font-medium'
@@ -214,7 +236,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
         </aside>
 
         {/* Right Content Area */}
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-6" data-testid="settings-content">
           {activeComponent}
         </main>
       </div>

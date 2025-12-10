@@ -7,10 +7,17 @@ import useCompanies from '../hooks/useCompanies';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import YearScopeBadge from './admin/YearScopeBadge';
 
-export default function ActivityForm({ activity = null, day = 'saturday', year = new Date().getFullYear(), initialActivityData = null, onSave = () => {}, onClose = () => {} }) {
+export default function ActivityForm({
+  activity = null,
+  day = 'saturday',
+  year = new Date().getFullYear(),
+  initialActivityData = null,
+  onSave = () => {},
+  onClose = () => {},
+}) {
   const { t, i18n } = useTranslation();
   const [tab, setTab] = useState('nl');
-  const adminLang = (i18n && i18n.language === 'nl') ? 'nl' : 'en';
+  const adminLang = i18n && i18n.language === 'nl' ? 'nl' : 'en';
   // title + description + location + badge fields for nl/en/de
   const [titleNl, setTitleNl] = useState(activity?.title_nl || '');
   const [titleEn, setTitleEn] = useState(activity?.title_en || '');
@@ -33,8 +40,12 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
   const [endTime, setEndTime] = useState(activity?.end_time || '');
   const [displayOrder, setDisplayOrder] = useState(activity?.display_order ?? 0);
   const [isActive, setIsActive] = useState(activity?.is_active ?? true);
-  const [showLocationTypeBadge, setShowLocationTypeBadge] = useState(activity?.show_location_type_badge ?? false);
-  const [locationType, setLocationType] = useState(activity?.location_type || (activity?.company_id ? 'exhibitor' : 'venue'));
+  const [showLocationTypeBadge, setShowLocationTypeBadge] = useState(
+    activity?.show_location_type_badge ?? false,
+  );
+  const [locationType, setLocationType] = useState(
+    activity?.location_type || (activity?.company_id ? 'exhibitor' : 'venue'),
+  );
   const [companyId, setCompanyId] = useState(activity?.company_id ?? null);
 
   // unique id suffix used for element ids in the modal to avoid collisions
@@ -46,8 +57,8 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
   const { subscriptions } = useEventSubscriptions(year);
 
   // Filter companies to only show those with active subscriptions for this year
-  const subscribedCompanyIds = new Set(subscriptions.map(sub => sub.company_id));
-  const subscribedCompanies = companies.filter(company => subscribedCompanyIds.has(company.id));
+  const subscribedCompanyIds = new Set(subscriptions.map((sub) => sub.company_id));
+  const subscribedCompanies = companies.filter((company) => subscribedCompanyIds.has(company.id));
 
   // Keep fields in sync if `activity` or `initialActivityData` changes
   useEffect(() => {
@@ -100,7 +111,10 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
       setDisplayOrder(initialActivityData.display_order || 0);
       setIsActive(initialActivityData.is_active ?? true);
       setShowLocationTypeBadge(initialActivityData.show_location_type_badge ?? false);
-      setLocationType(initialActivityData.location_type || (initialActivityData.company_id ? 'exhibitor' : 'venue'));
+      setLocationType(
+        initialActivityData.location_type ||
+          (initialActivityData.company_id ? 'exhibitor' : 'venue'),
+      );
       setCompanyId(initialActivityData.company_id || null);
     }
     // If creating a new activity from scratch, reset to defaults
@@ -137,7 +151,8 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
     // Build payload matching event_activities columns
     // Coerce and normalise values before sending to the DB to avoid type issues
     // (especially when companyId is from a <select> and may be a string)
-    const coercedCompanyId = (companyId !== null && companyId !== undefined && companyId !== '') ? Number(companyId) : null;
+    const coercedCompanyId =
+      companyId !== null && companyId !== undefined && companyId !== '' ? Number(companyId) : null;
 
     const payload = {
       organization_id: 1, // Default organization ID - adjust if needed
@@ -167,28 +182,28 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
     // For now, always include event_year (will be ignored if column doesn't exist)
     payload.event_year = year;
 
-      try {
-        // debug payload in case of unexpected server-side errors during save
-        // (useful when testing or when RLS/policies silently deny updates)
-        // eslint-disable-next-line no-console
-        console.debug('ActivityForm payload', payload);
-        // If inserting a new activity and displayOrder is not explicitly set, infer next slot
-        if (!activity?.id && (!displayOrder || displayOrder === 0)) {
-          // fetch max display_order for the current day
-          const { data: maxRow, error: maxErr } = await supabase
-            .from('event_activities')
-            .select('display_order')
-            .eq('day', day)
-            .order('display_order', { ascending: false })
-            .limit(1)
-            .maybeSingle();
+    try {
+      // debug payload in case of unexpected server-side errors during save
+      // (useful when testing or when RLS/policies silently deny updates)
 
-          if (!maxErr && maxRow && typeof maxRow.display_order === 'number') {
-            payload.display_order = maxRow.display_order + 1;
-          } else {
-            payload.display_order = 1;
-          }
+      console.debug('ActivityForm payload', payload);
+      // If inserting a new activity and displayOrder is not explicitly set, infer next slot
+      if (!activity?.id && (!displayOrder || displayOrder === 0)) {
+        // fetch max display_order for the current day
+        const { data: maxRow, error: maxErr } = await supabase
+          .from('event_activities')
+          .select('display_order')
+          .eq('day', day)
+          .order('display_order', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!maxErr && maxRow && typeof maxRow.display_order === 'number') {
+          payload.display_order = maxRow.display_order + 1;
+        } else {
+          payload.display_order = 1;
         }
+      }
       if (activity && activity.id) {
         // update (no chained select to avoid POST/REST content-negotiation issues)
         const { error: updateErr } = await supabase
@@ -207,7 +222,7 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
 
         if (fetchErr) {
           // log, but don't fail the whole flow as parent will refetch
-          // eslint-disable-next-line no-console
+
           console.warn('Failed to fetch updated activity:', fetchErr);
         }
 
@@ -215,7 +230,6 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           const persisted = !!updatedRow.show_location_type_badge;
           // If the persisted value differs from the requested payload — surface a helpful warning
           if (persisted !== payload.show_location_type_badge) {
-            // eslint-disable-next-line no-console
             console.warn('Persisted show_location_type_badge does not match requested value', {
               requested: payload.show_location_type_badge,
               persisted,
@@ -249,7 +263,6 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           .maybeSingle();
 
         if (fetchInsertedErr) {
-          // eslint-disable-next-line no-console
           console.warn('Failed to fetch inserted activity:', fetchInsertedErr);
         }
 
@@ -258,9 +271,9 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
         }
       }
 
-        // (company_id already coerced above)
+      // (company_id already coerced above)
 
-        // notify parent (ProgramManagement passes refetch)
+      // notify parent (ProgramManagement passes refetch)
       await onSave();
       // show success toast (explicit feedback for admins)
       try {
@@ -289,9 +302,27 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
     <Modal isOpen onClose={onClose} title={t('activityForm.createTitle')} size="lg">
       <div className="px-6 pt-4">
         <div className="flex items-center gap-2 mb-3">
-          <button type="button" onClick={() => setTab('nl')} className={`px-3 py-1 rounded ${tab==='nl'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>NL</button>
-          <button type="button" onClick={() => setTab('en')} className={`px-3 py-1 rounded ${tab==='en'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>EN</button>
-          <button type="button" onClick={() => setTab('de')} className={`px-3 py-1 rounded ${tab==='de'?'bg-blue-600 text-white':'bg-gray-100 text-gray-700'}`}>DE</button>
+          <button
+            type="button"
+            onClick={() => setTab('nl')}
+            className={`px-3 py-1 rounded ${tab === 'nl' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+          >
+            NL
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('en')}
+            className={`px-3 py-1 rounded ${tab === 'en' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('de')}
+            className={`px-3 py-1 rounded ${tab === 'de' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'}`}
+          >
+            DE
+          </button>
         </div>
 
         {/* Basic Information Section */}
@@ -299,65 +330,148 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           {/* Time Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`start-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.startTime')}</label>
-              <input id={`start-time-${uid}`} type="time" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={startTime || ''} onChange={(e) => setStartTime(e.target.value)} />
+              <label
+                htmlFor={`start-time-${uid}`}
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t('activityForm.startTime')}
+              </label>
+              <input
+                id={`start-time-${uid}`}
+                type="time"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={startTime || ''}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
             </div>
             <div>
-              <label htmlFor={`end-time-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.endTime')}</label>
-              <input id={`end-time-${uid}`} type="time" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={endTime || ''} onChange={(e) => setEndTime(e.target.value)} />
+              <label
+                htmlFor={`end-time-${uid}`}
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t('activityForm.endTime')}
+              </label>
+              <input
+                id={`end-time-${uid}`}
+                type="time"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={endTime || ''}
+                onChange={(e) => setEndTime(e.target.value)}
+              />
             </div>
           </div>
 
           {/* Location Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor={`location-type-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationType')}</label>
-              <select id={`location-type-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationType} onChange={(e) => setLocationType(e.target.value)}>
+              <label
+                htmlFor={`location-type-${uid}`}
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                {t('activityForm.locationType')}
+              </label>
+              <select
+                id={`location-type-${uid}`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={locationType}
+                onChange={(e) => setLocationType(e.target.value)}
+              >
                 <option value="venue">{t('activityForm.venue')}</option>
                 <option value="exhibitor">{t('activityForm.exhibitor')}</option>
               </select>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor={`company-${uid}`} className="block text-sm font-medium text-gray-700">{t('activityForm.company')}</label>
+                <label
+                  htmlFor={`company-${uid}`}
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {t('activityForm.company')}
+                </label>
                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   {t('activityForm.subscribedCompanies', { year })}
                 </span>
               </div>
-              <select id={`company-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={companyId || ''} onChange={(e) => setCompanyId(e.target.value || null)}>
+              <select
+                id={`company-${uid}`}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                value={companyId || ''}
+                onChange={(e) => setCompanyId(e.target.value || null)}
+              >
                 <option value="">{t('activityForm.selectCompany')}</option>
-                {subscribedCompanies.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                {subscribedCompanies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
               <p className="text-xs text-gray-500 mt-1">{t('activityForm.companyScopeHint')}</p>
             </div>
           </div>
-
-
         </div>
 
         {/* Content Section */}
         <div className="mt-8 pt-6 border-t border-gray-200">
-
           {tab === 'nl' && (
             <div className="space-y-4">
               <div>
-                <label htmlFor={`title-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.titleNL', { lng: adminLang })}</label>
-                <input id={`title-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleNl} onChange={(e) => setTitleNl(e.target.value)} />
+                <label
+                  htmlFor={`title-nl-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('activityForm.titleNL', { lng: adminLang })}
+                </label>
+                <input
+                  id={`title-nl-${uid}`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={titleNl}
+                  onChange={(e) => setTitleNl(e.target.value)}
+                />
               </div>
               <div>
-                <label htmlFor={`description-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.descriptionNL')}</label>
-                <textarea id={`description-nl-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionNl} onChange={(e) => setDescriptionNl(e.target.value)} />
+                <label
+                  htmlFor={`description-nl-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('activityForm.descriptionNL')}
+                </label>
+                <textarea
+                  id={`description-nl-${uid}`}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={descriptionNl}
+                  onChange={(e) => setDescriptionNl(e.target.value)}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor={`location-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationNL')}</label>
-                  <input id={`location-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationNl} onChange={(e) => setLocationNl(e.target.value)} />
+                  <label
+                    htmlFor={`location-nl-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t('activityForm.locationNL')}
+                  </label>
+                  <input
+                    id={`location-nl-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={locationNl}
+                    onChange={(e) => setLocationNl(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor={`badge-nl-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.badgeNL')} <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
-                  <input id={`badge-nl-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeNl} onChange={(e) => setBadgeNl(e.target.value)} />
+                  <label
+                    htmlFor={`badge-nl-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t('activityForm.badgeNL')}{' '}
+                    <span className="text-xs text-gray-500">{t('activityForm.optional')}</span>
+                  </label>
+                  <input
+                    id={`badge-nl-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={badgeNl}
+                    onChange={(e) => setBadgeNl(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -366,21 +480,63 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           {tab === 'en' && (
             <div className="space-y-4">
               <div>
-                <label htmlFor={`title-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.titleEN', { lng: adminLang })}</label>
-                <input id={`title-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} />
+                <label
+                  htmlFor={`title-en-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('activityForm.titleEN', { lng: adminLang })}
+                </label>
+                <input
+                  id={`title-en-${uid}`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={titleEn}
+                  onChange={(e) => setTitleEn(e.target.value)}
+                />
               </div>
               <div>
-                <label htmlFor={`description-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.descriptionEN')}</label>
-                <textarea id={`description-en-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionEn} onChange={(e) => setDescriptionEn(e.target.value)} />
+                <label
+                  htmlFor={`description-en-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t('activityForm.descriptionEN')}
+                </label>
+                <textarea
+                  id={`description-en-${uid}`}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={descriptionEn}
+                  onChange={(e) => setDescriptionEn(e.target.value)}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor={`location-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.locationEN')}</label>
-                  <input id={`location-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationEn} onChange={(e) => setLocationEn(e.target.value)} />
+                  <label
+                    htmlFor={`location-en-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t('activityForm.locationEN')}
+                  </label>
+                  <input
+                    id={`location-en-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={locationEn}
+                    onChange={(e) => setLocationEn(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor={`badge-en-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">{t('activityForm.badgeEN')} <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
-                  <input id={`badge-en-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeEn} onChange={(e) => setBadgeEn(e.target.value)} />
+                  <label
+                    htmlFor={`badge-en-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t('activityForm.badgeEN')}{' '}
+                    <span className="text-xs text-gray-500">{t('activityForm.optional')}</span>
+                  </label>
+                  <input
+                    id={`badge-en-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={badgeEn}
+                    onChange={(e) => setBadgeEn(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -389,21 +545,63 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
           {tab === 'de' && (
             <div className="space-y-4">
               <div>
-                <label htmlFor={`title-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Title (DE)</label>
-                <input id={`title-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={titleDe} onChange={(e) => setTitleDe(e.target.value)} />
+                <label
+                  htmlFor={`title-de-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Title (DE)
+                </label>
+                <input
+                  id={`title-de-${uid}`}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={titleDe}
+                  onChange={(e) => setTitleDe(e.target.value)}
+                />
               </div>
               <div>
-                <label htmlFor={`description-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Description (DE)</label>
-                <textarea id={`description-de-${uid}`} rows={4} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={descriptionDe} onChange={(e) => setDescriptionDe(e.target.value)} />
+                <label
+                  htmlFor={`description-de-${uid}`}
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Description (DE)
+                </label>
+                <textarea
+                  id={`description-de-${uid}`}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={descriptionDe}
+                  onChange={(e) => setDescriptionDe(e.target.value)}
+                />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor={`location-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Location (DE)</label>
-                  <input id={`location-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={locationDe} onChange={(e) => setLocationDe(e.target.value)} />
+                  <label
+                    htmlFor={`location-de-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Location (DE)
+                  </label>
+                  <input
+                    id={`location-de-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={locationDe}
+                    onChange={(e) => setLocationDe(e.target.value)}
+                  />
                 </div>
                 <div>
-                  <label htmlFor={`badge-de-${uid}`} className="block text-sm font-medium text-gray-700 mb-2">Badge (DE) <span className="text-xs text-gray-500">{t('activityForm.optional')}</span></label>
-                  <input id={`badge-de-${uid}`} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={badgeDe} onChange={(e) => setBadgeDe(e.target.value)} />
+                  <label
+                    htmlFor={`badge-de-${uid}`}
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Badge (DE){' '}
+                    <span className="text-xs text-gray-500">{t('activityForm.optional')}</span>
+                  </label>
+                  <input
+                    id={`badge-de-${uid}`}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={badgeDe}
+                    onChange={(e) => setBadgeDe(e.target.value)}
+                  />
                 </div>
               </div>
             </div>
@@ -422,7 +620,9 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
                 onChange={(e) => setIsActive(e.target.checked)}
               />
               <div className="flex-1">
-                <label htmlFor={`isActive-${uid}`} className="text-sm text-gray-700 cursor-pointer">{t('activityForm.isActive')}</label>
+                <label htmlFor={`isActive-${uid}`} className="text-sm text-gray-700 cursor-pointer">
+                  {t('activityForm.isActive')}
+                </label>
                 <p className="text-xs text-gray-500 mt-0.5">{t('activityForm.isActiveHelp')}</p>
               </div>
             </div>
@@ -436,8 +636,15 @@ export default function ActivityForm({ activity = null, day = 'saturday', year =
                 onChange={(e) => setShowLocationTypeBadge(e.target.checked)}
               />
               <div className="flex-1">
-                <label htmlFor={`showLocBadge-${uid}`} className="text-sm text-gray-700 cursor-pointer">{t('activityForm.showLocationBadge')}</label>
-                <p className="text-xs text-gray-500 mt-0.5">{t('activityForm.showLocationBadgeHelp')}</p>
+                <label
+                  htmlFor={`showLocBadge-${uid}`}
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
+                  {t('activityForm.showLocationBadge')}
+                </label>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {t('activityForm.showLocationBadgeHelp')}
+                </p>
               </div>
             </div>
           </div>

@@ -17,7 +17,7 @@ export const backupConfig = {
     database: process.env.SUPABASE_DB_NAME || 'postgres',
     user: process.env.SUPABASE_DB_USER || 'postgres',
     password: process.env.SUPABASE_DB_PASSWORD,
-    ssl: process.env.SUPABASE_DB_SSL === 'true' || true
+    ssl: process.env.SUPABASE_DB_SSL === 'true' || true,
   },
 
   // Backup settings
@@ -25,10 +25,10 @@ export const backupConfig = {
     // Critical tables for daily backup
     criticalTables: [
       'companies',
-      'event_subscriptions', 
+      'event_subscriptions',
       'assignments',
       'organization_profile',
-      'user_preferences'
+      'user_preferences',
     ],
 
     // All tables for full backup
@@ -49,21 +49,21 @@ export const backupConfig = {
       'feedback_requests',
       'organization_settings',
       'company_translations',
-      'marker_defaults'
+      'marker_defaults',
     ],
 
     // Backup directories
     paths: {
       local: './backups',
-      archive: './backups/archive'
+      archive: './backups/archive',
     },
 
     // Retention policies
     retention: {
-      daily: 7,      // Keep 7 daily backups
-      weekly: 4,     // Keep 4 weekly backups  
-      monthly: 12    // Keep 12 monthly backups
-    }
+      daily: 7, // Keep 7 daily backups
+      weekly: 4, // Keep 4 weekly backups
+      monthly: 12, // Keep 12 monthly backups
+    },
   },
 
   // Cloud storage settings (optional)
@@ -73,12 +73,12 @@ export const backupConfig = {
       googleDrive: {
         clientId: process.env.GOOGLE_DRIVE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_DRIVE_CLIENT_SECRET,
-        refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN
+        refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN,
       },
       dropbox: {
-        accessToken: process.env.DROPBOX_ACCESS_TOKEN
-      }
-    }
+        accessToken: process.env.DROPBOX_ACCESS_TOKEN,
+      },
+    },
   },
 
   // Notification settings
@@ -86,26 +86,26 @@ export const backupConfig = {
     email: {
       enabled: process.env.BACKUP_EMAIL_ENABLED === 'true',
       to: process.env.BACKUP_EMAIL_TO,
-      from: process.env.BACKUP_EMAIL_FROM || 'backup-system@localhost'
+      from: process.env.BACKUP_EMAIL_FROM || 'backup-system@localhost',
     },
     slack: {
-      enabled: process.env.BACKUP_SLACK_ENABLED === 'true', 
-      webhook: process.env.BACKUP_SLACK_WEBHOOK
-    }
+      enabled: process.env.BACKUP_SLACK_ENABLED === 'true',
+      webhook: process.env.BACKUP_SLACK_WEBHOOK,
+    },
   },
 
   // Logging
   logging: {
     level: process.env.BACKUP_LOG_LEVEL || 'info',
-    file: './logs/backup.log'
-  }
+    file: './logs/backup.log',
+  },
 };
 
 // Validate required environment variables
 export function validateConfig() {
   const required = ['SUPABASE_DB_PASSWORD'];
-  const missing = required.filter(key => !process.env[key]);
-  
+  const missing = required.filter((key) => !process.env[key]);
+
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }

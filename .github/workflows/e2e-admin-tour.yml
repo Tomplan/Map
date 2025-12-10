@@ -1,0 +1,82 @@
+name: "E2E: Admin Tour (Puppeteer)"
+
+on:
+  push:
+    branches: [ main, master, feature/manual-gh-pages-deploy ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  e2e-admin-tour:
+    name: Admin tour E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        env:
+          # Opt-in to expose test helpers when building preview for CI.
+          VITE_E2E_TEST_HELPERS: '1'
+          # Also set a simple env var so runtime checks and Jest runs can
+          # read a platform-agnostic E2E_TEST_HELPERS flag.
+          E2E_TEST_HELPERS: '1'
+        run: npm run build
+
+      - name: Start preview server (background)
+        # Use vite preview to serve the built site so the e2e script can hit it
+        run: |
+          npm run preview -- --port 5173 --strictPort --host 127.0.0.1 &> preview.log &
+          echo $! > preview.pid
+
+      - name: Wait for preview up
+        run: npx wait-on http://127.0.0.1:5173/Map --timeout 120000
+
+      - name: Run admin-tour E2E (Puppeteer)
+        # Only run admin E2E when admin credentials are provided via repo secrets
+        if: ${{ secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
+        env:
+          E2E_BASE: http://127.0.0.1:5173/Map
+          # Provide admin credentials through repo secrets so the E2E
+          # script can sign-in if the job is running against a protected
+          # preview. Add these secrets to your repo settings: E2E_ADMIN_EMAIL
+          # and E2E_ADMIN_PASSWORD
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: npm run test:e2e:tour-admin
+
+      - name: Run help-no-reopen E2E (Puppeteer)
+        # Only run help-related E2E when admin credentials are provided
+        if: ${{ secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
+        env:
+          E2E_BASE: http://127.0.0.1:5173/Map
+          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+        run: npm run test:e2e:tour-help-no-reopen
+
+      - name: Upload debug artifacts (preview.log)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: preview-log
+          path: preview.log
+
+      - name: Print preview log (for quick debugging)
+        if: always()
+        run: |
+          echo "--- preview.log ---"
+          if [ -f preview.log ]; then tail -n +1 preview.log || true; else echo "(no preview.log found)"; fi
+
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ -f preview.pid ]; then kill "$(cat preview.pid)" || true; fi

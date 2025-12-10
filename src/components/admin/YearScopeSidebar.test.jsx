@@ -4,16 +4,18 @@ import '@testing-library/jest-dom';
 
 // Mock translations used by the sidebar
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => {
-    const map = {
-      'admin.yearScope.title': 'Evenement-specifieke gegevens',
-      'admin.yearScope.viewingYear': 'Geselecteerd jaar',
-      'adminNav.eventSubscriptions': 'Inschrijvingen',
-      'adminNav.assignments': 'Toewijzingen',
-      'adminNav.programManagement': 'Programmabeheer',
-    };
-    return map[k] || k;
-  } })
+  useTranslation: () => ({
+    t: (k) => {
+      const map = {
+        'admin.yearScope.title': 'Evenement-specifieke gegevens',
+        'admin.yearScope.viewingYear': 'Geselecteerd jaar',
+        'adminNav.eventSubscriptions': 'Inschrijvingen',
+        'adminNav.assignments': 'Toewijzingen',
+        'adminNav.programManagement': 'Programmabeheer',
+      };
+      return map[k] || k;
+    },
+  }),
 }));
 
 // Use centralized supabaseClient mock and configure responses for each test
@@ -32,7 +34,8 @@ beforeEach(() => {
 jest.mock('react-router-dom', () => {
   const React = require('react');
   return {
-    Link: ({ children, to, ...props }) => React.createElement('a', { href: to, ...props }, children),
+    Link: ({ children, to, ...props }) =>
+      React.createElement('a', { href: to, ...props }, children),
     // many components in admin tests assume a simple useLocation shape — provide a lightweight mock
     useLocation: () => ({ pathname: '/admin/subscriptions' }),
   };
@@ -40,7 +43,6 @@ jest.mock('react-router-dom', () => {
 
 // TextEncoder/Decoder polyfill for Node test env
 if (typeof TextEncoder === 'undefined') {
-  // eslint-disable-next-line global-require
   const { TextEncoder, TextDecoder } = require('util');
   global.TextEncoder = TextEncoder;
   global.TextDecoder = TextDecoder;

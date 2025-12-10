@@ -9,11 +9,7 @@ const FavoritesContext = createContext(null);
 export function FavoritesProvider({ selectedYear, children }) {
   const favoritesState = useFavorites(selectedYear);
 
-  return (
-    <FavoritesContext.Provider value={favoritesState}>
-      {children}
-    </FavoritesContext.Provider>
-  );
+  return <FavoritesContext.Provider value={favoritesState}>{children}</FavoritesContext.Provider>;
 }
 
 /**

@@ -23,7 +23,7 @@ export function basenameOf(name) {
 }
 
 export function filterNumericCandidates(objects) {
-  return (objects || []).filter(o => looksNumericBase(basenameOf(o.name)));
+  return (objects || []).filter((o) => looksNumericBase(basenameOf(o.name)));
 }
 
 export async function listGeneratedObjects(supabase, prefix = 'generated/', limit = 2000) {
@@ -58,12 +58,12 @@ export async function run(opts = {}) {
     confirm = false,
     archiveFlag = false,
     deleteArchivedFlag = false,
-    prefix = undefined
+    prefix = undefined,
   } = opts;
 
   if (!supabaseClient) throw new Error('supabaseClient required');
 
-  const listPrefix = deleteArchivedFlag ? 'generated/archived/' : (prefix || 'generated/');
+  const listPrefix = deleteArchivedFlag ? 'generated/archived/' : prefix || 'generated/';
 
   console.log(`Listing ${listPrefix} objects from Supabase (dry-run unless --confirm provided)`);
 
@@ -76,11 +76,13 @@ export async function run(opts = {}) {
   }
 
   console.log(`Found ${candidates.length} numeric-generated objects:`);
-  candidates.forEach(o => console.log(' -', o.name, `(${o.size || 'n/a'} bytes)`));
+  candidates.forEach((o) => console.log(' -', o.name, `(${o.size || 'n/a'} bytes)`));
 
   if (!confirm) {
     console.log('\nDry run: no changes applied. Re-run with --confirm to apply.');
-    console.log('You may pass --archive to move objects into generated/archived/ instead of permanent delete.');
+    console.log(
+      'You may pass --archive to move objects into generated/archived/ instead of permanent delete.',
+    );
     if (deleteArchivedFlag) return { status: 'dry-run-archived', candidates };
     return { status: 'dry-run', candidates };
   }
@@ -91,7 +93,9 @@ export async function run(opts = {}) {
       const toPath = `generated/archived/${o.name}`;
       console.log('Archiving', fromPath, '->', toPath);
 
-      const { data: downloadData, error: downloadErr } = await supabaseClient.storage.from(BUCKET).download(fromPath);
+      const { data: downloadData, error: downloadErr } = await supabaseClient.storage
+        .from(BUCKET)
+        .download(fromPath);
       if (downloadErr) {
         console.error('  failed to download', fromPath, downloadErr.message || downloadErr);
         continue;
@@ -105,12 +109,10 @@ export async function run(opts = {}) {
         continue;
       }
 
-      const ext = toPath.slice(((toPath.lastIndexOf('.') + 1) || 0) - 1);
-      const put = await supabaseClient.storage.from(BUCKET).upload(
-        toPath,
-        buffer,
-        { upsert: true, contentType: contentTypeForExt(ext) }
-      );
+      const ext = toPath.slice((toPath.lastIndexOf('.') + 1 || 0) - 1);
+      const put = await supabaseClient.storage
+        .from(BUCKET)
+        .upload(toPath, buffer, { upsert: true, contentType: contentTypeForExt(ext) });
 
       if (put.error) {
         console.error('  failed to upload archive', toPath, put.error.message || put.error);
@@ -119,7 +121,8 @@ export async function run(opts = {}) {
 
       console.log('  archived', o.name);
       const del = await supabaseClient.storage.from(BUCKET).remove([fromPath]);
-      if (del.error) console.error('  failed to delete original', fromPath, del.error.message || del.error);
+      if (del.error)
+        console.error('  failed to delete original', fromPath, del.error.message || del.error);
       else console.log('  deleted original', fromPath);
     }
 
@@ -128,29 +131,35 @@ export async function run(opts = {}) {
   }
 
   if (deleteArchivedFlag) {
-    const { data: archived, error: listErr } = await supabaseClient.storage.from(BUCKET).list('generated/archived', { limit: 2000 });
+    const { data: archived, error: listErr } = await supabaseClient.storage
+      .from(BUCKET)
+      .list('generated/archived', { limit: 2000 });
     if (listErr) {
       console.error('Failed to list archived objects:', listErr.message || listErr);
       return { status: 'error', error: listErr };
     }
 
-    const archivedCandidates = (archived || []).filter(a => looksNumericBase(basenameOf(a.name)));
+    const archivedCandidates = (archived || []).filter((a) => looksNumericBase(basenameOf(a.name)));
     if (!archivedCandidates.length) {
       console.log('No numeric-archived objects found. Nothing to do.');
       return { status: 'noop-archived', candidates: [] };
     }
 
     console.log(`Found ${archivedCandidates.length} numeric-archived objects:`);
-    archivedCandidates.forEach(o => console.log(' -', o.name));
+    archivedCandidates.forEach((o) => console.log(' -', o.name));
 
     if (!confirm) {
-      console.log('\nDry run for archived: no changes applied. Re-run with --confirm --delete-archived to apply.');
+      console.log(
+        '\nDry run for archived: no changes applied. Re-run with --confirm --delete-archived to apply.',
+      );
       return { status: 'dry-run-archived', candidates: archivedCandidates };
     }
 
-    const pathsToDelete = archivedCandidates.map(o => `generated/archived/${o.name}`);
+    const pathsToDelete = archivedCandidates.map((o) => `generated/archived/${o.name}`);
     console.log('\nDeleting archived numeric-generated objects (permanent)');
-    const { data: removedArchived, error: remArchErr } = await supabaseClient.storage.from(BUCKET).remove(pathsToDelete);
+    const { data: removedArchived, error: remArchErr } = await supabaseClient.storage
+      .from(BUCKET)
+      .remove(pathsToDelete);
     if (remArchErr) {
       console.error('Failed to remove archived objects:', remArchErr.message || remArchErr);
       return { status: 'error', error: remArchErr };
@@ -161,7 +170,7 @@ export async function run(opts = {}) {
   }
 
   console.log('\nDeleting numeric-generated objects (permanent)');
-  const paths = candidates.map(o => `${listPrefix}${o.name}`);
+  const paths = candidates.map((o) => `${listPrefix}${o.name}`);
   const { data: removed, error: remErr } = await supabaseClient.storage.from(BUCKET).remove(paths);
   if (remErr) {
     console.error('Delete failed:', remErr.message || remErr);
@@ -184,19 +193,21 @@ if (typeof process !== 'undefined' && process.argv) {
     // Only run CLI dynamic import when NOT running under jest
     if (process.env.JEST_WORKER_ID === undefined) {
       // import dynamically so module doesn't require @supabase during tests
-      import('@supabase/supabase-js').then(({ createClient }) => {
-      const supabase = createClient(url, key, { auth: { persistSession: false } });
-      const confirm = process.argv.includes('--confirm');
-      const archiveFlag = process.argv.includes('--archive');
-      const deleteArchivedFlag = process.argv.includes('--delete-archived');
-      run({ supabaseClient: supabase, confirm, archiveFlag, deleteArchivedFlag }).catch(e => {
-        console.error('Run failed', e.message || e);
-        process.exit(1);
-      });
-      }).catch(e => {
-        console.error('Failed to import supabase client', e.message || e);
-        process.exit(1);
-      });
+      import('@supabase/supabase-js')
+        .then(({ createClient }) => {
+          const supabase = createClient(url, key, { auth: { persistSession: false } });
+          const confirm = process.argv.includes('--confirm');
+          const archiveFlag = process.argv.includes('--archive');
+          const deleteArchivedFlag = process.argv.includes('--delete-archived');
+          run({ supabaseClient: supabase, confirm, archiveFlag, deleteArchivedFlag }).catch((e) => {
+            console.error('Run failed', e.message || e);
+            process.exit(1);
+          });
+        })
+        .catch((e) => {
+          console.error('Failed to import supabase client', e.message || e);
+          process.exit(1);
+        });
     }
   }
 }

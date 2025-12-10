@@ -4,20 +4,23 @@ import XLSX from 'xlsx';
 
 // Supabase credentials
 const supabaseUrl = 'https://xtkbvnnkovogqwcwdhkg.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0a2J2bm5rb3ZvZ3F3Y3dkaGtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMzg5ODEsImV4cCI6MjA3NjgxNDk4MX0.71MqQy05baMcDaGI5Xq_fUbcjgGvA0rjnNuXtacEwKs';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0a2J2bm5rb3ZvZ3F3Y3dkaGtnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyMzg5ODEsImV4cCI6MjA3NjgxNDk4MX0.71MqQy05baMcDaGI5Xq_fUbcjgGvA0rjnNuXtacEwKs';
 
 // You need to set your JWT token here - get it from browser DevTools:
 // 1. Open the app in browser and log in
 // 2. Open DevTools → Application → Local Storage → find supabase.auth.token
 // 3. Copy the access_token value and paste it below
-const USER_JWT_TOKEN = process.env.SUPABASE_JWT_TOKEN || 'eyJhbGciOiJIUzI1NiIsImtpZCI6IncrTGZCa0dNUzB6SkViK3UiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3h0a2J2bm5rb3ZvZ3F3Y3dkaGtnLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI0OWE4NzZlYS01Y2ZkLTRiNzktOTFjMC1jNmUxOTliNTBmMTQiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYyOTcyMzEzLCJpYXQiOjE3NjI5Njg3MTMsImVtYWlsIjoib3JnYW5pc2F0aWVANHg0dmFrYW50aWViZXVycy5ubCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzYyNjI0MzMwfV0sInNlc3Npb25faWQiOiJkNDlkOTM2ZC1kMzM0LTQ3YWEtYWJiOS0xY2UyMmVkZTFlNWQiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.-I_bzpta4q5pL79S0AhXWLxKE_-Rs2-Xp0p49w5P-kw';
+const USER_JWT_TOKEN =
+  process.env.SUPABASE_JWT_TOKEN ||
+  'eyJhbGciOiJIUzI1NiIsImtpZCI6IncrTGZCa0dNUzB6SkViK3UiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3h0a2J2bm5rb3ZvZ3F3Y3dkaGtnLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiI0OWE4NzZlYS01Y2ZkLTRiNzktOTFjMC1jNmUxOTliNTBmMTQiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzYyOTcyMzEzLCJpYXQiOjE3NjI5Njg3MTMsImVtYWlsIjoib3JnYW5pc2F0aWVANHg0dmFrYW50aWViZXVycy5ubCIsInBob25lIjoiIiwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX0sInVzZXJfbWV0YWRhdGEiOnsiZW1haWxfdmVyaWZpZWQiOnRydWV9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6InBhc3N3b3JkIiwidGltZXN0YW1wIjoxNzYyNjI0MzMwfV0sInNlc3Npb25faWQiOiJkNDlkOTM2ZC1kMzM0LTQ3YWEtYWJiOS0xY2UyMmVkZTFlNWQiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.-I_bzpta4q5pL79S0AhXWLxKE_-Rs2-Xp0p49w5P-kw';
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   global: {
     headers: {
-      Authorization: `Bearer ${USER_JWT_TOKEN}`
-    }
-  }
+      Authorization: `Bearer ${USER_JWT_TOKEN}`,
+    },
+  },
 });
 
 async function importSubscriptions() {
@@ -42,7 +45,7 @@ async function importSubscriptions() {
 
   // Create company name to ID map (case-insensitive)
   const companyMap = {};
-  companies.forEach(company => {
+  companies.forEach((company) => {
     companyMap[company.name.toLowerCase().trim()] = company.id;
   });
 
@@ -59,7 +62,7 @@ async function importSubscriptions() {
 
   // Create company_id to subscription_id map
   const subscriptionMap = {};
-  existingSubscriptions.forEach(sub => {
+  existingSubscriptions.forEach((sub) => {
     subscriptionMap[sub.company_id] = sub.id;
   });
 
@@ -110,9 +113,14 @@ async function importSubscriptions() {
         .eq('id', companyId);
 
       if (companyUpdateError) {
-        console.error(`Row ${i + 1}: Error updating company "${companyName}":`, companyUpdateError.message);
+        console.error(
+          `Row ${i + 1}: Error updating company "${companyName}":`,
+          companyUpdateError.message,
+        );
       } else {
-        process.stdout.write(`Row ${i + 1}: Updated company "${companyName}" (${Object.keys(companyUpdates).join(', ')})\n`);
+        process.stdout.write(
+          `Row ${i + 1}: Updated company "${companyName}" (${Object.keys(companyUpdates).join(', ')})\n`,
+        );
         companiesUpdated++;
       }
     }
@@ -181,10 +189,15 @@ async function importSubscriptions() {
       .eq('id', subscriptionId);
 
     if (updateError) {
-      console.error(`Row ${i + 1}: Error updating subscription for "${companyName}":`, updateError.message);
+      console.error(
+        `Row ${i + 1}: Error updating subscription for "${companyName}":`,
+        updateError.message,
+      );
       errors++;
     } else {
-      process.stdout.write(`Row ${i + 1}: Updated subscription for "${companyName}" (${Object.keys(updates).join(', ')})\n`);
+      process.stdout.write(
+        `Row ${i + 1}: Updated subscription for "${companyName}" (${Object.keys(updates).join(', ')})\n`,
+      );
       updated++;
     }
   }

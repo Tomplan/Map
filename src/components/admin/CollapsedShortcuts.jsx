@@ -10,7 +10,10 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
     // Year-scoped operations only (Map and Settings are in a separate section)
     <div className="w-full py-3 flex flex-col">
       {/* Year above the icons — static text in collapsed mode */}
-      <div className="text-gray-700 text-base font-semibold mb-2 h-8 flex items-center justify-center transition-all duration-500 ease-in-out" title={`Event Year: ${selectedYear}`}>
+      <div
+        className="text-gray-700 text-base font-semibold mb-2 h-8 flex items-center justify-center transition-all duration-500 ease-in-out"
+        title={`Event Year: ${selectedYear}`}
+      >
         {selectedYear}
       </div>
 

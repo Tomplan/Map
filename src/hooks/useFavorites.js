@@ -16,7 +16,7 @@ export default function useFavorites(selectedYear) {
     (companyId) => {
       return favorites.includes(companyId);
     },
-    [favorites]
+    [favorites],
   );
 
   // Toggle favorite status
@@ -53,11 +53,11 @@ export default function useFavorites(selectedYear) {
   }, []);
 
   return {
-    favorites,           // Array of company IDs
-    isFavorite,          // (companyId) => boolean
-    toggleFavorite,      // (companyId) => void
-    addFavorite,         // (companyId) => void
-    removeFavorite,      // (companyId) => void
-    clearAllFavorites,   // () => void
+    favorites, // Array of company IDs
+    isFavorite, // (companyId) => boolean
+    toggleFavorite, // (companyId) => void
+    addFavorite, // (companyId) => void
+    removeFavorite, // (companyId) => void
+    clearAllFavorites, // () => void
   };
 }

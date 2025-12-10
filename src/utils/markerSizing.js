@@ -21,9 +21,7 @@ export function getIconSizeForZoom(zoom, baseSize, isSpecial = false, isAdminVie
   }
 
   // Find the appropriate zoom bucket
-  const bucket = config.ZOOM_BUCKETS.find(
-    (b) => zoom >= b.minZoom && zoom <= b.maxZoom
-  );
+  const bucket = config.ZOOM_BUCKETS.find((b) => zoom >= b.minZoom && zoom <= b.maxZoom);
 
   // found bucket (debug logging removed)
 
@@ -33,7 +31,12 @@ export function getIconSizeForZoom(zoom, baseSize, isSpecial = false, isAdminVie
   // If marker provided its own base size, scale bucket size proportionally
   // so per-marker "base" sizes are respected while still using global bucket values
   try {
-    if (Array.isArray(baseSize) && baseSize.length === 2 && config.DEFAULT_SIZE && Array.isArray(config.DEFAULT_SIZE)) {
+    if (
+      Array.isArray(baseSize) &&
+      baseSize.length === 2 &&
+      config.DEFAULT_SIZE &&
+      Array.isArray(config.DEFAULT_SIZE)
+    ) {
       const defaultRefHeight = config.DEFAULT_SIZE[1] || config.DEFAULT_SIZE[0] || 41;
       const baseHeight = baseSize[1] || baseSize[0] || defaultRefHeight;
       const scaleFactor = baseHeight / defaultRefHeight;
@@ -68,9 +71,7 @@ export function getZoomBucket(zoom) {
     return 'default';
   }
 
-  const bucket = config.ZOOM_BUCKETS.find(
-    (b) => zoom >= b.minZoom && zoom <= b.maxZoom
-  );
+  const bucket = config.ZOOM_BUCKETS.find((b) => zoom >= b.minZoom && zoom <= b.maxZoom);
 
   return bucket ? `${bucket.minZoom}-${bucket.maxZoom}` : 'default';
 }
@@ -79,7 +80,13 @@ export function getZoomBucket(zoom) {
  * Compute a scale factor between two zooms for a given base icon size.
  * Returns the ratio of icon width at targetZoom to icon width at baseZoom.
  */
-export function getScaleBetweenZooms(baseZoom, targetZoom, baseSize, isSpecial = false, isAdminView = false) {
+export function getScaleBetweenZooms(
+  baseZoom,
+  targetZoom,
+  baseSize,
+  isSpecial = false,
+  isAdminView = false,
+) {
   try {
     const base = getIconSizeForZoom(baseZoom, baseSize, isSpecial, isAdminView);
     const target = getIconSizeForZoom(targetZoom, baseSize, isSpecial, isAdminView);

@@ -11,7 +11,7 @@ import {
   mdiProgressClock,
   mdiCircleOutline,
   mdiArchive,
-  mdiDelete
+  mdiDelete,
 } from '@mdi/js';
 import useFeedbackRequests from '../../hooks/useFeedbackRequests';
 import useUserRole from '../../hooks/useUserRole';
@@ -65,16 +65,16 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
       setLoadingComments(false);
     };
     fetchComments();
-  }, [request.id]);
+  }, [request.id, loadComments]);
 
   // Handle vote toggle
   const handleVoteToggle = async () => {
     if (userVotes.has(request.id)) {
       const { error } = await removeVote(request.id);
-      if (!error) setLocalVotes(v => Math.max(0, v - 1));
+      if (!error) setLocalVotes((v) => Math.max(0, v - 1));
     } else {
       const { error } = await addVote(request.id);
-      if (!error) setLocalVotes(v => v + 1);
+      if (!error) setLocalVotes((v) => v + 1);
     }
   };
 
@@ -85,11 +85,11 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
 
     setPosting(true);
     const { data, error } = await addComment(request.id, newComment.trim());
-    
+
     if (!error && data) {
       setComments([...comments, data]);
       setNewComment('');
-      setLocalCommentsCount(c => c + 1);
+      setLocalCommentsCount((c) => c + 1);
     }
     setPosting(false);
   };
@@ -100,14 +100,14 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
       title: t('settings.feedbackRequests.detail.deleteComment'),
       message: t('common.confirmDelete'),
       confirmText: t('common.delete'),
-      variant: 'danger'
+      variant: 'danger',
     });
     if (!confirmed) return;
 
     const { error } = await deleteComment(commentId, request.id);
     if (!error) {
-      setComments(comments.filter(c => c.id !== commentId));
-      setLocalCommentsCount(c => Math.max(0, c - 1));
+      setComments(comments.filter((c) => c.id !== commentId));
+      setLocalCommentsCount((c) => Math.max(0, c - 1));
     }
   };
 
@@ -127,7 +127,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
     }
 
     const { error, data: updated } = await updateRequest(request.id, updates);
-    
+
     if (!error) {
       setIsEditing(false);
       if (onUpdate) onUpdate(updated);
@@ -156,37 +156,42 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
   const getStatusIcon = (status) => {
     const s = normalizeStatusKey(status);
     switch (status) {
-      case 'completed': return mdiCheckCircle;
-      case 'in_progress': return mdiProgressClock;
-      case 'archived': return mdiArchive;
-      default: return mdiCircleOutline;
+      case 'completed':
+        return mdiCheckCircle;
+      case 'in_progress':
+        return mdiProgressClock;
+      case 'archived':
+        return mdiArchive;
+      default:
+        return mdiCircleOutline;
     }
   };
 
   const getStatusColor = (status) => {
     const s = normalizeStatusKey(status);
     switch (s) {
-      case 'completed': return 'text-green-600';
-      case 'in_progress': return 'text-blue-600';
-      case 'archived': return 'text-gray-400';
-      default: return 'text-yellow-600';
+      case 'completed':
+        return 'text-green-600';
+      case 'in_progress':
+        return 'text-blue-600';
+      case 'archived':
+        return 'text-gray-400';
+      default:
+        return 'text-yellow-600';
     }
   };
 
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-      size="lg"
-      showCloseButton={false}
-    >
+    <Modal isOpen={true} onClose={onClose} size="lg" showCloseButton={false}>
       {/* Custom Header */}
       <div className="bg-gray-50 border-b border-gray-200 px-6 py-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-              request.type === 'issue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-            }`}>
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                request.type === 'issue' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+              }`}
+            >
               <Icon
                 path={request.type === 'issue' ? mdiBug : mdiLightbulbOn}
                 size={0.5}
@@ -202,9 +207,7 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
             <span>{request.user_email}</span>
             <span>{new Date(request.created_at).toLocaleDateString()}</span>
             {request.version_completed && !isEditing && (
-              <span className="text-green-600 font-medium">
-                v{request.version_completed}
-              </span>
+              <span className="text-green-600 font-medium">v{request.version_completed}</span>
             )}
           </div>
         </div>
@@ -212,70 +215,88 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
 
       {/* Content */}
       <div className="px-6 py-4">
-          {/* Description */}
-          {request.description && (
-            <div className="mb-6">
-              <p className="text-gray-700 whitespace-pre-wrap">{request.description}</p>
-            </div>
-          )}
+        {/* Description */}
+        {request.description && (
+          <div className="mb-6">
+            <p className="text-gray-700 whitespace-pre-wrap">{request.description}</p>
+          </div>
+        )}
 
-          {/* Admin controls */}
-          {isSuperAdmin && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left flex flex-col">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-blue-900">
-                  {t('settings.feedbackRequests.detail.status')}
-                </h3>
-                {!isEditing ? (
+        {/* Admin controls */}
+        {isSuperAdmin && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-left flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-blue-900">
+                {t('settings.feedbackRequests.detail.status')}
+              </h3>
+              {!isEditing ? (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  {t('common.edit')}
+                </button>
+              ) : (
+                <div className="flex gap-2">
                   <button
-                    onClick={() => setIsEditing(true)}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    onClick={() => setIsEditing(false)}
+                    className="text-sm text-gray-600 hover:text-gray-700"
                   >
-                    {t('common.edit')}
+                    {t('common.cancel')}
                   </button>
-                ) : (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="text-sm text-gray-600 hover:text-gray-700"
-                    >
-                      {t('common.cancel')}
-                    </button>
-                    <button
-                      onClick={handleSaveEdits}
-                      disabled={saving}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                    >
-                      {saving ? t('common.saving') : t('common.save')}
-                    </button>
-                  </div>
-                )}
-              </div>
+                  <button
+                    onClick={handleSaveEdits}
+                    disabled={saving}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    {saving ? t('common.saving') : t('common.save')}
+                  </button>
+                </div>
+              )}
+            </div>
 
-              {/* Unified Status & Priority Block */}
-              {(() => { 
-                const uiStatusKeyMap = { open:'open', in_progress:'inProgress', completed:'completed', archived:'archived' };
-                const normalized = normalizeStatusKey(request.status);
-                const translationKey = uiStatusKeyMap[normalized] || 'open';
-                return (
+            {/* Unified Status & Priority Block */}
+            {(() => {
+              const uiStatusKeyMap = {
+                open: 'open',
+                in_progress: 'inProgress',
+                completed: 'completed',
+                archived: 'archived',
+              };
+              const normalized = normalizeStatusKey(request.status);
+              const translationKey = uiStatusKeyMap[normalized] || 'open';
+              return (
                 <div className="mt-2 space-y-4">
                   {/* Status */}
                   <div className="flex flex-col">
-                    <label htmlFor="feedback-status-select" className="text-sm font-medium text-gray-700 mb-1">
-                      {t('settings.feedbackRequests.detail.statusCurrent') || t('settings.feedbackRequests.detail.status') || 'Status'}
+                    <label
+                      htmlFor="feedback-status-select"
+                      className="text-sm font-medium text-gray-700 mb-1"
+                    >
+                      {t('settings.feedbackRequests.detail.statusCurrent') ||
+                        t('settings.feedbackRequests.detail.status') ||
+                        'Status'}
                     </label>
                     {isEditing ? (
                       <select
                         id="feedback-status-select"
-                        aria-label={t('settings.feedbackRequests.detail.statusAriaEdit') || 'Edit status'}
+                        aria-label={
+                          t('settings.feedbackRequests.detail.statusAriaEdit') || 'Edit status'
+                        }
                         value={editStatus}
                         onChange={(e) => setEditStatus(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                       >
                         <option value="open">{t('settings.feedbackRequests.statuses.open')}</option>
-                        <option value="in_progress">{t('settings.feedbackRequests.statuses.inProgress')}</option>
-                        <option value="completed">{t('settings.feedbackRequests.statuses.completed')}</option>
-                        <option value="archived">{t('settings.feedbackRequests.statuses.archived')}</option>
+                        <option value="in_progress">
+                          {t('settings.feedbackRequests.statuses.inProgress')}
+                        </option>
+                        <option value="completed">
+                          {t('settings.feedbackRequests.statuses.completed')}
+                        </option>
+                        <option value="archived">
+                          {t('settings.feedbackRequests.statuses.archived')}
+                        </option>
                       </select>
                     ) : (
                       <span
@@ -299,27 +320,39 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
                         value={editPriority}
                         onChange={(e) => setEditPriority(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        aria-label={t('settings.feedbackRequests.detail.priorityAriaEdit') || 'Edit priority'}
+                        aria-label={
+                          t('settings.feedbackRequests.detail.priorityAriaEdit') || 'Edit priority'
+                        }
                       >
-                        <option value="">{t('settings.feedbackRequests.priorities.none') || 'No priority'}</option>
+                        <option value="">
+                          {t('settings.feedbackRequests.priorities.none') || 'No priority'}
+                        </option>
                         <option value="low">{t('settings.feedbackRequests.priorities.low')}</option>
-                        <option value="medium">{t('settings.feedbackRequests.priorities.medium')}</option>
-                        <option value="high">{t('settings.feedbackRequests.priorities.high')}</option>
+                        <option value="medium">
+                          {t('settings.feedbackRequests.priorities.medium')}
+                        </option>
+                        <option value="high">
+                          {t('settings.feedbackRequests.priorities.high')}
+                        </option>
                       </select>
                     ) : (
                       <span
                         className={`inline-flex items-center gap-2 px-2 py-1 rounded-md border text-sm font-medium ${
-                          request.priority === 'high' ? 'border-red-300 bg-red-50 text-red-700' :
-                          request.priority === 'medium' ? 'border-yellow-300 bg-yellow-50 text-yellow-700' :
-                          request.priority === 'low' ? 'border-green-300 bg-green-50 text-green-700' : 'border-gray-300 bg-white text-gray-600'
+                          request.priority === 'high'
+                            ? 'border-red-300 bg-red-50 text-red-700'
+                            : request.priority === 'medium'
+                              ? 'border-yellow-300 bg-yellow-50 text-yellow-700'
+                              : request.priority === 'low'
+                                ? 'border-green-300 bg-green-50 text-green-700'
+                                : 'border-gray-300 bg-white text-gray-600'
                         }`}
                         data-testid="feedback-priority-badge"
                         role="status"
-                        aria-label={`Current priority: ${request.priority ? t(`settings.feedbackRequests.priorities.${request.priority}`) : (t('settings.feedbackRequests.priorities.none') || 'No priority')}`}
+                        aria-label={`Current priority: ${request.priority ? t(`settings.feedbackRequests.priorities.${request.priority}`) : t('settings.feedbackRequests.priorities.none') || 'No priority'}`}
                       >
                         {request.priority
                           ? t(`settings.feedbackRequests.priorities.${request.priority}`)
-                          : (t('settings.feedbackRequests.priorities.none') || 'No priority')}
+                          : t('settings.feedbackRequests.priorities.none') || 'No priority'}
                       </span>
                     )}
                   </div>
@@ -339,89 +372,90 @@ export default function FeedbackRequestDetail({ request, onClose, onUpdate }) {
                     </div>
                   )}
                 </div>
-              ); })()}
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Vote & counts */}
+        <div className="mb-6">
+          <button
+            onClick={handleVoteToggle}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+              userVotes.has(request.id)
+                ? 'bg-blue-50 border-blue-500 text-blue-700'
+                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <Icon path={mdiThumbUp} size={0.8} />
+            <span className="font-medium">
+              {userVotes.has(request.id) ? t('common.voted') : t('common.vote')}
+            </span>
+            <span className="text-sm" aria-label={`Total votes: ${localVotes}`}>
+              ({localVotes})
+            </span>
+          </button>
+        </div>
+
+        {/* Comments */}
+        <div>
+          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <Icon path={mdiComment} size={0.8} />
+            {t('settings.feedbackRequests.detail.comments')} ({localCommentsCount})
+          </h3>
+
+          {loadingComments ? (
+            <div className="text-center py-4 text-gray-500">{t('common.loading')}</div>
+          ) : comments.length === 0 ? (
+            <p className="text-gray-500 text-sm mb-4">
+              {t('settings.feedbackRequests.detail.noComments')}
+            </p>
+          ) : (
+            <div className="space-y-3 mb-4">
+              {comments.map((comment) => (
+                <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="text-sm">
+                      <span className="font-medium text-gray-900">{comment.user_email}</span>
+                      <span className="text-gray-500 ml-2">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {(comment.user_id === currentUserId || isSuperAdmin) && (
+                      <button
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Icon path={mdiDelete} size={0.6} />
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-gray-700 text-sm whitespace-pre-wrap">{comment.comment}</p>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Vote & counts */}
-          <div className="mb-6">
+          {/* Add comment form */}
+          <form onSubmit={handlePostComment} className="flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={t('settings.feedbackRequests.detail.addComment')}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
             <button
-              onClick={handleVoteToggle}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                userVotes.has(request.id)
-                  ? 'bg-blue-50 border-blue-500 text-blue-700'
-                  : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
+              type="submit"
+              disabled={posting || !newComment.trim()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
-              <Icon path={mdiThumbUp} size={0.8} />
-              <span className="font-medium">
-                {userVotes.has(request.id) ? t('common.voted') : t('common.vote')}
-              </span>
-              <span className="text-sm" aria-label={`Total votes: ${localVotes}`}>({localVotes})</span>
+              <Icon path={mdiSend} size={0.7} />
+              {t('settings.feedbackRequests.detail.postComment')}
             </button>
-          </div>
-
-          {/* Comments */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Icon path={mdiComment} size={0.8} />
-              {t('settings.feedbackRequests.detail.comments')} ({localCommentsCount})
-            </h3>
-
-            {loadingComments ? (
-              <div className="text-center py-4 text-gray-500">
-                {t('common.loading')}
-              </div>
-            ) : comments.length === 0 ? (
-              <p className="text-gray-500 text-sm mb-4">
-                {t('settings.feedbackRequests.detail.noComments')}
-              </p>
-            ) : (
-              <div className="space-y-3 mb-4">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="text-sm">
-                        <span className="font-medium text-gray-900">{comment.user_email}</span>
-                        <span className="text-gray-500 ml-2">
-                          {new Date(comment.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {(comment.user_id === currentUserId || isSuperAdmin) && (
-                        <button
-                          onClick={() => handleDeleteComment(comment.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Icon path={mdiDelete} size={0.6} />
-                        </button>
-                      )}
-                    </div>
-                    <p className="text-gray-700 text-sm whitespace-pre-wrap">{comment.comment}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add comment form */}
-            <form onSubmit={handlePostComment} className="flex gap-2">
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={t('settings.feedbackRequests.detail.addComment')}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={posting || !newComment.trim()}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <Icon path={mdiSend} size={0.7} />
-                {t('settings.feedbackRequests.detail.postComment')}
-              </button>
-            </form>
-          </div>
+          </form>
         </div>
-      </Modal>
+      </div>
+    </Modal>
   );
 }
