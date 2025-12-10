@@ -46,25 +46,6 @@ const envSource =
         ? 'process.env'
         : 'none';
 
-// Avoid noisy logs in tests; debug in browser/dev to help investigate missing creds.
-if (
-  !(
-    typeof process !== 'undefined' &&
-    process.env &&
-    (process.env.JEST_WORKER_ID !== undefined || process.env.NODE_ENV === 'test')
-  )
-) {
-  try {
-    const urlPresent = !!env.VITE_SUPABASE_URL;
-    const keyPresent = !!env.VITE_SUPABASE_ANON_KEY;
-    console.debug(
-      `[supabaseClient] env source=${envSource} url=${urlPresent} anonKey=${keyPresent}`,
-    );
-  } catch (e) {
-    // swallow logging failures
-  }
-}
-
 const supabaseUrl = env.VITE_SUPABASE_URL;
 const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
 
@@ -267,9 +248,6 @@ if (isTestEnv) {
     if (!isTestEnv && typeof globalThis !== 'undefined') {
       try {
         globalThis.__supabase_client__ = supabase;
-        console.debug(
-          '[supabaseClient] exposed globalThis.__supabase_client__ for interactive debugging',
-        );
       } catch (e) {
         // ignore failures to set global
       }
