@@ -125,7 +125,7 @@ export default function PublicDefaultYear() {
             className="btn-primary"
             data-testid="save-public-default-year"
           >
-            {saving ? t('settings.saving') : t('settings.save')}
+            {saving ? t('settings.publicDefaultYear.saving') : t('settings.publicDefaultYear.save')}
           </button>
 
           <button
@@ -133,7 +133,7 @@ export default function PublicDefaultYear() {
             onClick={() => setValue(settings?.public_default_year == null ? '' : String(settings.public_default_year))}
             className="btn-outline"
           >
-            {t('settings.reset')}
+            {t('settings.publicDefaultYear.reset')}
           </button>
         </div>
       </form>
