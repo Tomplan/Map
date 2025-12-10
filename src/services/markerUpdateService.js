@@ -64,7 +64,11 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
     const table = FIELD_TABLE_MAP[key] || 'markers_core';
 
     // Sync to Supabase
-    const { error } = await supabase.from(table).update({ [key]: sendValue }).eq('id', id).eq('event_year', eventYear);
+    const { error } = await supabase
+      .from(table)
+      .update({ [key]: sendValue })
+      .eq('id', id)
+      .eq('event_year', eventYear);
 
     if (error) {
       console.error(`Failed to update ${key} for marker ${id}:`, error);
@@ -140,7 +144,9 @@ async function updateAssignmentField(_markerId, key, _value, _eventYear) {
   try {
     // No assignment fields currently supported
     // booth_number removed - now using glyphText from Markers_Appearance
-    console.warn(`updateAssignmentField called with key: ${key}, but no assignment fields are supported`);
+    console.warn(
+      `updateAssignmentField called with key: ${key}, but no assignment fields are supported`,
+    );
     return { error: new Error('No assignment fields supported') };
   } catch (error) {
     console.error(`Exception updating assignment field ${key}:`, error);
@@ -167,7 +173,12 @@ export async function toggleMarkerLock(id, lockField, currentValue) {
  * @param {number} eventYear - Event year for the markers
  * @returns {Promise<{error: Error | null}>}
  */
-export async function batchUpdateLocks(markerIds, lockField, locked, eventYear = new Date().getFullYear()) {
+export async function batchUpdateLocks(
+  markerIds,
+  lockField,
+  locked,
+  eventYear = new Date().getFullYear(),
+) {
   try {
     const table = FIELD_TABLE_MAP[lockField] || 'markers_core';
 

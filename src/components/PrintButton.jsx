@@ -39,8 +39,8 @@ export default function PrintButton({ mapInstance }) {
 
     try {
       // Find the map container element
-      const mapContainer = document.querySelector('#map-container') 
-        || document.querySelector('.leaflet-container');
+      const mapContainer =
+        document.querySelector('#map-container') || document.querySelector('.leaflet-container');
 
       if (!mapContainer) {
         console.error('Map container not found');
@@ -49,29 +49,17 @@ export default function PrintButton({ mapInstance }) {
       }
 
       // Wait a moment for any pending tile loads
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Capture the map container as a canvas
-      const canvas = await html2canvas(mapContainer, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scale: 2, // Higher quality for print
-        // Ignore elements that shouldn't be printed
-        ignoreElements: (element) => {
-          return element.classList?.contains('map-controls-print-hide') ||
-                 element.classList?.contains('leaflet-control-zoom') ||
-                 element.classList?.contains('leaflet-control-minimap');
-        }
-      });
-
-      // Convert canvas to image data URL
-      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
+      // Convert container to an image using the shared helper (testable)
+      const imageDataUrl = await import('../utils/printHelpers').then((m) =>
+        m.snapshotElementToDataUrl(mapContainer, { scale: 2 }),
+      );
 
       // Open a new window with just the map image
       const printWindow = window.open('', '_blank', 'width=900,height=700');
-      
+
       if (!printWindow) {
         console.error('Could not open print window. Check popup blocker settings.');
         setIsPrinting(false);
@@ -94,10 +82,18 @@ export default function PrintButton({ mapInstance }) {
       const img = doc.createElement('img');
       img.src = imageDataUrl;
       img.alt = 'Map';
-      img.onload = () => setTimeout(() => { try { printWindow.print(); } catch(e) { /* ignore */ } }, 100);
+      img.onload = () =>
+        setTimeout(() => {
+          try {
+            printWindow.print();
+          } catch (e) {
+            /* ignore */
+          }
+        }, 100);
       body.appendChild(img);
 
-      while (doc.documentElement?.firstChild) doc.documentElement.removeChild(doc.documentElement.firstChild);
+      while (doc.documentElement?.firstChild)
+        doc.documentElement.removeChild(doc.documentElement.firstChild);
       doc.documentElement.appendChild(head);
       doc.documentElement.appendChild(body);
       doc.close();
@@ -108,13 +104,16 @@ export default function PrintButton({ mapInstance }) {
       printWindow.onafterprint = () => {
         printWindow.close();
       };
-
     } catch (error) {
       console.error('Print error:', error);
       // Fallback to basic window.print(); alert user that snapshot may be incomplete
       try {
-        alert('Snapshot printing failed, likely due to blocked map tiles or cross-origin issues — fallback to browser print. Use header Print Map plugin if available for better results.');
-      } catch (e) { /* ignore */ }
+        alert(
+          'Snapshot printing failed, likely due to blocked map tiles or cross-origin issues — fallback to browser print. Use header Print Map plugin if available for better results.',
+        );
+      } catch (e) {
+        /* ignore */
+      }
       window.print();
     } finally {
       setIsPrinting(false);
@@ -138,7 +137,8 @@ export default function PrintButton({ mapInstance }) {
     let finished = false;
 
     const cleanupListeners = () => {
-      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event)) return;
+      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event))
+        return;
       const Ev = window.L.BrowserPrint.Event;
       try {
         mapInstance.off(Ev.PrintStart, onStart);
@@ -154,9 +154,17 @@ export default function PrintButton({ mapInstance }) {
       }
     };
 
-    const onStart = () => { started = true; };
-    const onEnd = () => { finished = true; cleanupListeners(); };
-    const onCancel = () => { finished = true; cleanupListeners(); };
+    const onStart = () => {
+      started = true;
+    };
+    const onEnd = () => {
+      finished = true;
+      cleanupListeners();
+    };
+    const onCancel = () => {
+      finished = true;
+      cleanupListeners();
+    };
 
     try {
       if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
@@ -188,17 +196,21 @@ export default function PrintButton({ mapInstance }) {
       // Wait for either a start or a short timeout. If printing never starts
       // within 2.5s, fall back to the snapshot method (common symptom of
       // runtime cloning errors inside the plugin).
-      const waitForStart = () => new Promise((resolve) => {
-        if (started) return resolve('started');
-        timeoutId = setTimeout(() => resolve('timeout'), 2500);
-        const poll = setInterval(() => {
-          if (started || finished) {
-            clearInterval(poll);
-            if (timeoutId) { clearTimeout(timeoutId); timeoutId = null; }
-            resolve(started ? 'started' : 'finished');
-          }
-        }, 80);
-      });
+      const waitForStart = () =>
+        new Promise((resolve) => {
+          if (started) return resolve('started');
+          timeoutId = setTimeout(() => resolve('timeout'), 2500);
+          const poll = setInterval(() => {
+            if (started || finished) {
+              clearInterval(poll);
+              if (timeoutId) {
+                clearTimeout(timeoutId);
+                timeoutId = null;
+              }
+              resolve(started ? 'started' : 'finished');
+            }
+          }, 80);
+        });
 
       const result = await waitForStart();
       if (result === 'timeout') {
@@ -266,7 +278,13 @@ export default function PrintButton({ mapInstance }) {
             </div>
           ) : (
             <div>
-              <button onClick={handlePrint} className="w-full text-left px-3 py-2 hover:bg-gray-100" type="button">Snapshot (PNG)</button>
+              <button
+                onClick={handlePrint}
+                className="w-full text-left px-3 py-2 hover:bg-gray-100"
+                type="button"
+              >
+                Snapshot (PNG)
+              </button>
             </div>
           )}
         </div>

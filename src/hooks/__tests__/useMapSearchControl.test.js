@@ -16,14 +16,18 @@ const mockLayerGroup = jest.fn(() => ({
 jest.mock('leaflet', () => ({
   marker: (latlng, opts) => mockMarker(latlng, opts),
   layerGroup: () => mockLayerGroup(),
-  Control: { Search: jest.fn((opts) => ({
-    on: (event, cb) => { controlHandlers[event] = cb; },
-    off: jest.fn(),
-    _input: { blur: jest.fn() },
-    hideAlert: jest.fn(),
-    collapse: jest.fn(),
-    _markerSearch: { remove: jest.fn() },
-  })) },
+  Control: {
+    Search: jest.fn((opts) => ({
+      on: (event, cb) => {
+        controlHandlers[event] = cb;
+      },
+      off: jest.fn(),
+      _input: { blur: jest.fn() },
+      hideAlert: jest.fn(),
+      collapse: jest.fn(),
+      _markerSearch: { remove: jest.fn() },
+    })),
+  },
 }));
 
 // Prevent importing import.meta env usage in test environment by mocking config
@@ -50,9 +54,15 @@ describe('useMapSearchControl', () => {
       addControl: jest.fn(),
       removeControl: jest.fn(),
       flyTo: jest.fn(),
-      once: jest.fn((event, handler) => { listeners[event] = handler; }),
-      on: jest.fn((event, handler) => { listeners[event] = handler; }),
-      off: jest.fn((event, handler) => { if (listeners[event] === handler) delete listeners[event]; }),
+      once: jest.fn((event, handler) => {
+        listeners[event] = handler;
+      }),
+      on: jest.fn((event, handler) => {
+        listeners[event] = handler;
+      }),
+      off: jest.fn((event, handler) => {
+        if (listeners[event] === handler) delete listeners[event];
+      }),
       hasLayer: jest.fn(() => true),
       removeLayer: jest.fn(),
     };
@@ -71,7 +81,9 @@ describe('useMapSearchControl', () => {
     expect(typeof controlHandlers['search:locationfound']).toBe('function');
 
     act(() => {
-      controlHandlers['search:locationfound']({ layer: { getLatLng: () => ({ lat: 10, lng: 20 }) } });
+      controlHandlers['search:locationfound']({
+        layer: { getLatLng: () => ({ lat: 10, lng: 20 }) },
+      });
     });
 
     // FlyTo should have been called
@@ -102,9 +114,15 @@ describe('useMapSearchControl', () => {
       addControl: jest.fn(),
       removeControl: jest.fn(),
       flyTo: jest.fn(),
-      once: jest.fn((event, handler) => { listeners[event] = handler; }),
-      on: jest.fn((event, handler) => { listeners[event] = handler; }),
-      off: jest.fn((event, handler) => { if (listeners[event] === handler) delete listeners[event]; }),
+      once: jest.fn((event, handler) => {
+        listeners[event] = handler;
+      }),
+      on: jest.fn((event, handler) => {
+        listeners[event] = handler;
+      }),
+      off: jest.fn((event, handler) => {
+        if (listeners[event] === handler) delete listeners[event];
+      }),
       hasLayer: jest.fn(() => true),
       removeLayer: jest.fn(),
     };
@@ -118,7 +136,9 @@ describe('useMapSearchControl', () => {
     await waitFor(() => expect(mapInstance.addControl).toHaveBeenCalled());
 
     act(() => {
-      controlHandlers['search:locationfound']({ layer: { getLatLng: () => ({ lat: 11, lng: 21 }) } });
+      controlHandlers['search:locationfound']({
+        layer: { getLatLng: () => ({ lat: 11, lng: 21 }) },
+      });
     });
 
     // Simulate user starting a manual zoom action after the search

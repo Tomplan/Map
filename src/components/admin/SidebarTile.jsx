@@ -32,24 +32,26 @@ export default function SidebarTile({
   // default label classes so text appearance is consistent across tiles
   // include `text-left` so all tile labels are left-aligned by default
   labelClass = 'text-sm font-medium text-left',
-  ariaLabel
+  ariaLabel,
 }) {
   // Unified rendering: always mount label + badge so we can animate them
   // with transform and opacity without remounting nodes. This avoids
   // clipping/mount delay when toggling the sidebar and yields a smoother
   // animation. The container class will vary between collapsed and
   // expanded states but structure stays identical.
-  const collapsedClasses = "relative flex items-center px-2 py-2 w-full rounded-lg transition-all duration-500 ease-in-out border no-underline";
+  const collapsedClasses =
+    'relative flex items-center px-2 py-2 w-full rounded-lg transition-all duration-500 ease-in-out border no-underline';
   const collapsedStateClasses = isActive
-    ? "bg-blue-50 text-gray-700 hover:text-gray-700 font-semibold border-blue-200"
-    : "bg-white text-gray-700 hover:text-gray-700 hover:bg-gray-50 border-transparent";
+    ? 'bg-blue-50 text-gray-700 hover:text-gray-700 font-semibold border-blue-200'
+    : 'bg-white text-gray-700 hover:text-gray-700 hover:bg-gray-50 border-transparent';
 
   // Expanded tile base layout — px-2 keeps the icon column aligned with
   // collapsed center as described in earlier changes.
-  const expandedBase = "flex items-center gap-3 px-2 w-full py-2 rounded-lg transition-all duration-500 ease-in-out border no-underline";
+  const expandedBase =
+    'flex items-center gap-3 px-2 w-full py-2 rounded-lg transition-all duration-500 ease-in-out border no-underline';
   const expandedStateClasses = isActive
-    ? "bg-blue-50 text-gray-700 hover:text-gray-700 font-semibold border-blue-200"
-    : "bg-white text-gray-700 hover:text-gray-700 hover:bg-gray-50 border-gray-200";
+    ? 'bg-blue-50 text-gray-700 hover:text-gray-700 font-semibold border-blue-200'
+    : 'bg-white text-gray-700 hover:text-gray-700 hover:bg-gray-50 border-gray-200';
 
   const containerClass = isCollapsed
     ? `${collapsedClasses} ${collapsedStateClasses}`
@@ -64,10 +66,11 @@ export default function SidebarTile({
   // between collapsed (centered inside 64px aside less nav padding) and
   // expanded (tile with left padding). Using px-2 here gives the correct
   // 8px left offset so the icon center stays at 32px from the left edge.
-  const baseClasses = "flex items-center gap-3 px-2 w-full py-3 rounded-lg transition-all duration-300 border bg-white";
+  const baseClasses =
+    'flex items-center gap-3 px-2 w-full py-3 rounded-lg transition-all duration-300 border bg-white';
   const stateClasses = isActive
-    ? "bg-blue-50 text-blue-700 font-semibold border-blue-200"
-    : "text-gray-700 hover:bg-gray-50 border-gray-200";
+    ? 'bg-blue-50 text-blue-700 font-semibold border-blue-200'
+    : 'text-gray-700 hover:bg-gray-50 border-gray-200';
 
   // Icon always present. The label and badge remain mounted and are
   // animated between collapsed/expanded states with transform/opacity. When
@@ -76,7 +79,9 @@ export default function SidebarTile({
   // child.
   const content = (
     <>
-      <span className={`flex-none ${iconClass} flex items-center justify-center text-gray-600 transition-all duration-500 ease-in-out`}>
+      <span
+        className={`flex-none ${iconClass} flex items-center justify-center text-gray-600 transition-all duration-500 ease-in-out`}
+      >
         <Icon path={icon} size={1} />
       </span>
 
@@ -87,7 +92,11 @@ export default function SidebarTile({
       </span>
 
       {badge !== undefined && badge !== null && (
-        <div className={`${isCollapsed ? 'opacity-0 pointer-events-none w-0' : 'text-sm font-semibold text-gray-800'}`}>{badge}</div>
+        <div
+          className={`${isCollapsed ? 'opacity-0 pointer-events-none w-0' : 'text-sm font-semibold text-gray-800'}`}
+        >
+          {badge}
+        </div>
       )}
     </>
   );
@@ -95,11 +104,7 @@ export default function SidebarTile({
   // If 'to' prop is provided, render as Link (navigation)
   if (to) {
     return (
-      <Link
-        to={to}
-        className={containerClass}
-        aria-label={ariaLabel || label}
-      >
+      <Link to={to} className={containerClass} aria-label={ariaLabel || label}>
         {content}
       </Link>
     );
@@ -107,11 +112,7 @@ export default function SidebarTile({
 
   // Otherwise render as button
   return (
-    <button
-      onClick={onClick}
-      className={containerClass}
-      aria-label={ariaLabel || label}
-    >
+    <button onClick={onClick} className={containerClass} aria-label={ariaLabel || label}>
       {content}
     </button>
   );

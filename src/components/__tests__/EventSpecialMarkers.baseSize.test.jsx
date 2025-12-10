@@ -2,15 +2,25 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 jest.mock('react-leaflet', () => ({
-  Marker: ({ children }) => require('react').createElement('div', { 'data-testid': 'marker' }, children),
-  Popup: ({ children }) => require('react').createElement('div', { 'data-testid': 'popup' }, children),
+  Marker: ({ children }) =>
+    require('react').createElement('div', { 'data-testid': 'marker' }, children),
+  Popup: ({ children }) =>
+    require('react').createElement('div', { 'data-testid': 'popup' }, children),
 }));
 
 jest.mock('../../hooks/useIsMobile', () => () => false);
-jest.mock('../../contexts/OrganizationLogoContext', () => ({ useOrganizationLogo: () => ({ organizationLogo: null, loading: false }) }));
+jest.mock('../../contexts/OrganizationLogoContext', () => ({
+  useOrganizationLogo: () => ({ organizationLogo: null, loading: false }),
+}));
 jest.mock('../../hooks/useEventSubscriptions', () => () => ({ subscriptions: [] }));
-jest.mock('../../hooks/useAssignments', () => () => ({ assignments: [], assignCompanyToMarker: async () => {}, unassignCompanyFromMarker: async () => {} }));
-jest.mock('../../contexts/DialogContext', () => ({ useDialog: () => ({ confirm: async () => true }) }));
+jest.mock('../../hooks/useAssignments', () => () => ({
+  assignments: [],
+  assignCompanyToMarker: async () => {},
+  unassignCompanyFromMarker: async () => {},
+}));
+jest.mock('../../contexts/DialogContext', () => ({
+  useDialog: () => ({ confirm: async () => true }),
+}));
 
 // Spy on getIconSizeForZoom
 const mockGetIconSizeForZoom = jest.fn(() => [10, 20]);
@@ -19,10 +29,16 @@ jest.mock('../../utils/markerSizing', () => ({
 }));
 
 const mockCreate = jest.fn(() => ({ _iconObject: true }));
-jest.mock('../../utils/markerIcons', () => ({ createMarkerIcon: (...args) => mockCreate(...args) }));
+jest.mock('../../utils/markerIcons', () => ({
+  createMarkerIcon: (...args) => mockCreate(...args),
+}));
 
-jest.mock('../../utils/getIconPath', () => ({ getIconPath: (file) => `/assets/${file || 'default.svg'}` }));
-jest.mock('../../utils/getDefaultLogo', () => ({ getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png' }));
+jest.mock('../../utils/getIconPath', () => ({
+  getIconPath: (file) => `/assets/${file || 'default.svg'}`,
+}));
+jest.mock('../../utils/getDefaultLogo', () => ({
+  getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png',
+}));
 jest.mock('../MobileBottomSheet', () => () => null);
 jest.mock('../MarkerDetailsUI', () => ({ MarkerUI: () => null }));
 jest.mock('../MarkerContextMenu', () => () => null);
@@ -52,9 +68,7 @@ describe('EventSpecialMarkers — base size source', () => {
   });
 
   it('computes missing icon height from width for special marker iconSize with only width', () => {
-    const markers = [
-      { id: 1002, lat: 52.0, lng: 4.0, type: 'special', iconSize: [30] },
-    ];
+    const markers = [{ id: 1002, lat: 52.0, lng: 4.0, type: 'special', iconSize: [30] }];
 
     const props = {
       safeMarkers: markers,
@@ -69,7 +83,8 @@ describe('EventSpecialMarkers — base size source', () => {
 
     // The special default fallback is [17,28] so height should be round(30 * 28/17) = 49
     expect(mockGetIconSizeForZoom).toHaveBeenCalled();
-    const calledArgs = mockGetIconSizeForZoom.mock.calls[mockGetIconSizeForZoom.mock.calls.length - 1];
+    const calledArgs =
+      mockGetIconSizeForZoom.mock.calls[mockGetIconSizeForZoom.mock.calls.length - 1];
     expect(calledArgs[1]).toEqual([30, 49]);
   });
 

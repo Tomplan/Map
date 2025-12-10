@@ -13,13 +13,19 @@ export default function EventSchedule({ selectedYear }) {
   const { t, i18n } = useTranslation();
   const [selectedDay, setSelectedDay] = useState('saturday');
   const lang = i18n.language || 'en';
-  
+
   // Load activities from database
-  const { activities: activityData, loading, error, getActivityLocation } = useEventActivities(selectedYear);
-  
+  const {
+    activities: activityData,
+    loading,
+    error,
+    getActivityLocation,
+  } = useEventActivities(selectedYear);
+
   // Select activities for current day and filter to only active ones for public view
-  const activities = (selectedDay === 'saturday' ? activityData.saturday : activityData.sunday)
-    .filter(activity => activity.is_active);
+  const activities = (
+    selectedDay === 'saturday' ? activityData.saturday : activityData.sunday
+  ).filter((activity) => activity.is_active);
 
   // Show loading state
   if (loading) {
@@ -27,7 +33,9 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
-          <p className="text-gray-600">{lang === 'en' ? 'Loading schedule...' : 'Programma laden...'}</p>
+          <p className="text-gray-600">
+            {lang === 'en' ? 'Loading schedule...' : 'Programma laden...'}
+          </p>
         </div>
       </div>
     );
@@ -39,7 +47,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <Icon path={mdiAlert} size={2} className="text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">
             {lang === 'en' ? 'Unable to load schedule' : 'Kan programma niet laden'}
           </h2>
           <p className="text-gray-600">{error}</p>
@@ -353,7 +361,7 @@ export default function EventSchedule({ selectedYear }) {
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
             {lang === 'en' ? 'Program' : 'Programma'}
           </h1>
-          
+
           {/* Day Selector */}
           <div className="flex gap-2">
             <button
@@ -385,7 +393,7 @@ export default function EventSchedule({ selectedYear }) {
         <div className="space-y-4">
           {activities.map((activity) => {
             const location = getActivityLocation(activity, i18n.language);
-            
+
             return (
               <div
                 key={activity.id}
@@ -401,20 +409,34 @@ export default function EventSchedule({ selectedYear }) {
                   </div>
                   {(activity.badge_nl || activity.badge_en || activity.badge_de) && (
                     <span className="inline-block px-2 py-1 bg-orange-600 text-white text-xs font-semibold rounded">
-                      {lang === 'nl' ? activity.badge_nl : lang === 'de' ? activity.badge_de : activity.badge_en}
+                      {lang === 'nl'
+                        ? activity.badge_nl
+                        : lang === 'de'
+                          ? activity.badge_de
+                          : activity.badge_en}
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {lang === 'nl' ? activity.title_nl : lang === 'de' ? activity.title_de : activity.title_en}
+                  {lang === 'nl'
+                    ? activity.title_nl
+                    : lang === 'de'
+                      ? activity.title_de
+                      : activity.title_en}
                 </h3>
 
                 {/* Description */}
-                {(activity.description_nl || activity.description_en || activity.description_de) && (
+                {(activity.description_nl ||
+                  activity.description_en ||
+                  activity.description_de) && (
                   <p className="text-gray-700 mb-3">
-                    {lang === 'nl' ? activity.description_nl : lang === 'de' ? activity.description_de : activity.description_en}
+                    {lang === 'nl'
+                      ? activity.description_nl
+                      : lang === 'de'
+                        ? activity.description_de
+                        : activity.description_en}
                   </p>
                 )}
 
@@ -426,15 +448,17 @@ export default function EventSchedule({ selectedYear }) {
                     {location.text}
                   </span>
                   {activity.show_location_type_badge && (
-                    <span className={`px-2 py-0.5 text-xs rounded ${
-                      activity.location_type === 'exhibitor'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}>
-                      {(activity.location_type === 'exhibitor' || activity.location_type === 'company')
-                            ? t('programManagement.exhibitor')
-                            : t('programManagement.venue')
-                          }
+                    <span
+                      className={`px-2 py-0.5 text-xs rounded ${
+                        activity.location_type === 'exhibitor'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {activity.location_type === 'exhibitor' ||
+                      activity.location_type === 'company'
+                        ? t('programManagement.exhibitor')
+                        : t('programManagement.venue')}
                     </span>
                   )}
                 </div>

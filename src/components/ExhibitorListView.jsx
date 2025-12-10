@@ -1,7 +1,15 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@mdi/react';
-import { mdiMagnify, mdiMapMarker, mdiFilterVariant, mdiChevronUp, mdiChevronDown, mdiClose, mdiTag } from '@mdi/js';
+import {
+  mdiMagnify,
+  mdiMapMarker,
+  mdiFilterVariant,
+  mdiChevronUp,
+  mdiChevronDown,
+  mdiClose,
+  mdiTag,
+} from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useFavoritesContext } from '../contexts/FavoritesContext';
@@ -34,29 +42,36 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const sortFieldLabels = {
     name: t('exhibitorPage.sortName') || 'Name',
     booth: t('exhibitorPage.sortBooth') || 'Booth',
-    favorites: t('exhibitorPage.sortFavoritesBase') || 'Favorites'
+    favorites: t('exhibitorPage.sortFavoritesBase') || 'Favorites',
   };
 
   // Favorites context
   const { favorites, isFavorite, toggleFavorite } = useFavoritesContext();
-  
+
   // Categories
-  const { categories, loading: categoriesLoading, getAllCompanyCategories } = useCategories(i18n.language);
+  const {
+    categories,
+    loading: categoriesLoading,
+    getAllCompanyCategories,
+  } = useCategories(i18n.language);
 
   // Raw exhibitors subset
-  const exhibitors = useMemo(() => markersState.filter(m => m.id < 1000 && m.name), [markersState]);
+  const exhibitors = useMemo(
+    () => markersState.filter((m) => m.id < 1000 && m.name),
+    [markersState],
+  );
 
   // Group by companyId
   const groupedExhibitors = useMemo(() => {
     const grouped = {};
-    exhibitors.forEach(marker => {
+    exhibitors.forEach((marker) => {
       if (marker.companyId) {
         if (!grouped[marker.companyId]) {
           grouped[marker.companyId] = {
             ...marker,
             boothNumbers: [marker.glyph],
             markerIds: [marker.id],
-            categories: [] // Will be populated via useEffect
+            categories: [], // Will be populated via useEffect
           };
         } else {
           grouped[marker.companyId].boothNumbers.push(marker.glyph);
@@ -64,8 +79,8 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
         }
       }
     });
-    Object.values(grouped).forEach(company => {
-      company.boothNumbers.sort((a,b) => (parseInt(a)||0) - (parseInt(b)||0));
+    Object.values(grouped).forEach((company) => {
+      company.boothNumbers.sort((a, b) => (parseInt(a) || 0) - (parseInt(b) || 0));
     });
     return Object.values(grouped);
   }, [exhibitors]);
@@ -73,36 +88,34 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   // Load categories for all companies in one query
   const [exhibitorsWithCategories, setExhibitorsWithCategories] = useState([]);
   const [categoriesLoaded, setCategoriesLoaded] = useState(false);
-  
+
   useEffect(() => {
     if (categoriesLoading) {
       return;
     }
-    
+
     if (groupedExhibitors.length === 0) {
       setExhibitorsWithCategories([]);
       setCategoriesLoaded(false);
       return;
     }
-    
+
     // Only load once per language change or when groupedExhibitors change
     const loadCategories = async () => {
-      const companyIds = groupedExhibitors.map(ex => ex.companyId);
+      const companyIds = groupedExhibitors.map((ex) => ex.companyId);
       const categoryMap = await getAllCompanyCategories(companyIds);
-      
-      const withCategories = groupedExhibitors.map(exhibitor => ({
+
+      const withCategories = groupedExhibitors.map((exhibitor) => ({
         ...exhibitor,
-        categories: categoryMap[exhibitor.companyId] || []
+        categories: categoryMap[exhibitor.companyId] || [],
       }));
-      
+
       setExhibitorsWithCategories(withCategories);
       setCategoriesLoaded(true);
     };
-    
+
     loadCategories();
   }, [groupedExhibitors, categoriesLoading, getAllCompanyCategories, i18n.language]);
-
-
 
   // Outside click close for category dropdown
   useEffect(() => {
@@ -123,18 +136,19 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   // Filters
   const filteredExhibitors = useMemo(() => {
     let list = exhibitorsWithCategories;
-    if (showFavoritesOnly) list = list.filter(ex => ex.companyId && isFavorite(ex.companyId));
+    if (showFavoritesOnly) list = list.filter((ex) => ex.companyId && isFavorite(ex.companyId));
     if (selectedCategory) {
-      list = list.filter(ex => {
+      list = list.filter((ex) => {
         if (!ex.categories || ex.categories.length === 0) return false;
-        return ex.categories.some(cat => cat.id === selectedCategory);
+        return ex.categories.some((cat) => cat.id === selectedCategory);
       });
     }
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
-      list = list.filter(ex =>
-        ex.name?.toLowerCase().includes(q) ||
-        ex.boothNumbers?.some(b => b?.toLowerCase().includes(q))
+      list = list.filter(
+        (ex) =>
+          ex.name?.toLowerCase().includes(q) ||
+          ex.boothNumbers?.some((b) => b?.toLowerCase().includes(q)),
       );
     }
     return list;
@@ -178,28 +192,28 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
     const list = [...filteredExhibitors];
     const parsePrimaryBooth = (ex) => {
       if (!ex.boothNumbers || ex.boothNumbers.length === 0) return Number.MAX_SAFE_INTEGER;
-      const nums = ex.boothNumbers.map(b => parseInt(b)).filter(n => !isNaN(n));
+      const nums = ex.boothNumbers.map((b) => parseInt(b)).filter((n) => !isNaN(n));
       return nums.length ? Math.min(...nums) : Number.MAX_SAFE_INTEGER;
     };
     if (sortField === 'favorites') {
-      list.sort((a,b) => {
+      list.sort((a, b) => {
         const favA = a.companyId && isFavorite(a.companyId) ? 0 : 1;
         const favB = b.companyId && isFavorite(b.companyId) ? 0 : 1;
         if (favA !== favB) return favA - favB;
-        const cmp = (a.name||'').localeCompare(b.name||'');
+        const cmp = (a.name || '').localeCompare(b.name || '');
         return sortDirection === 'asc' ? cmp : -cmp;
       });
       return list;
     }
     if (sortField === 'name') {
-      list.sort((a,b) => {
-        const cmp = (a.name||'').localeCompare(b.name||'');
+      list.sort((a, b) => {
+        const cmp = (a.name || '').localeCompare(b.name || '');
         return sortDirection === 'asc' ? cmp : -cmp;
       });
       return list;
     }
     if (sortField === 'booth') {
-      list.sort((a,b) => {
+      list.sort((a, b) => {
         const cmp = parsePrimaryBooth(a) - parsePrimaryBooth(b);
         return sortDirection === 'asc' ? cmp : -cmp;
       });
@@ -236,7 +250,8 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           {/* Filters and Results Count */}
           <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div className="text-sm text-gray-600">
-              {t('exhibitorPage.showing')} {filteredExhibitors.length} {t('exhibitorPage.of')} {exhibitors.length} {t('exhibitorPage.exhibitors')}
+              {t('exhibitorPage.showing')} {filteredExhibitors.length} {t('exhibitorPage.of')}{' '}
+              {exhibitors.length} {t('exhibitorPage.exhibitors')}
               {favorites.length > 0 && ` • ${favorites.length} ${t('exhibitorPage.favorited')}`}
             </div>
             <div className="flex flex-wrap gap-2 items-center relative">
@@ -263,16 +278,19 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
                 </button>
               </div>
-              
+
               {/* Category Filter Dropdown */}
               {!categoriesLoading && categories.length > 0 && (
-                <div className="relative flex items-center gap-1" onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setShowCategoryMenu(false);
-                    const btn = categoryButtonRef.current;
-                    if (btn) btn.focus();
-                  }
-                }}>
+                <div
+                  className="relative flex items-center gap-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setShowCategoryMenu(false);
+                      const btn = categoryButtonRef.current;
+                      if (btn) btn.focus();
+                    }
+                  }}
+                >
                   <button
                     type="button"
                     ref={categoryButtonRef}
@@ -288,15 +306,18 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   >
                     <Icon path={mdiTag} size={0.7} />
                     <span className="font-medium">
-                      {selectedCategory 
-                        ? categories.find(c => c.id === selectedCategory)?.name 
+                      {selectedCategory
+                        ? categories.find((c) => c.id === selectedCategory)?.name
                         : t('exhibitorPage.allCategories')}
                     </span>
                   </button>
                   {selectedCategory && (
                     <button
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); setSelectedCategory(null); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedCategory(null);
+                      }}
                       aria-label={t('exhibitorPage.clearFilters')}
                       className="px-2 py-1.5 rounded-lg border text-sm flex items-center justify-center transition-colors bg-white border-gray-300 text-gray-700 hover:bg-gray-100"
                     >
@@ -316,7 +337,10 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                           type="button"
                           role="option"
                           aria-selected={!selectedCategory}
-                          onClick={() => { setSelectedCategory(null); setShowCategoryMenu(false); }}
+                          onClick={() => {
+                            setSelectedCategory(null);
+                            setShowCategoryMenu(false);
+                          }}
                           className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${!selectedCategory ? 'font-semibold text-blue-700 bg-blue-50' : 'text-gray-700'}`}
                         >
                           <Icon path={mdiTag} size={0.7} className="opacity-50" />
@@ -324,18 +348,21 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         </button>
                       </li>
                       <div className="border-t border-gray-200 my-1"></div>
-                      {categories.map(category => (
+                      {categories.map((category) => (
                         <li key={category.id}>
                           <button
                             type="button"
                             role="option"
                             aria-selected={selectedCategory === category.id}
-                            onClick={() => { setSelectedCategory(category.id); setShowCategoryMenu(false); }}
+                            onClick={() => {
+                              setSelectedCategory(category.id);
+                              setShowCategoryMenu(false);
+                            }}
                             className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 flex items-center gap-2 ${selectedCategory === category.id ? 'font-semibold text-blue-700 bg-blue-50' : 'text-gray-700'}`}
                           >
-                            <Icon 
-                              path={category.icon} 
-                              size={0.7} 
+                            <Icon
+                              path={category.icon}
+                              size={0.7}
                               style={{ color: category.color }}
                             />
                             {category.name}
@@ -346,7 +373,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                   )}
                 </div>
               )}
-              
+
               {/* Favorites Only Toggle */}
               {favorites.length > 0 && (
                 <button
@@ -370,7 +397,6 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
               {t('exhibitorPage.noCategoryMatch')}
             </div>
           )}
-
         </div>
       </div>
 
@@ -429,7 +455,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                     {/* Category Badges */}
                     {exhibitor.categories && exhibitor.categories.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        {exhibitor.categories.map(category => (
+                        {exhibitor.categories.map((category) => (
                           <span
                             key={category.id}
                             className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
@@ -448,12 +474,10 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                       const translatedInfo = getTranslatedInfo(
                         exhibitor.company_translations,
                         i18n.language,
-                        exhibitor.info
+                        exhibitor.info,
                       );
                       return translatedInfo ? (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                          {translatedInfo}
-                        </p>
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">{translatedInfo}</p>
                       ) : null;
                     })()}
                   </div>

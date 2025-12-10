@@ -2,10 +2,10 @@
 
 /**
  * Supabase Backup Scheduler
- * 
+ *
  * This script sets up automated backups using cron jobs and provides
  * management utilities for the backup system.
- * 
+ *
  * Usage:
  *   node scheduler.js --setup           # Setup cron jobs
  *   node scheduler.js --status          # Check backup status
@@ -28,9 +28,9 @@ class BackupScheduler {
     this.config = backupConfig;
     this.logger = this.setupLogging();
     this.cronJobs = {
-      critical: '0 2 * * *',      // Daily at 2 AM
-      full: '0 3 * * 0',          // Weekly on Sunday at 3 AM
-      schema: '0 4 1 * *'         // Monthly on 1st at 4 AM
+      critical: '0 2 * * *', // Daily at 2 AM
+      full: '0 3 * * 0', // Weekly on Sunday at 3 AM
+      schema: '0 4 1 * *', // Monthly on 1st at 4 AM
     };
   }
 
@@ -39,37 +39,37 @@ class BackupScheduler {
       info: (msg) => console.log(`[INFO] ${msg}`),
       error: (msg) => console.error(`[ERROR] ${msg}`),
       warn: (msg) => console.warn(`[WARN] ${msg}`),
-      success: (msg) => console.log(`[SUCCESS] ${msg}`)
+      success: (msg) => console.log(`[SUCCESS] ${msg}`),
     };
   }
 
   async setupCronJobs() {
     try {
       this.logger.info('Setting up automated backup cron jobs...');
-      
+
       // Create cron job entries
       const cronEntries = [
         {
           name: 'supabase-critical-backup',
           schedule: this.cronJobs.critical,
-          command: `cd ${process.cwd()} && node scripts/backup/backup-critical.js --compress`
+          command: `cd ${process.cwd()} && node scripts/backup/backup-critical.js --compress`,
         },
         {
-          name: 'supabase-full-backup', 
+          name: 'supabase-full-backup',
           schedule: this.cronJobs.full,
-          command: `cd ${process.cwd()} && node scripts/backup/backup-full.js --compress`
+          command: `cd ${process.cwd()} && node scripts/backup/backup-full.js --compress`,
         },
         {
           name: 'supabase-schema-backup',
-          schedule: this.cronJobs.schema, 
-          command: `cd ${process.cwd()} && node scripts/backup/backup-full.js --schema-only --compress`
-        }
+          schedule: this.cronJobs.schema,
+          command: `cd ${process.cwd()} && node scripts/backup/backup-full.js --schema-only --compress`,
+        },
       ];
 
       // Generate crontab entries
-      const crontabEntries = cronEntries.map(job => 
-        `${job.schedule} ${job.command} >> ./logs/backup-cron.log 2>&1`
-      ).join('\n');
+      const crontabEntries = cronEntries
+        .map((job) => `${job.schedule} ${job.command} >> ./logs/backup-cron.log 2>&1`)
+        .join('\n');
 
       // Add environment variables to crontab
       const environmentSetup = [
@@ -81,7 +81,7 @@ class BackupScheduler {
         `SUPABASE_DB_USER=${this.config.database.user}`,
         `SUPABASE_DB_PASSWORD=${this.config.database.password}`,
         '',
-        '# Backup cron jobs'
+        '# Backup cron jobs',
       ].join('\n');
 
       const fullCrontab = environmentSetup + '\n' + crontabEntries;
@@ -89,14 +89,14 @@ class BackupScheduler {
       // Write crontab file
       const crontabFile = './backup-crontab';
       await fs.writeFile(crontabFile, fullCrontab);
-      
+
       this.logger.success(`Crontab configuration written to: ${crontabFile}`);
       this.logger.info('To install these cron jobs, run:');
       this.logger.info(`  crontab ${crontabFile}`);
       this.logger.info('');
       this.logger.info('Or manually add the following entries to your crontab:');
       this.logger.info('');
-      cronEntries.forEach(job => {
+      cronEntries.forEach((job) => {
         this.logger.info(`# ${job.name}`);
         this.logger.info(`${job.schedule} ${job.command}`);
         this.logger.info('');
@@ -112,7 +112,7 @@ class BackupScheduler {
   async checkBackupStatus() {
     try {
       this.logger.info('Checking backup system status...');
-      
+
       // Check if backup directory exists
       const backupDir = './backups';
       try {
@@ -124,10 +124,10 @@ class BackupScheduler {
 
       // List recent backups
       await this.listBackups();
-      
+
       // Check cron jobs
       await this.checkCronJobs();
-      
+
       return true;
     } catch (error) {
       this.logger.error(`Status check failed: ${error.message}`);
@@ -138,10 +138,10 @@ class BackupScheduler {
   async listBackups() {
     try {
       this.logger.info('Listing available backups...');
-      
+
       const backupDir = './backups';
       let files;
-      
+
       try {
         files = await fs.readdir(backupDir);
       } catch {
@@ -150,26 +150,26 @@ class BackupScheduler {
       }
 
       const backups = files
-        .filter(f => f.includes('backup') || f.includes('critical'))
-        .map(f => ({
+        .filter((f) => f.includes('backup') || f.includes('critical'))
+        .map((f) => ({
           name: f,
           path: path.join(backupDir, f),
-          mtime: fs.stat(path.join(backupDir, f)).then(s => s.mtime)
+          mtime: fs.stat(path.join(backupDir, f)).then((s) => s.mtime),
         }));
 
       const backupsWithStats = await Promise.all(
         backups.map(async (backup) => ({
           ...backup,
-          mtime: await backup.mtime
-        }))
+          mtime: await backup.mtime,
+        })),
       );
 
       backupsWithStats.sort((a, b) => b.mtime - a.mtime);
 
       this.logger.info(`Found ${backupsWithStats.length} backup files:`);
-      backupsWithStats.forEach(backup => {
-        const size = fs.stat(backup.path).then(s => s.size);
-        size.then(sizeBytes => {
+      backupsWithStats.forEach((backup) => {
+        const size = fs.stat(backup.path).then((s) => s.size);
+        size.then((sizeBytes) => {
           const sizeMB = (sizeBytes / 1024 / 1024).toFixed(2);
           this.logger.info(`  ${backup.name} (${sizeMB} MB) - ${backup.mtime.toISOString()}`);
         });
@@ -191,15 +191,18 @@ class BackupScheduler {
           return;
         }
 
-        const backupJobs = stdout.split('\n').filter(line => 
-          line.includes('backup-critical') || 
-          line.includes('backup-full') ||
-          line.includes('backup-cron')
-        );
+        const backupJobs = stdout
+          .split('\n')
+          .filter(
+            (line) =>
+              line.includes('backup-critical') ||
+              line.includes('backup-full') ||
+              line.includes('backup-cron'),
+          );
 
         if (backupJobs.length > 0) {
           this.logger.success('Found backup cron jobs:');
-          backupJobs.forEach(job => {
+          backupJobs.forEach((job) => {
             if (job.trim() && !job.startsWith('#')) {
               this.logger.info(`  ${job.trim()}`);
             }
@@ -216,9 +219,9 @@ class BackupScheduler {
   async cleanupOldBackups() {
     try {
       this.logger.info('Cleaning up old backups...');
-      
+
       const backupDir = './backups';
-      
+
       try {
         await fs.access(backupDir);
       } catch {
@@ -228,28 +231,28 @@ class BackupScheduler {
 
       const files = await fs.readdir(backupDir);
       const backupFiles = files
-        .filter(f => f.includes('backup') || f.includes('critical'))
-        .map(f => ({
+        .filter((f) => f.includes('backup') || f.includes('critical'))
+        .map((f) => ({
           name: f,
           path: path.join(backupDir, f),
-          mtime: fs.stat(path.join(backupDir, f)).then(s => s.mtime)
+          mtime: fs.stat(path.join(backupDir, f)).then((s) => s.mtime),
         }));
 
       const filesWithStats = await Promise.all(
         backupFiles.map(async (file) => ({
           ...file,
-          mtime: await file.mtime
-        }))
+          mtime: await file.mtime,
+        })),
       );
 
       filesWithStats.sort((a, b) => b.mtime - a.mtime);
 
       // Keep critical: 7 files, full: 4 files
-      const toDelete = filesWithStats.filter(file => {
+      const toDelete = filesWithStats.filter((file) => {
         if (file.name.includes('critical')) {
-          return filesWithStats.filter(f => f.name.includes('critical')).indexOf(file) >= 7;
+          return filesWithStats.filter((f) => f.name.includes('critical')).indexOf(file) >= 7;
         } else if (file.name.includes('full')) {
-          return filesWithStats.filter(f => f.name.includes('full')).indexOf(file) >= 4;
+          return filesWithStats.filter((f) => f.name.includes('full')).indexOf(file) >= 4;
         }
         return false;
       });
@@ -272,32 +275,32 @@ class BackupScheduler {
   async testBackupSystem() {
     try {
       this.logger.info('Testing backup system...');
-      
+
       // Test critical backup
       this.logger.info('Testing critical backup...');
       const criticalResult = await this.runBackup('critical', { dryRun: true });
-      
-      // Test full backup  
+
+      // Test full backup
       this.logger.info('Testing full backup...');
       const fullResult = await this.runBackup('full', { dryRun: true });
-      
+
       // Test restore
       this.logger.info('Testing restore system...');
       const restoreResult = await this.testRestore();
-      
+
       const allPassed = criticalResult.success && fullResult.success && restoreResult.success;
-      
+
       if (allPassed) {
         this.logger.success('All backup system tests passed!');
       } else {
         this.logger.warn('Some backup system tests failed');
       }
-      
+
       return {
         success: allPassed,
         critical: criticalResult,
         full: fullResult,
-        restore: restoreResult
+        restore: restoreResult,
       };
     } catch (error) {
       this.logger.error(`Backup system test failed: ${error.message}`);
@@ -307,18 +310,19 @@ class BackupScheduler {
 
   async runBackup(type, options = {}) {
     const { dryRun = false } = options;
-    
+
     try {
-      const scriptPath = type === 'critical' 
-        ? './scripts/backup/backup-critical.js'
-        : './scripts/backup/backup-full.js';
-      
+      const scriptPath =
+        type === 'critical'
+          ? './scripts/backup/backup-critical.js'
+          : './scripts/backup/backup-full.js';
+
       const args = dryRun ? ['--dry-run'] : [];
-      
+
       // This would execute the backup script
       // For now, just validate the script exists
       await fs.access(scriptPath);
-      
+
       this.logger.info(`${type} backup script validated`);
       return { success: true, type, dryRun };
     } catch (error) {
@@ -361,20 +365,23 @@ class BackupScheduler {
 // Main execution
 if (import.meta.url === `file://${process.argv[1]}`) {
   const scheduler = new BackupScheduler();
-  
+
   const command = process.argv[2];
-  
+
   if (!command) {
     console.error('Usage: node scheduler.js [--setup|--status|--list|--cleanup|--test]');
     process.exit(1);
   }
-  
-  scheduler.run(command).then(result => {
-    process.exit(result ? 0 : 1);
-  }).catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-  });
+
+  scheduler
+    .run(command)
+    .then((result) => {
+      process.exit(result ? 0 : 1);
+    })
+    .catch((error) => {
+      console.error('Fatal error:', error);
+      process.exit(1);
+    });
 }
 
 export default BackupScheduler;

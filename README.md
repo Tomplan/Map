@@ -38,6 +38,17 @@ A mobile-first web application designed for event navigation, providing an inter
   - [Vite](https://vitejs.dev/) for fast development and building.
   - [Tailwind CSS](https://tailwindcss.com/) for styling.
   - [Leaflet](https://leafletjs.com/) for the interactive map.
+
+## 🧭 Debugging policy — root-cause first
+
+This codebase follows a strict *Root-Cause First* policy when debugging. Before acting on a bug you must:
+
+1. Reproduce the issue reliably.
+2. Collect traces and logs so you can reason about the *root cause*.
+3. Implement the smallest change that fixes the root cause and add a test proving the fix.
+4. Remove any temporary debug hooks and keep PRs short, with a *Root-Cause Summary* describing steps 1–3.
+
+See docs/ROOT_CAUSE_POLICY.md for the full policy and checklist.
   - [Supabase](https://supabase.com/) for the backend and database.
   - [i18next](https://www.i18next.com/) for internationalization.
   - [Material Design Icons](https://fonts.google.com/icons) for icons.

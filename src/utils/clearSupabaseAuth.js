@@ -21,7 +21,7 @@ export function clearSupabaseAuth() {
     }
   }
 
-  keysToRemove.forEach(key => {
+  keysToRemove.forEach((key) => {
     // remove key
     localStorage.removeItem(key);
   });

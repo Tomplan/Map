@@ -5,21 +5,21 @@ import { mdiInformationOutline } from '@mdi/js';
 
 /**
  * Tooltip Component
- * 
+ *
  * Displays contextual help on hover or click.
  * Can be used inline or as a floating tooltip.
- * 
+ *
  * @param {string} content - Tooltip text content
  * @param {string} position - Tooltip position: 'top' | 'bottom' | 'left' | 'right'
  * @param {node} children - Optional custom trigger element (defaults to info icon)
  * @param {string} trigger - 'hover' | 'click' | 'both'
  */
-export default function Tooltip({ 
-  content, 
+export default function Tooltip({
+  content,
   position = 'top',
   children,
   trigger = 'hover',
-  className = ''
+  className = '',
 }) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -32,15 +32,17 @@ export default function Tooltip({
     top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
     bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
     left: 'right-full top-1/2 -translate-y-1/2 mr-2',
-    right: 'left-full top-1/2 -translate-y-1/2 ml-2'
+    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
   };
 
   // Arrow classes
   const arrowClasses = {
     top: 'top-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-b-transparent border-t-gray-800',
-    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-gray-800',
+    bottom:
+      'bottom-full left-1/2 -translate-x-1/2 border-l-transparent border-r-transparent border-t-transparent border-b-gray-800',
     left: 'left-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-r-transparent border-l-gray-800',
-    right: 'right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-gray-800'
+    right:
+      'right-full top-1/2 -translate-y-1/2 border-t-transparent border-b-transparent border-l-transparent border-r-gray-800',
   };
 
   // Event handlers based on trigger type
@@ -50,12 +52,12 @@ export default function Tooltip({
         onMouseEnter: showTooltip,
         onMouseLeave: hideTooltip,
         onFocus: showTooltip,
-        onBlur: hideTooltip
+        onBlur: hideTooltip,
       };
     }
     if (trigger === 'click') {
       return {
-        onClick: toggleTooltip
+        onClick: toggleTooltip,
       };
     }
     if (trigger === 'both') {
@@ -64,7 +66,7 @@ export default function Tooltip({
         onMouseLeave: hideTooltip,
         onClick: toggleTooltip,
         onFocus: showTooltip,
-        onBlur: hideTooltip
+        onBlur: hideTooltip,
       };
     }
     return {};
@@ -87,9 +89,9 @@ export default function Tooltip({
         }}
       >
         {children || (
-          <Icon 
-            path={mdiInformationOutline} 
-            size={0.7} 
+          <Icon
+            path={mdiInformationOutline}
+            size={0.7}
             className="text-blue-500 hover:text-blue-600 transition-colors"
           />
         )}
@@ -104,20 +106,14 @@ export default function Tooltip({
           <div className="bg-gray-800 text-white text-sm rounded-lg px-3 py-2 shadow-lg max-w-xs whitespace-normal">
             {content}
             {/* Arrow */}
-            <div 
-              className={`absolute w-0 h-0 border-4 ${arrowClasses[position]}`}
-            />
+            <div className={`absolute w-0 h-0 border-4 ${arrowClasses[position]}`} />
           </div>
         </div>
       )}
 
       {/* Click-outside handler for click trigger */}
       {isVisible && trigger !== 'hover' && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={hideTooltip}
-          aria-hidden="true"
-        />
+        <div className="fixed inset-0 z-40" onClick={hideTooltip} aria-hidden="true" />
       )}
     </div>
   );
@@ -138,9 +134,9 @@ Tooltip.propTypes = {
 export function IconWithTooltip({ content, position = 'top', iconSize = 0.7 }) {
   return (
     <Tooltip content={content} position={position}>
-      <Icon 
-        path={mdiInformationOutline} 
-        size={iconSize} 
+      <Icon
+        path={mdiInformationOutline}
+        size={iconSize}
         className="text-blue-500 hover:text-blue-600 transition-colors"
       />
     </Tooltip>

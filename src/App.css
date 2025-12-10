@@ -145,4 +145,12 @@ body {
   .print-hide {
     display: none !important;
   }
+
+  /* Also make sure popups / tooltips are not printed */
+  .leaflet-popup,
+  .leaflet-popup-content-wrapper,
+  .leaflet-popup-tip,
+  .leaflet-tooltip {
+    display: none !important;
+  }
 }

@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiMapMarker, mdiCheckCircle, mdiAlertCircle, mdiInformation, mdiDomain, mdiCalendar, mdiRefresh } from '@mdi/js';
+import {
+  mdiMapMarker,
+  mdiCheckCircle,
+  mdiAlertCircle,
+  mdiInformation,
+  mdiDomain,
+  mdiCalendar,
+  mdiRefresh,
+} from '@mdi/js';
 import useEventMapSettings from '../../hooks/useEventMapSettings';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
@@ -20,7 +28,12 @@ import { useDialog } from '../../contexts/DialogContext';
 export default function MapSettings({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const { settings: globalSettings, loading: globalLoading } = useOrganizationSettings();
-  const { settings: eventSettings, loading: eventLoading, updateSettings, resetToGlobal } = useEventMapSettings(selectedYear);
+  const {
+    settings: eventSettings,
+    loading: eventLoading,
+    updateSettings,
+    resetToGlobal,
+  } = useEventMapSettings(selectedYear);
   const { toastError, toastWarning, confirm } = useDialog();
 
   const [saving, setSaving] = useState(false);
@@ -141,17 +154,27 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
       {/* Header */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-bold text-gray-900">{t('settings.mapDefaults.title')} - {selectedYear}</h2>
+          <h2 className="text-xl font-bold text-gray-900">
+            {t('settings.mapDefaults.title')} - {selectedYear}
+          </h2>
           <div className="flex items-center gap-2">
-            <div className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg ${
-              usingEventSettings
-                ? 'bg-green-50 border-green-200'
-                : 'bg-orange-50 border-orange-200'
-            }`}>
-              <Icon path={mdiDomain} size={0.6} className={usingEventSettings ? 'text-green-600' : 'text-orange-600'} />
-              <span className={`text-xs font-semibold uppercase tracking-wide ${
-                usingEventSettings ? 'text-green-700' : 'text-orange-700'
-              }`}>
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 border rounded-lg ${
+                usingEventSettings
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-orange-50 border-orange-200'
+              }`}
+            >
+              <Icon
+                path={mdiDomain}
+                size={0.6}
+                className={usingEventSettings ? 'text-green-600' : 'text-orange-600'}
+              />
+              <span
+                className={`text-xs font-semibold uppercase tracking-wide ${
+                  usingEventSettings ? 'text-green-700' : 'text-orange-700'
+                }`}
+              >
                 {usingEventSettings ? 'Event Settings' : 'Global Defaults'}
               </span>
             </div>
@@ -176,8 +199,7 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
         <p className="text-sm text-gray-600">
           {usingEventSettings
             ? `Configure map settings specific to the ${selectedYear} event.`
-            : `Using global organization defaults for ${selectedYear}. Configure event-specific settings below.`
-          }
+            : `Using global organization defaults for ${selectedYear}. Configure event-specific settings below.`}
         </p>
       </div>
 
@@ -190,8 +212,7 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
             <p className="text-sm text-green-700">
               {usingEventSettings
                 ? `Map settings updated for ${selectedYear}.`
-                : `Settings reset to global defaults for ${selectedYear}.`
-              }
+                : `Settings reset to global defaults for ${selectedYear}.`}
             </p>
           </div>
         </div>
@@ -268,9 +289,7 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
           {/* Info box */}
           <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
             <Icon path={mdiInformation} size={0.8} className="text-blue-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-blue-800">
-              {t('settings.mapDefaults.mapCenter.hint')}
-            </p>
+            <p className="text-sm text-blue-800">{t('settings.mapDefaults.mapCenter.hint')}</p>
           </div>
         </div>
 
@@ -367,7 +386,9 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
           {/* Zoom levels info */}
           <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-sm text-amber-800">
-              <span className="font-medium">{t('settings.mapDefaults.zoomLevels.constraint')}:</span>{' '}
+              <span className="font-medium">
+                {t('settings.mapDefaults.zoomLevels.constraint')}:
+              </span>{' '}
               {t('settings.mapDefaults.zoomLevels.constraintDesc')}
             </p>
           </div>

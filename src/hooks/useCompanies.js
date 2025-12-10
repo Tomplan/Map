@@ -80,7 +80,7 @@ export default function useCompanies() {
       if (updateError) throw updateError;
 
       setCompanies((prev) =>
-        prev.map((c) => (c.id === id ? data : c)).sort((a, b) => a.name.localeCompare(b.name))
+        prev.map((c) => (c.id === id ? data : c)).sort((a, b) => a.name.localeCompare(b.name)),
       );
       return { data, error: null };
     } catch (err) {
@@ -111,7 +111,7 @@ export default function useCompanies() {
       const term = searchTerm.toLowerCase();
       return companies.filter((c) => c.name?.toLowerCase().includes(term));
     },
-    [companies]
+    [companies],
   );
 
   // Initial load

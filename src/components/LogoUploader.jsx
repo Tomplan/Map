@@ -8,7 +8,7 @@ import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 /**
  * LogoUploader Component
  * Reusable component for uploading logos to Supabase Storage
- * 
+ *
  * @param {Object} props
  * @param {string} props.currentLogo - Current logo URL or path
  * @param {function} props.onUploadComplete - Callback when upload succeeds (url, path) => void
@@ -25,7 +25,7 @@ export default function LogoUploader({
   folder = 'companies',
   label = 'Upload Logo',
   showPreview = true,
-  allowDelete = false
+  allowDelete = false,
 }) {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null); // 'success' | 'error' | null
@@ -59,7 +59,7 @@ export default function LogoUploader({
     } else {
       setUploadStatus('success');
       setStatusMessage('Upload successful!');
-      
+
       // Call parent callback with the URL and path
       if (onUploadComplete) {
         onUploadComplete(result.url, result.path);
@@ -162,9 +162,7 @@ export default function LogoUploader({
       </div>
 
       {/* Help text */}
-      <p className="text-xs text-gray-500">
-        Supported: PNG, JPG, WEBP, AVIF, SVG • Max size: 5MB
-      </p>
+      <p className="text-xs text-gray-500">Supported: PNG, JPG, WEBP, AVIF, SVG • Max size: 5MB</p>
     </div>
   );
 }

@@ -11,12 +11,7 @@ import { mdiStar, mdiStarOutline } from '@mdi/js';
  * @param {string} size - Icon size (sm, md, lg)
  * @param {string} className - Additional CSS classes
  */
-export default function FavoriteButton({
-  isFavorite,
-  onToggle,
-  size = 'md',
-  className = '',
-}) {
+export default function FavoriteButton({ isFavorite, onToggle, size = 'md', className = '' }) {
   const sizeMap = {
     sm: 0.8,
     md: 1,
@@ -35,9 +30,7 @@ export default function FavoriteButton({
     <button
       onClick={handleClick}
       className={`transition-all ${
-        isFavorite
-          ? 'text-yellow-500 hover:text-yellow-600'
-          : 'text-gray-400 hover:text-yellow-500'
+        isFavorite ? 'text-yellow-500 hover:text-yellow-600' : 'text-gray-400 hover:text-yellow-500'
       } ${className}`}
       title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
       aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}

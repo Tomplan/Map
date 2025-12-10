@@ -27,18 +27,12 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
       )}
       <div className="flex flex-col min-w-0">
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs font-semibold text-gray-700">
-            Booth {marker.glyph}
-          </div>
+          <div className="text-xs font-semibold text-gray-700">Booth {marker.glyph}</div>
         )}
         {marker.name ? (
-          <div className="text-sm font-medium text-gray-900 truncate">
-            {marker.name}
-          </div>
+          <div className="text-sm font-medium text-gray-900 truncate">{marker.name}</div>
         ) : (
-          <div className="text-xs font-medium text-gray-500 italic">
-            Unassigned
-          </div>
+          <div className="text-xs font-medium text-gray-500 italic">Unassigned</div>
         )}
       </div>
     </div>
@@ -94,17 +88,17 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
               )}
             </div>
           ) : (
-            <div className="text-base font-semibold text-gray-500 italic mb-1">Unassigned Booth</div>
+            <div className="text-base font-semibold text-gray-500 italic mb-1">
+              Unassigned Booth
+            </div>
           )}
           {showBoothNumber && marker.glyph && (
-            <div className="text-sm text-gray-700 mb-2">
-              Booth {marker.glyph}
-            </div>
+            <div className="text-sm text-gray-700 mb-2">Booth {marker.glyph}</div>
           )}
           {/* Category Badges */}
           {categories && categories.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
-              {categories.map(category => (
+              {categories.map((category) => (
                 <span
                   key={category.id}
                   className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
@@ -121,9 +115,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
             <div className="text-sm mb-2">
               <a
                 href={
-                  marker.website.startsWith('http')
-                    ? marker.website
-                    : `https://${marker.website}`
+                  marker.website.startsWith('http') ? marker.website : `https://${marker.website}`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
@@ -140,7 +132,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
               style={{
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
-                whiteSpace: 'pre-wrap'
+                whiteSpace: 'pre-wrap',
               }}
             >
               {translatedInfo}
@@ -174,9 +166,7 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
           <div className="font-semibold text-gray-500 italic text-sm">Unassigned Booth</div>
         )}
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs text-gray-700 mb-2">
-            Booth {marker.glyph}
-          </div>
+          <div className="text-xs text-gray-700 mb-2">Booth {marker.glyph}</div>
         )}
         {hasCompanyData && (
           <button
@@ -192,13 +182,18 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
 };
 
 // --- Combined helper ---
-export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo, showBoothNumber = true }) => {
+export const MarkerUI = ({
+  marker,
+  onMoreInfo,
+  isMobile,
+  organizationLogo,
+  showBoothNumber = true,
+}) => {
   // Only show tooltip if marker has meaningful content (glyph or name)
   // This prevents showing empty/incomplete tooltips on first hover
-  const hasTooltipContent = marker && (
-    (marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') ||
-    marker.name
-  );
+  const hasTooltipContent =
+    marker &&
+    ((marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') || marker.name);
 
   return (
     <>
@@ -206,13 +201,28 @@ export const MarkerUI = ({ marker, onMoreInfo, isMobile, organizationLogo, showB
         <>
           {hasTooltipContent && (
             <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
-              <MarkerTooltipContent marker={marker} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />
+              <MarkerTooltipContent
+                marker={marker}
+                organizationLogo={organizationLogo}
+                showBoothNumber={showBoothNumber}
+              />
             </Tooltip>
           )}
-          <MarkerPopupDesktop marker={marker} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />
+          <MarkerPopupDesktop
+            marker={marker}
+            organizationLogo={organizationLogo}
+            showBoothNumber={showBoothNumber}
+          />
         </>
       )}
-      {isMobile && <MarkerPopupMobile marker={marker} onMoreInfo={onMoreInfo} organizationLogo={organizationLogo} showBoothNumber={showBoothNumber} />}
+      {isMobile && (
+        <MarkerPopupMobile
+          marker={marker}
+          onMoreInfo={onMoreInfo}
+          organizationLogo={organizationLogo}
+          showBoothNumber={showBoothNumber}
+        />
+      )}
     </>
   );
 };

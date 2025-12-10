@@ -3,18 +3,20 @@ import { render, screen } from '@testing-library/react';
 
 // Mock i18n
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k) => {
-    const map = {
-      'admin.yearScope.title': 'Year-scoped data',
-      'admin.yearScope.eventSpecific': 'Event-specific (changes with year)',
-      'admin.yearScope.viewingYear': 'Viewing year',
-      'admin.yearScope.subscriptions': 'Subscriptions',
-      'admin.yearScope.assignments': 'Assignments',
-      'admin.yearScope.program': 'Program',
-      'admin.yearScope.preview': 'Preview changes',
-    };
-    return map[k] || k;
-  } })
+  useTranslation: () => ({
+    t: (k) => {
+      const map = {
+        'admin.yearScope.title': 'Year-scoped data',
+        'admin.yearScope.eventSpecific': 'Event-specific (changes with year)',
+        'admin.yearScope.viewingYear': 'Viewing year',
+        'admin.yearScope.subscriptions': 'Subscriptions',
+        'admin.yearScope.assignments': 'Assignments',
+        'admin.yearScope.program': 'Program',
+        'admin.yearScope.preview': 'Preview changes',
+      };
+      return map[k] || k;
+    },
+  }),
 }));
 
 import '@testing-library/jest-dom';
@@ -28,7 +30,7 @@ describe('YearScopeCard', () => {
         setSelectedYear={jest.fn()}
         counts={{ subscriptions: 42, assignments: 12, program: 3 }}
         onPreview={jest.fn()}
-      />
+      />,
     );
 
     // Basic assertions - ensure the key labels render and ARIA features exist

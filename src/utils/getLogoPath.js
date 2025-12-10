@@ -25,7 +25,9 @@ export function getLogoPath(logo) {
         // decode then re-encode as basename (strip extension)
         const decoded = decodeURIComponent(filename);
         // If filename already looks like a sized generated variant, return the original url
-        if (/(?:-64| -128|-256|-512)\.(webp|avif)$/i.test(decoded)) {
+        // If filename already looks like a sized generated variant, return the original url
+        // (match '-64', '-128', '-256', or '-512' followed by .webp or .avif)
+        if (/-(?:64|128|256|512)\.(webp|avif)$/i.test(decoded)) {
           return logo;
         }
 
@@ -107,8 +109,11 @@ export function getResponsiveLogoSources(iconUrl) {
   const basename = filename.replace(/\.[^.]+$/, '');
 
   // Prefer CDN-hosted generated assets (Supabase public storage) if VITE_SUPABASE_URL exists
-  const supabaseUrl = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL : null;
-  const cdnBase = supabaseUrl ? `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/Logos/generated/${basename}` : null;
+  const supabaseUrl =
+    typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL : null;
+  const cdnBase = supabaseUrl
+    ? `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/Logos/generated/${basename}`
+    : null;
   const generatedBase = cdnBase || `${base}assets/logos/generated/${basename}`;
 
   const src = `${generatedBase}-128.webp`;

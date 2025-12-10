@@ -88,14 +88,12 @@ const BottomSheet = ({ marker, onClose }) => {
               />
             )}
           </div>
-          {marker.glyph && (
-            <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>
-          )}
+          {marker.glyph && <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>}
 
           {/* Category Badges */}
           {categories && categories.length > 0 && (
             <div className="mb-2 flex flex-wrap gap-1.5">
-              {categories.map(category => (
+              {categories.map((category) => (
                 <span
                   key={category.id}
                   className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
@@ -113,7 +111,9 @@ const BottomSheet = ({ marker, onClose }) => {
           {marker.website && (
             <div className="text-sm mb-1">
               <a
-                href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`}
+                href={
+                  marker.website.startsWith('http') ? marker.website : `https://${marker.website}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-600 hover:text-blue-800 underline"
@@ -125,7 +125,9 @@ const BottomSheet = ({ marker, onClose }) => {
 
           {/* Info */}
           {marker.info && (
-            <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">{marker.info}</div>
+            <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
+              {marker.info}
+            </div>
           )}
 
           {/* Close button */}
@@ -138,7 +140,7 @@ const BottomSheet = ({ marker, onClose }) => {
         </div>
       </motion.div>
     </AnimatePresence>,
-    document.body // Render directly to document.body, outside the map container
+    document.body, // Render directly to document.body, outside the map container
   );
 };
 

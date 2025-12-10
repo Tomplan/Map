@@ -34,7 +34,8 @@ export default function ProtectedSection({ requiredRole, children, message }) {
         <Icon path={mdiLockOutline} size={3} className="text-gray-400 mb-4" />
         <h2 className="text-xl font-bold text-gray-700 mb-2">Access Restricted</h2>
         <p className="text-gray-600 text-center max-w-md">
-          {message || 'You do not have permission to view this section. Contact your administrator if you need access.'}
+          {message ||
+            'You do not have permission to view this section. Contact your administrator if you need access.'}
         </p>
         {role && (
           <p className="text-sm text-gray-500 mt-4">
@@ -49,10 +50,8 @@ export default function ProtectedSection({ requiredRole, children, message }) {
 }
 
 ProtectedSection.propTypes = {
-  requiredRole: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.arrayOf(PropTypes.string),
-  ]).isRequired,
+  requiredRole: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)])
+    .isRequired,
   children: PropTypes.node.isRequired,
   message: PropTypes.string,
 };

@@ -395,6 +395,20 @@
     "schedule": "Programma"
   },
   "programManagement": {
+    "eventDates": {
+      "title": "Evenementdata",
+      "description": "Stel de officiële begin- en einddatum voor dit evenementjaar in.",
+      "startLabel": "Begin",
+      "endLabel": "Eind",
+      "save": "Data opslaan",
+      "resetToGlobal": "Terug naar organisatie-instelling",
+      "saveSuccess": "Evenementdata opgeslagen",
+      "saveError": "Kon evenementdata niet opslaan",
+      "resetSuccess": "Evenementdata teruggezet naar organisatie-standaard",
+      "resetError": "Kon evenementdata niet terugzetten"
+      ,
+      "invalidRange": "Begin-datum moet voor of gelijk aan de eind-datum zijn"
+    },
     "title": "Programma Beheer",
     "addActivity": "Activiteit Toevoegen",
     "addFirstActivity": "Voeg Je Eerste Activiteit Toe",
@@ -688,6 +702,9 @@
     "tourNew": "Nieuw",
     "availableTours": "Beschikbare Rondleidingen",
     "noToursAvailable": "Geen rondleidingen beschikbaar voor je huidige pagina",
+    "navigationRequiredTitle": "Navigeer naar de vereiste pagina",
+    "navigationRequiredText": "Om de rondleiding te starten moeten we naar {{page}} navigeren. Wil je doorgaan?",
+    "startFailed": "Kon de rondleiding niet starten — vereiste elementen op de pagina ontbreken of laden nog. Probeer het later of controleer of je op de juiste pagina bent.",
     "duration": "Duur: ~{{minutes}} min"
   }
 }

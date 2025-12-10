@@ -39,7 +39,8 @@ export default function useEventMapSettings(eventYear) {
         .eq('event_year', eventYear)
         .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 is "not found" which is OK
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 is "not found" which is OK
         console.error('Error fetching event map settings:', fetchError);
         setError(fetchError.message);
         setSettings(null);
@@ -61,67 +62,74 @@ export default function useEventMapSettings(eventYear) {
    * @param {Object} updates - Settings to update
    * @returns {Promise<boolean>} Success status
    */
-  const updateSettings = useCallback(async (updates) => {
-    if (!eventYear) {
-      console.error('Cannot update settings: No event year specified');
-      return false;
-    }
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('Cannot update settings: No user logged in');
+  const updateSettings = useCallback(
+    async (updates) => {
+      if (!eventYear) {
+        console.error('Cannot update settings: No event year specified');
         return false;
       }
 
-      // Check if settings already exist for this year
-      const existingSettings = settings;
-
-      if (existingSettings) {
-        // Update existing settings
-        const { data, error: updateError } = await supabase
-          .from('event_map_settings')
-          .update({
-            ...updates,
-            updated_by: user.id,
-          })
-          .eq('event_year', eventYear)
-          .select()
-          .single();
-
-        if (updateError) {
-          console.error('Error updating event map settings:', updateError);
-          throw new Error(updateError.message);
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) {
+          console.error('Cannot update settings: No user logged in');
+          return false;
         }
 
-        setSettings(data);
-      } else {
-        // Create new settings for this year
-        const { data, error: insertError } = await supabase
-          .from('event_map_settings')
-          .insert([{
-            event_year: eventYear,
-            ...updates,
-            created_by: user.id,
-            updated_by: user.id,
-          }])
-          .select()
-          .single();
+        // Check if settings already exist for this year
+        const existingSettings = settings;
 
-        if (insertError) {
-          console.error('Error creating event map settings:', insertError);
-          throw new Error(insertError.message);
+        if (existingSettings) {
+          // Update existing settings
+          const { data, error: updateError } = await supabase
+            .from('event_map_settings')
+            .update({
+              ...updates,
+              updated_by: user.id,
+            })
+            .eq('event_year', eventYear)
+            .select()
+            .single();
+
+          if (updateError) {
+            console.error('Error updating event map settings:', updateError);
+            throw new Error(updateError.message);
+          }
+
+          setSettings(data);
+        } else {
+          // Create new settings for this year
+          const { data, error: insertError } = await supabase
+            .from('event_map_settings')
+            .insert([
+              {
+                event_year: eventYear,
+                ...updates,
+                created_by: user.id,
+                updated_by: user.id,
+              },
+            ])
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error('Error creating event map settings:', insertError);
+            throw new Error(insertError.message);
+          }
+
+          setSettings(data);
         }
 
-        setSettings(data);
+        return true;
+      } catch (error) {
+        console.error('Error in updateSettings:', error);
+        throw error;
       }
-
-      return true;
-    } catch (error) {
-      console.error('Error in updateSettings:', error);
-      throw error;
-    }
-  }, [eventYear, settings]);
+    },
+    [eventYear, settings],
+  );
 
   /**
    * Reset event settings to use global defaults (delete event-specific settings)

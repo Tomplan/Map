@@ -16,7 +16,9 @@ jest.mock('../../EventMap/EventMap', () => (props) => (
 jest.mock('../../../supabaseClient');
 const { __setQueryResponse, __resetMocks } = require('../../../supabaseClient');
 
-beforeEach(() => { __resetMocks(); });
+beforeEach(() => {
+  __resetMocks();
+});
 
 // Mock hooks that rely on auth/session — event_manager role (read-only)
 jest.mock('../../../hooks/useUserRole', () => () => ({
@@ -27,19 +29,34 @@ jest.mock('../../../hooks/useUserRole', () => () => ({
   hasAnyRole: (roles) => Array.isArray(roles) && roles.includes('event_manager'),
 }));
 
-jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }) }));
+jest.mock('../../../contexts/DialogContext', () => ({
+  useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }),
+}));
 
 // Minimal config mocks
 jest.mock('../../../config/markerTabsConfig', () => ({ ICON_OPTIONS: ['default.svg'] }));
-jest.mock('../../../utils/getIconPath', () => ({ getIconPath: (file) => `/assets/${file || 'default.svg'}` }));
-jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: (file) => `/assets/${file || 'default.png'}` }));
+jest.mock('../../../utils/getIconPath', () => ({
+  getIconPath: (file) => `/assets/${file || 'default.svg'}`,
+}));
+jest.mock('../../../utils/getLogoPath', () => ({
+  getLogoPath: (file) => `/assets/${file || 'default.png'}`,
+}));
 
 import MapManagement from '../MapManagement';
 
 test('Event managers still get admin EventMap (isAdminView=true) inside MapManagement', async () => {
-  const markers = [ { id: 1, lat: 52.1, lng: 4.3 } ];
+  const markers = [{ id: 1, lat: 52.1, lng: 4.3 }];
 
-  render(<MapManagement markersState={markers} setMarkersState={jest.fn()} updateMarker={jest.fn()} selectedYear={2025} archiveMarkers={jest.fn()} copyMarkers={jest.fn()} />);
+  render(
+    <MapManagement
+      markersState={markers}
+      setMarkersState={jest.fn()}
+      updateMarker={jest.fn()}
+      selectedYear={2025}
+      archiveMarkers={jest.fn()}
+      copyMarkers={jest.fn()}
+    />,
+  );
 
   const mapNode = await screen.findByTestId('event-map');
   expect(mapNode).toBeInTheDocument();

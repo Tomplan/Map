@@ -159,9 +159,7 @@ export default function MapControls({
                     />
                   </svg>
                 </span>
-                <span style={{ marginLeft: showRectanglesAndHandles ? -8 : 0 }}>
-                  Booth Surface
-                </span>
+                <span style={{ marginLeft: showRectanglesAndHandles ? -8 : 0 }}>Booth Surface</span>
               </label>
             </div>
           )}

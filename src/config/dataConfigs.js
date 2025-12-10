@@ -3,7 +3,7 @@ import {
   validateEmail,
   validatePhone,
   validateNumber,
-  validateRequired
+  validateRequired,
 } from '../utils/dataExportImport';
 
 /**
@@ -12,7 +12,7 @@ import {
 export const DATA_TYPES = {
   COMPANIES: 'companies',
   SUBSCRIPTIONS: 'event_subscriptions',
-  ASSIGNMENTS: 'assignments'
+  ASSIGNMENTS: 'assignments',
 };
 
 /**
@@ -39,7 +39,7 @@ export const dataConfigs = {
       { key: 'info_nl', header: 'Info (Nederlands)', type: 'string', wrapText: true },
       { key: 'info_en', header: 'Info (English)', type: 'string', wrapText: true },
       { key: 'info_de', header: 'Info (Deutsch)', type: 'string', wrapText: true },
-      { key: 'logo', header: 'Logo URL', type: 'string' }
+      { key: 'logo', header: 'Logo URL', type: 'string' },
     ],
 
     // Transform import row to database format
@@ -48,7 +48,7 @@ export const dataConfigs = {
         name: row['Company Name']?.trim() || '',
         contact: row['Contact Person']?.trim() || '',
         website: row['Website']?.trim() || '',
-        logo: row['Logo URL']?.trim() || ''
+        logo: row['Logo URL']?.trim() || '',
       };
 
       // Handle phone normalization
@@ -71,13 +71,16 @@ export const dataConfigs = {
       const translations = {
         nl: row['Info (Nederlands)']?.trim() || '',
         en: row['Info (English)']?.trim() || '',
-        de: row['Info (Deutsch)']?.trim() || ''
+        de: row['Info (Deutsch)']?.trim() || '',
       };
 
       // Extract categories (comma-separated slugs)
       const categoriesStr = row['Categories']?.trim() || '';
       const categorySlugs = categoriesStr
-        ? categoriesStr.split(',').map(s => s.trim()).filter(s => s.length > 0)
+        ? categoriesStr
+            .split(',')
+            .map((s) => s.trim())
+            .filter((s) => s.length > 0)
         : [];
 
       // Attach translations and categories to company data for import handler to use
@@ -93,7 +96,7 @@ export const dataConfigs = {
 
       if (!supabase || companies.length === 0) {
         // Fallback if supabase not provided
-        return companies.map(c => ({
+        return companies.map((c) => ({
           id: c.id,
           name: c.name || '',
           categories: '',
@@ -101,14 +104,14 @@ export const dataConfigs = {
           phone: c.phone || '',
           email: c.email || '',
           website: c.website || '',
-          info_nl: c.info || '',  // Legacy fallback
+          info_nl: c.info || '', // Legacy fallback
           info_en: '',
           info_de: '',
-          logo: c.logo || ''
+          logo: c.logo || '',
         }));
       }
 
-      const companyIds = companies.map(c => c.id);
+      const companyIds = companies.map((c) => c.id);
 
       // Fetch all translations for all companies in one query
       const { data: translations, error: translationsError } = await supabase
@@ -123,10 +126,12 @@ export const dataConfigs = {
       // Fetch all categories for all companies in one query
       const { data: companyCategories, error: categoriesError } = await supabase
         .from('company_categories')
-        .select(`
+        .select(
+          `
           company_id,
           categories(slug)
-        `)
+        `,
+        )
         .in('company_id', companyIds);
 
       if (categoriesError) {
@@ -136,7 +141,7 @@ export const dataConfigs = {
       // Build a map of translations: { companyId: { nl: '...', en: '...', de: '...' } }
       const translationMap = {};
       if (translations) {
-        translations.forEach(t => {
+        translations.forEach((t) => {
           if (!translationMap[t.company_id]) {
             translationMap[t.company_id] = {};
           }
@@ -147,7 +152,7 @@ export const dataConfigs = {
       // Build a map of categories: { companyId: ['slug1', 'slug2', ...] }
       const categoryMap = {};
       if (companyCategories) {
-        companyCategories.forEach(cc => {
+        companyCategories.forEach((cc) => {
           if (!categoryMap[cc.company_id]) {
             categoryMap[cc.company_id] = [];
           }
@@ -158,21 +163,21 @@ export const dataConfigs = {
       }
 
       // Map companies with translations and categories
-      return companies.map(c => {
+      return companies.map((c) => {
         const companyTranslations = translationMap[c.id] || {};
         const companyCategorySlugs = categoryMap[c.id] || [];
         return {
           id: c.id,
           name: c.name || '',
-          categories: companyCategorySlugs.join(', '),  // Comma-separated slugs
+          categories: companyCategorySlugs.join(', '), // Comma-separated slugs
           contact: c.contact || '',
           phone: c.phone || '',
           email: c.email || '',
           website: c.website || '',
-          info_nl: companyTranslations.nl || c.info || '',  // Fallback to legacy info
+          info_nl: companyTranslations.nl || c.info || '', // Fallback to legacy info
           info_en: companyTranslations.en || '',
           info_de: companyTranslations.de || '',
-          logo: c.logo || ''
+          logo: c.logo || '',
         };
       });
     },
@@ -186,7 +191,7 @@ export const dataConfigs = {
       if (!nameValidation.valid) {
         errors.push({
           field: 'Company Name',
-          message: nameValidation.error
+          message: nameValidation.error,
         });
       }
 
@@ -196,7 +201,7 @@ export const dataConfigs = {
         if (!emailValidation.valid) {
           errors.push({
             field: 'Email',
-            message: emailValidation.error
+            message: emailValidation.error,
           });
         }
       }
@@ -207,27 +212,28 @@ export const dataConfigs = {
         if (!phoneValidation.valid) {
           errors.push({
             field: 'Phone',
-            message: phoneValidation.error
+            message: phoneValidation.error,
           });
         }
       }
 
       // Validate category columns (per-category boolean columns)
-      Object.keys(row).forEach(key => {
+      Object.keys(row).forEach((key) => {
         // Check if this is a category column (header contains category indicators)
-        const isCategoryColumn = key.toLowerCase().includes('category') || 
-                                key.toLowerCase().includes('cat:') ||
-                                // Check if the key starts with category: pattern (for metadata)
-                                key.startsWith('category:');
-        
+        const isCategoryColumn =
+          key.toLowerCase().includes('category') ||
+          key.toLowerCase().includes('cat:') ||
+          // Check if the key starts with category: pattern (for metadata)
+          key.startsWith('category:');
+
         if (isCategoryColumn && row[key]) {
           const value = String(row[key]).trim().toUpperCase();
           const validCategoryValues = ['TRUE', 'FALSE', '+', '-', 'X', '✓', '1', '0', 'YES', 'NO'];
-          
+
           if (!validCategoryValues.includes(value)) {
             errors.push({
               field: key,
-              message: `Invalid category value "${row[key]}". Use +, -, TRUE, FALSE, X, or ✓`
+              message: `Invalid category value "${row[key]}". Use +, -, TRUE, FALSE, X, or ✓`,
             });
           }
         }
@@ -235,7 +241,7 @@ export const dataConfigs = {
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       };
     },
 
@@ -244,7 +250,7 @@ export const dataConfigs = {
       // Fields to match on (case-insensitive)
       matchFields: ['name'],
       // Match mode: 'first' = take first match, 'strict' = error on duplicates
-      matchMode: 'first'
+      matchMode: 'first',
     },
 
     // Display labels
@@ -254,8 +260,8 @@ export const dataConfigs = {
       exportButton: 'Export Companies',
       importButton: 'Import Companies',
       modalTitle: 'Import Companies',
-      exportFilename: 'companies-export'
-    }
+      exportFilename: 'companies-export',
+    },
   },
 
   /**
@@ -284,7 +290,7 @@ export const dataConfigs = {
       { key: 'breakfast_sun', header: 'Breakfast (Sun)', type: 'number' },
       { key: 'lunch_sun', header: 'Lunch (Sun)', type: 'number' },
       { key: 'coins', header: 'Coins', type: 'number' },
-      { key: 'notes', header: 'Notes', type: 'string', wrapText: true }
+      { key: 'notes', header: 'Notes', type: 'string', wrapText: true },
     ],
 
     // Transform export data (join company name and booth labels)
@@ -293,7 +299,7 @@ export const dataConfigs = {
 
       // If no supabase or event year, return basic export
       if (!supabase || !eventYear) {
-        return subscriptions.map(sub => ({
+        return subscriptions.map((sub) => ({
           id: sub.id,
           company_name: sub.company?.name || '',
           event_year: sub.event_year,
@@ -309,7 +315,7 @@ export const dataConfigs = {
           breakfast_sun: sub.breakfast_sun || 0,
           lunch_sun: sub.lunch_sun || 0,
           coins: sub.coins || 0,
-          notes: sub.notes || ''
+          notes: sub.notes || '',
         }));
       }
 
@@ -323,7 +329,7 @@ export const dataConfigs = {
         if (appearanceError) {
           console.error('Error fetching marker appearances:', appearanceError);
           // Return basic export without booth labels
-          return subscriptions.map(sub => ({
+          return subscriptions.map((sub) => ({
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
@@ -339,22 +345,22 @@ export const dataConfigs = {
             breakfast_sun: sub.breakfast_sun || 0,
             lunch_sun: sub.lunch_sun || 0,
             coins: sub.coins || 0,
-            notes: sub.notes || ''
+            notes: sub.notes || '',
           }));
         }
 
         // Build marker ID to glyph map from appearance data
         const markerGlyphMap = {};
-        markerAppearances?.forEach(appearance => {
+        markerAppearances?.forEach((appearance) => {
           markerGlyphMap[appearance.id] = appearance.glyph || appearance.id.toString();
         });
 
         // Get company IDs to fetch their assignments
-        const companyIds = subscriptions.map(s => s.company_id).filter(Boolean);
+        const companyIds = subscriptions.map((s) => s.company_id).filter(Boolean);
 
         if (companyIds.length === 0) {
           // No companies to process, return basic export
-          return subscriptions.map(sub => ({
+          return subscriptions.map((sub) => ({
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
@@ -370,7 +376,7 @@ export const dataConfigs = {
             breakfast_sun: sub.breakfast_sun || 0,
             lunch_sun: sub.lunch_sun || 0,
             coins: sub.coins || 0,
-            notes: sub.notes || ''
+            notes: sub.notes || '',
           }));
         }
 
@@ -384,7 +390,7 @@ export const dataConfigs = {
         if (assignmentsError) {
           console.error('Error fetching assignments:', assignmentsError);
           // Return basic export without booth labels
-          return subscriptions.map(sub => ({
+          return subscriptions.map((sub) => ({
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
@@ -400,13 +406,13 @@ export const dataConfigs = {
             breakfast_sun: sub.breakfast_sun || 0,
             lunch_sun: sub.lunch_sun || 0,
             coins: sub.coins || 0,
-            notes: sub.notes || ''
+            notes: sub.notes || '',
           }));
         }
 
         // Build company ID to booth labels map
         const companyBoothMap = {};
-        assignments?.forEach(assignment => {
+        assignments?.forEach((assignment) => {
           const glyph = markerGlyphMap[assignment.marker_id];
           if (glyph) {
             if (!companyBoothMap[assignment.company_id]) {
@@ -417,12 +423,12 @@ export const dataConfigs = {
         });
 
         // Sort booth labels for each company
-        Object.keys(companyBoothMap).forEach(companyId => {
+        Object.keys(companyBoothMap).forEach((companyId) => {
           companyBoothMap[companyId].sort();
         });
 
         // Enhanced export with company details and assignment info
-        return subscriptions.map(sub => {
+        return subscriptions.map((sub) => {
           const boothLabels = companyBoothMap[sub.company_id]?.join(', ') || '';
 
           return {
@@ -441,13 +447,13 @@ export const dataConfigs = {
             breakfast_sun: sub.breakfast_sun || 0,
             lunch_sun: sub.lunch_sun || 0,
             coins: sub.coins || 0,
-            notes: sub.notes || ''
+            notes: sub.notes || '',
           };
         });
       } catch (error) {
         console.error('Error in transformExport:', error);
         // Return basic export on any error
-        return subscriptions.map(sub => ({
+        return subscriptions.map((sub) => ({
           id: sub.id,
           company_name: sub.company?.name || '',
           event_year: sub.event_year,
@@ -463,7 +469,7 @@ export const dataConfigs = {
           breakfast_sun: sub.breakfast_sun || 0,
           lunch_sun: sub.lunch_sun || 0,
           coins: sub.coins || 0,
-          notes: sub.notes || ''
+          notes: sub.notes || '',
         }));
       }
     },
@@ -482,7 +488,7 @@ export const dataConfigs = {
         event_year: parseInt(row['Event Year']) || eventYear,
         contact: row['Contact Person']?.trim() || '',
         area: row['Area']?.trim() || '',
-        notes: row['Notes']?.trim() || ''
+        notes: row['Notes']?.trim() || '',
       };
 
       // Phone
@@ -514,7 +520,7 @@ export const dataConfigs = {
       if (!nameValidation.valid) {
         errors.push({
           field: 'Company Name',
-          message: nameValidation.error
+          message: nameValidation.error,
         });
       } else {
         // Check if company exists in database
@@ -522,7 +528,7 @@ export const dataConfigs = {
         if (companyMap && !companyMap[companyName]) {
           errors.push({
             field: 'Company Name',
-            message: `Company "${row['Company Name']}" not found in database`
+            message: `Company "${row['Company Name']}" not found in database`,
           });
         }
       }
@@ -532,7 +538,7 @@ export const dataConfigs = {
       if (row['Event Year'] && (isNaN(eventYear) || eventYear < 2020 || eventYear > 2100)) {
         errors.push({
           field: 'Event Year',
-          message: 'Event Year must be a valid year between 2020-2100'
+          message: 'Event Year must be a valid year between 2020-2100',
         });
       }
 
@@ -541,18 +547,24 @@ export const dataConfigs = {
       if (row['Booth Count'] && (isNaN(boothCount) || boothCount < 1)) {
         errors.push({
           field: 'Booth Count',
-          message: 'Booth Count must be at least 1'
+          message: 'Booth Count must be at least 1',
         });
       }
 
       // Meal count validation (0 or positive integers)
-      const mealFields = ['Breakfast (Sat)', 'Lunch (Sat)', 'BBQ (Sat)', 'Breakfast (Sun)', 'Lunch (Sun)'];
-      mealFields.forEach(field => {
+      const mealFields = [
+        'Breakfast (Sat)',
+        'Lunch (Sat)',
+        'BBQ (Sat)',
+        'Breakfast (Sun)',
+        'Lunch (Sun)',
+      ];
+      mealFields.forEach((field) => {
         const value = parseInt(row[field]);
         if (row[field] && (isNaN(value) || value < 0)) {
           errors.push({
             field: field,
-            message: `${field} must be 0 or a positive integer`
+            message: `${field} must be 0 or a positive integer`,
           });
         }
       });
@@ -562,7 +574,7 @@ export const dataConfigs = {
       if (row['Coins'] && (isNaN(coins) || coins < 0)) {
         errors.push({
           field: 'Coins',
-          message: 'Coins must be 0 or a positive integer'
+          message: 'Coins must be 0 or a positive integer',
         });
       }
 
@@ -572,7 +584,7 @@ export const dataConfigs = {
         if (!emailValidation.valid) {
           errors.push({
             field: 'Email',
-            message: emailValidation.error
+            message: emailValidation.error,
           });
         }
       }
@@ -583,21 +595,21 @@ export const dataConfigs = {
         if (!phoneValidation.valid) {
           errors.push({
             field: 'Phone',
-            message: phoneValidation.error
+            message: phoneValidation.error,
           });
         }
       }
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       };
     },
 
     // Matching strategy
     matchStrategy: {
       matchFields: ['company_id', 'event_year'],
-      matchMode: 'strict' // One subscription per company per year
+      matchMode: 'strict', // One subscription per company per year
     },
 
     labels: {
@@ -606,8 +618,8 @@ export const dataConfigs = {
       exportButton: 'Export Subscriptions',
       importButton: 'Import Subscriptions',
       modalTitle: 'Import Subscriptions',
-      exportFilename: 'subscriptions-export'
-    }
+      exportFilename: 'subscriptions-export',
+    },
   },
 
   /**
@@ -625,23 +637,23 @@ export const dataConfigs = {
       { key: 'company_name', header: 'Company Name', type: 'string', required: true },
       { key: 'booth_label', header: 'Booth Label', type: 'string', required: true },
       { key: 'marker_id', header: 'Marker ID', type: 'number', required: true },
-      { key: 'event_year', header: 'Event Year', type: 'number', required: true }
+      { key: 'event_year', header: 'Event Year', type: 'number', required: true },
     ],
 
     // Transform export data (join company name and booth label)
     transformExport: (assignments, markers) => {
       // Build marker glyph map
       const markerMap = {};
-      markers.forEach(m => {
+      markers.forEach((m) => {
         markerMap[m.id] = m.glyph || m.id.toString();
       });
 
-      return assignments.map(a => ({
+      return assignments.map((a) => ({
         id: a.id,
         company_name: a.company?.name || '',
         booth_label: markerMap[a.marker_id] || a.marker_id.toString(),
         marker_id: a.marker_id,
-        event_year: a.event_year
+        event_year: a.event_year,
       }));
     },
 
@@ -665,7 +677,7 @@ export const dataConfigs = {
       return {
         company_id: companyId,
         marker_id: parseInt(markerId),
-        event_year: parseInt(row['Event Year']) || eventYear
+        event_year: parseInt(row['Event Year']) || eventYear,
       };
     },
 
@@ -678,14 +690,14 @@ export const dataConfigs = {
       if (!nameValidation.valid) {
         errors.push({
           field: 'Company Name',
-          message: nameValidation.error
+          message: nameValidation.error,
         });
       } else if (companyMap) {
         const companyName = row['Company Name']?.trim().toLowerCase();
         if (!companyMap[companyName]) {
           errors.push({
             field: 'Company Name',
-            message: `Company "${row['Company Name']}" not found in database`
+            message: `Company "${row['Company Name']}" not found in database`,
           });
         }
       }
@@ -695,28 +707,28 @@ export const dataConfigs = {
       if (!boothValidation.valid) {
         errors.push({
           field: 'Booth Label',
-          message: boothValidation.error
+          message: boothValidation.error,
         });
       } else if (markerMap) {
         const boothLabel = row['Booth Label']?.trim().toLowerCase();
         if (!markerMap[boothLabel]) {
           errors.push({
             field: 'Booth Label',
-            message: `Booth "${row['Booth Label']}" not found in markers`
+            message: `Booth "${row['Booth Label']}" not found in markers`,
           });
         }
       }
 
       return {
         valid: errors.length === 0,
-        errors
+        errors,
       };
     },
 
     // Matching strategy
     matchStrategy: {
       matchFields: ['company_id', 'marker_id', 'event_year'],
-      matchMode: 'skip-duplicates' // Don't create duplicate assignments
+      matchMode: 'skip-duplicates', // Don't create duplicate assignments
     },
 
     labels: {
@@ -725,9 +737,9 @@ export const dataConfigs = {
       exportButton: 'Export Assignments',
       importButton: 'Import Assignments',
       modalTitle: 'Import Booth Assignments',
-      exportFilename: 'assignments-export'
-    }
-  }
+      exportFilename: 'assignments-export',
+    },
+  },
 };
 
 /**

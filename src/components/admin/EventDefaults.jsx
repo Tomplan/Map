@@ -52,9 +52,10 @@ export default function EventDefaults() {
 
       // Parse notification settings from JSONB
       if (settings.notification_settings) {
-        const notifSettings = typeof settings.notification_settings === 'string'
-          ? JSON.parse(settings.notification_settings)
-          : settings.notification_settings;
+        const notifSettings =
+          typeof settings.notification_settings === 'string'
+            ? JSON.parse(settings.notification_settings)
+            : settings.notification_settings;
         setEmailNotifications(notifSettings.emailNotifications ?? true);
         setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
         setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
@@ -140,9 +141,10 @@ export default function EventDefaults() {
       setDefaultLunchSun(settings.default_lunch_sun ?? 0);
 
       if (settings.notification_settings) {
-        const notifSettings = typeof settings.notification_settings === 'string'
-          ? JSON.parse(settings.notification_settings)
-          : settings.notification_settings;
+        const notifSettings =
+          typeof settings.notification_settings === 'string'
+            ? JSON.parse(settings.notification_settings)
+            : settings.notification_settings;
         setEmailNotifications(notifSettings.emailNotifications ?? true);
         setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
         setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
@@ -173,7 +175,9 @@ export default function EventDefaults() {
           <h2 className="text-xl font-bold text-gray-900">{t('settings.eventDefaults.title')}</h2>
           <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
             <Icon path={mdiDomain} size={0.6} className="text-orange-600" />
-            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Organization Setting</span>
+            <span className="text-xs font-semibold text-orange-700 uppercase tracking-wide">
+              Organization Setting
+            </span>
           </div>
         </div>
         <p className="text-sm text-gray-600">{t('settings.eventDefaults.description')}</p>
@@ -184,8 +188,12 @@ export default function EventDefaults() {
         <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-lg flex items-start">
           <Icon path={mdiCheckCircle} size={1} className="text-green-600 mr-3 flex-shrink-0" />
           <div>
-            <p className="font-semibold text-green-800">{t('settings.eventDefaults.saveSuccess')}</p>
-            <p className="text-sm text-green-700">{t('settings.eventDefaults.saveSuccessMessage')}</p>
+            <p className="font-semibold text-green-800">
+              {t('settings.eventDefaults.saveSuccess')}
+            </p>
+            <p className="text-sm text-green-700">
+              {t('settings.eventDefaults.saveSuccessMessage')}
+            </p>
           </div>
         </div>
       )}
@@ -313,7 +321,12 @@ export default function EventDefaults() {
                 <label className="label-base text-gray-400">
                   {t('settings.eventDefaults.mealDefaults.bbq')}
                 </label>
-                <span className="input-base bg-gray-100 cursor-not-allowed block w-full h-[2.5rem] rounded text-center text-gray-400" aria-disabled="true">—</span>
+                <span
+                  className="input-base bg-gray-100 cursor-not-allowed block w-full h-[2.5rem] rounded text-center text-gray-400"
+                  aria-disabled="true"
+                >
+                  —
+                </span>
                 <p className="text-xs text-gray-400 mt-1">
                   {t('settings.eventDefaults.mealDefaults.sundayNoBbq')}
                 </p>

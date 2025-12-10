@@ -401,6 +401,20 @@
     "schedule": "Schedule"
   },
   "programManagement": {
+    "eventDates": {
+      "title": "Event Dates",
+      "description": "Set the official start and end dates for this event year.",
+      "startLabel": "Start",
+      "endLabel": "End",
+      "save": "Save Dates",
+      "resetToGlobal": "Reset to Organization Default",
+      "saveSuccess": "Event dates saved",
+      "saveError": "Failed to save event dates",
+      "resetSuccess": "Event dates reset to organization defaults",
+      "resetError": "Failed to reset event dates"
+      ,
+      "invalidRange": "Start date must be before or equal to end date"
+    },
     "title": "Program Management",
     "addActivity": "Add Activity",
     "addFirstActivity": "Add Your First Activity",
@@ -690,13 +704,16 @@
     "back": "Back",
     "finish": "Finish Tour",
     "close": "Close",
-    "progress": "Step {{current}} of {{total}}",
+    "progressText": "Step {{current}} of {{total}}",
     "startTour": "Start Tour",
     "restartTour": "Restart Tour",
     "tourCompleted": "Completed",
     "tourNew": "New",
     "availableTours": "Available Tours",
     "noToursAvailable": "No tours available for your current page",
+    "navigationRequiredTitle": "Navigate to the required page",
+    "navigationRequiredText": "To run the tour we need to navigate to {{page}}. Do you want to continue?",
+    "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
   }
 }
