@@ -57,14 +57,14 @@ body {
   right: -4px;
   width: 16px;
   height: 16px;
-  background: #FCD34D;
+  background: #fcd34d;
   border: 2px solid white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  color: #92400E;
+  color: #92400e;
   font-weight: bold;
   z-index: 1000;
   pointer-events: none;
@@ -72,12 +72,18 @@ body {
 }
 
 /* Smooth scaling transitions for markers when bucket sizes change */
-.leaflet-glyph-icon, .marker-icon {
-  transition: width 160ms ease, height 160ms ease, transform 180ms ease;
+.leaflet-glyph-icon,
+.marker-icon {
+  transition:
+    width 160ms ease,
+    height 160ms ease,
+    transform 180ms ease;
   will-change: width, height, transform;
 }
 .leaflet-glyph-icon span {
-  transition: font-size 160ms ease, line-height 160ms ease;
+  transition:
+    font-size 160ms ease,
+    line-height 160ms ease;
   will-change: font-size, line-height;
 }
 
@@ -155,11 +161,12 @@ body {
   }
 
   /* Force single page printing - prevent page breaks and hide overflow */
-  html, body {
+  html,
+  body {
     height: 100% !important;
     overflow: hidden !important;
   }
-  
+
   .leaflet-print-overlay,
   .grid-print-container,
   .pages-print-container {

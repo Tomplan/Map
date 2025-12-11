@@ -38,7 +38,18 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selectedMarkerId, onMarkerSelect, previewUseVisitorSizing = false, editMode = false, onMarkerDrag = null, onMapReady = null }) {
+function EventMap({
+  isAdminView,
+  markersState,
+  updateMarker,
+  selectedYear,
+  selectedMarkerId,
+  onMarkerSelect,
+  previewUseVisitorSizing = false,
+  editMode = false,
+  onMarkerDrag = null,
+  onMapReady = null,
+}) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
@@ -85,16 +96,15 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
     () => createIconCreateFunction(organizationLogo),
-    [organizationLogo]
+    [organizationLogo],
   );
-  
-  
+
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
   const safeMarkers = useMemo(
     () => (Array.isArray(markersState) ? markersState : []),
-    [markersState]
+    [markersState],
   );
 
   // Filter markers based on favorites toggle
@@ -227,7 +237,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
     // Create and populate search layer
     const layerGroup = L.layerGroup();
-    
+
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
@@ -273,7 +283,13 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     return () => {
       control.off('search:locationfound', handleFound);
     };
-  }, [mapInstance, searchLayer, /* track when control instance becomes available */ Boolean(searchControlRef && searchControlRef.current)]);
+  }, [
+    mapInstance,
+    searchLayer,
+    /* track when control instance becomes available */ Boolean(
+      searchControlRef && searchControlRef.current,
+    ),
+  ]);
 
   // Setup minimap control
   useEffect(() => {
@@ -354,7 +370,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
     // Initialize browserPrint ONLY for admin view (print is admin-only feature)
     if (isAdminView && !map._browserPrintInitialized) {
-      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+      if (
+        window.L &&
+        window.L.BrowserPrint &&
+        window.L.BrowserPrint.Mode &&
+        window.L.browserPrint
+      ) {
         // Dynamically import print cloners only when needed
         const { cloneMarkerLayer, cloneMarkerClusterLayer } = await import('./printCloners');
         const Mode = window.L.BrowserPrint.Mode;
@@ -364,10 +385,30 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         // Settings centralized in PRINT_CONFIG (mapConfig.js)
         const { margin, modes: modeSettings } = PRINT_CONFIG;
         const modes = [
-          Mode.Landscape('A3', { title: 'A3 — Landscape', margin, zoom: modeSettings['A3 — Landscape'].zoom, invalidateBounds: false }),
-          Mode.Portrait('A3', { title: 'A3 — Portrait', margin, zoom: modeSettings['A3 — Portrait'].zoom, invalidateBounds: false }),
-          Mode.Landscape('A4', { title: 'A4 — Landscape', margin, zoom: modeSettings['A4 — Landscape'].zoom, invalidateBounds: false }),
-          Mode.Portrait('A4', { title: 'A4 — Portrait', margin, zoom: modeSettings['A4 — Portrait'].zoom, invalidateBounds: false }),
+          Mode.Landscape('A3', {
+            title: 'A3 — Landscape',
+            margin,
+            zoom: modeSettings['A3 — Landscape'].zoom,
+            invalidateBounds: false,
+          }),
+          Mode.Portrait('A3', {
+            title: 'A3 — Portrait',
+            margin,
+            zoom: modeSettings['A3 — Portrait'].zoom,
+            invalidateBounds: false,
+          }),
+          Mode.Landscape('A4', {
+            title: 'A4 — Landscape',
+            margin,
+            zoom: modeSettings['A4 — Landscape'].zoom,
+            invalidateBounds: false,
+          }),
+          Mode.Portrait('A4', {
+            title: 'A4 — Portrait',
+            margin,
+            zoom: modeSettings['A4 — Portrait'].zoom,
+            invalidateBounds: false,
+          }),
           Mode.Landscape('A4', { title: 'Current view — landscape', margin }),
           Mode.Auto('A4', { title: 'Auto fit', margin }),
           Mode.Custom('A4', { title: 'Select area', customArea: true, margin }),
@@ -379,7 +420,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
           // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
           if (window.L.MarkerClusterGroup) {
-            window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
+            window.L.BrowserPrint.Utils.registerLayer(
+              window.L.MarkerClusterGroup,
+              'L.MarkerClusterGroup',
+              cloneMarkerClusterLayer,
+            );
           }
         }
 
@@ -402,7 +447,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           let pendingPrintConfig = null;
 
           // Helper: normalize mode titles to unify different dash/hyphen characters
-          const normalizeModeTitle = (t) => (t || '').replace(/[\-\u2013\u2014]/g, '—').replace(/\s+/g, ' ').trim();
+          const normalizeModeTitle = (t) =>
+            (t || '')
+              .replace(/[\-\u2013\u2014]/g, '—')
+              .replace(/\s+/g, ' ')
+              .trim();
 
           // Helper: find print config for a given mode title
           const findPrintConfig = (modeTitleRaw) => {
@@ -416,8 +465,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
               const paperMatch = (modeTitleRaw || '').match(/\b(A2|A3|A4)\b/i);
               const orientationMatch = (modeTitleRaw || '').match(/\b(Landscape|Portrait)\b/i);
               if (paperMatch && orientationMatch) {
-                const partial = Object.keys(PRINT_CONFIG.modes).find((k) =>
-                  k.toLowerCase().includes(paperMatch[0].toLowerCase()) && k.toLowerCase().includes(orientationMatch[0].toLowerCase())
+                const partial = Object.keys(PRINT_CONFIG.modes).find(
+                  (k) =>
+                    k.toLowerCase().includes(paperMatch[0].toLowerCase()) &&
+                    k.toLowerCase().includes(orientationMatch[0].toLowerCase()),
                 );
                 if (partial) config = PRINT_CONFIG.modes[partial];
               }
@@ -443,12 +494,19 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
                 };
                 console.log('[Print] PrintInit - saved original view', originalView);
               }
-              
+
               // Set source map to desired center - plugin will use this when creating print map
               // The zoom is handled via mode options, we just need to set the center
-              console.log('[Print] PrintInit - setting source map center:', printConfig.center, 'for mode:', modeTitleRaw);
-              browserPrint._map.setView(printConfig.center, browserPrint._map.getZoom(), { animate: false });
-              
+              console.log(
+                '[Print] PrintInit - setting source map center:',
+                printConfig.center,
+                'for mode:',
+                modeTitleRaw,
+              );
+              browserPrint._map.setView(printConfig.center, browserPrint._map.getZoom(), {
+                animate: false,
+              });
+
               // Store config for Print event fallback
               pendingPrintConfig = printConfig;
             }
@@ -462,19 +520,19 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
               console.log('[Print] Print - no pending config');
               return;
             }
-            
+
             const { center, zoom } = pendingPrintConfig;
             const printMap = event.printMap;
-            
+
             console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
-            
+
             if (printMap) {
               // Apply our desired view - this ensures the correct center is used
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
               console.log('[Print] Print - view applied');
             }
-            
+
             pendingPrintConfig = null;
           });
 
@@ -485,15 +543,19 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             // Inject Material Design Icons stylesheet into print iframe for glyph rendering
             // This ensures icon fonts load correctly in the print document
             try {
-              const printDocument = event.printLayer?._container?.ownerDocument || 
-                                   event.printMap?._container?.ownerDocument;
+              const printDocument =
+                event.printLayer?._container?.ownerDocument ||
+                event.printMap?._container?.ownerDocument;
               if (printDocument && printDocument.head) {
                 // Check if MDI stylesheet already exists
-                const existingLink = printDocument.querySelector('link[href*="materialdesignicons"]');
+                const existingLink = printDocument.querySelector(
+                  'link[href*="materialdesignicons"]',
+                );
                 if (!existingLink) {
                   const mdiLink = printDocument.createElement('link');
                   mdiLink.rel = 'stylesheet';
-                  mdiLink.href = 'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css';
+                  mdiLink.href =
+                    'https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css';
                   printDocument.head.appendChild(mdiLink);
                 }
               }
@@ -510,8 +572,10 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
               const paperMatch = (modeTitle || '').match(/\b(A2|A3|A4)\b/i);
               const orientationMatch = (modeTitle || '').match(/\b(Landscape|Portrait)\b/i);
               if (paperMatch && orientationMatch) {
-                const partial = Object.keys(PRINT_CONFIG.modes).find((k) =>
-                  k.toLowerCase().includes(paperMatch[0].toLowerCase()) && k.toLowerCase().includes(orientationMatch[0].toLowerCase())
+                const partial = Object.keys(PRINT_CONFIG.modes).find(
+                  (k) =>
+                    k.toLowerCase().includes(paperMatch[0].toLowerCase()) &&
+                    k.toLowerCase().includes(orientationMatch[0].toLowerCase()),
                 );
                 if (partial) printModeConfig = PRINT_CONFIG.modes[partial];
               }
@@ -597,7 +661,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             // Restore original view after printing completes
             if (originalView) {
               if (originalView.center && typeof originalView.zoom !== 'undefined') {
-                browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+                browserPrint._map.setView(originalView.center, originalView.zoom, {
+                  animate: false,
+                });
               }
               if (originalView.maxZoom) {
                 browserPrint._map.setMaxZoom(originalView.maxZoom);
@@ -610,7 +676,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             // Restore original view if user cancels print
             if (originalView) {
               if (originalView.center && typeof originalView.zoom !== 'undefined') {
-                browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+                browserPrint._map.setView(originalView.center, originalView.zoom, {
+                  animate: false,
+                });
               }
               if (originalView.maxZoom) {
                 browserPrint._map.setMaxZoom(originalView.maxZoom);
@@ -629,7 +697,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     // Inform parent components that the map instance is ready so they can
     // register print actions or other map-specific interactions.
     if (typeof onMapReady === 'function') {
-      try { onMapReady(map); } catch (err) { /* ignore parent handler errors */ }
+      try {
+        onMapReady(map);
+      } catch (err) {
+        /* ignore parent handler errors */
+      }
     }
 
     // Force a resize event to ensure proper tile loading
@@ -659,7 +731,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         // Debounce a bit to avoid thrashing during continuous resize
         if (mapInstance._invalidateTimeout) clearTimeout(mapInstance._invalidateTimeout);
         mapInstance._invalidateTimeout = setTimeout(() => {
-          try { mapInstance.invalidateSize(); } catch (err) { /* ignore */ }
+          try {
+            mapInstance.invalidateSize();
+          } catch (err) {
+            /* ignore */
+          }
           mapInstance._invalidateTimeout = null;
         }, 120);
       } catch (err) {
@@ -684,7 +760,11 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
     window.addEventListener('resize', onWinResize);
 
     return () => {
-      try { window.removeEventListener('resize', onWinResize); } catch (e) { /* ignore */ }
+      try {
+        window.removeEventListener('resize', onWinResize);
+      } catch (e) {
+        /* ignore */
+      }
       if (cleanup) cleanup();
     };
   }, [mapInstance]);
@@ -712,12 +792,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
       };
 
   return (
-    <div
-      style={containerStyle}
-      tabIndex={0}
-      aria-label="Event Map"
-      role="region"
-    >
+    <div style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}
@@ -755,7 +830,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
 
       <div
         id="map-container"
-        className={isAdminView ? "w-full h-full" : "fixed inset-0 w-full h-full"}
+        className={isAdminView ? 'w-full h-full' : 'fixed inset-0 w-full h-full'}
         style={{
           zIndex: isAdminView ? 1 : 1, // Ensure admin map stays below modals
           height: isAdminView ? '100%' : '100svh',
@@ -775,7 +850,7 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
           style={{
             width: isAdminView ? '100%' : '100vw',
             height: isAdminView ? '100%' : '100svh',
-            minHeight: isAdminView ? '400px' : '100svh'
+            minHeight: isAdminView ? '400px' : '100svh',
           }}
           className="focus:outline-none focus:ring-2 focus:ring-primary"
           whenReady={handleMapCreated}
@@ -783,12 +858,12 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
         >
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
-                key={layer.key}
-                attribution={layer.attribution}
-                url={layer.url}
-                crossOrigin="anonymous"
-                maxZoom={MAP_CONFIG.MAX_ZOOM}
-              />
+              key={layer.key}
+              attribution={layer.attribution}
+              url={layer.url}
+              crossOrigin="anonymous"
+              maxZoom={MAP_CONFIG.MAX_ZOOM}
+            />
           ))}
 
           <EventClusterMarkers
@@ -797,7 +872,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
+            isMarkerDraggable={(marker) =>
+              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+            }
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
@@ -817,7 +894,9 @@ function EventMap({ isAdminView, markersState, updateMarker, selectedYear, selec
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)}
+            isMarkerDraggable={(marker) =>
+              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+            }
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}
