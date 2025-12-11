@@ -6,7 +6,11 @@ jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn() }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 
 jest.mock('../../contexts/OrganizationLogoContext', () => ({
-  useOrganizationLogo: () => ({ organizationLogo: '/assets/logos/generated/4x4Vakantiebeurs-128.webp', organizationLogoRaw: '/assets/logos/4x4Vakantiebeurs.png', loading: false }),
+  useOrganizationLogo: () => ({
+    organizationLogo: '/assets/logos/generated/4x4Vakantiebeurs-128.webp',
+    organizationLogoRaw: '/assets/logos/4x4Vakantiebeurs.png',
+    loading: false,
+  }),
 }));
 
 const mockUseSubscriptionCount = jest.fn(() => ({ count: 42, loading: false }));

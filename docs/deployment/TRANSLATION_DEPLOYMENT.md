@@ -3,6 +3,7 @@
 ## ✅ Completed Implementation
 
 ### Admin Interface (Managers)
+
 - ✅ Multi-language Info field in CompaniesTab
 - ✅ Language tabs (NL/EN) with visual indicators
 - ✅ Auto-save on blur
@@ -10,6 +11,7 @@
 - ✅ useCompanyTranslations hook for CRUD operations
 
 ### Public Interface (Normal Users)
+
 - ✅ useTranslatedCompanyInfo hook for display
 - ✅ Automatic language detection from browser/i18n settings
 - ✅ Translated info in map popups (MarkerDetailsUI)
@@ -17,6 +19,7 @@
 - ✅ Fallback chain: current language → Dutch → any available
 
 ### Database Layer
+
 - ✅ Migration 012: company_translations table
 - ✅ All queries updated to fetch company_translations
 - ✅ RLS policies for authenticated access
@@ -25,12 +28,14 @@
 ## 🔧 Manual Steps Required
 
 ### 1. Run Migration 012 in Supabase
+
 ```sql
 -- Open Supabase SQL Editor and run:
 -- /migrations/05_create_company_translations.sql
 ```
 
 This migration will:
+
 - Create company_translations table
 - Add indexes for performance
 - Enable RLS policies
@@ -38,6 +43,7 @@ This migration will:
 - Mark old info column as DEPRECATED
 
 ### 2. Test Translation Flow
+
 1. **Admin Interface:**
    - Log in as admin
    - Go to Companies tab
@@ -65,12 +71,14 @@ This migration will:
 ## 📊 Current State
 
 ### Migrations Status
+
 - ✅ Migration 001-009: Already run (existing system)
 - ⏳ Migration 010: Branding columns (pending)
 - ⏳ Migration 011: User roles RLS (pending)
 - ⏳ Migration 05: Company translations (pending) **← RUN THIS**
 
 ### Code Status
+
 - ✅ All code committed to feature/development
 - ⏳ Pending deployment to production
 - ⏳ Pending migration execution
@@ -78,6 +86,7 @@ This migration will:
 ## 🚀 Deployment Steps
 
 1. **Push to main:**
+
    ```bash
    git push origin feature/development
    git checkout main
@@ -86,6 +95,7 @@ This migration will:
    ```
 
 2. **Deploy to GitHub Pages:**
+
    ```bash
    npm run deploy
    ```

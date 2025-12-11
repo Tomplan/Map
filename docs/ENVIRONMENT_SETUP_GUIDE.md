@@ -19,10 +19,11 @@ You need to get your Supabase database credentials and put them in the environme
 ### Extract these values:
 
 From the connection string above:
+
 - **Host**: `db.[YOUR-PROJECT].supabase.co`
 - **Port**: `5432` (standard PostgreSQL)
 - **Database**: `postgres`
-- **User**: `postgres`  
+- **User**: `postgres`
 - **Password**: `[YOUR-PASSWORD]` (the part between `postgres:` and `@`)
 
 ## 📝 Step 2: Create Environment File
@@ -66,10 +67,12 @@ npm run backup:critical
 ## 🔍 What Each Setting Means:
 
 ### Required Settings:
+
 - `SUPABASE_DB_HOST` - Your database server address
 - `SUPABASE_DB_PASSWORD` - Your database password (**most important**)
 
 ### Optional Settings (keep defaults for now):
+
 - `BACKUP_RETENTION_DAYS=7` - Keep 7 days of daily backups
 - `BACKUP_RETENTION_WEEKS=4` - Keep 4 weeks of weekly backups
 - `BACKUP_RETENTION_MONTHS=12` - Keep 12 months of monthly backups
@@ -77,33 +80,41 @@ npm run backup:critical
 ## 🆘 Troubleshooting:
 
 ### "Missing required environment variables"
+
 ✅ **Fixed** - Add your SUPABASE_DB_PASSWORD
 
 ### "Connection refused"
+
 ✅ **Check** - Verify SUPABASE_DB_HOST is correct
 
 ### "Password authentication failed"
+
 ✅ **Check** - Verify SUPABASE_DB_PASSWORD is correct
 
 ### npm v11 - Missing DevDependencies (vite, etc.)
+
 ⚠️ **Important**: npm v11.6.0 may have `omit = "dev"` configured, preventing devDependencies from installing.
 
 **Symptoms:**
+
 - Build fails with "Cannot find package 'vite'"
 - Missing packages even after `npm install`
 - `npm list vite` shows "(empty)"
 
 **Quick Fix:**
+
 ```bash
 npm install --include=dev
 ```
 
 **Permanent Fix (may need to repeat):**
+
 ```bash
 npm config set omit "" --location=user
 ```
 
 **Alternative:** Consider downgrading to npm v10 if issue persists:
+
 ```bash
 npm install -g npm@10
 ```
@@ -113,6 +124,7 @@ This issue was discovered during file-saver integration (Dec 2025) and affects a
 ### Stale Vite Cache Issue
 
 ⚠️ **Symptoms:**
+
 - Dev server fails with "Cannot find package 'vite'" error
 - `npm list vite` shows "(empty)" but vite directory exists in node_modules
 - `npx vite --version` works correctly
@@ -121,6 +133,7 @@ This issue was discovered during file-saver integration (Dec 2025) and affects a
 **Root Cause:** Stale cache in `node_modules/.vite-temp` with incorrect references, even after devDependencies are installed.
 
 **Quick Fix:**
+
 ```bash
 # Clear the stale Vite cache
 rm -rf node_modules/.vite-temp
@@ -133,6 +146,7 @@ npm run dev
 ```
 
 **Complete Fix (if issue persists):**
+
 ```bash
 # 1. Ensure devDependencies are installed
 npm install --include=dev
@@ -149,6 +163,7 @@ This issue can occur after npm v11 devDependencies problems are resolved, as cac
 ## 🎉 Success!
 
 Once configured correctly, you'll see:
+
 ```
 [SUCCESS] Critical backup completed successfully
 ```
@@ -156,6 +171,7 @@ Once configured correctly, you'll see:
 ## 📞 Need Help?
 
 If you can't find your credentials:
+
 1. Check your Supabase dashboard → Settings → Database
 2. Look for "Connection string" or "Database URL"
 3. The format should be: `postgresql://user:password@host:port/database`

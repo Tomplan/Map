@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
-import { mdiFoodDrumstick, mdiBellRing, mdiCheckCircle, mdiAlertCircle, mdiDomain, mdiCurrencyUsd } from '@mdi/js';
+import {
+  mdiFoodDrumstick,
+  mdiBellRing,
+  mdiCheckCircle,
+  mdiAlertCircle,
+  mdiDomain,
+  mdiCurrencyUsd,
+} from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import { supabase } from '../../supabaseClient';
@@ -344,7 +351,10 @@ export default function EventDefaults() {
             </h3>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            {t('settings.eventDefaults.coins.description', 'Number of default coins assigned to a new subscription when created.')}
+            {t(
+              'settings.eventDefaults.coins.description',
+              'Number of default coins assigned to a new subscription when created.',
+            )}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-sm">

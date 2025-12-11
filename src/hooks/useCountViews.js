@@ -31,7 +31,10 @@ export function useSubscriptionCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const baseQuery = supabase.from('subscription_counts').select('count').eq('event_year', eventYear);
+        const baseQuery = supabase
+          .from('subscription_counts')
+          .select('count')
+          .eq('event_year', eventYear);
         let res;
         if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
           res = await baseQuery.maybeSingle();
@@ -119,7 +122,10 @@ export function useAssignmentCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const baseQuery = supabase.from('assignment_counts').select('count').eq('event_year', eventYear);
+        const baseQuery = supabase
+          .from('assignment_counts')
+          .select('count')
+          .eq('event_year', eventYear);
         let res;
         if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
           res = await baseQuery.maybeSingle();
@@ -205,7 +211,10 @@ export function useMarkerCount(eventYear) {
     const loadCount = async () => {
       try {
         setLoading(true);
-        const baseQuery = supabase.from('marker_counts').select('count').eq('event_year', eventYear);
+        const baseQuery = supabase
+          .from('marker_counts')
+          .select('count')
+          .eq('event_year', eventYear);
         let res;
         if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
           res = await baseQuery.maybeSingle();

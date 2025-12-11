@@ -34,7 +34,14 @@ const mockUseEventMapSettings = jest.fn((year) => ({
 }));
 jest.mock('../../hooks/useEventMapSettings', () => (year) => mockUseEventMapSettings(year));
 
-jest.mock('../../contexts/DialogContext', () => ({ useDialog: () => ({ confirm: async () => true, toastError: mockToastError, toastSuccess: mockToastSuccess, toastInfo: mockToastInfo }) }));
+jest.mock('../../contexts/DialogContext', () => ({
+  useDialog: () => ({
+    confirm: async () => true,
+    toastError: mockToastError,
+    toastSuccess: mockToastSuccess,
+    toastInfo: mockToastInfo,
+  }),
+}));
 
 import ProgramManagement from '../ProgramManagement';
 

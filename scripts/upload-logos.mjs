@@ -11,7 +11,9 @@ import { createClient } from '@supabase/supabase-js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const GENERATED_DIR = path.resolve(path.join(__dirname, '..', 'public', 'assets', 'logos', 'generated'));
+const GENERATED_DIR = path.resolve(
+  path.join(__dirname, '..', 'public', 'assets', 'logos', 'generated'),
+);
 const BUCKET = 'Logos';
 
 async function main() {
@@ -27,7 +29,8 @@ async function main() {
 
   function validateSupabaseUrl(supabaseUrl) {
     if (!supabaseUrl) return 'SUPABASE_URL is unset';
-    if (!/^https?:\/\//i.test(supabaseUrl)) return 'SUPABASE_URL must start with http:// or https://';
+    if (!/^https?:\/\//i.test(supabaseUrl))
+      return 'SUPABASE_URL must start with http:// or https://';
     try {
       const u = new URL(supabaseUrl);
       if (!u.hostname.includes('supabase.co')) {
@@ -43,20 +46,24 @@ async function main() {
   if (urlFailure) {
     console.error('Supabase configuration error:', urlFailure);
     console.error('Value of SUPABASE_URL (masked) =>', mask(url));
-    console.error('Please set the GitHub repository secret SUPABASE_URL to the full project URL, e.g. https://<project>.supabase.co');
+    console.error(
+      'Please set the GitHub repository secret SUPABASE_URL to the full project URL, e.g. https://<project>.supabase.co',
+    );
     process.exit(2);
   }
 
   if (!key) {
     console.error('Supabase configuration error: SUPABASE_SERVICE_ROLE_KEY is unset');
-    console.error('Make sure you added the SUPABASE_SERVICE_ROLE_KEY secret to the workflow or repository secrets.');
+    console.error(
+      'Make sure you added the SUPABASE_SERVICE_ROLE_KEY secret to the workflow or repository secrets.',
+    );
     process.exit(2);
   }
 
   const supabase = createClient(url, key, { auth: { persistSession: false } });
 
   // Walk generated dir
-  let files = fs.readdirSync(GENERATED_DIR).filter(f => !f.startsWith('.'));
+  let files = fs.readdirSync(GENERATED_DIR).filter((f) => !f.startsWith('.'));
 
   // Allow quick single-file testing: pass a filename as argv[2]
   const single = process.argv[2];
@@ -100,7 +107,7 @@ async function main() {
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
       '.svg': 'image/svg+xml',
-      '.gif': 'image/gif'
+      '.gif': 'image/gif',
     };
     const contentType = extToMime[ext] || 'application/octet-stream';
 
@@ -125,10 +132,10 @@ async function main() {
       url.replace(/^https?:\/\//, ''),
       'storage/v1/object',
       BUCKET,
-      ...remotePath.split('/').map(p => encodeURIComponent(p))
+      ...remotePath.split('/').map((p) => encodeURIComponent(p)),
     ].join('/');
     // Full URL: <SUPABASE_URL>/storage/v1/object/<BUCKET>/<path>?upsert=true
-    const fullUploadUrl = `${url.replace(/\/$/, '')}/storage/v1/object/${BUCKET}/${remotePath.split('/').map(encodeURIComponent).join('/') }?upsert=true`;
+    const fullUploadUrl = `${url.replace(/\/$/, '')}/storage/v1/object/${BUCKET}/${remotePath.split('/').map(encodeURIComponent).join('/')}?upsert=true`;
 
     let attempts = 0;
     let ok = false;
@@ -139,27 +146,29 @@ async function main() {
         const headersToSend = {
           Authorization: `Bearer ${key}`,
           'Content-Type': contentType,
-          'x-upsert': 'true'
+          'x-upsert': 'true',
         };
 
         // Masked debug output so CI logs show what we send without leaking the key
         console.log('DEBUG: sending headers (masked):', {
           Authorization: 'Bearer ***',
           'Content-Type': headersToSend['Content-Type'],
-          'x-upsert': headersToSend['x-upsert']
+          'x-upsert': headersToSend['x-upsert'],
         });
 
         const res = await fetch(fullUploadUrl, {
           method: 'PUT',
           headers: headersToSend,
-          body: payload
+          body: payload,
         });
 
         if (!res.ok) {
           lastRespText = await res.text();
-          console.error(`Attempt ${attempts} failed for ${file}: status=${res.status} body=${lastRespText}`);
+          console.error(
+            `Attempt ${attempts} failed for ${file}: status=${res.status} body=${lastRespText}`,
+          );
           console.error('DEBUG: response headers:', Object.fromEntries(res.headers.entries()));
-          await new Promise(r => setTimeout(r, 200 * attempts));
+          await new Promise((r) => setTimeout(r, 200 * attempts));
           continue;
         }
 
@@ -168,16 +177,17 @@ async function main() {
       } catch (err) {
         lastRespText = String(err);
         console.error(`Attempt ${attempts} failed for ${file}: ${lastRespText}`);
-        console.error('DEBUG: fetch error; headers were (masked):', { 'Content-Type': contentType });
-        await new Promise(r => setTimeout(r, 200 * attempts));
+        console.error('DEBUG: fetch error; headers were (masked):', {
+          'Content-Type': contentType,
+        });
+        await new Promise((r) => setTimeout(r, 200 * attempts));
       }
     }
 
     if (!ok) {
       console.error('Upload failed for', file, '-', lastRespText || 'unknown error');
       failCount += 1;
-    }
-    else {
+    } else {
       successCount += 1;
     }
   }
@@ -194,4 +204,7 @@ async function main() {
   }
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

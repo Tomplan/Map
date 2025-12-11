@@ -1,35 +1,21 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import {
-  useSubscriptionCount,
-  useAssignmentCount,
-  useMarkerCount,
-} from '../useCountViews';
+import { useSubscriptionCount, useAssignmentCount, useMarkerCount } from '../useCountViews';
 
 function ProbeSubscription({ year }) {
   const { count, loading, error } = useSubscriptionCount(year);
-  return (
-    <div data-testid={`sub-${String(year)}`}>
-      {JSON.stringify({ count, loading, error })}
-    </div>
-  );
+  return <div data-testid={`sub-${String(year)}`}>{JSON.stringify({ count, loading, error })}</div>;
 }
 
 function ProbeAssignment({ year }) {
   const { count, loading, error } = useAssignmentCount(year);
-  return (
-    <div data-testid={`ass-${String(year)}`}>
-      {JSON.stringify({ count, loading, error })}
-    </div>
-  );
+  return <div data-testid={`ass-${String(year)}`}>{JSON.stringify({ count, loading, error })}</div>;
 }
 
 function ProbeMarker({ year }) {
   const { count, loading, error } = useMarkerCount(year);
   return (
-    <div data-testid={`mark-${String(year)}`}>
-      {JSON.stringify({ count, loading, error })}
-    </div>
+    <div data-testid={`mark-${String(year)}`}>{JSON.stringify({ count, loading, error })}</div>
   );
 }
 

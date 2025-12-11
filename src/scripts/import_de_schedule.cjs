@@ -36,7 +36,7 @@ async function main() {
       day: e.day,
       start_time: e.start_time,
       end_time: e.end_time,
-      display_order: e.display_order || (idx + 1),
+      display_order: e.display_order || idx + 1,
       title_nl: e.title_nl || null,
       title_en: e.title_en || null,
       title_de: e.title_de || null,
@@ -87,4 +87,9 @@ async function main() {
   }
 }
 
-main().then(()=>process.stdout.write('Done\n')).catch(err=>{console.error(err); process.exit(1);});
+main()
+  .then(() => process.stdout.write('Done\n'))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

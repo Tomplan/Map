@@ -383,7 +383,7 @@
     "phaseNote": "Let op:",
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
-      "sortOptions": "Sorteeropties"
+    "sortOptions": "Sorteeropties"
   },
   "map": {
     "searchPlaceholder": "Zoek op naam of standnummer...",
@@ -422,8 +422,7 @@
       "saveSuccess": "Evenementdata opgeslagen",
       "saveError": "Kon evenementdata niet opslaan",
       "resetSuccess": "Evenementdata teruggezet naar organisatie-standaard",
-      "resetError": "Kon evenementdata niet terugzetten"
-      ,
+      "resetError": "Kon evenementdata niet terugzetten",
       "invalidRange": "Begin-datum moet voor of gelijk aan de eind-datum zijn"
     },
     "title": "Programma Beheer",
@@ -615,7 +614,11 @@
       "updateSuccess": "Categorie succesvol bijgewerkt",
       "deleteSuccess": "Categorie succesvol verwijderd",
       "deleteError": "Kan categorie niet verwijderen: {{error}}",
-      "saveError": "Kan categorie niet opslaan: {{error}}"
+      "saveError": "Kan categorie niet opslaan: {{error}}",
+      "dragToReorder": "Sleep om categorieën te herschikken",
+      "reorderSuccess": "Categorieën succesvol herschikt",
+      "reorderError": "Kon categorieën niet herschikken: {{error}}",
+      "reordering": "Bezig met herschikken..."
     },
     "subscriptions": {
       "searchPlaceholder": "Zoek ingeschreven bedrijven...",

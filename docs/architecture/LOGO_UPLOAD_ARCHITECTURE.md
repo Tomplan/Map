@@ -70,6 +70,7 @@
 ## Data Flow
 
 ### Upload Flow
+
 ```
 1. User clicks "Upload Logo"
    ↓
@@ -95,6 +96,7 @@
 ```
 
 ### Read Flow
+
 ```
 1. Component needs to display logo
    ↓
@@ -108,6 +110,7 @@
 ```
 
 ### Delete Flow
+
 ```
 1. User clicks delete button
    ↓
@@ -235,6 +238,7 @@ Each layer returns:
 ## Integration Points
 
 ### 1. BrandingSettings Integration
+
 ```jsx
 const [logo, setLogo] = useState(initialLogo);
 
@@ -245,10 +249,11 @@ const [logo, setLogo] = useState(initialLogo);
     saveToDB({ logo: url });
   }}
   folder="events"
-/>
+/>;
 ```
 
 ### 2. CompaniesTab Integration
+
 ```jsx
 const [companyForm, setCompanyForm] = useState({});
 
@@ -258,16 +263,14 @@ const [companyForm, setCompanyForm] = useState({});
     setCompanyForm({ ...companyForm, logo: url });
   }}
   folder="companies"
-/>
+/>;
 ```
 
 ### 3. Database Update
+
 ```javascript
 // After upload succeeds
-await supabase
-  .from('Companies')
-  .update({ logo: newLogoUrl })
-  .eq('id', companyId);
+await supabase.from('Companies').update({ logo: newLogoUrl }).eq('id', companyId);
 ```
 
 ## Performance Considerations
@@ -300,6 +303,7 @@ Optimization Strategy:
 ---
 
 This architecture ensures:
+
 - ✅ Scalability (cloud storage)
 - ✅ Security (multiple validation layers)
 - ✅ Maintainability (separation of concerns)

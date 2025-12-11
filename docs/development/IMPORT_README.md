@@ -21,16 +21,19 @@ This script imports company contact information and subscription data from an Ex
 ### Step 2: Run the Import
 
 **Option A: Using the helper script (recommended)**
+
 ```bash
 ./run-import.sh 'YOUR_JWT_TOKEN_HERE'
 ```
 
 **Option B: Using environment variable**
+
 ```bash
 SUPABASE_JWT_TOKEN='YOUR_JWT_TOKEN_HERE' node import-subscriptions-2025.js
 ```
 
 **Option C: Edit the file directly**
+
 1. Open `import-subscriptions-2025.js`
 2. Replace `'REPLACE_WITH_YOUR_JWT_TOKEN'` on line 12 with your actual token
 3. Run: `node import-subscriptions-2025.js`
@@ -38,6 +41,7 @@ SUPABASE_JWT_TOKEN='YOUR_JWT_TOKEN_HERE' node import-subscriptions-2025.js
 ## Excel File Format
 
 The script expects an Excel file at:
+
 ```
 /Users/tom/Downloads/lijst standhouders update 27-9-25.xlsx
 ```
@@ -58,6 +62,7 @@ The script expects an Excel file at:
 ## Output
 
 The script will show:
+
 - ✓ Companies Updated: Count of companies that had contact info updated
 - ✓ Subscriptions Updated: Count of subscriptions that had data updated
 - ⊘ Skipped: Rows that had no data to update or no matching subscription
@@ -66,6 +71,7 @@ The script will show:
 ## What Gets Updated
 
 ### Companies Table (Default Contact Info)
+
 - Contact person name
 - Phone number
 - Email address
@@ -73,6 +79,7 @@ The script will show:
 These become the **default** contact information shown in the Companies tab (green section).
 
 ### Event Subscriptions Table (Year-Specific Data)
+
 - Contact, phone, email (overrides for this year)
 - Booth count
 - Area preference
@@ -85,16 +92,21 @@ This data is shown in the Event Subscriptions tab for 2025.
 ## Troubleshooting
 
 ### "JWT expired" error
+
 Your authentication token has expired. Get a fresh token following Step 1 above.
 
 ### "Company not found in database"
+
 The company name in Excel doesn't match any company in the database. Check:
+
 - Spelling and capitalization (matching is case-insensitive)
 - Extra spaces before/after the name
 - Company exists in the Companies tab
 
 ### "No subscription found for 2025"
+
 The company exists but isn't subscribed to 2025. The script will:
+
 - ✓ Still update the company's contact info in the Companies table
 - ⊘ Skip updating the event subscription
 

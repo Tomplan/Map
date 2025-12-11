@@ -13,7 +13,7 @@ const supabase = createClient(url, key, { auth: { persistSession: false } });
 async function listGeneratedObjects() {
   const res = await supabase.storage.from('Logos').list('generated', { limit: 2000 });
   if (res.error) throw res.error;
-  return res.data.map(o => o.name);
+  return res.data.map((o) => o.name);
 }
 
 async function getPlannedFilenames() {
@@ -21,7 +21,9 @@ async function getPlannedFilenames() {
   const companyFetch = await supabase
     .from('companies')
     .select('logo')
-    .or("logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%")
+    .or(
+      'logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%',
+    )
     .limit(2000);
 
   if (companyFetch.error) throw companyFetch.error;
@@ -29,20 +31,22 @@ async function getPlannedFilenames() {
   const markerFetch = await supabase
     .from('markers_content')
     .select('logo')
-    .or("logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%")
+    .or(
+      'logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%',
+    )
     .limit(2000);
 
   if (markerFetch.error) throw markerFetch.error;
 
   const items = [];
-  for (const r of (companyFetch.data || [])) {
+  for (const r of companyFetch.data || []) {
     const logo = r.logo || '';
     if (!logo) continue;
     if (logo.includes('/Logos/generated/')) continue;
     const filename = logo.split('/').pop();
     if (filename) items.push(filename);
   }
-  for (const r of (markerFetch.data || [])) {
+  for (const r of markerFetch.data || []) {
     const logo = r.logo || '';
     if (!logo) continue;
     if (logo.includes('/Logos/generated/')) continue;
@@ -72,7 +76,7 @@ async function getPlannedFilenames() {
       const enc = encodeURIComponent(fn);
       if (objects.includes(enc)) continue;
       // lowercase match (some files might be case-insensitive)
-      const lower = objects.find(o => o.toLowerCase() === fn.toLowerCase());
+      const lower = objects.find((o) => o.toLowerCase() === fn.toLowerCase());
       if (lower) continue;
 
       // check for generated variants based on basename (e.g. name-128.webp)
@@ -92,7 +96,11 @@ async function getPlannedFilenames() {
           break;
         }
         // case-insensitive
-        if (objects.find(o => o.toLowerCase() === w1.toLowerCase() || o.toLowerCase() === a1.toLowerCase())) {
+        if (
+          objects.find(
+            (o) => o.toLowerCase() === w1.toLowerCase() || o.toLowerCase() === a1.toLowerCase(),
+          )
+        ) {
           foundVariant = true;
           break;
         }

@@ -114,15 +114,16 @@ npm run backup:test
 
 The system runs three types of backups automatically:
 
-| Backup Type | Schedule | Contents | Retention |
-|-------------|----------|----------|-----------|
-| **Critical** | Daily at 2 AM | Essential tables only | 7 days |
-| **Full** | Weekly on Sunday at 3 AM | Complete database | 4 weeks |
-| **Schema** | Monthly on 1st at 4 AM | Database structure | 12 months |
+| Backup Type  | Schedule                 | Contents              | Retention |
+| ------------ | ------------------------ | --------------------- | --------- |
+| **Critical** | Daily at 2 AM            | Essential tables only | 7 days    |
+| **Full**     | Weekly on Sunday at 3 AM | Complete database     | 4 weeks   |
+| **Schema**   | Monthly on 1st at 4 AM   | Database structure    | 12 months |
 
 ## Backup Contents
 
 ### Critical Tables (Daily)
+
 - `companies` - Exhibitor information
 - `event_subscriptions` - Event logistics
 - `assignments` - Booth mappings
@@ -130,6 +131,7 @@ The system runs three types of backups automatically:
 - `user_preferences` - User settings
 
 ### Full Database (Weekly)
+
 - All tables from critical backup
 - Plus all additional tables:
   - `Markers_Core`, `Markers_Appearance`, `Markers_Content`
@@ -137,6 +139,7 @@ The system runs three types of backups automatically:
   - And all other application tables
 
 ### Schema Documentation (Monthly)
+
 - Complete database structure
 - Table relationships
 - Column definitions
@@ -170,9 +173,11 @@ logs/                     # Backup operation logs
 Copy `scripts/backup/.env.example` to `scripts/backup/.env` and configure:
 
 **Required:**
+
 - `SUPABASE_DB_PASSWORD` - Your Supabase database password
 
 **Optional:**
+
 - `BACKUP_RETENTION_DAYS` - Days to keep daily backups (default: 7)
 - `BACKUP_RETENTION_WEEKS` - Weeks to keep weekly backups (default: 4)
 - `BACKUP_RETENTION_MONTHS` - Months to keep monthly backups (default: 12)
@@ -182,6 +187,7 @@ Copy `scripts/backup/.env.example` to `scripts/backup/.env` and configure:
 To automatically sync backups to cloud storage:
 
 **Google Drive:**
+
 ```bash
 GOOGLE_DRIVE_CLIENT_ID=your-client-id
 GOOGLE_DRIVE_CLIENT_SECRET=your-client-secret
@@ -189,6 +195,7 @@ GOOGLE_DRIVE_REFRESH_TOKEN=your-refresh-token
 ```
 
 **Dropbox:**
+
 ```bash
 DROPBOX_ACCESS_TOKEN=your-access-token
 ```
@@ -196,15 +203,19 @@ DROPBOX_ACCESS_TOKEN=your-access-token
 ## Safety Features
 
 ### Automatic Safety Backup
+
 Before any restore operation, the system automatically creates a safety backup of the current database state.
 
 ### Dry Run Testing
+
 All restore operations support `--dry-run` flag to test without making changes.
 
 ### Validation
+
 Backup files are validated for integrity before use in restore operations.
 
 ### Logging
+
 All backup and restore operations are logged with timestamps and status information.
 
 ## Troubleshooting
@@ -212,16 +223,20 @@ All backup and restore operations are logged with timestamps and status informat
 ### Common Issues
 
 **"Missing required environment variables"**
+
 - Ensure `scripts/backup/.env` exists and contains `SUPABASE_DB_PASSWORD`
 
 **"pg_dump: command not found"**
+
 - Install PostgreSQL client tools: `brew install postgresql` (macOS) or `sudo apt install postgresql-client` (Linux)
 
 **"Backup failed: connection refused"**
+
 - Verify Supabase connection settings in `.env`
 - Check that your IP is allowed in Supabase dashboard
 
 **"Permission denied"**
+
 - Ensure backup scripts have execute permissions: `chmod +x scripts/backup/*.js`
 
 ### Getting Help

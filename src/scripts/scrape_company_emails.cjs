@@ -21,12 +21,15 @@ dotenv.config();
 
 // Support both VITE_ prefixed and non-prefixed environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ||
-                     process.env.SUPABASE_KEY ||
-                     process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Please set SUPABASE_URL and SUPABASE_KEY (or VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) in your .env file');
+  console.error(
+    'Please set SUPABASE_URL and SUPABASE_KEY (or VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) in your .env file',
+  );
   process.exit(1);
 }
 
@@ -92,7 +95,7 @@ function isValidEmail(email, companydomain) {
   email = email.toLowerCase();
 
   // Check if it's a generic unwanted email
-  if (UNWANTED_EMAILS.some(unwanted => email.includes(unwanted))) {
+  if (UNWANTED_EMAILS.some((unwanted) => email.includes(unwanted))) {
     return false;
   }
 
@@ -102,10 +105,12 @@ function isValidEmail(email, companydomain) {
   }
 
   // Filter out common generic emails
-  if (email.startsWith('noreply@') ||
-      email.startsWith('no-reply@') ||
-      email.startsWith('support@') ||
-      email.includes('privacy@')) {
+  if (
+    email.startsWith('noreply@') ||
+    email.startsWith('no-reply@') ||
+    email.startsWith('support@') ||
+    email.includes('privacy@')
+  ) {
     return false;
   }
 
@@ -120,7 +125,7 @@ function extractEmails(html, companyDomain) {
   const matches = html.match(EMAIL_REGEX);
 
   if (matches) {
-    matches.forEach(email => {
+    matches.forEach((email) => {
       email = email.toLowerCase().trim();
       if (isValidEmail(email, companyDomain)) {
         emails.add(email);
@@ -181,10 +186,12 @@ function findContactPageUrl(html, baseUrl) {
 
     if (!href) return;
 
-    if (text.includes('contact') ||
-        text.includes('kontakt') ||
-        href.toLowerCase().includes('contact') ||
-        href.toLowerCase().includes('kontakt')) {
+    if (
+      text.includes('contact') ||
+      text.includes('kontakt') ||
+      href.toLowerCase().includes('contact') ||
+      href.toLowerCase().includes('kontakt')
+    ) {
       try {
         const fullUrl = new URL(href, baseUrl);
         links.push(fullUrl.href);
@@ -218,10 +225,12 @@ async function findCompanyEmail(company) {
   const homepageHtml = await fetchUrl(websiteUrl);
   if (homepageHtml) {
     const emails = extractEmails(homepageHtml, baseDomain);
-    emails.forEach(e => allEmails.add(e));
+    emails.forEach((e) => allEmails.add(e));
 
     if (emails.length > 0) {
-      process.stdout.write(`  Found ${emails.length} email(s) on homepage: ` + JSON.stringify(emails) + '\n');
+      process.stdout.write(
+        `  Found ${emails.length} email(s) on homepage: ` + JSON.stringify(emails) + '\n',
+      );
     }
 
     // 2. Try to find contact page from links
@@ -231,9 +240,13 @@ async function findCompanyEmail(company) {
       const contactHtml = await fetchUrl(contactPageUrl);
       if (contactHtml) {
         const contactEmails = extractEmails(contactHtml, baseDomain);
-        contactEmails.forEach(e => allEmails.add(e));
+        contactEmails.forEach((e) => allEmails.add(e));
         if (contactEmails.length > 0) {
-          process.stdout.write(`  Found ${contactEmails.length} email(s) on contact page: ` + JSON.stringify(contactEmails) + '\n');
+          process.stdout.write(
+            `  Found ${contactEmails.length} email(s) on contact page: ` +
+              JSON.stringify(contactEmails) +
+              '\n',
+          );
         }
       }
     }
@@ -246,8 +259,10 @@ async function findCompanyEmail(company) {
     if (html) {
       const emails = extractEmails(html, baseDomain);
       if (emails.length > 0) {
-      process.stdout.write(`  Found ${emails.length} email(s) at ${path}: ` + JSON.stringify(emails) + '\n');
-        emails.forEach(e => allEmails.add(e));
+        process.stdout.write(
+          `  Found ${emails.length} email(s) at ${path}: ` + JSON.stringify(emails) + '\n',
+        );
+        emails.forEach((e) => allEmails.add(e));
         break; // Stop after first successful contact page
       }
     }
@@ -255,7 +270,7 @@ async function findCompanyEmail(company) {
 
   // Prefer emails from company domain
   const emailsArray = Array.from(allEmails);
-  const companyDomainEmails = emailsArray.filter(e => e.includes(baseDomain));
+  const companyDomainEmails = emailsArray.filter((e) => e.includes(baseDomain));
 
   if (companyDomainEmails.length > 0) {
     return companyDomainEmails[0]; // Return first email from company domain
@@ -289,7 +304,7 @@ async function main() {
   process.stdout.write(`Found ${companies.length} companies with websites\n`);
 
   // Filter to only companies without email
-  const companiesWithoutEmail = companies.filter(c => !c.email || c.email.trim() === '');
+  const companiesWithoutEmail = companies.filter((c) => !c.email || c.email.trim() === '');
   process.stdout.write(`${companiesWithoutEmail.length} companies need email addresses\n`);
 
   const results = [];
@@ -311,11 +326,13 @@ async function main() {
     }
 
     // Small delay to be polite to servers
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
   process.stdout.write('\n' + '='.repeat(60) + '\n');
-  process.stdout.write(`\nSummary: Found emails for ${successCount}/${companiesWithoutEmail.length} companies\n`);
+  process.stdout.write(
+    `\nSummary: Found emails for ${successCount}/${companiesWithoutEmail.length} companies\n`,
+  );
 
   // Generate SQL
   if (results.length > 0) {
@@ -338,10 +355,7 @@ async function main() {
     if (applyChanges) {
       process.stdout.write('Applying changes to database...\n');
       for (const { id, name, email } of results) {
-        const { error } = await supabase
-          .from('companies')
-          .update({ email })
-          .eq('id', id);
+        const { error } = await supabase.from('companies').update({ email }).eq('id', id);
 
         if (error) {
           console.error(`❌ Failed to update ${name}:`, error.message);
@@ -359,7 +373,7 @@ async function main() {
   }
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('💥 Fatal error:', error);
   process.exit(1);
 });

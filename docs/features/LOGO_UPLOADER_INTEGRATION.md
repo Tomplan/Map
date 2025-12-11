@@ -1,9 +1,10 @@
-/**
- * INTEGRATION EXAMPLES
- * 
- * This file shows how to integrate the LogoUploader component
- * into existing components like CompaniesTab and BrandingSettings
- */
+/\*\*
+
+- INTEGRATION EXAMPLES
+-
+- This file shows how to integrate the LogoUploader component
+- into existing components like CompaniesTab and BrandingSettings
+  \*/
 
 // ============================================
 // Example 1: CompaniesTab Integration
@@ -12,6 +13,7 @@
 import LogoUploader from '../LogoUploader';
 
 // In the "Create New Company" form section:
+
 <div className="mb-4 p-4 border rounded-lg bg-blue-50">
   <h3 className="font-bold mb-3">New Company</h3>
   <div className="grid grid-cols-2 gap-3">
@@ -58,11 +60,13 @@ import LogoUploader from '../LogoUploader';
       className="px-3 py-2 border rounded"
       rows={2}
     />
+
   </div>
   {/* ... rest of create form ... */}
 </div>
 
 // In the table's edit mode (Logo column):
+
 <td className="py-1 px-3 border-b text-left">
   {isEditing ? (
     <div className="flex flex-col gap-2">
@@ -102,6 +106,7 @@ import LogoUploader from '../LogoUploader';
 import LogoUploader from './LogoUploader';
 
 // Replace the text input in BrandingSettings:
+
 <div className="flex items-center w-full" style={{ gap: 10 }}>
   {logo && (
     <img
@@ -164,13 +169,13 @@ import LogoUploader from './LogoUploader';
 
 // Simple upload button anywhere in your app:
 <LogoUploader
-  onUploadComplete={(url, path) => {
-    console.log('Logo uploaded:', url);
-    // Do something with the URL
-  }}
-  folder="misc"
-  label="Upload Image"
-  showPreview={false}
+onUploadComplete={(url, path) => {
+console.log('Logo uploaded:', url);
+// Do something with the URL
+}}
+folder="misc"
+label="Upload Image"
+showPreview={false}
 />
 
 // ============================================
@@ -178,42 +183,44 @@ import LogoUploader from './LogoUploader';
 // ============================================
 
 function MyComponent() {
-  const [logoUrl, setLogoUrl] = useState('');
-  const [logoPath, setLogoPath] = useState('');
+const [logoUrl, setLogoUrl] = useState('');
+const [logoPath, setLogoPath] = useState('');
 
-  const handleUpload = async (url, path) => {
-    setLogoUrl(url);
-    setLogoPath(path);
-    
+const handleUpload = async (url, path) => {
+setLogoUrl(url);
+setLogoPath(path);
+
     // Save to database
     const { error } = await supabase
       .from('MyTable')
       .update({ logo: url })
       .eq('id', myId);
-    
+
     if (error) {
       console.error('Error saving logo:', error);
     }
-  };
 
-  const handleDelete = async () => {
-    // Optional: Delete from storage
-    if (logoPath) {
-      await deleteLogo(logoPath);
-    }
-    
+};
+
+const handleDelete = async () => {
+// Optional: Delete from storage
+if (logoPath) {
+await deleteLogo(logoPath);
+}
+
     // Clear from database
     await supabase
       .from('MyTable')
       .update({ logo: null })
       .eq('id', myId);
-    
+
     setLogoUrl('');
     setLogoPath('');
-  };
 
-  return (
-    <LogoUploader
+};
+
+return (
+<LogoUploader
       currentLogo={logoUrl}
       onUploadComplete={handleUpload}
       onDelete={handleDelete}
@@ -221,7 +228,7 @@ function MyComponent() {
       showPreview={true}
       allowDelete={true}
     />
-  );
+);
 }
 
 // ============================================
@@ -229,43 +236,45 @@ function MyComponent() {
 // ============================================
 
 function BulkLogoUploader({ companies, onComplete }) {
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
+const [uploading, setUploading] = useState(false);
+const [progress, setProgress] = useState(0);
 
-  const handleBulkUpload = async (files) => {
-    setUploading(true);
-    const results = [];
-    
+const handleBulkUpload = async (files) => {
+setUploading(true);
+const results = [];
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const result = await uploadLogo(file, 'companies');
       results.push(result);
       setProgress(((i + 1) / files.length) * 100);
     }
-    
+
     setUploading(false);
     onComplete(results);
-  };
 
-  return (
-    <div>
-      <input
-        type="file"
-        multiple
-        accept="image/*"
-        onChange={(e) => handleBulkUpload(Array.from(e.target.files))}
-      />
-      {uploading && (
-        <div className="mt-2">
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-sm text-gray-600 mt-1">{Math.round(progress)}% complete</p>
-        </div>
-      )}
-    </div>
-  );
+};
+
+return (
+
+<div>
+<input
+type="file"
+multiple
+accept="image/\*"
+onChange={(e) => handleBulkUpload(Array.from(e.target.files))}
+/>
+{uploading && (
+<div className="mt-2">
+<div className="w-full bg-gray-200 rounded-full h-2">
+<div
+className="bg-blue-600 h-2 rounded-full transition-all"
+style={{ width: `${progress}%` }}
+/>
+</div>
+<p className="text-sm text-gray-600 mt-1">{Math.round(progress)}% complete</p>
+</div>
+)}
+</div>
+);
 }
