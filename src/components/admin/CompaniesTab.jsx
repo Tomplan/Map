@@ -162,6 +162,17 @@ export default function CompaniesTab() {
   const { categories, getCompanyCategories, getAllCompanyCategories, assignCategoriesToCompany } =
     useCategories();
 
+  // Create stable dependency keys for categories and companies to avoid
+  // re-running effects on every render due to new array/object references
+  const categoriesDepsKey = useMemo(
+    () => (categories || []).map((c) => `${c.id}:${c.name || ''}`).join('|'),
+    [categories],
+  );
+  const companiesDepsKey = useMemo(
+    () => (companies || []).map((c) => `${c.id}`).join(','),
+    [companies],
+  );
+
   const [searchTerm, setSearchTerm] = useState('');
   const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
   const [activeTab, setActiveTab] = useState('public');
@@ -206,7 +217,7 @@ export default function CompaniesTab() {
       }
     };
     loadCompanyCategories();
-  }, [editingId, categories]); // Re-run when global categories change so translations update
+  }, [editingId, categoriesDepsKey]); // Re-run when global categories change so translations update
 
   // Load categories for all companies when public tab is active
   useEffect(() => {
@@ -222,7 +233,7 @@ export default function CompaniesTab() {
     if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
     }
-  }, [activeTab, companies.length, companies, categories]); // Also depend on categories to refresh when their names change
+  }, [activeTab, companies.length, companiesDepsKey, categoriesDepsKey]); // Also depend on categories to refresh when their names change
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
