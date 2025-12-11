@@ -35,6 +35,7 @@ export function useCategories(language = 'nl') {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [categoryStats, setCategoryStats] = useState({});
 
   // Load categories with translations
   const loadCategories = useCallback(async () => {
@@ -86,7 +87,13 @@ export function useCategories(language = 'nl') {
         };
       });
 
-      setCategories(transformed);
+      // Avoid unnecessary re-renders by checking if the transformed data changed
+      setCategories((prev) => {
+        const prevStr = JSON.stringify(prev || []);
+        const nextStr = JSON.stringify(transformed || []);
+        if (prevStr !== nextStr) return transformed;
+        return prev;
+      });
     } catch (err) {
       console.error('Error loading categories:', err);
       setError(err.message);
@@ -106,6 +113,31 @@ export function useCategories(language = 'nl') {
   }, [loadCategories]);
 
   // Real-time subscription
+  // Dedicated loader for category stats (used by subscription)
+  const loadCategoryStats = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.from('company_categories').select('category_id');
+      if (error) throw error;
+      const stats = {};
+      data.forEach((cc) => {
+        if (!stats[cc.category_id]) stats[cc.category_id] = 0;
+        stats[cc.category_id]++;
+      });
+      // Only set if changed to avoid re-render loops
+      setCategoryStats((prev) => {
+        const prevStr = JSON.stringify(prev || {});
+        const nextStr = JSON.stringify(stats || {});
+        if (prevStr !== nextStr) return stats;
+        return prev;
+      });
+      return stats;
+    } catch (err) {
+      console.error('Error loading category stats:', err);
+      setCategoryStats({});
+      return {};
+    }
+  }, []);
+
   useEffect(() => {
     const channel = supabase
       .channel('categories-changes')
@@ -117,12 +149,15 @@ export function useCategories(language = 'nl') {
         { event: '*', schema: 'public', table: 'category_translations' },
         () => loadCategories(),
       )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
+        loadCategoryStats(),
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [loadCategories]);
+  }, [loadCategories, loadCategoryStats]);
 
   // Create category with translations
   const createCategory = async (categoryData) => {
@@ -360,12 +395,19 @@ export function useCategories(language = 'nl') {
         stats[cc.category_id]++;
       });
 
+      // set to central state so other consumers can subscribe via hook
+      setCategoryStats(stats);
       return stats;
     } catch (err) {
       console.error('Error fetching category stats:', err);
       return {};
     }
   };
+
+  useEffect(() => {
+    // Initial load for category stats
+    loadCategoryStats();
+  }, [loadCategoryStats]);
 
   return {
     categories,
@@ -378,6 +420,7 @@ export function useCategories(language = 'nl') {
     getAllCompanyCategories,
     assignCategoriesToCompany,
     getCategoryStats,
+    categoryStats,
     refetch: loadCategories,
   };
 }

@@ -13,9 +13,9 @@ module.exports = {
         },
         // Form Input System
         input: {
-          text: '#111827',        // gray-900 (high contrast)
+          text: '#111827', // gray-900 (high contrast)
           placeholder: '#9ca3af', // gray-400
-          border: '#d1d5db',      // gray-300
+          border: '#d1d5db', // gray-300
           'border-focus': '#ff6b35', // orange on focus
           bg: '#ffffff',
           'bg-disabled': '#f3f4f6', // gray-100

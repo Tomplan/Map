@@ -44,7 +44,9 @@
   background: linear-gradient(to bottom, #ccc, #bbb);
   border-radius: 9999px;
   margin: 10px auto 12px;
-  transition: background 0.25s ease, transform 0.2s ease;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease;
 }
 .bottom-sheet .handle:active {
   background: #999;
@@ -65,7 +67,9 @@
 
 /* --- Buttons --- */
 .bottom-sheet button {
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.15s ease;
 }
 .bottom-sheet button:active {
   transform: scale(0.98);

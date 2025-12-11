@@ -12,13 +12,28 @@ const supabase = createClient(url, key, { auth: { persistSession: false } });
 
 async function run() {
   try {
-    const comp = await supabase.from('companies').select('id, logo').ilike('logo', '%/Logos/generated/%').limit(10);
+    const comp = await supabase
+      .from('companies')
+      .select('id, logo')
+      .ilike('logo', '%/Logos/generated/%')
+      .limit(10);
     if (comp.error) throw comp.error;
-    const compCount = await supabase.from('companies').select('id', { count: 'exact', head: true }).match({}).ilike('logo', '%/Logos/generated/%');
+    const compCount = await supabase
+      .from('companies')
+      .select('id', { count: 'exact', head: true })
+      .match({})
+      .ilike('logo', '%/Logos/generated/%');
 
-    const markers = await supabase.from('markers_content').select('id, logo, event_year').ilike('logo', '%/Logos/generated/%').limit(10);
+    const markers = await supabase
+      .from('markers_content')
+      .select('id, logo, event_year')
+      .ilike('logo', '%/Logos/generated/%')
+      .limit(10);
     if (markers.error) throw markers.error;
-    const markersCountHead = await supabase.from('markers_content').select('id', { count: 'exact', head: true }).ilike('logo', '%/Logos/generated/%');
+    const markersCountHead = await supabase
+      .from('markers_content')
+      .select('id', { count: 'exact', head: true })
+      .ilike('logo', '%/Logos/generated/%');
 
     console.log('Sample updated companies (up to 10):');
     console.table(comp.data || []);
@@ -27,7 +42,6 @@ async function run() {
     console.log('\nSample updated markers_content (up to 10):');
     console.table(markers.data || []);
     console.log('Markers_content count now pointing to generated:', markersCountHead.count || 0);
-
   } catch (err) {
     console.error('Error querying DB:', err.message || err);
     process.exit(1);

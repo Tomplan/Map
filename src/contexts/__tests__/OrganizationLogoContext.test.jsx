@@ -52,7 +52,13 @@ describe('OrganizationLogoProvider', () => {
 
   it('normalizes DB filename using getLogoPath when found', async () => {
     // arrange - supabase returns a raw filename
-    supabase.from.mockReturnValueOnce({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { logo: 'company.png' }, error: null }) }) }) });
+    supabase.from.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: { logo: 'company.png' }, error: null }),
+        }),
+      }),
+    });
 
     render(
       <OrganizationLogoProvider>
@@ -67,7 +73,11 @@ describe('OrganizationLogoProvider', () => {
   });
 
   it('falls back to default when DB returns empty', async () => {
-    supabase.from.mockReturnValueOnce({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: { logo: '' }, error: null }) }) }) });
+    supabase.from.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: { logo: '' }, error: null }) }),
+      }),
+    });
 
     render(
       <OrganizationLogoProvider>
@@ -82,7 +92,11 @@ describe('OrganizationLogoProvider', () => {
   });
 
   it('falls back to default when supabase returns an error', async () => {
-    supabase.from.mockReturnValueOnce({ select: () => ({ eq: () => ({ single: () => Promise.resolve({ data: null, error: new Error('boom') }) }) }) });
+    supabase.from.mockReturnValueOnce({
+      select: () => ({
+        eq: () => ({ single: () => Promise.resolve({ data: null, error: new Error('boom') }) }),
+      }),
+    });
 
     render(
       <OrganizationLogoProvider>

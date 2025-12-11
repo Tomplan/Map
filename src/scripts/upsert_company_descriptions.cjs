@@ -126,4 +126,9 @@ async function main() {
   process.stdout.write('Done. Stats: ' + JSON.stringify(stats) + '\n');
 }
 
-main().then(()=>process.exit(0)).catch(err=>{console.error(err); process.exit(1);});
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });

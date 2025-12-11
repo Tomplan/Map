@@ -39,7 +39,7 @@ const _pkgs = { en, nl, de };
     // Extract companies from helpPanel.companies (where it actually exists)
     const companiesData = pkg?.helpPanel?.companies;
 
-    if (companiesData && (!i18n.store?.data?.[lang]?.translation?.companies)) {
+    if (companiesData && !i18n.store?.data?.[lang]?.translation?.companies) {
       i18n.addResourceBundle(lang, 'translation', { companies: companiesData }, true, true);
     }
   } catch (e) {

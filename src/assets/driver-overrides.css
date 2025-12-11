@@ -160,12 +160,12 @@
     max-width: none !important;
     width: auto !important;
   }
-  
+
   .driver-active .driver-popover-navigation-btns {
     display: flex !important;
     justify-content: space-between !important;
   }
-  
+
   .driver-active .driver-popover-navigation-btns button {
     flex: 1 !important;
     margin: 0 5px !important;

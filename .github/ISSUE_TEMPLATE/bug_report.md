@@ -11,6 +11,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. Go to '...'
 2. Click on '....'
 3. Scroll down to '....'
@@ -23,6 +24,7 @@ A clear and concise description of what you expected to happen.
 Add any relevant screenshots, console logs or network traces.
 
 **Environment (please complete the following information):**
+
 - OS: macOS / windows / linux / browser
 - Node: version
 - App version: commit/branch

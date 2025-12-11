@@ -17,7 +17,9 @@ async function run() {
     process.exit(2);
   }
 
-  const names = fs.readdirSync(LOGOS_DIR).filter(n => fs.statSync(path.join(LOGOS_DIR, n)).isFile());
+  const names = fs
+    .readdirSync(LOGOS_DIR)
+    .filter((n) => fs.statSync(path.join(LOGOS_DIR, n)).isFile());
   let missing = [];
   for (const name of names) {
     const ext = path.extname(name).toLowerCase();
@@ -39,4 +41,7 @@ async function run() {
   console.log('All checks passed — found generated logo variants.');
 }
 
-run().catch(err => { console.error(err); process.exit(3); });
+run().catch((err) => {
+  console.error(err);
+  process.exit(3);
+});

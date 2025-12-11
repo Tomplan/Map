@@ -22,7 +22,7 @@ This guide explains how to set up Supabase Storage to enable logo uploads for co
    - **Name**: `logos`
    - **Public bucket**: ✅ Enable (logos need to be publicly accessible)
    - **File size limit**: 5242880 (5MB)
-   - **Allowed MIME types**: 
+   - **Allowed MIME types**:
      ```
      image/png
      image/jpeg
@@ -38,6 +38,7 @@ This guide explains how to set up Supabase Storage to enable logo uploads for co
 The bucket should be public for reading but restricted for writing. Set up these policies:
 
 #### Policy 1: Public Read Access
+
 ```sql
 -- Allow anyone to read logos
 CREATE POLICY "Public can view logos"
@@ -46,23 +47,25 @@ USING (bucket_id = 'logos');
 ```
 
 #### Policy 2: Authenticated Upload Access
+
 ```sql
 -- Allow authenticated users to upload logos
 CREATE POLICY "Authenticated users can upload logos"
 ON storage.objects FOR INSERT
 WITH CHECK (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 ```
 
 #### Policy 3: Authenticated Delete Access (Optional)
+
 ```sql
 -- Allow authenticated users to delete their uploads
 CREATE POLICY "Authenticated users can delete logos"
 ON storage.objects FOR DELETE
 USING (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 ```
@@ -101,6 +104,7 @@ logos/
 ## File Naming Convention
 
 Files are automatically renamed on upload:
+
 - Format: `{timestamp}_{random}.{extension}`
 - Example: `1699635420123_a7f3d2.png`
 - This prevents naming conflicts and ensures uniqueness
@@ -108,6 +112,7 @@ Files are automatically renamed on upload:
 ## Usage in Code
 
 ### Upload a Logo
+
 ```javascript
 import { uploadLogo } from '../services/logoUploadService';
 
@@ -121,6 +126,7 @@ if (result.error) {
 ```
 
 ### Use LogoUploader Component
+
 ```jsx
 import LogoUploader from '../components/LogoUploader';
 
@@ -132,27 +138,31 @@ import LogoUploader from '../components/LogoUploader';
   }}
   folder="companies"
   showPreview={true}
-/>
+/>;
 ```
 
 ## Troubleshooting
 
 ### Error: "Storage bucket not found"
+
 - Ensure you created the bucket named exactly `logos`
 - Check bucket is set to public
 - Verify you're connected to the correct Supabase project
 
 ### Error: "Permission denied"
+
 - Check RLS policies are correctly configured
 - Verify user is authenticated before uploading
 - Check bucket permissions in Storage settings
 
 ### Error: "File type not allowed"
+
 - Ensure file is one of: PNG, JPG, WEBP, AVIF, SVG
 - Check file MIME type matches allowed types
 - Verify file isn't corrupted
 
 ### Uploads work but images don't display
+
 - Verify bucket is set to **public**
 - Check the URL format in your database
 - Ensure CORS is properly configured (usually automatic)
@@ -169,12 +179,14 @@ If you have existing logos in `public/assets/logos/`:
 ## Security Considerations
 
 ✅ **Implemented:**
+
 - File type validation
 - File size limits (5MB)
 - Authenticated uploads only
 - Public read access for display
 
 ⚠️ **Consider adding:**
+
 - Image dimension validation
 - Virus scanning for uploaded files
 - Rate limiting on uploads
@@ -183,11 +195,13 @@ If you have existing logos in `public/assets/logos/`:
 ## Cost Considerations
 
 Supabase Storage pricing (as of 2024):
+
 - **Free tier**: 1GB storage, 2GB bandwidth/month
 - **Pro tier**: 100GB storage, 200GB bandwidth/month
 - Overage: $0.021/GB storage, $0.09/GB bandwidth
 
 For a typical event with 100-200 companies:
+
 - Average logo size: 50KB
 - Total storage: ~10MB
 - Well within free tier limits

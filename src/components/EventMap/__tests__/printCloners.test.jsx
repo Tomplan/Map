@@ -49,7 +49,7 @@ describe('printCloners', () => {
     expect(cloned).toBeDefined();
     expect(cloned.options).toBeDefined();
     expect(cloned.options.icon).toBeDefined();
-    
+
     const iconOpts = cloned.options.icon.options;
     expect(iconOpts.iconUrl).toBe('/images/marker.svg');
     expect(iconOpts.glyph).toBe('1');
@@ -86,11 +86,11 @@ describe('printCloners', () => {
   });
 
   test('cloneMarkerClusterLayer clones markers and returns a cluster with same count', () => {
-    const m1 = L.marker([5, 6], { 
-      icon: L.icon.glyph({ iconUrl: '/a.png', glyph: '1' }) 
+    const m1 = L.marker([5, 6], {
+      icon: L.icon.glyph({ iconUrl: '/a.png', glyph: '1' }),
     });
-    const m2 = L.marker([7, 8], { 
-      icon: L.icon.glyph({ iconUrl: '/b.png', glyph: '2' }) 
+    const m2 = L.marker([7, 8], {
+      icon: L.icon.glyph({ iconUrl: '/b.png', glyph: '2' }),
     });
 
     // Simulate a cluster group with eachLayer
@@ -104,7 +104,7 @@ describe('printCloners', () => {
 
     const clonedCluster = cloneMarkerClusterLayer(fakeCluster);
     expect(clonedCluster).toBeDefined();
-    
+
     // Check layer count
     const layers = clonedCluster.getLayers ? clonedCluster.getLayers() : [];
     expect(layers.length).toBe(2);

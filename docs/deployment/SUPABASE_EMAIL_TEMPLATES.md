@@ -201,7 +201,7 @@ If you want users to receive **only the password setup email** (not both emails)
 - **What it is**: Supabase automatically generates this URL with a secure token
 - **Where it goes**: Points to the URL specified in `redirectTo` parameter when calling `resetPasswordForEmail()`
 - **Current setting**: Should be `https://tomplan.github.io/Map/#/reset-password`
-- **What happens**: 
+- **What happens**:
   1. User clicks link → Goes to `/reset-password` page with token in URL
   2. User sets new password → Automatically redirects to `/admin`
   3. User logs in with new password
@@ -215,6 +215,7 @@ The `redirectTo` URL in the code should already be correct. If not, check line 1
 `src/components/admin/UserManagement.jsx`
 
 **Fix in Supabase Dashboard:**
+
 1. Go to: **Authentication → URL Configuration**
 2. Check **"Site URL"**: Should be `https://tomplan.github.io/Map/#/`
 3. Check **"Redirect URLs"**: Should include `https://tomplan.github.io/Map/#/reset-password`
@@ -233,7 +234,7 @@ The `redirectTo` URL in the code should already be correct. If not, check line 1
 After setting up custom SMTP:
 
 1. Go to **Authentication → Users**
-2. Click **"Invite user"** 
+2. Click **"Invite user"**
 3. Enter a test email address
 4. Check your inbox to verify emails are working
 5. Verify the sender name shows as "4x4 Vakantiebeurs"
@@ -243,15 +244,18 @@ After setting up custom SMTP:
 ## Troubleshooting
 
 **Emails not sending?**
+
 - Check SMTP credentials are correct
 - Verify port (587 for TLS, 465 for SSL)
 - For Gmail: ensure App Password is used (not regular password)
 - Check Supabase logs: **Project Settings → Logs → Auth Logs**
 
 **Rate limit errors?**
+
 - This means custom SMTP is not enabled
 - Follow SMTP setup instructions above
 
 **Wrong sender name/email?**
+
 - Update in **Project Settings → Auth → SMTP Settings**
 - Change "Sender email" and "Sender name" fields

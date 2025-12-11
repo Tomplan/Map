@@ -3,6 +3,7 @@
 ## Problem Fixed
 
 The original backup script (`npm run backup:critical`) was failing with the error:
+
 ```
 /bin/sh: line 1: pg_dump: command not found
 ```
@@ -16,15 +17,19 @@ The original backup script (`npm run backup:critical`) was failing with the erro
 ## Solution Implemented
 
 ### 1. Installed PostgreSQL Client Tools
+
 ```bash
 brew install postgresql@14
 ```
 
 ### 2. Fixed CLI Arguments
+
 Removed the incompatible `--clean` option and replaced it with `--no-owner --no-privileges` for better portability.
 
 ### 3. Migrated to JavaScript-based Backup Approach
+
 Instead of relying on `pg_dump` commands, the backup script now uses:
+
 - **Supabase JavaScript Client** (`@supabase/supabase-js`)
 - **API-based data retrieval** instead of direct database connections
 - **JSON format backups** instead of SQL dumps
@@ -32,12 +37,14 @@ Instead of relying on `pg_dump` commands, the backup script now uses:
 ## Key Changes Made
 
 ### Updated Files
+
 - `scripts/backup/backup-critical.js` - Completely rewritten to use Supabase JavaScript client
 - `scripts/backup/backup-full.js` - Completely rewritten to use Supabase JavaScript client
 - `scripts/backup/.env` - Added Supabase API credentials
 - Removed temporary backup files (no longer needed)
 
 ### Technical Improvements
+
 - **Better Error Handling**: More descriptive error messages
 - **No External Dependencies**: Doesn't require `pg_dump` or PostgreSQL installation
 - **Cross-platform Compatibility**: Works on any system with Node.js
@@ -47,7 +54,9 @@ Instead of relying on `pg_dump` commands, the backup script now uses:
 ## Backup Results
 
 ### Critical Backup (5 tables)
+
 The backup now successfully creates backups of all critical tables:
+
 - **companies**: 63 records
 - **event_subscriptions**: 67 records
 - **assignments**: 108 records
@@ -55,7 +64,9 @@ The backup now successfully creates backups of all critical tables:
 - **user_preferences**: 0 records
 
 ### Full Backup (16 tables)
+
 The full backup successfully backs up all existing tables:
+
 - **companies**: 63 records
 - **event_subscriptions**: 67 records
 - **assignments**: 108 records
@@ -98,6 +109,7 @@ node scripts/backup/backup-full.js --output-dir ./custom-backups
 ## Backup Location
 
 Backups are stored in: `backups/critical-[timestamp]/`
+
 - Individual JSON files for each table
 - `metadata.json` with backup information
 - Automatic cleanup of old backups (keeps latest 7)
@@ -105,6 +117,7 @@ Backups are stored in: `backups/critical-[timestamp]/`
 ## Environment Requirements
 
 The backup script requires these environment variables:
+
 - `VITE_SUPABASE_URL` - Your Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous/public key
 
@@ -121,6 +134,7 @@ These are typically already set in your project's `.env` file.
 ## Future Enhancements
 
 Potential improvements for future versions:
+
 - Compression of backup files
 - Cloud storage integration (AWS S3, Google Drive, etc.)
 - Email/Slack notifications

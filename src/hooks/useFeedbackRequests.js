@@ -65,133 +65,148 @@ export default function useFeedbackRequests() {
   );
 
   // Create new request
-  const createRequest = useCallback(async (requestData) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+  const createRequest = useCallback(
+    async (requestData) => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
 
-      const { data, error: insertError } = await supabase
-        .from('feedback_requests')
-        .insert({
-          user_id: user.id,
-          user_email: user.email,
-          type: requestData.type,
-          title: requestData.title,
-          description: requestData.description || '',
-        })
-        .select()
-        .single();
+        const { data, error: insertError } = await supabase
+          .from('feedback_requests')
+          .insert({
+            user_id: user.id,
+            user_email: user.email,
+            type: requestData.type,
+            title: requestData.title,
+            description: requestData.description || '',
+          })
+          .select()
+          .single();
 
-      if (insertError) throw insertError;
+        if (insertError) throw insertError;
 
-      await loadRequests();
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error creating request:', err);
-      return { data: null, error: err.message };
-    }
-  }, [loadRequests]);
+        await loadRequests();
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error creating request:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [loadRequests],
+  );
 
   // Update request (super admin can update status, priority, version; users can update own title/description)
-  const updateRequest = useCallback(async (requestId, updates) => {
-    try {
-      const { data, error: updateError } = await supabase
-        .from('feedback_requests')
-        .update(updates)
-        .eq('id', requestId)
-        .select()
-        .single();
+  const updateRequest = useCallback(
+    async (requestId, updates) => {
+      try {
+        const { data, error: updateError } = await supabase
+          .from('feedback_requests')
+          .update(updates)
+          .eq('id', requestId)
+          .select()
+          .single();
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-      await loadRequests();
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error updating request:', err);
-      return { data: null, error: err.message };
-    }
-  }, [loadRequests]);
+        await loadRequests();
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error updating request:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [loadRequests],
+  );
 
   // Delete request (super admin only)
-  const deleteRequest = useCallback(async (requestId) => {
-    try {
-      const { error: deleteError } = await supabase
-        .from('feedback_requests')
-        .delete()
-        .eq('id', requestId);
+  const deleteRequest = useCallback(
+    async (requestId) => {
+      try {
+        const { error: deleteError } = await supabase
+          .from('feedback_requests')
+          .delete()
+          .eq('id', requestId);
 
-      if (deleteError) throw deleteError;
+        if (deleteError) throw deleteError;
 
-      await loadRequests();
-      return { error: null };
-    } catch (err) {
-      console.error('Error deleting request:', err);
-      return { error: err.message };
-    }
-  }, [loadRequests]);
+        await loadRequests();
+        return { error: null };
+      } catch (err) {
+        console.error('Error deleting request:', err);
+        return { error: err.message };
+      }
+    },
+    [loadRequests],
+  );
 
   // Add vote to request
-  const addVote = useCallback(async (requestId) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+  const addVote = useCallback(
+    async (requestId) => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
 
-      const { error: insertError } = await supabase.from('feedback_votes').insert({
-        request_id: requestId,
-        user_id: user.id,
-      });
+        const { error: insertError } = await supabase.from('feedback_votes').insert({
+          request_id: requestId,
+          user_id: user.id,
+        });
 
-      if (insertError) throw insertError;
+        if (insertError) throw insertError;
 
-      // Update local state
-      setUserVotes((prev) => new Set([...prev, requestId]));
-      setRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, votes: r.votes + 1 } : r)),
-      );
+        // Update local state
+        setUserVotes((prev) => new Set([...prev, requestId]));
+        setRequests((prev) =>
+          prev.map((r) => (r.id === requestId ? { ...r, votes: r.votes + 1 } : r)),
+        );
 
-      return { error: null };
-    } catch (err) {
-      console.error('Error adding vote:', err);
-      return { error: err.message };
-    }
-  }, [setUserVotes]);
+        return { error: null };
+      } catch (err) {
+        console.error('Error adding vote:', err);
+        return { error: err.message };
+      }
+    },
+    [setUserVotes],
+  );
 
   // Remove vote from request
-  const removeVote = useCallback(async (requestId) => {
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+  const removeVote = useCallback(
+    async (requestId) => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
 
-      const { error: deleteError } = await supabase
-        .from('feedback_votes')
-        .delete()
-        .eq('request_id', requestId)
-        .eq('user_id', user.id);
+        const { error: deleteError } = await supabase
+          .from('feedback_votes')
+          .delete()
+          .eq('request_id', requestId)
+          .eq('user_id', user.id);
 
-      if (deleteError) throw deleteError;
+        if (deleteError) throw deleteError;
 
-      // Update local state
-      setUserVotes((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(requestId);
-        return newSet;
-      });
-      setRequests((prev) =>
-        prev.map((r) => (r.id === requestId ? { ...r, votes: Math.max(0, r.votes - 1) } : r)),
-      );
+        // Update local state
+        setUserVotes((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(requestId);
+          return newSet;
+        });
+        setRequests((prev) =>
+          prev.map((r) => (r.id === requestId ? { ...r, votes: Math.max(0, r.votes - 1) } : r)),
+        );
 
-      return { error: null };
-    } catch (err) {
-      console.error('Error removing vote:', err);
-      return { error: err.message };
-    }
-  }, [setUserVotes]);
+        return { error: null };
+      } catch (err) {
+        console.error('Error removing vote:', err);
+        return { error: err.message };
+      }
+    },
+    [setUserVotes],
+  );
 
   // Load comments for a request
   const loadComments = useCallback(async (requestId) => {
@@ -272,35 +287,39 @@ export default function useFeedbackRequests() {
   useEffect(() => {
     const requestsChannel = supabase
       .channel('feedback_requests_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'feedback_requests' }, (payload) => {
-        // Apply targeted changes to local requests array instead of triggering a full reload.
-        if (!payload) return;
-        setRequests((prev) => {
-          const next = [...prev];
-          const newRow = payload.new;
-          const oldRow = payload.old;
-          const id = newRow?.id || oldRow?.id;
-          const idx = next.findIndex((r) => r.id === id);
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'feedback_requests' },
+        (payload) => {
+          // Apply targeted changes to local requests array instead of triggering a full reload.
+          if (!payload) return;
+          setRequests((prev) => {
+            const next = [...prev];
+            const newRow = payload.new;
+            const oldRow = payload.old;
+            const id = newRow?.id || oldRow?.id;
+            const idx = next.findIndex((r) => r.id === id);
 
-          if (newRow && !oldRow) {
-            // INSERT
-            return [newRow, ...next];
-          }
+            if (newRow && !oldRow) {
+              // INSERT
+              return [newRow, ...next];
+            }
 
-          if (newRow && oldRow) {
-            // UPDATE
-            if (idx !== -1) next[idx] = { ...next[idx], ...newRow };
+            if (newRow && oldRow) {
+              // UPDATE
+              if (idx !== -1) next[idx] = { ...next[idx], ...newRow };
+              return next;
+            }
+
+            if (oldRow && !newRow) {
+              // DELETE
+              return next.filter((r) => r.id !== oldRow.id);
+            }
+
             return next;
-          }
-
-          if (oldRow && !newRow) {
-            // DELETE
-            return next.filter((r) => r.id !== oldRow.id);
-          }
-
-          return next;
-        });
-      })
+          });
+        },
+      )
       .subscribe();
 
     const votesChannel = supabase
