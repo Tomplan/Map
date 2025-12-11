@@ -14,7 +14,13 @@ const fetchFn = async (...args) => {
 };
 
 const DEFAULT_HOST = process.env.E2E_HOST || 'http://localhost:5173';
-const baseCandidates = [process.env.E2E_BASE, `${DEFAULT_HOST}/Map`, `${DEFAULT_HOST}/Map/`, `${DEFAULT_HOST}`, `${DEFAULT_HOST}/index.html`].filter(Boolean);
+const baseCandidates = [
+  process.env.E2E_BASE,
+  `${DEFAULT_HOST}/Map`,
+  `${DEFAULT_HOST}/Map/`,
+  `${DEFAULT_HOST}`,
+  `${DEFAULT_HOST}/index.html`,
+].filter(Boolean);
 
 async function waitForServer(u, timeout = 20000) {
   const start = Date.now();
@@ -34,8 +40,10 @@ async function waitForServer(u, timeout = 20000) {
         }
       }
       if (res && (res.ok || res.status === 200 || res.status === 404)) return true;
-    } catch (e) { /* ignore */ }
-    await new Promise(r => setTimeout(r, 300));
+    } catch (e) {
+      /* ignore */
+    }
+    await new Promise((r) => setTimeout(r, 300));
   }
   return false;
 }
@@ -60,9 +68,12 @@ async function run() {
   console.log('E2E base:', base);
   // If the base already includes a hash fragment, avoid appending another
   // '#/admin' (which would create an invalid URL like /Map#/admin#/admin).
-  const ADMIN = (base.includes('#') ? base : `${base}#/admin`);
+  const ADMIN = base.includes('#') ? base : `${base}#/admin`;
 
-  const browser = await puppeteer.launch({ args: ['--no-sandbox','--disable-setuid-sandbox'], headless: true });
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+  });
   const page = await browser.newPage();
   // Allow a generous default timeout for E2E actions, but avoid relying on
   // networkidle2 for initial navigation (some preview hosts keep connections
@@ -75,13 +86,23 @@ async function run() {
     try {
       const text = msg.text();
       if (typeof text === 'string' && text.length > 0) console.log('PAGE_LOG:', text);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
   });
   page.on('pageerror', (err) => {
-    try { console.error('PAGE_ERROR:', err && err.message ? err.message : err.toString()); } catch (e) { /* ignore */ }
+    try {
+      console.error('PAGE_ERROR:', err && err.message ? err.message : err.toString());
+    } catch (e) {
+      /* ignore */
+    }
   });
   page.on('error', (err) => {
-    try { console.error('PAGE_FATAL:', err && err.message ? err.message : err.toString()); } catch (e) { /* ignore */ }
+    try {
+      console.error('PAGE_FATAL:', err && err.message ? err.message : err.toString());
+    } catch (e) {
+      /* ignore */
+    }
   });
 
   // small sleep helper to avoid depending on Puppeteer page.waitForTimeout implementation
@@ -125,18 +146,29 @@ async function run() {
         });
         // allow it to close
         await sleep(300);
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
     }
 
     // If test helpers are available we can start the tour deterministically
     // from outside the Help panel. This ensures lastCompletedTour.source !== 'help'.
     const startedViaHelper = await page.evaluate(() => {
       try {
-        if (window.__onboarding_test_helpers__ && typeof window.__onboarding_test_helpers__.startTour === 'function') {
-          try { window.__onboarding_test_helpers__.startTour('admin-dashboard', 'ui'); } catch (e) { /* ignore */ }
+        if (
+          window.__onboarding_test_helpers__ &&
+          typeof window.__onboarding_test_helpers__.startTour === 'function'
+        ) {
+          try {
+            window.__onboarding_test_helpers__.startTour('admin-dashboard', 'ui');
+          } catch (e) {
+            /* ignore */
+          }
           return true;
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) {
+        /* ignore */
+      }
       return false;
     });
 
@@ -152,16 +184,22 @@ async function run() {
             if (b.closest('[role="dialog"]')) continue; // skip buttons in dialogs
             const txt = (b.innerText || '').toLowerCase();
             if (/start|start tour|starten/.test(txt)) {
-              b.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true }));
+              b.dispatchEvent(
+                new MouseEvent('click', { bubbles: true, cancelable: true, composed: true }),
+              );
               return true;
             }
           }
-        } catch (e) { /* ignore */ }
+        } catch (e) {
+          /* ignore */
+        }
         return false;
       });
 
       if (!clickedOutside) {
-        console.error('Could not find a reliable outside-Help start button — recommend running with VITE_E2E_TEST_HELPERS=1 for deterministic checks');
+        console.error(
+          'Could not find a reliable outside-Help start button — recommend running with VITE_E2E_TEST_HELPERS=1 for deterministic checks',
+        );
         await browser.close();
         process.exit(3);
       }
@@ -174,21 +212,35 @@ async function run() {
     try {
       if (startedViaHelper) {
         // Wait for the provider to record an active source and then complete
-        await page.waitForFunction(() => window.__onboarding_test_helpers__?.getActiveSource?.() === 'ui', { timeout: 3000 });
+        await page.waitForFunction(
+          () => window.__onboarding_test_helpers__?.getActiveSource?.() === 'ui',
+          { timeout: 3000 },
+        );
         // Force complete
         await page.evaluate(() => {
-          try { window.__onboarding_test_helpers__.completeTour('admin-dashboard'); } catch (e) { /* ignore */ }
+          try {
+            window.__onboarding_test_helpers__.completeTour('admin-dashboard');
+          } catch (e) {
+            /* ignore */
+          }
         });
 
         // Wait for last completed payload
-        await page.waitForFunction(() => !!window.__onboarding_last_completed__ && window.__onboarding_last_completed__.id === 'admin-dashboard', { timeout: 3000 });
+        await page.waitForFunction(
+          () =>
+            !!window.__onboarding_last_completed__ &&
+            window.__onboarding_last_completed__.id === 'admin-dashboard',
+          { timeout: 3000 },
+        );
         const completedDetail = await page.evaluate(() => window.__onboarding_last_completed__);
         console.log('Observed onboarding completion detail (outside help):', completedDetail);
         if (!completedDetail || completedDetail.source === 'help') {
           console.error('Completed tour source unexpectedly marked as help:', completedDetail);
         }
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
 
     // For both helper and UI flows, wait for a driver instance then finish it
     // via API if it hasn't been destroyed yet.
@@ -197,25 +249,37 @@ async function run() {
       while (Date.now() - start < timeout) {
         const hasDriver = await page.evaluate(() => !!window.__ONBOARDING_DRIVER_INSTANCE);
         if (hasDriver) return true;
-        await new Promise(r => setTimeout(r, 150));
+        await new Promise((r) => setTimeout(r, 150));
       }
       return false;
     };
 
     const driverFound = await waitForDriver(6000);
     if (!driverFound) {
-      console.log('No driver instance found after starting outside-Help tour — maybe it was completed via helper');
+      console.log(
+        'No driver instance found after starting outside-Help tour — maybe it was completed via helper',
+      );
     } else {
       // If driver exists, attempt to finish by moving to last step and destroying
-      const total = await page.evaluate(() => window.__ONBOARDING_DRIVER_INSTANCE?.getConfig?.()?.steps?.length || 0);
+      const total = await page.evaluate(
+        () => window.__ONBOARDING_DRIVER_INSTANCE?.getConfig?.()?.steps?.length || 0,
+      );
       if (total > 0) {
         await page.evaluate((last) => {
           try {
             const drv = window.__ONBOARDING_DRIVER_INSTANCE;
             drv.drive(last - 1);
             // destroy to trigger completion hooks
-            setTimeout(() => { try { drv.destroy(); } catch (e) { /* ignore */ } }, 120);
-          } catch (e) { /* ignore */ }
+            setTimeout(() => {
+              try {
+                drv.destroy();
+              } catch (e) {
+                /* ignore */
+              }
+            }, 120);
+          } catch (e) {
+            /* ignore */
+          }
         }, total);
       }
 
@@ -225,7 +289,7 @@ async function run() {
         while (Date.now() - started < timeout) {
           const exists = await page.evaluate(() => !!window.__ONBOARDING_DRIVER_INSTANCE);
           if (!exists) return true;
-          await new Promise(r => setTimeout(r, 150));
+          await new Promise((r) => setTimeout(r, 150));
         }
         return false;
       };
@@ -236,19 +300,26 @@ async function run() {
 
     // Verify there are no leftover popovers or driver-active classes after
     // destruction — this is the core of the bug we're preventing.
-    const remainingPopovers = await page.evaluate(() => document.querySelectorAll('.onboarding-tour-popover').length);
-    const bodyHasActive = await page.evaluate(() => document.body.classList.contains('driver-active'));
+    const remainingPopovers = await page.evaluate(
+      () => document.querySelectorAll('.onboarding-tour-popover').length,
+    );
+    const bodyHasActive = await page.evaluate(() =>
+      document.body.classList.contains('driver-active'),
+    );
 
     console.log('Remaining popovers:', remainingPopovers, 'body has driver-active:', bodyHasActive);
 
     if (remainingPopovers > 0 || bodyHasActive) {
-      console.error('Leftover driver UI detected after tour finished (outside-help flow):', { remainingPopovers, bodyHasActive });
+      console.error('Leftover driver UI detected after tour finished (outside-help flow):', {
+        remainingPopovers,
+        bodyHasActive,
+      });
       await browser.close();
       process.exit(5);
     }
 
     // Ensure Help did NOT reopen — because the tour did not start from Help
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 1200));
 
     const helpOpen = await page.evaluate(() => {
       const dlg = document.querySelector('[role="dialog"][aria-label="Help Panel"]');
@@ -265,7 +336,10 @@ async function run() {
     // Also assert payload recorded has source !== 'help' when helper used
     const completedDetail = await page.evaluate(() => window.__onboarding_last_completed__);
     if (completedDetail && completedDetail.source === 'help') {
-      console.error('Completed detail incorrectly recorded as help for outside-help flow:', completedDetail);
+      console.error(
+        'Completed detail incorrectly recorded as help for outside-help flow:',
+        completedDetail,
+      );
       await browser.close();
       process.exit(7);
     }
@@ -273,10 +347,13 @@ async function run() {
     console.log('E2E: PASS — Help did NOT reopen after finishing tour started from outside Help');
     await browser.close();
     process.exit(0);
-
   } catch (err) {
     console.error('E2E error:', err);
-    try { await browser.close(); } catch (e) { /* ignore */ }
+    try {
+      await browser.close();
+    } catch (e) {
+      /* ignore */
+    }
     process.exit(1);
   }
 }

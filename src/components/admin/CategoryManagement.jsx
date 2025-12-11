@@ -3,6 +3,7 @@ import Icon from '@mdi/react';
 import { mdiPlus, mdiPencil, mdiDelete, mdiDragVertical, mdiCheck, mdiChartBar } from '@mdi/js';
 import { useTranslation } from 'react-i18next';
 import useCategories from '../../hooks/useCategories';
+import { supabase } from '../../supabaseClient';
 import Modal from '../common/Modal';
 import { useDialog } from '../../contexts/DialogContext';
 
@@ -47,11 +48,32 @@ export default function CategoryManagement() {
     error,
     createCategory,
     updateCategory,
+    categoryStats,
     deleteCategory,
     getCategoryStats,
+    refetch,
+    // Subscribe to centralized category stats from the hook
   } = useCategories(i18n.language);
-  const { confirm, toastSuccess, toastError } = useDialog();
 
+  // Subscribe to centralized category stats from the hook
+  useEffect(() => {
+    setStats((prev) => {
+      const prevStr = JSON.stringify(prev || {});
+      const nextStr = JSON.stringify(categoryStats || {});
+      if (prevStr !== nextStr) return categoryStats || {};
+      return prev;
+    });
+  }, [categoryStats]);
+
+  // Dialog helpers
+  const { confirm, toastError, toastSuccess } = useDialog();
+
+  // Local UI state for reordering / drag-n-drop
+  const [localCategories, setLocalCategories] = useState([]);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [reordering, setReordering] = useState(false);
+
+  const [dropTargetIndex, setDropTargetIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [stats, setStats] = useState({});
@@ -68,16 +90,112 @@ export default function CategoryManagement() {
     },
   });
 
-  // Load stats
+  // Load stats (useCategories hook supplies `categoryStats` via subscription)
+  // We rely on the centralized hook state and don't call getCategoryStats here anymore.
+
+  // Keep a local copy of categories for optimistic UI reordering
   useEffect(() => {
-    const loadStats = async () => {
-      const categoryStats = await getCategoryStats();
-      setStats(categoryStats);
-    };
-    if (!loading) {
-      loadStats();
+    // Only sync upstream categories when not actively reordering to avoid
+    // clobbering the local optimistic order on drop. Do a deep compare to
+    // avoid setting identical values which can lead to render loops in tests
+    if (!reordering) {
+      setLocalCategories((prev) => {
+        const prevStr = JSON.stringify(prev || []);
+        const nextStr = JSON.stringify(categories || []);
+        if (prevStr !== nextStr) return categories || [];
+        return prev;
+      });
     }
-  }, [loading, getCategoryStats, categories]);
+  }, [categories, reordering]);
+
+  const handleDragStart = (e, category, index) => {
+    setDraggedItem({ category, index });
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+    // Add visual cue
+    try {
+      e.currentTarget.style.opacity = '0.4';
+    } catch (err) {}
+  };
+
+  const handleDragEnd = (e) => {
+    try {
+      e.currentTarget.style.opacity = '1';
+    } catch (err) {}
+    setDraggedItem(null);
+    setDropTargetIndex(null);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+    setDropTargetIndex(index);
+  };
+
+  const handleDragLeave = () => setDropTargetIndex(null);
+
+  // Drop handler: compute new order, call RPC if available, fallback to sequential updates
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+    if (!draggedItem) return;
+    if (draggedItem.index === dropIndex) {
+      setDraggedItem(null);
+      setDropTargetIndex(null);
+      return;
+    }
+
+    setReordering(true);
+    try {
+      const items = [...(localCategories || [])];
+      const [dragged] = items.splice(draggedItem.index, 1);
+      items.splice(dropIndex, 0, dragged);
+      setLocalCategories(items);
+
+      const updates = items.map((cat, idx) => ({ id: cat.id, sort_order: idx + 1 }));
+
+      // Use RPC if available for atomic update. If the RPC isn't present or
+      // returns an error, we fall back to sequential updates to ensure the
+      // UI remains functional.
+      let rpcError = null;
+      if (supabase && supabase.rpc) {
+        const { error } = await supabase.rpc('update_category_order', { updates });
+        if (error) rpcError = error;
+      }
+
+      if (rpcError) {
+        console.warn(
+          'RPC update_category_order failed, falling back to sequential updates',
+          rpcError,
+        );
+        // Fall-through to sequential update below
+      }
+
+      if (!rpcError) {
+        // RPC succeeded, nothing more to do
+      } else {
+        // Fallback: sequential updates
+        for (const update of updates) {
+          const { error } = await supabase
+            .from('categories')
+            .update({ sort_order: update.sort_order })
+            .eq('id', update.id);
+          if (error) throw error;
+        }
+      }
+
+      // Once done, refetch categories
+      if (refetch) await refetch();
+      toastSuccess(t('helpPanel.categories.reorderSuccess') || t('common.saveSuccess'));
+    } catch (err) {
+      console.error('Error reordering categories:', err);
+      toastError(t('helpPanel.categories.reorderError', { error: err.message || err }));
+      // Restore local order from canonical categories
+      setLocalCategories(categories || []);
+    } finally {
+      setReordering(false);
+      setDraggedItem(null);
+      setDropTargetIndex(null);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -206,6 +324,9 @@ export default function CategoryManagement() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">{t('helpPanel.categories.title')}</h2>
           <p className="text-gray-600 mt-1">{t('helpPanel.categories.description')}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {t('helpPanel.categories.dragToReorder') || 'Drag to reorder categories'}
+          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -240,8 +361,21 @@ export default function CategoryManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {categories.map((category) => (
-              <tr key={category.id} className="hover:bg-gray-50">
+            {localCategories.map((category, idx) => (
+              <tr
+                key={category.id}
+                className={`hover:bg-gray-50 ${dropTargetIndex === idx ? 'border-t-2 border-blue-400' : ''}`}
+                draggable={!reordering}
+                data-testid={`category-row-${idx}`}
+                onDragStart={(e) => handleDragStart(e, category, idx)}
+                onDragEnd={(e) => handleDragEnd(e)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, idx)}
+                role="option"
+                aria-grabbed={draggedItem?.index === idx ? 'true' : 'false'}
+                aria-dropeffect={dropTargetIndex !== null ? 'move' : 'none'}
+              >
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-2 text-gray-500">
                     <Icon path={mdiDragVertical} size={0.8} className="cursor-move" />
@@ -277,20 +411,38 @@ export default function CategoryManagement() {
                   <button
                     onClick={() => handleEdit(category)}
                     className="text-blue-600 hover:text-blue-900 mr-3"
+                    disabled={reordering}
+                    title={reordering ? t('helpPanel.categories.reordering') : ''}
                   >
                     <Icon path={mdiPencil} size={0.8} />
                   </button>
                   <button
                     onClick={() => handleDelete(category.id, category.name)}
                     className="text-red-600 hover:text-red-900"
-                    disabled={stats[category.id] > 0}
-                    title={stats[category.id] > 0 ? t('helpPanel.categories.cannotDelete') : ''}
+                    disabled={reordering || stats[category.id] > 0}
+                    title={
+                      reordering
+                        ? t('helpPanel.categories.reordering')
+                        : stats[category.id] > 0
+                          ? t('helpPanel.categories.cannotDelete')
+                          : ''
+                    }
                   >
                     <Icon path={mdiDelete} size={0.8} />
                   </button>
                 </td>
               </tr>
             ))}
+
+            {/* Final drop zone to append an item at the end */}
+            <tr
+              key="drop-end"
+              className={`h-6 ${dropTargetIndex === (localCategories || []).length ? 'bg-blue-50' : ''}`}
+              onDragOver={(e) => handleDragOver(e, (localCategories || []).length)}
+              onDrop={(e) => handleDrop(e, (localCategories || []).length)}
+            >
+              <td colSpan={6} className="p-0" />
+            </tr>
           </tbody>
         </table>
 

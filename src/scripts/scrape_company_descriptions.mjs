@@ -10,11 +10,17 @@ import path from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 async function fetchUrl(url) {
   try {
-    const res = await fetch(url, { redirect: 'follow', headers: { 'User-Agent': 'map-scraper/1.0 (+https://github.com/Tomplan/Map)' }, timeout: 15000 });
+    const res = await fetch(url, {
+      redirect: 'follow',
+      headers: { 'User-Agent': 'map-scraper/1.0 (+https://github.com/Tomplan/Map)' },
+      timeout: 15000,
+    });
     if (!res.ok) return { error: `HTTP ${res.status}` };
     const text = await res.text();
     return { text, finalUrl: res.url };
@@ -25,19 +31,32 @@ async function fetchUrl(url) {
 
 function extractDescription(html) {
   if (!html) return null;
-  const metaDesc = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["'][^>]*>/i);
+  const metaDesc = html.match(
+    /<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+  );
   if (metaDesc && metaDesc[1]) return metaDesc[1].trim();
-  const og = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["'][^>]*>/i);
+  const og = html.match(
+    /<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+  );
   if (og && og[1]) return og[1].trim();
-  const aboutSection = html.match(/<(?:section|div)[^>]*(?:id|class)=["'][^"']*(about|mission|what-we-do|purpose|company|over-ons|uber-uns)[^"']*["'][^>]*>([\s\S]{10,800})<\/(?:section|div)>/i);
+  const aboutSection = html.match(
+    /<(?:section|div)[^>]*(?:id|class)=["'][^"']*(about|mission|what-we-do|purpose|company|over-ons|uber-uns)[^"']*["'][^>]*>([\s\S]{10,800})<\/(?:section|div)>/i,
+  );
   if (aboutSection && aboutSection[2]) {
-    const plain = aboutSection[2].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const plain = aboutSection[2]
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     return plain.split('. ').slice(0, 2).join('. ').trim();
   }
-  const mainParagraph = html.match(/<main[^>]*>[\s\S]*?<p[^>]*>([\s\S]{20,400}?)<\/p>/i)
-    || html.match(/<body[^>]*>[\s\S]*?<p[^>]*>([\s\S]{20,400}?)<\/p>/i);
+  const mainParagraph =
+    html.match(/<main[^>]*>[\s\S]*?<p[^>]*>([\s\S]{20,400}?)<\/p>/i) ||
+    html.match(/<body[^>]*>[\s\S]*?<p[^>]*>([\s\S]{20,400}?)<\/p>/i);
   if (mainParagraph && mainParagraph[1]) {
-    const plain = mainParagraph[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const plain = mainParagraph[1]
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
     return plain.split('. ').slice(0, 2).join('. ').trim();
   }
   return null;
@@ -47,7 +66,17 @@ async function probeSite(baseUrl) {
   if (!baseUrl) return { error: 'missing website' };
   let url = baseUrl;
   if (!/^https?:\/\//i.test(url)) url = `https://${url}`;
-  const candidatePaths = ['/', '/nl', '/en', '/de', '/about', '/en/about', '/nl/over-ons', '/de/ueber-uns', '/about-us'];
+  const candidatePaths = [
+    '/',
+    '/nl',
+    '/en',
+    '/de',
+    '/about',
+    '/en/about',
+    '/nl/over-ons',
+    '/de/ueber-uns',
+    '/about-us',
+  ];
   const results = {};
   for (const p of candidatePaths) {
     const full = new URL(p, url).toString();
@@ -69,8 +98,10 @@ function chooseByLanguage(results) {
     if (!r.ok || !r.description) continue;
     const lower = url.toLowerCase();
     if (!out.nl && lower.includes('/nl')) out.nl = { url, text: r.description };
-    if (!out.de && (lower.includes('/de') || lower.includes('ueber') || lower.includes('uber'))) out.de = { url, text: r.description };
-    if (!out.en && (lower.includes('/en') || lower.includes('about') || lower === '/')) out.en = { url, text: r.description };
+    if (!out.de && (lower.includes('/de') || lower.includes('ueber') || lower.includes('uber')))
+      out.de = { url, text: r.description };
+    if (!out.en && (lower.includes('/en') || lower.includes('about') || lower === '/'))
+      out.en = { url, text: r.description };
   }
   for (const [url, r] of Object.entries(results)) {
     if (!r.ok || !r.description) continue;
@@ -90,8 +121,10 @@ async function main(argv) {
     if (args[i] === '--dry-run') opts.dry = true;
   }
 
-  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL_PUBLIC;
-  const SUPABASE_KEY = process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
+  const SUPABASE_URL =
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL_PUBLIC;
+  const SUPABASE_KEY =
+    process.env.SUPABASE_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
 
   let companies = [];
 
@@ -106,18 +139,25 @@ async function main(argv) {
     const { createClient } = await import('@supabase/supabase-js');
     const client = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } });
     // loading companies from Supabase
-    const { data, error } = await client.from('companies').select('id,name,website').order('name', { ascending: true });
+    const { data, error } = await client
+      .from('companies')
+      .select('id,name,website')
+      .order('name', { ascending: true });
     if (error) {
       console.error('Supabase error:', error.message || error);
       process.exit(1);
     }
     companies = data || [];
   } else {
-    console.error('No input file and no Supabase keys provided. Either pass --input or set SUPABASE_URL and SUPABASE_KEY.');
+    console.error(
+      'No input file and no Supabase keys provided. Either pass --input or set SUPABASE_URL and SUPABASE_KEY.',
+    );
     process.exit(1);
   }
 
-  process.stdout.write(`Found ${companies.length} companies — probing websites (this may take a while)\n`);
+  process.stdout.write(
+    `Found ${companies.length} companies — probing websites (this may take a while)\n`,
+  );
 
   const results = [];
   for (const c of companies) {
@@ -132,7 +172,9 @@ async function main(argv) {
     await sleep(300);
   }
 
-  const outPath = opts.output || path.join(__dirname, '..', '..', 'out', `company_descriptions_${Date.now()}.json`);
+  const outPath =
+    opts.output ||
+    path.join(__dirname, '..', '..', 'out', `company_descriptions_${Date.now()}.json`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(results, null, 2), 'utf8');
 
@@ -141,5 +183,8 @@ async function main(argv) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}` || !import.meta.url.startsWith('file:')) {
-  main(process.argv).catch((err) => { console.error(err); process.exit(1); });
+  main(process.argv).catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
 }

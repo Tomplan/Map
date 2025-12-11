@@ -49,7 +49,9 @@ async function listNumericCompanyCandidates(limit = 2000) {
   if (error) throw error;
 
   return (data || []).filter((r) => {
-    const filename = String(r.logo || '').split('/').pop();
+    const filename = String(r.logo || '')
+      .split('/')
+      .pop();
     const base = filename ? filename.replace(/\.[^.]+$/, '') : '';
     return base && looksNumericBase(base);
   });
@@ -64,17 +66,21 @@ async function listNumericMarkerCandidates(limit = 2000) {
     .limit(limit);
   if (error) throw error;
 
-  return (data || []).filter(r => {
-    const filename = String(r.logo || '').split('/').pop();
+  return (data || []).filter((r) => {
+    const filename = String(r.logo || '')
+      .split('/')
+      .pop();
     const base = filename ? filename.replace(/\.[^.]+$/, '') : '';
     return base && looksNumericBase(base);
   });
 }
 
 async function objectExists(remotePath) {
-  const listRes = await supabase.storage.from(BUCKET).list(path.dirname(remotePath), { limit: 2000 });
+  const listRes = await supabase.storage
+    .from(BUCKET)
+    .list(path.dirname(remotePath), { limit: 2000 });
   if (listRes.error) return false;
-  return listRes.data.some(o => o.name === path.basename(remotePath));
+  return listRes.data.some((o) => o.name === path.basename(remotePath));
 }
 
 async function downloadToBuffer(remotePath) {
@@ -91,7 +97,12 @@ async function downloadToBuffer(remotePath) {
     for await (const c of stream) chunks.push(c);
     return { buffer: Buffer.concat(chunks) };
   }
-  try { const text = await data.text(); return { buffer: Buffer.from(text) }; } catch (e) { return { error: e } }
+  try {
+    const text = await data.text();
+    return { buffer: Buffer.from(text) };
+  } catch (e) {
+    return { error: e };
+  }
 }
 
 function contentTypeForExt(ext) {
@@ -118,8 +129,11 @@ async function copyGeneratedVariants(srcBase, dstBase) {
         continue;
       }
 
-      const up = await supabase.storage.from(BUCKET).upload(dstName, buffer, { upsert: true, contentType: contentTypeForExt(ext) });
-      if (up.error) results.push({ srcName, dstName, success: false, reason: up.error.message || up.error });
+      const up = await supabase.storage
+        .from(BUCKET)
+        .upload(dstName, buffer, { upsert: true, contentType: contentTypeForExt(ext) });
+      if (up.error)
+        results.push({ srcName, dstName, success: false, reason: up.error.message || up.error });
       else results.push({ srcName, dstName, success: true });
     }
   }
@@ -151,7 +165,16 @@ async function processCompanies(confirmApply = false) {
     const ext = path.extname(filename) || '.png';
     const desired = slugify(r.name || `company-${r.id}`);
     const uniqueBase = await findUniqueBase(desired);
-    planned.push({ table: 'companies', id: r.id, name: r.name, oldBase: base, oldFilename: filename, oldExt: ext, desiredBase: uniqueBase, desiredFilename: `${uniqueBase}${ext}` });
+    planned.push({
+      table: 'companies',
+      id: r.id,
+      name: r.name,
+      oldBase: base,
+      oldFilename: filename,
+      oldExt: ext,
+      desiredBase: uniqueBase,
+      desiredFilename: `${uniqueBase}${ext}`,
+    });
   }
 
   if (!confirmApply) return planned;
@@ -162,7 +185,8 @@ async function processCompanies(confirmApply = false) {
     const res = await copyGeneratedVariants(p.oldBase, p.desiredBase);
     const newUrl = cdnUrlFor(p.desiredFilename);
     const upd = await supabase.from('companies').update({ logo: newUrl }).eq('id', p.id);
-    if (upd.error) console.error('Failed update DB for company', p.id, upd.error.message || upd.error);
+    if (upd.error)
+      console.error('Failed update DB for company', p.id, upd.error.message || upd.error);
     else console.log('Updated company', p.id, '->', newUrl);
   }
 
@@ -180,7 +204,17 @@ async function processMarkers(confirmApply = false) {
     const ext = path.extname(filename) || '.png';
     const desiredSeed = r.name ? slugify(r.name) : `marker-${r.id}`;
     const uniqueBase = await findUniqueBase(desiredSeed);
-    planned.push({ table: 'markers_content', id: r.id, name: r.name, event_year: r.event_year, oldBase: base, oldFilename: filename, oldExt: ext, desiredBase: uniqueBase, desiredFilename: `${uniqueBase}${ext}` });
+    planned.push({
+      table: 'markers_content',
+      id: r.id,
+      name: r.name,
+      event_year: r.event_year,
+      oldBase: base,
+      oldFilename: filename,
+      oldExt: ext,
+      desiredBase: uniqueBase,
+      desiredFilename: `${uniqueBase}${ext}`,
+    });
   }
 
   if (!confirmApply) return planned;
@@ -190,7 +224,8 @@ async function processMarkers(confirmApply = false) {
     await copyGeneratedVariants(p.oldBase, p.desiredBase);
     const newUrl = cdnUrlFor(p.desiredFilename);
     const upd = await supabase.from('markers_content').update({ logo: newUrl }).eq('id', p.id);
-    if (upd.error) console.error('Failed update DB for marker', p.id, upd.error.message || upd.error);
+    if (upd.error)
+      console.error('Failed update DB for marker', p.id, upd.error.message || upd.error);
     else console.log('Updated markers_content', p.id, '->', newUrl);
   }
 
@@ -209,13 +244,32 @@ async function main() {
     }
 
     console.log('\nPlanned company updates:');
-    console.table(companyPlan.map(p => ({ id: p.id, name: p.name, from: p.oldBase, to: p.desiredBase, newFilename: p.desiredFilename })));
+    console.table(
+      companyPlan.map((p) => ({
+        id: p.id,
+        name: p.name,
+        from: p.oldBase,
+        to: p.desiredBase,
+        newFilename: p.desiredFilename,
+      })),
+    );
 
     console.log('\nPlanned marker_content updates:');
-    console.table(markerPlan.map(p => ({ id: p.id, name: p.name, event_year: p.event_year, from: p.oldBase, to: p.desiredBase, newFilename: p.desiredFilename })));
+    console.table(
+      markerPlan.map((p) => ({
+        id: p.id,
+        name: p.name,
+        event_year: p.event_year,
+        from: p.oldBase,
+        to: p.desiredBase,
+        newFilename: p.desiredFilename,
+      })),
+    );
 
     if (!confirm) {
-      console.log('\nDRY RUN - no changes applied. Re-run with --confirm to copy variants and update DB.');
+      console.log(
+        '\nDRY RUN - no changes applied. Re-run with --confirm to copy variants and update DB.',
+      );
       return;
     }
 

@@ -44,7 +44,10 @@ export function OrganizationLogoProvider({ children }) {
           setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
           setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
         } else {
-          console.log('[OrganizationLogoContext] Keeping default logo:', BRANDING_CONFIG.DEFAULT_LOGO);
+          console.log(
+            '[OrganizationLogoContext] Keeping default logo:',
+            BRANDING_CONFIG.DEFAULT_LOGO,
+          );
         }
       } catch (err) {
         console.error('Error fetching organization logo:', err);

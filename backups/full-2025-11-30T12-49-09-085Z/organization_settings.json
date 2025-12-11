@@ -18,10 +18,7 @@
       "map_min_zoom": 14,
       "map_max_zoom": 22,
       "map_search_zoom": 21,
-      "map_enabled_layers": [
-        "carto",
-        "esri"
-      ],
+      "map_enabled_layers": ["carto", "esri"],
       "public_default_year": null,
       "notification_settings": {
         "emailNotifications": true,

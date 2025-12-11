@@ -29,8 +29,16 @@ import puppeteer from 'puppeteer';
       const bg = getComputed(el, 'background-image');
       const bgSize = getComputed(el, 'background-size');
       const classes = el.className;
-      const svg = el.querySelector ? (el.querySelector('svg') ? el.querySelector('svg').outerHTML : null) : null;
-      const img = el.querySelector ? (el.querySelector('img') ? el.querySelector('img').src : null) : null;
+      const svg = el.querySelector
+        ? el.querySelector('svg')
+          ? el.querySelector('svg').outerHTML
+          : null
+        : null;
+      const img = el.querySelector
+        ? el.querySelector('img')
+          ? el.querySelector('img').src
+          : null
+        : null;
 
       return { html, bg, bgSize, classes, rect, svg, img };
     });

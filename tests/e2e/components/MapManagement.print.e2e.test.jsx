@@ -16,7 +16,10 @@ jest.mock('../../../src/hooks/useUserRole', () => () => ({
 jest.mock('../../../src/supabaseClient');
 
 jest.mock('../../../src/utils/getIconPath', () => ({ getIconPath: (p) => p }));
-jest.mock('../../../src/utils/getLogoPath', () => ({ getLogoPath: (p) => p, getResponsiveLogoSources: () => null }));
+jest.mock('../../../src/utils/getLogoPath', () => ({
+  getLogoPath: (p) => p,
+  getResponsiveLogoSources: () => null,
+}));
 jest.mock('../../../src/config/markerTabsConfig', () => ({ ICON_OPTIONS: [] }));
 
 import MapManagement from '../../../src/components/admin/MapManagement';
@@ -49,7 +52,12 @@ describe.skip('MapManagement header snapshot print (e2e) [quarantined skip]', ()
     // Stub window.open to avoid jsdom errors
     global.openOriginal = window.open;
     window.open = jest.fn(() => ({
-      document: { open: jest.fn(), close: jest.fn(), createElement: (n) => document.createElement(n), documentElement: document.documentElement },
+      document: {
+        open: jest.fn(),
+        close: jest.fn(),
+        createElement: (n) => document.createElement(n),
+        documentElement: document.documentElement,
+      },
       print: jest.fn(),
       onafterprint: null,
     }));

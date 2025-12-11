@@ -32,7 +32,7 @@ const missingFiles = [
   '1762803420948_3cy65g.png',
   '1762803351448_mfq3ab.jpg',
   '1762803431544_xfrpwe.png',
-  '1762803439792_le7fpj.webp'
+  '1762803439792_le7fpj.webp',
 ];
 
 async function downloadCompanyFile(filename) {
@@ -83,12 +83,14 @@ async function ensureDirs() {
 function runCommand(cmd, args = []) {
   return new Promise((resolve, reject) => {
     const p = child_process.spawn(cmd, args, { stdio: 'inherit', shell: true });
-    p.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`))));
+    p.on('close', (code) =>
+      code === 0 ? resolve() : reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`)),
+    );
     p.on('error', reject);
   });
 }
 
-(async function main(){
+(async function main() {
   try {
     await ensureDirs();
 

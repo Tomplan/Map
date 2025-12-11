@@ -19,7 +19,9 @@ function q(s) {
   return '"' + t + '"';
 }
 
-const header = ['id','name','website','nl_description','en_description','de_description'].map(x => '"' + x + '"').join(',');
+const header = ['id', 'name', 'website', 'nl_description', 'en_description', 'de_description']
+  .map((x) => '"' + x + '"')
+  .join(',');
 const rows = [header];
 
 for (const c of arr) {

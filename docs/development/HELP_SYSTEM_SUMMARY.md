@@ -11,6 +11,7 @@
 ### 1. Core Components
 
 #### **HelpPanel.jsx** - Main Help System
+
 - Collapsible right-side panel (500px wide on desktop, full-width on mobile)
 - Three tabs:
   - **Current Page**: Context-sensitive help based on route
@@ -21,6 +22,7 @@
 - Fully accessible (ARIA labels, keyboard navigation)
 
 #### **Tooltip.jsx** - Contextual Help Hints
+
 - Reusable tooltip component
 - Multiple positioning options (top, bottom, left, right)
 - Trigger modes: hover, click, or both
@@ -31,7 +33,9 @@
 ### 2. Configuration Files
 
 #### **helpContentBilingual.js** - Bilingual Help Content (EN/NL)
+
 Contains help content for:
+
 - Dashboard Overview
 - Map Management
 - Companies Management
@@ -42,26 +46,31 @@ Contains help content for:
 - General/Getting Started
 
 Each section includes:
+
 - Title: `{ en: "...", nl: "..." }`
 - Content: `{ en: "...", nl: "..." }` (markdown-style formatting)
 - Last updated date
 - Tips array: `{ en: [...], nl: [...] }`
 
 **Helper functions:**
+
 - `getHelpContent(page, language)` - Get help by page ID with language
 - `getHelpContentByRoute(pathname, language)` - Get help by route with language
 
 **Fallback mechanism:**
+
 - If Dutch translation missing, falls back to English
 - If section missing, returns 'general' help
 
 #### **whatsNewBilingual.js** - Bilingual Change Log (EN/NL)
+
 - Date-based change tracking
 - Change types: feature, fix, improvement
 - Bilingual change text: `{ en: "...", nl: "..." }`
 - Shows last 5 updates by default
 
 **Helper functions:**
+
 - `getRecentChanges(limit, language)` - Get recent N items with language
 
 **Note:** Old files `helpContent.js` and `whatsNew.js` are deprecated. Use bilingual versions.
@@ -69,6 +78,7 @@ Each section includes:
 ### 3. AdminLayout Integration
 
 **Added:**
+
 - Help button in sidebar (above Logout)
 - Blue accent for visibility
 - Opens HelpPanel on click
@@ -80,20 +90,24 @@ Each section includes:
 ## How Managers Use It
 
 ### Opening Help
+
 1. Click **Help** button in sidebar (blue with ? icon)
 2. Help panel slides in from right
 3. Automatically shows help for current page
 
 ### Navigation
+
 - **Current Page Tab**: See help for the page you're on
 - **What's New Tab**: View recent updates (last 5 changes)
 - **Quick Start Tab**: 5-step onboarding guide
 
 ### Role-Based Content
+
 - Display shows your role (Super Admin, System Manager, Event Manager)
 - Help content adapts based on available features for that role
 
 ### Closing Help
+
 - Click X button in top-right
 - Click backdrop (dark overlay)
 - Press Escape key (planned)
@@ -110,11 +124,8 @@ import { IconWithTooltip } from '../components/Tooltip';
 // In your component JSX
 <div className="flex items-center gap-2">
   <label>Booth Count</label>
-  <IconWithTooltip 
-    content="Total booths requested by company"
-    position="top"
-  />
-</div>
+  <IconWithTooltip content="Total booths requested by company" position="top" />
+</div>;
 ```
 
 ### Priority Areas to Add Tooltips
@@ -122,6 +133,7 @@ import { IconWithTooltip } from '../components/Tooltip';
 See `TOOLTIP_EXAMPLES.md` for detailed implementation guide.
 
 **High Priority:**
+
 1. Import data buttons (JWT token help)
 2. Lock marker controls
 3. Booth count fields
@@ -162,8 +174,8 @@ export const helpContentBilingual = {
 
   newPage: {
     title: {
-      en: "New Page Title",
-      nl: "Nieuwe Pagina Titel"
+      en: 'New Page Title',
+      nl: 'Nieuwe Pagina Titel',
     },
     content: {
       en: `
@@ -177,20 +189,14 @@ Je helptekst hier.
 
 **Vetgedrukte Tekst** voor nadruk.
 Gebruik dubbele line breaks voor paragrafen.
-      `.trim()
+      `.trim(),
     },
-    updated: "2025-11-22",
+    updated: '2025-11-22',
     tips: {
-      en: [
-        "Tip 1",
-        "Tip 2"
-      ],
-      nl: [
-        "Tip 1",
-        "Tip 2"
-      ]
-    }
-  }
+      en: ['Tip 1', 'Tip 2'],
+      nl: ['Tip 1', 'Tip 2'],
+    },
+  },
 };
 ```
 
@@ -201,16 +207,16 @@ Gebruik dubbele line breaks voor paragrafen.
 ```javascript
 export const whatsNewBilingual = [
   {
-    date: "2025-11-25", // Add new items at TOP
+    date: '2025-11-25', // Add new items at TOP
     changes: [
       {
         text: {
-          en: "Added new feature X",
-          nl: "Nieuwe functie X toegevoegd"
+          en: 'Added new feature X',
+          nl: 'Nieuwe functie X toegevoegd',
         },
-        type: "feature" // or "fix" or "improvement"
-      }
-    ]
+        type: 'feature', // or "fix" or "improvement"
+      },
+    ],
   },
   // ... existing changes
 ];
@@ -237,17 +243,20 @@ export function getHelpContentByRoute(pathname, language = 'en') {
 ## Language Support
 
 ### How It Works
+
 - HelpPanel uses `useTranslation()` hook from react-i18next
 - Current language extracted via `i18n.language`
 - Language passed to all helper functions
 - Fallback to English if Dutch translation missing
 
 ### Switching Languages
+
 - Users switch language via LanguageToggle in public map
 - Admin panel respects user's language choice
 - Help content automatically updates when language changes
 
 ### Adding New Language
+
 1. Add new language code to all content objects
 2. Update helper functions to support new language
 3. Provide translations for all sections
@@ -276,18 +285,21 @@ export function getHelpContentByRoute(pathname, language = 'en') {
 ## Future Enhancements
 
 ### Short-Term (Optional)
+
 - [ ] Add search functionality in Current Page tab
 - [ ] Add keyboard shortcut (Shift + ?) to open help
 - [ ] Add Escape key to close help panel
 - [ ] Embed video tutorials (YouTube/Loom)
 
 ### Medium-Term (After 6+ months)
+
 - [ ] Add version display (v1.0.0) when production-ready
 - [ ] Track help views (analytics)
 - [ ] Add "Was this helpful?" feedback buttons
 - [ ] Version-aware help content (if needed)
 
 ### Long-Term (Optional)
+
 - [ ] Interactive guided tours (react-joyride)
 - [ ] Onboarding checklist with progress tracking
 - [ ] Help article search with full-text indexing
@@ -298,6 +310,7 @@ export function getHelpContentByRoute(pathname, language = 'en') {
 ## No Versioning Yet
 
 As documented in `VERSIONING_STRATEGY.md`:
+
 - App is at v0.0.0 (development phase)
 - Help content uses simple date-based updates
 - No version-specific help content needed yet
@@ -314,13 +327,14 @@ As documented in `VERSIONING_STRATEGY.md`:
 ✅ **What's New**: See recent changes at a glance  
 ✅ **Role-Aware**: Only shows features you can access  
 ✅ **Accessible**: Works with keyboard and screen readers  
-✅ **Mobile-Friendly**: Responsive design for all devices  
+✅ **Mobile-Friendly**: Responsive design for all devices
 
 ---
 
 ## Support
 
 For questions about the help system:
+
 1. Check this document
 2. See `TOOLTIP_EXAMPLES.md` for tooltip usage
 3. See `VERSIONING_STRATEGY.md` for future versioning
@@ -329,6 +343,7 @@ For questions about the help system:
 ---
 
 **Next Steps:**
+
 1. Test help system in dev environment: `npm run dev`
 2. Review help content for accuracy
 3. Add tooltips to high-priority areas (see TOOLTIP_EXAMPLES.md)
