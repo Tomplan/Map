@@ -369,12 +369,16 @@ function EventMap({
 
     // Initialize browserPrint ONLY for admin view (print is admin-only feature)
     if (isAdminView && !map._browserPrintInitialized) {
+<<<<<<< HEAD
       if (
         window.L &&
         window.L.BrowserPrint &&
         window.L.BrowserPrint.Mode &&
         window.L.browserPrint
       ) {
+=======
+      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Mode && window.L.browserPrint) {
+>>>>>>> origin/main
         // Dynamically import print cloners only when needed
         const { cloneMarkerLayer, cloneMarkerClusterLayer } = await import('./printCloners');
         const Mode = window.L.BrowserPrint.Mode;
@@ -419,11 +423,15 @@ function EventMap({
 
           // Register MarkerClusterGroup cloner that manually clones markers using our custom logic
           if (window.L.MarkerClusterGroup) {
+<<<<<<< HEAD
             window.L.BrowserPrint.Utils.registerLayer(
               window.L.MarkerClusterGroup,
               'L.MarkerClusterGroup',
               cloneMarkerClusterLayer,
             );
+=======
+            window.L.BrowserPrint.Utils.registerLayer(window.L.MarkerClusterGroup, 'L.MarkerClusterGroup', cloneMarkerClusterLayer);
+>>>>>>> origin/main
           }
         }
 
@@ -611,17 +619,41 @@ function EventMap({
               // Temporarily increase maxZoom for printing
               browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
             }
-          });
 
-          // Restore original maxZoom after printing ends or is cancelled
-          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
-            if (originalView && originalView.maxZoom) {
-              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            // CRITICAL: Only change center for specific print modes that need a fixed home view
+            // "Current view" mode should preserve the current map position to avoid marker misplacement
+            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
+            const isAutoMode = modeTitle.toLowerCase().includes('auto');
+            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
+            
+            // Skip center change for current view, auto, and custom modes
+            if (isCurrentViewMode || isAutoMode || isCustomMode) {
+              return;
             }
-          });
-          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
-            if (originalView && originalView.maxZoom) {
-              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            
+            // Only modify Portrait and Landscape orientations with fixed home positions
+            if (orientation === 'Portrait' || orientation === 'Landscape') {
+              // Save current view to restore after printing
+              originalView = {
+                center: browserPrint._map.getCenter(),
+                zoom: browserPrint._map.getZoom(),
+              };
+
+              // Use different center and zoom for Portrait vs Landscape
+              const centerPosition = orientation === 'Portrait'
+                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+              const zoomLevel = orientation === 'Portrait'
+                ? 18 // Portrait uses zoom 17.8
+                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+
+              // Move the real map to the target position
+              // The plugin will then use this view when creating the print overlay
+              // (because Portrait/Landscape modes have invalidateBounds: false)
+              browserPrint._map.setView(centerPosition, zoomLevel, {
+                animate: false // Instant jump, no animation
+              });
             }
           });
 
@@ -682,6 +714,7 @@ function EventMap({
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
             // Restore original view after printing completes
             if (originalView) {
+<<<<<<< HEAD
               if (originalView.center && typeof originalView.zoom !== 'undefined') {
                 browserPrint._map.setView(originalView.center, originalView.zoom, {
                   animate: false,
@@ -690,6 +723,9 @@ function EventMap({
               if (originalView.maxZoom) {
                 browserPrint._map.setMaxZoom(originalView.maxZoom);
               }
+=======
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+>>>>>>> origin/main
               originalView = null;
             }
           });
@@ -697,6 +733,7 @@ function EventMap({
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
             // Restore original view if user cancels print
             if (originalView) {
+<<<<<<< HEAD
               if (originalView.center && typeof originalView.zoom !== 'undefined') {
                 browserPrint._map.setView(originalView.center, originalView.zoom, {
                   animate: false,
@@ -705,6 +742,9 @@ function EventMap({
               if (originalView.maxZoom) {
                 browserPrint._map.setMaxZoom(originalView.maxZoom);
               }
+=======
+              browserPrint._map.setView(originalView.center, originalView.zoom, { animate: false });
+>>>>>>> origin/main
               originalView = null;
             }
           });
