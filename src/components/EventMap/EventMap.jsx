@@ -20,6 +20,7 @@ import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
+import { computePrintIconOptions } from '../../utils/printScaling';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -190,9 +191,7 @@ function EventMap({
       // Development-only: log zoom level for debugging
       try {
         if (process.env.NODE_ENV !== 'production') {
-          /* eslint-disable no-console */
           console.debug(`[Map] zoom: ${zoom}`);
-          /* eslint-enable no-console */
         }
       } catch (err) {
         // safe fallback if console isn't available
@@ -515,7 +514,7 @@ function EventMap({
           // Print event fires right before window.print() - final chance to set view
           // At this point the plugin has already set its view and waited for tiles
           // We apply our custom center/zoom here as a fallback verification
-          browserPrint._map.on(window.L.BrowserPrint.Event.Print, (event) => {
+          browserPrint._map.on(window.L.BrowserPrint.Event.Print, async (event) => {
             if (!pendingPrintConfig) {
               console.log('[Print] Print - no pending config');
               return;
@@ -531,6 +530,29 @@ function EventMap({
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
               console.log('[Print] Print - view applied');
+
+              // Recompute marker sizes for print zoom using ZOOM_BUCKETS
+              if (event.printObjects && event.printObjects['L.Marker']) {
+                const printMarkers = event.printObjects['L.Marker'];
+                const printZoom = printMap.getZoom();
+                console.log(`[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`);
+
+                try {
+                  printMarkers.forEach((printMarker) => {
+                    if (printMarker.options.icon && printMarker.options.icon.options) {
+                      const originalIconOpts = printMarker.options.icon.options;
+                      const recomputedOpts = computePrintIconOptions(originalIconOpts, printZoom, isAdminView);
+                      
+                      if (recomputedOpts && recomputedOpts.iconSize) {
+                        const newIcon = L.icon.glyph(recomputedOpts);
+                        printMarker.setIcon(newIcon);
+                      }
+                    }
+                  });
+                } catch (error) {
+                  console.error('[Print] Error recomputing marker sizes:', error);
+                }
+              }
             }
 
             pendingPrintConfig = null;

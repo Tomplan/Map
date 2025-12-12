@@ -44,7 +44,7 @@ const _pkgs = { en, nl, de };
     }
   } catch (e) {
     // best-effort - do not throw during startup
-    // eslint-disable-next-line no-console
+
     console.debug('[i18n] failed to merge companies for', lang, e && e.message);
   }
 });
