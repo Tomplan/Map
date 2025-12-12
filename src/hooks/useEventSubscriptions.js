@@ -27,10 +27,12 @@ export default function useEventSubscriptions(eventYear) {
 
       const { data, error: fetchError } = await supabase
         .from('event_subscriptions')
-        .select(`
+        .select(
+          `
           *,
           company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
-        `)
+        `,
+        )
         .eq('event_year', eventYear)
         .order('id', { ascending: true });
 
@@ -49,7 +51,9 @@ export default function useEventSubscriptions(eventYear) {
   const subscribeCompany = async (companyId, subscriptionData = {}) => {
     try {
       // Get current user for created_by
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const created_by = user?.email || 'unknown';
 
       // Fetch company defaults for contact info
@@ -62,7 +66,9 @@ export default function useEventSubscriptions(eventYear) {
       // Fetch organization defaults for meal counts (separate Saturday/Sunday)
       const { data: orgProfile } = await supabase
         .from('organization_profile')
-        .select('default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins')
+        .select(
+          'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins',
+        )
         .eq('id', 1)
         .single();
 
@@ -71,10 +77,15 @@ export default function useEventSubscriptions(eventYear) {
       const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
       const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
       const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
-      const defaultCoins = typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
+      const defaultCoins =
+        typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
 
       // Normalize phone before inserting
-      const phoneToInsert = subscriptionData.phone ? normalizePhone(subscriptionData.phone) : (company?.phone ? normalizePhone(company.phone) : '');
+      const phoneToInsert = subscriptionData.phone
+        ? normalizePhone(subscriptionData.phone)
+        : company?.phone
+          ? normalizePhone(company.phone)
+          : '';
       // Normalize email to lowercase
       const emailToInsert = (subscriptionData.email || company?.email || '').toLowerCase().trim();
 
@@ -122,10 +133,12 @@ export default function useEventSubscriptions(eventYear) {
         .from('event_subscriptions')
         .update(updates)
         .eq('id', subscriptionId)
-        .select(`
+        .select(
+          `
           *,
           company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
-        `)
+        `,
+        )
         .single();
 
       if (updateError) throw updateError;
@@ -178,16 +191,15 @@ export default function useEventSubscriptions(eventYear) {
   // Archive subscriptions for the current year
   const archiveCurrentYear = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const archived_by = user?.email || 'unknown';
 
-      const { data, error: archiveError } = await supabase.rpc(
-        'archive_event_subscriptions',
-        {
-          year_to_archive: eventYear,
-          archived_by_user: archived_by,
-        }
-      );
+      const { data, error: archiveError } = await supabase.rpc('archive_event_subscriptions', {
+        year_to_archive: eventYear,
+        archived_by_user: archived_by,
+      });
 
       if (archiveError) throw archiveError;
 
@@ -220,7 +232,9 @@ export default function useEventSubscriptions(eventYear) {
   // Copy subscriptions from previous year
   const copyFromPreviousYear = async (sourceYear) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const created_by = user?.email || 'unknown';
 
       // Fetch subscriptions from source year
@@ -236,7 +250,7 @@ export default function useEventSubscriptions(eventYear) {
       }
 
       // Copy subscriptions to current year
-      const newSubscriptions = sourceSubscriptions.map(sub => ({
+      const newSubscriptions = sourceSubscriptions.map((sub) => ({
         company_id: sub.company_id,
         event_year: eventYear,
         contact: sub.contact,
@@ -292,7 +306,7 @@ export default function useEventSubscriptions(eventYear) {
           reloadTimeoutRef.current = setTimeout(() => {
             loadSubscriptions();
           }, 500);
-        }
+        },
       )
       .subscribe();
 

@@ -24,7 +24,7 @@ describe('Modal backdrop click guard', () => {
     const { getByRole } = render(
       <Modal isOpen={true} onClose={onClose} title="Test">
         <div>content</div>
-      </Modal>
+      </Modal>,
     );
 
     // Simulate a very-early click (50ms after mount)
@@ -42,7 +42,7 @@ describe('Modal backdrop click guard', () => {
     const { getByRole } = render(
       <Modal isOpen={true} onClose={onClose} title="Test" testMountedAt={base} testNow={base + 200}>
         <div>content</div>
-      </Modal>
+      </Modal>,
     );
 
     // Simulate a later click (200ms after mount)
@@ -53,4 +53,3 @@ describe('Modal backdrop click guard', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
   });
 });
-

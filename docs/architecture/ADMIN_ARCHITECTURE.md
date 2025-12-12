@@ -9,9 +9,11 @@ The admin panel uses a **desktop-optimized** sidebar navigation with **role-base
 ## User Roles
 
 ### 1. Super Admin (`super_admin`)
+
 **Full access to all features**
 
 Sections visible:
+
 - Dashboard
 - Map Management
 - Companies
@@ -20,16 +22,20 @@ Sections visible:
 - Settings
 
 ### 2. System Manager (`system_manager`)
+
 **Technical/map administrators** - manages marker positioning and styling
 
 Sections visible:
+
 - Dashboard
 - Map Management
 
 ### 3. Event Manager (`event_manager`)
+
 **Business users** - manages companies and booth assignments
 
 Sections visible:
+
 - Dashboard
 - Companies
 - Event Subscriptions
@@ -38,9 +44,11 @@ Sections visible:
 ## Architecture Components
 
 ### AdminLayout.jsx
+
 **Role**: Main layout wrapper with sidebar navigation
 
 Features:
+
 - Left sidebar (256px fixed width)
 - Navigation items filtered by user role
 - Active route highlighting
@@ -48,18 +56,22 @@ Features:
 - Uses React Router `<Outlet />` for nested routes
 
 ### useUserRole Hook
+
 **Location**: `/src/hooks/useUserRole.js`
 
 Features:
+
 - Reads role from Supabase `user_metadata.role`
 - Provides helper functions: `hasRole()`, `hasAnyRole()`
 - Boolean flags: `isSuperAdmin`, `isSystemManager`, `isEventManager`
 - Listens to auth state changes
 
 ### ProtectedSection Component
+
 **Location**: `/src/components/ProtectedSection.jsx`
 
 Usage:
+
 ```jsx
 <ProtectedSection requiredRole="system_manager">
   <MapManagement />
@@ -71,6 +83,7 @@ Usage:
 ```
 
 Behavior:
+
 - Shows children if user has required role
 - Shows "Access Restricted" message otherwise
 - Super admin always has access
@@ -88,25 +101,30 @@ Behavior:
 ```
 
 **Login Flow**:
+
 - Unauthenticated users see AdminLogin + FeedbackForm at `/admin/*`
 - After login, redirected to AdminLayout with role-based navigation
 
 ## Admin Sections
 
 ### 1. Dashboard
+
 **Location**: `/src/components/admin/Dashboard.jsx`
 **Access**: All roles
 
 Features:
+
 - Stats overview cards (markers, companies, subscriptions, assignments)
 - Quick action links
 - Placeholder for recent activity
 
 ### 2. Map Management
+
 **Location**: `/src/components/admin/MapManagement.jsx`
 **Access**: System Manager, Super Admin
 
 Features:
+
 - **Master-detail layout**: List of markers (left) + edit panel (right)
 - **Search/filter**: By ID, booth label, or name
 - **Unified editing** - merges old Core/Appearance/Content tabs:
@@ -117,15 +135,18 @@ Features:
 - Edit mode with save/cancel
 
 **Replaces**:
+
 - Old AdminDashboard Core tab
 - Old AdminDashboard Appearance tab
 - Old AdminDashboard Content tab
 
 ### 3. Companies
+
 **Location**: `/src/components/admin/CompaniesTab.jsx`
 **Access**: Event Manager, Super Admin
 
 Features:
+
 - Permanent company catalog (reusable across years)
 - CRUD operations
 - Dual-section form: Public Info + Manager-Only Info
@@ -133,10 +154,12 @@ Features:
 - Search/filter
 
 ### 4. Event Subscriptions
+
 **Location**: `/src/components/admin/EventSubscriptionsTab.jsx`
 **Access**: Event Manager, Super Admin
 
 Features:
+
 - Year-specific company subscriptions
 - Contact overrides (override company defaults)
 - Booth count, area preference
@@ -147,10 +170,12 @@ Features:
 - Copy from previous year
 
 ### 5. Assignments
+
 **Location**: `/src/components/admin/AssignmentsTab.jsx`
 **Access**: Event Manager, Super Admin
 
 Features:
+
 - Matrix view: Companies (rows) × Markers (columns)
 - Click to toggle assignments
 - Shows only subscribed companies
@@ -158,10 +183,12 @@ Features:
 - Archive functionality
 
 ### 6. Settings
+
 **Location**: Placeholder
 **Access**: Super Admin only
 
 Planned features:
+
 - Organization profile
 - Branding settings
 - User management
@@ -169,6 +196,7 @@ Planned features:
 ## Data Model
 
 ### Markers (4 tables for backward compatibility)
+
 1. **Markers_Core**: `id`, `lat`, `lng`, `rectangle`, `angle`, `coreLocked`
 2. **Markers_Appearance**: `id`, `glyph`, `iconUrl`, `iconSize`, `glyphColor`, etc.
 3. **Markers_Content**: `id`, `name`, `logo`, `website`, `info`, `contentLocked`
@@ -177,11 +205,13 @@ Planned features:
 4. **Markers_Admin**: ⚠️ **DEPRECATED** - Being migrated to Event_Subscriptions
 
 ### New Tables (Preferred)
+
 1. **Companies**: Permanent company catalog
 2. **Event_Subscriptions**: Year-specific company subscriptions with logistics
 3. **Assignments**: Many-to-many (marker ↔ company) for specific year
 
 ### Relationship Flow
+
 ```
 Markers_Core (booths)
     ↓
@@ -198,6 +228,7 @@ event_year    Event_Subscriptions
 Roles are stored in Supabase `auth.users.user_metadata.role`.
 
 **To set a role**:
+
 ```sql
 -- Using Supabase SQL editor
 UPDATE auth.users
@@ -206,13 +237,15 @@ WHERE email = 'admin@example.com';
 ```
 
 **Or via Supabase JavaScript**:
+
 ```javascript
 const { data, error } = await supabase.auth.updateUser({
-  data: { role: 'super_admin' }
+  data: { role: 'super_admin' },
 });
 ```
 
 **Valid roles**:
+
 - `super_admin`
 - `system_manager`
 - `event_manager`
@@ -220,17 +253,20 @@ const { data, error } = await supabase.auth.updateUser({
 ## Best Practices
 
 ### For System Managers
+
 - Use Map Management for marker positioning only
 - Don't edit booth content (managed by Event Managers)
 - Lock markers when positioning is finalized (`coreLocked`, `appearanceLocked`)
 
 ### For Event Managers
+
 - Manage companies in Companies tab (permanent catalog)
 - Create yearly subscriptions in Event Subscriptions
 - Assign booths in Assignments tab
 - Don't modify marker positions or icons
 
 ### For Developers
+
 - Check role before showing/hiding features: `useUserRole()`
 - Wrap protected components with `<ProtectedSection>`
 - Super admin always has full access
@@ -239,14 +275,13 @@ const { data, error } = await supabase.auth.updateUser({
 ## Migration from Old Admin
 
 **Old Pattern** (Deprecated):
+
 ```jsx
-<AdminDashboard
-  markersState={markersState}
-  setMarkersState={setMarkersState}
-/>
+<AdminDashboard markersState={markersState} setMarkersState={setMarkersState} />
 ```
 
 **New Pattern**:
+
 ```jsx
 <Routes>
   <Route path="/admin" element={<AdminLayout />}>

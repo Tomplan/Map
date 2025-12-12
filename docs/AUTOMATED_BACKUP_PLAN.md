@@ -9,17 +9,20 @@ Since Supabase free accounts lack built-in backup features, this plan creates a 
 ### 1. Multi-Tier Backup Approach
 
 **Tier 1: Critical Data (Daily)**
+
 - Companies table
-- Event subscriptions  
+- Event subscriptions
 - Assignments
 - Organization profile
 - User preferences
 
 **Tier 2: Full Database (Weekly)**
+
 - Complete database dump
 - Schema + all data
 
 **Tier 3: Schema Only (Monthly)**
+
 - Database structure documentation
 - Table relationships
 
@@ -32,17 +35,20 @@ Since Supabase free accounts lack built-in backup features, this plan creates a 
 ## Automation Components
 
 ### 1. Backup Scripts
+
 - `backup-critical.js` - Daily critical data backup
-- `backup-full.js` - Weekly complete backup  
+- `backup-full.js` - Weekly complete backup
 - `backup-schema.js` - Monthly schema documentation
 - `restore.js` - Disaster recovery script
 
 ### 2. Scheduling System
+
 - **Manual triggers** - Run backup on demand
 - **Cron jobs** - Automated scheduling
 - **CI/CD integration** - Backup before deployments
 
 ### 3. Storage Management
+
 - **Local storage** - Current + 7 daily backups
 - **Cloud sync** - Automated upload to cloud storage
 - **Retention policy** - Automatic cleanup of old backups
@@ -50,24 +56,28 @@ Since Supabase free accounts lack built-in backup features, this plan creates a 
 ## Implementation Plan
 
 ### Phase 1: Core Backup Scripts (Week 1)
+
 - [ ] Create backup configuration file
 - [ ] Implement critical data backup script
 - [ ] Create basic restore functionality
 - [ ] Test backup/restore cycle
 
-### Phase 2: Automation & Scheduling (Week 2)  
+### Phase 2: Automation & Scheduling (Week 2)
+
 - [ ] Create cron job setup scripts
 - [ ] Implement cloud storage integration
 - [ ] Add backup monitoring and alerts
 - [ ] Create management dashboard
 
 ### Phase 3: Advanced Features (Week 3)
+
 - [ ] Add incremental backup capability
 - [ ] Implement backup verification
 - [ ] Create disaster recovery runbook
 - [ ] Add performance monitoring
 
 ### Phase 4: Production Deployment (Week 4)
+
 - [ ] Deploy to production server
 - [ ] Configure monitoring alerts
 - [ ] Train team on procedures

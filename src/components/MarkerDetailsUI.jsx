@@ -45,7 +45,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const translatedInfo = useTranslatedCompanyInfo(marker);
   const { i18n } = useTranslation();
-  const { getCompanyCategories } = useCategories(i18n.language);
+  const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const [categories, setCategories] = useState([]);
 
   // Fetch categories when marker.companyId changes
@@ -55,7 +55,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
     } else {
       setCategories([]);
     }
-  }, [marker.companyId, getCompanyCategories]);
+  }, [marker.companyId, getCompanyCategories, allCategories]);
 
   return (
     <Popup

@@ -17,7 +17,9 @@ const getArg = (key, fallback) => {
   return fallback;
 };
 
-const SOURCE_DIR = path.resolve(getArg('--source', path.join(__dirname, '..', 'public', 'assets', 'logos')));
+const SOURCE_DIR = path.resolve(
+  getArg('--source', path.join(__dirname, '..', 'public', 'assets', 'logos')),
+);
 const OUTPUT_DIR = path.resolve(getArg('--out', path.join(SOURCE_DIR, 'generated')));
 const ORIGINALS_DIR = path.resolve(getArg('--backup', path.join(SOURCE_DIR, 'originals')));
 
@@ -25,7 +27,9 @@ const SIZES = [64, 128, 256, 512];
 const QUALITY = 80;
 
 async function ensureDir(p) {
-  try { await fs.promises.mkdir(p, { recursive: true }); } catch (e) { }
+  try {
+    await fs.promises.mkdir(p, { recursive: true });
+  } catch (e) {}
 }
 
 function isImageFile(name) {
@@ -38,7 +42,11 @@ async function generateVariants(file) {
   const ext = path.extname(filename).toLowerCase();
 
   // Skip files in generated or originals folders
-  if (file.includes(`${path.sep}generated${path.sep}`) || file.includes(`${path.sep}originals${path.sep}`)) return;
+  if (
+    file.includes(`${path.sep}generated${path.sep}`) ||
+    file.includes(`${path.sep}originals${path.sep}`)
+  )
+    return;
 
   const nameNoExt = filename.replace(/\.[^.]+$/, '');
 
@@ -82,7 +90,7 @@ async function run() {
   await ensureDir(ORIGINALS_DIR);
 
   const names = await fs.promises.readdir(SOURCE_DIR);
-  const files = names.map(n => path.join(SOURCE_DIR, n));
+  const files = names.map((n) => path.join(SOURCE_DIR, n));
 
   for (const f of files) {
     const stat = await fs.promises.stat(f);
@@ -101,4 +109,7 @@ async function run() {
   console.log('Done.');
 }
 
-run().catch((err) => { console.error(err); process.exit(1); });
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

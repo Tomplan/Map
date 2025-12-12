@@ -17,12 +17,14 @@ nano scripts/backup/.env
 ```
 
 **Required Settings:**
+
 ```env
 SUPABASE_DB_HOST=db.your-project.supabase.co
 SUPABASE_DB_PASSWORD=your-actual-password
 ```
 
 **Get these values from your Supabase dashboard:**
+
 1. Go to Settings → Database
 2. Copy the Connection String
 3. Extract host and password from the string
@@ -70,17 +72,18 @@ npm run restore:critical -- --backup-file ./backups/critical-2025-11-30 --confir
 ✅ **Database connectivity** - Ready to connect to Supabase  
 ✅ **File creation** - Backup directories and metadata  
 ✅ **Error handling** - Graceful failure and logging  
-✅ **Safety mechanisms** - Pre-restore backups, dry-run testing  
+✅ **Safety mechanisms** - Pre-restore backups, dry-run testing
 
 ## 🔧 Configuration Notes
 
 **Environment Variables Location:** `scripts/backup/.env`  
 **Backup Storage:** `./backups/` directory  
-**Logs:** `./logs/` directory  
+**Logs:** `./logs/` directory
 
 ## 📞 Support
 
 If you encounter issues:
+
 1. Check logs in `./logs/` directory
 2. Verify Supabase credentials in environment file
 3. Run `npm run backup:test` to diagnose problems

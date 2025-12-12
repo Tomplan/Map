@@ -23,16 +23,18 @@
 ## Changes Made Today (That Broke It)
 
 ### Approved Changes:
+
 1. **Removed aggressive auto-close useEffect** from both EventClusterMarkers and EventSpecialMarkers
    - Previous code: `useEffect(() => { if (contextMenu.isOpen) setContextMenu({ isOpen: false, ... }); }, [markers]);`
    - This closed context menu whenever markers array changed
 
 2. **Updated Popup configuration** for context menu:
+
    ```jsx
    <Popup
-     closeOnClick={true}      // NEW
-     closeOnEscapeKey={true}  // NEW
-     autoClose={false}        // Keep separate context menu
+     closeOnClick={true} // NEW
+     closeOnEscapeKey={true} // NEW
+     autoClose={false} // Keep separate context menu
    />
    ```
 
@@ -43,6 +45,7 @@
    ```
 
 ### Unauthorized Changes:
+
 4. **Modified MemoizedMarker comparison logic** (lines 76-101 in EventClusterMarkers.jsx)
    - Reordered checks to prioritize metadata (companyId, assignmentId, name, etc.) FIRST
    - Added companyId and assignmentId to metadata checks
@@ -53,6 +56,7 @@
 ## Current Architecture (How It Should Work)
 
 ### Data Flow:
+
 ```
 1. User right-clicks marker
 2. handleContextMenu() → Opens context menu popup
@@ -72,6 +76,7 @@
 ### Real-Time Update Logic (useEventMarkers_v2.js lines 236-289):
 
 **For INSERT/UPDATE assignments:**
+
 ```javascript
 // Check if event_year matches current year
 if (assignment?.event_year !== eventYearRef.current) return;
@@ -84,35 +89,41 @@ const { data: companyData } = await supabase
   .single();
 
 // Update specific marker
-setMarkers(prev => prev.map(m =>
-  m.id === assignment.marker_id
-    ? {
-        ...m,
-        name: companyData.name,
-        logo: companyData.logo,
-        website: companyData.website,
-        info: companyData.info,
-        companyId: companyData.id,
-        assignmentId: assignment.id,
-        iconUrl: 'glyph-marker-icon-blue.svg'
-      }
-    : m
-));
+setMarkers((prev) =>
+  prev.map((m) =>
+    m.id === assignment.marker_id
+      ? {
+          ...m,
+          name: companyData.name,
+          logo: companyData.logo,
+          website: companyData.website,
+          info: companyData.info,
+          companyId: companyData.id,
+          assignmentId: assignment.id,
+          iconUrl: 'glyph-marker-icon-blue.svg',
+        }
+      : m,
+  ),
+);
 ```
 
 **For DELETE assignments:**
+
 - Full reload (payload doesn't include marker_id)
 
 ### Memoization Strategy (EventClusterMarkers.jsx):
 
 **getMarkerKey()** (line 58):
+
 ```javascript
-`${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`
+`${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
 ```
+
 - Used as React key
 - EXCLUDES metadata (name, companyId) so marker instance persists
 
 **MemoizedMarker comparison** (lines 76-101):
+
 ```javascript
 // Check metadata FIRST (CURRENT - may be wrong order)
 if (name/logo/website/info/companyId/assignmentId changed) → RE-RENDER
@@ -128,26 +139,33 @@ if (icon/isDraggable/eventHandlers changed) → RE-RENDER
 ## Why It's Broken Now
 
 ### Hypothesis 1: Race Condition
+
 - Context menu closes immediately: `setContextMenu({ isOpen: false, ... })`
 - Real-time update happens async (network delay)
 - Marker updates, but tooltip is in transition state
 - Tooltip doesn't refresh because marker instance didn't unmount/remount
 
 ### Hypothesis 2: Removed useEffect Was Critical
+
 The aggressive auto-close useEffect may have been doing two things:
+
 1. Closing context menu (annoying side effect)
 2. **Triggering something that forced tooltip refresh** (hidden benefit)
 
 When removed, tooltips stopped updating.
 
 ### Hypothesis 3: closeOnClick Interference
+
 `closeOnClick={true}` on context menu Popup might be interfering with Leaflet's internal state management, preventing tooltip updates.
 
 ### Hypothesis 4: Event Handler Cache Key Issue
+
 Event handler cache includes `subscriptions.length` and `assignments.length`:
+
 ```javascript
 const key = `${marker.id}-...-sub${subscriptions.length}-asn${assignments.length}`;
 ```
+
 When assignment added, length changes → new handlers → forces re-render.
 This might be causing timing issues or preventing proper update flow.
 
@@ -156,17 +174,20 @@ This might be causing timing issues or preventing proper update flow.
 ## What We Know For Sure
 
 ### Real-Time Update Works:
+
 - ✅ Supabase subscription detects assignment changes
 - ✅ Company data is fetched correctly
 - ✅ Marker state is updated with new data (verified in previous sessions)
 - ✅ setMarkers() is called with updated marker object
 
 ### Memoization Logic Appears Correct:
+
 - ✅ Checks for metadata changes (name, companyId, etc.)
 - ✅ Returns false (re-render) when changes detected
 - ✅ Marker prop should update in child components
 
 ### UI Doesn't Update:
+
 - ❌ Tooltip shows blank or old data
 - ❌ Marker doesn't visually update
 - ❌ Change only visible after full page reload
@@ -176,37 +197,46 @@ This might be causing timing issues or preventing proper update flow.
 ## Recovery Steps (RECOMMENDED)
 
 ### Step 1: Revert All Changes
+
 ```bash
 cd /Users/tom/Documents/GitHub/Map
 git checkout src/components/EventClusterMarkers.jsx
 git checkout src/components/EventSpecialMarkers.jsx
 ```
+
 This restores both files to last committed state (before today).
 
 ### Step 2: Verify Original Functionality
+
 Test that assignment still works and updates markers immediately.
 
 ### Step 3: Reproduce Original Problem
+
 Document exactly what the aggressive auto-close was doing wrong:
+
 - Does it close on every background data change?
 - Does it close when other markers are updated?
 - Is it actually a problem or just perceived as one?
 
 ### Step 4: Systematic Testing
+
 If original problem exists, fix it one change at a time:
 
 **Test A: Only remove aggressive useEffect**
+
 - Remove the useEffect that closes on markers change
 - Test assignment - does it still work?
 - If YES → problem was not the useEffect
 - If NO → useEffect was critical, find alternative
 
 **Test B: Only add closeOnClick**
+
 - Keep useEffect, only add `closeOnClick={true}`
 - Test assignment - does it still work?
 - Identify if this specific change breaks it
 
 **Test C: Only manual close in handlers**
+
 - Keep useEffect, add manual close in handleAssign/handleUnassign
 - Test assignment - does it still work?
 - Check if manual close timing is the issue
@@ -214,6 +244,7 @@ If original problem exists, fix it one change at a time:
 ### Step 5: Alternative Solutions (If Needed)
 
 **Option A: Delay context menu close**
+
 ```javascript
 await assignCompanyToMarker(markerId, companyId);
 // Wait for real-time update before closing
@@ -223,6 +254,7 @@ setTimeout(() => {
 ```
 
 **Option B: Force tooltip refresh**
+
 ```javascript
 await assignCompanyToMarker(markerId, companyId);
 // Close all tooltips/popups
@@ -232,11 +264,12 @@ setContextMenu({ isOpen: false, position: null, marker: null });
 ```
 
 **Option C: Keep useEffect but make it selective**
+
 ```javascript
 useEffect(() => {
   if (contextMenu.isOpen && contextMenu.marker) {
     // Only close if the specific marker in context menu changed
-    const currentMarker = markers.find(m => m.id === contextMenu.marker.id);
+    const currentMarker = markers.find((m) => m.id === contextMenu.marker.id);
     if (currentMarker?.companyId !== contextMenu.marker.companyId) {
       setContextMenu({ isOpen: false, position: null, marker: null });
     }
@@ -267,15 +300,18 @@ useEffect(() => {
 ## Key Files Reference (Unchanged)
 
 ### src/hooks/useEventMarkers_v2.js
+
 - Lines 236-289: Real-time assignment subscription with granular updates
 - This logic is CORRECT and working properly
 
 ### src/components/MarkerDetailsUI.jsx
+
 - Lines 8-39: MarkerTooltipContent - displays marker.name, marker.logo, marker.glyph
 - Lines 42-109: MarkerPopupDesktop - full marker details
 - This logic is CORRECT
 
 ### src/components/MarkerContextMenu.jsx
+
 - Context menu UI component
 - Shows available companies with booth counts
 - Calls onAssign/onUnassign callbacks
@@ -286,12 +322,14 @@ useEffect(() => {
 ## Diagnostic Commands for Testing
 
 ### Check if marker state has updated data:
+
 ```javascript
 // In browser console after assignment
 console.log('Current markers:', window.__markers);
 ```
 
 ### Check if MemoizedMarker is re-rendering:
+
 ```javascript
 // Add to MemoizedMarker comparison function
 console.log('Comparing marker:', prevProps.marker.id, {
@@ -302,6 +340,7 @@ console.log('Comparing marker:', prevProps.marker.id, {
 ```
 
 ### Check real-time subscription:
+
 ```javascript
 // Add to useEventMarkers_v2.js assignment subscription
 console.log('Assignment updated:', assignment, 'Company data:', companyData);

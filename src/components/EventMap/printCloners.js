@@ -3,7 +3,7 @@ import { getAbsoluteUrl } from '../../utils/getBaseUrl';
 
 /**
  * Print cloner module for Leaflet BrowserPrint plugin.
- * 
+ *
  * Uses L.icon.glyph() recreation as the primary strategy since all markers
  * in this application are created via createMarkerIcon() which stores complete
  * icon options. This ensures print output matches UI exactly with:
@@ -11,7 +11,7 @@ import { getAbsoluteUrl } from '../../utils/getBaseUrl';
  * - Proper glyph text/numbers
  * - Accurate icon sizes
  * - Shadow rendering
- * 
+ *
  * Fallback chain: L.icon.glyph() → L.icon() → L.Icon.Default()
  */
 
@@ -30,7 +30,7 @@ function makeAbsoluteUrl(url) {
  * Clone a single marker layer for print output.
  * Recreates the icon using L.icon.glyph() with all original options preserved.
  * Skips invisible or non-interactive markers (e.g., search layer markers).
- * 
+ *
  * @param {L.Marker} layer - Original marker layer to clone
  * @returns {L.Marker|null} Cloned marker with properly configured icon, or null if marker should be skipped
  */
@@ -46,15 +46,16 @@ export function cloneMarkerLayer(layer) {
 
   const iconOpts = layer?.options?.icon?.options;
   const latLng = layer.getLatLng();
-  
+
   let clonedIcon;
-  
+
   // Strategy 1: Recreate glyph icon (primary - all our markers use this)
   const isGlyphIcon = iconOpts && (iconOpts.glyph !== undefined || iconOpts.prefix !== undefined);
-  
+
   if (isGlyphIcon && L.icon && L.icon.glyph) {
     const opts = {
       iconUrl: makeAbsoluteUrl(iconOpts.iconUrl),
+      // Use iconSize as originally cloned (UI-scaled) to preserve previous behavior
       iconSize: iconOpts.iconSize || [25, 41],
       iconAnchor: iconOpts.iconAnchor || [12, 41],
       popupAnchor: iconOpts.popupAnchor || [1, -34],
@@ -68,10 +69,12 @@ export function cloneMarkerLayer(layer) {
       glyphSize: iconOpts.glyphSize || '11px',
       glyphAnchor: iconOpts.glyphAnchor || [0, 0],
       className: iconOpts.className || '',
+      // Preserve baseIconSize as created by createMarkerIcon when possible
+      baseIconSize: iconOpts.baseIconSize || undefined,
     };
 
     clonedIcon = L.icon.glyph(opts);
-    
+
     if (process.env.NODE_ENV !== 'production') {
       console.log('[PrintCloner] ✓ L.icon.glyph()', {
         glyph: opts.glyph,
@@ -92,7 +95,7 @@ export function cloneMarkerLayer(layer) {
       shadowAnchor: iconOpts.shadowAnchor,
       className: iconOpts.className || '',
     });
-    
+
     if (process.env.NODE_ENV !== 'production') {
       console.log('[PrintCloner] ✓ L.icon()', {
         iconUrl: iconOpts.iconUrl,
@@ -103,7 +106,7 @@ export function cloneMarkerLayer(layer) {
   // Strategy 3: Last resort - Leaflet default icon
   else {
     clonedIcon = new L.Icon.Default();
-    
+
     if (process.env.NODE_ENV !== 'production') {
       console.log('[PrintCloner] ⚠ L.Icon.Default() fallback');
     }
@@ -126,7 +129,7 @@ export function cloneMarkerLayer(layer) {
 /**
  * Clone a marker cluster group for print output.
  * Iterates through all markers in the cluster and clones each one.
- * 
+ *
  * @param {L.MarkerClusterGroup} clusterGroup - Original cluster group to clone
  * @returns {L.MarkerClusterGroup|L.LayerGroup} Cloned cluster with all markers
  */
@@ -151,24 +154,24 @@ export function cloneMarkerClusterLayer(clusterGroup) {
 
   const clusterOptions = group.options || {};
   let cluster;
-  
+
   if (typeof L.markerClusterGroup === 'function') {
     cluster = L.markerClusterGroup(clusterOptions);
   } else {
     // Marker cluster plugin not present - fall back to layerGroup
     cluster = L.layerGroup();
   }
-  
+
   if (typeof cluster.addLayers === 'function') {
     cluster.addLayers(markers);
   } else {
     markers.forEach((m) => cluster.addLayer(m));
   }
-  
+
   if (process.env.NODE_ENV !== 'production') {
     console.log('[PrintCloner] ✓ Cloned cluster with', markers.length, 'markers');
   }
-  
+
   return cluster;
 }
 

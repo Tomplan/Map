@@ -5,6 +5,7 @@
 Before you can test, you MUST complete these steps in Supabase:
 
 ### ✅ Checklist - Have you done these?
+
 - [ ] Created 'logos' bucket in Supabase Dashboard
 - [ ] Set bucket to PUBLIC
 - [ ] Added RLS policies (see Step 3 in checklist)
@@ -19,11 +20,13 @@ Before you can test, you MUST complete these steps in Supabase:
 ### 1. Navigate to the Test Page
 
 **Option A: Direct URL**
+
 1. Open your browser
 2. Navigate to: `http://localhost:5173/Map/#/storage-test`
    (or if using dev server: `http://localhost:5173/#/storage-test`)
 
 **Option B: From Admin Dashboard**
+
 1. Log in to admin dashboard: `/Map/#/admin`
 2. Manually type in URL bar: `/Map/#/storage-test`
 
@@ -34,16 +37,19 @@ Before you can test, you MUST complete these steps in Supabase:
 You should see a section labeled **"Authentication Status"**
 
 ✅ **Success looks like:**
+
 ```
 ✅ Authenticated as: your-email@example.com
 ```
 
 ❌ **Failure looks like:**
+
 ```
 ❌ Not authenticated - Please log in first
 ```
 
 **If failed:**
+
 1. Go to `/Map/#/admin`
 2. Log in with your admin credentials
 3. Return to `/Map/#/storage-test`
@@ -55,17 +61,20 @@ You should see a section labeled **"Authentication Status"**
 You should see a section labeled **"Storage Bucket Status"**
 
 ✅ **Success looks like:**
+
 ```
 ✅ Bucket 'logos' exists and is accessible
 ```
 
 ❌ **Failure looks like:**
+
 ```
 ❌ Bucket 'logos' not found or inaccessible
 Error: Storage bucket "logos" not found. Please create it in Supabase Dashboard.
 ```
 
 **If failed:**
+
 1. **Go to Supabase Dashboard**: https://supabase.com/dashboard
 2. **Select your project** (the one with your map data)
 3. **Click "Storage"** in left sidebar
@@ -77,6 +86,7 @@ Error: Storage bucket "logos" not found. Please create it in Supabase Dashboard.
 6. **Click "Create bucket"**
 7. **Go to SQL Editor** in Supabase
 8. **Run these policies** (copy from Step 3 in main checklist):
+
    ```sql
    CREATE POLICY "Public can view logos"
    ON storage.objects FOR SELECT
@@ -85,17 +95,18 @@ Error: Storage bucket "logos" not found. Please create it in Supabase Dashboard.
    CREATE POLICY "Authenticated users can upload logos"
    ON storage.objects FOR INSERT
    WITH CHECK (
-     bucket_id = 'logos' 
+     bucket_id = 'logos'
      AND auth.role() = 'authenticated'
    );
 
    CREATE POLICY "Authenticated users can delete logos"
    ON storage.objects FOR DELETE
    USING (
-     bucket_id = 'logos' 
+     bucket_id = 'logos'
      AND auth.role() = 'authenticated'
    );
    ```
+
 9. **Return to test page** and click "Recheck" button
 
 ---
@@ -124,16 +135,19 @@ Once both status checks show ✅:
 ### 5. Verify Image Displays
 
 ✅ **Success looks like:**
+
 - Small preview image appears below upload button
 - Image is clear and properly displayed
 - Delete button (trash icon) appears next to image
 
 ❌ **Common issues:**
+
 - Image URL shown but no image: Bucket might not be public
 - Broken image icon: Check file was actually uploaded
 - No preview: Check browser console for errors
 
 **To verify in Supabase:**
+
 1. Go to Supabase Dashboard → Storage → logos bucket
 2. Click on "test" folder
 3. You should see your uploaded file with a timestamp name
@@ -148,6 +162,7 @@ Once both status checks show ✅:
 3. **Check Upload History section** - record should remain but image gone
 
 **To verify deletion:**
+
 - Go back to Supabase Dashboard → Storage → logos → test
 - File should be removed
 
@@ -158,6 +173,7 @@ Once both status checks show ✅:
 Below the upload section, you should see **"Upload History"**
 
 Each upload shows:
+
 - ✓ Success indicator (green)
 - Timestamp of upload
 - Full URL to the image
@@ -165,6 +181,7 @@ Each upload shows:
 - Thumbnail preview of the image
 
 This helps you verify:
+
 - URLs are properly formatted
 - Images are accessible
 - Multiple uploads work correctly
@@ -174,7 +191,9 @@ This helps you verify:
 ## Expected Results Summary
 
 ### All Green ✅
+
 If everything works, you should see:
+
 1. ✅ Authentication status: Logged in
 2. ✅ Bucket status: Exists and accessible
 3. ✅ Upload works: Image appears
@@ -183,7 +202,9 @@ If everything works, you should see:
 6. ✅ History tracked: All uploads logged
 
 ### Next Step After Success
+
 Once all tests pass:
+
 - Proceed to **Phase 3**: Integrate into BrandingSettings
 - Proceed to **Phase 4**: Integrate into CompaniesTab
 
@@ -192,29 +213,37 @@ Once all tests pass:
 ## Troubleshooting Common Issues
 
 ### Issue 1: "Not authenticated"
+
 **Cause**: Not logged in or session expired
-**Fix**: 
+**Fix**:
+
 1. Navigate to `/Map/#/admin`
 2. Log in with admin email/password
 3. Return to storage test page
 
 ### Issue 2: "Bucket not found"
+
 **Cause**: Bucket doesn't exist or wrong name
-**Fix**: 
+**Fix**:
+
 1. Check Supabase Dashboard → Storage
 2. Verify bucket named exactly `logos` exists
 3. If not, create it following Step 3 instructions above
 
 ### Issue 3: "Permission denied" on upload
+
 **Cause**: RLS policies not set up
-**Fix**: 
+**Fix**:
+
 1. Go to Supabase Dashboard → SQL Editor
 2. Run the three policy creation queries from Step 3
 3. Verify in Storage → Policies tab
 
 ### Issue 4: Upload succeeds but image doesn't display
+
 **Cause**: Bucket not public
-**Fix**: 
+**Fix**:
+
 1. Go to Supabase Dashboard → Storage
 2. Click on 'logos' bucket
 3. Go to Settings
@@ -222,20 +251,26 @@ Once all tests pass:
 5. Save settings
 
 ### Issue 5: "File type not allowed"
+
 **Cause**: Unsupported file format
-**Fix**: 
+**Fix**:
+
 - Only use: PNG, JPG, JPEG, WEBP, AVIF, or SVG
 - Check file extension is correct
 
 ### Issue 6: "File too large"
+
 **Cause**: File over 5MB
-**Fix**: 
+**Fix**:
+
 - Resize/compress your image
 - Use online tools like TinyPNG or Squoosh
 
 ### Issue 7: Console shows CORS errors
+
 **Cause**: Supabase CORS not configured (rare)
-**Fix**: 
+**Fix**:
+
 - Usually auto-configured by Supabase
 - Check your VITE_SUPABASE_URL in .env matches dashboard
 - Try hard refresh (Cmd+Shift+R on Mac, Ctrl+Shift+R on Windows)
@@ -247,6 +282,7 @@ Once all tests pass:
 If issues persist, open browser console (F12) and look for:
 
 **Good signs:**
+
 ```
 ✓ Bucket check successful
 ✓ File validated
@@ -254,6 +290,7 @@ If issues persist, open browser console (F12) and look for:
 ```
 
 **Bad signs (with fixes):**
+
 ```
 ❌ "Storage bucket not found" → Create bucket
 ❌ "new row violates row-level security" → Add RLS policies
@@ -269,7 +306,9 @@ Open browser console on test page and run:
 
 ```javascript
 // Check if authenticated
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser();
 console.log('User:', user);
 
 // Check bucket
@@ -293,6 +332,7 @@ console.log('Files:', files);
 ## Video Walkthrough (If Needed)
 
 I can guide you through this live if needed. The key steps are:
+
 1. Supabase bucket exists and is public ← MOST COMMON ISSUE
 2. RLS policies applied ← SECOND MOST COMMON
 3. You're logged in as admin

@@ -5,6 +5,7 @@ A mobile-first web application designed for event navigation, providing an inter
 ## 🗺️ Features
 
 ### For Event Visitors
+
 - **Interactive Map**: Explore the event venue with detailed markers for exhibitors, parking, food, and other points of interest.
 - **Search Functionality**: Quickly find exhibitors, booths, or specific locations on the map.
 - **Exhibitor Listings**: Browse a comprehensive list of all exhibitors with detailed information.
@@ -15,10 +16,11 @@ A mobile-first web application designed for event navigation, providing an inter
 - **Favorites**: Save your favorite exhibitors for quick access.
 
 ### For Event Admins
+
 - **Secure Login**: A secure, role-based admin panel to manage all event data.
 - **Dashboard**: Get an overview of key event metrics, including total markers, companies, subscriptions, and assignments.
 - **Map Management**: Easily add, edit, and delete map markers. Drag-and-drop functionality for precise positioning.
-    - Per-marker sizing: admins can set per-marker `iconSize`, `glyphSize` and `shadowScale` to tune how each marker and glyph scales across zoom levels. (Legacy fields `iconBaseSize` / `glyphBaseSize` are present in the DB for backfill/verification and are not used by the UI.)
+  - Per-marker sizing: admins can set per-marker `iconSize`, `glyphSize` and `shadowScale` to tune how each marker and glyph scales across zoom levels. (Legacy fields `iconBaseSize` / `glyphBaseSize` are present in the DB for backfill/verification and are not used by the UI.)
 - **Company Management**: Add and manage companies, logos, and contact details.
 - **Booth Assignments**: Assign companies to specific booth locations on the map.
 - **Event Subscriptions**: Manage event subscriptions, including meal counts, booth numbers, and special requirements.
@@ -41,17 +43,18 @@ A mobile-first web application designed for event navigation, providing an inter
 
 ## 🧭 Debugging policy — root-cause first
 
-This codebase follows a strict *Root-Cause First* policy when debugging. Before acting on a bug you must:
+This codebase follows a strict _Root-Cause First_ policy when debugging. Before acting on a bug you must:
 
 1. Reproduce the issue reliably.
-2. Collect traces and logs so you can reason about the *root cause*.
+2. Collect traces and logs so you can reason about the _root cause_.
 3. Implement the smallest change that fixes the root cause and add a test proving the fix.
-4. Remove any temporary debug hooks and keep PRs short, with a *Root-Cause Summary* describing steps 1–3.
+4. Remove any temporary debug hooks and keep PRs short, with a _Root-Cause Summary_ describing steps 1–3.
 
 See docs/ROOT_CAUSE_POLICY.md for the full policy and checklist.
-  - [Supabase](https://supabase.com/) for the backend and database.
-  - [i18next](https://www.i18next.com/) for internationalization.
-  - [Material Design Icons](https://fonts.google.com/icons) for icons.
+
+- [Supabase](https://supabase.com/) for the backend and database.
+- [i18next](https://www.i18next.com/) for internationalization.
+- [Material Design Icons](https://fonts.google.com/icons) for icons.
 
 - **Backend**:
   - [Supabase](https://supabase.com/) - A Firebase alternative, providing a PostgreSQL database with real-time capabilities and authentication.
@@ -65,42 +68,48 @@ See docs/ROOT_CAUSE_POLICY.md for the full policy and checklist.
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm (v9 or higher)
 
 ### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/Tomplan/Map.git
     cd Map
     ```
 
 2.  **Install dependencies:**
+
     ```bash
     npm install
     ```
 
 3.  **Set up environment variables:**
     Create a `.env` file in the root of your project with the following variables:
+
     ```env
     VITE_SUPABASE_URL=your_supabase_project_url
     VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
     ```
 
 4.  **Set up the Supabase Database:**
-    -   Navigate to your Supabase project dashboard.
-    -   Go to the **SQL Editor** and run the `migrations/COMPLETE_MIGRATION.sql` script. This will create all the necessary tables, set up Row Level Security (RLS), and migrate any existing data.
-    -   You can also run individual migration scripts from the `migrations/` folder if you prefer a more granular approach.
+    - Navigate to your Supabase project dashboard.
+    - Go to the **SQL Editor** and run the `migrations/COMPLETE_MIGRATION.sql` script. This will create all the necessary tables, set up Row Level Security (RLS), and migrate any existing data.
+    - You can also run individual migration scripts from the `migrations/` folder if you prefer a more granular approach.
 
 5.  **Start the development server:**
+
     ```bash
     npm run dev
     ```
+
     The application will be available at `http://localhost:5173`.
 
 6.  **Stop dev servers cleanly:**
-        We added a small helper script to stop `vite`/`node`/`npm` processes that belong to this repository.
+    We added a small helper script to stop `vite`/`node`/`npm` processes that belong to this repository.
 
         - Convenience (one-liner):
             ```bash
@@ -119,10 +128,12 @@ See docs/ROOT_CAUSE_POLICY.md for the full policy and checklist.
             bash scripts/kill-dev-servers.sh --port 5173
             ```
 
-6.  **Build for production:**
+7.  **Build for production:**
+
     ```bash
     npm run build
     ```
+
     The built files will be in the `dist` folder, ready for deployment.
 
     ## 🔀 Branching workflow (recommended)
@@ -170,83 +181,83 @@ Map/
 
 The interactive map is built with [Leaflet](https://leafletjs.com/) and offers a rich set of features:
 
--   **Multiple Map Layers**: Users can switch between different map styles, such as Carto Voyager and Esri World Imagery.
--   **Custom Markers**: Different marker types for exhibitors, parking, food, and more, with custom icons and colors.
--   **Zoom Controls**: Custom zoom buttons with Material Design icons.
--   **Home Button**: A button to quickly return to the map's default view.
--   **Search Bar**: Integrated search functionality to find markers by name, booth number, or other attributes.
--   **Tooltips & Popups**: Hovering over a marker shows a tooltip with basic info, while clicking opens a detailed popup.
--   **Minimap**: A minimap in the bottom-right corner provides an overview of the entire map.
--   **Rectangle Overlays**: For exhibitor booths, a 6x6 meter rectangle can be displayed, which can be rotated and repositioned by admins.
--   **Marker Clustering**: Markers are clustered at lower zoom levels for better performance and user experience.
--   **Offline Support**: Map tiles are cached, allowing the map to be viewed offline.
+- **Multiple Map Layers**: Users can switch between different map styles, such as Carto Voyager and Esri World Imagery.
+- **Custom Markers**: Different marker types for exhibitors, parking, food, and more, with custom icons and colors.
+- **Zoom Controls**: Custom zoom buttons with Material Design icons.
+- **Home Button**: A button to quickly return to the map's default view.
+- **Search Bar**: Integrated search functionality to find markers by name, booth number, or other attributes.
+- **Tooltips & Popups**: Hovering over a marker shows a tooltip with basic info, while clicking opens a detailed popup.
+- **Minimap**: A minimap in the bottom-right corner provides an overview of the entire map.
+- **Rectangle Overlays**: For exhibitor booths, a 6x6 meter rectangle can be displayed, which can be rotated and repositioned by admins.
+- **Marker Clustering**: Markers are clustered at lower zoom levels for better performance and user experience.
+- **Offline Support**: Map tiles are cached, allowing the map to be viewed offline.
 
 ## 👤 Admin Dashboard
 
 The admin dashboard provides a comprehensive set of tools for event management:
 
--   **Role-Based Access Control**: Different user roles (Super Admin, System Manager, Event Manager) with varying levels of access.
--   **Dashboard**: An overview page with key statistics and quick actions.
--   **Map Management**: Add, edit, and delete markers. Drag markers to reposition them and rotate booth rectangles. Lock marker positions to prevent changes before the event.
-    - Per-marker base sizing (new): set `iconBaseSize`, `glyphBaseSize`, and `shadowScale` per marker to control initial sizes and scaling behavior across zoom buckets.
--   **Company Management**: View, add, and edit company information, including logos, websites, and descriptions.
--   **Event Subscriptions**: Manage company registrations, including booth counts, meal preferences, and special requirements.
--   **Booth Assignments**: Assign companies to specific map markers (booths) and manage these assignments.
--   **Program Management**: Create and manage the event schedule, with support for multilingual content and drag-and-drop reordering.
--   **Category Management**: Define and manage categories for exhibitors to improve organization and filtering on the public map.
--   **Settings**: Configure organization profiles, branding, UI language, map defaults, and event-specific settings.
--   **User Management (Super Admin)**: Invite and manage other admin users, assign roles, and control access to different parts of the admin panel.
--   **Feedback & Feature Requests**: A built-in system for submitting, tracking, and managing user feedback and feature requests.
--   **Data Import/Export**: Easily bulk import or export event data using spreadsheet files or JSON.
--   **Help System**: Integrated help panel with contextual guidance, a "What's New" section, and a quick-start guide.
+- **Role-Based Access Control**: Different user roles (Super Admin, System Manager, Event Manager) with varying levels of access.
+- **Dashboard**: An overview page with key statistics and quick actions.
+- **Map Management**: Add, edit, and delete markers. Drag markers to reposition them and rotate booth rectangles. Lock marker positions to prevent changes before the event.
+  - Per-marker base sizing (new): set `iconBaseSize`, `glyphBaseSize`, and `shadowScale` per marker to control initial sizes and scaling behavior across zoom buckets.
+- **Company Management**: View, add, and edit company information, including logos, websites, and descriptions.
+- **Event Subscriptions**: Manage company registrations, including booth counts, meal preferences, and special requirements.
+- **Booth Assignments**: Assign companies to specific map markers (booths) and manage these assignments.
+- **Program Management**: Create and manage the event schedule, with support for multilingual content and drag-and-drop reordering.
+- **Category Management**: Define and manage categories for exhibitors to improve organization and filtering on the public map.
+- **Settings**: Configure organization profiles, branding, UI language, map defaults, and event-specific settings.
+- **User Management (Super Admin)**: Invite and manage other admin users, assign roles, and control access to different parts of the admin panel.
+- **Feedback & Feature Requests**: A built-in system for submitting, tracking, and managing user feedback and feature requests.
+- **Data Import/Export**: Easily bulk import or export event data using spreadsheet files or JSON.
+- **Help System**: Integrated help panel with contextual guidance, a "What's New" section, and a quick-start guide.
 
 ## 🌐 Localization
 
 The application is built with internationalization in mind:
 
--   **UI Language**: The language of the admin panel and public-facing app can be changed by users and admins.
--   **Content Translation**: Event content, such as company descriptions and event schedules, can be managed in multiple languages. Currently, English and Dutch are supported.
--   **Translation Files**: All translations are stored in JSON files located in the `src/locales/` directory.
--   **i18next**: The [i18next](https://www.i18next.com/) library is used to manage translations and provide a seamless multilingual experience.
+- **UI Language**: The language of the admin panel and public-facing app can be changed by users and admins.
+- **Content Translation**: Event content, such as company descriptions and event schedules, can be managed in multiple languages. Currently, English and Dutch are supported.
+- **Translation Files**: All translations are stored in JSON files located in the `src/locales/` directory.
+- **i18next**: The [i18next](https://www.i18next.com/) library is used to manage translations and provide a seamless multilingual experience.
 
 ## ♿ Accessibility
 
 The Event Map App is designed to be accessible to all users:
 
--   **Semantic HTML**: Uses proper HTML5 elements for better screen reader support.
--   **Keyboard Navigation**: All interactive elements are accessible via the keyboard.
--   **High-Contrast Mode**: Users can switch to a high-contrast color scheme for better visibility.
--   **Large Text Mode**: Provides an option to increase the font size for improved readability.
--   **ARIA Attributes**: Uses ARIA roles and attributes to enhance the experience for users of assistive technologies.
--   **Focus Management**: Ensures that keyboard focus is handled correctly, especially in modals and dialogs.
+- **Semantic HTML**: Uses proper HTML5 elements for better screen reader support.
+- **Keyboard Navigation**: All interactive elements are accessible via the keyboard.
+- **High-Contrast Mode**: Users can switch to a high-contrast color scheme for better visibility.
+- **Large Text Mode**: Provides an option to increase the font size for improved readability.
+- **ARIA Attributes**: Uses ARIA roles and attributes to enhance the experience for users of assistive technologies.
+- **Focus Management**: Ensures that keyboard focus is handled correctly, especially in modals and dialogs.
 
 ## 🔄 Offline Support
 
 The application provides a degree of offline functionality:
 
--   **Service Worker**: A service worker (`public/service-worker.js`) caches map tiles and static assets.
--   **Marker Data**: Marker data is cached in `localStorage` and loaded when the user is offline.
--   **Offline Indicator**: A banner at the bottom of the screen indicates when the user is offline.
--   **Limited Functionality**: While offline, users can view the map and marker data but cannot make changes or perform searches that require a network connection.
+- **Service Worker**: A service worker (`public/service-worker.js`) caches map tiles and static assets.
+- **Marker Data**: Marker data is cached in `localStorage` and loaded when the user is offline.
+- **Offline Indicator**: A banner at the bottom of the screen indicates when the user is offline.
+- **Limited Functionality**: While offline, users can view the map and marker data but cannot make changes or perform searches that require a network connection.
 
 ## 📊 Database Schema
 
 The application uses a PostgreSQL database managed by Supabase. The schema is defined in a series of migration scripts in the `migrations/` folder. Key tables include:
 
--   `companies`: Stores information about the exhibiting companies.
--   `Markers_Core`, `Markers_Appearance`, `Markers_Content`: Separates marker data into core, appearance, and content-related fields.
--   `assignments`: Links companies to specific map markers for each event year.
--   `event_subscriptions`: Manages company registrations and their specific requirements.
--   `event_activities`: Stores the event schedule and program.
--   `categories`: Defines exhibitor categories.
--   `organization_profile`: Contains general event and organization information.
--   `user_roles`: Manages user roles and permissions.
+- `companies`: Stores information about the exhibiting companies.
+- `Markers_Core`, `Markers_Appearance`, `Markers_Content`: Separates marker data into core, appearance, and content-related fields.
+- `assignments`: Links companies to specific map markers for each event year.
+- `event_subscriptions`: Manages company registrations and their specific requirements.
+- `event_activities`: Stores the event schedule and program.
+- `categories`: Defines exhibitor categories.
+- `organization_profile`: Contains general event and organization information.
+- `user_roles`: Manages user roles and permissions.
 
 ## 🔧 Configuration
 
--   **Vite**: The build tool and development server are configured in `vite.config.js`.
--   **Tailwind CSS**: The styling framework is configured in `tailwind.config.cjs`.
--   **ESLint & Prettier**: Code quality and formatting are enforced using ESLint and Prettier, with configurations in `.eslintrc.js` and `.prettierrc`.
+- **Vite**: The build tool and development server are configured in `vite.config.js`.
+- **Tailwind CSS**: The styling framework is configured in `tailwind.config.cjs`.
+- **ESLint & Prettier**: Code quality and formatting are enforced using ESLint and Prettier, with configurations in `.eslintrc.js` and `.prettierrc`.
 
 ## 🚀 Deployment
 
@@ -280,10 +291,10 @@ Contributions are welcome! Please follow these steps:
 
 ### Development Guidelines
 
--   Follow the existing code style.
--   Write tests for new features and bug fixes.
--   Update documentation as needed.
--   Run the linter and formatter before committing.
+- Follow the existing code style.
+- Write tests for new features and bug fixes.
+- Update documentation as needed.
+- Run the linter and formatter before committing.
 
 ## 📄 License
 
@@ -291,10 +302,10 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## 🙏 Acknowledgments
 
--   [Leaflet](https://leafletjs.com/) for the excellent mapping library.
--   [Supabase](https://supabase.com/) for the powerful backend-as-a-service.
--   [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework.
--   [Vite](https://vitejs.dev/) for the fast and modern build tool.
+- [Leaflet](https://leafletjs.com/) for the excellent mapping library.
+- [Supabase](https://supabase.com/) for the powerful backend-as-a-service.
+- [Tailwind CSS](https://tailwindcss.com/) for the utility-first CSS framework.
+- [Vite](https://vitejs.dev/) for the fast and modern build tool.
 
 ## 📞 Contact
 

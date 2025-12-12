@@ -20,7 +20,7 @@
 @tailwind utilities;
 
 /* Global form field styling - ensure white backgrounds */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+input:not([type='checkbox']):not([type='radio']):not([type='range']),
 textarea,
 select {
   background-color: white !important;
@@ -28,7 +28,7 @@ select {
 }
 
 /* Prevent double borders on focus */
-input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+input:not([type='checkbox']):not([type='radio']):not([type='range']):focus,
 textarea:focus,
 select:focus {
   outline: none !important;
@@ -46,17 +46,17 @@ select:focus {
     @apply transition-all outline-none;
     @apply disabled:bg-input-bg-disabled disabled:cursor-not-allowed;
   }
-  
+
   /* Textarea */
   .textarea-base {
     @apply input-base resize-vertical min-h-[100px];
   }
-  
+
   /* Select Dropdown */
   .select-base {
     @apply input-base cursor-pointer;
   }
-  
+
   /* Primary Button */
   .btn-primary {
     @apply px-6 py-3 rounded-lg font-semibold;
@@ -65,7 +65,7 @@ select:focus {
     @apply transition-all transform hover:scale-[1.02] active:scale-[0.98];
     @apply disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
   }
-  
+
   /* Secondary Button */
   .btn-secondary {
     @apply px-6 py-3 rounded-lg font-semibold;
@@ -74,7 +74,7 @@ select:focus {
     @apply transition-all;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
   }
-  
+
   /* Form Label */
   .label-base {
     @apply block text-sm font-semibold text-gray-700 mb-2;

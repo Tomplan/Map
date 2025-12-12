@@ -28,7 +28,12 @@ function cdnUrl(filename) {
   return `${supabaseUrl}/storage/v1/object/public/Logos/generated/${encodeURIComponent(filename)}`;
 }
 
-async function fetchRowsForTable(tableName, select = 'id, logo', whereOr = 'logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%', limit = 1000) {
+async function fetchRowsForTable(
+  tableName,
+  select = 'id, logo',
+  whereOr = 'logo.ilike.%assets/logos/%,logo.not.ilike.%http%,logo.ilike.%/Logos/companies/%,logo.ilike.%/Logos/organization/%',
+  limit = 1000,
+) {
   console.log(`Fetching ${tableName} rows with non-remote logo values...`);
   const { data: rows, error } = await supabase
     .from(tableName)
@@ -53,7 +58,7 @@ async function migrateCompanies() {
   }
 
   // Filter out rows which already point to the 'generated' CDN path — nothing to do for those
-  const candidates = rows.filter(r => {
+  const candidates = rows.filter((r) => {
     const logo = (r.logo || '').toString();
     if (!logo) return false;
     if (logo.includes('/Logos/generated/')) return false;
@@ -61,21 +66,25 @@ async function migrateCompanies() {
   });
 
   if (candidates.length === 0) {
-    console.log('No candidate company rows found (all already point to generated CDN). Nothing to do.');
+    console.log(
+      'No candidate company rows found (all already point to generated CDN). Nothing to do.',
+    );
     return;
   }
 
   console.log(`Found ${candidates.length} company records to review`);
 
-  const plan = candidates.map(r => {
-    const logo = r.logo || '';
-    const filename = logo.split('/').pop();
-    if (!filename) return null;
-    const newLogo = cdnUrl(filename);
-    return { id: r.id, old: logo, new: newLogo };
-  }).filter(Boolean);
+  const plan = candidates
+    .map((r) => {
+      const logo = r.logo || '';
+      const filename = logo.split('/').pop();
+      if (!filename) return null;
+      const newLogo = cdnUrl(filename);
+      return { id: r.id, old: logo, new: newLogo };
+    })
+    .filter(Boolean);
 
-  console.table(plan.map(p => ({ id: p.id, old: p.old, new: p.new })));
+  console.table(plan.map((p) => ({ id: p.id, old: p.old, new: p.new })));
 
   if (!confirm) {
     console.log('\nDRY RUN (no changes applied). Rerun with --confirm to apply updates.');
@@ -93,14 +102,19 @@ async function migrateCompanies() {
 
 async function migrateMarkers() {
   // markers_content holds the marker's content including logo
-  const rows = await fetchRowsForTable('markers_content', 'id, logo, event_year', 'logo.ilike.%assets/logos/%,logo.not.ilike.%http%', 1000);
+  const rows = await fetchRowsForTable(
+    'markers_content',
+    'id, logo, event_year',
+    'logo.ilike.%assets/logos/%,logo.not.ilike.%http%',
+    1000,
+  );
 
   if (!rows || rows.length === 0) {
     console.log('No candidate marker rows found. Nothing to do.');
     return;
   }
 
-  const candidates = rows.filter(r => {
+  const candidates = rows.filter((r) => {
     const logo = (r.logo || '').toString();
     if (!logo) return false;
     if (logo.includes('/Logos/generated/')) return false;
@@ -108,21 +122,25 @@ async function migrateMarkers() {
   });
 
   if (candidates.length === 0) {
-    console.log('No candidate marker rows found (all already point to generated CDN). Nothing to do.');
+    console.log(
+      'No candidate marker rows found (all already point to generated CDN). Nothing to do.',
+    );
     return;
   }
 
   console.log(`Found ${candidates.length} marker records to review`);
 
-  const plan = candidates.map(r => {
-    const logo = r.logo || '';
-    const filename = logo.split('/').pop();
-    if (!filename) return null;
-    const newLogo = cdnUrl(filename);
-    return { id: r.id, event_year: r.event_year, old: logo, new: newLogo };
-  }).filter(Boolean);
+  const plan = candidates
+    .map((r) => {
+      const logo = r.logo || '';
+      const filename = logo.split('/').pop();
+      if (!filename) return null;
+      const newLogo = cdnUrl(filename);
+      return { id: r.id, event_year: r.event_year, old: logo, new: newLogo };
+    })
+    .filter(Boolean);
 
-  console.table(plan.map(p => ({ id: p.id, event_year: p.event_year, old: p.old, new: p.new })));
+  console.table(plan.map((p) => ({ id: p.id, event_year: p.event_year, old: p.old, new: p.new })));
 
   if (!confirm) {
     console.log('\nDRY RUN (no changes applied). Rerun with --confirm to apply updates.');
@@ -132,7 +150,10 @@ async function migrateMarkers() {
   console.log('\nApplying marker updates...');
   for (const item of plan) {
     const { id, new: newUrl } = item;
-    const { error: e } = await supabase.from('markers_content').update({ logo: newUrl }).eq('id', id);
+    const { error: e } = await supabase
+      .from('markers_content')
+      .update({ logo: newUrl })
+      .eq('id', id);
     if (e) console.error('Failed to update marker', id, e.message || e);
     else console.log('Updated marker', id);
   }
@@ -154,7 +175,7 @@ async function migrateOrganizationProfile() {
     return;
   }
 
-  const candidates = rows.filter(r => {
+  const candidates = rows.filter((r) => {
     const logo = (r.logo || '').toString();
     if (!logo) return false;
     if (logo.includes('/Logos/generated/')) return false;
@@ -162,21 +183,25 @@ async function migrateOrganizationProfile() {
   });
 
   if (candidates.length === 0) {
-    console.log('No candidate organization_profile rows found (all already point to generated CDN). Nothing to do.');
+    console.log(
+      'No candidate organization_profile rows found (all already point to generated CDN). Nothing to do.',
+    );
     return;
   }
 
   console.log(`Found ${candidates.length} organization_profile rows to review`);
 
-  const plan = candidates.map(r => {
-    const logo = r.logo || '';
-    const filename = logo.split('/').pop();
-    if (!filename) return null;
-    const newLogo = cdnUrl(filename);
-    return { id: r.id, old: logo, new: newLogo };
-  }).filter(Boolean);
+  const plan = candidates
+    .map((r) => {
+      const logo = r.logo || '';
+      const filename = logo.split('/').pop();
+      if (!filename) return null;
+      const newLogo = cdnUrl(filename);
+      return { id: r.id, old: logo, new: newLogo };
+    })
+    .filter(Boolean);
 
-  console.table(plan.map(p => ({ id: p.id, old: p.old, new: p.new })));
+  console.table(plan.map((p) => ({ id: p.id, old: p.old, new: p.new })));
 
   if (!confirm) {
     console.log('\nDRY RUN (no changes applied). Rerun with --confirm to apply updates.');
@@ -186,7 +211,10 @@ async function migrateOrganizationProfile() {
   console.log('\nApplying organization_profile updates...');
   for (const item of plan) {
     const { id, new: newUrl } = item;
-    const { error: e } = await supabase.from('organization_profile').update({ logo: newUrl }).eq('id', id);
+    const { error: e } = await supabase
+      .from('organization_profile')
+      .update({ logo: newUrl })
+      .eq('id', id);
     if (e) console.error('Failed to update organization_profile', id, e.message || e);
     else console.log('Updated organization_profile', id);
   }

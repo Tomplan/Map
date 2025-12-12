@@ -55,11 +55,11 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const marker = cloneMarkerLayer(layer);
-    
+
     expect(marker).toBeDefined();
     expect(marker.options).toBeDefined();
     expect(marker.options.icon).toBeDefined();
-    
+
     const iconOpts = marker.options.icon.options;
     expect(iconOpts.iconUrl).toBe('https://cdn.example.com/marker.svg');
     expect(iconOpts.glyph).toBe('42');
@@ -84,7 +84,7 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const marker = cloneMarkerLayer(layer);
-    
+
     expect(marker).toBeDefined();
     const iconOpts = marker.options.icon.options;
     expect(iconOpts.iconUrl).toBe('https://cdn.example.com/simple.png');
@@ -99,7 +99,7 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const marker = cloneMarkerLayer(layer);
-    
+
     expect(marker).toBeDefined();
     // Should have created a marker with default icon
     expect(marker.options.icon).toBeDefined();
@@ -120,7 +120,7 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const marker = cloneMarkerLayer(layer);
-    
+
     expect(marker).toBeDefined();
     // Popup should be bound
     expect(marker.getPopup()).toBeDefined();
@@ -142,7 +142,7 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const result = cloneMarkerLayer(layer);
-    
+
     expect(result).toBeNull();
   });
 
@@ -161,7 +161,7 @@ describe('printCloners.cloneMarkerLayer', () => {
     };
 
     const result = cloneMarkerLayer(layer);
-    
+
     expect(result).toBeNull();
   });
 });

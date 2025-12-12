@@ -6,7 +6,14 @@ import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import useUserPreferences from '../../hooks/useUserPreferences';
 import { supabase } from '../../supabaseClient';
 import Icon from '@mdi/react';
-import { mdiArchive, mdiHistory, mdiMagnify, mdiCheck, mdiChevronUp, mdiChevronDown } from '@mdi/js';
+import {
+  mdiArchive,
+  mdiHistory,
+  mdiMagnify,
+  mdiCheck,
+  mdiChevronUp,
+  mdiChevronDown,
+} from '@mdi/js';
 import { useDialog } from '../../contexts/DialogContext';
 
 /**
@@ -41,7 +48,7 @@ export default function AssignmentsTab({ selectedYear }) {
       sortDirection: 'asc',
       // Default to label/glyph-based sorting (human-friendly) instead of marker_id
       columnSort: 'glyph_text',
-      columnSortDirection: 'asc'
+      columnSortDirection: 'asc',
     };
   };
 
@@ -65,7 +72,7 @@ export default function AssignmentsTab({ selectedYear }) {
         sortBy: dbSortBy,
         sortDirection: dbSortDirection,
         columnSort: dbColumnSort,
-        columnSortDirection: dbColumnSortDirection
+        columnSortDirection: dbColumnSortDirection,
       };
 
       setSortBy(dbSortBy);
@@ -83,7 +90,7 @@ export default function AssignmentsTab({ selectedYear }) {
     assignCompanyToMarker,
     unassignCompanyFromMarker,
     archiveCurrentYear,
-    loadArchivedAssignments
+    loadArchivedAssignments,
   } = useAssignments(selectedYear);
 
   // Load subscriptions to filter companies
@@ -94,7 +101,7 @@ export default function AssignmentsTab({ selectedYear }) {
 
   // Extract subscribed companies with their info
   const subscribedCompanies = useMemo(() => {
-    return subscriptions.map(sub => ({
+    return subscriptions.map((sub) => ({
       id: sub.company_id,
       name: sub.company?.name || 'Unknown',
       logo: sub.company?.logo || '',
@@ -109,7 +116,7 @@ export default function AssignmentsTab({ selectedYear }) {
         sortBy,
         sortDirection,
         columnSort,
-        columnSortDirection
+        columnSortDirection,
       };
       localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(localPrefs));
     } catch (error) {
@@ -121,36 +128,43 @@ export default function AssignmentsTab({ selectedYear }) {
     // 2. Values are different from database
     // 3. These aren't the values we just synced FROM the database
     if (!preferencesLoading && preferences) {
-      const valuesChanged = (
+      const valuesChanged =
         preferences.assignments_sort_by !== sortBy ||
         preferences.assignments_sort_direction !== sortDirection ||
         preferences.assignments_column_sort !== columnSort ||
-        preferences.assignments_column_sort_direction !== columnSortDirection
-      );
+        preferences.assignments_column_sort_direction !== columnSortDirection;
 
-      const notFromSync = !lastSyncedPrefsRef.current || (
+      const notFromSync =
+        !lastSyncedPrefsRef.current ||
         lastSyncedPrefsRef.current.sortBy !== sortBy ||
         lastSyncedPrefsRef.current.sortDirection !== sortDirection ||
         lastSyncedPrefsRef.current.columnSort !== columnSort ||
-        lastSyncedPrefsRef.current.columnSortDirection !== columnSortDirection
-      );
+        lastSyncedPrefsRef.current.columnSortDirection !== columnSortDirection;
 
       if (valuesChanged && notFromSync) {
         const dbUpdates = {
           assignments_sort_by: sortBy,
           assignments_sort_direction: sortDirection,
           assignments_column_sort: columnSort,
-          assignments_column_sort_direction: columnSortDirection
+          assignments_column_sort_direction: columnSortDirection,
         };
         updatePreferences(dbUpdates);
       }
     }
-  }, [sortBy, sortDirection, columnSort, columnSortDirection, preferencesLoading, preferences, updatePreferences]);
+  }, [
+    sortBy,
+    sortDirection,
+    columnSort,
+    columnSortDirection,
+    preferencesLoading,
+    preferences,
+    updatePreferences,
+  ]);
 
   // Count assignments per company (for badge display)
   const companyAssignmentCounts = useMemo(() => {
     const counts = {};
-    assignments.forEach(assignment => {
+    assignments.forEach((assignment) => {
       counts[assignment.company_id] = (counts[assignment.company_id] || 0) + 1;
     });
     return counts;
@@ -159,8 +173,11 @@ export default function AssignmentsTab({ selectedYear }) {
   // Get lowest marker ID for each company (for sorting by marker position)
   const companyLowestMarkers = useMemo(() => {
     const lowestMarkers = {};
-    assignments.forEach(assignment => {
-      if (!lowestMarkers[assignment.company_id] || assignment.marker_id < lowestMarkers[assignment.company_id]) {
+    assignments.forEach((assignment) => {
+      if (
+        !lowestMarkers[assignment.company_id] ||
+        assignment.marker_id < lowestMarkers[assignment.company_id]
+      ) {
         lowestMarkers[assignment.company_id] = assignment.marker_id;
       }
     });
@@ -172,7 +189,7 @@ export default function AssignmentsTab({ selectedYear }) {
     // Only show subscribed companies for the selected year
     // First, filter by search term
     let filtered = searchTerm
-      ? subscribedCompanies.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      ? subscribedCompanies.filter((c) => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
       : subscribedCompanies;
 
     // Then, sort based on selected option
@@ -221,7 +238,14 @@ export default function AssignmentsTab({ selectedYear }) {
     });
 
     return sorted;
-  }, [subscribedCompanies, searchTerm, sortBy, sortDirection, companyAssignmentCounts, companyLowestMarkers]);
+  }, [
+    subscribedCompanies,
+    searchTerm,
+    sortBy,
+    sortDirection,
+    companyAssignmentCounts,
+    companyLowestMarkers,
+  ]);
 
   // Sort markers by column sort criteria
   const sortedMarkers = useMemo(() => {
@@ -245,7 +269,7 @@ export default function AssignmentsTab({ selectedYear }) {
   // Create assignment map: key = `${company_id}_${marker_id}`, value = assignment
   const assignmentMap = useMemo(() => {
     const map = {};
-    assignments.forEach(assignment => {
+    assignments.forEach((assignment) => {
       const key = `${assignment.company_id}_${assignment.marker_id}`;
       map[key] = assignment;
     });
@@ -255,7 +279,7 @@ export default function AssignmentsTab({ selectedYear }) {
   // Track which markers have any assignments (for column styling)
   const markerHasAssignments = useMemo(() => {
     const markerAssignments = new Set();
-    assignments.forEach(assignment => {
+    assignments.forEach((assignment) => {
       markerAssignments.add(assignment.marker_id);
     });
     return markerAssignments;
@@ -290,27 +314,27 @@ export default function AssignmentsTab({ selectedYear }) {
       }
     } else {
       // Assign - Check if marker already has assignments
-      const existingAssignments = assignments.filter(a => a.marker_id === markerId);
+      const existingAssignments = assignments.filter((a) => a.marker_id === markerId);
 
       if (existingAssignments.length > 0) {
         // Get company and marker info
-        const newCompany = subscribedCompanies.find(c => c.id === companyId);
+        const newCompany = subscribedCompanies.find((c) => c.id === companyId);
         const newCompanyName = newCompany?.name || 'this company';
-        const marker = sortedMarkers.find(m => m.id === markerId);
+        const marker = sortedMarkers.find((m) => m.id === markerId);
         const boothLabel = marker?.glyph || markerId;
 
         // Build warning message
         let warningMessage;
         if (existingAssignments.length === 1) {
           const existingCompany = subscribedCompanies.find(
-            c => c.id === existingAssignments[0].company_id
+            (c) => c.id === existingAssignments[0].company_id,
           );
           const existingCompanyName = existingCompany?.name || 'another company';
           warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
         } else {
           const companyNames = existingAssignments
-            .map(a => {
-              const comp = subscribedCompanies.find(c => c.id === a.company_id);
+            .map((a) => {
+              const comp = subscribedCompanies.find((c) => c.id === a.company_id);
               return comp?.name;
             })
             .filter(Boolean)
@@ -412,55 +436,69 @@ export default function AssignmentsTab({ selectedYear }) {
           </button>
           {/* Sort Controls */}
           <div className="flex items-end gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortCompanies')}</label>
-                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
-                    title="Sort table rows"
-                  >
-                    <option value="alphabetic">A-Z</option>
-                    <option value="by_marker">{t('helpPanel.assignments.byMarker')}</option>
-                    <option value="unassigned_first">{t('helpPanel.assignments.unassignedFirst')}</option>
-                  </select>
-                  <button
-                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
-                    title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
-                  >
-                      <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
-                  </button>
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('helpPanel.assignments.sortCompanies')}
+              </label>
+              <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
+                  title="Sort table rows"
+                >
+                  <option value="alphabetic">A-Z</option>
+                  <option value="by_marker">{t('helpPanel.assignments.byMarker')}</option>
+                  <option value="unassigned_first">
+                    {t('helpPanel.assignments.unassignedFirst')}
+                  </option>
+                </select>
+                <button
+                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                  className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                  title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                >
+                  <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
+                </button>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('helpPanel.assignments.sortMarkers')}</label>
-                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
-                  <select
-                    value={columnSort}
-                    onChange={(e) => setColumnSort(e.target.value)}
-                    className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
-                    title="Sort table columns"
-                  >
-                    <option value="marker_id">{t('helpPanel.assignments.markerId')}</option>
-                    <option value="glyph_text">{t('helpPanel.assignments.glyphText')}</option>
-                  </select>
-                  <button
-                    onClick={() => setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')}
-                    className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
-                    title={columnSortDirection === 'asc' ? 'Ascending' : 'Descending'}
-                  >
-                      <Icon path={columnSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
-                  </button>
-                </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {t('helpPanel.assignments.sortMarkers')}
+              </label>
+              <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                <select
+                  value={columnSort}
+                  onChange={(e) => setColumnSort(e.target.value)}
+                  className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
+                  title="Sort table columns"
+                >
+                  <option value="marker_id">{t('helpPanel.assignments.markerId')}</option>
+                  <option value="glyph_text">{t('helpPanel.assignments.glyphText')}</option>
+                </select>
+                <button
+                  onClick={() =>
+                    setColumnSortDirection(columnSortDirection === 'asc' ? 'desc' : 'asc')
+                  }
+                  className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
+                  title={columnSortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                >
+                  <Icon
+                    path={columnSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                    size={0.8}
+                  />
+                </button>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
       {/* Assignment Matrix */}
-      <div className="flex-1 overflow-auto border rounded-lg relative" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+      <div
+        className="flex-1 overflow-auto border rounded-lg relative"
+        style={{ maxHeight: 'calc(100vh - 8rem)' }}
+      >
         <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
           <thead className="bg-gray-100">
             <tr className="text-gray-900">
@@ -470,21 +508,25 @@ export default function AssignmentsTab({ selectedYear }) {
               >
                 Company
               </th>
-              {sortedMarkers.map(marker => {
-                 const hasAssignment = isMarkerAssigned(marker.id);
-                 return (
-                   <th
-                     key={marker.id}
-                     className={`p-1 text-center border-b sticky top-0 z-20 ${hasAssignment ? '' : 'bg-gray-200'}`}
-                     style={{ minWidth: '45px', maxWidth: '45px', background: hasAssignment ? '#f9fafb' : '#f3f4f6' }}
-                     title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}${hasAssignment ? '' : ' (Unassigned)'}`}
-                   >
-                     <div className={`font-semibold ${hasAssignment ? '' : 'text-gray-500'}`}>
-                       {marker.glyph}
-                     </div>
-                   </th>
-                 );
-               })}
+              {sortedMarkers.map((marker) => {
+                const hasAssignment = isMarkerAssigned(marker.id);
+                return (
+                  <th
+                    key={marker.id}
+                    className={`p-1 text-center border-b sticky top-0 z-20 ${hasAssignment ? '' : 'bg-gray-200'}`}
+                    style={{
+                      minWidth: '45px',
+                      maxWidth: '45px',
+                      background: hasAssignment ? '#f9fafb' : '#f3f4f6',
+                    }}
+                    title={`Marker ID: ${marker.id}, Booth: ${marker.glyph}${hasAssignment ? '' : ' (Unassigned)'}`}
+                  >
+                    <div className={`font-semibold ${hasAssignment ? '' : 'text-gray-500'}`}>
+                      {marker.glyph}
+                    </div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -492,7 +534,10 @@ export default function AssignmentsTab({ selectedYear }) {
               const assignmentCount = companyAssignmentCounts[company.id] || 0;
               return (
                 <tr key={company.id} className="hover:bg-gray-50">
-                  <td className="p-2 border-b border-r bg-white sticky left-0 z-20" style={{ background: 'white' }}>
+                  <td
+                    className="p-2 border-b border-r bg-white sticky left-0 z-20"
+                    style={{ background: 'white' }}
+                  >
                     <div className="flex items-center justify-between gap-2">
                       <div className="font-semibold text-gray-900 truncate" title={company.name}>
                         {company.name}
@@ -509,28 +554,35 @@ export default function AssignmentsTab({ selectedYear }) {
                       </span>
                     </div>
                   </td>
-                {sortedMarkers.map(marker => {
-                  const assigned = isAssigned(company.id, marker.id);
-                  const markerHasAnyAssignment = isMarkerAssigned(marker.id);
-                  return (
-                    <td key={marker.id} className={`p-0 border-b border-r text-center ${markerHasAnyAssignment ? '' : 'bg-gray-100'}`}>
-                      <button
-                        onClick={() => handleToggleAssignment(company.id, marker.id)}
-                        className={`w-full h-full p-2 transition-colors ${
-                          assigned
-                            ? 'bg-green-100 hover:bg-green-200 text-green-700'
-                            : markerHasAnyAssignment
-                            ? 'bg-white hover:bg-gray-100 text-gray-300'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
-                        }`}
-                        title={assigned ? `${company.name} → Booth ${marker.glyph}` : `Assign ${company.name} to Booth ${marker.glyph}`}
+                  {sortedMarkers.map((marker) => {
+                    const assigned = isAssigned(company.id, marker.id);
+                    const markerHasAnyAssignment = isMarkerAssigned(marker.id);
+                    return (
+                      <td
+                        key={marker.id}
+                        className={`p-0 border-b border-r text-center ${markerHasAnyAssignment ? '' : 'bg-gray-100'}`}
                       >
-                        {assigned && <Icon path={mdiCheck} size={0.6} />}
-                      </button>
-                    </td>
-                  );
-                })}
-              </tr>
+                        <button
+                          onClick={() => handleToggleAssignment(company.id, marker.id)}
+                          className={`w-full h-full p-2 transition-colors ${
+                            assigned
+                              ? 'bg-green-100 hover:bg-green-200 text-green-700'
+                              : markerHasAnyAssignment
+                                ? 'bg-white hover:bg-gray-100 text-gray-300'
+                                : 'bg-gray-100 hover:bg-gray-200 text-gray-400'
+                          }`}
+                          title={
+                            assigned
+                              ? `${company.name} → Booth ${marker.glyph}`
+                              : `Assign ${company.name} to Booth ${marker.glyph}`
+                          }
+                        >
+                          {assigned && <Icon path={mdiCheck} size={0.6} />}
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
               );
             })}
           </tbody>
@@ -560,9 +612,9 @@ export default function AssignmentsTab({ selectedYear }) {
           </div>
         </div>
         <div className="text-sm text-gray-900">
-          <strong>Statistics for {selectedYear}:</strong> {assignments.length} assignments,
-          {' '}{new Set(assignments.map(a => a.company_id)).size} unique companies,
-          {' '}{new Set(assignments.map(a => a.marker_id)).size} markers assigned
+          <strong>Statistics for {selectedYear}:</strong> {assignments.length} assignments,{' '}
+          {new Set(assignments.map((a) => a.company_id)).size} unique companies,{' '}
+          {new Set(assignments.map((a) => a.marker_id)).size} markers assigned
         </div>
       </div>
     </div>

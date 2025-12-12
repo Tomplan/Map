@@ -92,6 +92,7 @@ const createIcon = (
     prefix: marker.prefix,
     iconUrl: getIconFile(marker, isFavorited, assignedDefault, unassignedDefault),
     iconSize,
+    iconBaseSize: baseSize,
     glyph: marker.glyph || '',
     glyphColor: marker.glyphColor || DEFAULT_ICON.GLYPH_COLOR,
     // If glyphSize explicitly configured on marker, use it. Otherwise compute as a proportion

@@ -13,7 +13,8 @@ The default logo (`4x4Vakantiebeurs.png`) is now centrally managed through the `
    ```javascript
    export const BRANDING_CONFIG = {
      DEFAULT_LOGO: '4x4Vakantiebeurs.png',
-     getDefaultLogoPath: () => `${import.meta.env.BASE_URL}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`,
+     getDefaultLogoPath: () =>
+       `${import.meta.env.BASE_URL}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`,
    };
    ```
 3. Change the `DEFAULT_LOGO` value to your new logo filename:
@@ -25,6 +26,7 @@ The default logo (`4x4Vakantiebeurs.png`) is now centrally managed through the `
 ### Option 2: Update Through the Admin Dashboard
 
 The default logo can also be overridden at runtime through the Admin Dashboard's Branding Settings panel. This allows you to:
+
 - Upload a custom logo
 - Change the event name
 - Adjust theme colors
@@ -59,7 +61,8 @@ To change to a new event logo:
 // In src/config/mapConfig.js
 export const BRANDING_CONFIG = {
   DEFAULT_LOGO: 'winter-event-2025.png',
-  getDefaultLogoPath: () => `${import.meta.env.BASE_URL}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`,
+  getDefaultLogoPath: () =>
+    `${import.meta.env.BASE_URL}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`,
 };
 ```
 

@@ -10,7 +10,7 @@ if (!url || !key) {
 const supabase = createClient(url, key, { auth: { persistSession: false } });
 
 (async function run() {
-  const ids = [2,3,4,5,6,7,8,9,10,21];
+  const ids = [2, 3, 4, 5, 6, 7, 8, 9, 10, 21];
   try {
     const { data, error } = await supabase.from('companies').select('id,name,logo').in('id', ids);
     if (error) throw error;

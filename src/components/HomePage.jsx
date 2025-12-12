@@ -12,10 +12,10 @@ import { useSubscriptionCount } from '../hooks/useCountViews';
 /**
  * Memoized logo component to prevent re-renders when other HomePage state changes
  */
-const OrganizationLogoImage = memo(function OrganizationLogoImage({ 
-  organizationLogo, 
-  organizationLogoRaw, 
-  eventName 
+const OrganizationLogoImage = memo(function OrganizationLogoImage({
+  organizationLogo,
+  organizationLogoRaw,
+  eventName,
 }) {
   const defaultLogo = getDefaultLogoPath(organizationLogoRaw);
   const [visibleLogo, setVisibleLogo] = React.useState(defaultLogo);
@@ -41,41 +41,45 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
     };
   }, [organizationLogo]);
 
-  const responsiveSources = useMemo(() => 
-    getResponsiveLogoSources(organizationLogo) || getResponsiveLogoSources(organizationLogoRaw),
-    [organizationLogo, organizationLogoRaw]
+  const responsiveSources = useMemo(
+    () =>
+      getResponsiveLogoSources(organizationLogo) || getResponsiveLogoSources(organizationLogoRaw),
+    [organizationLogo, organizationLogoRaw],
   );
 
-  const pngFallback = useMemo(() => 
-    getLogoPath(organizationLogoRaw || visibleLogo || organizationLogo),
-    [organizationLogoRaw, visibleLogo, organizationLogo]
+  const pngFallback = useMemo(
+    () => getLogoPath(organizationLogoRaw || visibleLogo || organizationLogo),
+    [organizationLogoRaw, visibleLogo, organizationLogo],
   );
 
-  const handleError = useCallback((e) => {
-    const tried = parseInt(e.target.dataset.logoRetries || '0', 10);
+  const handleError = useCallback(
+    (e) => {
+      const tried = parseInt(e.target.dataset.logoRetries || '0', 10);
 
-    const trySetSrc = (newSrc) => {
-      if (!newSrc || e.target.src === newSrc) return false;
-      e.target.src = newSrc;
-      e.target.srcset = '';
-      e.target.dataset.logoRetries = String(tried + 1);
-      return true;
-    };
+      const trySetSrc = (newSrc) => {
+        if (!newSrc || e.target.src === newSrc) return false;
+        e.target.src = newSrc;
+        e.target.srcset = '';
+        e.target.dataset.logoRetries = String(tried + 1);
+        return true;
+      };
 
-    // Try raw URL first if it's absolute
-    if (tried === 0 && organizationLogoRaw && organizationLogoRaw.startsWith('http')) {
-      if (trySetSrc(organizationLogoRaw)) return;
-    }
+      // Try raw URL first if it's absolute
+      if (tried === 0 && organizationLogoRaw && organizationLogoRaw.startsWith('http')) {
+        if (trySetSrc(organizationLogoRaw)) return;
+      }
 
-    // Try normalized fallback
-    if (tried <= 1) {
-      const fallbackSrc = getLogoPath(organizationLogoRaw || organizationLogo);
-      if (trySetSrc(fallbackSrc)) return;
-    }
+      // Try normalized fallback
+      if (tried <= 1) {
+        const fallbackSrc = getLogoPath(organizationLogoRaw || organizationLogo);
+        if (trySetSrc(fallbackSrc)) return;
+      }
 
-    // Final fallback to default
-    trySetSrc(getDefaultLogoPath(organizationLogoRaw));
-  }, [organizationLogoRaw, organizationLogo]);
+      // Final fallback to default
+      trySetSrc(getDefaultLogoPath(organizationLogoRaw));
+    },
+    [organizationLogoRaw, organizationLogo],
+  );
 
   if (!organizationLogo) return null;
 
@@ -83,7 +87,11 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
     <div className="mb-6">
       <picture>
         {responsiveSources?.srcSet && (
-          <source srcSet={responsiveSources.srcSet} sizes={responsiveSources.sizes} type="image/webp" />
+          <source
+            srcSet={responsiveSources.srcSet}
+            sizes={responsiveSources.sizes}
+            type="image/webp"
+          />
         )}
         <img
           src={responsiveSources ? responsiveSources.src : pngFallback}
@@ -124,45 +132,53 @@ function HomePage({ selectedYear, branding }) {
   }, [subscriptionsLoading, exhibitorCount]);
 
   // Memoize event info
-  const eventInfo = useMemo(() => ({
-    name: branding?.eventName || '4x4 Vakantiebeurs',
-  }), [branding?.eventName]);
+  const eventInfo = useMemo(
+    () => ({
+      name: branding?.eventName || '4x4 Vakantiebeurs',
+    }),
+    [branding?.eventName],
+  );
 
   // Prefer per-year dates from the event_map_settings table (via hook).
   const { settings: eventSettings } = useEventMapSettings(selectedYear);
 
   // Memoize date formatting function
-  const formatDatesFromSettings = useCallback((start, end) => {
-    if (!start && !end) return null;
-    const lang = i18n?.language || 'en-US';
-    if (start && end) {
-      const s = new Date(start);
-      const e = new Date(end);
-      if (s.getFullYear() === e.getFullYear()) {
-        if (s.getMonth() === e.getMonth()) {
-          const month = s.toLocaleString(lang, { month: 'long' });
-          return `${month} ${s.getDate()}-${e.getDate()}, ${s.getFullYear()}`;
+  const formatDatesFromSettings = useCallback(
+    (start, end) => {
+      if (!start && !end) return null;
+      const lang = i18n?.language || 'en-US';
+      if (start && end) {
+        const s = new Date(start);
+        const e = new Date(end);
+        if (s.getFullYear() === e.getFullYear()) {
+          if (s.getMonth() === e.getMonth()) {
+            const month = s.toLocaleString(lang, { month: 'long' });
+            return `${month} ${s.getDate()}-${e.getDate()}, ${s.getFullYear()}`;
+          }
+          const sStr = `${s.toLocaleString(lang, { month: 'short' })} ${s.getDate()}`;
+          const eStr = `${e.toLocaleString(lang, { month: 'short' })} ${e.getDate()}, ${e.getFullYear()}`;
+          return `${sStr} - ${eStr}`;
         }
-        const sStr = `${s.toLocaleString(lang, { month: 'short' })} ${s.getDate()}`;
-        const eStr = `${e.toLocaleString(lang, { month: 'short' })} ${e.getDate()}, ${e.getFullYear()}`;
-        return `${sStr} - ${eStr}`;
+        return `${s.toLocaleDateString(lang)} - ${e.toLocaleDateString(lang)}`;
       }
-      return `${s.toLocaleDateString(lang)} - ${e.toLocaleDateString(lang)}`;
-    }
-    const d = start ? new Date(start) : new Date(end);
-    return d.toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' });
-  }, [i18n?.language]);
+      const d = start ? new Date(start) : new Date(end);
+      return d.toLocaleDateString(lang, { year: 'numeric', month: 'long', day: 'numeric' });
+    },
+    [i18n?.language],
+  );
 
   // Memoize derived values
-  const dbEventDate = useMemo(() => 
-    formatDatesFromSettings(eventSettings?.event_start_date, eventSettings?.event_end_date),
-    [formatDatesFromSettings, eventSettings?.event_start_date, eventSettings?.event_end_date]
+  const dbEventDate = useMemo(
+    () => formatDatesFromSettings(eventSettings?.event_start_date, eventSettings?.event_end_date),
+    [formatDatesFromSettings, eventSettings?.event_start_date, eventSettings?.event_end_date],
   );
 
   const eventDays = useMemo(() => {
     if (eventSettings?.event_start_date || eventSettings?.event_end_date) {
       try {
-        const start = eventSettings?.event_start_date ? new Date(eventSettings.event_start_date) : null;
+        const start = eventSettings?.event_start_date
+          ? new Date(eventSettings.event_start_date)
+          : null;
         const end = eventSettings?.event_end_date ? new Date(eventSettings.event_end_date) : null;
         if (start && end) {
           const msPerDay = 1000 * 60 * 60 * 24;
@@ -217,12 +233,10 @@ function HomePage({ selectedYear, branding }) {
               </div>
               <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
             </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-orange-600">
-                  {eventDays}
-                </div>
-                <div className="text-sm text-gray-600">{t('homePage.days')}</div>
-              </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{eventDays}</div>
+              <div className="text-sm text-gray-600">{t('homePage.days')}</div>
+            </div>
           </div>
         </div>
       </div>

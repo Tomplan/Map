@@ -2,9 +2,9 @@ name: CI — Node tests
 
 on:
   push:
-    branches: [ main, master, development, 'feature/**', 'chore/**' ]
+    branches: [main, master, development, 'feature/**', 'chore/**']
   pull_request:
-    branches: [ main, master, development ]
+    branches: [main, master, development]
 
 jobs:
   test:

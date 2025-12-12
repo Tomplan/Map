@@ -9,6 +9,7 @@ Since Supabase free accounts don't have built-in backup features, this document 
 ### Step 1: Access Database Credentials
 
 From your Supabase dashboard:
+
 1. Go to Settings → Database
 2. Copy the connection details:
    - Host: `db.your-project.supabase.co`
@@ -49,6 +50,7 @@ pg_dump -h db.your-project.supabase.co -U postgres -d postgres \
 ### Step 4: Verify Backup
 
 Check your backup file contains data:
+
 ```bash
 # Check file size and content
 ls -la backup_critical_*.sql
@@ -66,23 +68,17 @@ Add this to your app temporarily for JSON/CSV export:
 ```javascript
 // Temporary backup utility
 export const backupToJson = async () => {
-  const tables = [
-    'companies',
-    'event_subscriptions', 
-    'assignments',
-    'organization_profile'
-  ];
-  
+  const tables = ['companies', 'event_subscriptions', 'assignments', 'organization_profile'];
+
   const backup = {};
   for (const table of tables) {
     const { data, error } = await supabase.from(table).select('*');
     if (error) console.error(`Error backing up ${table}:`, error);
     else backup[table] = data;
   }
-  
+
   // Download as JSON file
-  const blob = new Blob([JSON.stringify(backup, null, 2)], 
-    { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -114,26 +110,31 @@ psql -h db.your-project.supabase.co -U postgres -d postgres \
 ## Emergency Contacts & Resources
 
 ### Supabase Support
+
 - Dashboard: https://app.supabase.com
 - Free tier limitations: No automatic backups
 - Community: https://github.com/supabase/supabase/discussions
 
 ### Database Recovery
+
 - PostgreSQL docs: https://www.postgresql.org/docs/
 - Restore procedures: https://www.postgresql.org/docs/current/backup-dump.html
 
 ## Backup Schedule Recommendation
 
 ### Before Any Changes:
+
 - [ ] Complete backup of critical tables
 - [ ] Verify backup file integrity
 - [ ] Store in multiple locations
 
 ### Ongoing (Weekly):
+
 - [ ] Export critical data (companies, assignments)
 - [ ] Keep 4 weekly backups rotating
 
 ### Before Major Updates:
+
 - [ ] Full backup of all tables
 - [ ] Test restore procedure
 - [ ] Document any manual configuration
@@ -141,6 +142,7 @@ psql -h db.your-project.supabase.co -U postgres -d postgres \
 ## Free Account Limitations
 
 ⚠️ **Important Notes:**
+
 - No automated backups - manual process required
 - No point-in-time recovery
 - No backup retention policies
@@ -151,11 +153,13 @@ psql -h db.your-project.supabase.co -U postgres -d postgres \
 ## Repository Cleanup Impact
 
 During repository cleanup:
+
 1. **Migration files removed**: No impact on data
 2. **Code cleanup**: No database changes
 3. **Component removal**: Verify no API calls to deprecated tables
 4. **Schema changes**: Will require fresh backup before execution
 
 ---
-*Document created: 2025-11-30*  
-*For repository cleanup safety*
+
+_Document created: 2025-11-30_  
+_For repository cleanup safety_

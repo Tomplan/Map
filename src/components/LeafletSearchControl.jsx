@@ -38,6 +38,14 @@ const LeafletSearchControl = ({ map, markerLayer }) => {
   useEffect(() => {
     if (!map || !markerLayer) return;
 
+    // Create the search control, but only if the plugin is actually available
+    if (!L.Control || !L.Control.Search) {
+      if (process.env.NODE_ENV !== 'production')
+        console.warn(
+          '[LeafletSearchControl] Leaflet Search plugin not available — control not created',
+        );
+      return undefined;
+    }
     // Create the search control
     const searchControl = new L.Control.Search({
       layer: markerLayer,
@@ -48,7 +56,13 @@ const LeafletSearchControl = ({ map, markerLayer }) => {
       position: 'topright',
     });
 
-    map.addControl(searchControl);
+    try {
+      map.addControl(searchControl);
+    } catch (err) {
+      // Don't throw; the host UI should keep working even if the plugin fails
+      if (process.env.NODE_ENV !== 'production')
+        console.warn('[LeafletSearchControl] Failed to add search control', err);
+    }
 
     // Cleanup on unmount
     return () => {

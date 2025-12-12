@@ -18,11 +18,14 @@ dotenv.config();
 
 // Support both VITE_ prefixed and non-prefixed environment variables
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ||
-                     process.env.SUPABASE_KEY ||
-                     process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY;
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error('Please set SUPABASE_URL and SUPABASE_KEY (or VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) in your environment.');
+  console.error(
+    'Please set SUPABASE_URL and SUPABASE_KEY (or VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) in your environment.',
+  );
   process.exit(1);
 }
 
@@ -54,7 +57,9 @@ async function main() {
   const doApply = args.includes('--apply');
 
   process.stdout.write('Phone normalization script\n');
-  process.stdout.write('Mode: ' + (dryRun ? 'DRY RUN (default)' : doApply ? 'APPLY' : 'DRY RUN') + '\n');
+  process.stdout.write(
+    'Mode: ' + (dryRun ? 'DRY RUN (default)' : doApply ? 'APPLY' : 'DRY RUN') + '\n',
+  );
 
   // Gather targets
   const companies = await fetchAll('companies', 'id,phone,name');
@@ -72,7 +77,12 @@ async function main() {
   for (const s of subscriptions) {
     const normalized = normalize(s.phone || '');
     if (normalized !== (s.phone || '').trim()) {
-      subscriptionChanges.push({ id: s.id, company_id: s.company_id, from: s.phone, to: normalized });
+      subscriptionChanges.push({
+        id: s.id,
+        company_id: s.company_id,
+        from: s.phone,
+        to: normalized,
+      });
     }
   }
 
@@ -82,9 +92,15 @@ async function main() {
   if (dryRun && !doApply) {
     process.stdout.write('\n--- DRY RUN RESULTS ---\n');
     process.stdout.write('Companies to change:\n');
-    companyChanges.slice(0, 200).forEach(c => process.stdout.write(`${c.id}: ${c.name} — "${c.from}" -> "${c.to}"\n`));
+    companyChanges
+      .slice(0, 200)
+      .forEach((c) => process.stdout.write(`${c.id}: ${c.name} — "${c.from}" -> "${c.to}"\n`));
     process.stdout.write('\nSubscriptions to change:\n');
-    subscriptionChanges.slice(0, 200).forEach(s => process.stdout.write(`${s.id}: company ${s.company_id} — "${s.from}" -> "${s.to}"\n`));
+    subscriptionChanges
+      .slice(0, 200)
+      .forEach((s) =>
+        process.stdout.write(`${s.id}: company ${s.company_id} — "${s.from}" -> "${s.to}"\n`),
+      );
     process.stdout.write('\nTo apply changes: run with --apply\n');
     return;
   }
@@ -97,15 +113,21 @@ async function main() {
       else process.stdout.write('Updated company ' + c.id + ' ' + c.name + ' -> ' + c.to + '\n');
     }
     for (const s of subscriptionChanges) {
-      const { error } = await client.from('event_subscriptions').update({ phone: s.to }).eq('id', s.id);
+      const { error } = await client
+        .from('event_subscriptions')
+        .update({ phone: s.to })
+        .eq('id', s.id);
       if (error) console.error('Failed to update subscription', s.id, error.message);
-      else process.stdout.write('Updated subscription ' + s.id + ' company ' + s.company_id + ' -> ' + s.to + '\n');
+      else
+        process.stdout.write(
+          'Updated subscription ' + s.id + ' company ' + s.company_id + ' -> ' + s.to + '\n',
+        );
     }
     process.stdout.write('Done applying phone normalizations.\n');
   }
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('Fatal error:', err.message || err);
   process.exit(1);
 });
