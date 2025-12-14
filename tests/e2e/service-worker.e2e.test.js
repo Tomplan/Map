@@ -48,8 +48,8 @@ describe('Service Worker E2E', () => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    // Wait until server prints the local URL
-    await waitForServerOutput(previewProc, new RegExp(`http://localhost:${PREVIEW_PORT}`));
+    // Wait until server prints the local URL (match either localhost or 127.0.0.1)
+    await waitForServerOutput(previewProc, new RegExp(`:${PREVIEW_PORT}`));
 
     browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     page = await browser.newPage();
