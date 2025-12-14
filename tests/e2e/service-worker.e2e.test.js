@@ -29,6 +29,24 @@ function waitForServerOutput(proc, regex, timeout = 60000) {
   });
 }
 
+// Poll the given URL until it responds with a 2xx/3xx status or timeout elapses.
+async function waitForUrl(url, timeout = 120000, interval = 500) {
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    try {
+      const res = await fetch(url, { method: 'GET' });
+      if (res && typeof res.status === 'number' && res.status >= 200 && res.status < 400) {
+        return true;
+      }
+    } catch (err) {
+      // ignore and retry
+    }
+    await new Promise((r) => setTimeout(r, interval));
+  }
+  throw new Error('Server did not start in time (url probe)');
+}
+
 describe('Service Worker E2E', () => {
   let browser;
   let page;
@@ -48,8 +66,9 @@ describe('Service Worker E2E', () => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    // Wait until server prints the local URL (match either localhost or 127.0.0.1)
-    await waitForServerOutput(previewProc, new RegExp(`:${PREVIEW_PORT}`));
+    // Wait until the preview server is responding on the expected URL.
+    // Polling the URL is more robust on CI than relying on stdout/stderr lines.
+    await waitForUrl(PREVIEW_URL, 120000);
 
     browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     page = await browser.newPage();
