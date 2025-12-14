@@ -24,6 +24,9 @@ jobs:
       - name: Install apt dependencies for headless Chromium
         run: |
           sudo apt-get update
+          # libasound2 isn't available on some ubuntu images as a direct package
+          # (it's provided by other packages). Remove it from the explicit list to
+          # avoid 'no installation candidate' failures and install chromium.
           sudo apt-get install -y --no-install-recommends \
             ca-certificates \
             fonts-liberation \
@@ -39,10 +42,9 @@ jobs:
             libxrandr2 \
             libgbm1 \
             libgtk-3-0 \
-            libasound2 \
             libnspr4 \
             libnss3 \
-            chromium-browser
+            chromium-browser || sudo apt-get install -y chromium
 
       - name: Verify Chromium
         run: |
