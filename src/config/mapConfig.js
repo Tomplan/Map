@@ -74,8 +74,14 @@ export const PRINT_CONFIG = {
   // If true, set the source map's zoom to the print mode zoom before the plugin
   // creates the print overlay so icons are already sized for the print zoom.
   // This is less robust (visible zoom change) but works with environments where
+<<<<<<< HEAD
   // inlining or plugin cloning can't preserve computed icon sizing.
   SET_SOURCE_ZOOM_ON_PRINT: true,
+=======
+  // inlining or plugin cloning can preserve computed icon sizing.
+  SET_SOURCE_ZOOM_ON_PRINT: true,
+
+>>>>>>> pr29/resolve-main-into-development
   modes: {
     'A2 — Landscape (large floor plan)': {
       center: [51.898095078807025, 5.772961378097534],
