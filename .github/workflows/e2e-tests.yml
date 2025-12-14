@@ -41,7 +41,13 @@ jobs:
             libgtk-3-0 \
             libasound2 \
             libnspr4 \
-            libnss3
+            libnss3 \
+            chromium-browser
+
+      - name: Verify Chromium
+        run: |
+          echo "Chromium path: $(which chromium-browser || true)"
+          chromium-browser --version || true
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -52,9 +58,14 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+          PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
         run: npm ci
 
       - name: Run E2E tests
         env:
           CI: true
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+          PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
         run: npm run test:e2e --silent
