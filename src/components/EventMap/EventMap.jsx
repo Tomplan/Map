@@ -20,7 +20,10 @@ import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
+<<<<<<< HEAD
 import { computePrintIconOptions } from '../../utils/printScaling';
+=======
+>>>>>>> origin/development
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -542,7 +545,7 @@ function EventMap({
                     if (printMarker.options.icon && printMarker.options.icon.options) {
                       const originalIconOpts = printMarker.options.icon.options;
                       const recomputedOpts = computePrintIconOptions(originalIconOpts, printZoom, isAdminView);
-                      
+
                       if (recomputedOpts && recomputedOpts.iconSize) {
                         const newIcon = L.icon.glyph(recomputedOpts);
                         printMarker.setIcon(newIcon);
@@ -591,8 +594,8 @@ function EventMap({
             if (!printModeConfig) printModeConfig = PRINT_CONFIG.modes[modeTitle];
             // fallback to partial match
             if (!printModeConfig) {
-              const paperMatch = (modeTitle || '').match(/\b(A2|A3|A4)\b/i);
-              const orientationMatch = (modeTitle || '').match(/\b(Landscape|Portrait)\b/i);
+              const paperMatch = (modeTitle || '').match(/(A2|A3|A4)/i);
+              const orientationMatch = (modeTitle || '').match(/(Landscape|Portrait)/i);
               if (paperMatch && orientationMatch) {
                 const partial = Object.keys(PRINT_CONFIG.modes).find(
                   (k) =>
@@ -611,43 +614,20 @@ function EventMap({
               // Temporarily increase maxZoom for printing
               browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
             }
+          });
 
-            // CRITICAL: Only change center for specific print modes that need a fixed home view
-            // "Current view" mode should preserve the current map position to avoid marker misplacement
-            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
-            const isAutoMode = modeTitle.toLowerCase().includes('auto');
-            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
-            
-            // Skip center change for current view, auto, and custom modes
-            if (isCurrentViewMode || isAutoMode || isCustomMode) {
-              return;
-            }
-            
-            // Only modify Portrait and Landscape orientations with fixed home positions
-            if (orientation === 'Portrait' || orientation === 'Landscape') {
-              // Save current view to restore after printing
-              originalView = {
-                center: browserPrint._map.getCenter(),
-                zoom: browserPrint._map.getZoom(),
-              };
-
-              // Use different center and zoom for Portrait vs Landscape
-              const centerPosition = orientation === 'Portrait'
-                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
-                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
-
-              const zoomLevel = orientation === 'Portrait'
-                ? 18 // Portrait uses zoom 17.8
-                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
-
-              // Move the real map to the target position
-              // The plugin will then use this view when creating the print overlay
-              // (because Portrait/Landscape modes have invalidateBounds: false)
-              browserPrint._map.setView(centerPosition, zoomLevel, {
-                animate: false // Instant jump, no animation
-              });
+          // Restore original maxZoom after printing ends or is cancelled
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
+            if (originalView && originalView.maxZoom) {
+              browserPrint._map.setMaxZoom(originalView.maxZoom);
             }
           });
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
+            if (originalView && originalView.maxZoom) {
+              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            }
+          });
+
 
           // PrintStart handler REMOVED - icon cloning now handled by custom cloner
           // Redundant code that used unreliable coordinate matching
