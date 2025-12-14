@@ -1,26 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import { getMarkerSnapshot, setMarkerSnapshot } from '../services/idbCache';
 
 /**
  * Updated hook to fetch markers with company assignments
  * Uses new Companies and Assignments tables structure
  */
 export default function useEventMarkers(eventYear = new Date().getFullYear()) {
-  const cached = typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
   const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const [isOnline, setIsOnline] = useState(initialOnline);
-  const [markers, setMarkers] = useState(() => {
-    if (!initialOnline && cached) {
-      return JSON.parse(cached);
-    }
-    return [];
-  });
-  const [loading, setLoading] = useState(() => {
-    if (!initialOnline && cached) {
-      return false;
-    }
-    return true;
-  });
+  const [markers, setMarkers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
@@ -36,10 +26,18 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       const targetYear = eventYearRef.current;
 
       setLoading(true);
-      if (!online && cached) {
-        setMarkers(JSON.parse(cached));
-        setLoading(false);
-        return;
+      if (!online) {
+        // Try to load cached snapshot from IndexedDB when offline
+        try {
+          const snapshot = await getMarkerSnapshot();
+          if (snapshot) {
+            setMarkers(snapshot);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          // ignore and proceed to attempt network fetch (which will fail if offline)
+        }
       }
 
       try {
@@ -189,14 +187,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           });
 
         setMarkers(mergedMarkers);
-        localStorage.setItem('eventMarkers', JSON.stringify(mergedMarkers));
+        // Persist a snapshot asynchronously for offline use
+        try {
+          await setMarkerSnapshot(mergedMarkers);
+        } catch (err) {
+          // ignore persistence failures
+        }
       } catch (error) {
         console.error('Error loading markers:', error);
       } finally {
         setLoading(false);
       }
     },
-    [cached],
+    [],
   );
 
   useEffect(() => {
@@ -207,11 +210,13 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       loadMarkers(true);
     }
 
-    function handleOffline() {
+    async function handleOffline() {
       setIsOnline(false);
-      const cached = localStorage.getItem('eventMarkers');
-      if (cached) {
-        setMarkers(JSON.parse(cached));
+      try {
+        const snapshot = await getMarkerSnapshot();
+        if (snapshot) setMarkers(snapshot);
+      } catch (err) {
+        // ignore
       }
       setLoading(false);
     }
@@ -219,76 +224,86 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Supabase realtime subscriptions for all related tables
-    const coreChannel = supabase
-      .channel(`markers-core-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_core',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
+    // Supabase realtime subscriptions for all related tables. Only create
+    // channels when online to avoid unnecessary network work while offline.
+    const createdChannels = [];
+    if (isOnline) {
+      const coreChannel = supabase
+        .channel(`markers-core-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_core',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(coreChannel);
 
-    const appearanceChannel = supabase
-      .channel(`markers-appearance-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
+      const appearanceChannel = supabase
+        .channel(`markers-appearance-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_appearance',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(appearanceChannel);
 
-    // Separate subscription for default markers (event_year = 0) that affect all years
-    const defaultsChannel = supabase
-      .channel('markers-appearance-defaults-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: 'event_year=eq.0',
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
+      // Separate subscription for default markers (event_year = 0) that affect all years
+      const defaultsChannel = supabase
+        .channel('markers-appearance-defaults-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_appearance',
+            filter: 'event_year=eq.0',
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(defaultsChannel);
 
-    const contentChannel = supabase
-      .channel(`markers-content-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_content',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
+      const contentChannel = supabase
+        .channel(`markers-content-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_content',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(contentChannel);
+    }
 
     // Note: Markers_Admin subscription removed - admin data comes from event_subscriptions
 
-    const assignmentsChannel = supabase
-      .channel('markers-assignments-changes')
+    let assignmentsChannel = null;
+    if (isOnline) {
+      assignmentsChannel = supabase
+        .channel('markers-assignments-changes')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'assignments' },
@@ -312,9 +327,12 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         },
       )
       .subscribe();
+    }
 
-    const companiesChannel = supabase
-      .channel('companies-changes')
+    let companiesChannel = null;
+    if (isOnline) {
+      companiesChannel = supabase
+        .channel('companies-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
         // Company data changed - update all markers using this company
         if (payload.eventType === 'UPDATE' && payload.new) {
@@ -332,9 +350,13 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                 : m,
             ),
           );
-          // Update localStorage
-          setMarkers((current) => {
-            localStorage.setItem('eventMarkers', JSON.stringify(current));
+          // Persist updated markers asynchronously
+          setMarkers(async (current) => {
+            try {
+              await setMarkerSnapshot(current);
+            } catch (err) {
+              // ignore
+            }
             return current;
           });
         } else {
@@ -344,8 +366,12 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       })
       .subscribe();
 
-    const subscriptionsChannel = supabase
-      .channel(`event-subscriptions-changes-${eventYear}`)
+    }
+
+    let subscriptionsChannel = null;
+    if (isOnline) {
+      subscriptionsChannel = supabase
+        .channel(`event-subscriptions-changes-${eventYear}`)
       .on(
         'postgres_changes',
         {
@@ -360,16 +386,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       )
       .subscribe();
 
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
-      supabase.removeChannel(coreChannel);
-      supabase.removeChannel(appearanceChannel);
-      supabase.removeChannel(defaultsChannel);
-      supabase.removeChannel(contentChannel);
-      supabase.removeChannel(assignmentsChannel);
-      supabase.removeChannel(companiesChannel);
-      supabase.removeChannel(subscriptionsChannel);
+      // Remove any channels we created while online
+      if (createdChannels.length) {
+        createdChannels.forEach((ch) => supabase.removeChannel(ch));
+      }
+      // Also remove channels created conditionally
+      if (assignmentsChannel) supabase.removeChannel(assignmentsChannel);
+      if (companiesChannel) supabase.removeChannel(companiesChannel);
+      if (subscriptionsChannel) supabase.removeChannel(subscriptionsChannel);
     };
   }, [isOnline, loadMarkers, eventYear]);
 

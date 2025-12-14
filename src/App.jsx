@@ -157,32 +157,36 @@ function AppContent() {
       }
     }
     fetchBranding();
-    const channel = supabase
-      .channel('organization-profile-branding-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'organization_profile',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          if (payload.new) {
-            // Always use the logo from Organization_Profile
-            const logoPath = payload.new.logo || '';
-            setBranding({
-              logo: logoPath ? getLogoPath(logoPath) : null,
-              eventName: payload.new.name || '4x4 Vakantiebeurs',
-              themeColor: '#ffffff',
-              fontFamily: 'Arvo, Sans-serif',
-            });
-          }
-        },
-      )
-      .subscribe();
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel('organization-profile-branding-sync')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'organization_profile',
+            filter: 'id=eq.1',
+          },
+          (payload) => {
+            if (payload.new) {
+              // Always use the logo from Organization_Profile
+              const logoPath = payload.new.logo || '';
+              setBranding({
+                logo: logoPath ? getLogoPath(logoPath) : null,
+                eventName: payload.new.name || '4x4 Vakantiebeurs',
+                themeColor: '#ffffff',
+                fontFamily: 'Arvo, Sans-serif',
+              });
+            }
+          },
+        )
+        .subscribe();
+    }
+
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 

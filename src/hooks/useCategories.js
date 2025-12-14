@@ -139,23 +139,26 @@ export function useCategories(language = 'nl') {
   }, []);
 
   useEffect(() => {
-    const channel = supabase
-      .channel('categories-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
-        loadCategories(),
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'category_translations' },
-        () => loadCategories(),
-      )
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
-        loadCategoryStats(),
-      )
-      .subscribe();
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel('categories-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
+          loadCategories(),
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'category_translations' },
+          () => loadCategories(),
+        )
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
+          loadCategoryStats(),
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [loadCategories, loadCategoryStats]);
 

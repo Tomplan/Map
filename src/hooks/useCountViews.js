@@ -63,36 +63,39 @@ export function useSubscriptionCount(eventYear) {
 
     loadCount();
 
-    // Subscribe to real-time changes on the count table directly
-    const channel = supabase
-      .channel(`subscription-count-${eventYear}-${Date.now()}-${Math.random()}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'subscription_counts',
-        },
-        (payload) => {
-          // Check if this update is for our event year
-          const isRelevantUpdate =
-            (payload.new && payload.new.event_year === eventYear) ||
-            (payload.old && payload.old.event_year === eventYear);
+    // Subscribe to real-time changes on the count table directly (only when online)
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel(`subscription-count-${eventYear}-${Date.now()}-${Math.random()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'subscription_counts',
+          },
+          (payload) => {
+            // Check if this update is for our event year
+            const isRelevantUpdate =
+              (payload.new && payload.new.event_year === eventYear) ||
+              (payload.old && payload.old.event_year === eventYear);
 
-          if (isRelevantUpdate) {
-            // Update local state directly from the payload
-            if (payload.new) {
-              setCount(payload.new.count);
-            } else if (payload.eventType === 'DELETE') {
-              setCount(0);
+            if (isRelevantUpdate) {
+              // Update local state directly from the payload
+              if (payload.new) {
+                setCount(payload.new.count);
+              } else if (payload.eventType === 'DELETE') {
+                setCount(0);
+              }
             }
-          }
-        },
-      )
-      .subscribe();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [eventYear]);
 
@@ -152,36 +155,39 @@ export function useAssignmentCount(eventYear) {
 
     loadCount();
 
-    // Subscribe to real-time changes on the count table directly
-    const channel = supabase
-      .channel(`assignment-count-${eventYear}-${Date.now()}-${Math.random()}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'assignment_counts',
-        },
-        (payload) => {
-          // Check if this update is for our event year
-          const isRelevantUpdate =
-            (payload.new && payload.new.event_year === eventYear) ||
-            (payload.old && payload.old.event_year === eventYear);
+    // Subscribe to real-time changes on the count table directly (only when online)
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel(`assignment-count-${eventYear}-${Date.now()}-${Math.random()}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'assignment_counts',
+          },
+          (payload) => {
+            // Check if this update is for our event year
+            const isRelevantUpdate =
+              (payload.new && payload.new.event_year === eventYear) ||
+              (payload.old && payload.old.event_year === eventYear);
 
-          if (isRelevantUpdate) {
-            // Update local state directly from the payload
-            if (payload.new) {
-              setCount(payload.new.count);
-            } else if (payload.eventType === 'DELETE') {
-              setCount(0);
+            if (isRelevantUpdate) {
+              // Update local state directly from the payload
+              if (payload.new) {
+                setCount(payload.new.count);
+              } else if (payload.eventType === 'DELETE') {
+                setCount(0);
+              }
             }
-          }
-        },
-      )
-      .subscribe();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [eventYear]);
 
@@ -238,25 +244,28 @@ export function useMarkerCount(eventYear) {
 
     loadCount();
 
-    // Subscribe to real-time changes
-    const channel = supabase
-      .channel(`marker-count-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'marker_counts',
-        },
-        (payload) => {
-          // Reload count when view changes
-          loadCount();
-        },
-      )
-      .subscribe();
+    // Subscribe to real-time changes (only when online)
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel(`marker-count-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'marker_counts',
+          },
+          (payload) => {
+            // Reload count when view changes
+            loadCount();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [eventYear]);
 
@@ -301,25 +310,28 @@ export function useCompanyCount() {
 
     loadCount();
 
-    // Subscribe to real-time changes
-    const channel = supabase
-      .channel('company-count')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'company_counts',
-        },
-        (payload) => {
-          // Reload count when view changes
-          loadCount();
-        },
-      )
-      .subscribe();
+    // Subscribe to real-time changes (only when online)
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel('company-count')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'company_counts',
+          },
+          (payload) => {
+            // Reload count when view changes
+            loadCount();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 

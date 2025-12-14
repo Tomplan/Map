@@ -27,6 +27,42 @@ self.addEventListener('activate', () => {
   self.clients.claim();
 });
 
+// Messages from the page to perform on-demand caching or store snapshots.
+self.addEventListener('message', (event) => {
+  const data = event.data;
+  if (!data || !data.type) return;
+
+  if (data.type === 'CACHE_URLS' && Array.isArray(data.urls)) {
+    // Cache provided URLs defensively
+    const cacheName = 'on-demand-cache';
+    event.waitUntil(
+      caches.open(cacheName).then((cache) =>
+        Promise.all(
+          data.urls.map((u) =>
+            fetch(u)
+              .then((res) => {
+                if (res && res.ok) return cache.put(u, res.clone());
+                return null;
+              })
+              .catch(() => null),
+          ),
+        ),
+      ),
+    );
+  }
+
+  if (data.type === 'STORE_SNAPSHOT' && data.snapshot) {
+    const cacheName = PRECACHE_NAME;
+    try {
+      const body = JSON.stringify(data.snapshot || {});
+      const response = new Response(body, { headers: { 'Content-Type': 'application/json' } });
+      event.waitUntil(caches.open(cacheName).then((cache) => cache.put('/markers-snapshot', response)));
+    } catch (e) {
+      // ignore
+    }
+  }
+});
+
 // Cache Carto Voyager map tiles
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;

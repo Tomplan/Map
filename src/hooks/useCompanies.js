@@ -121,20 +121,23 @@ export default function useCompanies() {
 
   // Subscribe to realtime changes (debounced to batch multiple rapid changes)
   useEffect(() => {
-    const channel = supabase
-      .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
-        // Debounce: wait 500ms after last change before reloading
-        if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-        reloadTimeoutRef.current = setTimeout(() => {
-          loadCompanies();
-        }, 500);
-      })
-      .subscribe();
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel('companies-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
+          // Debounce: wait 500ms after last change before reloading
+          if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
+          reloadTimeoutRef.current = setTimeout(() => {
+            loadCompanies();
+          }, 500);
+        })
+        .subscribe();
+    }
 
     return () => {
       if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [loadCompanies]);
 

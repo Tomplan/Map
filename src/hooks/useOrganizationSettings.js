@@ -245,26 +245,29 @@ export default function useOrganizationSettings() {
       channelRef.current = null;
     }
 
-    // Subscribe to settings changes with version checking
-    channelRef.current = supabase
-      .channel('organization-settings-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'organization_settings',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          // Only apply update if newer version (prevents race conditions)
-          // Compare against the stable primitive rowVersion captured above
-          if (payload.new.row_version > rowVersion) {
-            setSettings(payload.new);
-          }
-        },
-      )
-      .subscribe();
+    // Only subscribe when online
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      // Subscribe to settings changes with version checking
+      channelRef.current = supabase
+        .channel('organization-settings-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'organization_settings',
+            filter: 'id=eq.1',
+          },
+          (payload) => {
+            // Only apply update if newer version (prevents race conditions)
+            // Compare against the stable primitive rowVersion captured above
+            if (payload.new.row_version > rowVersion) {
+              setSettings(payload.new);
+            }
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
       if (channelRef.current) {

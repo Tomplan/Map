@@ -58,41 +58,44 @@ export function OrganizationLogoProvider({ children }) {
 
     fetchOrganizationLogo();
 
-    // Subscribe to changes in organization_profile
-    const channel = supabase
-      .channel('organization-logo-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'organization_profile',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          if (payload.new) {
-            // If the new value is empty/cleared, fall back to static default path
-            if (!payload.new.logo || payload.new.logo.trim() === '') {
-              // Cleared -> restore raw default & resolved default
-              setOrganizationLogoRaw((prev) =>
-                prev === BRANDING_CONFIG.DEFAULT_LOGO ? prev : BRANDING_CONFIG.DEFAULT_LOGO,
-              );
-              setOrganizationLogo((prev) =>
-                prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
-              );
-            } else {
-              const raw = payload.new.logo;
-              const normalized = getLogoPath(raw);
-              setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
-              setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
+    // Subscribe to changes in organization_profile (only when online)
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel('organization-logo-sync')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'organization_profile',
+            filter: 'id=eq.1',
+          },
+          (payload) => {
+            if (payload.new) {
+              // If the new value is empty/cleared, fall back to static default path
+              if (!payload.new.logo || payload.new.logo.trim() === '') {
+                // Cleared -> restore raw default & resolved default
+                setOrganizationLogoRaw((prev) =>
+                  prev === BRANDING_CONFIG.DEFAULT_LOGO ? prev : BRANDING_CONFIG.DEFAULT_LOGO,
+                );
+                setOrganizationLogo((prev) =>
+                  prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
+                );
+              } else {
+                const raw = payload.new.logo;
+                const normalized = getLogoPath(raw);
+                setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
+                setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
+              }
             }
-          }
-        },
-      )
-      .subscribe();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 

@@ -52,3 +52,14 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register(`${getBaseUrl()}service-worker.js`);
   });
 }
+
+// Schedule background idle prefetch (map chunk + marker snapshot) so the map
+// becomes available offline without blocking the initial load. Runs after page
+// load and uses requestIdleCallback when available.
+try {
+  // Import lazily to avoid bundling this helper into main chunk; small runtime
+  // cost but keeps main bundle lean.
+  import('./services/prefetchOnIdle').then((m) => m.scheduleMapPrefetchOnIdle());
+} catch (e) {
+  // ignore
+}

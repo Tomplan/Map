@@ -301,25 +301,28 @@ function EventClusterMarkers({
 
     loadDefaults();
 
-    // Subscribe to default marker changes
-    const subscription = supabase
-      .channel('default-markers-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: 'event_year=eq.0',
-        },
-        () => {
-          loadDefaults();
-        },
-      )
-      .subscribe();
+    // Subscribe to default marker changes only when online
+    let subscription = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      subscription = supabase
+        .channel('default-markers-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_appearance',
+            filter: 'event_year=eq.0',
+          },
+          () => {
+            loadDefaults();
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(subscription);
+      if (subscription) supabase.removeChannel(subscription);
     };
   }, []);
 

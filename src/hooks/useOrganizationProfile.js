@@ -42,24 +42,26 @@ export default function useOrganizationProfile() {
 
   useEffect(() => {
     fetchProfile();
-
-    // Subscribe to real-time updates
-    const subscription = supabase
-      .channel('public:organization_profile')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
-        (payload) => {
-          if (payload.new) {
-            setProfile(payload.new);
-          }
-        },
-      )
-      .subscribe();
+    // Subscribe to real-time updates only when online
+    let subscription = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      subscription = supabase
+        .channel('public:organization_profile')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
+          (payload) => {
+            if (payload.new) {
+              setProfile(payload.new);
+            }
+          },
+        )
+        .subscribe();
+    }
 
     // Cleanup subscription on unmount
     return () => {
-      supabase.removeChannel(subscription);
+      if (subscription) supabase.removeChannel(subscription);
     };
   }, [fetchProfile]);
 

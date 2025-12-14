@@ -15,10 +15,16 @@ export default function useFeedbackRequests() {
   // Get current user
   useEffect(() => {
     const getCurrentUser = async () => {
+      try {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       setCurrentUserId(user?.id || null);
+        // console.debug('[useFeedbackRequests] getUser result', user);
+      } catch (err) {
+        console.error('[useFeedbackRequests] getUser error', err);
+        setCurrentUserId(null);
+      }
     };
     getCurrentUser();
   }, []);
@@ -44,6 +50,7 @@ export default function useFeedbackRequests() {
         if (fetchError) throw fetchError;
 
         setRequests(data || []);
+        
 
         // Load user's votes
         if (currentUserId) {
@@ -283,111 +290,123 @@ export default function useFeedbackRequests() {
     }
   }, []);
 
-  // Set up real-time subscription for requests
+  // Set up real-time subscription for requests (only when online)
   useEffect(() => {
-    const requestsChannel = supabase
-      .channel('feedback_requests_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'feedback_requests' },
-        (payload) => {
-          // Apply targeted changes to local requests array instead of triggering a full reload.
-          if (!payload) return;
-          setRequests((prev) => {
-            const next = [...prev];
+    let requestsChannel = null;
+    let votesChannel = null;
+    let commentsChannel = null;
+
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      requestsChannel = supabase
+        .channel('feedback_requests_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'feedback_requests' },
+          (payload) => {
+            // Apply targeted changes to local requests array instead of triggering a full reload.
+            if (!payload) return;
+            setRequests((prev) => {
+              const next = [...prev];
+              const newRow = payload.new;
+              const oldRow = payload.old;
+              const id = newRow?.id || oldRow?.id;
+              const idx = next.findIndex((r) => r.id === id);
+
+              if (newRow && !oldRow) {
+                // INSERT
+                return [newRow, ...next];
+              }
+
+              if (newRow && oldRow) {
+                // UPDATE
+                if (idx !== -1) next[idx] = { ...next[idx], ...newRow };
+                return next;
+              }
+
+              if (oldRow && !newRow) {
+                // DELETE
+                return next.filter((r) => r.id !== oldRow.id);
+              }
+
+              return next;
+            });
+          },
+        )
+        .subscribe();
+
+      votesChannel = supabase
+        .channel('feedback_votes_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'feedback_votes' },
+          (payload) => {
+            if (!payload) return;
             const newRow = payload.new;
             const oldRow = payload.old;
-            const id = newRow?.id || oldRow?.id;
-            const idx = next.findIndex((r) => r.id === id);
+            const id = newRow?.request_id || oldRow?.request_id;
+            if (!id) return;
 
-            if (newRow && !oldRow) {
-              // INSERT
-              return [newRow, ...next];
-            }
+            setRequests((prev) =>
+              prev.map((r) => {
+                if (r.id !== id) return r;
+                if (newRow && !oldRow) {
+                  // INSERT -> increment
+                  return { ...r, votes: (r.votes || 0) + 1 };
+                }
+                if (!newRow && oldRow) {
+                  // DELETE -> decrement
+                  return { ...r, votes: Math.max(0, (r.votes || 0) - 1) };
+                }
+                // UPDATE or unknown -> return as-is
+                return r;
+              }),
+            );
+          },
+        )
+        .subscribe();
 
-            if (newRow && oldRow) {
-              // UPDATE
-              if (idx !== -1) next[idx] = { ...next[idx], ...newRow };
-              return next;
-            }
+      commentsChannel = supabase
+        .channel('feedback_comments_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'feedback_comments' },
+          (payload) => {
+            if (!payload) return;
+            const newRow = payload.new;
+            const oldRow = payload.old;
+            const id = newRow?.request_id || oldRow?.request_id;
+            if (!id) return;
 
-            if (oldRow && !newRow) {
-              // DELETE
-              return next.filter((r) => r.id !== oldRow.id);
-            }
-
-            return next;
-          });
-        },
-      )
-      .subscribe();
-
-    const votesChannel = supabase
-      .channel('feedback_votes_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'feedback_votes' },
-        (payload) => {
-          if (!payload) return;
-          const newRow = payload.new;
-          const oldRow = payload.old;
-          const id = newRow?.request_id || oldRow?.request_id;
-          if (!id) return;
-
-          setRequests((prev) =>
-            prev.map((r) => {
-              if (r.id !== id) return r;
-              if (newRow && !oldRow) {
-                // INSERT -> increment
-                return { ...r, votes: (r.votes || 0) + 1 };
-              }
-              if (!newRow && oldRow) {
-                // DELETE -> decrement
-                return { ...r, votes: Math.max(0, (r.votes || 0) - 1) };
-              }
-              // UPDATE or unknown -> return as-is
-              return r;
-            }),
-          );
-        },
-      )
-      .subscribe();
-
-    const commentsChannel = supabase
-      .channel('feedback_comments_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'feedback_comments' },
-        (payload) => {
-          if (!payload) return;
-          const newRow = payload.new;
-          const oldRow = payload.old;
-          const id = newRow?.request_id || oldRow?.request_id;
-          if (!id) return;
-
-          setRequests((prev) =>
-            prev.map((r) => {
-              if (r.id !== id) return r;
-              if (newRow && !oldRow) {
-                // INSERT comment -> increment comments_count
-                return { ...r, comments_count: (r.comments_count || 0) + 1 };
-              }
-              if (!newRow && oldRow) {
-                // DELETE comment -> decrement
-                return { ...r, comments_count: Math.max(0, (r.comments_count || 0) - 1) };
-              }
-              return r;
-            }),
-          );
-        },
-      )
-      .subscribe();
+            setRequests((prev) =>
+              prev.map((r) => {
+                if (r.id !== id) return r;
+                if (newRow && !oldRow) {
+                  // INSERT comment -> increment comments_count
+                  return { ...r, comments_count: (r.comments_count || 0) + 1 };
+                }
+                if (!newRow && oldRow) {
+                  // DELETE comment -> decrement
+                  return { ...r, comments_count: Math.max(0, (r.comments_count || 0) - 1) };
+                }
+                return r;
+              }),
+            );
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(requestsChannel);
-      supabase.removeChannel(votesChannel);
-      supabase.removeChannel(commentsChannel);
+      if (requestsChannel) supabase.removeChannel(requestsChannel);
+      if (votesChannel) supabase.removeChannel(votesChannel);
+      if (commentsChannel) supabase.removeChannel(commentsChannel);
     };
+  }, [loadRequests]);
+
+  // Initial load on mount
+  useEffect(() => {
+    console.debug('[useFeedbackRequests] initial load effect running');
+    loadRequests();
   }, [loadRequests]);
 
   return {

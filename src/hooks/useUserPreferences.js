@@ -369,35 +369,37 @@ export default function useUserPreferences() {
       channelRef.current = null;
     }
 
-    // Subscribe to all preference changes, filter in callback
-    channelRef.current = supabase
-      .channel(`user-preferences-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'user_preferences',
-        },
-        (payload) => {
-          // Filter for this user only
-          if (payload.new?.user_id === userId) {
-            // Ignore updates made by this same user to prevent infinite loops
-            if (
-              payload.new.updated_by === userId &&
-              payload.new.row_version === currentVersionRef.current + 1
-            ) {
-              // Update our version reference but don't trigger state update
-              currentVersionRef.current = payload.new.row_version;
-              return;
-            }
+    // Subscribe to all preference changes, filter in callback (only when online)
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channelRef.current = supabase
+        .channel(`user-preferences-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_preferences',
+          },
+          (payload) => {
+            // Filter for this user only
+            if (payload.new?.user_id === userId) {
+              // Ignore updates made by this same user to prevent infinite loops
+              if (
+                payload.new.updated_by === userId &&
+                payload.new.row_version === currentVersionRef.current + 1
+              ) {
+                // Update our version reference but don't trigger state update
+                currentVersionRef.current = payload.new.row_version;
+                return;
+              }
 
-            currentVersionRef.current = payload.new.row_version;
-            setPreferences(payload.new);
-          }
-        },
-      )
-      .subscribe();
+              currentVersionRef.current = payload.new.row_version;
+              setPreferences(payload.new);
+            }
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
       if (channelRef.current) {

@@ -290,29 +290,32 @@ export default function useEventSubscriptions(eventYear) {
 
   // Subscribe to real-time changes
   useEffect(() => {
-    const channel = supabase
-      .channel(`event-subscriptions-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          // Debounce: wait 500ms after last change before reloading
-          if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-          reloadTimeoutRef.current = setTimeout(() => {
-            loadSubscriptions();
-          }, 500);
-        },
-      )
-      .subscribe();
+    let channel = null;
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel(`event-subscriptions-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_subscriptions',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            // Debounce: wait 500ms after last change before reloading
+            if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
+            reloadTimeoutRef.current = setTimeout(() => {
+              loadSubscriptions();
+            }, 500);
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
       if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [eventYear, loadSubscriptions]);
 

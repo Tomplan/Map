@@ -297,41 +297,45 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
 
   // Subscribe to realtime changes - filter by event year
   useEffect(() => {
-    const channel = supabase
-      .channel(`event-activities-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_activities',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        (payload) => {
-          // For INSERT events, check if we already have this activity locally
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setActivities((prev) => {
-              // Check if this activity already exists
-              const day = payload.new.day;
-              const exists = prev[day]?.some((a) => a.id === payload.new.id);
-              if (exists) {
-                // We already have it (we created it locally), no need to reload
+    let channel = null;
+
+    if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
+      channel = supabase
+        .channel(`event-activities-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_activities',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          (payload) => {
+            // For INSERT events, check if we already have this activity locally
+            if (payload.eventType === 'INSERT' && payload.new) {
+              setActivities((prev) => {
+                // Check if this activity already exists
+                const day = payload.new.day;
+                const exists = prev[day]?.some((a) => a.id === payload.new.id);
+                if (exists) {
+                  // We already have it (we created it locally), no need to reload
+                  return prev;
+                }
+                // New activity from another user/session, reload to get full data
+                loadActivities();
                 return prev;
-              }
-              // New activity from another user/session, reload to get full data
+              });
+            } else {
+              // For UPDATE/DELETE, always reload
               loadActivities();
-              return prev;
-            });
-          } else {
-            // For UPDATE/DELETE, always reload
-            loadActivities();
-          }
-        },
-      )
-      .subscribe();
+            }
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) supabase.removeChannel(channel);
     };
   }, [eventYear, loadActivities]);
 
