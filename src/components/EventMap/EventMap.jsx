@@ -20,10 +20,7 @@ import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
-<<<<<<< HEAD
 import { computePrintIconOptions } from '../../utils/printScaling';
-=======
->>>>>>> origin/development
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
