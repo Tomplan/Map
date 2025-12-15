@@ -24,7 +24,6 @@ export function scheduleMapPrefetchOnIdle(opts = {}) {
       // We intentionally don't attach it to the DOM; this warms the network cache and
       // ensures the chunk is available offline if the service worker caches it or if
       // it's present in HTTP cache.
-      // eslint-disable-next-line no-unused-vars, import/no-cycle
       await import('../components/EventMap/EventMapInner');
 
       // Optionally, tell the service worker to cache specific known asset URLs (CSS/images)
