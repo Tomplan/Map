@@ -10,7 +10,10 @@ jobs:
   e2e:
     name: Run E2E tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Allow a bit more time for CI runners that may be slower or need to
+    # install browser snaps; this helps reduce spurious cancellations
+    # while we collect additional diagnostics for flaky runs.
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -71,3 +74,35 @@ jobs:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
           PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
         run: npm run test:e2e --silent
+
+      - name: Capture processes & diagnostics
+        if: always()
+        run: |
+          echo "--- ps aux ---" > process-list.txt || true
+          ps aux >> process-list.txt || true
+          echo "--- netstat -tulpn (may require sudo) ---" >> process-list.txt || true
+          # List processes that look related to preview/test tooling
+          pgrep -a vite || true
+          pgrep -a esbuild || true
+          pgrep -a node || true
+
+      - name: Upload E2E debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-debug
+          path: |
+            process-list.txt
+            preview.log
+
+      - name: Stop lingering preview/esbuild/vite processes
+        if: always()
+        run: |
+          # Try to kill known background processes that may hang the job
+          pkill -f 'vite preview' || true
+          pkill -f 'npm run preview' || true
+          pkill -f 'esbuild' || true
+          # If preview was started on the fixed port, kill processes using it
+          if command -v lsof >/dev/null 2>&1; then
+            lsof -ti:5173 | xargs -r kill -9 || true
+          fi
