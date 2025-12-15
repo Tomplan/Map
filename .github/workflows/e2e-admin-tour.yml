@@ -42,28 +42,35 @@ jobs:
         run: npx wait-on http://127.0.0.1:5173/Map --timeout 120000
 
       - name: Run admin-tour E2E (Puppeteer)
-        # Only run admin E2E when admin credentials are provided via repo secrets
-        # and only on push events (secrets are not available to forked PRs).
-        if: ${{ github.event_name == 'push' && secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
+        # Only run admin E2E on push events. Secrets are validated at runtime
+        # inside the step to avoid using `secrets.*` in the `if` expression
+        # which some linters flag as unrecognized in PR/fork contexts.
+        if: ${{ github.event_name == 'push' }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
-          # Provide admin credentials through repo secrets so the E2E
-          # script can sign-in if the job is running against a protected
-          # preview. Add these secrets to your repo settings: E2E_ADMIN_EMAIL
-          # and E2E_ADMIN_PASSWORD
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-        run: npm run test:e2e:tour-admin
+        run: |
+          if [ -z "${{ secrets.E2E_ADMIN_EMAIL }}" ] || [ -z "${{ secrets.E2E_ADMIN_PASSWORD }}" ]; then
+            echo "Admin credentials not present; skipping admin-tour E2E.";
+            exit 0;
+          fi
+          export E2E_ADMIN_EMAIL="${{ secrets.E2E_ADMIN_EMAIL }}"
+          export E2E_ADMIN_PASSWORD="${{ secrets.E2E_ADMIN_PASSWORD }}"
+          npm run test:e2e:tour-admin
 
       - name: Run help-no-reopen E2E (Puppeteer)
-        # Only run help-related E2E when admin credentials are provided
-        # and only on push events (secrets are not available to forked PRs).
-        if: ${{ github.event_name == 'push' && secrets.E2E_ADMIN_EMAIL && secrets.E2E_ADMIN_PASSWORD }}
+        # Only run help-related E2E on push events and validate secrets at
+        # runtime to avoid linter warnings about `secrets.*` in expressions.
+        if: ${{ github.event_name == 'push' }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
-          E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
-          E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-        run: npm run test:e2e:tour-help-no-reopen
+        run: |
+          if [ -z "${{ secrets.E2E_ADMIN_EMAIL }}" ] || [ -z "${{ secrets.E2E_ADMIN_PASSWORD }}" ]; then
+            echo "Admin credentials not present; skipping help-no-reopen E2E.";
+            exit 0;
+          fi
+          export E2E_ADMIN_EMAIL="${{ secrets.E2E_ADMIN_EMAIL }}"
+          export E2E_ADMIN_PASSWORD="${{ secrets.E2E_ADMIN_PASSWORD }}"
+          npm run test:e2e:tour-help-no-reopen
 
       - name: Upload debug artifacts (preview.log)
         if: always()
