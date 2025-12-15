@@ -10,5 +10,7 @@ module.exports = {
   moduleNameMapper: {
     '\\.(svg|png|jpg|jpeg|gif|webp|avif)$': '<rootDir>/__mocks__/fileMock.js',
     '\\.(css|less|sass|scss)$': '<rootDir>/__mocks__/fileMock.js',
+    '^xlsx$': '<rootDir>/__mocks__/xlsx.js',
+    '^exceljs$': '<rootDir>/__mocks__/exceljs.js',
   },
 };

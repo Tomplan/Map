@@ -37,18 +37,21 @@ jest.mock('../../../../src/utils/getLogoPath', () => ({
 
 // Mock EventMap so it calls onMapReady with a fake map on mount
 jest.mock('../../../../src/components/EventMap/EventMap', () => {
-  const React = require('react');
+  let mapReadyCalled = false;
   return (props) => {
-    const { onMapReady } = props;
-    React.useEffect(() => {
-      if (onMapReady) {
-        onMapReady({
-          printControl: { options: { printModes: [{ options: { title: 'A4 — Landscape' } }] } },
-        });
-      }
-    }, [onMapReady]);
-
-    return React.createElement('div', { 'data-testid': 'event-map-mock' }, 'mock');
+    // Simulate a map ready call only once after mount
+    if (props.onMapReady && typeof props.onMapReady === 'function' && !mapReadyCalled) {
+      mapReadyCalled = true;
+      // Use setTimeout to simulate async map creation
+      setTimeout(() => props.onMapReady({
+        printControl: {
+          options: {
+            printModes: [{ options: { title: 'A4 — Landscape' } }]
+          }
+        }
+      }), 0);
+    }
+    return <div data-testid="event-map-mock">mock</div>;
   };
 });
 
