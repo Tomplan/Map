@@ -80,8 +80,14 @@ jobs:
         run: |
           echo "--- ps aux ---" > process-list.txt || true
           ps aux >> process-list.txt || true
-          echo "--- netstat -tulpn (may require sudo) ---" >> process-list.txt || true
-          # List processes that look related to preview/test tooling
+          echo "--- listening sockets (ss -lntp) ---" >> process-list.txt || true
+          ss -lntp || true
+          echo "--- lsof :5173 :5174 (if available) ---" >> process-list.txt || true
+          if command -v lsof >/dev/null 2>&1; then
+            lsof -ti:5173 | xargs -r ps -o pid,ppid,cmd -p || true
+            lsof -ti:5174 | xargs -r ps -o pid,ppid,cmd -p || true
+          fi
+          echo "--- candidate processes (pgrep) ---" >> process-list.txt || true
           pgrep -a vite || true
           pgrep -a esbuild || true
           pgrep -a node || true
@@ -94,6 +100,9 @@ jobs:
           path: |
             process-list.txt
             preview.log
+            preview-child.stdout.log
+            preview-child.stderr.log
+            e2e-logs/**
 
       - name: Stop lingering preview/esbuild/vite processes
         if: always()
