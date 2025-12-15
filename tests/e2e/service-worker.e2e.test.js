@@ -163,10 +163,16 @@ describe('Service Worker E2E', () => {
         } catch (e) {
           /* ignore - streams may already be closed */
         }
-
         if (!previewProc.killed) previewProc.kill('SIGTERM');
-        // Wait briefly for the process to exit
+        // Wait briefly for the process to exit, then escalate to SIGKILL if needed
         await new Promise((resolve) => setTimeout(resolve, 250));
+        if (previewProc.exitCode === null && !previewProc.killed) {
+          try {
+            previewProc.kill('SIGKILL');
+          } catch (e) {
+            console.error('Failed to SIGKILL preview process:', e);
+          }
+        }
       } catch (err) {
         console.error('Error killing preview process in afterAll:', err);
       }
