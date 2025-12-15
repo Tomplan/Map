@@ -60,6 +60,10 @@ describe('Service Worker E2E', () => {
   let browser;
   let page;
   let previewProc;
+  // Handlers for preview stdout/stderr; declare in outer scope so
+  // `afterAll` can remove them during teardown.
+  let previewStdoutHandler;
+  let previewStderrHandler;
 
   // Helper: wait for preview to start by watching stdout or probing the URL.
   async function waitForPreviewStart(proc, url, timeout = 180000) {
@@ -117,8 +121,8 @@ describe('Service Worker E2E', () => {
       // Attach persistent handlers for logging. Keep references so we can
       // remove them during teardown to avoid leaking listeners in case the
       // process is restarted or the test harness reuses state.
-      let previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
-      let previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
+      previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
+      previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
       previewProc.stdout.on('data', previewStdoutHandler);
       previewProc.stderr.on('data', previewStderrHandler);
 
@@ -130,6 +134,13 @@ describe('Service Worker E2E', () => {
     } catch (err) {
       // Ensure we don't leak the process when startup fails
       try {
+        // Remove handlers if they were attached
+        try {
+          if (previewStdoutHandler) previewProc.stdout.off('data', previewStdoutHandler);
+          if (previewStderrHandler) previewProc.stderr.off('data', previewStderrHandler);
+        } catch (e) {
+          /* ignore */
+        }
         if (previewProc && !previewProc.killed) previewProc.kill();
       } catch (killErr) {
         console.error('Failed to kill preview process after startup failure:', killErr);
