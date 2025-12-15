@@ -48,13 +48,15 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
+          ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
         run: |
-          if [ -z "${{ secrets.E2E_ADMIN_EMAIL }}" ] || [ -z "${{ secrets.E2E_ADMIN_PASSWORD }}" ]; then
+          if [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
             echo "Admin credentials not present; skipping admin-tour E2E.";
             exit 0;
           fi
-          export E2E_ADMIN_EMAIL="${{ secrets.E2E_ADMIN_EMAIL }}"
-          export E2E_ADMIN_PASSWORD="${{ secrets.E2E_ADMIN_PASSWORD }}"
+          export E2E_ADMIN_EMAIL="$ADMIN_EMAIL"
+          export E2E_ADMIN_PASSWORD="$ADMIN_PASSWORD"
           npm run test:e2e:tour-admin
 
       - name: Run help-no-reopen E2E (Puppeteer)
@@ -63,13 +65,15 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         env:
           E2E_BASE: http://127.0.0.1:5173/Map
+          ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
         run: |
-          if [ -z "${{ secrets.E2E_ADMIN_EMAIL }}" ] || [ -z "${{ secrets.E2E_ADMIN_PASSWORD }}" ]; then
+          if [ -z "$ADMIN_EMAIL" ] || [ -z "$ADMIN_PASSWORD" ]; then
             echo "Admin credentials not present; skipping help-no-reopen E2E.";
             exit 0;
           fi
-          export E2E_ADMIN_EMAIL="${{ secrets.E2E_ADMIN_EMAIL }}"
-          export E2E_ADMIN_PASSWORD="${{ secrets.E2E_ADMIN_PASSWORD }}"
+          export E2E_ADMIN_EMAIL="$ADMIN_EMAIL"
+          export E2E_ADMIN_PASSWORD="$ADMIN_PASSWORD"
           npm run test:e2e:tour-help-no-reopen
 
       - name: Upload debug artifacts (preview.log)

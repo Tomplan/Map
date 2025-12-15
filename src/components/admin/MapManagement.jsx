@@ -397,7 +397,13 @@ export default function MapManagement({
       });
 
       const imageDataUrl = canvas.toDataURL('image/png', 1.0);
-      const printWindow = window.open('', '_blank', 'width=900,height=700');
+      let printWindow;
+      try {
+        printWindow = window.open('', '_blank', 'width=900,height=700');
+      } catch (e) {
+        // In test environments like jsdom, window.open may not be implemented
+        return;
+      }
       if (!printWindow) return;
 
       // Avoid document.write (browser warns). Build DOM safely using DOM APIs
