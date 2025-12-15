@@ -69,7 +69,9 @@ describe('Service Worker E2E', () => {
   async function waitForPreviewStart(proc, url, timeout = 180000) {
     const start = Date.now();
 
-    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(() => null);
+    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(
+      () => null,
+    );
     const urlPromise = waitForUrl(url, timeout).catch(() => null);
 
     // Also reject if the preview process exits early or emits an error.
@@ -113,18 +115,29 @@ describe('Service Worker E2E', () => {
     });
 
     // Start preview server on fixed port and capture stdout/stderr for debug logs
+    // Start preview detached so it runs in its own process group. This
+    // makes it possible to terminate the whole group (vite/esbuild
+    // children) reliably during teardown and prevents leaked processes
+    // from persisting if the test process is aborted.
     previewProc = spawn('npm', ['run', 'preview', '--', '--port', String(PREVIEW_PORT)], {
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true,
     });
+    // Don't keep the child attached to this process if the parent exits
+    try {
+      previewProc.unref();
+    } catch (e) {
+      // unref may not be available in all environments - ignore
+    }
 
-      // Attach persistent handlers for logging. Keep references so we can
-      // remove them during teardown to avoid leaking listeners in case the
-      // process is restarted or the test harness reuses state.
-      previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
-      previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
-      previewProc.stdout.on('data', previewStdoutHandler);
-      previewProc.stderr.on('data', previewStderrHandler);
+    // Attach persistent handlers for logging. Keep references so we can
+    // remove them during teardown to avoid leaking listeners in case the
+    // process is restarted or the test harness reuses state.
+    previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
+    previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
+    previewProc.stdout.on('data', previewStdoutHandler);
+    previewProc.stderr.on('data', previewStderrHandler);
 
     // Wait until the preview server is responding on the expected URL or
     // until we see the 'Local:' line on stdout. If the process exits early
@@ -163,15 +176,39 @@ describe('Service Worker E2E', () => {
         } catch (e) {
           /* ignore - streams may already be closed */
         }
-        if (!previewProc.killed) previewProc.kill('SIGTERM');
-        // Wait briefly for the process to exit, then escalate to SIGKILL if needed
-        await new Promise((resolve) => setTimeout(resolve, 250));
-        if (previewProc.exitCode === null && !previewProc.killed) {
+
+        // If the process was started detached, kill the entire group by
+        // sending a negative pid (POSIX). Fall back to direct kill if that
+        // fails. Use SIGTERM then escalate to SIGKILL after a short timeout.
+        const killGroup = () => {
           try {
-            previewProc.kill('SIGKILL');
-          } catch (e) {
-            console.error('Failed to SIGKILL preview process:', e);
+            // negative PID targets the process group on POSIX systems
+            process.kill(-previewProc.pid, 'SIGTERM');
+            return true;
+          } catch (err) {
+            try {
+              if (!previewProc.killed) previewProc.kill('SIGTERM');
+              return true;
+            } catch (e) {
+              console.error('Failed to SIGTERM preview process/group:', e);
+              return false;
+            }
           }
+        };
+
+        const killed = killGroup();
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        // If still alive, escalate
+        try {
+          if (previewProc.exitCode === null && !previewProc.killed) {
+            try {
+              process.kill(-previewProc.pid, 'SIGKILL');
+            } catch (err) {
+              if (!previewProc.killed) previewProc.kill('SIGKILL');
+            }
+          }
+        } catch (err) {
+          // best-effort - ignore
         }
       } catch (err) {
         console.error('Error killing preview process in afterAll:', err);
@@ -220,7 +257,10 @@ describe('Service Worker E2E', () => {
 
     // Verify the snapshot is stored in PRECACHE_NAME under '/markers-snapshot'
     const snapshotBody = await page.evaluate(() =>
-      caches.open('static-assets-v1').then((c) => c.match('/markers-snapshot')).then((r) => (r ? r.text() : null)),
+      caches
+        .open('static-assets-v1')
+        .then((c) => c.match('/markers-snapshot'))
+        .then((r) => (r ? r.text() : null)),
     );
 
     expect(snapshotBody).not.toBeNull();
@@ -237,7 +277,11 @@ describe('Service Worker E2E', () => {
     await new Promise((r) => setTimeout(r, 500));
 
     const cached = await page.evaluate(
-      (asset) => caches.open('on-demand-cache').then((c) => c.match(asset)).then(Boolean),
+      (asset) =>
+        caches
+          .open('on-demand-cache')
+          .then((c) => c.match(asset))
+          .then(Boolean),
       assetPath,
     );
 

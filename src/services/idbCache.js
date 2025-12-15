@@ -35,7 +35,7 @@ export async function getMarkerSnapshot() {
     // and let callers fall back to network or empty state
     // This avoids throwing IndexedDB errors into UI code
     // which keeps behavior predictable.
-    // eslint-disable-next-line no-console
+
     console.warn('getMarkerSnapshot failed', err);
     return undefined;
   }
@@ -50,7 +50,6 @@ export async function setMarkerSnapshot(snapshot) {
     await db.put(MARKER_STORE, snapshot, 'snapshot');
     return true;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('setMarkerSnapshot failed', err);
     return false;
   }
@@ -62,7 +61,6 @@ export async function clearMarkerSnapshot() {
     await db.delete(MARKER_STORE, 'snapshot');
     return true;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('clearMarkerSnapshot failed', err);
     return false;
   }
@@ -75,7 +73,6 @@ export async function enqueueOfflineAction(action) {
     await db.add(QUEUE_STORE, action);
     return true;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('enqueueOfflineAction failed', err);
     return false;
   }
@@ -90,7 +87,6 @@ export async function getOfflineQueue() {
     await tx.done;
     return all;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('getOfflineQueue failed', err);
     return [];
   }
@@ -105,7 +101,6 @@ export async function clearOfflineQueue() {
     await tx.done;
     return true;
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.warn('clearOfflineQueue failed', err);
     return false;
   }

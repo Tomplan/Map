@@ -54,7 +54,6 @@ export default function EventMapInner(props) {
   // across files in the repo history. Keep this function as a thin wrapper
   // to avoid too much refactoring in one change.
 
-  // eslint-disable-next-line react/prop-types
   const {
     isAdminView,
     markersState,

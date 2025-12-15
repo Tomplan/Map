@@ -27,7 +27,9 @@ export default function FeedbackRequests() {
   // const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
   const preferences = null;
   const preferencesLoading = false;
-  const updatePreference = () => {};
+  // Keep a stable no-op updatePreference while preferences integration is
+  // temporarily disabled; wrap in useCallback so it's stable across renders
+  const updatePreference = React.useCallback(() => {}, []);
 
   const {
     requests,

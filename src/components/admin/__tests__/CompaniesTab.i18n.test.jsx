@@ -70,16 +70,20 @@ jest.mock('../../../hooks/useCompanyTranslations', () => () => ({
   translations: {},
   getTranslation: () => '',
 }));
+// Provide stable jest.fn() mocks for category helpers so the component
+// won't re-run effects due to changing function identities between renders
+const mockGetCompanyCategories = jest.fn(async () => []);
+const mockGetAllCompanyCategories = jest.fn(async (ids) => {
+  const out = {};
+  ids.forEach((id) => {
+    out[id] = [];
+  });
+  return out;
+});
 jest.mock('../../../hooks/useCategories', () => () => ({
   categories: [],
-  getCompanyCategories: async () => [],
-  getAllCompanyCategories: async (ids) => {
-    const out = {};
-    ids.forEach((id) => {
-      out[id] = [];
-    });
-    return out;
-  },
+  getCompanyCategories: mockGetCompanyCategories,
+  getAllCompanyCategories: mockGetAllCompanyCategories,
   assignCategoriesToCompany: jest.fn(),
 }));
 jest.mock('../../../contexts/OrganizationLogoContext', () => ({

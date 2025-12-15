@@ -20,187 +20,184 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     eventYearRef.current = eventYear;
   }, [eventYear]);
 
-  const loadMarkers = useCallback(
-    async (online) => {
-      // Always use the latest eventYear from ref
-      const targetYear = eventYearRef.current;
+  const loadMarkers = useCallback(async (online) => {
+    // Always use the latest eventYear from ref
+    const targetYear = eventYearRef.current;
 
-      setLoading(true);
-      if (!online) {
-        // Try to load cached snapshot from IndexedDB when offline
-        try {
-          const snapshot = await getMarkerSnapshot();
-          if (snapshot) {
-            setMarkers(snapshot);
-            setLoading(false);
-            return;
-          }
-        } catch (err) {
-          // ignore and proceed to attempt network fetch (which will fail if offline)
-        }
-      }
-
+    setLoading(true);
+    if (!online) {
+      // Try to load cached snapshot from IndexedDB when offline
       try {
-        // Fetch all data in parallel, including defaults for booth markers
-        // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
-        const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes, defaultsRes] =
-          await Promise.all([
-            supabase
-              .from('markers_core')
-              .select('*')
-              .or(`event_year.eq.${targetYear},event_year.eq.0`),
-            supabase.from('markers_appearance').select('*').eq('event_year', targetYear),
-            supabase.from('markers_content').select('*').eq('event_year', targetYear),
-            supabase
-              .from('assignments')
-              .select(
-                `
+        const snapshot = await getMarkerSnapshot();
+        if (snapshot) {
+          setMarkers(snapshot);
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        // ignore and proceed to attempt network fetch (which will fail if offline)
+      }
+    }
+
+    try {
+      // Fetch all data in parallel, including defaults for booth markers
+      // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
+      const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes, defaultsRes] =
+        await Promise.all([
+          supabase
+            .from('markers_core')
+            .select('*')
+            .or(`event_year.eq.${targetYear},event_year.eq.0`),
+          supabase.from('markers_appearance').select('*').eq('event_year', targetYear),
+          supabase.from('markers_content').select('*').eq('event_year', targetYear),
+          supabase
+            .from('assignments')
+            .select(
+              `
             *,
             company:companies(id, name, logo, website, info, company_translations(language_code, info))
           `,
-              )
-              .eq('event_year', targetYear),
-            supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
-            supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
-          ]);
+            )
+            .eq('event_year', targetYear),
+          supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
+          supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
+        ]);
 
-        if (coreRes.error) throw coreRes.error;
-        if (appearanceRes.error) throw appearanceRes.error;
-        if (contentRes.error) throw contentRes.error;
-        if (assignmentsRes.error) throw assignmentsRes.error;
-        if (subscriptionsRes.error) throw subscriptionsRes.error;
+      if (coreRes.error) throw coreRes.error;
+      if (appearanceRes.error) throw appearanceRes.error;
+      if (contentRes.error) throw contentRes.error;
+      if (assignmentsRes.error) throw assignmentsRes.error;
+      if (subscriptionsRes.error) throw subscriptionsRes.error;
 
-        // Build lookup maps
-        const appearanceById = {};
-        for (const row of appearanceRes.data || []) {
-          if (row && row.id) appearanceById[row.id] = row;
-        }
-
-        // Ensure defaults are loaded (override any existing)
-        for (const row of defaultsRes.data || []) {
-          if (row && row.id) appearanceById[row.id] = row;
-        }
-
-        const contentById = {};
-        for (const row of contentRes.data || []) {
-          if (row && row.id) contentById[row.id] = row;
-        }
-
-        // Extract defaults for booth markers (IDs -1 and -2)
-        const assignedDefaults = {
-          appearance: appearanceById[-1] || {},
-          core: (coreRes.data || []).find((row) => row.id === -1) || {},
-        };
-
-        const unassignedDefaults = {
-          appearance: appearanceById[-2] || {},
-          core: (coreRes.data || []).find((row) => row.id === -2) || {},
-        };
-
-        // Build subscriptions lookup by company_id
-        const subscriptionByCompany = {};
-        for (const sub of subscriptionsRes.data || []) {
-          if (sub && sub.company_id) {
-            subscriptionByCompany[sub.company_id] = sub;
-          }
-        }
-
-        // Group assignments by marker_id
-        const assignmentsByMarker = {};
-        for (const assignment of assignmentsRes.data || []) {
-          if (!assignment || !assignment.marker_id) continue;
-
-          if (!assignmentsByMarker[assignment.marker_id]) {
-            assignmentsByMarker[assignment.marker_id] = [];
-          }
-
-          assignmentsByMarker[assignment.marker_id].push({
-            assignmentId: assignment.id,
-            companyId: assignment.company_id,
-            ...assignment.company, // Spread company data (name, logo, website, info)
-          });
-        }
-
-        // Merge all data (exclude default markers from regular list)
-        const mergedMarkers = (coreRes.data || [])
-          .filter((marker) => marker.id > 0) // Exclude defaults (-1, -2)
-          .map((marker) => {
-            const appearance = appearanceById[marker.id] || {};
-            const content = contentById[marker.id] || {};
-            const assignments = assignmentsByMarker[marker.id] || [];
-
-            // Determine content source based on marker type
-            let contentData = {};
-            let adminData = {};
-
-            if (marker.id < 1000) {
-              // Booth markers: use company assignment data
-              const primaryAssignment = assignments[0] || {};
-
-              contentData = {
-                name: primaryAssignment.name,
-                logo: primaryAssignment.logo,
-                website: primaryAssignment.website,
-                info: primaryAssignment.info,
-                companyId: primaryAssignment.companyId,
-                assignmentId: primaryAssignment.assignmentId,
-                company_translations: primaryAssignment.company_translations,
-              };
-
-              // If this marker has a company assignment, get subscription data for admin fields
-              if (primaryAssignment.companyId) {
-                const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
-                adminData = {
-                  contact: subscription.contact,
-                  phone: subscription.phone,
-                  email: subscription.email,
-                  boothCount: subscription.booth_count,
-                  area: subscription.area,
-                  coins: subscription.coins,
-                  breakfast: subscription.breakfast_sat,
-                  lunch: subscription.lunch_sat,
-                  bbq: subscription.bbq_sat,
-                  notes: subscription.notes,
-                };
-              }
-            } else {
-              // Special markers (ID >= 1000): use Markers_Content data
-              contentData = {
-                name: content.name,
-                logo: content.logo,
-                website: content.website,
-                info: content.info,
-              };
-              // Special markers don't have admin data (no booth logistics)
-              adminData = {};
-            }
-
-            return {
-              ...marker,
-              ...appearance,
-              ...contentData,
-              ...adminData,
-
-              // Assignment data (for booth markers)
-              assignments, // Array of all assignments
-            };
-          });
-
-        setMarkers(mergedMarkers);
-        // Persist a snapshot asynchronously for offline use
-        try {
-          await setMarkerSnapshot(mergedMarkers);
-        } catch (err) {
-          // ignore persistence failures
-        }
-      } catch (error) {
-        console.error('Error loading markers:', error);
-      } finally {
-        setLoading(false);
+      // Build lookup maps
+      const appearanceById = {};
+      for (const row of appearanceRes.data || []) {
+        if (row && row.id) appearanceById[row.id] = row;
       }
-    },
-    [],
-  );
+
+      // Ensure defaults are loaded (override any existing)
+      for (const row of defaultsRes.data || []) {
+        if (row && row.id) appearanceById[row.id] = row;
+      }
+
+      const contentById = {};
+      for (const row of contentRes.data || []) {
+        if (row && row.id) contentById[row.id] = row;
+      }
+
+      // Extract defaults for booth markers (IDs -1 and -2)
+      const assignedDefaults = {
+        appearance: appearanceById[-1] || {},
+        core: (coreRes.data || []).find((row) => row.id === -1) || {},
+      };
+
+      const unassignedDefaults = {
+        appearance: appearanceById[-2] || {},
+        core: (coreRes.data || []).find((row) => row.id === -2) || {},
+      };
+
+      // Build subscriptions lookup by company_id
+      const subscriptionByCompany = {};
+      for (const sub of subscriptionsRes.data || []) {
+        if (sub && sub.company_id) {
+          subscriptionByCompany[sub.company_id] = sub;
+        }
+      }
+
+      // Group assignments by marker_id
+      const assignmentsByMarker = {};
+      for (const assignment of assignmentsRes.data || []) {
+        if (!assignment || !assignment.marker_id) continue;
+
+        if (!assignmentsByMarker[assignment.marker_id]) {
+          assignmentsByMarker[assignment.marker_id] = [];
+        }
+
+        assignmentsByMarker[assignment.marker_id].push({
+          assignmentId: assignment.id,
+          companyId: assignment.company_id,
+          ...assignment.company, // Spread company data (name, logo, website, info)
+        });
+      }
+
+      // Merge all data (exclude default markers from regular list)
+      const mergedMarkers = (coreRes.data || [])
+        .filter((marker) => marker.id > 0) // Exclude defaults (-1, -2)
+        .map((marker) => {
+          const appearance = appearanceById[marker.id] || {};
+          const content = contentById[marker.id] || {};
+          const assignments = assignmentsByMarker[marker.id] || [];
+
+          // Determine content source based on marker type
+          let contentData = {};
+          let adminData = {};
+
+          if (marker.id < 1000) {
+            // Booth markers: use company assignment data
+            const primaryAssignment = assignments[0] || {};
+
+            contentData = {
+              name: primaryAssignment.name,
+              logo: primaryAssignment.logo,
+              website: primaryAssignment.website,
+              info: primaryAssignment.info,
+              companyId: primaryAssignment.companyId,
+              assignmentId: primaryAssignment.assignmentId,
+              company_translations: primaryAssignment.company_translations,
+            };
+
+            // If this marker has a company assignment, get subscription data for admin fields
+            if (primaryAssignment.companyId) {
+              const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
+              adminData = {
+                contact: subscription.contact,
+                phone: subscription.phone,
+                email: subscription.email,
+                boothCount: subscription.booth_count,
+                area: subscription.area,
+                coins: subscription.coins,
+                breakfast: subscription.breakfast_sat,
+                lunch: subscription.lunch_sat,
+                bbq: subscription.bbq_sat,
+                notes: subscription.notes,
+              };
+            }
+          } else {
+            // Special markers (ID >= 1000): use Markers_Content data
+            contentData = {
+              name: content.name,
+              logo: content.logo,
+              website: content.website,
+              info: content.info,
+            };
+            // Special markers don't have admin data (no booth logistics)
+            adminData = {};
+          }
+
+          return {
+            ...marker,
+            ...appearance,
+            ...contentData,
+            ...adminData,
+
+            // Assignment data (for booth markers)
+            assignments, // Array of all assignments
+          };
+        });
+
+      setMarkers(mergedMarkers);
+      // Persist a snapshot asynchronously for offline use
+      try {
+        await setMarkerSnapshot(mergedMarkers);
+      } catch (err) {
+        // ignore persistence failures
+      }
+    } catch (error) {
+      console.error('Error loading markers:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadMarkers(isOnline);
@@ -304,88 +301,86 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     if (isOnline) {
       assignmentsChannel = supabase
         .channel('markers-assignments-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignments' },
-        async (payload) => {
-          // Handle different event types
-          if (payload.eventType === 'DELETE') {
-            // Assignment deleted - reload all markers to reflect the deletion
-            // Note: Supabase DELETE payloads don't include marker_id, only the primary key
-            loadMarkers(true);
-          } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            // For INSERT/UPDATE, check year before processing
-            const assignment = payload.new;
-            if (assignment?.event_year !== eventYearRef.current) {
-              return;
-            }
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'assignments' },
+          async (payload) => {
+            // Handle different event types
+            if (payload.eventType === 'DELETE') {
+              // Assignment deleted - reload all markers to reflect the deletion
+              // Note: Supabase DELETE payloads don't include marker_id, only the primary key
+              loadMarkers(true);
+            } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              // For INSERT/UPDATE, check year before processing
+              const assignment = payload.new;
+              if (assignment?.event_year !== eventYearRef.current) {
+                return;
+              }
 
-            // Assignment added/updated - reload all markers to apply correct defaults
-            // (Defaults depend on assignment status, so we need to re-evaluate)
-            loadMarkers(true);
-          }
-        },
-      )
-      .subscribe();
+              // Assignment added/updated - reload all markers to apply correct defaults
+              // (Defaults depend on assignment status, so we need to re-evaluate)
+              loadMarkers(true);
+            }
+          },
+        )
+        .subscribe();
     }
 
     let companiesChannel = null;
     if (isOnline) {
       companiesChannel = supabase
         .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
-        // Company data changed - update all markers using this company
-        if (payload.eventType === 'UPDATE' && payload.new) {
-          const company = payload.new;
-          setMarkers((prev) =>
-            prev.map((m) =>
-              m.companyId === company.id
-                ? {
-                    ...m,
-                    name: company.name,
-                    logo: company.logo,
-                    website: company.website,
-                    info: company.info,
-                  }
-                : m,
-            ),
-          );
-          // Persist updated markers asynchronously
-          setMarkers(async (current) => {
-            try {
-              await setMarkerSnapshot(current);
-            } catch (err) {
-              // ignore
-            }
-            return current;
-          });
-        } else {
-          // For INSERT/DELETE, do full reload (rare events)
-          loadMarkers(true);
-        }
-      })
-      .subscribe();
-
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
+          // Company data changed - update all markers using this company
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const company = payload.new;
+            setMarkers((prev) =>
+              prev.map((m) =>
+                m.companyId === company.id
+                  ? {
+                      ...m,
+                      name: company.name,
+                      logo: company.logo,
+                      website: company.website,
+                      info: company.info,
+                    }
+                  : m,
+              ),
+            );
+            // Persist updated markers asynchronously
+            setMarkers(async (current) => {
+              try {
+                await setMarkerSnapshot(current);
+              } catch (err) {
+                // ignore
+              }
+              return current;
+            });
+          } else {
+            // For INSERT/DELETE, do full reload (rare events)
+            loadMarkers(true);
+          }
+        })
+        .subscribe();
     }
 
     let subscriptionsChannel = null;
     if (isOnline) {
       subscriptionsChannel = supabase
         .channel(`event-subscriptions-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        (payload) => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
-
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_subscriptions',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          (payload) => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
     }
 
     return () => {

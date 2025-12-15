@@ -13,6 +13,12 @@ beforeEach(() => {
   __resetMocks();
 });
 
+afterEach(() => {
+  // Ensure any DOM or globals introduced by the test are cleaned up
+  const eventMap = document.querySelector('[data-testid="event-map-mock"]');
+  if (eventMap && eventMap.parentNode) eventMap.parentNode.removeChild(eventMap);
+});
+
 // Mock user role to be event_manager (read-only) — this role should see the header print
 jest.mock('../../../../src/hooks/useUserRole', () => () => ({
   role: 'event_manager',
@@ -54,7 +60,7 @@ jest.mock('../../../../src/components/EventMap/EventMap', () => {
 
 import MapManagement from '../../../../src/components/admin/MapManagement';
 
-test.skip('header Print Map shows plugin preset when EventMap calls onMapReady (e2e) [quarantined skip]', async () => {
+test('header Print Map shows plugin preset when EventMap calls onMapReady (e2e)', async () => {
   render(
     <MapManagement
       markersState={[]}

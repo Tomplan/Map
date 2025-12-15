@@ -37,10 +37,25 @@ jest.mock('../../../src/components/EventMap/EventMap', () => (props) => {
 jest.mock('html2canvas', () => jest.fn());
 import html2canvas from 'html2canvas';
 
-describe.skip('MapManagement header snapshot print (e2e) [quarantined skip]', () => {
+describe('MapManagement header snapshot print (e2e)', () => {
   beforeEach(() => {
     html2canvas.mockReset();
     html2canvas.mockResolvedValue({ toDataURL: () => 'data:image/png;base64,FAKE' });
+  });
+
+  afterEach(() => {
+    // cleanup any map container added during the test
+    const fakeMap = document.getElementById('map-container');
+    if (fakeMap && fakeMap.parentNode) fakeMap.parentNode.removeChild(fakeMap);
+    // restore window.open if test mutated it and it wasn't restored
+    if (global.openOriginal) {
+      try {
+        window.open = global.openOriginal;
+      } catch (e) {
+        /* ignore */
+      }
+      delete global.openOriginal;
+    }
   });
 
   test('header snapshot ignores popups, tooltips and print-hide elements', async () => {
@@ -49,8 +64,9 @@ describe.skip('MapManagement header snapshot print (e2e) [quarantined skip]', ()
     fakeMap.id = 'map-container';
     document.body.appendChild(fakeMap);
 
-    // Stub window.open to avoid jsdom errors
-    global.openOriginal = window.open;
+    // Stub window.open to avoid jsdom errors; store original on the global so
+    // the afterEach cleanup can restore it even if the test fails.
+    if (typeof global.openOriginal === 'undefined') global.openOriginal = window.open;
     window.open = jest.fn(() => ({
       document: {
         open: jest.fn(),
@@ -90,7 +106,8 @@ describe.skip('MapManagement header snapshot print (e2e) [quarantined skip]', ()
       fireEvent.click(snapshotBtn);
     });
 
-    window.open = global.openOriginal;
+    // restore window.open (afterEach will also clean up if this is skipped)
+    if (global.openOriginal) window.open = global.openOriginal;
 
     expect(html2canvas).toHaveBeenCalled();
     const opts = html2canvas.mock.calls[0][1];
