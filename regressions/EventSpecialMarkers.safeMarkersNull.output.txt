@@ -1,0 +1,32 @@
+FAIL src/components/__tests__/EventSpecialMarkers.safeMarkersNull.test.jsx
+  EventSpecialMarkers — safeMarkers null
+    ✕ renders without throwing when `safeMarkers` prop is null (13 ms)
+
+  ● EventSpecialMarkers — safeMarkers null › renders without throwing when `safeMarkers` prop is null
+
+    TestingLibraryElementError: Unable to find an element by: [data-testid="marker"]
+
+    Ignored nodes: comments, script, style
+    [36m<body>[39m
+      [36m<div />[39m
+    [36m</body>[39m
+
+      51 |     const { getByTestId } = render(<EventSpecialMarkers {...props} />);
+      52 |
+    > 53 |     expect(getByTestId('marker')).toBeTruthy();
+         |            ^
+      54 |   });
+      55 | });
+      56 |
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError (node_modules/@testing-library/dom/dist/query-helpers.js:76:38)
+      at allQuery (node_modules/@testing-library/dom/dist/query-helpers.js:52:17)
+      at query (node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.getByTestId (src/components/__tests__/EventSpecialMarkers.safeMarkersNull.test.jsx:53:12)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        0.538 s
+Ran all test suites matching src/components/__tests__/EventSpecialMarkers.safeMarkersNull.test.jsx.

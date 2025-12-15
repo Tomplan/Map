@@ -1,0 +1,30 @@
+4b0c1f5 Revert: remove MiniMap init and search-control wiring; keep safeMarkers and prop forwarding fixes
+f0e8ccf Fix: safe default for `safeMarkers` prop and add test to prevent undefined.filter crash
+e03bd99 ci: run unit tests by default; add gated integration job for heavy tests
+fee3e5b test(mock): implement XLSX.utils.aoa_to_sheet for metadata sheets
+fecc6d5 test: run unit tests by default; add mocks for xlsx/exceljs to avoid heavy bundles in unit tests
+1f65443 test(e2e): fix hook deps in EventMap mock (destructure onMapReady, add to deps)
+b3d7cc7 fix(lint): include companies in effect deps to satisfy exhaustive-deps
+46e90d1 chore: remove duplicate scrape_company_descriptions.cjs (ES module .mjs used instead)
+db47812 chore: remove unused eslint-disable for import/no-cycle in prefetchOnIdle
+9a245dc chore(ci): avoid secrets in step if-expr; validate secrets at runtime and skip on push when absent
+2a0c44f chore(ci): fix indentation in e2e workflow cleanup step
+e9906c7 chore(ci): remove duplicate tail from e2e workflow and only run admin E2E on pushes when secrets present
+01a16b1 chore(ci): fix duplicated/truncated e2e workflow and improve port cleanup
+672fe24 chore(ci): remove stray merge marker from e2e workflow
+38abf15 chore(ci): resolve e2e workflow merge conflict (use updated workflow with diagnostics and longer timeout)
+79e7328 tests(e2e): ensure preview process fully terminated (SIGKILL fallback)
+3ae7781 tests(e2e): fix handler scoping for preview stdout/stderr and remove on failure
+a660209 tests(e2e): attach named preview stdout/stderr handlers and remove them in teardown
+f5c1521 tests(e2e): robustly handle preview process exit/error listeners (use once + cleanup)
+b6f6fdb tests(e2e): avoid listener leak on waitForServerOutput timeout
+a67db77 tests(e2e): make service-worker e2e test more robust (wait for preview stdout/url, handle exit, increase timeouts)
+b0b8dee E2E: use URL polling to detect preview readiness (more robust in CI)
+06d2410 E2E: make preview startup detection more flexible (match port)
+9662ffb E2E: listen to stderr for preview logs and increase server start timeout
+fd091c6 CI: avoid apt 'libasound2' install failure; add chromium fallback
+1715233 CI: install system chromium and set Puppeteer to use system browser (skip download) for e2e workflow
+4595cad CI: add GitHub Actions job to run E2E tests (headless Chromium)
+f116c71 Add E2E service worker tests: verify STORE_SNAPSHOT and CACHE_URLS through preview + Puppeteer
+94c7552 Guard supabase realtime subscriptions: only create channels when online; add offline tests and fix supabaseClient getUser; fix useEventMarkers parsing error
+bd14559 Merge origin/main into fix/print-marker-sizing
