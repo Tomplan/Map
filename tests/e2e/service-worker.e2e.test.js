@@ -68,13 +68,32 @@ describe('Service Worker E2E', () => {
     const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(() => null);
     const urlPromise = waitForUrl(url, timeout).catch(() => null);
 
-    // Also reject if the preview process exits early
-    const exitPromise = new Promise((_, rej) => proc.on('exit', (code) => rej(new Error('preview process exited with code ' + code))));
+    // Also reject if the preview process exits early or emits an error.
+    // Use `once` to avoid attaching multiple persistent listeners, and
+    // ensure we remove the listeners after the race completes to avoid
+    // emitting a late rejection that would become an unhandled rejection.
+    let cleanupExit = () => {};
+    const exitPromise = new Promise((_, rej) => {
+      const onExit = (code) => rej(new Error('preview process exited with code ' + code));
+      const onError = (err) => rej(new Error('preview process error: ' + (err && err.message)));
+      proc.once('exit', onExit);
+      proc.once('error', onError);
+      cleanupExit = () => {
+        try {
+          proc.off('exit', onExit);
+          proc.off('error', onError);
+        } catch (e) {
+          // ignore if streams already closed
+        }
+      };
+    });
 
     try {
       await Promise.race([outputPromise, urlPromise, exitPromise]);
+      cleanupExit();
       return true;
     } catch (err) {
+      cleanupExit();
       const elapsed = Math.round((Date.now() - start) / 1000);
       throw new Error(`Preview server failed to start within ${elapsed}s: ${err && err.message}`);
     }
