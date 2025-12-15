@@ -641,6 +641,8 @@ EventClusterMarkers.propTypes = {
 };
 
 EventClusterMarkers.defaultProps = {
+  // Provide a safe default so callers can omit `safeMarkers` without crashing
+  safeMarkers: [],
   selectedYear: new Date().getFullYear(),
   isAdminView: false,
   selectedMarkerId: null,
