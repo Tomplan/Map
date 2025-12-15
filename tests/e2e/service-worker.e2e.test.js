@@ -10,7 +10,16 @@ const PREVIEW_URL = `http://localhost:${PREVIEW_PORT}/`;
 
 function waitForServerOutput(proc, regex, timeout = 60000) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Server did not start in time')), timeout);
+    const timer = setTimeout(() => {
+      // Remove listeners to avoid leaking handlers if the probe times out
+      try {
+        proc.stdout.off('data', onData);
+        proc.stderr.off('data', onData);
+      } catch (e) {
+        // streams may already be closed - ignore
+      }
+      reject(new Error('Server did not start in time'));
+    }, timeout);
 
     const onData = (chunk) => {
       const s = chunk.toString();
