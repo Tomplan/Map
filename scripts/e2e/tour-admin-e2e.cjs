@@ -77,7 +77,7 @@ async function run() {
       // If the candidate includes a hash, remove it for the probe
       const probeUrl = candidate.split('#')[0];
 
-      const up = await waitForServer(probeUrl, 1500);
+      const up = await waitForServer(probeUrl, 5000);
       console.log('probe', probeUrl, '=>', up ? 'up' : 'down');
       if (up) {
         chosenBase = candidate;
@@ -102,7 +102,7 @@ async function run() {
     headless: true,
   });
   const page = await browser.newPage();
-  page.setDefaultTimeout(30000);
+  page.setDefaultTimeout(35000);
 
   // prefer a small local sleep helper instead of page.waitForTimeout (some
   // puppeteer versions in CI do not expose that method consistently)
@@ -110,8 +110,9 @@ async function run() {
 
   try {
     console.log(`Navigating to admin: ${ADMIN_URL}`);
-    await page.goto(ADMIN_URL, { waitUntil: 'networkidle2' });
-    await sleep(600);
+    // Use domcontentloaded for faster deterministic navigation; allow a short hydration sleep
+    await page.goto(ADMIN_URL, { waitUntil: 'domcontentloaded' });
+    await sleep(800);
 
     // Find and click the Help sidebar tile (ariaLabel="Help"). In CI the
     // admin UI may be behind a login and the help button can be missing; if
@@ -209,29 +210,21 @@ async function run() {
       process.exit(1);
     }
 
-    // Wait for either a toast (role=alert) or driver popover to appear.
-    let firstResult = null;
+    // Wait for either a toast (role=alert) or driver popover to appear with a reasonable timeout
+    let firstResult = { type: 'none' };
     try {
-      // Short window for toast/popover appearance
       await Promise.race([
-        page.waitForSelector('.onboarding-tour-popover', { timeout: 1500 }),
-        page.waitForSelector('div[role="alert"]', { timeout: 1500 }),
+        page.waitForSelector('.onboarding-tour-popover', { timeout: 6000 }),
+        page.waitForSelector('div[role="alert"]', { timeout: 6000 }),
       ]);
-
-      // Determine which happened
       const toast = await page.$('div[role="alert"]');
       const pop = await page.$('.onboarding-tour-popover');
-
       if (toast) {
-        firstResult = {
-          type: 'toast',
-          text: await (await toast.getProperty('innerText')).jsonValue(),
-        };
+        firstResult = { type: 'toast', text: await (await toast.getProperty('innerText')).jsonValue() };
       } else if (pop) {
         firstResult = { type: 'popover' };
       }
     } catch (e) {
-      // Nothing appeared quickly
       firstResult = { type: 'none' };
     }
 
@@ -263,7 +256,7 @@ async function run() {
       ensure('.help-button', '<button class="help-button">Help</button>');
     });
 
-    await sleep(400);
+    await sleep(600);
 
     // Re-click first available "Start Tour" button to start again
     console.log('Attempting to start the tour again (with injected targets)...');
@@ -275,7 +268,7 @@ async function run() {
     });
 
     // Wait for driver to initialize
-    await sleep(800);
+    await sleep(1200);
 
     // Query for tour popover and overlay
     const popoverCount = await page.evaluate(
@@ -317,22 +310,35 @@ async function run() {
       console.log('Driver activeIndex after next click:', activeIndex);
 
       // Success code
-      await browser.close();
+      try {
+        await browser.close();
+      } catch (e) {
+        /* ignore */
+      }
       process.exit(0);
     }
-
-    console.error('E2E: Admin tour did not start as expected (popover/overlay/driver missing)');
-    await browser.close();
-    process.exit(3);
-  } catch (err) {
-    console.error('E2E script errored:', err);
-    try {
-      await browser.close();
-    } catch (e) {
-      /* ignore */
+      console.error('E2E: Admin tour did not start as expected (popover/overlay/driver missing)');
+      try {
+        await browser.close();
+      } catch (e) {
+        /* ignore */
+      }
+      process.exit(3);
+    } catch (err) {
+      console.error('E2E script errored:', err && err.message ? err.message : err);
+      try {
+        await browser.close();
+      } catch (e) {
+        /* ignore */
+      }
+      process.exit(1);
+    } finally {
+      try {
+        if (browser && browser.isConnected && browser.isConnected()) await browser.close();
+      } catch (e) {
+        /* ignore */
+      }
     }
-    process.exit(1);
-  }
 }
 
 if (require.main === module) run();

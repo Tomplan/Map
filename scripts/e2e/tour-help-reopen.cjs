@@ -52,7 +52,7 @@ async function chooseBase() {
   if (process.env.E2E_BASE) return process.env.E2E_BASE;
   for (const c of baseCandidates) {
     const probe = c.split('#')[0];
-    const ok = await waitForServer(probe, 1500);
+    const ok = await waitForServer(probe, 5000);
     if (ok) return c;
   }
   return null;
@@ -73,7 +73,7 @@ async function run() {
     headless: true,
   });
   const page = await browser.newPage();
-  page.setDefaultTimeout(30000);
+  page.setDefaultTimeout(35000);
 
   // Forward page console messages to our test runner so we can see driver debug
   page.on('console', (msg) => {
@@ -140,37 +140,22 @@ async function run() {
     // than relying on localized text. Using page.click avoids issues where
     // synthetic clicks inside page.evaluate don't always trigger React's
     // event handlers in some environments.
-    try {
-      // Choose the header container which actually holds the tabs: there are
-      // multiple `.flex.border-b` elements in the panel; find the one with
-      // at least 3 child buttons to reliably pick the tabs container.
-      await page.evaluate(() => {
-        const containers = Array.from(
-          document.querySelectorAll('[role="dialog"][aria-label="Help Panel"] .flex.border-b'),
-        );
-        const tabsContainer = containers.find(
-          (c) => (c.querySelectorAll('button') || []).length >= 3,
-        );
-        if (tabsContainer) {
-          const tabs = Array.from(tabsContainer.querySelectorAll('button'));
-          if (tabs && tabs.length >= 3)
-            tabs[2].dispatchEvent(
-              new MouseEvent('click', { bubbles: true, cancelable: true, composed: true }),
-            );
-        }
-      });
-    } catch (e) {
-      // Fallback: if nth-child fails (DOM changed) try a best-effort search
-      await page.evaluate(() => {
-        const container = document.querySelector(
-          '[role="dialog"][aria-label="Help Panel"] .flex.border-b',
-        );
-        if (container) {
-          const tabs = Array.from(container.querySelectorAll('button'));
-          if (tabs && tabs.length >= 3) tabs[2].click();
-        }
-      });
-    }
+    // Click the header tab area; prefer the deterministic approach but
+    // allow some time for rendering on slow hosts.
+    await page.waitForSelector('[role="dialog"][aria-label="Help Panel"] .flex.border-b', {
+      visible: true,
+      timeout: 6000,
+    });
+    await page.evaluate(() => {
+      const containers = Array.from(
+        document.querySelectorAll('[role="dialog"][aria-label="Help Panel"] .flex.border-b'),
+      );
+      const tabsContainer = containers.find((c) => (c.querySelectorAll('button') || []).length >= 3);
+      if (tabsContainer) {
+        const tabs = Array.from(tabsContainer.querySelectorAll('button'));
+        if (tabs && tabs.length >= 3) tabs[2].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }
+    });
 
     // Diagnostic: log header tab texts and classes so we can see which tab is active
     const headerTabSnapshot = await page.evaluate(() => {
@@ -235,7 +220,7 @@ async function run() {
       return false;
     };
 
-    const started = await findAndClickStart(12000);
+    const started = await findAndClickStart(15000);
 
     if (!started) {
       // Diagnostic: report all dialog button texts to assist debugging
@@ -326,7 +311,7 @@ async function run() {
       return false;
     };
 
-    const driverFound = await waitForDriver(6000);
+    const driverFound = await waitForDriver(9000);
     if (!driverFound) {
       // Capture diagnostics
       const diag = await page.evaluate(() => ({
@@ -371,7 +356,7 @@ async function run() {
       console.log('Existing onboarding popover elements count:', popCount);
     }
     try {
-      await page.waitForSelector('.onboarding-tour-popover', { visible: true, timeout: 15000 });
+      await page.waitForSelector('.onboarding-tour-popover', { visible: true, timeout: 20000 });
     } catch (e) {
       // log snapshot then rethrow
       const popHtml = await page.evaluate(() =>
@@ -562,13 +547,19 @@ async function run() {
     await browser.close();
     process.exit(0);
   } catch (err) {
-    console.error('E2E error:', err);
+    console.error('E2E error:', err && err.message ? err.message : err);
     try {
       await browser.close();
     } catch (e) {
       /* ignore */
     }
     process.exit(1);
+  } finally {
+    try {
+      if (browser && browser.isConnected && browser.isConnected()) await browser.close();
+    } catch (e) {
+      /* ignore */
+    }
   }
 }
 

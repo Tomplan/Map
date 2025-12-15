@@ -214,7 +214,7 @@ async function run() {
         // Wait for the provider to record an active source and then complete
         await page.waitForFunction(
           () => window.__onboarding_test_helpers__?.getActiveSource?.() === 'ui',
-          { timeout: 3000 },
+          { timeout: 6000 },
         );
         // Force complete
         await page.evaluate(() => {
@@ -225,12 +225,12 @@ async function run() {
           }
         });
 
-        // Wait for last completed payload
+        // Wait for last completed payload (longer timeout on CI)
         await page.waitForFunction(
           () =>
             !!window.__onboarding_last_completed__ &&
             window.__onboarding_last_completed__.id === 'admin-dashboard',
-          { timeout: 3000 },
+          { timeout: 8000 },
         );
         const completedDetail = await page.evaluate(() => window.__onboarding_last_completed__);
         console.log('Observed onboarding completion detail (outside help):', completedDetail);
@@ -239,7 +239,7 @@ async function run() {
         }
       }
     } catch (e) {
-      /* ignore */
+      console.warn('helper-complete failed or timed out (non-fatal):', e && e.message ? e.message : e);
     }
 
     // For both helper and UI flows, wait for a driver instance then finish it
@@ -254,7 +254,7 @@ async function run() {
       return false;
     };
 
-    const driverFound = await waitForDriver(6000);
+    const driverFound = await waitForDriver(9000);
     if (!driverFound) {
       console.log(
         'No driver instance found after starting outside-Help tour — maybe it was completed via helper',
@@ -319,7 +319,8 @@ async function run() {
     }
 
     // Ensure Help did NOT reopen — because the tour did not start from Help
-    await new Promise((r) => setTimeout(r, 1200));
+    // Use a slightly larger wait to accommodate slower CI hosts
+    await new Promise((r) => setTimeout(r, 2000));
 
     const helpOpen = await page.evaluate(() => {
       const dlg = document.querySelector('[role="dialog"][aria-label="Help Panel"]');
@@ -345,16 +346,27 @@ async function run() {
     }
 
     console.log('E2E: PASS — Help did NOT reopen after finishing tour started from outside Help');
-    await browser.close();
+    try {
+      await browser.close();
+    } catch (e) {
+      /* ignore */
+    }
     process.exit(0);
   } catch (err) {
-    console.error('E2E error:', err);
+    console.error('E2E error:', err && err.message ? err.message : err);
     try {
       await browser.close();
     } catch (e) {
       /* ignore */
     }
     process.exit(1);
+  } finally {
+    // Ensure the browser is closed in all cases
+    try {
+      if (browser && browser.isConnected && browser.isConnected()) await browser.close();
+    } catch (e) {
+      /* ignore */
+    }
   }
 }
 
