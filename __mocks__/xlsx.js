@@ -13,6 +13,36 @@ const utils = {
     wb.Sheets[name] = ws;
     wb.SheetNames.push(name);
   },
+  // Convert an array-of-arrays to a sheet with A1-style cell objects
+  aoa_to_sheet(aoa) {
+    // Helper to convert 1-based column index to Excel letter (A, B, ..., Z, AA, AB...)
+    function colLetter(n) {
+      let s = '';
+      while (n > 0) {
+        const mod = (n - 1) % 26;
+        s = String.fromCharCode(65 + mod) + s;
+        n = Math.floor((n - mod) / 26);
+      }
+      return s;
+    }
+
+    const sheet = {};
+    for (let r = 0; r < aoa.length; r++) {
+      const row = aoa[r] || [];
+      for (let c = 0; c < row.length; c++) {
+        const addr = `${colLetter(c + 1)}${r + 1}`;
+        sheet[addr] = { v: row[c] };
+      }
+    }
+    const maxCols = aoa.reduce((m, row) => Math.max(m, (row || []).length), 0);
+    const maxRows = aoa.length;
+    if (maxCols > 0 && maxRows > 0) {
+      sheet['!ref'] = `A1:${colLetter(maxCols)}${maxRows}`;
+    } else {
+      sheet['!ref'] = 'A1:A1';
+    }
+    return sheet;
+  },
   sheet_to_json(worksheet, opts) {
     return worksheet && worksheet.__rows ? worksheet.__rows : [];
   },
