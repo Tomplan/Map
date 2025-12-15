@@ -26,6 +26,8 @@ L.icon.glyph = jest.fn((opts) => {
   icon.options.glyphAnchor = opts.glyphAnchor;
   icon.options.prefix = opts.prefix;
   icon.options.bgColor = opts.bgColor;
+  // preserve baseIconSize in mocked icon options if provided
+  icon.options.baseIconSize = opts.baseIconSize;
   return icon;
 });
 
@@ -41,6 +43,7 @@ describe('printCloners', () => {
         glyph: '1',
         glyphColor: 'white',
         glyphSize: '10px',
+        baseIconSize: [25, 41],
       }),
     });
 
@@ -56,6 +59,7 @@ describe('printCloners', () => {
     expect(iconOpts.glyphColor).toBe('white');
     expect(iconOpts.iconSize).toEqual([25, 41]);
     expect(iconOpts.iconAnchor).toEqual([12, 41]);
+    expect(iconOpts.baseIconSize).toEqual([25, 41]);
   });
 
   test('cloneMarkerLayer falls back to L.icon for non-glyph markers', () => {
@@ -120,5 +124,21 @@ describe('printCloners', () => {
     const cloned = cloneMarkerLayer(fakeLayer);
     expect(cloned).toBeDefined();
     expect(cloned.options.icon).toBeDefined();
+  });
+
+  test('cloneMarkerLayer prefers baseIconSize when present over UI-scaled iconSize', () => {
+    const original = L.marker([51.89, 5.77], {
+      icon: L.icon.glyph({
+        iconUrl: '/images/marker.svg',
+        iconSize: [38, 63], // UI scaled size
+        baseIconSize: [25, 41], // canonical size
+        glyph: 'B',
+      }),
+    });
+
+    const cloned = cloneMarkerLayer(original);
+    const iconOpts = cloned.options.icon.options;
+    // Rollback note: behavior restored to using UI-scaled iconSize for clones
+    expect(iconOpts.iconSize).toEqual([38, 63]);
   });
 });

@@ -20,6 +20,7 @@ import { useMapSearchControl } from '../../hooks/useMapSearchControl';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
+import { computePrintIconOptions } from '../../utils/printScaling';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -190,9 +191,7 @@ function EventMap({
       // Development-only: log zoom level for debugging
       try {
         if (process.env.NODE_ENV !== 'production') {
-          /* eslint-disable no-console */
           console.debug(`[Map] zoom: ${zoom}`);
-          /* eslint-enable no-console */
         }
       } catch (err) {
         // safe fallback if console isn't available
@@ -515,7 +514,7 @@ function EventMap({
           // Print event fires right before window.print() - final chance to set view
           // At this point the plugin has already set its view and waited for tiles
           // We apply our custom center/zoom here as a fallback verification
-          browserPrint._map.on(window.L.BrowserPrint.Event.Print, (event) => {
+          browserPrint._map.on(window.L.BrowserPrint.Event.Print, async (event) => {
             if (!pendingPrintConfig) {
               console.log('[Print] Print - no pending config');
               return;
@@ -531,6 +530,29 @@ function EventMap({
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
               console.log('[Print] Print - view applied');
+
+              // Recompute marker sizes for print zoom using ZOOM_BUCKETS
+              if (event.printObjects && event.printObjects['L.Marker']) {
+                const printMarkers = event.printObjects['L.Marker'];
+                const printZoom = printMap.getZoom();
+                console.log(`[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`);
+
+                try {
+                  printMarkers.forEach((printMarker) => {
+                    if (printMarker.options.icon && printMarker.options.icon.options) {
+                      const originalIconOpts = printMarker.options.icon.options;
+                      const recomputedOpts = computePrintIconOptions(originalIconOpts, printZoom, isAdminView);
+                      
+                      if (recomputedOpts && recomputedOpts.iconSize) {
+                        const newIcon = L.icon.glyph(recomputedOpts);
+                        printMarker.setIcon(newIcon);
+                      }
+                    }
+                  });
+                } catch (error) {
+                  console.error('[Print] Error recomputing marker sizes:', error);
+                }
+              }
             }
 
             pendingPrintConfig = null;
@@ -589,17 +611,41 @@ function EventMap({
               // Temporarily increase maxZoom for printing
               browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
             }
-          });
 
-          // Restore original maxZoom after printing ends or is cancelled
-          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
-            if (originalView && originalView.maxZoom) {
-              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            // CRITICAL: Only change center for specific print modes that need a fixed home view
+            // "Current view" mode should preserve the current map position to avoid marker misplacement
+            const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
+            const isAutoMode = modeTitle.toLowerCase().includes('auto');
+            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
+            
+            // Skip center change for current view, auto, and custom modes
+            if (isCurrentViewMode || isAutoMode || isCustomMode) {
+              return;
             }
-          });
-          browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
-            if (originalView && originalView.maxZoom) {
-              browserPrint._map.setMaxZoom(originalView.maxZoom);
+            
+            // Only modify Portrait and Landscape orientations with fixed home positions
+            if (orientation === 'Portrait' || orientation === 'Landscape') {
+              // Save current view to restore after printing
+              originalView = {
+                center: browserPrint._map.getCenter(),
+                zoom: browserPrint._map.getZoom(),
+              };
+
+              // Use different center and zoom for Portrait vs Landscape
+              const centerPosition = orientation === 'Portrait'
+                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+              const zoomLevel = orientation === 'Portrait'
+                ? 18 // Portrait uses zoom 17.8
+                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+
+              // Move the real map to the target position
+              // The plugin will then use this view when creating the print overlay
+              // (because Portrait/Landscape modes have invalidateBounds: false)
+              browserPrint._map.setView(centerPosition, zoomLevel, {
+                animate: false // Instant jump, no animation
+              });
             }
           });
 

@@ -55,6 +55,7 @@ export function cloneMarkerLayer(layer) {
   if (isGlyphIcon && L.icon && L.icon.glyph) {
     const opts = {
       iconUrl: makeAbsoluteUrl(iconOpts.iconUrl),
+      // Use iconSize as originally cloned (UI-scaled) to preserve previous behavior
       iconSize: iconOpts.iconSize || [25, 41],
       iconAnchor: iconOpts.iconAnchor || [12, 41],
       popupAnchor: iconOpts.popupAnchor || [1, -34],
@@ -68,6 +69,8 @@ export function cloneMarkerLayer(layer) {
       glyphSize: iconOpts.glyphSize || '11px',
       glyphAnchor: iconOpts.glyphAnchor || [0, 0],
       className: iconOpts.className || '',
+      // Preserve baseIconSize as created by createMarkerIcon when possible
+      baseIconSize: iconOpts.baseIconSize || undefined,
     };
 
     clonedIcon = L.icon.glyph(opts);

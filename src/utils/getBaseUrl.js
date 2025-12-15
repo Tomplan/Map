@@ -4,7 +4,18 @@
  * @returns {string} Base URL with trailing slash
  */
 export function getBaseUrl() {
-  const baseUrl = import.meta.env.BASE_URL;
+  // Safely access Vite base URL using a runtime Function to avoid `import.meta` parse
+  // errors in non-Vite environments (Jest/Node). Fall back to process.env or '/'.
+  const getViteBase = () => {
+    try {
+      return new Function('return import.meta.env && import.meta.env.BASE_URL')();
+    } catch (e) {
+      return undefined;
+    }
+  };
+
+  const baseUrl =
+    getViteBase() || (typeof process !== 'undefined' && process.env && process.env.BASE_URL) || '/';
   return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 }
 
