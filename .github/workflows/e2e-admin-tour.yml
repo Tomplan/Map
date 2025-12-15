@@ -79,6 +79,25 @@ jobs:
           name: preview-log
           path: preview.log
 
+      - name: Capture processes & diagnostics
+        if: always()
+        run: |
+          echo "--- ps aux ---" > process-list.txt || true
+          ps aux >> process-list.txt || true
+          echo "--- listening sockets (ss -lntp) ---" >> process-list.txt || true
+          ss -lntp || true
+          if command -v lsof >/dev/null 2>&1; then
+            lsof -ti:5173 | xargs -r ps -o pid,ppid,cmd -p || true
+            lsof -ti:5174 | xargs -r ps -o pid,ppid,cmd -p || true
+          fi
+
+      - name: Upload extra debug artifacts (process-list)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-admin-debug
+          path: process-list.txt
+
       - name: Print preview log (for quick debugging)
         if: always()
         run: |
