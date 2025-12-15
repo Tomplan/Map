@@ -217,7 +217,7 @@ export default function CompaniesTab() {
       }
     };
     loadCompanyCategories();
-  }, [editingId, categoriesDepsKey]); // Re-run when global categories change so translations update
+  }, [editingId, categoriesDepsKey, getCompanyCategories]); // Re-run when global categories change so translations update
 
   // Load categories for all companies when public tab is active
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function CompaniesTab() {
     if (activeTab === 'public' && companies.length > 0) {
       loadAllCategories();
     }
-  }, [activeTab, companies.length, companiesDepsKey, categoriesDepsKey]); // Also depend on categories to refresh when their names change
+  }, [activeTab, companies, companiesDepsKey, categoriesDepsKey, getAllCompanyCategories]); // Also depend on categories to refresh when their names change
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
