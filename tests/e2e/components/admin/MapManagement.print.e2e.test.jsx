@@ -39,13 +39,14 @@ jest.mock('../../../../src/utils/getLogoPath', () => ({
 jest.mock('../../../../src/components/EventMap/EventMap', () => {
   const React = require('react');
   return (props) => {
+    const { onMapReady } = props;
     React.useEffect(() => {
-      if (props.onMapReady) {
-        props.onMapReady({
+      if (onMapReady) {
+        onMapReady({
           printControl: { options: { printModes: [{ options: { title: 'A4 — Landscape' } }] } },
         });
       }
-    }, []);
+    }, [onMapReady]);
 
     return React.createElement('div', { 'data-testid': 'event-map-mock' }, 'mock');
   };
