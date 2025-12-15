@@ -114,8 +114,13 @@ describe('Service Worker E2E', () => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    previewProc.stdout.on('data', (chunk) => console.log('[preview stdout]', chunk.toString().trim()));
-    previewProc.stderr.on('data', (chunk) => console.error('[preview stderr]', chunk.toString().trim()));
+      // Attach persistent handlers for logging. Keep references so we can
+      // remove them during teardown to avoid leaking listeners in case the
+      // process is restarted or the test harness reuses state.
+      let previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
+      let previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
+      previewProc.stdout.on('data', previewStdoutHandler);
+      previewProc.stderr.on('data', previewStderrHandler);
 
     // Wait until the preview server is responding on the expected URL or
     // until we see the 'Local:' line on stdout. If the process exits early
@@ -140,6 +145,14 @@ describe('Service Worker E2E', () => {
     if (browser) await browser.close();
     if (previewProc) {
       try {
+        // Remove logging handlers to avoid any late events being processed
+        try {
+          previewProc.stdout.off('data', previewStdoutHandler);
+          previewProc.stderr.off('data', previewStderrHandler);
+        } catch (e) {
+          /* ignore - streams may already be closed */
+        }
+
         if (!previewProc.killed) previewProc.kill('SIGTERM');
         // Wait briefly for the process to exit
         await new Promise((resolve) => setTimeout(resolve, 250));
