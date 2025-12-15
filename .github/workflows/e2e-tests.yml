@@ -102,8 +102,15 @@ jobs:
           pkill -f 'vite preview' || true
           pkill -f 'npm run preview' || true
           pkill -f 'esbuild' || true
-          # If preview was started on the fixed port, kill processes using it
+          # If preview was started on the fixed ports, kill processes using them
           if command -v lsof >/dev/null 2>&1; then
             lsof -ti:5173 | xargs -r kill -9 || true
+            lsof -ti:5174 | xargs -r kill -9 || true
           fi
+name: E2E Tests (Service Worker)
+
+on:
+  push:
+    branches: [ development, main ]
+    branches: [ development, main ]
 
