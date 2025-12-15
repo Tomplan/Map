@@ -69,7 +69,9 @@ describe('Service Worker E2E', () => {
   async function waitForPreviewStart(proc, url, timeout = 180000) {
     const start = Date.now();
 
-    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(() => null);
+    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(
+      () => null,
+    );
     const urlPromise = waitForUrl(url, timeout).catch(() => null);
 
     // Also reject if the preview process exits early or emits an error.
@@ -113,18 +115,23 @@ describe('Service Worker E2E', () => {
     });
 
     // Start preview server on fixed port and capture stdout/stderr for debug logs
+    // Start the preview server in its own process group so we can reliably
+    // terminate all child processes (esbuild, etc.) spawned by the preview
+    // task in CI. 'detached: true' creates a new process group on Unix-like
+    // systems; we'll use negative PID kills to signal the group.
     previewProc = spawn('npm', ['run', 'preview', '--', '--port', String(PREVIEW_PORT)], {
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true,
     });
 
-      // Attach persistent handlers for logging. Keep references so we can
-      // remove them during teardown to avoid leaking listeners in case the
-      // process is restarted or the test harness reuses state.
-      previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
-      previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
-      previewProc.stdout.on('data', previewStdoutHandler);
-      previewProc.stderr.on('data', previewStderrHandler);
+    // Attach persistent handlers for logging. Keep references so we can
+    // remove them during teardown to avoid leaking listeners in case the
+    // process is restarted or the test harness reuses state.
+    previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
+    previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
+    previewProc.stdout.on('data', previewStdoutHandler);
+    previewProc.stderr.on('data', previewStderrHandler);
 
     // Wait until the preview server is responding on the expected URL or
     // until we see the 'Local:' line on stdout. If the process exits early
@@ -163,21 +170,46 @@ describe('Service Worker E2E', () => {
         } catch (e) {
           /* ignore - streams may already be closed */
         }
-        if (!previewProc.killed) previewProc.kill('SIGTERM');
-        // Wait briefly for the process to exit, then escalate to SIGKILL if needed
-        await new Promise((resolve) => setTimeout(resolve, 250));
-        if (previewProc.exitCode === null && !previewProc.killed) {
+
+        if (!previewProc.killed) {
+          // Try to terminate the whole process group first (Unix).
           try {
-            previewProc.kill('SIGKILL');
+            process.kill(-previewProc.pid, 'SIGTERM');
           } catch (e) {
-            console.error('Failed to SIGKILL preview process:', e);
+            // Fallback: try to kill the direct process if group kill fails
+            try {
+              previewProc.kill('SIGTERM');
+            } catch (e2) {
+              /* ignore */
+            }
+          }
+
+          // Wait up to 5s for the process group to exit gracefully
+          const start = Date.now();
+          while (Date.now() - start < 5000 && previewProc.exitCode === null) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((r) => setTimeout(r, 100));
+          }
+
+          // If it's still alive, escalate to SIGKILL for the group, then the
+          // individual process as a last resort.
+          if (previewProc.exitCode === null) {
+            try {
+              process.kill(-previewProc.pid, 'SIGKILL');
+            } catch (e) {
+              try {
+                previewProc.kill('SIGKILL');
+              } catch (e2) {
+                console.error('Failed to SIGKILL preview process:', e2);
+              }
+            }
           }
         }
       } catch (err) {
         console.error('Error killing preview process in afterAll:', err);
       }
     }
-  });
+  }, 20000);
 
   test('stores markers snapshot in precache and caches URLs on demand', async () => {
     // Navigate to the base path the app is built for (/Map/) so service worker scope matches
@@ -220,7 +252,10 @@ describe('Service Worker E2E', () => {
 
     // Verify the snapshot is stored in PRECACHE_NAME under '/markers-snapshot'
     const snapshotBody = await page.evaluate(() =>
-      caches.open('static-assets-v1').then((c) => c.match('/markers-snapshot')).then((r) => (r ? r.text() : null)),
+      caches
+        .open('static-assets-v1')
+        .then((c) => c.match('/markers-snapshot'))
+        .then((r) => (r ? r.text() : null)),
     );
 
     expect(snapshotBody).not.toBeNull();
@@ -237,7 +272,11 @@ describe('Service Worker E2E', () => {
     await new Promise((r) => setTimeout(r, 500));
 
     const cached = await page.evaluate(
-      (asset) => caches.open('on-demand-cache').then((c) => c.match(asset)).then(Boolean),
+      (asset) =>
+        caches
+          .open('on-demand-cache')
+          .then((c) => c.match(asset))
+          .then(Boolean),
       assetPath,
     );
 
