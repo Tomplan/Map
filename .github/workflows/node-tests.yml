@@ -5,6 +5,7 @@ on:
     branches: [main, master, development, 'feature/**', 'chore/**']
   pull_request:
     branches: [main, master, development]
+  workflow_dispatch: {}
 
 jobs:
   test:
@@ -21,5 +22,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run test suite
-        run: npm test --silent
+      - name: Run unit test suite
+        run: npm run test:unit --silent
+
+  integration:
+    name: Run integration / heavy tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: test
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ','), 'run-integration-tests'))
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run heavy/integration tests
+        # Run the full test suite (including e2e if present) or target specific heavy tests
+        run: npm run test:all --silent -- --testPathPattern="src/__tests__/exceljs_integration.test.js"
