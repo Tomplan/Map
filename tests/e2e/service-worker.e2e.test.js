@@ -52,6 +52,26 @@ describe('Service Worker E2E', () => {
   let page;
   let previewProc;
 
+  // Helper: wait for preview to start by watching stdout or probing the URL.
+  async function waitForPreviewStart(proc, url, timeout = 180000) {
+    const start = Date.now();
+
+    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(() => null);
+    const urlPromise = waitForUrl(url, timeout).catch(() => null);
+
+    // Also reject if the preview process exits early
+    const exitPromise = new Promise((_, rej) => proc.on('exit', (code) => rej(new Error('preview process exited with code ' + code))));
+
+    try {
+      await Promise.race([outputPromise, urlPromise, exitPromise]);
+      return true;
+    } catch (err) {
+      const elapsed = Math.round((Date.now() - start) / 1000);
+      throw new Error(`Preview server failed to start within ${elapsed}s: ${err && err.message}`);
+    }
+  }
+
+  // Allow extra time for build + preview server startup on CI runners
   beforeAll(async () => {
     // Ensure the production build is available and start preview server
     // Build
@@ -60,23 +80,45 @@ describe('Service Worker E2E', () => {
       b.on('exit', (code) => (code === 0 ? res() : rej(new Error('build failed'))));
     });
 
-    // Start preview server on fixed port
+    // Start preview server on fixed port and capture stdout/stderr for debug logs
     previewProc = spawn('npm', ['run', 'preview', '--', '--port', String(PREVIEW_PORT)], {
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    // Wait until the preview server is responding on the expected URL.
-    // Polling the URL is more robust on CI than relying on stdout/stderr lines.
-    await waitForUrl(PREVIEW_URL, 120000);
+    previewProc.stdout.on('data', (chunk) => console.log('[preview stdout]', chunk.toString().trim()));
+    previewProc.stderr.on('data', (chunk) => console.error('[preview stderr]', chunk.toString().trim()));
+
+    // Wait until the preview server is responding on the expected URL or
+    // until we see the 'Local:' line on stdout. If the process exits early
+    // this will throw a helpful error and we make sure to clean up.
+    try {
+      await waitForPreviewStart(previewProc, PREVIEW_URL, 180000);
+    } catch (err) {
+      // Ensure we don't leak the process when startup fails
+      try {
+        if (previewProc && !previewProc.killed) previewProc.kill();
+      } catch (killErr) {
+        console.error('Failed to kill preview process after startup failure:', killErr);
+      }
+      throw err;
+    }
 
     browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     page = await browser.newPage();
-  }, 120000);
+  }, 240000);
 
   afterAll(async () => {
     if (browser) await browser.close();
-    if (previewProc) previewProc.kill();
+    if (previewProc) {
+      try {
+        if (!previewProc.killed) previewProc.kill('SIGTERM');
+        // Wait briefly for the process to exit
+        await new Promise((resolve) => setTimeout(resolve, 250));
+      } catch (err) {
+        console.error('Error killing preview process in afterAll:', err);
+      }
+    }
   });
 
   test('stores markers snapshot in precache and caches URLs on demand', async () => {
@@ -90,7 +132,8 @@ describe('Service Worker E2E', () => {
     // Poll for registration to be available (give SW time to register after load)
     let hasRegistration = false;
     const start = Date.now();
-    while (Date.now() - start < 5000) {
+    // wait up to 30s for registration on slow CI
+    while (Date.now() - start < 30000) {
       // Ask page for registration
       // Note: getRegistration() returns a promise, so we await it inside page.evaluate
       // and resolve to boolean
@@ -115,7 +158,7 @@ describe('Service Worker E2E', () => {
     }, sample);
 
     // Give the service worker a moment to write to cache
-    await new Promise((r) => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 1000));
 
     // Verify the snapshot is stored in PRECACHE_NAME under '/markers-snapshot'
     const snapshotBody = await page.evaluate(() =>
@@ -141,5 +184,5 @@ describe('Service Worker E2E', () => {
     );
 
     expect(cached).toBe(true);
-  }, 30000);
+  }, 120000);
 });
