@@ -16,10 +16,10 @@ export default function useFeedbackRequests() {
   useEffect(() => {
     const getCurrentUser = async () => {
       try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setCurrentUserId(user?.id || null);
         // console.debug('[useFeedbackRequests] getUser result', user);
       } catch (err) {
         console.error('[useFeedbackRequests] getUser error', err);
@@ -50,7 +50,6 @@ export default function useFeedbackRequests() {
         if (fetchError) throw fetchError;
 
         setRequests(data || []);
-        
 
         // Load user's votes
         if (currentUserId) {

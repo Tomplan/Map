@@ -35,6 +35,7 @@ export default function MapManagement({
   setMarkersState,
   updateMarker,
   selectedYear,
+  setSelectedYear,
   archiveMarkers,
   copyMarkers,
 }) {
@@ -130,6 +131,23 @@ export default function MapManagement({
 
     return sorted;
   }, [markersState, defaultMarkers, searchTerm, sortBy, sortDirection]);
+
+  // Helpful debug logging when no markers are present so admins can diagnose quickly
+  useEffect(() => {
+    if (filteredMarkers.length === 0) {
+      try {
+        // Show counts and sample marker years to aid debugging (only in dev)
+        const total = (markersState && markersState.length) || 0;
+        const years = Array.isArray(markersState)
+          ? Array.from(new Set(markersState.map((m) => m.event_year).filter(Boolean))).slice(0, 5)
+          : [];
+        // eslint-disable-next-line no-console
+        console.debug('[MapManagement] No markers found', { selectedYear, total, years, defaultMarkersLength: defaultMarkers.length });
+      } catch (err) {
+        // ignore
+      }
+    }
+  }, [filteredMarkers.length, markersState, selectedYear, defaultMarkers.length]);
 
   // Get selected marker (check both regular markers and defaults)
   const selectedMarker = useMemo(() => {
@@ -580,6 +598,30 @@ export default function MapManagement({
                     ? `There are no markers configured for ${selectedYear}. Please contact your system administrator.`
                     : `There are no markers configured for ${selectedYear}. You can copy markers from the previous year or create new ones.`}
                 </p>
+                {/* If markers exist for a different year, offer a quick switch to view them */}
+                {Array.isArray(markersState) && markersState.length > 0 && (
+                  (() => {
+                    const years = Array.from(new Set(markersState.map((m) => m.event_year).filter(Boolean))).sort((a, b) => b - a);
+                    const otherYears = years.filter((y) => y !== selectedYear);
+                    if (otherYears.length === 0) return null;
+                    return (
+                      <div className="space-y-2">
+                        <p className="text-sm text-blue-600">Markers are available for other years:</p>
+                        <div className="flex justify-center gap-2">
+                          {otherYears.slice(0, 3).map((y) => (
+                            <button
+                              key={y}
+                              onClick={() => setSelectedYear && setSelectedYear(y)}
+                              className="px-3 py-2 bg-white border rounded-md hover:bg-gray-50"
+                            >
+                              View {y}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()
+                )}
                 {!isReadOnly && (
                   <button
                     onClick={handleCopyFromPreviousYear}

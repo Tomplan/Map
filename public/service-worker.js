@@ -56,7 +56,9 @@ self.addEventListener('message', (event) => {
     try {
       const body = JSON.stringify(data.snapshot || {});
       const response = new Response(body, { headers: { 'Content-Type': 'application/json' } });
-      event.waitUntil(caches.open(cacheName).then((cache) => cache.put('/markers-snapshot', response)));
+      event.waitUntil(
+        caches.open(cacheName).then((cache) => cache.put('/markers-snapshot', response)),
+      );
     } catch (e) {
       // ignore
     }

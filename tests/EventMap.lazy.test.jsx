@@ -13,6 +13,8 @@ test('EventMap shows Suspense fallback before inner module loads', async () => {
   // After next tick the inner map component should render (tile layer markup)
   await waitFor(() => {
     // the lazily loaded MapContainer will render a div; ensure it appears
-    expect(container.querySelector('.leaflet-container') || container.querySelector('div')).toBeTruthy();
+    expect(
+      container.querySelector('.leaflet-container') || container.querySelector('div'),
+    ).toBeTruthy();
   });
 });

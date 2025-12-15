@@ -69,7 +69,9 @@ describe('Service Worker E2E', () => {
   async function waitForPreviewStart(proc, url, timeout = 180000) {
     const start = Date.now();
 
-    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(() => null);
+    const outputPromise = waitForServerOutput(proc, /Local:.*https?:\/\//i, timeout).catch(
+      () => null,
+    );
     const urlPromise = waitForUrl(url, timeout).catch(() => null);
 
     // Also reject if the preview process exits early or emits an error.
@@ -118,13 +120,13 @@ describe('Service Worker E2E', () => {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-      // Attach persistent handlers for logging. Keep references so we can
-      // remove them during teardown to avoid leaking listeners in case the
-      // process is restarted or the test harness reuses state.
-      previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
-      previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
-      previewProc.stdout.on('data', previewStdoutHandler);
-      previewProc.stderr.on('data', previewStderrHandler);
+    // Attach persistent handlers for logging. Keep references so we can
+    // remove them during teardown to avoid leaking listeners in case the
+    // process is restarted or the test harness reuses state.
+    previewStdoutHandler = (chunk) => console.log('[preview stdout]', chunk.toString().trim());
+    previewStderrHandler = (chunk) => console.error('[preview stderr]', chunk.toString().trim());
+    previewProc.stdout.on('data', previewStdoutHandler);
+    previewProc.stderr.on('data', previewStderrHandler);
 
     // Wait until the preview server is responding on the expected URL or
     // until we see the 'Local:' line on stdout. If the process exits early
@@ -220,7 +222,10 @@ describe('Service Worker E2E', () => {
 
     // Verify the snapshot is stored in PRECACHE_NAME under '/markers-snapshot'
     const snapshotBody = await page.evaluate(() =>
-      caches.open('static-assets-v1').then((c) => c.match('/markers-snapshot')).then((r) => (r ? r.text() : null)),
+      caches
+        .open('static-assets-v1')
+        .then((c) => c.match('/markers-snapshot'))
+        .then((r) => (r ? r.text() : null)),
     );
 
     expect(snapshotBody).not.toBeNull();
@@ -237,7 +242,11 @@ describe('Service Worker E2E', () => {
     await new Promise((r) => setTimeout(r, 500));
 
     const cached = await page.evaluate(
-      (asset) => caches.open('on-demand-cache').then((c) => c.match(asset)).then(Boolean),
+      (asset) =>
+        caches
+          .open('on-demand-cache')
+          .then((c) => c.match(asset))
+          .then(Boolean),
       assetPath,
     );
 

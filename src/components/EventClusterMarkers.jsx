@@ -237,10 +237,14 @@ function EventClusterMarkers({
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
 
+  // Normalize `safeMarkers` to a safe array to avoid runtime errors when callers
+  // pass `null` or `undefined` (defensive programming for robustness).
+  const markers = useMemo(() => (Array.isArray(safeMarkers) ? safeMarkers : []), [safeMarkers]);
+
   // In admin view with external selection, use selectedMarkerId; otherwise use internal state
   const selectedMarker =
     isAdminView && selectedMarkerId !== undefined
-      ? safeMarkers.find((m) => m.id === selectedMarkerId)
+      ? markers.find((m) => m.id === selectedMarkerId)
       : internalSelectedMarker;
 
   const setSelectedMarker =
@@ -330,8 +334,8 @@ function EventClusterMarkers({
   const { confirm, toastError } = useDialog();
 
   const filteredMarkers = useMemo(
-    () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
-    [safeMarkers],
+    () => markers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
+    [markers],
   );
 
   const handleDragEnd = useCallback(
@@ -370,7 +374,7 @@ function EventClusterMarkers({
   const handleAssign = useCallback(
     async (markerId, companyId) => {
       // Check if marker exists in current markers
-      const markerExists = safeMarkers.some((m) => m.id === markerId);
+      const markerExists = markers.some((m) => m.id === markerId);
       if (!markerExists) {
         toastError(`Cannot assign to marker ${markerId} - marker does not exist`);
         return;
@@ -385,7 +389,7 @@ function EventClusterMarkers({
         const newCompanyName = newCompany?.name || 'this company';
 
         // Get booth number/glyph from marker
-        const marker = safeMarkers.find((m) => m.id === markerId);
+        const marker = markers.find((m) => m.id === markerId);
         const boothLabel = marker?.glyph || marker?.id || 'this booth';
 
         // Build warning message
@@ -422,7 +426,7 @@ function EventClusterMarkers({
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, toastError, confirm],
+    [assignCompanyToMarker, assignments, subscriptions, markers, toastError, confirm],
   );
 
   // Handle unassignment

@@ -1,27 +1,16 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 
-// Mocks for react-leaflet + cluster
+// Mocks for react-leaflet
 jest.mock('react-leaflet', () => ({
-  Marker: ({ children }) =>
-    require('react').createElement('div', { 'data-testid': 'marker' }, children),
-  Popup: ({ children }) =>
-    require('react').createElement('div', { 'data-testid': 'popup' }, children),
-}));
-
-jest.mock('react-leaflet-markercluster', () => ({
-  __esModule: true,
-  default: ({ children }) =>
-    require('react').createElement('div', { 'data-testid': 'cluster' }, children),
+  Marker: ({ children }) => require('react').createElement('div', { 'data-testid': 'marker' }, children),
+  Popup: ({ children }) => require('react').createElement('div', { 'data-testid': 'popup' }, children),
 }));
 
 // Hook & context lightweight mocks
 jest.mock('../../hooks/useIsMobile', () => () => false);
 jest.mock('../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: null, loading: false }),
-}));
-jest.mock('../../contexts/FavoritesContext', () => ({
-  useFavoritesContext: () => ({ isFavorite: () => false }),
 }));
 jest.mock('../../hooks/useEventSubscriptions', () => () => ({ subscriptions: [] }));
 jest.mock('../../hooks/useAssignments', () => () => ({
@@ -35,7 +24,6 @@ jest.mock('../../contexts/DialogContext', () => ({
 
 jest.mock('../../utils/markerSizing', () => ({
   getIconSizeForZoom: () => [20, 30],
-  getZoomBucket: () => 'A',
 }));
 
 jest.mock('../../utils/markerIcons', () => ({
@@ -49,34 +37,19 @@ jest.mock('../MobileBottomSheet', () => () => null);
 jest.mock('../MarkerDetailsUI', () => ({ MarkerUI: () => null }));
 jest.mock('../MarkerContextMenu', () => () => null);
 
-import EventClusterMarkers from '../EventClusterMarkers';
+import EventSpecialMarkers from '../EventSpecialMarkers';
 
-describe('EventClusterMarkers — safeMarkers undefined', () => {
-  it('renders without throwing when `safeMarkers` prop is omitted', () => {
-    const props = {
-      // Intentionally omit `safeMarkers`
-      updateMarker: jest.fn(),
-      isMarkerDraggable: () => false,
-      iconCreateFunction: () => null,
-      currentZoom: 16,
-    };
-
-    const { getByTestId } = render(<EventClusterMarkers {...props} />);
-
-    expect(getByTestId('cluster')).toBeTruthy();
-  });
-
+describe('EventSpecialMarkers — safeMarkers null', () => {
   it('renders without throwing when `safeMarkers` prop is null', () => {
     const props = {
       safeMarkers: null,
       updateMarker: jest.fn(),
       isMarkerDraggable: () => false,
-      iconCreateFunction: () => null,
       currentZoom: 16,
     };
 
-    const { getByTestId } = render(<EventClusterMarkers {...props} />);
+    const { getByTestId } = render(<EventSpecialMarkers {...props} />);
 
-    expect(getByTestId('cluster')).toBeTruthy();
+    expect(getByTestId('marker')).toBeTruthy();
   });
 });

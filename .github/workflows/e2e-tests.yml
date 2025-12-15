@@ -2,9 +2,9 @@ name: E2E Tests (Service Worker)
 
 on:
   push:
-    branches: [ development, main ]
+    branches: [development, main]
   pull_request:
-    branches: [ development, main ]
+    branches: [development, main]
 
 jobs:
   e2e:
@@ -107,5 +107,3 @@ jobs:
             lsof -ti:5173 | xargs -r kill -9 || true
             lsof -ti:5174 | xargs -r kill -9 || true
             fi
-
-

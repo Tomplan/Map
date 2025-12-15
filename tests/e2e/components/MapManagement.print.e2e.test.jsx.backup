@@ -1,0 +1,157 @@
+import React from 'react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
+// Mock helper utilities that reference Vite environment or other browser features
+// Minimal app context mocks that MapManagement expects
+jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
+jest.mock('../../../src/hooks/useUserRole', () => () => ({
+  role: 'event_manager',
+  loading: false,
+  userInfo: {},
+  isEventManager: true,
+  isSystemManager: false,
+  isSuperAdmin: false,
+  hasRole: (r) => r === 'event_manager',
+  hasAnyRole: (roles) => Array.isArray(roles) && roles.includes('event_manager'),
+}));
+jest.mock('../../../src/supabaseClient');
+
+jest.mock('../../../src/utils/getIconPath', () => ({ getIconPath: (p) => p }));
+jest.mock('../../../src/utils/getLogoPath', () => ({
+  getLogoPath: (p) => p,
+  getResponsiveLogoSources: () => null,
+}));
+jest.mock('../../../src/config/markerTabsConfig', () => ({ ICON_OPTIONS: [] }));
+
+jest.mock('html2canvas', () => jest.fn());
+import html2canvas from 'html2canvas';
+
+// Mock window.open globally to avoid jsdom errors
+global.openOriginal = window.open;
+window.open = jest.fn(() => ({
+  document: {
+    open: jest.fn(),
+    close: jest.fn(),
+    createElement: (n) => document.createElement(n),
+    documentElement: document.documentElement,
+  },
+  print: jest.fn(),
+  onafterprint: null,
+}));
+
+import MapManagement from '../../../src/components/admin/MapManagement';
+
+// Mock EventMap so we don't render Leaflet during tests. The mock will
+// call onMapReady so the parent can set the mapInstance and populate printModes.
+jest.mock('../../../src/components/EventMap/EventMap', () => {
+  let mapReadyCalled = false;
+  return (props) => {
+    // Simulate a map ready call only once after mount
+    if (props.onMapReady && typeof props.onMapReady === 'function' && !mapReadyCalled) {
+      mapReadyCalled = true;
+      // Use setTimeout to simulate async map creation
+      setTimeout(() => props.onMapReady({
+        printControl: {
+          options: {
+            printModes: [] // Empty to show Snapshot option
+          }
+        }
+      }), 0);
+    }
+    return <div data-testid="mock-event-map">Mock EventMap</div>;
+  };
+});
+
+jest.mock('html2canvas', () => jest.fn());
+import html2canvas from 'html2canvas';
+
+describe('MapManagement header snapshot print (e2e)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    html2canvas.mockReset();
+    html2canvas.mockResolvedValue({ toDataURL: () => 'data:image/png;base64,FAKE' });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    // cleanup any map container added during the test
+    const fakeMap = document.getElementById('map-container');
+    if (fakeMap && fakeMap.parentNode) fakeMap.parentNode.removeChild(fakeMap);
+    // restore window.open if test mutated it and it wasn't restored
+    if (global.openOriginal) {
+      try {
+        window.open = global.openOriginal;
+      } catch (e) {
+        /* ignore */
+      }
+      delete global.openOriginal;
+    }
+  });
+
+  test('header snapshot ignores popups, tooltips and print-hide elements', async () => {
+    // Provide a fake map container element for html2canvas to target
+    const fakeMap = document.createElement('div');
+    fakeMap.id = 'map-container';
+    document.body.appendChild(fakeMap);
+
+    // Stub window.open to avoid jsdom errors; store original on the global so
+    // the afterEach cleanup can restore it.
+    // NOTE: window.open is now mocked globally at the top of the file
+    // if (typeof global.openOriginal === 'undefined') global.openOriginal = window.open;
+    // window.open = jest.fn(() => ({
+    //   document: {
+    //     open: jest.fn(),
+    //     close: jest.fn(),
+    //     createElement: (n) => document.createElement(n),
+    //     documentElement: document.documentElement,
+    //   },
+    //   print: jest.fn(),
+    //   onafterprint: null,
+    // }));
+
+    // Wrap with real DialogProvider so useDialog hook resolves cleanly during the test
+    const { DialogProvider } = require('../../../src/contexts/DialogContext');
+
+    render(
+      <DialogProvider>
+        <MapManagement
+          markersState={[]}
+          setMarkersState={() => {}}
+          updateMarker={() => {}}
+          selectedYear={2025}
+          archiveMarkers={() => ({})}
+          copyMarkers={() => ({})}
+        />
+      </DialogProvider>,
+    );
+
+    // Open the header Print Map menu
+    const headerBtn = screen.getByRole('button', { name: /Print map/i });
+    act(() => fireEvent.click(headerBtn));
+
+    // Snapshot option should be visible
+    const snapshotBtn = await screen.findByText(/Snapshot \(PNG\)/i);
+    expect(snapshotBtn).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.click(snapshotBtn);
+    });
+
+    // Advance timers to complete the async operations in snapshotHeaderPrint
+    jest.advanceTimersByTime(500);
+
+    // restore window.open (afterEach will also clean up if this is skipped)
+    if (global.openOriginal) window.open = global.openOriginal;
+
+    expect(html2canvas).toHaveBeenCalled();
+    const opts = html2canvas.mock.calls[0][1];
+    expect(typeof opts.ignoreElements).toBe('function');
+
+    const popupEl = { classList: { contains: (c) => c === 'leaflet-popup' } };
+    const tooltipEl = { classList: { contains: (c) => c === 'leaflet-tooltip' } };
+    const hideEl = { classList: { contains: (c) => c === 'print-hide' } };
+
+    expect(opts.ignoreElements(popupEl)).toBeTruthy();
+    expect(opts.ignoreElements(tooltipEl)).toBeTruthy();
+    expect(opts.ignoreElements(hideEl)).toBeTruthy();
+  });
+});

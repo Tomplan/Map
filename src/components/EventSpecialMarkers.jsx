@@ -31,9 +31,14 @@ function EventSpecialMarkers({
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
 
   // In admin view with external selection, use selectedMarkerId; otherwise use internal state
+  // Normalize `safeMarkers` to a safe array to avoid runtime errors when callers
+  // pass `null` or `undefined`.
+  const markers = Array.isArray(safeMarkers) ? safeMarkers : [];
+
+  // In admin view with external selection, use selectedMarkerId; otherwise use internal state
   const selectedMarker =
     isAdminView && selectedMarkerId !== undefined
-      ? safeMarkers.find((m) => m.id === selectedMarkerId)
+      ? markers.find((m) => m.id === selectedMarkerId)
       : internalSelectedMarker;
 
   const setSelectedMarker =
@@ -98,7 +103,7 @@ function EventSpecialMarkers({
         const newCompanyName = newCompany?.name || 'this company';
 
         // Get booth number/glyph from marker
-        const marker = safeMarkers.find((m) => m.id === markerId);
+        const marker = markers.find((m) => m.id === markerId);
         const boothLabel = marker?.glyph || marker?.id || 'this booth';
 
         // Build warning message
@@ -135,7 +140,7 @@ function EventSpecialMarkers({
         setContextMenuLoading(false);
       }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, confirm],
+    [assignCompanyToMarker, assignments, subscriptions, markers, confirm],
   );
 
   // Handle unassignment
@@ -155,7 +160,7 @@ function EventSpecialMarkers({
 
   return (
     <>
-      {safeMarkers
+      {markers
         .filter((marker) => marker.id >= 1001)
         .map((marker) => {
           const position = [marker.lat, marker.lng];

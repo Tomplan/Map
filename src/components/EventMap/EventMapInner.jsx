@@ -54,7 +54,6 @@ export default function EventMapInner(props) {
   // across files in the repo history. Keep this function as a thin wrapper
   // to avoid too much refactoring in one change.
 
-  // eslint-disable-next-line react/prop-types
   const {
     isAdminView,
     markersState,
@@ -70,6 +69,9 @@ export default function EventMapInner(props) {
 
   // Minimal implementation: render a basic MapContainer to preserve behavior
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
+  // NOTE: MiniMap and search control initialization were intentionally
+  // managed at a higher level previously. We avoid initializing them here
+  // to preserve the original control ordering and behaviour.
 
   return (
     <MapContainer
@@ -82,8 +84,31 @@ export default function EventMapInner(props) {
     >
       <TileLayer attribution={MAP_LAYERS[0].attribution} url={MAP_LAYERS[0].url} />
       {/* EventSpecialMarkers and clusters are intentionally kept in the lazy chunk */}
-      <EventClusterMarkers markers={markersState} />
-      <EventSpecialMarkers markers={markersState} />
+      <EventClusterMarkers
+        safeMarkers={markersState}
+        updateMarker={updateMarker}
+        isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+        iconCreateFunction={createIconCreateFunction}
+        selectedYear={selectedYear}
+        isAdminView={isAdminView}
+        selectedMarkerId={selectedMarkerId}
+        onMarkerSelect={onMarkerSelect}
+        currentZoom={MAP_CONFIG.DEFAULT_ZOOM}
+        applyVisitorSizing={previewUseVisitorSizing}
+        onMarkerDrag={onMarkerDrag}
+      />
+      <EventSpecialMarkers
+        safeMarkers={markersState}
+        updateMarker={updateMarker}
+        isMarkerDraggable={(marker) => isMarkerDraggable(marker, isAdminView)}
+        selectedYear={selectedYear}
+        isAdminView={isAdminView}
+        selectedMarkerId={selectedMarkerId}
+        onMarkerSelect={onMarkerSelect}
+        currentZoom={MAP_CONFIG.DEFAULT_ZOOM}
+        applyVisitorSizing={previewUseVisitorSizing}
+        onMarkerDrag={onMarkerDrag}
+      />
       <MapControls />
     </MapContainer>
   );

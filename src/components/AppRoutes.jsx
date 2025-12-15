@@ -241,6 +241,7 @@ function AppRoutes({
                 setMarkersState={setMarkersState}
                 updateMarker={updateMarker}
                 selectedYear={selectedYear}
+                setSelectedYear={setSelectedYear}
                 archiveMarkers={archiveMarkers}
                 copyMarkers={copyMarkers}
               />
