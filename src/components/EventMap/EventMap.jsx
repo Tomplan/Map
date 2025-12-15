@@ -542,6 +542,7 @@ function EventMap({
                     if (printMarker.options.icon && printMarker.options.icon.options) {
                       const originalIconOpts = printMarker.options.icon.options;
                       const recomputedOpts = computePrintIconOptions(originalIconOpts, printZoom, isAdminView);
+                      
                       if (recomputedOpts && recomputedOpts.iconSize) {
                         const newIcon = L.icon.glyph(recomputedOpts);
                         printMarker.setIcon(newIcon);
@@ -590,13 +591,8 @@ function EventMap({
             if (!printModeConfig) printModeConfig = PRINT_CONFIG.modes[modeTitle];
             // fallback to partial match
             if (!printModeConfig) {
-<<<<<<< HEAD
               const paperMatch = (modeTitle || '').match(/\b(A2|A3|A4)\b/i);
               const orientationMatch = (modeTitle || '').match(/\b(Landscape|Portrait)\b/i);
-=======
-              const paperMatch = (modeTitle || '').match(/(A2|A3|A4)/i);
-              const orientationMatch = (modeTitle || '').match(/(Landscape|Portrait)/i);
->>>>>>> pr29/resolve-main-into-development
               if (paperMatch && orientationMatch) {
                 const partial = Object.keys(PRINT_CONFIG.modes).find(
                   (k) =>
@@ -615,7 +611,6 @@ function EventMap({
               // Temporarily increase maxZoom for printing
               browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
             }
-<<<<<<< HEAD
 
             // CRITICAL: Only change center for specific print modes that need a fixed home view
             // "Current view" mode should preserve the current map position to avoid marker misplacement
@@ -645,45 +640,73 @@ function EventMap({
                 ? 18 // Portrait uses zoom 17.8
                 : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
 
-              // Save original maxZoom to restore after printing
-              const modeTitleNormalized = normalizeModeTitle(modeTitle);
-              let printModeConfig = PRINT_CONFIG.modes[modeTitleNormalized];
-              if (!printModeConfig) printModeConfig = PRINT_CONFIG.modes[modeTitle];
-              // fallback to partial match
-              if (!printModeConfig) {
-                const paperMatch = (modeTitle || '').match(/\b(A2|A3|A4)\b/i);
-                const orientationMatch = (modeTitle || '').match(/\b(Landscape|Portrait)\b/i);
-                if (paperMatch && orientationMatch) {
-                  const partial = Object.keys(PRINT_CONFIG.modes).find(
-                    (k) =>
-                      k.toLowerCase().includes(paperMatch[0].toLowerCase()) &&
-                      k.toLowerCase().includes(orientationMatch[0].toLowerCase()),
-                  );
-                  if (partial) printModeConfig = PRINT_CONFIG.modes[partial];
-                }
-              }
-              if (printModeConfig) {
-                if (!originalView) {
-                  originalView = { maxZoom: browserPrint._map.getMaxZoom() };
-                } else if (!originalView.maxZoom) {
-                  originalView.maxZoom = browserPrint._map.getMaxZoom();
-                }
-                // Temporarily increase maxZoom for printing
-                browserPrint._map.setMaxZoom(PRINT_CONFIG.maxZoom);
+              // Move the real map to the target position
+              // The plugin will then use this view when creating the print overlay
+              // (because Portrait/Landscape modes have invalidateBounds: false)
+              browserPrint._map.setView(centerPosition, zoomLevel, {
+                animate: false // Instant jump, no animation
+              });
+            }
+          });
+
+          // PrintStart handler REMOVED - icon cloning now handled by custom cloner
+          // Redundant code that used unreliable coordinate matching
+          // Keep commented for rollback if needed
+          /*
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintStart, (event) => {
+            console.log('[Print] PrintStart event - updating marker icons for print');
+
+            // Get all markers from the original map
+            const originalMarkers = new Map();
+            browserPrint._map.eachLayer((layer) => {
+              if (layer instanceof L.Marker && layer.options && layer.options.icon) {
+                // Use lat/lng as key to match markers between original and print map
+                const key = `${layer.getLatLng().lat.toFixed(8)},${layer.getLatLng().lng.toFixed(8)}`;
+                originalMarkers.set(key, layer);
               }
             });
 
-            // Restore original maxZoom after printing ends or is cancelled
-            browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
-              if (originalView && originalView.maxZoom) {
-                browserPrint._map.setMaxZoom(originalView.maxZoom);
-              }
-            });
-            browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
-              if (originalView && originalView.maxZoom) {
-                browserPrint._map.setMaxZoom(originalView.maxZoom);
-              }
-            });
+            // Update print overlay markers to match original markers
+            if (event.printObjects && event.printObjects['L.Marker']) {
+              const printMarkers = event.printObjects['L.Marker'];
+              console.log(`[Print] Updating ${printMarkers.length} markers in print overlay`);
+
+              printMarkers.forEach((printMarker) => {
+                const key = `${printMarker.getLatLng().lat.toFixed(8)},${printMarker.getLatLng().lng.toFixed(8)}`;
+                const originalMarker = originalMarkers.get(key);
+
+                if (originalMarker && originalMarker.options.icon && originalMarker.options.icon.options) {
+                  // Clone the icon with all original properties
+                  const iconOpts = originalMarker.options.icon.options;
+                  const newIcon = L.icon.glyph({
+                    iconUrl: iconOpts.iconUrl,
+                    iconSize: iconOpts.iconSize,
+                    iconAnchor: iconOpts.iconAnchor,
+                    popupAnchor: iconOpts.popupAnchor,
+                    shadowUrl: iconOpts.shadowUrl,
+                    shadowSize: iconOpts.shadowSize,
+                    shadowAnchor: iconOpts.shadowAnchor,
+                    prefix: iconOpts.prefix || '',
+                    glyph: iconOpts.glyph || '',
+                    glyphColor: iconOpts.glyphColor || 'white',
+                    bgColor: iconOpts.bgColor,
+                    glyphSize: iconOpts.glyphSize || '11px',
+                    glyphAnchor: iconOpts.glyphAnchor || [0, 0],
+                    className: iconOpts.className || '',
+                  });
+
+                  // Update the print marker with the correct icon
+                  printMarker.setIcon(newIcon);
+                }
+              });
+            }
+          });
+          */
+
+          browserPrint._map.on(window.L.BrowserPrint.Event.PrintEnd, () => {
+            // Restore original view after printing completes
+            if (originalView) {
+              if (originalView.center && typeof originalView.zoom !== 'undefined') {
                 browserPrint._map.setView(originalView.center, originalView.zoom, {
                   animate: false,
                 });
