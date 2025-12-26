@@ -28,12 +28,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   // Update ref whenever eventYear changes
   useEffect(() => {
     eventYearRef.current = eventYear;
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] eventYearRef updated to', eventYear);
+    }
   }, [eventYear]);
 
   const loadMarkers = useCallback(
     async (online) => {
       // Always use the latest eventYear from ref
       const targetYear = eventYearRef.current;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug(`[useEventMarkers] loadMarkers called for year ${targetYear} (online=${online})`);
+      }
 
       setLoading(true);
       if (!online && cached) {
@@ -200,6 +207,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   );
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] Setting up subscriptions for eventYear', eventYear);
+    }
+
     loadMarkers(isOnline);
 
     function handleOnline() {
@@ -231,6 +242,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           filter: `event_year=eq.${eventYear}`,
         },
         () => {
+          if (process.env.NODE_ENV !== 'production') {
+            console.debug('[useEventMarkers] markers_core change detected — reloading for', eventYearRef.current);
+          }
           loadMarkers(true);
         },
       )
@@ -361,6 +375,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       .subscribe();
 
     return () => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[useEventMarkers] Removing subscriptions for eventYear', eventYear);
+      }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       supabase.removeChannel(coreChannel);
@@ -373,8 +390,11 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     };
   }, [isOnline, loadMarkers, eventYear]);
 
-  // Reload markers when eventYear changes
+  // Automatically reload markers when eventYear changes
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] eventYear changed -> triggering loadMarkers for', eventYear);
+    }
     loadMarkers(isOnline);
   }, [eventYear, isOnline, loadMarkers]);
 
