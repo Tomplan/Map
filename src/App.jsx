@@ -113,6 +113,11 @@ function AppContent() {
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
   } = useEventMarkers(selectedYear);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.debug('[App] useEventMarkers invoked with selectedYear', selectedYear);
+  }
+
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, selectedYear);
 
