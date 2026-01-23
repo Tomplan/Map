@@ -9,8 +9,10 @@ const LANGUAGES = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ];
 
-export default function LanguageToggle({ className = '' }) {
+export default function LanguageToggle({ className = '', excludeCodes = [] }) {
   const { i18n } = useTranslation();
+  // Allow excluding languages from the UI (used in tests and some embedded contexts)
+  const availableLanguages = LANGUAGES.filter((l) => !excludeCodes.includes(l.code));
   const { preferences, updatePreference } = usePreferences();
   const { toastError, toastWarning } = useDialog();
   const current = i18n.language;
@@ -39,7 +41,7 @@ export default function LanguageToggle({ className = '' }) {
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {LANGUAGES.map((lang) => (
+      {availableLanguages.map((lang) => (
         <button
           key={lang.code}
           onClick={() => handleLanguageChange(lang.code)}
