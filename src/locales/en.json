@@ -69,6 +69,8 @@
     "loggingIn": "Logging in...",
     "rememberMe": "Remember my email",
     "rememberMeTooltip": "Your browser will also offer to save your password securely",
+    "portal": "Manager Portal",
+    "footerSecure": "Secure access for managers only",
     "errors": {
       "invalidCredentials": "Invalid email or password",
       "emailRequired": "Email is required",
