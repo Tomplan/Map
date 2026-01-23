@@ -48,3 +48,18 @@ const _pkgs = { en, nl, de };
     console.debug('[i18n] failed to merge companies for', lang, e && e.message);
   }
 });
+
+// Ensure branding.eventName exists and falls back to homePage.title when available
+['en', 'nl', 'de'].forEach((lang) => {
+  try {
+    const pkg = _pkgs[lang];
+    const eventTitle = pkg?.homePage?.title;
+    if (eventTitle && !i18n.exists('branding.eventName', { lng: lang })) {
+      // Add the branding.eventName key with the page title as a sensible default
+      i18n.addResource(lang, 'translation', 'branding.eventName', eventTitle);
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.debug('[i18n] failed to add branding.eventName for', lang, e && e.message);
+  }
+});
