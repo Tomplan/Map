@@ -18,12 +18,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   // Update ref whenever eventYear changes
   useEffect(() => {
     eventYearRef.current = eventYear;
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] eventYearRef updated to', eventYear);
+    }
   }, [eventYear]);
 
   const loadMarkers = useCallback(
     async (online) => {
       // Always use the latest eventYear from ref
       const targetYear = eventYearRef.current;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug(`[useEventMarkers] loadMarkers called for year ${targetYear} (online=${online})`);
+      }
 
       setLoading(true);
       if (!online) {
@@ -203,6 +210,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   );
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] Setting up subscriptions for eventYear', eventYear);
+    }
+
     loadMarkers(isOnline);
 
     function handleOnline() {
@@ -224,26 +235,162 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Supabase realtime subscriptions for all related tables. Only create
-    // channels when online to avoid unnecessary network work while offline.
+    // Supabase realtime subscriptions for all related tables. Only create channels when online
     const createdChannels = [];
     if (isOnline) {
       const coreChannel = supabase
-        .channel(`markers-core-changes-${eventYear}`)
+        .channel(`markers-core-changes-${eventYearRef.current}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'markers_core',
-            filter: `event_year=eq.${eventYear}`,
+            filter: `event_year=eq.${eventYearRef.current}`,
+          },
+          () => {
+            if (process.env.NODE_ENV !== 'production') {
+              console.debug('[useEventMarkers] markers_core change detected — reloading for', eventYearRef.current);
+            }
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(coreChannel);
+
+      const appearanceChannel = supabase
+        .channel(`markers-appearance-changes-${eventYearRef.current}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_appearance',
+            filter: `event_year=eq.${eventYearRef.current}`,
           },
           () => {
             loadMarkers(true);
           },
         )
         .subscribe();
-      createdChannels.push(coreChannel);
+      createdChannels.push(appearanceChannel);
+
+      // Separate subscription for default markers (event_year = 0) that affect all years
+      const defaultsChannel = supabase
+        .channel('markers-appearance-defaults-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_appearance',
+            filter: 'event_year=eq.0',
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(defaultsChannel);
+
+      const contentChannel = supabase
+        .channel(`markers-content-changes-${eventYearRef.current}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'markers_content',
+            filter: `event_year=eq.${eventYearRef.current}`,
+          },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(contentChannel);
+
+      // Assignments channel (handle insert/update/delete carefully)
+      const assignmentsChannel = supabase
+        .channel('markers-assignments-changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'assignments' },
+          async (payload) => {
+            // Handle different event types
+            if (payload.eventType === 'DELETE') {
+              // Assignment deleted - reload all markers to reflect the deletion
+              loadMarkers(true);
+            } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+              // For INSERT/UPDATE, check year before processing
+              const assignment = payload.new;
+              if (assignment?.event_year !== eventYearRef.current) {
+                return;
+              }
+
+              // Assignment added/updated - reload all markers to apply correct defaults
+              loadMarkers(true);
+            }
+          },
+        )
+        .subscribe();
+      createdChannels.push(assignmentsChannel);
+
+      // Companies channel
+      const companiesChannel = supabase
+        .channel('companies-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
+          // Company data changed - update all markers using this company
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const company = payload.new;
+            setMarkers((prev) => {
+              const next = prev.map((m) =>
+                m.companyId === company.id
+                  ? {
+                      ...m,
+                      name: company.name,
+                      logo: company.logo,
+                      website: company.website,
+                      info: company.info,
+                    }
+                  : m,
+              );
+              return next;
+            });
+            // Persist updated markers asynchronously for the new state
+              (async () => {
+                try {
+                  await setMarkerSnapshot(next);
+                } catch (err) {
+                  // ignore
+                }
+              })();
+          } else {
+            // For INSERT/DELETE, do full reload (rare events)
+            loadMarkers(true);
+          }
+        })
+        .subscribe();
+      createdChannels.push(companiesChannel);
+
+      // Subscriptions channel
+      const subscriptionsChannel = supabase
+        .channel(`event-subscriptions-changes-${eventYearRef.current}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_subscriptions',
+            filter: `event_year=eq.${eventYearRef.current}`,
+          },
+          (payload) => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+      createdChannels.push(subscriptionsChannel);
+    }
 
       const appearanceChannel = supabase
         .channel(`markers-appearance-changes-${eventYear}`)
@@ -389,6 +536,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
 
     return () => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug('[useEventMarkers] Removing subscriptions for eventYear', eventYear);
+      }
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       // Remove any channels we created while online
@@ -404,6 +554,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
   // Reload markers when eventYear changes
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.debug('[useEventMarkers] eventYear changed -> triggering loadMarkers for', eventYear);
+    }
     loadMarkers(isOnline);
   }, [eventYear, isOnline, loadMarkers]);
 

@@ -22,8 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+<<<<<<< HEAD
       - name: Run unit test suite
-        run: npm run test:unit --silent
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm run test:unit --silent -- --maxWorkers=50%
 
   integration:
     name: Run integration / heavy tests
@@ -47,3 +50,9 @@ jobs:
       - name: Run heavy/integration tests
         # Run the full test suite (including e2e if present) or target specific heavy tests
         run: npm run test:all --silent -- --testPathPattern="src/__tests__/exceljs_integration.test.js"
+=======
+      - name: Run test suite
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm test --silent -- --maxWorkers=50%
+>>>>>>> origin/chore/ci-increase-node-heap
