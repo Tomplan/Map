@@ -22,4 +22,6 @@ jobs:
         run: npm ci
 
       - name: Run test suite
-        run: npm test --silent
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+        run: npm test --silent -- --maxWorkers=50%
