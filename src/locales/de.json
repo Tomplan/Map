@@ -263,6 +263,23 @@
         "saveFailed": "Failed to save settings. Please check your connection."
       }
     },
+    "publicDefaultYear": {
+      "title": "Öffentliches Standardjahr",
+      "description": "Legen Sie das Standard-Veranstaltungsjahr fest, das Besuchern auf der öffentlichen Startseite angezeigt wird. Leer lassen, um das vom Admin ausgewählte Jahr zu verwenden.",
+      "inputLabel": "Öffentliches Standardjahr",
+      "placeholder": "z.B. 2025",
+      "hint": "Geben Sie ein Jahr zwischen 2000 und 2100 ein, oder lassen Sie es für dynamische Auswahl leer.",
+      "loading": "Laden...",
+      "save": "Speichern",
+      "saving": "Speichern...",
+      "reset": "Zurücksetzen",
+      "saveSuccess": "Öffentliches Standardjahr erfolgreich gespeichert!",
+      "error": "Fehler",
+      "errors": {
+        "invalid": "Bitte geben Sie ein gültiges Jahr zwischen 2000 und 2100 ein.",
+        "saveFailed": "Öffentliches Standardjahr konnte nicht gespeichert werden. Bitte versuchen Sie es erneut."
+      }
+    },
     "feedbackRequests": {
       "title": "Feedback & Feature-Anfragen",
       "description": "Probleme melden, Features anfragen und Fortschritt verfolgen",
@@ -329,7 +346,7 @@
   "homePage": {
     "subtitle": "Dein nächstes Abenteuer beginnt hier!",
     "title": "Die 4x4 Ferienmesse",
-    "eventDate": "10.-11. Oktober 2026",
+    "eventDate": "Datum wird noch bekannt gegeben",
     "exhibitors": "Aussteller",
     "days": "Tage",
     "openingHours": "Öffnungszeiten",
@@ -401,8 +418,7 @@
       "saveSuccess": "Veranstaltungsdaten gespeichert",
       "saveError": "Speichern der Veranstaltungsdaten fehlgeschlagen",
       "resetSuccess": "Veranstaltungsdaten auf Organisationsstandard zurückgesetzt",
-      "resetError": "Zurücksetzen der Veranstaltungsdaten fehlgeschlagen"
-      ,
+      "resetError": "Zurücksetzen der Veranstaltungsdaten fehlgeschlagen",
       "invalidRange": "Startdatum muss vor oder gleich der Enddatum sein"
     },
     "title": "Program Management",
@@ -457,7 +473,7 @@
     "displayOrder": "Display Order",
     "displayOrderHelp": "Lower numbers appear first in the schedule",
     "companyScopeHint": "Unternehmen werden über alle Jahre geteilt — die Auswahl eines Unternehmens verknüpft die Aktivität mit diesem Unternehmen über Ereignisse hinweg.",
- 
+
     "isActive": "Active",
     "isActiveHelp": "Inactive activities won't be shown to visitors",
     "showLocationBadge": "Show Location Type Badge",
@@ -592,7 +608,11 @@
       "updateSuccess": "Kategorie erfolgreich aktualisiert",
       "deleteSuccess": "Kategorie erfolgreich gelöscht",
       "deleteError": "Fehler beim Löschen der Kategorie: {{error}}",
-      "saveError": "Fehler beim Speichern der Kategorie: {{error}}"
+      "saveError": "Fehler beim Speichern der Kategorie: {{error}}",
+      "dragToReorder": "Ziehen, um Kategorien neu anzuordnen",
+      "reorderSuccess": "Kategorien erfolgreich neu angeordnet",
+      "reorderError": "Kategorien konnten nicht neu angeordnet werden: {{error}}",
+      "reordering": "Neu anordnen..."
     },
     "subscriptions": {
       "searchPlaceholder": "Search subscribed companies...",
@@ -687,8 +707,7 @@
     "nl": "Niederländisch",
     "en": "Englisch",
     "de": "Deutsch"
-  }
-  ,
+  },
   "languages": {
     "english": "Englisch",
     "dutch": "Niederländisch"

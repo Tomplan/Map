@@ -261,6 +261,23 @@
         "saveFailed": "Kon instellingen niet opslaan. Controleer je verbinding."
       }
     },
+    "publicDefaultYear": {
+      "title": "Standaard Publiek Jaar",
+      "description": "Stel het standaard evenementjaar in dat bezoekers zien op de openbare startpagina. Laat leeg om het door de admin geselecteerde jaar te gebruiken.",
+      "inputLabel": "Standaard Publiek Jaar",
+      "placeholder": "bijv. 2025",
+      "hint": "Voer een jaar in tussen 2000 en 2100, of laat leeg voor dynamische selectie.",
+      "loading": "Laden...",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "reset": "Resetten",
+      "saveSuccess": "Standaard publiek jaar succesvol opgeslagen!",
+      "error": "Fout",
+      "errors": {
+        "invalid": "Voer een geldig jaar in tussen 2000 en 2100.",
+        "saveFailed": "Kon standaard publiek jaar niet opslaan. Probeer het opnieuw."
+      }
+    },
     "feedbackRequests": {
       "title": "Feedback & Functieverzoeken",
       "description": "Meld problemen, vraag functies aan en volg voortgang",
@@ -329,7 +346,7 @@
   "homePage": {
     "subtitle": "Jouw Volgende Avontuur Start Hier!",
     "title": "Dé 4x4 Vakantiebeurs",
-    "eventDate": "10-11 oktober 2026",
+    "eventDate": "Datum wordt nog aangekondigd",
     "exhibitors": "Exposanten",
     "days": "Dagen",
     "openingHours": "Openingstijden",
@@ -368,7 +385,7 @@
     "phaseNote": "Let op:",
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
-      "sortOptions": "Sorteeropties"
+    "sortOptions": "Sorteeropties"
   },
   "map": {
     "searchPlaceholder": "Zoek op naam of standnummer...",
@@ -407,8 +424,7 @@
       "saveSuccess": "Evenementdata opgeslagen",
       "saveError": "Kon evenementdata niet opslaan",
       "resetSuccess": "Evenementdata teruggezet naar organisatie-standaard",
-      "resetError": "Kon evenementdata niet terugzetten"
-      ,
+      "resetError": "Kon evenementdata niet terugzetten",
       "invalidRange": "Begin-datum moet voor of gelijk aan de eind-datum zijn"
     },
     "title": "Programma Beheer",
@@ -600,7 +616,11 @@
       "updateSuccess": "Categorie succesvol bijgewerkt",
       "deleteSuccess": "Categorie succesvol verwijderd",
       "deleteError": "Kan categorie niet verwijderen: {{error}}",
-      "saveError": "Kan categorie niet opslaan: {{error}}"
+      "saveError": "Kan categorie niet opslaan: {{error}}",
+      "dragToReorder": "Sleep om categorieën te herschikken",
+      "reorderSuccess": "Categorieën succesvol herschikt",
+      "reorderError": "Kon categorieën niet herschikken: {{error}}",
+      "reordering": "Bezig met herschikken..."
     },
     "subscriptions": {
       "searchPlaceholder": "Zoek ingeschreven bedrijven...",

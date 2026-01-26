@@ -10,31 +10,31 @@ jest.mock('../../../hooks/useFeedbackRequests', () => {
   return {
     __esModule: true,
     default: jest.fn(() => ({
-    requests: [
-      {
-        id: 1,
-        title: 'Feature: Flicker test',
-        description: 'Details',
-        type: 'feature',
-        status: 'open',
-        user_email: 'test@example.com',
-        created_at: new Date().toISOString(),
-        votes: 2,
-        comments_count: 0,
-      },
-    ],
-    loading: false,
-    error: null,
-    userVotes: new Set(),
-    currentUserId: 'user-1',
-    loadRequests: jest.fn(),
-    createRequest: jest.fn(),
-    updateRequest: jest.fn(),
-    addVote: jest.fn(),
-    removeVote: jest.fn(),
-    loadComments: jest.fn(async () => ({ data: [] })),
-    addComment: jest.fn(),
-    deleteComment: jest.fn(),
+      requests: [
+        {
+          id: 1,
+          title: 'Feature: Flicker test',
+          description: 'Details',
+          type: 'feature',
+          status: 'open',
+          user_email: 'test@example.com',
+          created_at: new Date().toISOString(),
+          votes: 2,
+          comments_count: 0,
+        },
+      ],
+      loading: false,
+      error: null,
+      userVotes: new Set(),
+      currentUserId: 'user-1',
+      loadRequests: jest.fn(),
+      createRequest: jest.fn(),
+      updateRequest: jest.fn(),
+      addVote: jest.fn(),
+      removeVote: jest.fn(),
+      loadComments: jest.fn(async () => ({ data: [] })),
+      addComment: jest.fn(),
+      deleteComment: jest.fn(),
     })),
   };
 });
@@ -47,10 +47,14 @@ jest.mock('../FeedbackRequestDetail', () => (props) => (
 
 // Mock user role and preferences hooks
 jest.mock('../../../hooks/useUserRole', () => jest.fn(() => ({ role: 'admin' })));
-jest.mock('../../../hooks/useUserPreferences', () => jest.fn(() => ({ preferences: null, loading: false, updatePreference: jest.fn() })));
+jest.mock('../../../hooks/useUserPreferences', () =>
+  jest.fn(() => ({ preferences: null, loading: false, updatePreference: jest.fn() })),
+);
 
 // Dialog context used by child components
-jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ confirm: jest.fn(), toastError: jest.fn(), toastWarning: jest.fn() }) }));
+jest.mock('../../../contexts/DialogContext', () => ({
+  useDialog: () => ({ confirm: jest.fn(), toastError: jest.fn(), toastWarning: jest.fn() }),
+}));
 
 describe('FeedbackRequests modal open behavior (flicker)', () => {
   beforeEach(() => {

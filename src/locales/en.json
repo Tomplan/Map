@@ -257,14 +257,31 @@
         "assignmentChange": "Assignment Changes",
         "assignmentChangeDesc": "Get notified when booth assignments are modified"
       },
-        "coins": {
-          "title": "Default coins",
-          "description": "Number of default coins assigned to a new subscription when created.",
-          "label": "Default coins"
-        },
+      "coins": {
+        "title": "Default coins",
+        "description": "Number of default coins assigned to a new subscription when created.",
+        "label": "Default coins"
+      },
       "errors": {
         "loadFailed": "Failed to load settings. Please try again.",
         "saveFailed": "Failed to save settings. Please check your connection."
+      }
+    },
+    "publicDefaultYear": {
+      "title": "Public Default Year",
+      "description": "Set the default event year shown to visitors on the public homepage. Leave empty to use the admin's selected year.",
+      "inputLabel": "Public Default Year",
+      "placeholder": "e.g., 2025",
+      "hint": "Enter a year between 2000 and 2100, or leave empty for dynamic selection.",
+      "loading": "Loading...",
+      "save": "Save",
+      "saving": "Saving...",
+      "reset": "Reset",
+      "saveSuccess": "Public default year saved successfully!",
+      "error": "Error",
+      "errors": {
+        "invalid": "Please enter a valid year between 2000 and 2100.",
+        "saveFailed": "Failed to save public default year. Please try again."
       }
     },
     "feedbackRequests": {
@@ -335,7 +352,7 @@
   "homePage": {
     "subtitle": "Your Next Adventure Starts Here!",
     "title": "The 4x4 Holiday Fair",
-    "eventDate": "October 10-11, 2026",
+    "eventDate": "Date to be announced",
     "exhibitors": "Exhibitors",
     "days": "Days",
     "openingHours": "Opening Hours",
@@ -374,16 +391,16 @@
     "phaseNote": "Note:",
     "comingInFuturePhases": "Coming in future phases:",
     "categoryFiltering": "Category filtering",
-      "sortOptions": "Sort options"
+    "sortOptions": "Sort options"
   },
   "map": {
     "searchPlaceholder": "Search for name or booth...",
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
-      "sortId": "ID",
-      "sortName": "Name",
-      "sortType": "Type",
+    "sortId": "ID",
+    "sortName": "Name",
+    "sortType": "Type",
     "addMarker": "Add marker",
     "addMarkerTooltipActive": "Click on map to place marker",
     "addMarkerTooltip": "Add marker",
@@ -413,8 +430,7 @@
       "saveSuccess": "Event dates saved",
       "saveError": "Failed to save event dates",
       "resetSuccess": "Event dates reset to organization defaults",
-      "resetError": "Failed to reset event dates"
-      ,
+      "resetError": "Failed to reset event dates",
       "invalidRange": "Start date must be before or equal to end date"
     },
     "title": "Program Management",
@@ -608,7 +624,11 @@
       "updateSuccess": "Category updated successfully",
       "deleteSuccess": "Category deleted successfully",
       "deleteError": "Failed to delete category: {{error}}",
-      "saveError": "Failed to save category: {{error}}"
+      "saveError": "Failed to save category: {{error}}",
+      "dragToReorder": "Drag to reorder categories",
+      "reorderSuccess": "Categories reordered successfully",
+      "reorderError": "Failed to reorder categories: {{error}}",
+      "reordering": "Reordering..."
     },
     "subscriptions": {
       "searchPlaceholder": "Search subscribed companies...",
@@ -671,33 +691,32 @@
       "notSet": "Not set",
       "none": "None",
       "orPasteUrl": "Or paste URL",
-      "organizationInfo": "Organization info"
-    ,
-    "modal": {
-      "publicInfoHeading": "Public Info (visible to attendees)",
-      "managerInfoHeading": "Manager-only Info (default contact info)",
-      "infoMultiLanguageLabel": "Info (Multi-language)",
-      "enterInfoInLanguage": "Enter info in {{lang}}...",
-      "uploadLogo": "Upload Logo",
-      "categoriesLabel": "Categories",
-      "editTitle": "Edit: {{name}}"
-    },
-    "noCategoriesAvailable": "No categories available",
-    "notApplicable": "N/A",
-    "edit": "Edit",
-    "delete": "Delete",
-    "table": {
-      "name": "Name",
-      "logo": "Logo",
-      "website": "Website",
-      "info": "Info",
-      "categories": "Categories",
-      "contact": "Contact",
-      "phone": "Phone",
-      "email": "Email",
-      "actions": "Actions"
-    },
-    "create": "Create"
+      "organizationInfo": "Organization info",
+      "modal": {
+        "publicInfoHeading": "Public Info (visible to attendees)",
+        "managerInfoHeading": "Manager-only Info (default contact info)",
+        "infoMultiLanguageLabel": "Info (Multi-language)",
+        "enterInfoInLanguage": "Enter info in {{lang}}...",
+        "uploadLogo": "Upload Logo",
+        "categoriesLabel": "Categories",
+        "editTitle": "Edit: {{name}}"
+      },
+      "noCategoriesAvailable": "No categories available",
+      "notApplicable": "N/A",
+      "edit": "Edit",
+      "delete": "Delete",
+      "table": {
+        "name": "Name",
+        "logo": "Logo",
+        "website": "Website",
+        "info": "Info",
+        "categories": "Categories",
+        "contact": "Contact",
+        "phone": "Phone",
+        "email": "Email",
+        "actions": "Actions"
+      },
+      "create": "Create"
     }
   },
   "tour": {

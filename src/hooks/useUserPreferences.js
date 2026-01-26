@@ -141,7 +141,6 @@ export default function useUserPreferences() {
       // Prevent concurrent updates and add cooldown
       const now = Date.now();
       if (isUpdatingRef.current || now - lastUpdateTimeRef.current < 1000) {
-        console.log('useUserPreferences: Skipping update - concurrent update or cooldown active');
         return false;
       }
 
@@ -204,7 +203,6 @@ export default function useUserPreferences() {
           }
         }
 
-        console.log(`useUserPreferences: Successfully updated ${key} to`, value, 'new data:', data);
         currentVersionRef.current = data.row_version;
         setPreferences(data);
         lastUpdateTimeRef.current = Date.now();

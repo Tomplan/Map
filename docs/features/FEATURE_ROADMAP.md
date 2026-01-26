@@ -25,25 +25,30 @@
 ## Phase 1: Navigation & Structure
 
 ### 1.1 Bottom Tab Navigation (Mobile-First)
+
 **Goal:** Create primary navigation for visitor experience
 
 **Tabs:**
+
 - 🏠 **Home** - Landing page
 - 🗺️ **Map** - Current EventMap component
 - 📋 **Exhibitors** - List view
 - 📅 **Schedule** - Event timeline
 
 **Files to create:**
+
 - `src/components/TabNavigation.jsx` - Bottom tab bar component
 - `src/components/HomePage.jsx` - Landing screen
 - `src/components/ExhibitorListView.jsx` - Exhibitor list
 - `src/components/EventSchedule.jsx` - Schedule view
 
 **Files to modify:**
+
 - `src/components/AppRoutes.jsx` - Add new routes for tabs
 - `src/App.jsx` - Update routing structure if needed
 
 **Design Considerations:**
+
 - Fixed bottom position on mobile
 - Horizontal tabs on desktop/tablet
 - Active state highlighting
@@ -54,9 +59,11 @@
 ## Phase 2: Homescreen/Landing Page
 
 ### 2.1 HomePage Component
+
 **Goal:** Welcome visitors and provide event overview
 
 **Content:**
+
 - **Welcome banner**: Event name + logo (from Organization_Profile)
 - **Quick stats**:
   - "X Exhibitors"
@@ -71,11 +78,13 @@
 - **Upcoming activity**: Show next scheduled event if within 30 minutes
 
 **Data Sources:**
+
 - Event metadata → New table `Event_Info` or extend `Organization_Profile`
 - Exhibitor count → Calculate from `Event_Subscriptions` filtered by year
 - Next activity → Query `Event_Schedule` table (Phase 6)
 
 **Database Addition Needed:**
+
 ```sql
 -- Option A: Extend Organization_Profile
 ALTER TABLE Organization_Profile
@@ -102,6 +111,7 @@ CREATE TABLE Event_Info (
 ```
 
 **Files to create:**
+
 - `src/components/HomePage.jsx`
 - `src/hooks/useEventInfo.js` - Fetch event metadata
 - Admin tab: `src/components/admin/EventInfoTab.jsx` - Edit event info
@@ -111,9 +121,11 @@ CREATE TABLE Event_Info (
 ## Phase 3: Exhibitor List View
 
 ### 3.1 ExhibitorListView Component
+
 **Goal:** Alternative view to browse all exhibitors
 
 **Layout:**
+
 - **Search bar** at top (search by company name)
 - **Filter section**:
   - Category chips (horizontal scroll)
@@ -121,6 +133,7 @@ CREATE TABLE Event_Info (
 - **Scrollable list** of exhibitor cards
 
 **Exhibitor Card Display:**
+
 - Company logo (80x80px, square)
 - Company name (bold, 16px)
 - Booth number badge (e.g., "A12" in colored pill)
@@ -128,26 +141,31 @@ CREATE TABLE Event_Info (
 - Favorite star icon (⭐ yellow when active, ☆ grey when inactive)
 
 **Interactions:**
+
 - **Tap exhibitor card** → Navigate to Map tab
 - **Auto-focus** on selected marker
 - **Auto-open** popup/bottom sheet for that exhibitor
 - **Tap favorite star** → Toggle favorite (no navigation)
 
 **Sorting Options:**
+
 - Alphabetical (A-Z)
 - By booth number
 - Favorites first
 
 **Data Source:**
+
 - Reuse `useEventMarkers_v2` hook (existing)
 - Add filtering logic for categories and favorites
 
 **Files to create:**
+
 - `src/components/ExhibitorListView.jsx`
 - `src/components/ExhibitorCard.jsx` - Individual list item
 - `src/hooks/useExhibitorFilter.js` - Filter logic (categories, favorites, search)
 
 **Files to modify:**
+
 - `src/components/EventMap/EventMap.jsx` - Accept `focusedMarkerId` prop to auto-focus
 - `src/components/EventClusterMarkers.jsx` - Auto-open popup when focused
 
@@ -156,9 +174,11 @@ CREATE TABLE Event_Info (
 ## Phase 4: Favorites System
 
 ### 4.1 Favorite Functionality
+
 **Goal:** Let visitors mark exhibitors to remember/visit
 
 **Storage Strategy:**
+
 - **LocalStorage** (no login required)
 - Key: `event_favorites_[year]`
 - Value: Array of company IDs
@@ -167,11 +187,13 @@ CREATE TABLE Event_Info (
 **UI Changes:**
 
 **1. List View:**
+
 - Star icon next to each exhibitor
 - Tap to toggle favorite
 - Visual feedback (animation)
 
 **2. Map View:**
+
 - Use **different marker icon** for favorited exhibitors
 - Options:
   - Yellow star marker (`glyph-marker-icon-favorite.svg`)
@@ -181,18 +203,22 @@ CREATE TABLE Event_Info (
 - Priority: Favorite style > Assignment style
 
 **3. Marker Popup (Desktop):**
+
 - Add favorite button/icon at top-right
 - Toggle on click
 
 **4. Mobile Bottom Sheet:**
+
 - Add favorite button/icon at top-right
 - Toggle on click
 
 **5. Filter Option:**
+
 - "Show Favorites Only" toggle in list view
 - "Show Favorites Only" toggle in map view (hides non-favorite markers)
 
 **Marker Icon Priority:**
+
 ```javascript
 // Pseudocode
 if (isFavorite) {
@@ -205,11 +231,13 @@ if (isFavorite) {
 ```
 
 **Files to create:**
+
 - `src/hooks/useFavorites.js` - Manage favorites state
 - `src/components/FavoriteButton.jsx` - Reusable favorite toggle button
 - `public/assets/icons/glyph-marker-icon-favorite.svg` - Yellow star marker icon
 
 **Files to modify:**
+
 - `src/hooks/useEventMarkers_v2.js` - Integrate favorite icon logic
 - `src/components/EventClusterMarkers.jsx` - Use favorite markers
 - `src/components/MarkerDetailsUI.jsx` - Add favorite button to popup
@@ -217,14 +245,15 @@ if (isFavorite) {
 - `src/components/ExhibitorListView.jsx` - Show favorite status
 
 **useFavorites Hook API:**
+
 ```javascript
 const {
-  favorites,           // Array of company IDs
-  isFavorite,          // (companyId) => boolean
-  toggleFavorite,      // (companyId) => void
-  addFavorite,         // (companyId) => void
-  removeFavorite,      // (companyId) => void
-  clearAllFavorites    // () => void
+  favorites, // Array of company IDs
+  isFavorite, // (companyId) => boolean
+  toggleFavorite, // (companyId) => void
+  addFavorite, // (companyId) => void
+  removeFavorite, // (companyId) => void
+  clearAllFavorites, // () => void
 } = useFavorites(selectedYear);
 ```
 
@@ -233,9 +262,11 @@ const {
 ## Phase 5: Category System
 
 ### 5.1 Database Changes
+
 **Goal:** Organize exhibitors by category
 
 **Database Migration:**
+
 ```sql
 -- Add category column to Companies table
 ALTER TABLE Companies ADD COLUMN category TEXT;
@@ -255,6 +286,7 @@ ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 ```
 
 **Suggested Categories for 4x4 Event:**
+
 - 🚙 Vehicles & Parts
 - 🌍 Travel Agencies
 - ⛺ Camping Equipment
@@ -269,6 +301,7 @@ ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 ### 5.2 Category Filter UI
 
 **Filter Component:**
+
 - **Horizontal scrollable chips** (mobile)
 - **Multi-select dropdown** (desktop alternative)
 - **"All Categories" default** state
@@ -276,27 +309,32 @@ ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 - **Badge count**: "Showing 15 of 67 exhibitors"
 
 **Filter Logic:**
+
 - Select multiple categories (OR logic: show exhibitors matching ANY selected category)
 - Combine with search and favorites filter (AND logic)
 - Real-time filtering (no "Apply" button needed)
 
 **UI Placement:**
+
 - Above exhibitor list
 - Collapsible drawer on map view (filter icon in top-right)
 
 ### 5.3 Admin Changes
 
 **CompaniesTab:**
+
 - Add "Category" dropdown field in edit mode
 - Populate from Categories table or hardcoded list
 - Show category in table column
 
 **Files to create:**
+
 - `src/components/CategoryFilter.jsx` - Filter UI component
 - `src/hooks/useCategories.js` - Fetch categories
 - Admin tab: `src/components/admin/CategoriesTab.jsx` - Manage category list (if using table)
 
 **Files to modify:**
+
 - `src/components/admin/CompaniesTab.jsx` - Add category field
 - `src/components/ExhibitorListView.jsx` - Add category filter
 - `src/components/ExhibitorCard.jsx` - Display category badge
@@ -309,9 +347,11 @@ ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 ## Phase 6: Live Event Schedule
 
 ### 6.1 Database Table
+
 **Goal:** Display timetable of activities during the event
 
 **Database Schema:**
+
 ```sql
 CREATE TABLE Event_Schedule (
   id SERIAL PRIMARY KEY,
@@ -338,6 +378,7 @@ INSERT INTO Event_Schedule (year, title, description, start_time, end_time, loca
 ### 6.2 Schedule View Component
 
 **Layout:**
+
 - **Timeline format** (vertical list)
 - **Current time indicator** (red line or highlight)
 - **Activity cards** showing:
@@ -348,35 +389,40 @@ INSERT INTO Event_Schedule (year, title, description, start_time, end_time, loca
   - Brief description
 
 **Visual States:**
+
 - **Upcoming** (next 30 mins): Highlighted with accent color
 - **Current** (happening now): Strong highlight + "LIVE" badge
 - **Past**: Greyed out, collapsed by default
 - **Featured**: Special border or background color
 
 **Interactions:**
+
 - **Tap location** → Navigate to Map tab and focus on `marker_id` (if linked)
 - **Expand card** → Show full description
 - **"Add Reminder" button** (optional, uses browser notifications)
 
 **Files to create:**
+
 - `src/components/EventSchedule.jsx` - Schedule view
 - `src/components/ScheduleActivityCard.jsx` - Individual activity item
 - `src/hooks/useEventSchedule.js` - Fetch schedule data
 - Admin tab: `src/components/admin/ScheduleTab.jsx` - CRUD for schedule
 
 **useEventSchedule Hook:**
+
 ```javascript
 const {
-  allActivities,      // All schedule items for the day
+  allActivities, // All schedule items for the day
   upcomingActivities, // Next 3 activities
-  currentActivity,    // Activity happening right now
-  pastActivities,     // Completed activities
+  currentActivity, // Activity happening right now
+  pastActivities, // Completed activities
   loading,
-  error
+  error,
 } = useEventSchedule(selectedYear);
 ```
 
 **Admin Features (ScheduleTab):**
+
 - Add/Edit/Delete schedule items
 - Drag-and-drop reordering
 - Link to map marker (dropdown of special markers)
@@ -388,15 +434,18 @@ const {
 ## Phase 7: Real-time Visitor Count (Admin Only)
 
 ### 7.1 Analytics Tracking
+
 **Goal:** Show current visitor count in admin dashboard
 
 **Tracking Strategy:**
+
 - Generate unique session ID on first visit
 - Store in localStorage: `visitor_session_id`
 - Send to database with timestamp
 - Count unique sessions in last 4 hours as "active visitors"
 
 **Database Schema:**
+
 ```sql
 CREATE TABLE Visitor_Analytics (
   id SERIAL PRIMARY KEY,
@@ -414,6 +463,7 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 ```
 
 **Tracking Logic:**
+
 ```javascript
 // On app load (visitor side)
 1. Check localStorage for session_id
@@ -435,6 +485,7 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 ### 7.2 Admin Dashboard Widget
 
 **Display:**
+
 - **Card in AdminDashboard.jsx**
 - **Title:** "Visitor Analytics"
 - **Main metric:** "🔴 45 Visitors Active Now"
@@ -445,20 +496,24 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 - **Auto-refresh indicator** (spinning icon)
 
 **Optional Enhancements:**
+
 - Simple line chart showing visitor count over time (last 6 hours)
 - Breakdown by hour
 - Export data as CSV
 
 **Files to create:**
+
 - `src/hooks/useVisitorTracking.js` - Track visitor session
 - `src/hooks/useVisitorAnalytics.js` - Fetch analytics data (admin)
 - `src/components/admin/VisitorAnalyticsWidget.jsx` - Dashboard widget
 
 **Files to modify:**
+
 - `src/components/AdminDashboard.jsx` - Add analytics widget
 - `src/App.jsx` - Initialize visitor tracking on mount
 
 **Privacy Considerations:**
+
 - No personal data collected
 - Only anonymous session tracking
 - No cookies (localStorage only)
@@ -469,6 +524,7 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 ## Phase 8: Design System Discussion
 
 **Current State:**
+
 - **Primary color:** Orange (#ff6800) - from website
 - **Typography:** Arvo font (serif) - from website
 - **UI Framework:** Tailwind CSS utility classes
@@ -479,13 +535,16 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 ### Questions for Discussion:
 
 #### 1. Color Palette
+
 **Current:**
+
 - Primary: Orange (#ff6800)
 - Map markers: Blue (assigned), Grey (unassigned)
 - Admin sections: Blue-50 (public), Green-50 (manager)
 
 **Proposal:**
 Should we define a complete palette?
+
 - Primary (orange)
 - Secondary (for accents, CTAs)
 - Success, Warning, Error states
@@ -493,19 +552,24 @@ Should we define a complete palette?
 - Category colors (if using color-coded categories)
 
 #### 2. Typography
+
 **Current:**
+
 - Arvo (serif) for headers/branding
 - Sans-serif fallback for body
 
 **Proposal:**
+
 - Keep Arvo for event branding consistency with website
 - Add modern sans-serif (Inter, Open Sans) for UI text?
 - Define type scale (h1, h2, h3, body, small)
 
 #### 3. Spacing System
+
 **Current:** Inconsistent padding/margins
 
 **Proposal:** Standardize on 4px base unit
+
 - xs: 4px
 - sm: 8px
 - md: 16px
@@ -514,9 +578,11 @@ Should we define a complete palette?
 - 2xl: 48px
 
 #### 4. Component Library
+
 **Current:** Custom components with inline Tailwind classes
 
 **Proposal:** Create reusable components
+
 - `<Button variant="primary|secondary|outline" size="sm|md|lg" />`
 - `<Card elevated={true} />`
 - `<Badge color="blue|green|orange" />`
@@ -524,30 +590,38 @@ Should we define a complete palette?
 - `<Chip active={true} onToggle={() => {}} />`
 
 #### 5. Icon System
+
 **Current:** @mdi/react icons, various sizes
 
 **Proposal:**
+
 - Standardize icon sizes (16px, 20px, 24px)
 - Create icon wrapper component for consistency
 - Define icon color palette (matches text colors)
 
 #### 6. Dark Mode
+
 **Question:** Do you want dark mode support?
+
 - Event runs during daytime: probably not needed
 - Could add for evening events or user preference
 
 #### 7. Branding Consistency
+
 **Current:** App uses some website elements (logo, orange color, Arvo font)
 
 **Proposal:**
+
 - Match website's visual style more closely?
 - Keep app minimal/functional vs. marketing-heavy?
 - Use same button styles, card shadows, etc.?
 
 #### 8. Mobile-First Design
+
 **Current:** Mostly responsive
 
 **Proposal:**
+
 - Design all new components mobile-first
 - Touch targets minimum 44px
 - Bottom navigation (easier thumb access)
@@ -558,6 +632,7 @@ Should we define a complete palette?
 ## Implementation Priority
 
 ### 🔴 High Priority (Core Visitor Features)
+
 **Goal:** Essential features for event day
 
 1. **Tab Navigation** (Phase 1)
@@ -585,6 +660,7 @@ Should we define a complete palette?
    - Impact: High
 
 ### 🟡 Medium Priority (Enhanced Experience)
+
 **Goal:** Nice-to-have features that improve UX
 
 5. **Category Filtering** (Phase 5)
@@ -600,6 +676,7 @@ Should we define a complete palette?
    - Impact: Medium (depends on event complexity)
 
 ### 🟢 Low Priority (Admin/Analytics)
+
 **Goal:** Tools for organizers, not critical for visitors
 
 7. **Visitor Analytics** (Phase 7)
@@ -609,6 +686,7 @@ Should we define a complete palette?
    - Impact: Low (for visitors), Medium (for admins)
 
 ### 🔵 Ongoing
+
 8. **Design System** (Phase 8)
    - Should be integrated throughout all phases
    - Refine as features are built
@@ -622,6 +700,7 @@ Should we define a complete palette?
 ### New Tables Required:
 
 #### 1. Event_Info (Phase 2)
+
 ```sql
 CREATE TABLE Event_Info (
   id SERIAL PRIMARY KEY,
@@ -639,6 +718,7 @@ CREATE TABLE Event_Info (
 ```
 
 #### 2. Categories (Phase 5 - Optional)
+
 ```sql
 CREATE TABLE Categories (
   id SERIAL PRIMARY KEY,
@@ -650,6 +730,7 @@ CREATE TABLE Categories (
 ```
 
 #### 3. Event_Schedule (Phase 6)
+
 ```sql
 CREATE TABLE Event_Schedule (
   id SERIAL PRIMARY KEY,
@@ -668,6 +749,7 @@ CREATE TABLE Event_Schedule (
 ```
 
 #### 4. Visitor_Analytics (Phase 7)
+
 ```sql
 CREATE TABLE Visitor_Analytics (
   id SERIAL PRIMARY KEY,
@@ -686,6 +768,7 @@ CREATE INDEX idx_visitor_year_activity ON Visitor_Analytics(year, last_activity)
 ### Modified Tables:
 
 #### Companies (Phase 5)
+
 ```sql
 ALTER TABLE Companies ADD COLUMN category TEXT;
 -- OR
@@ -697,9 +780,11 @@ ALTER TABLE Companies ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 ## Technical Decisions Needed
 
 ### 1. Routing Strategy
+
 **Current:** React Router with HashRouter (for GitHub Pages)
 
 **Options for tabs:**
+
 - **Option A:** Keep single route `/`, use component state for tab switching
   - Pros: Simpler, no route changes
   - Cons: Can't bookmark specific tabs, no browser back button support
@@ -711,9 +796,11 @@ ALTER TABLE Companies ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 **Recommendation:** Option B (better UX)
 
 ### 2. State Management
+
 **Current:** React hooks (useState, useEffect), Supabase real-time
 
 **For new features:**
+
 - **Favorites:** localStorage + React Context
 - **Filters:** URL query params + local state
 - **Analytics:** Supabase real-time subscriptions
@@ -721,9 +808,11 @@ ALTER TABLE Companies ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 **Decision:** Continue with hooks + Context, no need for Redux/Zustand yet
 
 ### 3. Offline Support
+
 **Current:** Basic offline indicator
 
 **Enhancement:**
+
 - Cache exhibitor data in IndexedDB for offline access
 - Service Worker for asset caching
 - Show "Offline Mode" banner with cached data
@@ -731,11 +820,14 @@ ALTER TABLE Companies ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 **Decision:** Implement in Phase 1 if internet connectivity at venue is poor
 
 ### 4. Performance Optimization
+
 **Concerns:**
+
 - Large marker count (67+ exhibitors)
 - Real-time updates
 
 **Optimizations:**
+
 - Marker clustering (already exists)
 - Virtual scrolling for exhibitor list (react-window)
 - Debounce search/filter inputs
@@ -743,9 +835,11 @@ ALTER TABLE Companies ADD COLUMN category_id INTEGER REFERENCES Categories(id);
 - Memoize expensive calculations
 
 ### 5. Testing Strategy
+
 **Current:** No automated tests
 
 **Proposal:**
+
 - Unit tests for hooks (useFavorites, useEventSchedule)
 - Integration tests for key user flows
 - Manual testing on multiple devices

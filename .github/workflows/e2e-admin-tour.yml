@@ -1,10 +1,10 @@
-name: "E2E: Admin Tour (Puppeteer)"
+name: 'E2E: Admin Tour (Puppeteer)'
 
 on:
   push:
-    branches: [ main, master, feature/manual-gh-pages-deploy ]
+    branches: [main, master, feature/manual-gh-pages-deploy]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   e2e-admin-tour:

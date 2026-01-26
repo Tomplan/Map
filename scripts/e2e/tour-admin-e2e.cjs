@@ -23,7 +23,13 @@ const path = require('path');
 // E2E_HOST as env vars if needed. By default we try /Map then /
 const DEFAULT_HOST = process.env.E2E_HOST || 'http://localhost:5173';
 // Try multiple candidate forms — include trailing slash variants and index.html
-const baseCandidates = [process.env.E2E_BASE, `${DEFAULT_HOST}/Map`, `${DEFAULT_HOST}/Map/`, `${DEFAULT_HOST}`, `${DEFAULT_HOST}/index.html`].filter(Boolean);
+const baseCandidates = [
+  process.env.E2E_BASE,
+  `${DEFAULT_HOST}/Map`,
+  `${DEFAULT_HOST}/Map/`,
+  `${DEFAULT_HOST}`,
+  `${DEFAULT_HOST}/index.html`,
+].filter(Boolean);
 
 async function waitForServer(u, timeout = 20000) {
   const start = Date.now();
@@ -66,22 +72,24 @@ async function run() {
   } else {
     // Pick a responsive base URL from candidates
     console.log('Probing dev server endpoints, candidates:', baseCandidates);
-  for (const candidate of baseCandidates) {
-    // reuse waitForServer logic (shorter timeout for probes)
-    // If the candidate includes a hash, remove it for the probe
-    const probeUrl = candidate.split('#')[0];
-     
-    const up = await waitForServer(probeUrl, 1500);
-    console.log('probe', probeUrl, '=>', up ? 'up' : 'down');
-    if (up) {
-      chosenBase = candidate;
-      break;
+    for (const candidate of baseCandidates) {
+      // reuse waitForServer logic (shorter timeout for probes)
+      // If the candidate includes a hash, remove it for the probe
+      const probeUrl = candidate.split('#')[0];
+
+      const up = await waitForServer(probeUrl, 1500);
+      console.log('probe', probeUrl, '=>', up ? 'up' : 'down');
+      if (up) {
+        chosenBase = candidate;
+        break;
+      }
     }
-  }
   }
 
   if (!chosenBase) {
-    console.error(`Dev server not responding at any candidate: ${baseCandidates.join(', ')}. Start the dev server (npm run dev) and retry.`);
+    console.error(
+      `Dev server not responding at any candidate: ${baseCandidates.join(', ')}. Start the dev server (npm run dev) and retry.`,
+    );
     process.exit(2);
   }
 
@@ -89,7 +97,10 @@ async function run() {
   const ADMIN_URL = `${BASE}#/admin`;
   console.log('Using E2E base URL:', BASE);
 
-  const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'], headless: true });
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+  });
   const page = await browser.newPage();
   page.setDefaultTimeout(30000);
 
@@ -107,7 +118,9 @@ async function run() {
     // so we'll inject a lightweight mock to make the test deterministic.
     let helpBtn = await page.$('button[aria-label="Help"]');
     if (!helpBtn) {
-      console.warn('Help button not found on admin layout — injecting fallbacks so the E2E script can continue');
+      console.warn(
+        'Help button not found on admin layout — injecting fallbacks so the E2E script can continue',
+      );
       await page.evaluate(() => {
         // Add a minimal Help button and help panel so the tour can be started
         if (!document.querySelector('button[aria-label="Help"]')) {
@@ -148,7 +161,7 @@ async function run() {
     // Click the Interactive Tours tab by visible text
     await page.evaluate(() => {
       const tabs = Array.from(document.querySelectorAll('[role="dialog"] button'));
-      const interactive = tabs.find(t => /interactive/i.test(t.innerText));
+      const interactive = tabs.find((t) => /interactive/i.test(t.innerText));
       if (interactive) interactive.click();
     });
 
@@ -157,7 +170,10 @@ async function run() {
     // If the app provides deterministic E2E test helpers, use them to start
     // the admin dashboard tour directly (less flaky than UI clicks).
     const helpersAvailable = await page.evaluate(() => {
-      return !!(window.__onboarding_test_helpers__ && typeof window.__onboarding_test_helpers__.startTour === 'function');
+      return !!(
+        window.__onboarding_test_helpers__ &&
+        typeof window.__onboarding_test_helpers__.startTour === 'function'
+      );
     });
 
     if (helpersAvailable) {
@@ -207,7 +223,10 @@ async function run() {
       const pop = await page.$('.onboarding-tour-popover');
 
       if (toast) {
-        firstResult = { type: 'toast', text: await (await toast.getProperty('innerText')).jsonValue() };
+        firstResult = {
+          type: 'toast',
+          text: await (await toast.getProperty('innerText')).jsonValue(),
+        };
       } else if (pop) {
         firstResult = { type: 'popover' };
       }
@@ -251,7 +270,7 @@ async function run() {
     await page.evaluate(() => {
       // Find the first start-like button and click
       const btns = Array.from(document.querySelectorAll('button'));
-      const start = btns.find(b => /start tour|start/i.test(b.innerText));
+      const start = btns.find((b) => /start tour|start/i.test(b.innerText));
       if (start) start.click();
     });
 
@@ -259,11 +278,26 @@ async function run() {
     await sleep(800);
 
     // Query for tour popover and overlay
-    const popoverCount = await page.evaluate(() => document.querySelectorAll('.onboarding-tour-popover').length);
-    const overlayCount = await page.evaluate(() => document.querySelectorAll('.driver-overlay').length);
-    const driverActive = await page.evaluate(() => !!window.__ONBOARDING_DRIVER_INSTANCE && (typeof window.__ONBOARDING_DRIVER_INSTANCE.getActiveIndex === 'function'));
+    const popoverCount = await page.evaluate(
+      () => document.querySelectorAll('.onboarding-tour-popover').length,
+    );
+    const overlayCount = await page.evaluate(
+      () => document.querySelectorAll('.driver-overlay').length,
+    );
+    const driverActive = await page.evaluate(
+      () =>
+        !!window.__ONBOARDING_DRIVER_INSTANCE &&
+        typeof window.__ONBOARDING_DRIVER_INSTANCE.getActiveIndex === 'function',
+    );
 
-    console.log('After injecting targets -> popovers:', popoverCount, 'overlays:', overlayCount, 'driverActive?', driverActive);
+    console.log(
+      'After injecting targets -> popovers:',
+      popoverCount,
+      'overlays:',
+      overlayCount,
+      'driverActive?',
+      driverActive,
+    );
 
     // Validate expected success
     if (popoverCount >= 1 && overlayCount >= 1 && driverActive) {
@@ -277,7 +311,9 @@ async function run() {
 
       await sleep(400);
       // Check that a non-body step is displayed (e.g. .year-selector is present and popover attached)
-      const activeIndex = await page.evaluate(() => window.__ONBOARDING_DRIVER_INSTANCE?.getActiveIndex?.() ?? -1);
+      const activeIndex = await page.evaluate(
+        () => window.__ONBOARDING_DRIVER_INSTANCE?.getActiveIndex?.() ?? -1,
+      );
       console.log('Driver activeIndex after next click:', activeIndex);
 
       // Success code
@@ -288,10 +324,13 @@ async function run() {
     console.error('E2E: Admin tour did not start as expected (popover/overlay/driver missing)');
     await browser.close();
     process.exit(3);
-
   } catch (err) {
     console.error('E2E script errored:', err);
-    try { await browser.close(); } catch (e) { /* ignore */ }
+    try {
+      await browser.close();
+    } catch (e) {
+      /* ignore */
+    }
     process.exit(1);
   }
 }

@@ -41,6 +41,9 @@ export function createMarkerIcon({
   iconUrl = `${import.meta.env.BASE_URL}assets/icons/glyph-marker-icon-blue.svg`,
   className,
   iconSize,
+  // Optional base size (the marker's stored base icon size) so we can
+  // recompute sizes for different zooms (used in print scaling)
+  iconBaseSize,
   prefix,
   glyphAnchor,
   isActive,
@@ -70,7 +73,7 @@ export function createMarkerIcon({
 
   const base = getBaseUrl();
 
-  return L.icon.glyph({
+  const glyphOptions = L.icon.glyph({
     iconUrl: iconUrl || `${base}assets/icons/glyph-marker-icon-blue.svg`,
     iconSize: size,
     iconAnchor: [Math.round(size[0] / 2), size[1]],
@@ -86,7 +89,18 @@ export function createMarkerIcon({
     glyphSize: safeGlyphSize,
     glyphAnchor: glyphAnchor || [0, 0],
     className: isActive ? `${className} marker-active` : className || '',
+    // Preserve the base icon size on the icon's options so consumers (print cloners)
+    // can re-compute layout for a different zoom.
+    baseIconSize: iconBaseSize || size,
   });
+
+  // Proxy the created icon so that our stored `baseIconSize` appears in `icon.options`.
+  // The Glyph plugin places passed options on icon.options, so ensure it's present.
+  if (glyphOptions && glyphOptions.options && !glyphOptions.options.baseIconSize) {
+    glyphOptions.options.baseIconSize = iconBaseSize || size;
+  }
+
+  return glyphOptions;
 }
 
 export function createBoothMarkerIcon(number) {

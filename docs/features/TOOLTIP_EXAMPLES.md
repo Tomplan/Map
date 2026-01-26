@@ -21,7 +21,7 @@ import { IconWithTooltip } from '../components/Tooltip';
     <Icon path={mdiFileImport} size={0.9} />
     Import Data
   </button>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Import subscriptions from Excel/CSV. You'll need a JWT token from DevTools. See Help panel for detailed instructions."
     position="bottom"
   />
@@ -37,7 +37,7 @@ import { IconWithTooltip } from '../components/Tooltip';
     <Icon path={mdiPlus} size={0.9} />
     Add Company
   </button>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Add a new exhibitor company. Company names must be unique. Contact info becomes the default for subscriptions."
     position="bottom"
   />
@@ -53,7 +53,7 @@ import { IconWithTooltip } from '../components/Tooltip';
     <Icon path={mdiMapMarkerPlus} size={0.9} />
     Assign to Map
   </button>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Link a company subscription to a specific map marker (booth location). Each marker can only be assigned once per year."
     position="bottom"
   />
@@ -69,7 +69,7 @@ import { IconWithTooltip } from '../components/Tooltip';
     <input type="checkbox" checked={marker.locked} onChange={handleLockToggle} />
     <span>Lock Marker</span>
   </label>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Prevent accidental moves. Lock all markers before event day to avoid changes during live event."
     position="right"
   />
@@ -83,7 +83,7 @@ import { IconWithTooltip } from '../components/Tooltip';
 <div className="space-y-2">
   <div className="flex items-center gap-2">
     <label>Min Zoom Level</label>
-    <IconWithTooltip 
+    <IconWithTooltip
       content="Marker appears at this zoom level and higher. Use to control visual clutter on map."
       position="top"
     />
@@ -100,7 +100,7 @@ import { IconWithTooltip } from '../components/Tooltip';
 // Near year selector dropdown
 <div className="flex items-center gap-2">
   <label>Event Year</label>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Switch between event years. All data (subscriptions, assignments) is year-specific."
     position="top"
   />
@@ -115,20 +115,14 @@ import { IconWithTooltip } from '../components/Tooltip';
   <div>
     <div className="flex items-center gap-2 mb-1">
       <label>Breakfast (Sat)</label>
-      <IconWithTooltip 
-        content="Number of breakfast meals needed for Saturday"
-        position="top"
-      />
+      <IconWithTooltip content="Number of breakfast meals needed for Saturday" position="top" />
     </div>
     <input type="number" value={breakfastSat} onChange={handleChange} />
   </div>
   <div>
     <div className="flex items-center gap-2 mb-1">
       <label>Lunch (Sat)</label>
-      <IconWithTooltip 
-        content="Number of lunch meals needed for Saturday"
-        position="top"
-      />
+      <IconWithTooltip content="Number of lunch meals needed for Saturday" position="top" />
     </div>
     <input type="number" value={lunchSat} onChange={handleChange} />
   </div>
@@ -141,7 +135,7 @@ import { IconWithTooltip } from '../components/Tooltip';
 // In subscriptions tab - Add near booth count field
 <div className="flex items-center gap-2">
   <label>Booth Count</label>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Total booths requested by company. May differ from actual assignments. Use Assignments tab to link specific map locations."
     position="top"
   />
@@ -156,7 +150,7 @@ import { IconWithTooltip } from '../components/Tooltip';
   <button onClick={toggleLayers}>
     <Icon path={mdiLayers} size={1} />
   </button>
-  <IconWithTooltip 
+  <IconWithTooltip
     content="Switch between Satellite and Street map views. Default can be set in Settings."
     position="left"
   />
@@ -170,7 +164,7 @@ import { IconWithTooltip } from '../components/Tooltip';
 <div className="space-y-2">
   <div className="flex items-center gap-2">
     <h3>Organization Logo</h3>
-    <IconWithTooltip 
+    <IconWithTooltip
       content="Upload your organization logo. Appears on map cluster markers and admin header. Recommended size: 200x200px, transparent PNG."
       position="right"
     />
@@ -187,10 +181,8 @@ For complex UI elements, use the base Tooltip component with custom trigger:
 import Tooltip from '../components/Tooltip';
 
 <Tooltip content="Custom help text" position="bottom" trigger="click">
-  <button className="custom-button">
-    Complex Action
-  </button>
-</Tooltip>
+  <button className="custom-button">Complex Action</button>
+</Tooltip>;
 ```
 
 ## Priority Tooltips to Add First
@@ -229,6 +221,7 @@ import Tooltip from '../components/Tooltip';
 ## Style Consistency
 
 All tooltips should:
+
 - Use `position="top"` or `"bottom"` for primary actions
 - Use `position="right"` or `"left"` for form fields
 - Keep content under 150 characters

@@ -107,19 +107,23 @@ function AppContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedYear, preferencesLoading, updatePreference]);
 
-  // Fetch marker data from Supabase filtered by selected year
+  // Load organization settings early to determine the public-facing default year
+  // This must be before useEventMarkers so markers are fetched for the correct year
+  const { settings: orgSettings } = useOrganizationSettings();
+
+  // Public-facing year: prefer organization's public_default_year setting when present;
+  // otherwise fall back to admin's selectedYear
+  const publicYear = resolvePublicYear(selectedYear, orgSettings);
+
+  // Fetch marker data from Supabase filtered by publicYear
+  // This ensures both public views AND admin views show the same event year data
   const {
     markers,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
-  } = useEventMarkers(selectedYear);
-
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[App] useEventMarkers invoked with selectedYear', selectedYear);
-  }
-
+  } = useEventMarkers(publicYear);
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
-  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, selectedYear);
+  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, publicYear);
 
   const [branding, setBranding] = useState({
     logo: null, // Will be set from Organization_Profile
@@ -200,12 +204,6 @@ function AppContent() {
     };
   }, []);
 
-  // Load organization settings so we can determine the public-facing default year
-  const { settings: orgSettings } = useOrganizationSettings();
-
-  // public-facing year: prefer organization setting when present; otherwise fall back to selectedYear
-  const publicYear = resolvePublicYear(selectedYear, orgSettings);
-
   return (
     <OnboardingProvider>
       <DialogProvider>
@@ -220,6 +218,7 @@ function AppContent() {
               onLogin={setUser}
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
+              publicYear={publicYear}
               archiveMarkers={archiveMarkers}
               copyMarkers={copyMarkers}
             />

@@ -44,8 +44,12 @@ jest.mock('../../../hooks/useFeedbackRequests', () => {
 
 // user role and preferences
 jest.mock('../../../hooks/useUserRole', () => jest.fn(() => ({ role: 'admin' })));
-jest.mock('../../../hooks/useUserPreferences', () => jest.fn(() => ({ preferences: null, loading: false, updatePreference: jest.fn() })));
-jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ confirm: jest.fn(), toastError: jest.fn(), toastWarning: jest.fn() }) }));
+jest.mock('../../../hooks/useUserPreferences', () =>
+  jest.fn(() => ({ preferences: null, loading: false, updatePreference: jest.fn() })),
+);
+jest.mock('../../../contexts/DialogContext', () => ({
+  useDialog: () => ({ confirm: jest.fn(), toastError: jest.fn(), toastWarning: jest.fn() }),
+}));
 
 describe('FeedbackRequests real modal flicker check', () => {
   it('opens the real modal and keeps it open (no immediate close)', async () => {

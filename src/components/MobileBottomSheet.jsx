@@ -15,7 +15,7 @@ const BottomSheet = ({ marker, onClose }) => {
   const { organizationLogo } = useOrganizationLogo();
   const { isFavorite, toggleFavorite } = useFavoritesContext();
   const { i18n } = useTranslation();
-  const { getCompanyCategories } = useCategories(i18n.language);
+  const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const [categories, setCategories] = useState([]);
 
   // Lock map dragging while sheet is open
@@ -33,7 +33,7 @@ const BottomSheet = ({ marker, onClose }) => {
     } else {
       setCategories([]);
     }
-  }, [marker?.companyId, getCompanyCategories]);
+  }, [marker?.companyId, getCompanyCategories, allCategories]);
 
   if (!marker) return null;
 

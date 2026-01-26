@@ -176,6 +176,7 @@ function EventSpecialMarkers({
             prefix: marker.prefix,
             iconUrl: getIconPath(marker.iconUrl || `${marker.type || 'default'}.svg`),
             iconSize,
+            iconBaseSize: baseSize,
             glyph: marker.glyph || '?',
             glyphColor: marker.glyphColor || 'white',
             glyphSize: (() => {

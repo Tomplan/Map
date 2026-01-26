@@ -4,7 +4,18 @@
  * @returns {string} Base URL with trailing slash
  */
 export function getBaseUrl() {
-  const baseUrl = import.meta.env.BASE_URL;
+  // Safely access Vite base URL using a runtime Function to avoid `import.meta` parse
+  // errors in non-Vite environments (Jest/Node). Fall back to process.env or '/'.
+  const getViteBase = () => {
+    try {
+      return new Function('return import.meta.env && import.meta.env.BASE_URL')();
+    } catch (e) {
+      return undefined;
+    }
+  };
+
+  const baseUrl =
+    getViteBase() || (typeof process !== 'undefined' && process.env && process.env.BASE_URL) || '/';
   return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 }
 
@@ -16,23 +27,25 @@ export function getBaseUrl() {
  */
 export function getAbsoluteUrl(relativePath) {
   if (!relativePath) return '';
-  
+
   // Already absolute or data URI - return as-is
-  if (relativePath.startsWith('http://') || 
-      relativePath.startsWith('https://') || 
-      relativePath.startsWith('data:')) {
+  if (
+    relativePath.startsWith('http://') ||
+    relativePath.startsWith('https://') ||
+    relativePath.startsWith('data:')
+  ) {
     return relativePath;
   }
-  
+
   // Convert relative to absolute using window.location.origin
   const base = getBaseUrl();
   const fullPath = relativePath.startsWith('/') ? relativePath : `${base}${relativePath}`;
-  
+
   // Ensure we have window.location available (not in Node/test env)
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     return `${window.location.origin}${fullPath}`;
   }
-  
+
   // Fallback for test environments
   return fullPath;
 }

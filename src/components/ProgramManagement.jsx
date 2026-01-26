@@ -390,7 +390,9 @@ export default function ProgramManagement({ selectedYear }) {
       <div className="border-b border-gray-200 px-6 py-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h3 className="text-md font-semibold text-gray-700">{t('programManagement.eventDates.title')}</h3>
+            <h3 className="text-md font-semibold text-gray-700">
+              {t('programManagement.eventDates.title')}
+            </h3>
             <p className="text-sm text-gray-500">{t('programManagement.eventDates.description')}</p>
           </div>
           <div className="flex items-center gap-3">
@@ -404,7 +406,7 @@ export default function ProgramManagement({ selectedYear }) {
                 data-testid="event-start-date-input"
               />
             </label>
-              <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
               <span className="text-xs">{t('programManagement.eventDates.endLabel')}</span>
               <input
                 type="date"

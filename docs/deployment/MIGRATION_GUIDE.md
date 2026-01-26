@@ -9,15 +9,17 @@ This migration separates **Companies** (permanent, reusable) from **Markers** (p
 ## 🎯 **New Architecture**
 
 ### **Before:**
+
 - `Markers_Content` contained company data tied directly to markers
 - Had to duplicate company data for multiple booths
 - Couldn't reuse company data year-over-year
 
 ### **After:**
+
 - `Companies` - Permanent list of companies (grows over time)
 - `Markers_Core` - Physical booth locations (unchanged)
 - `Markers_Appearance` - Visual styling (unchanged)
-   - Note: Recent migration added per-marker sizing fields to `Markers_Appearance`. The new approach consolidates sizing around the existing `iconSize` and `glyphSize` columns: a backfill-only migration copies values from `iconBaseSize`/`glyphBaseSize` into `iconSize`/`glyphSize` for rows where those fields were empty. Legacy `iconBaseSize`/`glyphBaseSize` columns remain in the DB until you confirm removal.
+  - Note: Recent migration added per-marker sizing fields to `Markers_Appearance`. The new approach consolidates sizing around the existing `iconSize` and `glyphSize` columns: a backfill-only migration copies values from `iconBaseSize`/`glyphBaseSize` into `iconSize`/`glyphSize` for rows where those fields were empty. Legacy `iconBaseSize`/`glyphBaseSize` columns remain in the DB until you confirm removal.
 - `Assignments` - Yearly mapping of Companies → Markers
 - `Assignments_Archive` - Historical data for previous years
 
@@ -43,6 +45,7 @@ This migration separates **Companies** (permanent, reusable) from **Markers** (p
 ### **Step 2: Verify Migration**
 
 Check in Supabase:
+
 ```sql
 -- Should match Markers_Content count
 SELECT COUNT(*) FROM Companies;
@@ -68,37 +71,41 @@ LIMIT 5;
 ### **New Hooks Available:**
 
 #### **useCompanies()**
+
 ```javascript
 import useCompanies from './hooks/useCompanies';
 
 const {
-  companies,            // All companies
+  companies, // All companies
   loading,
-  createCompany,        // Add new company
-  updateCompany,        // Edit company
-  deleteCompany,        // Remove company
-  searchCompanies,      // Search by name
+  createCompany, // Add new company
+  updateCompany, // Edit company
+  deleteCompany, // Remove company
+  searchCompanies, // Search by name
 } = useCompanies();
 ```
 
 #### **useAssignments(eventYear)**
+
 ```javascript
 import useAssignments from './hooks/useAssignments';
 
 const {
-  assignments,                  // All assignments for year
+  assignments, // All assignments for year
   loading,
-  assignCompanyToMarker,        // Create assignment
-  unassignCompanyFromMarker,    // Remove assignment
-  getMarkerAssignments,         // Get companies for a marker
-  getCompanyAssignments,        // Get markers for a company
-  archiveCurrentYear,           // Archive and start fresh
-  loadArchivedAssignments,      // View previous year
+  assignCompanyToMarker, // Create assignment
+  unassignCompanyFromMarker, // Remove assignment
+  getMarkerAssignments, // Get companies for a marker
+  getCompanyAssignments, // Get markers for a company
+  archiveCurrentYear, // Archive and start fresh
+  loadArchivedAssignments, // View previous year
 } = useAssignments(2025);
 ```
 
 #### **useEventMarkers_v2(eventYear)**
+
 Updated version that loads markers with assignments:
+
 ```javascript
 import useEventMarkers from './hooks/useEventMarkers_v2';
 
@@ -114,12 +121,14 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 ## 🎨 **New Admin Features**
 
 ### **Companies Tab** (To be implemented)
+
 - View all companies
 - Add/edit/delete companies
 - Search companies
 - Import/export company list
 
 ### **Assignments Tab** (To be implemented)
+
 - Grid view: Markers (rows) × Companies (columns)
 - Drag-and-drop to assign
 - View previous years
@@ -127,6 +136,7 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 - Archive current year
 
 ### **Right-Click Assignment** (To be implemented)
+
 - Right-click marker on map
 - Select from companies list
 - Assign booth number
@@ -139,6 +149,7 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 ### **Preparing for a New Event Year:**
 
 1. **View Previous Year** (Optional)
+
    ```javascript
    const { loadArchivedAssignments } = useAssignments(2026);
    const { data } = await loadArchivedAssignments(2025);
@@ -146,6 +157,7 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
    ```
 
 2. **Archive Previous Year**
+
    ```javascript
    const { archiveCurrentYear } = useAssignments(2025);
    await archiveCurrentYear(); // Moves 2025 to archive
@@ -162,14 +174,17 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 ## 🔒 **Security (RLS Policies)**
 
 ### **Companies:**
+
 - ✅ Public read (anyone can view)
 - ✅ Admin write (only authenticated)
 
 ### **Assignments:**
+
 - ✅ Public read (anyone can view current year)
 - ✅ Admin write (only authenticated)
 
 ### **Assignments_Archive:**
+
 - ✅ Admin only (read and write)
 
 ---
@@ -177,11 +192,13 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 ## 🔄 **Backward Compatibility**
 
 The new `useEventMarkers_v2` maintains backward compatibility:
+
 - `marker.name`, `marker.logo`, etc. still work
 - Primary assignment is spread at marker level
 - New `marker.assignments` array available
 
 ### **Migration Path:**
+
 1. Run SQL migrations ✅
 2. Test with `useEventMarkers_v2` ✅
 3. Update components gradually
@@ -223,6 +240,7 @@ The new `useEventMarkers_v2` maintains backward compatibility:
 ## 🆘 **Rollback Plan**
 
 If needed, you can rollback:
+
 ```sql
 -- Restore from backup
 DROP TABLE Companies CASCADE;
@@ -237,6 +255,7 @@ DROP TABLE Assignments_Archive CASCADE;
 ## 📞 **Support**
 
 If you encounter issues:
+
 1. Check Supabase logs
 2. Verify RLS policies
 3. Check browser console for errors

@@ -49,9 +49,12 @@ function Modal({
     // synchronously while the user is still pressing the mouse (pointerdown)
     // and releases the pointer (pointerup) over the newly-mounted overlay.
     // Ignore backdrop clicks that occur within the first 150ms after mount.
-    const now = typeof testNow === 'number'
-      ? testNow
-      : (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const now =
+      typeof testNow === 'number'
+        ? testNow
+        : typeof performance !== 'undefined'
+          ? performance.now()
+          : Date.now();
     const mountAt = typeof testMountedAt === 'number' ? testMountedAt : mountedAtRef.current;
     const timeSinceMount = now - mountAt;
 
@@ -66,7 +69,6 @@ function Modal({
       onClose();
     }
   };
-
 
   return (
     <div

@@ -32,8 +32,8 @@ export const MAP_CONFIG = {
       { minZoom: 14.0, maxZoom: 16.99, size: [6, 10] },
       { minZoom: 17.0, maxZoom: 17.49, size: [8, 13.33] },
       { minZoom: 17.5, maxZoom: 17.99, size: [12, 20] },
-      { minZoom: 18.0, maxZoom: 18.49, size: [16, 26.66] },
-      { minZoom: 18.5, maxZoom: 18.99, size: [22, 36.66] },
+      { minZoom: 18.0, maxZoom: 18.49, size: [18, 30] },
+      { minZoom: 18.5, maxZoom: 18.99, size: [25, 41] },
       { minZoom: 19.0, maxZoom: 19.49, size: [30, 50] },
       { minZoom: 19.5, maxZoom: 22.0, size: [38, 63.33] },
     ],
@@ -45,9 +45,62 @@ export const MAP_CONFIG = {
 export const BRANDING_CONFIG = {
   DEFAULT_LOGO: '4x4Vakantiebeurs.png',
   getDefaultLogoPath: () => {
-    const base = import.meta.env.BASE_URL || '/';
+    // Access Vite's `import.meta.env.BASE_URL` safely. Jest (and some Node
+    // environments) cannot parse `import.meta` at module parse time which
+    // causes tests to fail. Use a runtime Function to access it when
+    // available; otherwise fall back to process.env or '/'. This keeps the
+    // code compatible with both Vite and Jest without causing parse errors.
+    const getViteBase = () => {
+      try {
+        return new Function('return import.meta.env && import.meta.env.BASE_URL')();
+      } catch (e) {
+        return undefined;
+      }
+    };
+
+    const base =
+      getViteBase() ||
+      (typeof process !== 'undefined' && process.env && process.env.BASE_URL) ||
+      '/';
     const baseUrl = base.endsWith('/') ? base : `${base}/`;
     return `${baseUrl}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`;
+  },
+};
+
+// Print configuration - single source of truth for all print modes
+export const PRINT_CONFIG = {
+  margin: { top: 3, right: 3, bottom: 3, left: 3 },
+  maxZoom: 25, // Temporarily allow higher zoom during printing
+  // If true, set the source map's zoom to the print mode zoom before the plugin
+  // creates the print overlay so icons are already sized for the print zoom.
+  // This is less robust (visible zoom change) but works with environments where
+  // inlining or plugin cloning can't preserve computed icon sizing.
+  SET_SOURCE_ZOOM_ON_PRINT: true,
+  modes: {
+    'A2 — Landscape (large floor plan)': {
+      center: [51.898095078807025, 5.772961378097534],
+      zoom: 17,
+    },
+    'A2 — Portrait (large floor plan)': {
+      center: [51.89664504222346, 5.775062626578228],
+      zoom: 18,
+    },
+    'A3 — Landscape': {
+      center: [51.89689783985157, 5.7757150597931615],
+      zoom: 18.5,
+    },
+    'A3 — Portrait': {
+      center: [51.89664504222346, 5.775062626578228],
+      zoom: 18.5,
+    },
+    'A4 — Landscape': {
+      center: [51.89676207833922, 5.7757150597931615],
+      zoom: 18,
+    },
+    'A4 — Portrait': {
+      center: [51.89668717526025, 5.775062626578228],
+      zoom: 18,
+    },
   },
 };
 

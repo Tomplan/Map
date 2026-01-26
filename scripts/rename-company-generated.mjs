@@ -11,20 +11,24 @@ if (!url || !key) {
 
 const supabase = createClient(url, key, { auth: { persistSession: false } });
 
-const ids = process.argv.slice(2).filter(a => a !== '--confirm').map(a => parseInt(a, 10)).filter(Boolean);
+const ids = process.argv
+  .slice(2)
+  .filter((a) => a !== '--confirm')
+  .map((a) => parseInt(a, 10))
+  .filter(Boolean);
 const confirm = process.argv.includes('--confirm');
 
 // Default to the known set if no ids passed
-const DEFAULT_IDS = [2,3,4,5,6,7,8,9,10,21];
+const DEFAULT_IDS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 21];
 const targetIds = ids.length ? ids : DEFAULT_IDS;
 
 import { slugify } from './lib/logoUtils.js';
 
-const SIZES = [64,128,256,512];
+const SIZES = [64, 128, 256, 512];
 const VARIANT_EXTS = ['.webp', '.avif'];
 const BUCKET = 'Logos';
 
-  // slugify imported from lib/logoUtils
+// slugify imported from lib/logoUtils
 
 function cdnBaseUrlFor(fname) {
   const supabaseUrl = url.replace(/\/$/, '');
@@ -63,7 +67,10 @@ function contentTypeForExt(ext) {
 async function run() {
   try {
     // fetch rows
-    const { data: rows, error } = await supabase.from('companies').select('id,name,logo').in('id', targetIds);
+    const { data: rows, error } = await supabase
+      .from('companies')
+      .select('id,name,logo')
+      .in('id', targetIds);
     if (error) throw error;
     if (!rows || rows.length === 0) {
       console.log('No companies found for ids:', targetIds);
@@ -105,7 +112,15 @@ async function run() {
 
     // show plan
     console.log('Planned renames / copies:');
-    console.table(plan.map(p => ({ id: p.id, name: p.name, from: p.curBase, to: p.desiredBase, ext: p.curExt })));
+    console.table(
+      plan.map((p) => ({
+        id: p.id,
+        name: p.name,
+        from: p.curBase,
+        to: p.desiredBase,
+        ext: p.curExt,
+      })),
+    );
 
     if (!confirm) {
       console.log('\nDRY RUN - no changes applied. Re-run with --confirm to apply.');
@@ -131,7 +146,9 @@ async function run() {
 
             // upload to dst
             const contentType = contentTypeForExt(ext);
-            const up = await supabase.storage.from(BUCKET).upload(dstName, Buffer.from(buffer), { upsert: true, contentType });
+            const up = await supabase.storage
+              .from(BUCKET)
+              .upload(dstName, Buffer.from(buffer), { upsert: true, contentType });
             if (up.error) {
               console.error('  Failed to upload copy:', dstName, up.error.message || up.error);
             } else {
@@ -156,7 +173,6 @@ async function run() {
     }
 
     console.log('\nAll done.');
-
   } catch (err) {
     console.error('Error:', err.message || err);
     process.exit(1);

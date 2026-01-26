@@ -7,6 +7,7 @@ This document outlines the comprehensive plan to implement export/import functio
 ## Current State Analysis
 
 ### ✅ Existing Infrastructure
+
 - **Database Schema**: `event_subscriptions` table with comprehensive fields
 - **Data Configuration**: Partial configuration exists in `src/config/dataConfigs.js`
 - **UI Components**: `EventSubscriptionsTab.jsx` with robust subscription management
@@ -15,6 +16,7 @@ This document outlines the comprehensive plan to implement export/import functio
 - **Validation System**: Reusable validation utilities
 
 ### ❌ Missing Components
+
 - Export/Import buttons in EventSubscriptionsTab
 - Complete subscription data transformation logic
 - Year selection UI for export/import
@@ -28,19 +30,20 @@ This document outlines the comprehensive plan to implement export/import functio
 **File**: `src/config/dataConfigs.js`
 
 #### Current subscription configuration already includes:
+
 ```javascript
 event_subscriptions: {
   label: 'Event Subscriptions',
   table: 'event_subscriptions',
   yearDependent: true,
-  
+
   exportColumns: [
     { key: 'id', header: 'Subscription ID', type: 'number' },
     { key: 'company_name', header: 'Company Name', type: 'string', required: true },
     { key: 'event_year', header: 'Event Year', type: 'number', required: true },
     // ... other columns
   ],
-  
+
   transformExport: (subscriptions) => { /* exists */ },
   transformImport: (row, companyMap, eventYear) => { /* exists */ },
   validateRow: (row, rowIndex, companyMap) => { /* exists */ },
@@ -49,6 +52,7 @@ event_subscriptions: {
 ```
 
 #### Enhancement needed:
+
 - Improve company name joining logic
 - Add comprehensive field validation
 - Enhance error messaging for subscription-specific issues
@@ -58,15 +62,16 @@ event_subscriptions: {
 **File**: `src/components/admin/EventSubscriptionsTab.jsx`
 
 #### Add Export/Import Buttons
+
 ```jsx
 // Add to header section alongside existing action buttons
 <div className="flex gap-2">
   <ExportButton
     dataType="event_subscriptions"
     data={subscriptions}
-    additionalData={{ 
+    additionalData={{
       supabase,
-      eventYear: selectedYear 
+      eventYear: selectedYear,
     }}
     filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
   />
@@ -74,9 +79,9 @@ event_subscriptions: {
     dataType="event_subscriptions"
     existingData={subscriptions}
     eventYear={selectedYear}
-    additionalData={{ 
+    additionalData={{
       supabase,
-      selectedYear 
+      selectedYear,
     }}
     onImportComplete={async () => {
       await loadSubscriptions();
@@ -87,6 +92,7 @@ event_subscriptions: {
 ```
 
 #### Key Features:
+
 - **Year-aware export**: Only export subscriptions for selected year
 - **Company validation**: Ensure imported companies exist in database
 - **Bulk operations**: Handle large subscription datasets efficiently
@@ -97,10 +103,11 @@ event_subscriptions: {
 **File**: `src/config/dataConfigs.js`
 
 #### Export Enhancement
+
 ```javascript
 transformExport: async (subscriptions, additionalData) => {
   const { supabase, eventYear } = additionalData || {};
-  
+
   // Enhanced export with company details and assignment info
   const enhancedSubscriptions = await Promise.all(
     subscriptions.map(async (sub) => {
@@ -111,10 +118,11 @@ transformExport: async (subscriptions, additionalData) => {
         .eq('company_id', sub.company_id)
         .eq('event_year', eventYear);
 
-      const boothLabels = assignments
-        ?.map(a => a.markers_core?.glyph)
-        ?.filter(Boolean)
-        ?.join(', ') || '';
+      const boothLabels =
+        assignments
+          ?.map((a) => a.markers_core?.glyph)
+          ?.filter(Boolean)
+          ?.join(', ') || '';
 
       return {
         id: sub.id,
@@ -132,16 +140,17 @@ transformExport: async (subscriptions, additionalData) => {
         breakfast_sun: sub.breakfast_sun || 0,
         lunch_sun: sub.lunch_sun || 0,
         coins: sub.coins || 0,
-        notes: sub.notes || ''
+        notes: sub.notes || '',
       };
-    })
+    }),
   );
 
   return enhancedSubscriptions;
-}
+};
 ```
 
 #### Import Enhancement
+
 ```javascript
 transformImport: (row, companyMap, eventYear) => {
   const companyName = row['Company Name']?.trim();
@@ -157,7 +166,7 @@ transformImport: (row, companyMap, eventYear) => {
     event_year: parseInt(row['Event Year']) || eventYear,
     contact: row['Contact Person']?.trim() || '',
     area: row['Area']?.trim() || '',
-    notes: row['Notes']?.trim() || ''
+    notes: row['Notes']?.trim() || '',
   };
 
   // Phone normalization
@@ -172,17 +181,23 @@ transformImport: (row, companyMap, eventYear) => {
 
   // Numeric fields with validation
   const numericFields = [
-    'Booth Count', 'Event Year',
-    'Breakfast (Sat)', 'Lunch (Sat)', 'BBQ (Sat)',
-    'Breakfast (Sun)', 'Lunch (Sun)', 'Coins'
+    'Booth Count',
+    'Event Year',
+    'Breakfast (Sat)',
+    'Lunch (Sat)',
+    'BBQ (Sat)',
+    'Breakfast (Sun)',
+    'Lunch (Sun)',
+    'Coins',
   ];
 
-  numericFields.forEach(field => {
+  numericFields.forEach((field) => {
     const value = row[field];
     if (value !== undefined && value !== null && value !== '') {
       const num = parseInt(value);
       if (!isNaN(num)) {
-        const key = field.toLowerCase()
+        const key = field
+          .toLowerCase()
           .replace(/[^a-z0-9]/g, '_')
           .replace(/_+/g, '_');
         transformed[key] = num;
@@ -191,12 +206,13 @@ transformImport: (row, companyMap, eventYear) => {
   });
 
   return transformed;
-}
+};
 ```
 
 ### Phase 4: Enhanced Validation
 
 #### Subscription-specific validation rules:
+
 ```javascript
 validateRow: (row, rowIndex, companyMap) => {
   const errors = [];
@@ -206,7 +222,7 @@ validateRow: (row, rowIndex, companyMap) => {
   if (!nameValidation.valid) {
     errors.push({
       field: 'Company Name',
-      message: nameValidation.error
+      message: nameValidation.error,
     });
   }
 
@@ -216,7 +232,7 @@ validateRow: (row, rowIndex, companyMap) => {
     if (!companyMap[companyName]) {
       errors.push({
         field: 'Company Name',
-        message: `Company "${row['Company Name']}" not found in database`
+        message: `Company "${row['Company Name']}" not found in database`,
       });
     }
   }
@@ -226,7 +242,7 @@ validateRow: (row, rowIndex, companyMap) => {
   if (row['Event Year'] && (isNaN(eventYear) || eventYear < 2020 || eventYear > 2100)) {
     errors.push({
       field: 'Event Year',
-      message: 'Event Year must be a valid year between 2020-2100'
+      message: 'Event Year must be a valid year between 2020-2100',
     });
   }
 
@@ -235,18 +251,24 @@ validateRow: (row, rowIndex, companyMap) => {
   if (row['Booth Count'] && (isNaN(boothCount) || boothCount < 1)) {
     errors.push({
       field: 'Booth Count',
-      message: 'Booth Count must be at least 1'
+      message: 'Booth Count must be at least 1',
     });
   }
 
   // Meal count validation (0 or positive integers)
-  const mealFields = ['Breakfast (Sat)', 'Lunch (Sat)', 'BBQ (Sat)', 'Breakfast (Sun)', 'Lunch (Sun)'];
-  mealFields.forEach(field => {
+  const mealFields = [
+    'Breakfast (Sat)',
+    'Lunch (Sat)',
+    'BBQ (Sat)',
+    'Breakfast (Sun)',
+    'Lunch (Sun)',
+  ];
+  mealFields.forEach((field) => {
     const value = parseInt(row[field]);
     if (row[field] && (isNaN(value) || value < 0)) {
       errors.push({
         field: field,
-        message: `${field} must be 0 or a positive integer`
+        message: `${field} must be 0 or a positive integer`,
       });
     }
   });
@@ -256,7 +278,7 @@ validateRow: (row, rowIndex, companyMap) => {
   if (row['Coins'] && (isNaN(coins) || coins < 0)) {
     errors.push({
       field: 'Coins',
-      message: 'Coins must be 0 or a positive integer'
+      message: 'Coins must be 0 or a positive integer',
     });
   }
 
@@ -266,21 +288,22 @@ validateRow: (row, rowIndex, companyMap) => {
     if (!emailValidation.valid) {
       errors.push({
         field: 'Email',
-        message: emailValidation.error
+        message: emailValidation.error,
       });
     }
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
-}
+};
 ```
 
 ### Phase 5: Year Selection UI
 
 #### Enhanced Import Modal Props
+
 ```jsx
 <ImportModal
   isOpen={isOpen}
@@ -291,13 +314,14 @@ validateRow: (row, rowIndex, companyMap) => {
   additionalData={{
     supabase,
     selectedYear,
-    availableCompanies: companies
+    availableCompanies: companies,
   }}
   onImportComplete={handleImportComplete}
 />
 ```
 
 #### Year-aware validation:
+
 - Check company existence in database
 - Validate event year consistency
 - Prevent duplicate subscriptions for same company/year
@@ -305,12 +329,14 @@ validateRow: (row, rowIndex, companyMap) => {
 ### Phase 6: Testing Strategy
 
 #### Export Testing
+
 1. **Single year export**: Export subscriptions for a specific year
 2. **Empty year handling**: Export when no subscriptions exist
 3. **Large dataset**: Export with 100+ subscriptions
 4. **Data integrity**: Verify all fields export correctly
 
 #### Import Testing
+
 1. **Valid data**: Import correctly formatted subscription data
 2. **Company validation**: Test import with non-existent companies
 3. **Duplicate handling**: Test import of existing subscriptions
@@ -321,11 +347,13 @@ validateRow: (row, rowIndex, companyMap) => {
 ### Phase 7: User Experience Enhancements
 
 #### Export Features
+
 - **Smart naming**: Auto-generate filenames with year and date
 - **Selective export**: Allow filtering before export
 - **Preview mode**: Show what will be exported
 
-#### Import Features  
+#### Import Features
+
 - **Preview validation**: Show all validation errors before import
 - **Selective import**: Allow choosing which records to import
 - **Progress tracking**: Real-time progress with phase indicators
@@ -350,6 +378,7 @@ src/
 ## Success Criteria
 
 ### Functional Requirements
+
 - [ ] Export subscriptions to Excel/CSV/JSON with all fields
 - [ ] Import subscriptions with comprehensive validation
 - [ ] Year-aware operations (only selected year)
@@ -358,6 +387,7 @@ src/
 - [ ] Bulk operation progress tracking
 
 ### Technical Requirements
+
 - [ ] Reuse existing export/import framework
 - [ ] Follow established code patterns
 - [ ] Maintain data integrity
@@ -365,6 +395,7 @@ src/
 - [ ] Provide meaningful error messages
 
 ### User Experience Requirements
+
 - [ ] Intuitive UI integration
 - [ ] Clear progress indicators
 - [ ] Comprehensive error reporting
@@ -374,7 +405,7 @@ src/
 ## Estimated Implementation Time
 
 - **Phase 1**: 1 hour (data configuration)
-- **Phase 2**: 2 hours (UI integration)  
+- **Phase 2**: 2 hours (UI integration)
 - **Phase 3**: 2 hours (data transformation)
 - **Phase 4**: 1 hour (validation)
 - **Phase 5**: 1 hour (year selection)
@@ -386,18 +417,21 @@ src/
 ## Risk Assessment
 
 ### Low Risk
+
 - ✅ Using established patterns and framework
 - ✅ Database schema is stable
 - ✅ Existing validation utilities
 
 ### Medium Risk
+
 - ⚠️ Large dataset performance (mitigation: progress tracking)
 - ⚠️ Complex validation logic (mitigation: comprehensive testing)
 
 ### High Risk
+
 - ❌ None identified - implementation follows proven patterns
 
 ---
 
-*Generated: 2025-12-02*
-*Status: Ready for Implementation*
+_Generated: 2025-12-02_
+_Status: Ready for Implementation_

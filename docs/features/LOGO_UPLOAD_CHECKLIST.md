@@ -3,6 +3,7 @@
 ## ✅ Phase 1: Supabase Setup (15 minutes)
 
 ### Step 1: Create Storage Bucket
+
 - [ ] Go to Supabase Dashboard → Storage
 - [ ] Click "New bucket"
 - [ ] Name: `logos`
@@ -11,6 +12,7 @@
 - [ ] Click "Create bucket"
 
 ### Step 2: Configure Bucket Settings
+
 - [ ] Click on 'logos' bucket
 - [ ] Go to Settings tab
 - [ ] Allowed MIME types: Add these types:
@@ -22,6 +24,7 @@
   - `image/svg+xml`
 
 ### Step 3: Set Up RLS Policies
+
 - [ ] Go to Supabase Dashboard → SQL Editor
 - [ ] Run this query:
 
@@ -35,7 +38,7 @@ USING (bucket_id = 'logos');
 CREATE POLICY "Authenticated users can upload logos"
 ON storage.objects FOR INSERT
 WITH CHECK (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 
@@ -43,7 +46,7 @@ WITH CHECK (
 CREATE POLICY "Authenticated users can delete logos"
 ON storage.objects FOR DELETE
 USING (
-  bucket_id = 'logos' 
+  bucket_id = 'logos'
   AND auth.role() = 'authenticated'
 );
 ```
@@ -55,17 +58,22 @@ USING (
 ## ✅ Phase 2: Test Setup (5 minutes)
 
 ### Step 4: Add Test Route (Optional)
+
 - [ ] Open `src/components/AppRoutes.jsx`
 - [ ] Add import:
+
 ```jsx
 import StorageTestPage from './StorageTestPage';
 ```
+
 - [ ] Add route (inside admin-protected routes):
+
 ```jsx
 <Route path="/storage-test" element={<StorageTestPage />} />
 ```
 
 ### Step 5: Test Upload
+
 - [ ] Log in to admin dashboard at `http://localhost:5173/Map/admin`
   - Enter your admin email and password
   - Wait for successful login (you'll see the admin dashboard)
@@ -83,14 +91,17 @@ import StorageTestPage from './StorageTestPage';
 ## ✅ Phase 3: Integrate into BrandingSettings (10 minutes)
 
 ### Step 6: Update BrandingSettings Component
+
 - [ ] Open `src/components/BrandingSettings.jsx`
 - [ ] Add import at top:
+
 ```jsx
 import LogoUploader from './LogoUploader';
 ```
 
 - [ ] Find the logo text input (around line 89)
 - [ ] Replace with:
+
 ```jsx
 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
   <LogoUploader
@@ -122,6 +133,7 @@ import LogoUploader from './LogoUploader';
 ```
 
 ### Step 7: Test BrandingSettings
+
 - [ ] Go to Admin Dashboard → Settings
 - [ ] Upload a new event logo
 - [ ] Verify logo updates immediately
@@ -134,15 +146,19 @@ import LogoUploader from './LogoUploader';
 ## ✅ Phase 4: Integrate into CompaniesTab (15 minutes)
 
 ### Step 8: Update CompaniesTab Component
+
 - [ ] Open `src/components/admin/CompaniesTab.jsx`
 - [ ] Add import at top:
+
 ```jsx
 import LogoUploader from '../LogoUploader';
 ```
 
 ### Step 9: Update Create Form
+
 - [ ] Find the "Create new company form" section (around line 108)
 - [ ] Replace logo text input with:
+
 ```jsx
 <div className="col-span-2">
   <label className="block text-sm font-medium mb-1">Company Logo</label>
@@ -166,8 +182,10 @@ import LogoUploader from '../LogoUploader';
 ```
 
 ### Step 10: Update Edit Mode
+
 - [ ] Find the Logo column in edit mode (around line 210)
 - [ ] Replace with:
+
 ```jsx
 <td className="py-1 px-3 border-b text-left">
   {isEditing ? (
@@ -202,6 +220,7 @@ import LogoUploader from '../LogoUploader';
 ```
 
 ### Step 11: Test CompaniesTab
+
 - [ ] Go to Admin Dashboard → Companies
 - [ ] Create a new company with logo upload
 - [ ] Edit existing company and upload logo
@@ -214,6 +233,7 @@ import LogoUploader from '../LogoUploader';
 ## ✅ Phase 5: Production Checklist
 
 ### Step 12: Final Verification
+
 - [ ] All uploads appear in Supabase Storage Dashboard
 - [ ] Logos display correctly on map
 - [ ] Logos display correctly in admin tables
@@ -223,11 +243,13 @@ import LogoUploader from '../LogoUploader';
 - [ ] Delete functionality works
 
 ### Step 13: Clean Up (Optional)
+
 - [ ] Remove test uploads from storage
 - [ ] Remove StorageTestPage route (if added)
 - [ ] Review and adjust file size limits if needed
 
 ### Step 14: Documentation
+
 - [ ] Share SUPABASE_STORAGE_SETUP.md with team
 - [ ] Add storage bucket name to environment docs
 - [ ] Document backup/migration procedures
@@ -237,6 +259,7 @@ import LogoUploader from '../LogoUploader';
 ## 🎉 Success Criteria
 
 You're done when:
+
 - ✅ Admins can upload logos in BrandingSettings
 - ✅ Admins can upload logos when creating companies
 - ✅ Admins can upload logos when editing companies
@@ -249,18 +272,23 @@ You're done when:
 ## 🆘 Troubleshooting
 
 ### Issue: Bucket not found
+
 **Fix**: Verify bucket name is exactly `logos` (lowercase)
 
 ### Issue: Permission denied
+
 **Fix**: Check RLS policies are applied, user is authenticated
 
 ### Issue: Upload succeeds but image doesn't show
+
 **Fix**: Ensure bucket is set to **public**
 
 ### Issue: File type error
+
 **Fix**: Only PNG, JPG, WEBP, AVIF, SVG supported
 
 ### Need Help?
+
 1. Check StorageTestPage diagnostics
 2. Review SUPABASE_STORAGE_SETUP.md
 3. Check browser console for errors
@@ -271,6 +299,7 @@ You're done when:
 ## 📁 Files Created
 
 All implementation files are ready:
+
 - ✅ `src/services/logoUploadService.js`
 - ✅ `src/components/LogoUploader.jsx`
 - ✅ `src/components/StorageTestPage.jsx`

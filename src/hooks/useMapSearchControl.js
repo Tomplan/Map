@@ -78,9 +78,22 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
       }
     }
 
-    const searchControl = new L.Control.Search(searchConfig);
-
-    mapInstance.addControl(searchControl);
+    // Ensure the plugin is present before trying to create the control
+    let searchControl = null;
+    try {
+      if (!L.Control || !L.Control.Search) {
+        if (process.env.NODE_ENV !== 'production')
+          console.warn('[useMapSearchControl] Leaflet Search plugin not present');
+        return () => undefined;
+      }
+      searchControl = new L.Control.Search(searchConfig);
+      if (mapInstance && typeof mapInstance.addControl === 'function')
+        mapInstance.addControl(searchControl);
+    } catch (err) {
+      if (process.env.NODE_ENV !== 'production')
+        console.warn('[useMapSearchControl] Failed to create search control', err);
+      searchControl = null;
+    }
     searchControlRef.current = searchControl;
 
     // Forward locationfound events to the map (same behavior as before)

@@ -6,23 +6,28 @@ import '@testing-library/jest-dom';
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k, opts) => {
-          const map = {
-            'companies.publicInfoTab': 'Publieke Info',
-            'companies.privateInfoTab': 'Privé Info',
-            'companies.modal.publicInfoHeading': 'Publieke informatie (zichtbaar voor bezoekers)',
-          'companies.create': 'Aanmaken',
-          'companies.loadingData': 'Gegevens laden...',
-          'companies.errorWithMessage': 'Fout: {{message}}'
-        };
+      const map = {
+        'companies.publicInfoTab': 'Publieke Info',
+        'companies.privateInfoTab': 'Privé Info',
+        'companies.modal.publicInfoHeading': 'Publieke informatie (zichtbaar voor bezoekers)',
+        'companies.create': 'Aanmaken',
+        'companies.loadingData': 'Gegevens laden...',
+        'companies.errorWithMessage': 'Fout: {{message}}',
+      };
       return map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
     },
-    i18n: { language: 'nl' }
-  })
+    i18n: { language: 'nl' },
+  }),
 }));
 
 // Mock helpers that touch runtime-only APIs or import.meta
-jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: (src) => src || '', getResponsiveLogoSources: () => null }));
-jest.mock('../../../utils/getDefaultLogo', () => ({ getDefaultLogoPath: () => '/assets/default.png' }));
+jest.mock('../../../utils/getLogoPath', () => ({
+  getLogoPath: (src) => src || '',
+  getResponsiveLogoSources: () => null,
+}));
+jest.mock('../../../utils/getDefaultLogo', () => ({
+  getDefaultLogoPath: () => '/assets/default.png',
+}));
 
 // Mock all hooks used by CompaniesTab so rendering is deterministic
 jest.mock('../../../hooks/useCompanies', () => () => ({
@@ -33,20 +38,23 @@ jest.mock('../../../hooks/useCompanies', () => () => ({
   updateCompany: jest.fn(),
   deleteCompany: jest.fn(),
   searchCompanies: jest.fn(),
-  reload: jest.fn()
+  reload: jest.fn(),
 }));
 
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
-  profile: { id: 1, name: 'Org' }, loading: false, error: null, updateProfile: jest.fn()
+  profile: { id: 1, name: 'Org' },
+  loading: false,
+  error: null,
+  updateProfile: jest.fn(),
 }));
 
 jest.mock('../../../hooks/useCompanyMutations', () => ({
   useCompanyMutations: () => ({
-  editingId: null,
-  editForm: {},
-  setEditForm: jest.fn(),
-  isCreating: true,
-  newCompanyForm: { name: 'NewCo' },
+    editingId: null,
+    editForm: {},
+    setEditForm: jest.fn(),
+    isCreating: true,
+    newCompanyForm: { name: 'NewCo' },
     setNewCompanyForm: jest.fn(),
     handleEdit: jest.fn(),
     handleSave: jest.fn(),
@@ -55,13 +63,31 @@ jest.mock('../../../hooks/useCompanyMutations', () => ({
     handleCreate: jest.fn(),
     handleStartCreate: jest.fn(),
     handleCancelCreate: jest.fn(),
-  })
+  }),
 }));
 
-jest.mock('../../../hooks/useCompanyTranslations', () => () => ({ translations: {}, getTranslation: () => '' }));
-jest.mock('../../../hooks/useCategories', () => () => ({ categories: [], getCompanyCategories: async () => [], getAllCompanyCategories: async (ids) => { const out = {}; ids.forEach(id => { out[id] = [] }); return out; }, assignCategoriesToCompany: jest.fn() }));
-jest.mock('../../../contexts/OrganizationLogoContext', () => ({ useOrganizationLogo: () => ({ organizationLogo: '' }) }));
-jest.mock('../../../contexts/DialogContext', () => ({ useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }) }));
+jest.mock('../../../hooks/useCompanyTranslations', () => () => ({
+  translations: {},
+  getTranslation: () => '',
+}));
+jest.mock('../../../hooks/useCategories', () => () => ({
+  categories: [],
+  getCompanyCategories: async () => [],
+  getAllCompanyCategories: async (ids) => {
+    const out = {};
+    ids.forEach((id) => {
+      out[id] = [];
+    });
+    return out;
+  },
+  assignCategoriesToCompany: jest.fn(),
+}));
+jest.mock('../../../contexts/OrganizationLogoContext', () => ({
+  useOrganizationLogo: () => ({ organizationLogo: '' }),
+}));
+jest.mock('../../../contexts/DialogContext', () => ({
+  useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }),
+}));
 jest.mock('../../../supabaseClient');
 
 import CompaniesTab from '../CompaniesTab';
