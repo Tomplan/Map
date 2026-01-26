@@ -10,6 +10,8 @@ jobs:
   test:
     name: Run tests
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - uses: actions/checkout@v4
 
@@ -22,4 +24,4 @@ jobs:
         run: npm ci
 
       - name: Run test suite
-        run: npm test --silent
+        run: npm test --silent -- --maxWorkers=25%
