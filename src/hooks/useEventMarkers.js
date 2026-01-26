@@ -392,58 +392,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       createdChannels.push(subscriptionsChannel);
     }
 
-      const appearanceChannel = supabase
-        .channel(`markers-appearance-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'markers_appearance',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          () => {
-            loadMarkers(true);
-          },
-        )
-        .subscribe();
-      createdChannels.push(appearanceChannel);
-
-      // Separate subscription for default markers (event_year = 0) that affect all years
-      const defaultsChannel = supabase
-        .channel('markers-appearance-defaults-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'markers_appearance',
-            filter: 'event_year=eq.0',
-          },
-          () => {
-            loadMarkers(true);
-          },
-        )
-        .subscribe();
-      createdChannels.push(defaultsChannel);
-
-      const contentChannel = supabase
-        .channel(`markers-content-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'markers_content',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          () => {
-            loadMarkers(true);
-          },
-        )
-        .subscribe();
-      createdChannels.push(contentChannel);
-    }
 
     // Note: Markers_Admin subscription removed - admin data comes from event_subscriptions
 
