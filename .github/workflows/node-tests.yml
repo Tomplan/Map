@@ -24,8 +24,8 @@ jobs:
 
       - name: Run test suite
         env:
-          NODE_OPTIONS: --max-old-space-size=4096
-        run: npm test --silent -- --maxWorkers=50%
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: npm test --silent -- --maxWorkers=25%
 
   integration:
     name: Run integration / heavy tests
