@@ -121,9 +121,6 @@ function AppContent() {
     markers,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
-<<<<<<< HEAD
-  } = useEventMarkers(publicYear);
-=======
   } = useEventMarkers(publicYear);
 
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
