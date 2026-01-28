@@ -100,7 +100,7 @@ export default function AdminLogin({ onLogin, branding }) {
     }
   };
 
-  const eventName = branding?.eventName || '4x4 Vakantiebeurs';
+  const eventName = branding?.eventName || t('branding.defaultEventName');
   const logoUrl = branding?.logo || BRANDING_CONFIG.getDefaultLogoPath();
 
   // Password Reset Form
@@ -211,7 +211,7 @@ export default function AdminLogin({ onLogin, branding }) {
               <img src={logoUrl} alt="Event Logo" className="h-12 w-12 object-contain" />
             </div>
             <h1 className="font-bold text-2xl text-gray-800 mb-1">{eventName}</h1>
-            <p className="text-gray-500 text-sm">Manager Portal</p>
+            <p className="text-gray-500 text-sm">{t('adminLogin.portal')}</p>
           </div>
 
           <h2 className="text-lg font-semibold mb-6 text-gray-700 text-center">
@@ -341,7 +341,7 @@ export default function AdminLogin({ onLogin, branding }) {
 
         {/* Footer */}
         <div className="text-center mt-6 text-xs text-gray-500">
-          <p>Secure manager access only</p>
+          <p>{t('adminLogin.footerSecure')}</p>
         </div>
       </div>
     </div>

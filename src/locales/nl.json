@@ -152,8 +152,7 @@
     "branding": {
       "title": "Branding Instellingen",
       "description": "Configureer visuele branding (kleuren, lettertypen)",
-      "note": "Organisatienaam en logo worden beheerd in het Bedrijven-tabblad",
-      "loading": "Instellingen laden...",
+      "note": "Organisatienaam en logo worden beheerd in het Bedrijven-tabblad",      "defaultEventName": "Dé 4x4 Vakantiebeurs",      "loading": "Instellingen laden...",
       "save": "Wijzigingen Opslaan",
       "saving": "Opslaan...",
       "loadingData": "Gegevens laden...",
