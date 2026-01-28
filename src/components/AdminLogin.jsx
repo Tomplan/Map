@@ -100,7 +100,7 @@ export default function AdminLogin({ onLogin, branding }) {
     }
   };
 
-  const eventName = branding?.eventName || t('branding.defaultEventName');
+  const eventName = branding?.eventName && branding.eventName !== '4x4 Vakantiebeurs' ? branding.eventName : t('branding.defaultEventName');
   const logoUrl = branding?.logo || BRANDING_CONFIG.getDefaultLogoPath();
 
   // Password Reset Form
