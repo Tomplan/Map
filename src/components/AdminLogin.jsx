@@ -118,7 +118,7 @@ export default function AdminLogin({ onLogin, branding }) {
                 <img src={logoUrl} alt="Event Logo" className="h-12 w-12 object-contain" />
               </div>
               <h1 className="font-bold text-2xl text-gray-800 mb-1">{eventName}</h1>
-              <p className="text-gray-500 text-sm">Manager Portal</p>
+              <p className="text-gray-500 text-sm">{t('adminLogin.portal')}</p>
             </div>
 
             <h2 className="text-xl font-bold mb-2 text-gray-800">
