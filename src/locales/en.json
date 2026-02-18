@@ -69,6 +69,8 @@
     "loggingIn": "Logging in...",
     "rememberMe": "Remember my email",
     "rememberMeTooltip": "Your browser will also offer to save your password securely",
+    "portal": "Manager Portal",
+    "footerSecure": "Secure access for managers only",
     "errors": {
       "invalidCredentials": "Invalid email or password",
       "emailRequired": "Email is required",
@@ -157,6 +159,7 @@
       "title": "Branding Settings",
       "description": "Configure visual branding (colors, fonts)",
       "note": "Organization name and logo are managed in the Companies tab",
+      "defaultEventName": "The 4x4 Holiday Fair",
       "loading": "Loading settings...",
       "save": "Save Changes",
       "saving": "Saving...",
