@@ -8,61 +8,139 @@ import { supabase } from '../supabaseClient';
  * @param {number} [selectedYear] - Optional year parameter to trigger reload when changed
  * @returns {{ markers: Array<{id: number, glyph: string}>, loading: boolean, error: Error | null }}
  */
-export function useMarkerGlyphs(selectedYear) {
-  const [markers, setMarkers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+/*
+  Cached marker glyphs hook
+  - Dedupes REST requests and subscribes once per table/year
+  - Reference-counted listeners so multiple components reuse same data
+*/
+const _glyphsCache = new Map();
 
-  useEffect(() => {
-    async function loadMarkers() {
-      try {
-        setLoading(true);
-        setError(null);
+function _glyphKey(year) {
+  return `markerGlyphs:${year}`;
+}
 
-        // Load core marker data (only booth markers with id < 1000)
-        const { data: coreData, error: coreError } = await supabase
+function _ensureGlyphsEntry(year) {
+  const key = _glyphKey(year);
+  if (_glyphsCache.has(key)) return _glyphsCache.get(key);
+
+  const entry = {
+    state: { markers: [], loading: true, error: null },
+    listeners: new Set(),
+    refCount: 0,
+    channels: [],
+    loadPromise: null,
+  };
+  _glyphsCache.set(key, entry);
+  return entry;
+}
+
+async function _loadInitialGlyphs(year, entry) {
+  if (entry.loadPromise) return entry.loadPromise;
+
+  entry.loadPromise = (async () => {
+    try {
+      entry.state.loading = true;
+      // Fetch core ids and appearance glyphs in parallel
+      const [coreRes, appearanceRes] = await Promise.all([
+        supabase
           .from('markers_core')
           .select('id')
           .lt('id', 1000)
-          .eq('event_year', selectedYear)
-          .order('id', { ascending: true });
-
-        if (coreError) throw coreError;
-
-        // Load appearance data (glyph text)
-        const { data: appearanceData, error: appearanceError } = await supabase
+          .eq('event_year', year)
+          .order('id', { ascending: true }),
+        supabase
           .from('markers_appearance')
           .select('id, glyph')
           .lt('id', 1000)
-          .eq('event_year', selectedYear);
+          .eq('event_year', year),
+      ]);
 
-        if (appearanceError) throw appearanceError;
+      if (coreRes.error) throw coreRes.error;
+      if (appearanceRes.error) throw appearanceRes.error;
 
-        // Create a map of glyph text by marker id
-        const glyphMap = {};
-        (appearanceData || []).forEach((row) => {
-          if (row && row.id) {
-            glyphMap[row.id] = row.glyph || '';
-          }
-        });
+      const glyphMap = {};
+      (appearanceRes.data || []).forEach((r) => {
+        if (r && r.id) glyphMap[r.id] = r.glyph || '';
+      });
 
-        // Merge core and appearance data
-        const mergedMarkers = (coreData || []).map((marker) => ({
-          id: marker.id,
-          glyph: glyphMap[marker.id] || marker.id.toString(), // Fallback to ID if no glyph
-        }));
+      const merged = (coreRes.data || []).map((m) => ({
+        id: m.id,
+        glyph: glyphMap[m.id] || String(m.id),
+      }));
 
-        setMarkers(mergedMarkers);
-      } catch (err) {
-        console.error('Error loading markers:', err);
-        setError(err);
-      } finally {
-        setLoading(false);
-      }
+      entry.state.markers = merged;
+      entry.state.error = null;
+    } catch (err) {
+      console.error('Error loading marker glyphs for', year, err);
+      entry.state.markers = [];
+      entry.state.error = err?.message || String(err);
+    } finally {
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
+    }
+  })();
+
+  return entry.loadPromise;
+}
+
+function _startGlyphsChannels(year, entry) {
+  if (entry.channels && entry.channels.length > 0) return;
+
+  const coreChannel = supabase
+    .channel(`markers-core-glyphs-${year}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'markers_core', filter: `event_year=eq.${year}` },
+      () => _loadInitialGlyphs(year, entry),
+    )
+    .subscribe();
+
+  const appearanceChannel = supabase
+    .channel(`markers-appearance-glyphs-${year}`)
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'markers_appearance', filter: `event_year=eq.${year}` },
+      () => _loadInitialGlyphs(year, entry),
+    )
+    .subscribe();
+
+  entry.channels = [coreChannel, appearanceChannel];
+}
+
+function _stopGlyphsEntry(year) {
+  const key = _glyphKey(year);
+  const entry = _glyphsCache.get(key);
+  if (!entry) return;
+  for (const ch of entry.channels || []) supabase.removeChannel(ch);
+  _glyphsCache.delete(key);
+}
+
+export function useMarkerGlyphs(selectedYear) {
+  const [local, setLocal] = useState({ markers: [], loading: true, error: null });
+
+  useEffect(() => {
+    if (!selectedYear) {
+      setLocal({ markers: [], loading: false, error: null });
+      return undefined;
     }
 
-    loadMarkers();
-  }, [selectedYear]); // Reload when selectedYear changes
+    const entry = _ensureGlyphsEntry(selectedYear);
+    entry.refCount += 1;
 
-  return { markers, loading, error };
+    const listener = (s) => setLocal({ ...s });
+    entry.listeners.add(listener);
+
+    setLocal({ ...entry.state });
+
+    if (entry.state.loading) _loadInitialGlyphs(selectedYear, entry);
+    _startGlyphsChannels(selectedYear, entry);
+
+    return () => {
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) _stopGlyphsEntry(selectedYear);
+    };
+  }, [selectedYear]);
+
+  return { markers: local.markers, loading: local.loading, error: local.error };
 }
