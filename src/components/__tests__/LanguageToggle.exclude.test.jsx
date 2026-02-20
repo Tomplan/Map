@@ -13,7 +13,7 @@ jest.mock('../../contexts/DialogContext', () => ({
 import LanguageToggle from '../LanguageToggle';
 
 test('hides German option when excludeCodes includes de', () => {
-  render(<LanguageToggle excludeCodes={["de"]} />);
+  render(<LanguageToggle excludeCodes={['de']} />);
 
   // English and Nederlands should be present
   expect(screen.getByText('English')).toBeInTheDocument();

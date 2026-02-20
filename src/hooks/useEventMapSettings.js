@@ -79,7 +79,12 @@ function _startRealtimeChannel(year, entry) {
     .channel(channelName)
     .on(
       'postgres_changes',
-      { event: '*', schema: 'public', table: 'event_map_settings', filter: `event_year=eq.${year}` },
+      {
+        event: '*',
+        schema: 'public',
+        table: 'event_map_settings',
+        filter: `event_year=eq.${year}`,
+      },
       () => {
         // reload cache on any change for this year
         _loadInitialSettings(year, entry);
@@ -149,10 +154,9 @@ export default function useEventMapSettings(eventYear) {
         // use upsert to simplify create-or-update semantics
         const { data, error } = await supabase
           .from('event_map_settings')
-          .upsert(
-            [{ event_year: eventYear, ...updates, updated_by: user.id }],
-            { onConflict: 'event_year' },
-          )
+          .upsert([{ event_year: eventYear, ...updates, updated_by: user.id }], {
+            onConflict: 'event_year',
+          })
           .select()
           .maybeSingle();
 
@@ -175,7 +179,10 @@ export default function useEventMapSettings(eventYear) {
   const resetToGlobal = useCallback(async () => {
     if (!eventYear) return false;
     try {
-      const { error } = await supabase.from('event_map_settings').delete().eq('event_year', eventYear);
+      const { error } = await supabase
+        .from('event_map_settings')
+        .delete()
+        .eq('event_year', eventYear);
       if (error) throw error;
       const entry = _ensureCacheEntry(eventYear);
       entry.state.settings = null;

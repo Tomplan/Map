@@ -2,7 +2,9 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('../../supabaseClient', () => {
-  const mockSelect = jest.fn(() => ({ eq: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) })) }));
+  const mockSelect = jest.fn(() => ({
+    eq: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) })),
+  }));
   const mockFrom = jest.fn(() => ({ select: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-sub' }));
@@ -14,7 +16,9 @@ jest.mock('../../supabaseClient', () => {
       from: mockFrom,
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
-      auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }) },
+      auth: {
+        getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }),
+      },
     },
     __mocks__: { mockFrom, mockSelect, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
   };

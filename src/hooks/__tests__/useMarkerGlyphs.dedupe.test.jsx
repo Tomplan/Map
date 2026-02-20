@@ -3,13 +3,23 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('../../supabaseClient', () => {
   // core select chain -> returns core ids
-  const mockCoreOrder = jest.fn(() => Promise.resolve({ data: [{ id: 1 }, { id: 2 }], error: null }));
+  const mockCoreOrder = jest.fn(() =>
+    Promise.resolve({ data: [{ id: 1 }, { id: 2 }], error: null }),
+  );
   const mockCoreEq = jest.fn(() => ({ order: mockCoreOrder }));
   const mockCoreLt = jest.fn(() => ({ eq: mockCoreEq }));
   const mockCoreSelect = jest.fn(() => ({ lt: mockCoreLt }));
 
   // appearance select chain -> returns glyphs
-  const mockAppearanceEq = jest.fn(() => Promise.resolve({ data: [{ id: 1, glyph: 'A' }, { id: 2, glyph: 'B' }], error: null }));
+  const mockAppearanceEq = jest.fn(() =>
+    Promise.resolve({
+      data: [
+        { id: 1, glyph: 'A' },
+        { id: 2, glyph: 'B' },
+      ],
+      error: null,
+    }),
+  );
   const mockAppearanceLt = jest.fn(() => ({ eq: mockAppearanceEq }));
   const mockAppearanceSelect = jest.fn(() => ({ lt: mockAppearanceLt }));
 
@@ -30,7 +40,20 @@ jest.mock('../../supabaseClient', () => {
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
     },
-    __mocks__: { mockFrom, mockCoreSelect, mockCoreLt, mockCoreEq, mockCoreOrder, mockAppearanceSelect, mockAppearanceLt, mockAppearanceEq, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
+    __mocks__: {
+      mockFrom,
+      mockCoreSelect,
+      mockCoreLt,
+      mockCoreEq,
+      mockCoreOrder,
+      mockAppearanceSelect,
+      mockAppearanceLt,
+      mockAppearanceEq,
+      mockChannel,
+      mockSubscribe,
+      mockRemoveChannel,
+      mockOn,
+    },
   };
 });
 

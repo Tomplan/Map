@@ -59,7 +59,6 @@ const _pkgs = { en, nl, de };
       i18n.addResource(lang, 'translation', 'branding.eventName', eventTitle);
     }
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.debug('[i18n] failed to add branding.eventName for', lang, e && e.message);
   }
 });
