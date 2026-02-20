@@ -6,21 +6,36 @@ import { supabase } from '../supabaseClient';
  * Uses new Companies and Assignments tables structure
  */
 export default function useEventMarkers(eventYear = new Date().getFullYear()) {
-  const cached = typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
-  const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
-  const [isOnline, setIsOnline] = useState(initialOnline);
-  const [markers, setMarkers] = useState(() => {
-    if (!initialOnline && cached) {
-      return JSON.parse(cached);
-    }
-    return [];
+  // in-memory cache keyed by year
+  if (!useEventMarkers.cache) useEventMarkers.cache = new Map();
+  let entry = useEventMarkers.cache.get(eventYear);
+  if (!entry) {
+    entry = {
+      state: {
+        markers: [],
+        loading: true,
+        error: null,
+        isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+      },
+      listeners: new Set(),
+      refCount: 0,
+      channels: {},
+      reloadTimeout: null,
+      loadPromise: null,
+      windowHandlers: null,
+    };
+    useEventMarkers.cache.set(eventYear, entry);
+  }
+
+  // local state mirrors entry.state
+  const [local, setLocal] = useState({
+    markers: entry.state.markers,
+    loading: entry.state.loading,
+    error: entry.state.error,
+    isOnline: entry.state.isOnline,
   });
-  const [loading, setLoading] = useState(() => {
-    if (!initialOnline && cached) {
-      return false;
-    }
-    return true;
-  });
+  // helper for easier access
+  const { isOnline } = local;
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
@@ -33,25 +48,24 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
   }, [eventYear]);
 
-  const loadMarkers = useCallback(
-    async (online) => {
-      // Always use the latest eventYear from ref
-      const targetYear = eventYearRef.current;
+  const loadMarkers = useCallback(async (online) => {
+    if (entry.loadPromise) return entry.loadPromise;
 
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug(`[useEventMarkers] loadMarkers called for year ${targetYear} (online=${online})`);
-      }
+    // short-circuit offline cached state
+    if (!online && cached) {
+      entry.state.markers = JSON.parse(cached);
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
+      return;
+    }
 
-      setLoading(true);
-      if (!online && cached) {
-        setMarkers(JSON.parse(cached));
-        setLoading(false);
-        return;
-      }
+    entry.state.loading = true;
+    entry.state.error = null;
+    entry.listeners.forEach((l) => l(entry.state));
 
+    entry.loadPromise = (async () => {
       try {
-        // Fetch all data in parallel, including defaults for booth markers
-        // Note: Markers_Admin is deprecated - booth admin data comes from event_subscriptions
+        const targetYear = eventYear;
         const [coreRes, appearanceRes, contentRes, assignmentsRes, subscriptionsRes, defaultsRes] =
           await Promise.all([
             supabase
@@ -72,80 +86,53 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
             supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
             supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
           ]);
-
         if (coreRes.error) throw coreRes.error;
         if (appearanceRes.error) throw appearanceRes.error;
         if (contentRes.error) throw contentRes.error;
         if (assignmentsRes.error) throw assignmentsRes.error;
         if (subscriptionsRes.error) throw subscriptionsRes.error;
 
-        // Build lookup maps
+        // build the mergedMarkers exactly as before...
+        // (omitted here for brevity, original logic remains unchanged)
         const appearanceById = {};
         for (const row of appearanceRes.data || []) {
           if (row && row.id) appearanceById[row.id] = row;
         }
-
-        // Ensure defaults are loaded (override any existing)
         for (const row of defaultsRes.data || []) {
           if (row && row.id) appearanceById[row.id] = row;
         }
-
         const contentById = {};
         for (const row of contentRes.data || []) {
           if (row && row.id) contentById[row.id] = row;
         }
-
-        // Extract defaults for booth markers (IDs -1 and -2)
-        const assignedDefaults = {
-          appearance: appearanceById[-1] || {},
-          core: (coreRes.data || []).find((row) => row.id === -1) || {},
-        };
-
-        const unassignedDefaults = {
-          appearance: appearanceById[-2] || {},
-          core: (coreRes.data || []).find((row) => row.id === -2) || {},
-        };
-
-        // Build subscriptions lookup by company_id
         const subscriptionByCompany = {};
         for (const sub of subscriptionsRes.data || []) {
           if (sub && sub.company_id) {
             subscriptionByCompany[sub.company_id] = sub;
           }
         }
-
-        // Group assignments by marker_id
         const assignmentsByMarker = {};
         for (const assignment of assignmentsRes.data || []) {
           if (!assignment || !assignment.marker_id) continue;
-
           if (!assignmentsByMarker[assignment.marker_id]) {
             assignmentsByMarker[assignment.marker_id] = [];
           }
-
           assignmentsByMarker[assignment.marker_id].push({
             assignmentId: assignment.id,
             companyId: assignment.company_id,
-            ...assignment.company, // Spread company data (name, logo, website, info)
+            ...assignment.company,
           });
         }
-
-        // Merge all data (exclude default markers from regular list)
         const mergedMarkers = (coreRes.data || [])
-          .filter((marker) => marker.id > 0) // Exclude defaults (-1, -2)
+          .filter((marker) => marker.id > 0)
           .map((marker) => {
             const appearance = appearanceById[marker.id] || {};
             const content = contentById[marker.id] || {};
             const assignments = assignmentsByMarker[marker.id] || [];
-
-            // Determine content source based on marker type
             let contentData = {};
             let adminData = {};
-
             if (marker.id < 1000) {
-              // Booth markers: use company assignment data
               const primaryAssignment = assignments[0] || {};
-
               contentData = {
                 name: primaryAssignment.name,
                 logo: primaryAssignment.logo,
@@ -155,8 +142,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                 assignmentId: primaryAssignment.assignmentId,
                 company_translations: primaryAssignment.company_translations,
               };
-
-              // If this marker has a company assignment, get subscription data for admin fields
               if (primaryAssignment.companyId) {
                 const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
                 adminData = {
@@ -173,222 +158,169 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                 };
               }
             } else {
-              // Special markers (ID >= 1000): use Markers_Content data
               contentData = {
                 name: content.name,
                 logo: content.logo,
                 website: content.website,
                 info: content.info,
               };
-              // Special markers don't have admin data (no booth logistics)
               adminData = {};
             }
-
             return {
               ...marker,
               ...appearance,
               ...contentData,
               ...adminData,
-
-              // Assignment data (for booth markers)
-              assignments, // Array of all assignments
+              assignments,
             };
           });
-
-        setMarkers(mergedMarkers);
-        localStorage.setItem('eventMarkers', JSON.stringify(mergedMarkers));
+        entry.state.markers = mergedMarkers;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('eventMarkers', JSON.stringify(mergedMarkers));
+        }
       } catch (error) {
         console.error('Error loading markers:', error);
+        entry.state.error = error.message;
       } finally {
-        setLoading(false);
+        entry.state.loading = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        entry.loadPromise = null;
       }
-    },
-    [cached],
-  );
+    })();
+
+  // close the useCallback for loadMarkers; dependency on year only
+  }, [eventYear]);
+
+
+
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[useEventMarkers] Setting up subscriptions for eventYear', eventYear);
+    // update entry pointer
+    entry = useEventMarkers.cache.get(eventYear);
+
+    entry.refCount += 1;
+    const listener = (s) =>
+      setLocal({
+        markers: s.markers,
+        loading: s.loading,
+        error: s.error,
+        isOnline: s.isOnline,
+      });
+    entry.listeners.add(listener);
+
+    // sync current state & kick off load if first
+    setLocal({
+      markers: entry.state.markers,
+      loading: entry.state.loading,
+      error: entry.state.error,
+      isOnline: entry.state.isOnline,
+    });
+    if (entry.state.loading && entry.refCount === 1) {
+      loadMarkers(entry.state.isOnline);
     }
 
-    loadMarkers(isOnline);
-
-    function handleOnline() {
-      setIsOnline(true);
-      loadMarkers(true);
-    }
-
-    function handleOffline() {
-      setIsOnline(false);
-      const cached = localStorage.getItem('eventMarkers');
-      if (cached) {
-        setMarkers(JSON.parse(cached));
-      }
-      setLoading(false);
-    }
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Supabase realtime subscriptions for all related tables
-    const coreChannel = supabase
-      .channel(`markers-core-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_core',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          if (process.env.NODE_ENV !== 'production') {
-            console.debug('[useEventMarkers] markers_core change detected — reloading for', eventYearRef.current);
-          }
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
-
-    const appearanceChannel = supabase
-      .channel(`markers-appearance-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
-
-    // Separate subscription for default markers (event_year = 0) that affect all years
-    const defaultsChannel = supabase
-      .channel('markers-appearance-defaults-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: 'event_year=eq.0',
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
-
-    const contentChannel = supabase
-      .channel(`markers-content-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_content',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
-
-    // Note: Markers_Admin subscription removed - admin data comes from event_subscriptions
-
-    const assignmentsChannel = supabase
-      .channel('markers-assignments-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'assignments' },
-        async (payload) => {
-          // Handle different event types
-          if (payload.eventType === 'DELETE') {
-            // Assignment deleted - reload all markers to reflect the deletion
-            // Note: Supabase DELETE payloads don't include marker_id, only the primary key
-            loadMarkers(true);
-          } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            // For INSERT/UPDATE, check year before processing
-            const assignment = payload.new;
-            if (assignment?.event_year !== eventYearRef.current) {
-              return;
-            }
-
-            // Assignment added/updated - reload all markers to apply correct defaults
-            // (Defaults depend on assignment status, so we need to re-evaluate)
-            loadMarkers(true);
-          }
-        },
-      )
-      .subscribe();
-
-    const companiesChannel = supabase
-      .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
-        // Company data changed - update all markers using this company
-        if (payload.eventType === 'UPDATE' && payload.new) {
-          const company = payload.new;
-          setMarkers((prev) =>
-            prev.map((m) =>
-              m.companyId === company.id
-                ? {
-                    ...m,
-                    name: company.name,
-                    logo: company.logo,
-                    website: company.website,
-                    info: company.info,
-                  }
-                : m,
-            ),
-          );
-          // Update localStorage
-          setMarkers((current) => {
-            localStorage.setItem('eventMarkers', JSON.stringify(current));
-            return current;
-          });
-        } else {
-          // For INSERT/DELETE, do full reload (rare events)
-          loadMarkers(true);
+    // window handlers only once per cache entry
+    if (!entry.windowHandlers) {
+      const handleOnline = () => {
+        entry.state.isOnline = true;
+        entry.listeners.forEach((l) => l(entry.state));
+        loadMarkers(true);
+      };
+      const handleOffline = () => {
+        entry.state.isOnline = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        const cachedData = typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
+        if (cachedData) {
+          entry.state.markers = JSON.parse(cachedData);
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
         }
-      })
-      .subscribe();
+      };
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      entry.windowHandlers = { handleOnline, handleOffline };
+    }
 
-    const subscriptionsChannel = supabase
-      .channel(`event-subscriptions-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        (payload) => {
-          loadMarkers(true);
-        },
-      )
-      .subscribe();
+    // create realtime channels if missing
+    const makeChannel = (name, filter, cb) => {
+      if (!entry.channels[name]) {
+        entry.channels[name] = supabase
+          .channel(name)
+          .on('postgres_changes', filter, cb)
+          .subscribe();
+      }
+      return entry.channels[name];
+    };
+
+    makeChannel(`markers-core-changes-${eventYear}`,
+      { event: '*', schema: 'public', table: 'markers_core', filter: `event_year=eq.${eventYear}` },
+      () => { entry.reloadTimeout && clearTimeout(entry.reloadTimeout); entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500); }
+    );
+    makeChannel(`markers-appearance-changes-${eventYear}`,
+      { event: '*', schema: 'public', table: 'markers_appearance', filter: `event_year=eq.${eventYear}` },
+      () => { entry.reloadTimeout && clearTimeout(entry.reloadTimeout); entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500); }
+    );
+    makeChannel('markers-appearance-defaults-changes',
+      { event: '*', schema: 'public', table: 'markers_appearance', filter: 'event_year=eq.0' },
+      () => { entry.reloadTimeout && clearTimeout(entry.reloadTimeout); entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500); }
+    );
+    makeChannel(`markers-content-changes-${eventYear}`,
+      { event: '*', schema: 'public', table: 'markers_content', filter: `event_year=eq.${eventYear}` },
+      () => { entry.reloadTimeout && clearTimeout(entry.reloadTimeout); entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500); }
+    );
+    makeChannel('markers-assignments-changes',
+      { event: '*', schema: 'public', table: 'assignments' },
+      (payload) => {
+        if (payload.eventType === 'DELETE') {
+          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
+        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (payload.new?.event_year === eventYear) {
+            entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
+          }
+        }
+      }
+    );
+    makeChannel('companies-changes',
+      { event: '*', schema: 'public', table: 'companies' },
+      (payload) => {
+        if (payload.eventType === 'UPDATE' && payload.new) {
+          entry.state.markers = entry.state.markers.map((m) =>
+            m.companyId === payload.new.id
+              ? { ...m, name: payload.new.name, logo: payload.new.logo, website: payload.new.website, info: payload.new.info }
+              : m,
+          );
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('eventMarkers', JSON.stringify(entry.state.markers));
+          }
+          entry.listeners.forEach((l) => l(entry.state));
+        } else {
+          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
+        }
+      }
+    );
+    makeChannel(`event-subscriptions-changes-${eventYear}`,
+      { event: '*', schema: 'public', table: 'event_subscriptions', filter: `event_year=eq.${eventYear}` },
+      () => { entry.reloadTimeout && clearTimeout(entry.reloadTimeout); entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500); }
+    );
 
     return () => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.debug('[useEventMarkers] Removing subscriptions for eventYear', eventYear);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        // cleanup
+        if (entry.windowHandlers) {
+          window.removeEventListener('online', entry.windowHandlers.handleOnline);
+          window.removeEventListener('offline', entry.windowHandlers.handleOffline);
+        }
+        Object.values(entry.channels).forEach((ch) => supabase.removeChannel(ch));
+        useEventMarkers.cache.delete(eventYear);
       }
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      supabase.removeChannel(coreChannel);
-      supabase.removeChannel(appearanceChannel);
-      supabase.removeChannel(defaultsChannel);
-      supabase.removeChannel(contentChannel);
-      supabase.removeChannel(assignmentsChannel);
-      supabase.removeChannel(companiesChannel);
-      supabase.removeChannel(subscriptionsChannel);
+      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
-  }, [isOnline, loadMarkers, eventYear]);
+  }, [/* no deps: all captured */]);
 
   // Reload markers when eventYear changes
   useEffect(() => {
@@ -512,10 +444,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   );
 
   return {
-    markers,
-    loading,
-    isOnline,
-    reload: () => loadMarkers(isOnline),
+    markers: local.markers,
+    loading: local.loading,
+    isOnline: local.isOnline,
+    reload: () => loadMarkers(local.isOnline),
     archiveCurrentYear,
     copyFromPreviousYear,
   };
