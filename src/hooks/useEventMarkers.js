@@ -24,21 +24,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       refCount: 0,
       channels: {},
       reloadTimeout: null,
-      loadPromise: null,
-      windowHandlers: null,
-    };
-    useEventMarkers.cache.set(eventYear, entry);
-  }
-
-  // local state mirrors entry.state
-  const [local, setLocal] = useState({
-    markers: entry.state.markers,
-    loading: entry.state.loading,
-    error: entry.state.error,
-    isOnline: entry.state.isOnline,
-  });
-  // helper for easier access
-  const { isOnline } = local;
+      notifyTimeout: null,
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
@@ -291,6 +277,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         refCount: 0,
         channels: {},
         reloadTimeout: null,
+        notifyTimeout: null,
         loadPromise: null,
         windowHandlers: null,
       };
@@ -434,10 +421,14 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                 }
               : m,
           );
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('eventMarkers', JSON.stringify(entry.state.markers));
-          }
-          entry.listeners.forEach((l) => l(entry.state));
+
+          if (entry.notifyTimeout) clearTimeout(entry.notifyTimeout);
+          entry.notifyTimeout = setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('eventMarkers', JSON.stringify(entry.state.markers));
+            }
+            entry.listeners.forEach((l) => l(entry.state));
+          }, 300);
         } else {
           entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
           entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
@@ -473,6 +464,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         // useEventMarkers.cache.delete(eventYear); // CACHE PERSISTENCE FIX
       }
       if (entry && entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+      if (entry && entry.notifyTimeout) clearTimeout(entry.notifyTimeout);
     };
   }, [eventYear, loadMarkers]);
 
