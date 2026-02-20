@@ -44,8 +44,8 @@ describe('ExportButton companies export', () => {
     // Setup mock categories for this test
     useCategories.mockReturnValue({ 
       categories: [
-        { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] },
-        { slug: 'cat2', translations: [{ language: 'nl', name: 'Category Two' }] }
+        { slug: 'cat1', category_translations: [{ language: 'nl', name: 'Category One' }] },
+        { slug: 'cat2', category_translations: [{ language: 'nl', name: 'Category Two' }] }
       ], 
       loading: false 
     });
@@ -144,7 +144,7 @@ describe('ExportButton companies export', () => {
     // Setup mock categories 
     useCategories.mockReturnValue({ 
       categories: [
-        { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] },
+        { slug: 'cat1', category_translations: [{ language: 'nl', name: 'Category One' }] },
       ], 
       loading: false 
     });
@@ -168,6 +168,18 @@ describe('ExportButton companies export', () => {
     }));
 
     supabase.from.mockImplementation((table) => {
+      // Mock categories fetch
+      if (table === 'categories') {
+         return {
+             select: jest.fn().mockReturnThis(),
+             order: jest.fn().mockResolvedValue({ 
+                 data: [
+                    { slug: 'cat1', category_translations: [{ language: 'nl', name: 'Category One' }] }
+                 ], 
+                 error: null 
+             })
+         }
+      }
       if (table === 'company_categories') {
         return {
           select: mockSelect
