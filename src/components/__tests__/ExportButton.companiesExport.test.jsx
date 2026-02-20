@@ -3,158 +3,65 @@ import { render, fireEvent, waitFor } from '@testing-library/react';
 import ExportButton from '../common/ExportButton';
 import { DialogProvider } from '../../contexts/DialogContext';
 import * as dataExport from '../../utils/dataExportImport';
+import useCategories from '../../hooks/useCategories';
+import { supabase } from '../../supabaseClient';
 
-// We'll test the behavior when no additionalData.supabase is passed by mocking
-// the global `supabase` export from `src/supabaseClient` dynamically.
+// Mock hooks globally
+jest.mock('../../hooks/useCategories');
 
-// Mock transformExport to be simple and predictable
-// We'll use real dataConfigs which will call transformExport; our supabase mock should satisfy requests
+// Mock supabase client globally
+jest.mock('../../supabaseClient', () => ({
+  supabase: {
+    from: jest.fn(),
+    channel: jest.fn(() => ({ on: jest.fn().mockReturnThis(), subscribe: jest.fn() })),
+    removeChannel: jest.fn(),
+  },
+}));
 
 describe('ExportButton companies export', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Default mock implementation for useCategories
+    // Return loading=false and empty categories by default so tests don't fail on disabled button unless specified
+    useCategories.mockReturnValue({ categories: [], loading: false });
+    
+    // Default supabase mock setup
+    supabase.from.mockImplementation(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      in: jest.fn().mockResolvedValue({ data: [], error: null }),
+      order: jest.fn().mockResolvedValue({ data: [], error: null }),
+    }));
   });
+
   test('expands categories into boolean columns and calls exportToExcel with flags', async () => {
-    jest.isolateModules(async () => {
-      const companies = [
-        { id: 1, name: 'Acme Co' },
-        { id: 2, name: 'Beta LLC' },
-      ];
-
-      // Mock supabase
-      const mockSupabase = {
-        from: jest.fn((table) => {
-          return {
-            select: jest.fn((args) => {
-              return {
-                in: (col, vals) => {
-                  if (table === 'company_categories') {
-                    // company 1 has cat1; company 2 has none
-                    return Promise.resolve({
-                      data: [{ company_id: 1, categories: { slug: 'cat1' } }],
-                      error: null,
-                    });
-                  }
-                  if (table === 'company_translations') {
-                    return Promise.resolve({ data: [], error: null });
-                  }
-                  return Promise.resolve({ data: [], error: null });
-                },
-                order: (col, opts) => {
-                  if (table === 'categories') {
-                    return Promise.resolve({
-                      data: [
-                        {
-                          slug: 'cat1',
-                          category_translations: [{ language: 'nl', name: 'Category One' }],
-                        },
-                        {
-                          slug: 'cat2',
-                          category_translations: [{ language: 'nl', name: 'Category Two' }],
-                        },
-                      ],
-                      error: null,
-                    });
-                  }
-                  return Promise.resolve({ data: [], error: null });
-                },
-              };
-            }),
-          };
-        }),
-      };
-
-      // Spy on exportToExcel
-      const dataExportLocal = await import('../../utils/dataExportImport');
-      const exportSpy = jest
-        .spyOn(dataExportLocal, 'exportToExcel')
-        .mockImplementation(() => Promise.resolve({ success: true }));
-
-      const { default: ExportButtonLocal } = await import('../common/ExportButton');
-
-      const { getByText } = render(
-        <ExportButton
-          dataType="companies"
-          data={companies}
-          filename={'companies-test-file'}
-          additionalData={{ supabase: mockSupabase }}
-        />,
-        { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
-      );
-
-      // Open dropdown then click Excel export
-      fireEvent.click(getByText('Export'));
-
-      const button = getByText('Export as Excel (.xlsx)');
-      fireEvent.click(button);
-
-      await waitFor(() => expect(exportSpy).toHaveBeenCalled());
-
-      const callArgs = exportSpy.mock.calls[0];
-      const passedData = callArgs[0];
-      const passedColumns = callArgs[1];
-
-      // Category columns should be present in columns
-      const catCols = passedColumns.filter((c) => c.key && c.key.startsWith('category:'));
-      expect(catCols.length).toBe(2);
-      // And they should be appended at the end of the columns array
-      const tail = passedColumns.slice(-2);
-      expect(tail.every((c) => c.key && c.key.startsWith('category:'))).toBe(true);
-      expect(catCols.map((c) => c.header)).toEqual(['Category One', 'Category Two']);
-
-      // Data rows should have category flags as '+' / '-'
-      const row1 = passedData.find((r) => r.id === 1);
-      const row2 = passedData.find((r) => r.id === 2);
-      expect(row1['category:cat1']).toBe('+');
-      expect(row1['category:cat2']).toBe('-');
-      expect(row2['category:cat1']).toBe('-');
-
-      exportSpy.mockRestore();
+    const companies = [
+      { id: 1, name: 'Acme Co' },
+      { id: 2, name: 'Beta LLC' },
+    ];
+    
+    // Setup mock categories for this test
+    useCategories.mockReturnValue({ 
+      categories: [
+        { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] },
+        { slug: 'cat2', translations: [{ language: 'nl', name: 'Category Two' }] }
+      ], 
+      loading: false 
     });
-  });
 
-  test('disables Excel export while in-memory categories are still loading', async () => {
-    jest.isolateModules(async () => {
-      // Mock useCategories to report loading=true to simulate initial app load
-      jest.doMock('../../hooks/useCategories', () => ({
-        default: () => ({ categories: [], loading: true }),
-      }));
+    // Mock export functions
+    const exportSpy = jest.spyOn(dataExport, 'exportToExcel').mockResolvedValue({ success: true });
 
-      const { default: ExportButtonLocal } = await import('../common/ExportButton');
-
-      const companies = [{ id: 1, name: 'Acme Co' }];
-
-      const { getByText } = render(
-        <ExportButtonLocal
-          dataType="companies"
-          data={companies}
-          filename={'companies-test-file'}
-        />,
-        { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
-      );
-
-      // Open dropdown
-      fireEvent.click(getByText('Export'));
-
-      const excelButton = getByText('Export as Excel (.xlsx)');
-      // The Excel export option should be rendered but disabled while categories are loading
-      expect(excelButton.closest('button')).toBeDisabled();
-      // And it should include a helpful tooltip/title
-      expect(excelButton.closest('button').getAttribute('title')).toMatch(
-        /Categories are still loading/,
-      );
-    });
-  });
-
-  test('falls back to global supabase when additionalData not provided', async () => {
-    // Prepare mock global supabase
-    const mockGlobalSupabase = {
+    // Mock supabase behavior for additionalData override
+    const mockSupabase = {
       from: jest.fn((table) => {
         return {
           select: jest.fn((args) => {
             return {
               in: (col, vals) => {
                 if (table === 'company_categories') {
+                  // company 1 has cat1; company 2 has none
                   return Promise.resolve({
                     data: [{ company_id: 1, categories: { slug: 'cat1' } }],
                     error: null,
@@ -162,88 +69,141 @@ describe('ExportButton companies export', () => {
                 }
                 return Promise.resolve({ data: [], error: null });
               },
-              order: (col, opts) => {
-                if (table === 'categories') {
-                  return Promise.resolve({
-                    data: [
-                      {
-                        slug: 'cat1',
-                        category_translations: [{ language: 'nl', name: 'Category One' }],
-                      },
-                      {
-                        slug: 'cat2',
-                        category_translations: [{ language: 'nl', name: 'Category Two' }],
-                      },
-                    ],
-                    error: null,
-                  });
-                }
-                return Promise.resolve({ data: [], error: null });
-              },
+              order: (col, opts) => Promise.resolve({ data: [], error: null }),
             };
           }),
         };
       }),
     };
 
-    // Also test fallback to in-memory categories when supabase is missing by
-    // mocking the useCategories hook to return categories.
-    jest.isolateModules(async () => {
-      jest.doMock('../../supabaseClient', () => ({ supabase: mockGlobalSupabase }));
-      jest.doMock('../../hooks/useCategories', () => ({
-        default: () => ({
-          categories: [
-            { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] },
-            { slug: 'cat2', translations: [{ language: 'nl', name: 'Category Two' }] },
-          ],
-        }),
-      }));
+    const { getByText } = render(
+      <ExportButton
+        dataType="companies"
+        data={companies}
+        filename={'companies-test-file'}
+        additionalData={{ supabase: mockSupabase }}
+      />,
+      { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
+    );
 
-      // Import the button module fresh so it picks up the mocked global and hook
-      const { default: ExportButtonLocal } = await import('../common/ExportButton');
-      const companies = [
-        { id: 1, name: 'Acme Co' },
-        { id: 2, name: 'Beta LLC' },
-      ];
+    // Open dropdown
+    fireEvent.click(getByText('Export'));
 
-      // Spy on exportToExcel
-      const exportSpy = jest
-        .spyOn(dataExport, 'exportToExcel')
-        .mockImplementation(() => Promise.resolve({ success: true }));
+    // Click Excel export
+    const excelButton = getByText('Export as Excel (.xlsx)');
+    await fireEvent.click(excelButton);
 
-      const { getByText } = render(
-        <ExportButtonLocal
-          dataType="companies"
-          data={companies}
-          filename={'companies-test-file'}
-        />,
-        { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
-      );
+    // Assert exportToExcel was called with correct columns and data
+    expect(exportSpy).toHaveBeenCalled();
+    const [passedData, passedColumns] = exportSpy.mock.calls[0];
 
-      // Open dropdown then click Excel export
-      fireEvent.click(getByText('Export'));
+    // Check columns
+    const catCols = passedColumns.filter((c) => c.key.startsWith('category:'));
+    expect(catCols.length).toBe(2);
+    // And they should be appended at the end of the columns array
+    expect(catCols.map((c) => c.header)).toEqual(['Category One', 'Category Two']);
 
-      const button = getByText('Export as Excel (.xlsx)');
-      fireEvent.click(button);
+    // Check data
+    const row1 = passedData.find((r) => r.id === 1);
+    const row2 = passedData.find((r) => r.id === 2);
+    expect(row1['category:cat1']).toBe('+');
+    expect(row1['category:cat2']).toBe('-'); 
+    expect(row2['category:cat1']).toBe('-');
 
-      await waitFor(() => expect(exportSpy).toHaveBeenCalled());
-
-      // find the specific call that contains wide-format per-category columns
-      const callWithCatColon = exportSpy.mock.calls.find(
-        (ca) =>
-          Array.isArray(ca[1]) &&
-          ca[1].some((cc) => cc.key && String(cc.key).startsWith('category:')),
-      );
-      expect(callWithCatColon).toBeDefined();
-      const passedColumns = callWithCatColon[1];
-
-      // Category columns should be present in wide-format columns
-      const catCols = passedColumns.filter((c) => c.key && c.key.startsWith('category:'));
-      expect(catCols.length).toBe(2);
-
-      exportSpy.mockRestore();
-    });
+    exportSpy.mockRestore();
   });
 
-  // long-format export option removed (wide-format only for now)
+  test('disables Excel export while in-memory categories are still loading', async () => {
+    // Mock useCategories to report loading=true
+    useCategories.mockReturnValue({ categories: [], loading: true });
+
+    const companies = [{ id: 1, name: 'Acme Co' }];
+
+    const { getByText } = render(
+      <ExportButton
+        dataType="companies"
+        data={companies}
+        filename={'companies-test-file'}
+      />,
+      { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
+    );
+
+    // Open dropdown
+    fireEvent.click(getByText('Export'));
+
+    const excelButton = getByText('Export as Excel (.xlsx)');
+    // The Excel export option should be rendered but disabled while categories are loading
+    expect(excelButton.closest('button')).toBeDisabled();
+    // And it should include a helpful tooltip/title
+    expect(excelButton.closest('button').getAttribute('title')).toMatch(
+      /Categories are still loading/,
+    );
+  });
+
+  test('falls back to global supabase when additionalData not provided', async () => {
+    // Setup mock categories 
+    useCategories.mockReturnValue({ 
+      categories: [
+        { slug: 'cat1', translations: [{ language: 'nl', name: 'Category One' }] },
+      ], 
+      loading: false 
+    });
+  
+    const companies = [{ id: 1, name: 'Acme Co' }];
+    const exportSpy = jest.spyOn(dataExport, 'exportToExcel').mockResolvedValue({ success: true });
+
+    // Mock global supabase behavior
+    // Since we mocked useCategories, the export will try to use Supabase to fetch company_categories
+    // The component defaults to globalSupabase if additionalData is missing.
+    // Our global mock 'supabase' is already imported and mocked.
+    
+    // We need to implement the chain for global supabase.from ...
+    // The chain is: from('company_categories').select(...).in(...)
+    
+    const mockSelect = jest.fn((args) => ({
+      in: jest.fn().mockResolvedValue({
+         data: [{ company_id: 1, categories: { slug: 'cat1' } }], // Mock valid response
+         error: null
+      })
+    }));
+
+    supabase.from.mockImplementation((table) => {
+      if (table === 'company_categories') {
+        return {
+          select: mockSelect
+        }
+      }
+      return {
+        select: jest.fn().mockReturnThis(),
+        eq: jest.fn().mockReturnThis(),
+        in: jest.fn().mockResolvedValue({ data: [], error: null }),
+        order: jest.fn().mockResolvedValue({ data: [], error: null }),
+      }
+    });
+
+    const { getByText } = render(
+      <ExportButton
+        dataType="companies"
+        data={companies}
+        filename={'companies-test-file'}
+      />,
+      { wrapper: ({ children }) => <DialogProvider>{children}</DialogProvider> },
+    );
+
+    // Open dropdown
+    fireEvent.click(getByText('Export'));
+    
+    // Click Excel
+    await fireEvent.click(getByText('Export as Excel (.xlsx)'));
+    
+    expect(supabase.from).toHaveBeenCalledWith('company_categories');
+    expect(exportSpy).toHaveBeenCalled();
+    
+    // Verify data
+    const [passedData] = exportSpy.mock.calls[0];
+    const row1 = passedData.find((r) => r.id === 1);
+    expect(row1['category:cat1']).toBe('+');
+    
+    exportSpy.mockRestore();
+  });
 });

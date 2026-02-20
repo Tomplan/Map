@@ -31,46 +31,56 @@ export default function useEventSubscriptions(eventYear) {
 
   // Load subscriptions for the given year
   const loadSubscriptions = useCallback(async (isReload = false) => {
+    // If we have a pending load and this isn't a forced reload, return the existing promise
+    if (entry.loadPromise && !isReload) {
+      return entry.loadPromise;
+    }
+
     // If we already have data and aren't forcing a reload, return early
     if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
       if (local.loading) {
         setLocal((prev) => ({ ...prev, loading: false }));
       }
-      return;
+      return Promise.resolve();
     }
 
-    try {
-      // Clear any pending debounced reload
-      if (entry.reloadTimeout) {
-        clearTimeout(entry.reloadTimeout);
-        entry.reloadTimeout = null;
+    entry.loadPromise = (async () => {
+      try {
+        // Clear any pending debounced reload
+        if (entry.reloadTimeout) {
+          clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = null;
+        }
+
+        entry.state.loading = true;
+        entry.state.error = null;
+
+        const { data, error: fetchError } = await supabase
+          .from('event_subscriptions')
+          .select(
+            `
+            *,
+              company:companies(id, name, logo, website, info, contact, phone, email)
+
+          `,
+          )
+          .eq('event_year', eventYear)
+          .order('id', { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        entry.state.subscriptions = data || [];
+      } catch (err) {
+        console.error('Error loading event subscriptions:', err);
+        entry.state.error = err.message;
+      } finally {
+        entry.state.loading = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        entry.loadPromise = null;
       }
+    })();
 
-      entry.state.loading = true;
-      entry.state.error = null;
-
-      const { data, error: fetchError } = await supabase
-        .from('event_subscriptions')
-        .select(
-          `
-          *,
-            company:companies(id, name, logo, website, info, contact, phone, email)
-
-        `,
-        )
-        .eq('event_year', eventYear)
-        .order('id', { ascending: true });
-
-      if (fetchError) throw fetchError;
-
-      entry.state.subscriptions = data || [];
-    } catch (err) {
-      console.error('Error loading event subscriptions:', err);
-      entry.state.error = err.message;
-    } finally {
-      entry.state.loading = false;
-      entry.listeners.forEach((l) => l(entry.state));
-    }
+    await entry.loadPromise;
   }, [eventYear]);
 
   // Subscribe a company to the event year

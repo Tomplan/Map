@@ -6,9 +6,7 @@ import normalizePhone from '../utils/phone';
  * Hook to manage Companies data
  * Companies are permanent and reusable across years
  */
-const useCompaniesCache = {
-  // Use a simple object as a singleton cache
-  // This persists across unmounts/remounts
+const defaultCache = {
   state: {
     companies: [],
     loading: true,
@@ -20,13 +18,32 @@ const useCompaniesCache = {
   reloadTimeout: null,
 };
 
+// We use a property on the function to allow seeking/resetting for tests
+// If it doesn't exist yet, initialize it
+if (!useCompanies.cache) {
+  useCompanies.cache = defaultCache;
+}
+
 /**
  * Companies are permanent and reusable across years
  */
 export default function useCompanies() {
-  const entry = useCompaniesCache;
-  // expose cache for testing
-  useCompanies.cache = useCompaniesCache;
+  // Ensure cache exists (in case it was cleared by tests or first run)
+  if (!useCompanies.cache) {
+    useCompanies.cache = {
+      state: {
+        companies: [],
+        loading: true,
+        error: null,
+      },
+      listeners: new Set(),
+      refCount: 0,
+      loadPromise: null,
+      reloadTimeout: null,
+    };
+  }
+  
+  const entry = useCompanies.cache;
 
   const [local, setLocal] = useState({
     companies: entry.state.companies,
@@ -37,7 +54,7 @@ export default function useCompanies() {
   // Load all companies (updates cache entry)
   const loadCompanies = useCallback(async (isReload = false) => {
     // always grab the latest cache entry
-    const e = useCompaniesCache;
+    const e = useCompanies.cache;
 
     // if a load is already in progress return the existing promise
     if (e.loadPromise) {
