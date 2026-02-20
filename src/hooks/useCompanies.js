@@ -7,22 +7,36 @@ import normalizePhone from '../utils/phone';
  * Companies are permanent and reusable across years
  */
 export default function useCompanies() {
-  const [companies, setCompanies] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const reloadTimeoutRef = useRef(null);
+  // shared cache entry (singleton)
+  if (!useCompanies.cache) {
+    useCompanies.cache = {
+      state: { companies: [], loading: true, error: null },
+      listeners: new Set(),
+      refCount: 0,
+      channel: null,
+      reloadTimeout: null,
+      loadPromise: null,
+    };
+  }
+  const entry = useCompanies.cache;
 
-  // Load all companies
+  const [local, setLocal] = useState({
+    companies: entry.state.companies,
+    loading: entry.state.loading,
+    error: entry.state.error,
+  });
+
+  // Load all companies (updates cache entry)
   const loadCompanies = useCallback(async () => {
     try {
       // Clear any pending debounced reload
-      if (reloadTimeoutRef.current) {
-        clearTimeout(reloadTimeoutRef.current);
-        reloadTimeoutRef.current = null;
+      if (entry.reloadTimeout) {
+        clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = null;
       }
 
-      setLoading(true);
-      setError(null);
+      entry.state.loading = true;
+      entry.state.error = null;
 
       const { data, error: fetchError } = await supabase
         .from('companies')
@@ -31,12 +45,13 @@ export default function useCompanies() {
 
       if (fetchError) throw fetchError;
 
-      setCompanies(data || []);
+      entry.state.companies = data || [];
     } catch (err) {
       console.error('Error loading companies:', err);
-      setError(err.message);
+      entry.state.error = err.message;
     } finally {
-      setLoading(false);
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
     }
   }, []);
 
@@ -107,41 +122,62 @@ export default function useCompanies() {
   // Search companies by name
   const searchCompanies = useCallback(
     (searchTerm) => {
-      if (!searchTerm) return companies;
+      const list = local.companies || [];
+      if (!searchTerm) return list;
       const term = searchTerm.toLowerCase();
-      return companies.filter((c) => c.name?.toLowerCase().includes(term));
+      return list.filter((c) => c.name?.toLowerCase().includes(term));
     },
-    [companies],
+    [local],
   );
 
-  // Initial load
-  useEffect(() => {
-    loadCompanies();
-  }, [loadCompanies]);
 
   // Subscribe to realtime changes (debounced to batch multiple rapid changes)
   useEffect(() => {
-    const channel = supabase
-      .channel('companies-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
-        // Debounce: wait 500ms after last change before reloading
-        if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-        reloadTimeoutRef.current = setTimeout(() => {
-          loadCompanies();
-        }, 500);
-      })
-      .subscribe();
+    entry.refCount += 1;
+    const listener = (s) => setLocal({
+      companies: s.companies,
+      loading: s.loading,
+      error: s.error,
+    });
+    entry.listeners.add(listener);
+
+    // sync immediately
+    setLocal({
+      companies: entry.state.companies,
+      loading: entry.state.loading,
+      error: entry.state.error,
+    });
+    if (entry.state.loading && entry.refCount === 1) {
+      loadCompanies();
+    }
+
+    if (!entry.channel) {
+      entry.channel = supabase
+        .channel('companies-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
+          if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = setTimeout(() => {
+            loadCompanies();
+          }, 500);
+        })
+        .subscribe();
+    }
 
     return () => {
-      if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-      supabase.removeChannel(channel);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        if (entry.channel) supabase.removeChannel(entry.channel);
+        useCompanies.cache = null;
+      }
+      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
   }, [loadCompanies]);
 
   return {
-    companies,
-    loading,
-    error,
+    companies: local.companies,
+    loading: local.loading,
+    error: local.error,
     createCompany,
     updateCompany,
     deleteCompany,
