@@ -70,13 +70,20 @@ function _startOrgChannel(entry) {
 }
 
 function _stopOrgEntry() {
-  if (_orgCacheEntry.channel) supabase.removeChannel(_orgCacheEntry.channel);
-  // reset state for safety (in case of next subscription)
-  _orgCacheEntry.state = { profile: null, loading: true, error: null };
+  if (_orgCacheEntry.channel) {
+    supabase.removeChannel(_orgCacheEntry.channel).catch((err) => console.error('Error removing channel:', err));
+    _orgCacheEntry.channel = null;
+  }
+  // Do not reset state for safety - keep cache across unmounts
+  // _orgCacheEntry.state = { profile: null, loading: true, error: null };
 }
 
 export default function useOrganizationProfile() {
-  const [local, setLocal] = useState({ profile: null, loading: true, error: null });
+  const [local, setLocal] = useState({
+    profile: _orgCacheEntry.state.profile,
+    loading: _orgCacheEntry.state.loading,
+    error: _orgCacheEntry.state.error,
+  });
 
   useEffect(() => {
     const entry = _orgCacheEntry;
@@ -84,9 +91,14 @@ export default function useOrganizationProfile() {
     const listener = (s) => setLocal({ ...s });
     entry.listeners.add(listener);
 
-    setLocal({ ...entry.state });
-    if (entry.state.loading) _loadInitialProfile(entry);
-    _startOrgChannel(entry);
+    // Sync immediately just in case
+    if (local.profile !== entry.state.profile || local.loading !== entry.state.loading) {
+       setLocal({ ...entry.state });
+    }
+
+    if (entry.state.loading && !entry.loadPromise) _loadInitialProfile(entry);
+    
+    if (!entry.channel) _startOrgChannel(entry);
 
     return () => {
       entry.listeners.delete(listener);

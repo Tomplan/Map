@@ -13,11 +13,10 @@ beforeAll(() => {
 
 jest.mock('../../supabaseClient', () => {
   const mockSelect = jest.fn(() => ({
-    eq: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })), or: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) })) })),
-    or: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) })),
+    eq: jest.fn(() => Promise.resolve({ data: [], error: null })),
     order: jest.fn(() => Promise.resolve({ data: [], error: null })),
   }));
-  const mockFrom = jest.fn(() => ({ select: mockSelect, or: jest.fn(() => ({ eq: mockSelect })) }));
+  const mockFrom = jest.fn(() => ({ select: mockSelect, eq: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-mk' }));
   const mockChannel = jest.fn(() => ({ on: mockOn, subscribe: mockSubscribe }));
@@ -57,9 +56,10 @@ describe('useEventMarkers cache/dedupe', () => {
     });
 
     const { supabase } = require('../../supabaseClient');
-    // should call from for each of the six queries exactly once
-    expect(supabase.from).toHaveBeenCalledTimes(6);
-    // and open seven realtime channels (including company updates)
+    // should call from only once (view) during initial load
+    expect(supabase.from).toHaveBeenCalledTimes(1);
+    expect(supabase.from).toHaveBeenCalledWith('event_markers_view');
+    // realtime channels remain unchanged
     expect(supabase.channel).toHaveBeenCalledTimes(7);
     const channelNames = supabase.channel.mock.calls.map((c) => String(c[0]));
     expect(channelNames).toEqual(
@@ -73,5 +73,22 @@ describe('useEventMarkers cache/dedupe', () => {
         expect.stringMatching(/event-subscriptions-changes-2026/),
       ]),
     );
+  });
+
+  it('falls back when view is absent', async () => {
+    const { supabase, __mocks__ } = require('../../supabaseClient');
+    // make first call to view return not-found error
+    __mocks__.mockFrom.mockImplementationOnce(() => ({
+      select: () => Promise.resolve({ data: null, error: { code: 'PGRST205', message: 'Could not find the table' } }),
+      eq: () => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) }),
+    }));
+
+    render(<Probe id="c" year={2027} />);
+    await waitFor(() => {
+      expect(screen.getByTestId('p-c').textContent).not.toMatch(/loading/);
+    });
+
+    // even after fallback the supabase.from was invoked more than once
+    expect(supabase.from).toHaveBeenCalled();
   });
 });

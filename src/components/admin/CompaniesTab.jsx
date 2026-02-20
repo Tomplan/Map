@@ -150,6 +150,14 @@ export default function CompaniesTab() {
     searchCompanies,
     reload: reloadCompanies,
   } = useCompanies();
+
+  // ensure we fetch at least once but avoid reloading when data already exists
+  React.useEffect(() => {
+    // only load if we have no companies yet
+    if (companies.length === 0 && !loadingCompanies) {
+      reloadCompanies();
+    }
+  }, [companies.length, reloadCompanies, loadingCompanies]);
   const {
     profile: organizationProfile,
     loading: loadingProfile,
@@ -277,8 +285,12 @@ export default function CompaniesTab() {
     return allItems.filter((item) => item.name?.toLowerCase().includes(lowercasedTerm));
   }, [organizationProfile, companies, searchTerm]);
 
+  // debug: trace when companies or filtered items change
+
+
   const loading = loadingCompanies || loadingProfile;
   const error = errorCompanies || errorProfile;
+
 
   if (loading) {
     return <div className="p-4">{translateSafe('companies.loadingData')}</div>;

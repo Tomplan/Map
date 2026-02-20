@@ -6,19 +6,27 @@ import normalizePhone from '../utils/phone';
  * Hook to manage Companies data
  * Companies are permanent and reusable across years
  */
+const useCompaniesCache = {
+  // Use a simple object as a singleton cache
+  // This persists across unmounts/remounts
+  state: {
+    companies: [],
+    loading: true,
+    error: null,
+  },
+  listeners: new Set(),
+  refCount: 0,
+  loadPromise: null,
+  reloadTimeout: null,
+};
+
+/**
+ * Companies are permanent and reusable across years
+ */
 export default function useCompanies() {
-  // shared cache entry (singleton)
-  if (!useCompanies.cache) {
-    useCompanies.cache = {
-      state: { companies: [], loading: true, error: null },
-      listeners: new Set(),
-      refCount: 0,
-      channel: null,
-      reloadTimeout: null,
-      loadPromise: null,
-    };
-  }
-  const entry = useCompanies.cache;
+  const entry = useCompaniesCache;
+  // expose cache for testing
+  useCompanies.cache = useCompaniesCache;
 
   const [local, setLocal] = useState({
     companies: entry.state.companies,
@@ -27,32 +35,52 @@ export default function useCompanies() {
   });
 
   // Load all companies (updates cache entry)
-  const loadCompanies = useCallback(async () => {
-    try {
-      // Clear any pending debounced reload
-      if (entry.reloadTimeout) {
-        clearTimeout(entry.reloadTimeout);
-        entry.reloadTimeout = null;
-      }
+  const loadCompanies = useCallback(async (isReload = false) => {
+    // always grab the latest cache entry
+    const e = useCompaniesCache;
 
-      entry.state.loading = true;
-      entry.state.error = null;
-
-      const { data, error: fetchError } = await supabase
-        .from('companies')
-        .select('*')
-        .order('name', { ascending: true });
-
-      if (fetchError) throw fetchError;
-
-      entry.state.companies = data || [];
-    } catch (err) {
-      console.error('Error loading companies:', err);
-      entry.state.error = err.message;
-    } finally {
-      entry.state.loading = false;
-      entry.listeners.forEach((l) => l(entry.state));
+    // if a load is already in progress return the existing promise
+    if (e.loadPromise) {
+      return e.loadPromise;
     }
+
+    // if we already have data and we aren't explicitly asked to reload, skip
+    if (e.state.companies.length > 0 && !e.state.loading && !isReload) {
+      if (local.loading) {
+        setLocal(prev => ({ ...prev, loading: false }));
+      }
+      return Promise.resolve();
+    }
+
+    e.loadPromise = (async () => {
+      try {
+        if (e.reloadTimeout) {
+          clearTimeout(e.reloadTimeout);
+          e.reloadTimeout = null;
+        }
+
+        e.state.loading = true;
+        e.state.error = null;
+
+        const { data, error: fetchError } = await supabase
+          .from('companies')
+          .select('*')
+          .order('name', { ascending: true });
+
+        if (fetchError) throw fetchError;
+
+        e.state.companies = data || [];
+      } catch (err) {
+        console.error('Error loading companies:', err);
+        e.state.error = err.message;
+      } finally {
+        e.state.loading = false;
+        e.listeners.forEach((l) => l(e.state));
+        e.loadPromise = null;
+      }
+    })();
+
+    return e.loadPromise;
   }, []);
 
   // Create new company
@@ -70,7 +98,10 @@ export default function useCompanies() {
 
       if (insertError) throw insertError;
 
-      setCompanies((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+      const newCompanies = [...entry.state.companies, data].sort((a, b) => a.name.localeCompare(b.name));
+      entry.state.companies = newCompanies;
+      entry.listeners.forEach(l => l(entry.state));
+      
       return { data, error: null };
     } catch (err) {
       console.error('Error creating company:', err);
@@ -94,9 +125,10 @@ export default function useCompanies() {
 
       if (updateError) throw updateError;
 
-      setCompanies((prev) =>
-        prev.map((c) => (c.id === id ? data : c)).sort((a, b) => a.name.localeCompare(b.name)),
-      );
+      const newCompanies = entry.state.companies.map((c) => (c.id === id ? data : c)).sort((a, b) => a.name.localeCompare(b.name));
+      entry.state.companies = newCompanies;
+      entry.listeners.forEach(l => l(entry.state));
+
       return { data, error: null };
     } catch (err) {
       console.error('Error updating company:', err);
@@ -111,7 +143,10 @@ export default function useCompanies() {
 
       if (deleteError) throw deleteError;
 
-      setCompanies((prev) => prev.filter((c) => c.id !== id));
+      const newCompanies = entry.state.companies.filter((c) => c.id !== id);
+      entry.state.companies = newCompanies;
+      entry.listeners.forEach(l => l(entry.state));
+      
       return { error: null };
     } catch (err) {
       console.error('Error deleting company:', err);
@@ -133,22 +168,47 @@ export default function useCompanies() {
 
   // Subscribe to realtime changes (debounced to batch multiple rapid changes)
   useEffect(() => {
+    console.debug('[useCompanies] effect mount, refCount before', entry.refCount, '(current cache entry)');
     entry.refCount += 1;
-    const listener = (s) => setLocal({
-      companies: s.companies,
-      loading: s.loading,
-      error: s.error,
-    });
+    console.debug('[useCompanies] refCount after', entry.refCount);
+    const listener = (s) => {
+      setLocal({
+        companies: s.companies,
+        loading: s.loading,
+        error: s.error,
+      });
+    };
     entry.listeners.add(listener);
 
-    // sync immediately
-    setLocal({
-      companies: entry.state.companies,
-      loading: entry.state.loading,
-      error: entry.state.error,
-    });
-    if (entry.state.loading && entry.refCount === 1) {
-      loadCompanies();
+    // sync immediately (check reference)
+    // If cache has data, ensure we use it AND turn off loading
+    if (entry.state.companies.length > 0) {
+      setLocal({
+        companies: entry.state.companies,
+        loading: false,
+        error: entry.state.error,
+      });
+    } else if (local.companies !== entry.state.companies) {
+      setLocal({
+        companies: entry.state.companies,
+        loading: entry.state.loading,
+        error: entry.state.error,
+      });
+    }
+
+    // only trigger initial load if empty
+    // IMPORTANT: Check against entry.refCount <= 1 to ensure we load on first ever mount
+    // OR if we have 0 items.
+    if (entry.state.companies.length === 0) {
+      if (!entry.state.loading && !entry.loadPromise) {
+          loadCompanies();
+      } else if (entry.state.loading && !entry.loadPromise) {
+          // It says loading:true but no promise? Stuck state. Restart.
+          loadCompanies();
+      } else if (entry.refCount === 1 && !entry.loadPromise) {
+          // First mounter, kick it off
+          loadCompanies();
+      }
     }
 
     if (!entry.channel) {
@@ -157,19 +217,19 @@ export default function useCompanies() {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, () => {
           if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
           entry.reloadTimeout = setTimeout(() => {
-            loadCompanies();
+            loadCompanies(true);
           }, 500);
         })
         .subscribe();
     }
 
     return () => {
+      console.debug('[useCompanies] effect cleanup, refCount before', entry.refCount);
       entry.listeners.delete(listener);
       entry.refCount -= 1;
-      if (entry.refCount <= 0) {
-        if (entry.channel) supabase.removeChannel(entry.channel);
-        useCompanies.cache = null;
-      }
+      console.debug('[useCompanies] refCount after', entry.refCount);
+      // don't evict cache entry so that an in-flight load can finish and be
+      // available to future subscribers; channels remain open indefinitely
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
   }, [loadCompanies]);

@@ -61,7 +61,15 @@ export function useCategories(language = 'nl') {
   });
 
   // Load categories with translations (updates cache entry)
-  const loadCategories = useCallback(async () => {
+  const loadCategories = useCallback(async (isReload = false) => {
+    // If we already have data and aren't forcing a reload, return early
+    if (entry.state.categories.length > 0 && !entry.state.loading && !isReload) {
+      if (local.loading) {
+        setLocal((prev) => ({ ...prev, loading: false }));
+      }
+      return;
+    }
+
     try {
       // don't call external set* helpers; update entry directly
       entry.state.loading = true;
@@ -167,6 +175,16 @@ export function useCategories(language = 'nl') {
       error: entry.state.error,
       categoryStats: entry.state.categoryStats,
     });
+
+    if (local.loading !== entry.state.loading) {
+      setLocal({
+        categories: entry.state.categories,
+        loading: entry.state.loading,
+        error: entry.state.error,
+        categoryStats: entry.state.categoryStats,
+      });
+    }
+
     // only trigger initial load once per cache entry
     if (entry.state.loading && entry.refCount === 1) {
       loadCategories();
@@ -200,10 +218,19 @@ export function useCategories(language = 'nl') {
     return () => {
       entry.listeners.delete(listener);
       entry.refCount -= 1;
+      
+      // Cleanup channels if no one is listening, but KEEP the data
+      // This is crucial for avoiding page flickers/loading states on navigation
       if (entry.refCount <= 0) {
-        if (entry.channel) supabase.removeChannel(entry.channel);
-        if (entry.statsChannel) supabase.removeChannel(entry.statsChannel);
-        useCategories.cache.delete(entryKey);
+        if (entry.channel) {
+          supabase.removeChannel(entry.channel);
+          entry.channel = null;
+        }
+        if (entry.statsChannel) {
+          supabase.removeChannel(entry.statsChannel);
+          entry.statsChannel = null;
+        }
+        // Do NOT delete the cache entry
       }
     };
   }, [entryKey, loadCategories, loadCategoryStats]);

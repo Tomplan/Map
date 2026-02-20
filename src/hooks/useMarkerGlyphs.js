@@ -111,8 +111,11 @@ function _stopGlyphsEntry(year) {
   const key = _glyphKey(year);
   const entry = _glyphsCache.get(key);
   if (!entry) return;
-  for (const ch of entry.channels || []) supabase.removeChannel(ch);
-  _glyphsCache.delete(key);
+  
+  // if (entry.refCount <= 0) { // Check passed in earlier
+    for (const ch of entry.channels || []) supabase.removeChannel(ch);
+    entry.channels = []; // Clear channels so they restart on next mount
+  // }
 }
 
 export function useMarkerGlyphs(selectedYear) {
@@ -123,22 +126,55 @@ export function useMarkerGlyphs(selectedYear) {
       setLocal({ markers: [], loading: false, error: null });
       return undefined;
     }
+    
+    // Check if cache entry exists
+    const key = _glyphKey(selectedYear);
+    let entry = _glyphsCache.get(key);
+    
+    // Create entry if missing
+    if (!entry) {
+        entry = {
+            state: { markers: [], loading: true, error: null },
+            listeners: new Set(),
+            refCount: 0,
+            channels: [],
+            loadPromise: null,
+        };
+        _glyphsCache.set(key, entry);
+    } else {
+        // If entry exists, use its state immediately (even if old)
+        // Loading state should reflect if we are actively fetching or have data
+        // If we have data, we might not want to show loading: true
+    }
 
-    const entry = _ensureGlyphsEntry(selectedYear);
     entry.refCount += 1;
 
     const listener = (s) => setLocal({ ...s });
     entry.listeners.add(listener);
 
+    // Sync efficiently - use state from entry
     setLocal({ ...entry.state });
 
-    if (entry.state.loading) _loadInitialGlyphs(selectedYear, entry);
-    _startGlyphsChannels(selectedYear, entry);
+    // Only load if explicitly loading (fresh entry) or valid refresh needed?
+    // Actually, if we have data, we probably don't need to reload immediately unless channels are gone?
+    // Channels being gone means we might be stale.
+    // So let's restart channels.
+    
+    if (entry.state.loading && !entry.loadPromise) {
+         _loadInitialGlyphs(selectedYear, entry);
+    }
+    
+    // Always start channels if missing (they are cleared on unmount)
+    if (!entry.channels || entry.channels.length === 0) {
+        _startGlyphsChannels(selectedYear, entry);
+    }
 
     return () => {
       entry.listeners.delete(listener);
       entry.refCount -= 1;
-      if (entry.refCount <= 0) _stopGlyphsEntry(selectedYear);
+      if (entry.refCount <= 0) {
+          _stopGlyphsEntry(selectedYear);
+      }
     };
   }, [selectedYear]);
 

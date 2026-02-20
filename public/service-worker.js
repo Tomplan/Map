@@ -27,25 +27,40 @@ self.addEventListener('activate', () => {
   self.clients.claim();
 });
 
-// Cache Carto Voyager map tiles
-self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-  // Cache Carto Voyager tiles — but be defensive.
-  // Many tile providers are cross-origin and fetches can fail or return opaque responses.
-  // To avoid breaking the page we either let the network handle cross-origin tiles, or
-  // if we attempt to cache them, don't throw on network failures and only cache good responses.
-  if (url.includes('cartodb-basemaps')) {
-    // Don't intercept / proxy cross-origin tile requests in the service worker by default.
-    // Returning early lets the browser perform the network request (no extra risk of throwing
-    // from the worker). This prevents a failing worker fetch from turning into a blank map.
-    return;
-  }
-  // Cache Esri World Imagery tiles
-  if (url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery')) {
-    // Similar to cartodb: avoid intercepting cross-origin imagery in the SW.
-    return;
-  }
-  // Cache marker icons and logos
+// Cache Carto Voyager and Esri map tiles as well as local assets
+  self.addEventListener('fetch', (event) => {
+    const url = event.request.url;
+    // Helper for caching arbitrary requests in the "map-tiles" cache
+    const cacheTile = () => {
+      event.respondWith(
+        caches.open('map-tiles').then((cache) =>
+          cache.match(event.request).then((response) => {
+            if (response) return response;
+            // perform a network fetch; allow opaque responses (mode no-cors)
+            return fetch(event.request, { mode: 'no-cors' })
+              .then((networkResponse) => {
+                if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+                  // we intentionally cache even opaque, since tiles are large and safe
+                  cache.put(event.request, networkResponse.clone()).catch(() => {});
+                }
+                return networkResponse;
+              })
+              .catch(() => {
+                // network failure - just let the request fall through
+                return fetch(event.request);
+              });
+          }),
+        ),
+      );
+    };
+
+    if (url.includes('cartodb-basemaps') || url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery')) {
+      // intercept and cache cross-origin tile requests
+      cacheTile();
+      return;
+    }
+
+    // Cache marker icons and logos (same as before)
   if (url.match(/\/assets\/(icons|logos)\//)) {
     event.respondWith(
       caches.open('map-assets').then((cache) => {

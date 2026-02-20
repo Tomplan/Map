@@ -35,7 +35,15 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   }, [eventYear]);
 
   // Load assignments for specific year
-  const loadAssignments = useCallback(async () => {
+  const loadAssignments = useCallback(async (isReload = false) => {
+    // If we already have data and aren't forcing a reload, return early
+    if (entry.state.assignments.length > 0 && !entry.state.loading && !isReload) {
+      if (local.loading) {
+        setLocal((prev) => ({ ...prev, loading: false }));
+      }
+      return;
+    }
+
     // prevent parallel fetches
     if (entry.loadPromise) return entry.loadPromise;
 
@@ -61,9 +69,10 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           .from('assignments')
           .select(
             `
-          *,
-          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
-          marker:markers_core(id, lat, lng)
+            *,
+            company:companies(id, name, logo, website, info),
+            marker:markers_core(id, lat, lng)
+
         `,
           )
           .eq('event_year', targetYear)
@@ -100,8 +109,9 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           .select(
             `
           *,
-          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
-          marker:markers_core(id, lat, lng)
+            company:companies(id, name, logo, website, info),
+            marker:markers_core(id, lat, lng)
+
         `,
           )
           .single();
@@ -128,7 +138,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info, company_translations(language_code, info)),
+          company:companies(id, name, logo, website, info),
           marker:markers_core(id, lat, lng)
         `,
         )
@@ -236,7 +246,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info, company_translations(language_code, info))
+          company:companies(id, name, logo, website, info)
         `,
         )
         .eq('event_year', year)
@@ -255,6 +265,18 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   useEffect(() => {
     // update entry reference if year changed
     entry = useAssignments.cache.get(eventYear);
+    if (!entry) {
+      // unexpected but rebuild cache entry to avoid crash
+      entry = {
+        state: { assignments: [], loading: true, error: null },
+        listeners: new Set(),
+        refCount: 0,
+        channel: null,
+        reloadTimeout: null,
+        loadPromise: null,
+      };
+      useAssignments.cache.set(eventYear, entry);
+    }
 
     entry.refCount += 1;
     const listener = (s) =>
@@ -265,14 +287,27 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
       });
     entry.listeners.add(listener);
 
-    // sync current state
-    setLocal({
-      assignments: entry.state.assignments,
-      loading: entry.state.loading,
-      error: entry.state.error,
-    });
-    if (entry.state.loading && entry.refCount === 1) {
-      loadAssignments();
+    // sync current state (data)
+    // If cache has data, ensure we use it AND turn off loading
+    if (entry.state.assignments.length > 0) {
+      setLocal({
+        assignments: entry.state.assignments,
+        loading: false,
+        error: entry.state.error,
+      });
+    } else if (local.assignments !== entry.state.assignments) {
+      setLocal({
+        assignments: entry.state.assignments,
+        loading: entry.state.loading,
+        error: entry.state.error,
+      });
+    }
+
+    if (entry.state.assignments.length === 0) {
+       // If empty, ensure we try to load
+       if (!entry.loadPromise) {
+           loadAssignments();
+       }
     }
 
     // start realtime channel if first subscriber
@@ -291,10 +326,10 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
             if (payload.eventType === 'INSERT' && payload.new) {
               // insert could come from self, just reload to keep logic simple
               entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(loadAssignments, 500);
+              entry.reloadTimeout = setTimeout(() => { loadAssignments(true); }, 500);
             } else {
               entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(loadAssignments, 500);
+              entry.reloadTimeout = setTimeout(() => { loadAssignments(true); }, 500);
             }
           },
         )
@@ -306,7 +341,8 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
       entry.refCount -= 1;
       if (entry.refCount <= 0) {
         if (entry.channel) supabase.removeChannel(entry.channel);
-        useAssignments.cache.delete(eventYear);
+        entry.channel = null; 
+        // useAssignments.cache.delete(eventYear); // Keep cache (fix for destroyed views)
       }
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };

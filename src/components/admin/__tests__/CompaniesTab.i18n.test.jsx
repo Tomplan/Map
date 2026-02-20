@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import '@testing-library/jest-dom';
 
 // Provide a Dutch translation mapping for keys we want to assert
@@ -93,7 +94,11 @@ jest.mock('../../../supabaseClient');
 import CompaniesTab from '../CompaniesTab';
 
 test('renders companies tab labels in Dutch (i18n) and modal heading', async () => {
-  render(<CompaniesTab />);
+  render(
+    <MemoryRouter initialEntries={["/companies"]}>
+      <CompaniesTab />
+    </MemoryRouter>,
+  );
 
   // Tabs should show Dutch labels from mocked t()
   expect(await screen.findByText('Publieke Info')).toBeInTheDocument();
