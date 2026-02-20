@@ -8,22 +8,38 @@ import normalizePhone from '../utils/phone';
  * @returns {object} Subscriptions data and CRUD operations
  */
 export default function useEventSubscriptions(eventYear) {
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const reloadTimeoutRef = useRef(null);
+  // cache per eventYear
+  if (!useEventSubscriptions.cache) useEventSubscriptions.cache = new Map();
+  let entry = useEventSubscriptions.cache.get(eventYear);
+  if (!entry) {
+    entry = {
+      state: { subscriptions: [], loading: true, error: null },
+      listeners: new Set(),
+      refCount: 0,
+      channel: null,
+      reloadTimeout: null,
+      loadPromise: null,
+    };
+    useEventSubscriptions.cache.set(eventYear, entry);
+  }
+
+  const [local, setLocal] = useState({
+    subscriptions: entry.state.subscriptions,
+    loading: entry.state.loading,
+    error: entry.state.error,
+  });
 
   // Load subscriptions for the given year
   const loadSubscriptions = useCallback(async () => {
     try {
       // Clear any pending debounced reload
-      if (reloadTimeoutRef.current) {
-        clearTimeout(reloadTimeoutRef.current);
-        reloadTimeoutRef.current = null;
+      if (entry.reloadTimeout) {
+        clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = null;
       }
 
-      setLoading(true);
-      setError(null);
+      entry.state.loading = true;
+      entry.state.error = null;
 
       const { data, error: fetchError } = await supabase
         .from('event_subscriptions')
@@ -38,12 +54,13 @@ export default function useEventSubscriptions(eventYear) {
 
       if (fetchError) throw fetchError;
 
-      setSubscriptions(data || []);
+      entry.state.subscriptions = data || [];
     } catch (err) {
       console.error('Error loading event subscriptions:', err);
-      setError(err.message);
+      entry.state.error = err.message;
     } finally {
-      setLoading(false);
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
     }
   }, [eventYear]);
 
@@ -283,43 +300,66 @@ export default function useEventSubscriptions(eventYear) {
     }
   };
 
-  // Load subscriptions on mount and when year changes
+  // hook instance lifecycle: register listener / kick off load / start channel
   useEffect(() => {
-    loadSubscriptions();
-  }, [loadSubscriptions]);
+    // update entry reference (in case eventYear changed)
+    entry = useEventSubscriptions.cache.get(eventYear);
 
-  // Subscribe to real-time changes
-  useEffect(() => {
-    const channel = supabase
-      .channel(`event-subscriptions-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          // Debounce: wait 500ms after last change before reloading
-          if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-          reloadTimeoutRef.current = setTimeout(() => {
-            loadSubscriptions();
-          }, 500);
-        },
-      )
-      .subscribe();
+    entry.refCount += 1;
+    const listener = (s) =>
+      setLocal({
+        subscriptions: s.subscriptions,
+        loading: s.loading,
+        error: s.error,
+      });
+    entry.listeners.add(listener);
+
+    // sync and maybe trigger load
+    setLocal({
+      subscriptions: entry.state.subscriptions,
+      loading: entry.state.loading,
+      error: entry.state.error,
+    });
+    if (entry.state.loading && entry.refCount === 1) {
+      loadSubscriptions();
+    }
+
+    // start realtime channel if first subscriber
+    if (!entry.channel) {
+      entry.channel = supabase
+        .channel(`event-subscriptions-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_subscriptions',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = setTimeout(() => {
+              loadSubscriptions();
+            }, 500);
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-      supabase.removeChannel(channel);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        if (entry.channel) supabase.removeChannel(entry.channel);
+        useEventSubscriptions.cache.delete(eventYear);
+      }
+      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
   }, [eventYear, loadSubscriptions]);
-
   return {
-    subscriptions,
-    loading,
-    error,
+    subscriptions: local.subscriptions,
+    loading: local.loading,
+    error: local.error,
     subscribeCompany,
     updateSubscription,
     unsubscribeCompany,
