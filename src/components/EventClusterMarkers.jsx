@@ -622,7 +622,7 @@ EventClusterMarkers.propTypes = {
       info: PropTypes.string,
       companyId: PropTypes.number,
     }),
-  ).isRequired,
+  ),
   updateMarker: PropTypes.func.isRequired,
   isMarkerDraggable: PropTypes.func.isRequired,
   iconCreateFunction: PropTypes.func.isRequired,
@@ -638,6 +638,7 @@ EventClusterMarkers.propTypes = {
 };
 
 EventClusterMarkers.defaultProps = {
+  safeMarkers: [],
   selectedYear: new Date().getFullYear(),
   isAdminView: false,
   selectedMarkerId: null,

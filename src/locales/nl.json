@@ -63,6 +63,8 @@
     "loggingIn": "Bezig met inloggen...",
     "rememberMe": "Onthoud mijn e-mail",
     "rememberMeTooltip": "Uw browser zal ook aanbieden om uw wachtwoord veilig op te slaan",
+    "portal": "Portaal voor managers",
+    "footerSecure": "Alleen beveiligde toegang voor managers",
     "errors": {
       "invalidCredentials": "Ongeldig e-mailadres of wachtwoord",
       "emailRequired": "E-mail is verplicht",
@@ -150,8 +152,7 @@
     "branding": {
       "title": "Branding Instellingen",
       "description": "Configureer visuele branding (kleuren, lettertypen)",
-      "note": "Organisatienaam en logo worden beheerd in het Bedrijven-tabblad",
-      "loading": "Instellingen laden...",
+      "note": "Organisatienaam en logo worden beheerd in het Bedrijven-tabblad",      "defaultEventName": "Dé 4x4 Vakantiebeurs",      "loading": "Instellingen laden...",
       "save": "Wijzigingen Opslaan",
       "saving": "Opslaan...",
       "loadingData": "Gegevens laden...",
