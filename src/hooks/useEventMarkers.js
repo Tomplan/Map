@@ -52,7 +52,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   }, [eventYear]);
 
   const loadMarkers = useCallback(
-    async (online) => {
+    async (online, isBackground = false) => {
       if (entry.loadPromise) return entry.loadPromise;
 
       // short-circuit offline cached state
@@ -63,9 +63,11 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         return;
       }
 
-      entry.state.loading = true;
-      entry.state.error = null;
-      entry.listeners.forEach((l) => l(entry.state));
+      if (!isBackground) {
+        entry.state.loading = true;
+        entry.state.error = null;
+        entry.listeners.forEach((l) => l(entry.state));
+      }
 
       entry.loadPromise = (async () => {
         try {
@@ -261,7 +263,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           }
           entry.state.error = error.message;
         } finally {
-          entry.state.loading = false;
+          if (!isBackground) {
+            entry.state.loading = false;
+          }
           entry.listeners.forEach((l) => l(entry.state));
           entry.loadPromise = null;
         }
@@ -272,214 +276,213 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     [eventYear],
   );
 
-  useEffect(
-    () => {
-      // update entry pointer (re-create if somehow removed)
-      entry = useEventMarkers.cache.get(eventYear);
-      if (!entry) {
-        entry = {
-          state: {
-            markers: [],
-            loading: true,
-            error: null,
-            isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
-          },
-          listeners: new Set(),
-          refCount: 0,
-          channels: {},
-          reloadTimeout: null,
-          loadPromise: null,
-          windowHandlers: null,
-        };
-        useEventMarkers.cache.set(eventYear, entry);
-      }
+  useEffect(() => {
+    // update entry pointer (re-create if somehow removed)
+    entry = useEventMarkers.cache.get(eventYear);
+    if (!entry) {
+      entry = {
+        state: {
+          markers: [],
+          loading: true,
+          error: null,
+          isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+        },
+        listeners: new Set(),
+        refCount: 0,
+        channels: {},
+        reloadTimeout: null,
+        loadPromise: null,
+        windowHandlers: null,
+      };
+      useEventMarkers.cache.set(eventYear, entry);
+    }
 
-      entry.refCount += 1;
-      const listener = (s) =>
-        setLocal({
-          markers: s.markers,
-          loading: s.loading,
-          error: s.error,
-          isOnline: s.isOnline,
-        });
-      entry.listeners.add(listener);
-
-      // sync current state & kick off load if first
+    entry.refCount += 1;
+    const listener = (s) =>
       setLocal({
-        markers: entry.state.markers,
-        loading: entry.state.loading,
-        error: entry.state.error,
-        isOnline: entry.state.isOnline,
+        markers: s.markers,
+        loading: s.loading,
+        error: s.error,
+        isOnline: s.isOnline,
       });
-      if (entry.state.loading && entry.refCount === 1) {
-        loadMarkers(entry.state.isOnline);
-      }
+    entry.listeners.add(listener);
 
-      // window handlers only once per cache entry
-      if (!entry.windowHandlers) {
-        const handleOnline = () => {
-          entry.state.isOnline = true;
-          entry.listeners.forEach((l) => l(entry.state));
-          loadMarkers(true);
-        };
-        const handleOffline = () => {
-          entry.state.isOnline = false;
-          entry.listeners.forEach((l) => l(entry.state));
-          const cachedData =
-            typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
-          if (cachedData) {
-            entry.state.markers = JSON.parse(cachedData);
-            entry.state.loading = false;
-            entry.listeners.forEach((l) => l(entry.state));
-          }
-        };
-        window.addEventListener('online', handleOnline);
-        window.addEventListener('offline', handleOffline);
-        entry.windowHandlers = { handleOnline, handleOffline };
-      }
+    // sync current state & kick off load if first
+    setLocal({
+      markers: entry.state.markers,
+      loading: entry.state.loading,
+      error: entry.state.error,
+      isOnline: entry.state.isOnline,
+    });
+    if (entry.state.loading && entry.refCount === 1) {
+      loadMarkers(entry.state.isOnline);
+    } else if (entry.refCount === 1 && entry.state.isOnline) {
+      // If we have cached data but just mounted (refCount 1), trigger a background refresh
+      // to Ensure we're up to date, but don't set loading=true
+      loadMarkers(true, true);
+    }
 
-      // create realtime channels if missing
-      const makeChannel = (name, filter, cb) => {
-        if (!entry.channels[name]) {
-          entry.channels[name] = supabase
-            .channel(name)
-            .on('postgres_changes', filter, cb)
-            .subscribe();
-        }
-        return entry.channels[name];
+    // window handlers only once per cache entry
+    if (!entry.windowHandlers) {
+      const handleOnline = () => {
+        entry.state.isOnline = true;
+        entry.listeners.forEach((l) => l(entry.state));
+        loadMarkers(true);
       };
-
-      makeChannel(
-        `markers-core-changes-${eventYear}`,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_core',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-        },
-      );
-      makeChannel(
-        `markers-appearance-changes-${eventYear}`,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-        },
-      );
-      makeChannel(
-        'markers-appearance-defaults-changes',
-        { event: '*', schema: 'public', table: 'markers_appearance', filter: 'event_year=eq.0' },
-        () => {
-          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-        },
-      );
-      makeChannel(
-        `markers-content-changes-${eventYear}`,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_content',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-        },
-      );
-      makeChannel(
-        'markers-assignments-changes',
-        { event: '*', schema: 'public', table: 'assignments' },
-        (payload) => {
-          if (payload.eventType === 'DELETE') {
-            entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-            entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-          } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
-            if (payload.new?.event_year === eventYear) {
-              entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-            }
-          }
-        },
-      );
-      makeChannel(
-        'companies-changes',
-        { event: '*', schema: 'public', table: 'companies' },
-        (payload) => {
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            entry.state.markers = entry.state.markers.map((m) =>
-              m.companyId === payload.new.id
-                ? {
-                    ...m,
-                    name: payload.new.name,
-                    logo: payload.new.logo,
-                    website: payload.new.website,
-                    info: payload.new.info,
-                  }
-                : m,
-            );
-            if (typeof window !== 'undefined') {
-              localStorage.setItem('eventMarkers', JSON.stringify(entry.state.markers));
-            }
-            entry.listeners.forEach((l) => l(entry.state));
-          } else {
-            entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-            entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-          }
-        },
-      );
-      makeChannel(
-        `event-subscriptions-changes-${eventYear}`,
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = setTimeout(() => loadMarkers(true), 500);
-        },
-      );
-
-      return () => {
-        entry.listeners.delete(listener);
-        entry.refCount -= 1;
-        if (entry.refCount <= 0) {
-          // cleanup
-          if (entry.windowHandlers) {
-            window.removeEventListener('online', entry.windowHandlers.handleOnline);
-            window.removeEventListener('offline', entry.windowHandlers.handleOffline);
-            entry.windowHandlers = null;
-          }
-          Object.values(entry.channels).forEach((ch) => supabase.removeChannel(ch));
-          entry.channels = {};
-          // useEventMarkers.cache.delete(eventYear); // CACHE PERSISTENCE FIX
+      const handleOffline = () => {
+        entry.state.isOnline = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        const cachedData =
+          typeof window !== 'undefined' ? localStorage.getItem('eventMarkers') : null;
+        if (cachedData) {
+          entry.state.markers = JSON.parse(cachedData);
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
         }
-        if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
       };
-    },
-    [
-      /* no deps: all captured */
-    ],
-  );
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      entry.windowHandlers = { handleOnline, handleOffline };
+    }
+
+    // create realtime channels if missing
+    const makeChannel = (name, filter, cb) => {
+      if (!entry.channels[name]) {
+        entry.channels[name] = supabase
+          .channel(name)
+          .on('postgres_changes', filter, cb)
+          .subscribe();
+      }
+      return entry.channels[name];
+    };
+
+    makeChannel(
+      `markers-core-changes-${eventYear}`,
+      {
+        event: '*',
+        schema: 'public',
+        table: 'markers_core',
+        filter: `event_year=eq.${eventYear}`,
+      },
+      () => {
+        entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+      },
+    );
+    makeChannel(
+      `markers-appearance-changes-${eventYear}`,
+      {
+        event: '*',
+        schema: 'public',
+        table: 'markers_appearance',
+        filter: `event_year=eq.${eventYear}`,
+      },
+      () => {
+        entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+      },
+    );
+    makeChannel(
+      'markers-appearance-defaults-changes',
+      { event: '*', schema: 'public', table: 'markers_appearance', filter: 'event_year=eq.0' },
+      () => {
+        entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+      },
+    );
+    makeChannel(
+      `markers-content-changes-${eventYear}`,
+      {
+        event: '*',
+        schema: 'public',
+        table: 'markers_content',
+        filter: `event_year=eq.${eventYear}`,
+      },
+      () => {
+        entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+      },
+    );
+    makeChannel(
+      'markers-assignments-changes',
+      { event: '*', schema: 'public', table: 'assignments' },
+      (payload) => {
+        if (payload.eventType === 'DELETE') {
+          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+        } else if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+          if (payload.new?.event_year === eventYear) {
+            entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+          }
+        }
+      },
+    );
+    makeChannel(
+      'companies-changes',
+      { event: '*', schema: 'public', table: 'companies' },
+      (payload) => {
+        if (payload.eventType === 'UPDATE' && payload.new) {
+          entry.state.markers = entry.state.markers.map((m) =>
+            m.companyId === payload.new.id
+              ? {
+                  ...m,
+                  name: payload.new.name,
+                  logo: payload.new.logo,
+                  website: payload.new.website,
+                  info: payload.new.info,
+                }
+              : m,
+          );
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('eventMarkers', JSON.stringify(entry.state.markers));
+          }
+          entry.listeners.forEach((l) => l(entry.state));
+        } else {
+          entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+          entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+        }
+      },
+    );
+    makeChannel(
+      `event-subscriptions-changes-${eventYear}`,
+      {
+        event: '*',
+        schema: 'public',
+        table: 'event_subscriptions',
+        filter: `event_year=eq.${eventYear}`,
+      },
+      () => {
+        entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+        entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
+      },
+    );
+
+    return () => {
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        // cleanup
+        if (entry.windowHandlers) {
+          window.removeEventListener('online', entry.windowHandlers.handleOnline);
+          window.removeEventListener('offline', entry.windowHandlers.handleOffline);
+          entry.windowHandlers = null;
+        }
+        Object.values(entry.channels).forEach((ch) => supabase.removeChannel(ch));
+        entry.channels = {};
+        // useEventMarkers.cache.delete(eventYear); // CACHE PERSISTENCE FIX
+      }
+      if (entry && entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+    };
+  }, [eventYear, loadMarkers]);
 
   // Reload markers when eventYear changes
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.debug('[useEventMarkers] eventYear changed -> triggering loadMarkers for', eventYear);
-    }
-    loadMarkers(isOnline);
-  }, [eventYear, isOnline, loadMarkers]);
+  // useEffect(() => {
+  //   if (process.env.NODE_ENV !== 'production') {
+  //     console.debug('[useEventMarkers] eventYear changed -> triggering loadMarkers for', eventYear);
+  //   }
+  //   loadMarkers(isOnline);
+  // }, [eventYear, isOnline, loadMarkers]);
 
   // Archive current year markers and prepare for next year
   const archiveCurrentYear = useCallback(async () => {
