@@ -5,9 +5,26 @@ import { supabase } from '../supabaseClient';
  * Hook to manage Assignments (Company-to-Marker mappings per year)
  */
 export default function useAssignments(eventYear = new Date().getFullYear()) {
-  const [assignments, setAssignments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // shared cache keyed by year
+  if (!useAssignments.cache) useAssignments.cache = new Map();
+  let entry = useAssignments.cache.get(eventYear);
+  if (!entry) {
+    entry = {
+      state: { assignments: [], loading: true, error: null },
+      listeners: new Set(),
+      refCount: 0,
+      channel: null,
+      reloadTimeout: null,
+      loadPromise: null,
+    };
+    useAssignments.cache.set(eventYear, entry);
+  }
+
+  const [local, setLocal] = useState({
+    assignments: entry.state.assignments,
+    loading: entry.state.loading,
+    error: entry.state.error,
+  });
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
@@ -18,26 +35,28 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   }, [eventYear]);
 
   // Load assignments for specific year
-  const loadAssignments = useCallback(
-    async (year) => {
+  const loadAssignments = useCallback(async () => {
+    // prevent parallel fetches
+    if (entry.loadPromise) return entry.loadPromise;
+
+    entry.state.loading = true;
+    entry.state.error = null;
+    entry.listeners.forEach((l) => l(entry.state));
+
+    entry.loadPromise = (async () => {
       try {
-        setLoading(true);
-        setError(null);
+        const targetYear = eventYear; // safe because entry is per-year
 
-        // Always use the latest eventYear from ref if no year specified
-        const targetYear = year !== undefined ? year : eventYearRef.current;
-
-        // First get valid marker IDs for this year
+        // first get valid marker IDs for this year
         const { data: validMarkers, error: markersError } = await supabase
           .from('markers_core')
           .select('id')
           .eq('event_year', targetYear);
-
         if (markersError) throw markersError;
 
         const validMarkerIds = validMarkers?.map((m) => m.id) || [];
 
-        // Only load assignments for markers that exist in this year's markers
+        // then fetch assignments filtered by those markers
         const { data, error: fetchError } = await supabase
           .from('assignments')
           .select(
@@ -50,23 +69,21 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           .eq('event_year', targetYear)
           .in('marker_id', validMarkerIds)
           .order('marker_id', { ascending: true });
-
         if (fetchError) throw fetchError;
 
-        setAssignments(data || []);
-
-        if (fetchError) throw fetchError;
-
-        setAssignments(data || []);
+        entry.state.assignments = data || [];
       } catch (err) {
         console.error('Error loading assignments:', err);
-        setError(err.message);
+        entry.state.error = err.message;
       } finally {
-        setLoading(false);
+        entry.state.loading = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        entry.loadPromise = null;
       }
-    },
-    [], // eventYear removed from dependencies
-  );
+    })();
+
+    return entry.loadPromise;
+  }, [eventYear]);
 
   // Create new assignment
   const createAssignment = useCallback(
@@ -91,14 +108,14 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (insertError) throw insertError;
 
-        setAssignments((prev) => [...prev, data].sort((a, b) => a.marker_id - b.marker_id));
+        await loadAssignments();
         return { data, error: null };
       } catch (err) {
         console.error('Error creating assignment:', err);
         return { data: null, error: err.message };
       }
     },
-    [eventYear],
+    [eventYear, loadAssignments],
   );
 
   // Update assignment (change booth number or company)
@@ -119,15 +136,13 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
       if (updateError) throw updateError;
 
-      setAssignments((prev) =>
-        prev.map((a) => (a.id === id ? data : a)).sort((a, b) => a.marker_id - b.marker_id),
-      );
+      await loadAssignments();
       return { data, error: null };
     } catch (err) {
       console.error('Error updating assignment:', err);
       return { data: null, error: err.message };
     }
-  }, []);
+  }, [loadAssignments]);
 
   // Delete assignment
   const deleteAssignment = useCallback(async (id) => {
@@ -136,13 +151,13 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
       if (deleteError) throw deleteError;
 
-      setAssignments((prev) => prev.filter((a) => a.id !== id));
+      await loadAssignments();
       return { error: null };
     } catch (err) {
       console.error('Error deleting assignment:', err);
       return { error: err.message };
     }
-  }, []);
+  }, [loadAssignments]);
 
   // Assign company to marker
   const assignCompanyToMarker = useCallback(
@@ -169,32 +184,30 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (deleteError) throw deleteError;
 
-        setAssignments((prev) =>
-          prev.filter((a) => !(a.marker_id === markerId && a.company_id === companyId)),
-        );
+        await loadAssignments();
         return { error: null };
       } catch (err) {
         console.error('Error unassigning company:', err);
         return { error: err.message };
       }
     },
-    [eventYear],
+    [eventYear, loadAssignments],
   );
 
   // Get assignments for a specific marker
   const getMarkerAssignments = useCallback(
     (markerId) => {
-      return assignments.filter((a) => a.marker_id === markerId);
+      return local.assignments.filter((a) => a.marker_id === markerId);
     },
-    [assignments],
+    [local.assignments],
   );
 
   // Get assignments for a specific company
   const getCompanyAssignments = useCallback(
     (companyId) => {
-      return assignments.filter((a) => a.company_id === companyId);
+      return local.assignments.filter((a) => a.company_id === companyId);
     },
-    [assignments],
+    [local.assignments],
   );
 
   // Archive current year and prepare for next year
@@ -238,60 +251,71 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     }
   }, []);
 
-  // Initial load
+  // hook instance lifecycle: register listener / kick off load / manage channel
   useEffect(() => {
-    loadAssignments();
-  }, [loadAssignments]);
+    // update entry reference if year changed
+    entry = useAssignments.cache.get(eventYear);
 
-  // Reload assignments when eventYear changes
-  useEffect(() => {
-    loadAssignments();
-  }, [eventYear, loadAssignments]);
+    entry.refCount += 1;
+    const listener = (s) =>
+      setLocal({
+        assignments: s.assignments,
+        loading: s.loading,
+        error: s.error,
+      });
+    entry.listeners.add(listener);
 
-  // Subscribe to realtime changes - filter by event year
-  useEffect(() => {
-    const channel = supabase
-      .channel(`assignments-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'assignments',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        (payload) => {
-          // For INSERT events, check if we already have this assignment locally
-          // (it was created by us, not another user)
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setAssignments((prev) => {
-              // Check if this assignment already exists
-              const exists = prev.some((a) => a.id === payload.new.id);
-              if (exists) {
-                // We already have it (we created it locally), no need to reload
-                return prev;
-              }
-              // New assignment from another user/session, reload to get full data
-              loadAssignments();
-              return prev;
-            });
-          } else {
-            // For UPDATE/DELETE, always reload
-            loadAssignments();
-          }
-        },
-      )
-      .subscribe();
+    // sync current state
+    setLocal({
+      assignments: entry.state.assignments,
+      loading: entry.state.loading,
+      error: entry.state.error,
+    });
+    if (entry.state.loading && entry.refCount === 1) {
+      loadAssignments();
+    }
+
+    // start realtime channel if first subscriber
+    if (!entry.channel) {
+      entry.channel = supabase
+        .channel(`assignments-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'assignments',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          (payload) => {
+            if (payload.eventType === 'INSERT' && payload.new) {
+              // insert could come from self, just reload to keep logic simple
+              entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+              entry.reloadTimeout = setTimeout(loadAssignments, 500);
+            } else {
+              entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
+              entry.reloadTimeout = setTimeout(loadAssignments, 500);
+            }
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        if (entry.channel) supabase.removeChannel(entry.channel);
+        useAssignments.cache.delete(eventYear);
+      }
+      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
   }, [eventYear, loadAssignments]);
 
   return {
-    assignments,
-    loading,
-    error,
+    assignments: local.assignments,
+    loading: local.loading,
+    error: local.error,
     createAssignment,
     updateAssignment,
     deleteAssignment,
