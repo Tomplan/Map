@@ -25,6 +25,21 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       channels: {},
       reloadTimeout: null,
       notifyTimeout: null,
+      loadPromise: null,
+      windowHandlers: null,
+    };
+    useEventMarkers.cache.set(eventYear, entry);
+  }
+
+  // local state mirrors entry.state
+  const [local, setLocal] = useState({
+    markers: entry.state.markers,
+    loading: entry.state.loading,
+    error: entry.state.error,
+    isOnline: entry.state.isOnline,
+  });
+  // helper for easier access
+  const { isOnline } = local;
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
