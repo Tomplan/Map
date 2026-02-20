@@ -20,9 +20,7 @@ export default function useCompanyTranslations(companyId) {
   }
 
   const [local, setLocal] = useState(
-    entry
-      ? { ...entry.state }
-      : { translations: {}, loading: false, error: null },
+    entry ? { ...entry.state } : { translations: {}, loading: false, error: null },
   );
 
   // Load all translations for a company (updates entry)

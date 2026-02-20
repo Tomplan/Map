@@ -68,10 +68,10 @@ export default function useOrganizationSettings() {
   const fetchSettings = useCallback(async (isReload = false) => {
     // If we already have data and aren't forcing a reload, return early
     if (entry.state.settings && !entry.state.loading && !isReload) {
-        if (local.loading) {
-            setLocal((prev) => ({ ...prev, loading: false }));
-        }
-        return;
+      if (local.loading) {
+        setLocal((prev) => ({ ...prev, loading: false }));
+      }
+      return;
     }
 
     // prevent parallel fetches
@@ -82,50 +82,48 @@ export default function useOrganizationSettings() {
     entry.listeners.forEach((l) => l(entry.state));
 
     entry.loadPromise = (async () => {
-    try {
-      // Fetch the singleton settings row (id=1)
-      const { data, error: fetchError } = await supabase
-        .from('organization_settings')
-        .select('*')
-        .eq('id', 1)
-        .maybeSingle();
+      try {
+        // Fetch the singleton settings row (id=1)
+        const { data, error: fetchError } = await supabase
+          .from('organization_settings')
+          .select('*')
+          .eq('id', 1)
+          .maybeSingle();
 
-      if (fetchError) {
-        // Handle case where table doesn't exist yet (migrations not run)
-        if (fetchError.code === '42P01' || fetchError.message?.includes('does not exist')) {
-          console.warn('organization_settings table does not exist. Run migrations 25 & 26.');
-          entry.state.settings = null;
-          entry.state.error = null; // Don't treat as error, just not initialized
-        } else {
+        if (fetchError) {
+          // Handle case where table doesn't exist yet (migrations not run)
+          if (fetchError.code === '42P01' || fetchError.message?.includes('does not exist')) {
+            console.warn('organization_settings table does not exist. Run migrations 25 & 26.');
+            entry.state.settings = null;
+            entry.state.error = null; // Don't treat as error, just not initialized
+          } else {
             console.error('Error fetching organization settings:', fetchError);
             entry.state.error = fetchError.message;
             entry.state.settings = null;
-        }
-      } else if (!data) {
-        // This should never happen (migration 25 creates the row)
-        console.warn(
-          'Organization settings row not found (id=1). Database migration may not have run.',
-        );
-        entry.state.settings = null;
-        entry.state.error = null; // Don't treat as error, app should still work with defaults
-      } else {
+          }
+        } else if (!data) {
+          // This should never happen (migration 25 creates the row)
+          console.warn(
+            'Organization settings row not found (id=1). Database migration may not have run.',
+          );
+          entry.state.settings = null;
+          entry.state.error = null; // Don't treat as error, app should still work with defaults
+        } else {
           entry.state.settings = data;
           entry.state.error = null;
+        }
+      } catch (err) {
+        console.error('Error in fetchSettings:', err);
+        entry.state.error = err.message;
+        entry.state.settings = null;
+      } finally {
+        entry.state.loading = false;
+        entry.listeners.forEach((l) => l(entry.state));
+        entry.loadPromise = null;
       }
-    } catch (err) {
-      console.error('Error in fetchSettings:', err);
-      entry.state.error = err.message;
-      entry.state.settings = null;
-    } finally {
-      entry.state.loading = false;
-      entry.listeners.forEach((l) => l(entry.state));
-      entry.loadPromise = null;
-    }
     })();
     return entry.loadPromise;
   }, []);
-
-
 
   /**
    * Update multiple organization settings at once with optimistic concurrency control
@@ -191,9 +189,12 @@ export default function useOrganizationSettings() {
   );
 
   // Helper for single update
-  const updateSetting = useCallback(async (key, value) => {
+  const updateSetting = useCallback(
+    async (key, value) => {
       return updateSettings({ [key]: value });
-  }, [updateSettings]);
+    },
+    [updateSettings],
+  );
 
   // Initial fetch on mount
   useEffect(() => {
@@ -207,9 +208,9 @@ export default function useOrganizationSettings() {
     // Sync state immediately on mount
     // If we have data in cache, force loading=false to show it immediately
     if (entry.state.settings) {
-         setLocal({ ...entry.state, loading: false });
+      setLocal({ ...entry.state, loading: false });
     } else if (local.loading !== entry.state.loading || local.settings !== entry.state.settings) {
-        setLocal({ ...entry.state });
+      setLocal({ ...entry.state });
     }
 
     // Trigger fetch if:
@@ -217,41 +218,41 @@ export default function useOrganizationSettings() {
     // 2. OR we are loading but no promise is active (stuck state)
     // 3. We ignore refCount logic here because if we are mounting and don't have data, we want it.
     if (!entry.state.settings && !entry.loadPromise) {
-        fetchSettings();
+      fetchSettings();
     }
 
     // Setup channel if missing
     if (!entry.channel) {
-         entry.channel = supabase
-          .channel('organization-settings-changes')
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'organization_settings',
-              filter: 'id=eq.1',
-            },
-            (payload) => {
-              const currentVersion = entry.state.settings?.row_version || 0;
-              // Only apply update if newer version
-              if (payload.new.row_version > currentVersion) {
-                entry.state.settings = payload.new;
-                entry.listeners.forEach(l => l(entry.state));
-              }
-            },
-          )
-          .subscribe();
+      entry.channel = supabase
+        .channel('organization-settings-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'organization_settings',
+            filter: 'id=eq.1',
+          },
+          (payload) => {
+            const currentVersion = entry.state.settings?.row_version || 0;
+            // Only apply update if newer version
+            if (payload.new.row_version > currentVersion) {
+              entry.state.settings = payload.new;
+              entry.listeners.forEach((l) => l(entry.state));
+            }
+          },
+        )
+        .subscribe();
     }
 
     return () => {
-        entry.listeners.delete(listener);
-        entry.refCount -= 1;
-        if (entry.refCount <= 0 && entry.channel) {
-            supabase.removeChannel(entry.channel);
-            entry.channel = null;
-            // useOrgSettingsCache.state.settings = null; // KEEP CACHE
-        }
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0 && entry.channel) {
+        supabase.removeChannel(entry.channel);
+        entry.channel = null;
+        // useOrgSettingsCache.state.settings = null; // KEEP CACHE
+      }
     };
   }, [fetchSettings]); // Dependencies
 

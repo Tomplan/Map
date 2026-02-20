@@ -97,11 +97,11 @@ export default function useOrganizationProfile() {
 
     // Sync immediately just in case
     if (local.profile !== entry.state.profile || local.loading !== entry.state.loading) {
-       setLocal({ ...entry.state });
+      setLocal({ ...entry.state });
     }
 
     if (entry.state.loading && !entry.loadPromise) _loadInitialProfile(entry);
-    
+
     if (!entry.channel) _startOrgChannel(entry);
 
     return () => {

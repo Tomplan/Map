@@ -35,64 +35,67 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   }, [eventYear]);
 
   // Load assignments for specific year
-  const loadAssignments = useCallback(async (isReload = false) => {
-    // If we already have data and aren't forcing a reload, return early
-    if (entry.state.assignments.length > 0 && !entry.state.loading && !isReload) {
-      if (local.loading) {
-        setLocal((prev) => ({ ...prev, loading: false }));
+  const loadAssignments = useCallback(
+    async (isReload = false) => {
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.assignments.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
+        }
+        return;
       }
-      return;
-    }
 
-    // prevent parallel fetches
-    if (entry.loadPromise) return entry.loadPromise;
+      // prevent parallel fetches
+      if (entry.loadPromise) return entry.loadPromise;
 
-    entry.state.loading = true;
-    entry.state.error = null;
-    entry.listeners.forEach((l) => l(entry.state));
+      entry.state.loading = true;
+      entry.state.error = null;
+      entry.listeners.forEach((l) => l(entry.state));
 
-    entry.loadPromise = (async () => {
-      try {
-        const targetYear = eventYear; // safe because entry is per-year
+      entry.loadPromise = (async () => {
+        try {
+          const targetYear = eventYear; // safe because entry is per-year
 
-        // first get valid marker IDs for this year
-        const { data: validMarkers, error: markersError } = await supabase
-          .from('markers_core')
-          .select('id')
-          .eq('event_year', targetYear);
-        if (markersError) throw markersError;
+          // first get valid marker IDs for this year
+          const { data: validMarkers, error: markersError } = await supabase
+            .from('markers_core')
+            .select('id')
+            .eq('event_year', targetYear);
+          if (markersError) throw markersError;
 
-        const validMarkerIds = validMarkers?.map((m) => m.id) || [];
+          const validMarkerIds = validMarkers?.map((m) => m.id) || [];
 
-        // then fetch assignments filtered by those markers
-        const { data, error: fetchError } = await supabase
-          .from('assignments')
-          .select(
-            `
+          // then fetch assignments filtered by those markers
+          const { data, error: fetchError } = await supabase
+            .from('assignments')
+            .select(
+              `
             *,
             company:companies(id, name, logo, website, info),
             marker:markers_core(id, lat, lng)
 
         `,
-          )
-          .eq('event_year', targetYear)
-          .in('marker_id', validMarkerIds)
-          .order('marker_id', { ascending: true });
-        if (fetchError) throw fetchError;
+            )
+            .eq('event_year', targetYear)
+            .in('marker_id', validMarkerIds)
+            .order('marker_id', { ascending: true });
+          if (fetchError) throw fetchError;
 
-        entry.state.assignments = data || [];
-      } catch (err) {
-        console.error('Error loading assignments:', err);
-        entry.state.error = err.message;
-      } finally {
-        entry.state.loading = false;
-        entry.listeners.forEach((l) => l(entry.state));
-        entry.loadPromise = null;
-      }
-    })();
+          entry.state.assignments = data || [];
+        } catch (err) {
+          console.error('Error loading assignments:', err);
+          entry.state.error = err.message;
+        } finally {
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
+          entry.loadPromise = null;
+        }
+      })();
 
-    return entry.loadPromise;
-  }, [eventYear]);
+      return entry.loadPromise;
+    },
+    [eventYear],
+  );
 
   // Create new assignment
   const createAssignment = useCallback(
@@ -129,45 +132,51 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   );
 
   // Update assignment (change booth number or company)
-  const updateAssignment = useCallback(async (id, updates) => {
-    try {
-      const { data, error: updateError } = await supabase
-        .from('assignments')
-        .update(updates)
-        .eq('id', id)
-        .select(
-          `
+  const updateAssignment = useCallback(
+    async (id, updates) => {
+      try {
+        const { data, error: updateError } = await supabase
+          .from('assignments')
+          .update(updates)
+          .eq('id', id)
+          .select(
+            `
           *,
           company:companies(id, name, logo, website, info),
           marker:markers_core(id, lat, lng)
         `,
-        )
-        .single();
+          )
+          .single();
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-      await loadAssignments();
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error updating assignment:', err);
-      return { data: null, error: err.message };
-    }
-  }, [loadAssignments]);
+        await loadAssignments();
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error updating assignment:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [loadAssignments],
+  );
 
   // Delete assignment
-  const deleteAssignment = useCallback(async (id) => {
-    try {
-      const { error: deleteError } = await supabase.from('assignments').delete().eq('id', id);
+  const deleteAssignment = useCallback(
+    async (id) => {
+      try {
+        const { error: deleteError } = await supabase.from('assignments').delete().eq('id', id);
 
-      if (deleteError) throw deleteError;
+        if (deleteError) throw deleteError;
 
-      await loadAssignments();
-      return { error: null };
-    } catch (err) {
-      console.error('Error deleting assignment:', err);
-      return { error: err.message };
-    }
-  }, [loadAssignments]);
+        await loadAssignments();
+        return { error: null };
+      } catch (err) {
+        console.error('Error deleting assignment:', err);
+        return { error: err.message };
+      }
+    },
+    [loadAssignments],
+  );
 
   // Assign company to marker
   const assignCompanyToMarker = useCallback(
@@ -304,10 +313,10 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     }
 
     if (entry.state.assignments.length === 0) {
-       // If empty, ensure we try to load
-       if (!entry.loadPromise) {
-           loadAssignments();
-       }
+      // If empty, ensure we try to load
+      if (!entry.loadPromise) {
+        loadAssignments();
+      }
     }
 
     // start realtime channel if first subscriber
@@ -326,10 +335,14 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
             if (payload.eventType === 'INSERT' && payload.new) {
               // insert could come from self, just reload to keep logic simple
               entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(() => { loadAssignments(true); }, 500);
+              entry.reloadTimeout = setTimeout(() => {
+                loadAssignments(true);
+              }, 500);
             } else {
               entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(() => { loadAssignments(true); }, 500);
+              entry.reloadTimeout = setTimeout(() => {
+                loadAssignments(true);
+              }, 500);
             }
           },
         )
@@ -341,7 +354,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
       entry.refCount -= 1;
       if (entry.refCount <= 0) {
         if (entry.channel) supabase.removeChannel(entry.channel);
-        entry.channel = null; 
+        entry.channel = null;
         // useAssignments.cache.delete(eventYear); // Keep cache (fix for destroyed views)
       }
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);

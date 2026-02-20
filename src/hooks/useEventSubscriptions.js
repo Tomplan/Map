@@ -30,58 +30,61 @@ export default function useEventSubscriptions(eventYear) {
   });
 
   // Load subscriptions for the given year
-  const loadSubscriptions = useCallback(async (isReload = false) => {
-    // If we have a pending load and this isn't a forced reload, return the existing promise
-    if (entry.loadPromise && !isReload) {
-      return entry.loadPromise;
-    }
-
-    // If we already have data and aren't forcing a reload, return early
-    if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
-      if (local.loading) {
-        setLocal((prev) => ({ ...prev, loading: false }));
+  const loadSubscriptions = useCallback(
+    async (isReload = false) => {
+      // If we have a pending load and this isn't a forced reload, return the existing promise
+      if (entry.loadPromise && !isReload) {
+        return entry.loadPromise;
       }
-      return Promise.resolve();
-    }
 
-    entry.loadPromise = (async () => {
-      try {
-        // Clear any pending debounced reload
-        if (entry.reloadTimeout) {
-          clearTimeout(entry.reloadTimeout);
-          entry.reloadTimeout = null;
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
         }
+        return Promise.resolve();
+      }
 
-        entry.state.loading = true;
-        entry.state.error = null;
+      entry.loadPromise = (async () => {
+        try {
+          // Clear any pending debounced reload
+          if (entry.reloadTimeout) {
+            clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = null;
+          }
 
-        const { data, error: fetchError } = await supabase
-          .from('event_subscriptions')
-          .select(
-            `
+          entry.state.loading = true;
+          entry.state.error = null;
+
+          const { data, error: fetchError } = await supabase
+            .from('event_subscriptions')
+            .select(
+              `
             *,
               company:companies(id, name, logo, website, info, contact, phone, email)
 
           `,
-          )
-          .eq('event_year', eventYear)
-          .order('id', { ascending: true });
+            )
+            .eq('event_year', eventYear)
+            .order('id', { ascending: true });
 
-        if (fetchError) throw fetchError;
+          if (fetchError) throw fetchError;
 
-        entry.state.subscriptions = data || [];
-      } catch (err) {
-        console.error('Error loading event subscriptions:', err);
-        entry.state.error = err.message;
-      } finally {
-        entry.state.loading = false;
-        entry.listeners.forEach((l) => l(entry.state));
-        entry.loadPromise = null;
-      }
-    })();
+          entry.state.subscriptions = data || [];
+        } catch (err) {
+          console.error('Error loading event subscriptions:', err);
+          entry.state.error = err.message;
+        } finally {
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
+          entry.loadPromise = null;
+        }
+      })();
 
-    await entry.loadPromise;
-  }, [eventYear]);
+      await entry.loadPromise;
+    },
+    [eventYear],
+  );
 
   // Subscribe a company to the event year
   const subscribeCompany = async (companyId, subscriptionData = {}) => {
@@ -365,7 +368,7 @@ export default function useEventSubscriptions(eventYear) {
     if (entry.state.subscriptions.length === 0) {
       // If empty, we should load.
       if (!entry.loadPromise) {
-          loadSubscriptions();
+        loadSubscriptions();
       }
     }
 
@@ -398,13 +401,13 @@ export default function useEventSubscriptions(eventYear) {
       // This is the fix for "I had a working app and you destroyed it".
       // We keep the cache so navigating away and back doesn't reload.
       // useEventSubscriptions.cache.delete(eventYear); // REMOVED
-      
+
       // We still clean up channels if no one is listening to save resources,
       // but we keep the data in memory.
       if (entry.refCount <= 0) {
         if (entry.channel) {
-           supabase.removeChannel(entry.channel);
-           entry.channel = null; // Clear channel so it reconnects on next mount
+          supabase.removeChannel(entry.channel);
+          entry.channel = null; // Clear channel so it reconnects on next mount
         }
       }
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);

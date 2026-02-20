@@ -67,22 +67,19 @@ function _startRealtimeChannel(table, year, entry) {
   const channelName = `${table}-count-${year}`;
   entry.channel = supabase
     .channel(channelName)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table },
-      (payload) => {
-        const isRelevant = (payload.new && payload.new.event_year === year) ||
-          (payload.old && payload.old.event_year === year);
-        if (!isRelevant) return;
+    .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
+      const isRelevant =
+        (payload.new && payload.new.event_year === year) ||
+        (payload.old && payload.old.event_year === year);
+      if (!isRelevant) return;
 
-        if (payload.new) {
-          entry.state.count = payload.new.count;
-        } else if (payload.eventType === 'DELETE') {
-          entry.state.count = 0;
-        }
-        entry.listeners.forEach((l) => l(entry.state));
-      },
-    )
+      if (payload.new) {
+        entry.state.count = payload.new.count;
+      } else if (payload.eventType === 'DELETE') {
+        entry.state.count = 0;
+      }
+      entry.listeners.forEach((l) => l(entry.state));
+    })
     .subscribe();
 }
 
@@ -139,7 +136,6 @@ function _createCountHook(table) {
 export const useSubscriptionCount = _createCountHook('subscription_counts');
 export const useAssignmentCount = _createCountHook('assignment_counts');
 export const useMarkerCount = _createCountHook('marker_counts');
-
 
 /**
  * Hook for total company count (not year-specific)

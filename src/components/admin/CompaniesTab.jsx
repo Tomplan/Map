@@ -287,10 +287,8 @@ export default function CompaniesTab() {
 
   // debug: trace when companies or filtered items change
 
-
   const loading = loadingCompanies || loadingProfile;
   const error = errorCompanies || errorProfile;
-
 
   if (loading) {
     return <div className="p-4">{translateSafe('companies.loadingData')}</div>;

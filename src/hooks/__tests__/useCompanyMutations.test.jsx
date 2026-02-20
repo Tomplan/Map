@@ -6,7 +6,7 @@ import { useCompanyMutations } from '../useCompanyMutations';
 
 function TestHarness(props) {
   // expose the hook return value so tests can call its methods
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+
   const h = useCompanyMutations(props);
   // attach to window so test can access
   // (simple pattern used in this repo for small hook tests)
@@ -34,7 +34,13 @@ describe('useCompanyMutations (organization save)', () => {
     // Start edit for the special organization row
     act(() => {
       // @ts-ignore
-      window.__hook.handleEdit({ id: 'organization', name: 'Org name', contact: 'Alice', phone: '+31201234567', email: 'ALICE@EXAMPLE.COM' });
+      window.__hook.handleEdit({
+        id: 'organization',
+        name: 'Org name',
+        contact: 'Alice',
+        phone: '+31201234567',
+        email: 'ALICE@EXAMPLE.COM',
+      });
     });
 
     // Save (should call updateProfile with the contact/phone/email present in editForm)

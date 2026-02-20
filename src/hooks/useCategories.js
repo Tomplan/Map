@@ -61,24 +61,25 @@ export function useCategories(language = 'nl') {
   });
 
   // Load categories with translations (updates cache entry)
-  const loadCategories = useCallback(async (isReload = false) => {
-    // If we already have data and aren't forcing a reload, return early
-    if (entry.state.categories.length > 0 && !entry.state.loading && !isReload) {
-      if (local.loading) {
-        setLocal((prev) => ({ ...prev, loading: false }));
+  const loadCategories = useCallback(
+    async (isReload = false) => {
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.categories.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
+        }
+        return;
       }
-      return;
-    }
 
-    try {
-      // don't call external set* helpers; update entry directly
-      entry.state.loading = true;
-      entry.state.error = null;
+      try {
+        // don't call external set* helpers; update entry directly
+        entry.state.loading = true;
+        entry.state.error = null;
 
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select(
-          `
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select(
+            `
           id,
           slug,
           icon,
@@ -91,48 +92,49 @@ export function useCategories(language = 'nl') {
             description
           )
         `,
-        )
-        .eq('active', true)
-        .order('sort_order');
+          )
+          .eq('active', true)
+          .order('sort_order');
 
-      if (categoriesError) throw categoriesError;
+        if (categoriesError) throw categoriesError;
 
-      const transformed = (categoriesData || []).map((cat) => {
-        const translation =
-          cat.category_translations.find((t) => t.language === language) ||
-          cat.category_translations.find((t) => t.language === 'nl') ||
-          cat.category_translations[0];
+        const transformed = (categoriesData || []).map((cat) => {
+          const translation =
+            cat.category_translations.find((t) => t.language === language) ||
+            cat.category_translations.find((t) => t.language === 'nl') ||
+            cat.category_translations[0];
 
-        return {
-          id: cat.id,
-          slug: cat.slug,
-          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
-          iconName: cat.icon,
-          color: cat.color,
-          sort_order: cat.sort_order,
-          active: cat.active,
-          name: translation?.name || cat.slug,
-          description: translation?.description || '',
-          translations: cat.category_translations,
-        };
-      });
+          return {
+            id: cat.id,
+            slug: cat.slug,
+            icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+            iconName: cat.icon,
+            color: cat.color,
+            sort_order: cat.sort_order,
+            active: cat.active,
+            name: translation?.name || cat.slug,
+            description: translation?.description || '',
+            translations: cat.category_translations,
+          };
+        });
 
-      entry.state.categories = transformed;
-      entry.state.error = null;
-    } catch (err) {
-      console.error('Error loading categories:', err);
-      entry.state.error = err.message;
-      if (err.message?.includes('does not exist') || err.code === '42P01') {
-        console.warn('Categories table not found. Please run migration 007.');
-        entry.state.categories = [];
+        entry.state.categories = transformed;
+        entry.state.error = null;
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        entry.state.error = err.message;
+        if (err.message?.includes('does not exist') || err.code === '42P01') {
+          console.warn('Categories table not found. Please run migration 007.');
+          entry.state.categories = [];
+        }
+      } finally {
+        entry.state.loading = false;
+        // notify listeners
+        entry.listeners.forEach((l) => l(entry.state));
       }
-    } finally {
-      entry.state.loading = false;
-      // notify listeners
-      entry.listeners.forEach((l) => l(entry.state));
-    }
-  }, [language]);
-
+    },
+    [language],
+  );
 
   // Real-time subscription
   // Dedicated loader for category stats (used by subscription)
@@ -207,10 +209,8 @@ export function useCategories(language = 'nl') {
     if (!entry.statsChannel) {
       entry.statsChannel = supabase
         .channel('company-categories-stats')
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'company_categories' },
-          () => loadCategoryStats(),
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
+          loadCategoryStats(),
         )
         .subscribe();
     }
@@ -218,7 +218,7 @@ export function useCategories(language = 'nl') {
     return () => {
       entry.listeners.delete(listener);
       entry.refCount -= 1;
-      
+
       // Cleanup channels if no one is listening, but KEEP the data
       // This is crucial for avoiding page flickers/loading states on navigation
       if (entry.refCount <= 0) {
@@ -479,7 +479,6 @@ export function useCategories(language = 'nl') {
       return {};
     }
   };
-
 
   return {
     categories: local.categories,

@@ -42,7 +42,7 @@ export default function useCompanies() {
       reloadTimeout: null,
     };
   }
-  
+
   const entry = useCompanies.cache;
 
   const [local, setLocal] = useState({
@@ -64,7 +64,7 @@ export default function useCompanies() {
     // if we already have data and we aren't explicitly asked to reload, skip
     if (e.state.companies.length > 0 && !e.state.loading && !isReload) {
       if (local.loading) {
-        setLocal(prev => ({ ...prev, loading: false }));
+        setLocal((prev) => ({ ...prev, loading: false }));
       }
       return Promise.resolve();
     }
@@ -115,10 +115,12 @@ export default function useCompanies() {
 
       if (insertError) throw insertError;
 
-      const newCompanies = [...entry.state.companies, data].sort((a, b) => a.name.localeCompare(b.name));
+      const newCompanies = [...entry.state.companies, data].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      );
       entry.state.companies = newCompanies;
-      entry.listeners.forEach(l => l(entry.state));
-      
+      entry.listeners.forEach((l) => l(entry.state));
+
       return { data, error: null };
     } catch (err) {
       console.error('Error creating company:', err);
@@ -142,9 +144,11 @@ export default function useCompanies() {
 
       if (updateError) throw updateError;
 
-      const newCompanies = entry.state.companies.map((c) => (c.id === id ? data : c)).sort((a, b) => a.name.localeCompare(b.name));
+      const newCompanies = entry.state.companies
+        .map((c) => (c.id === id ? data : c))
+        .sort((a, b) => a.name.localeCompare(b.name));
       entry.state.companies = newCompanies;
-      entry.listeners.forEach(l => l(entry.state));
+      entry.listeners.forEach((l) => l(entry.state));
 
       return { data, error: null };
     } catch (err) {
@@ -162,8 +166,8 @@ export default function useCompanies() {
 
       const newCompanies = entry.state.companies.filter((c) => c.id !== id);
       entry.state.companies = newCompanies;
-      entry.listeners.forEach(l => l(entry.state));
-      
+      entry.listeners.forEach((l) => l(entry.state));
+
       return { error: null };
     } catch (err) {
       console.error('Error deleting company:', err);
@@ -182,12 +186,9 @@ export default function useCompanies() {
     [local],
   );
 
-
   // Subscribe to realtime changes (debounced to batch multiple rapid changes)
   useEffect(() => {
-    console.debug('[useCompanies] effect mount, refCount before', entry.refCount, '(current cache entry)');
     entry.refCount += 1;
-    console.debug('[useCompanies] refCount after', entry.refCount);
     const listener = (s) => {
       setLocal({
         companies: s.companies,
@@ -218,13 +219,13 @@ export default function useCompanies() {
     // OR if we have 0 items.
     if (entry.state.companies.length === 0) {
       if (!entry.state.loading && !entry.loadPromise) {
-          loadCompanies();
+        loadCompanies();
       } else if (entry.state.loading && !entry.loadPromise) {
-          // It says loading:true but no promise? Stuck state. Restart.
-          loadCompanies();
+        // It says loading:true but no promise? Stuck state. Restart.
+        loadCompanies();
       } else if (entry.refCount === 1 && !entry.loadPromise) {
-          // First mounter, kick it off
-          loadCompanies();
+        // First mounter, kick it off
+        loadCompanies();
       }
     }
 
@@ -241,10 +242,8 @@ export default function useCompanies() {
     }
 
     return () => {
-      console.debug('[useCompanies] effect cleanup, refCount before', entry.refCount);
       entry.listeners.delete(listener);
       entry.refCount -= 1;
-      console.debug('[useCompanies] refCount after', entry.refCount);
       // don't evict cache entry so that an in-flight load can finish and be
       // available to future subscribers; channels remain open indefinitely
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);

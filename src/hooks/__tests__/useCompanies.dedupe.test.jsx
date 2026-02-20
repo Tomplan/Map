@@ -2,7 +2,9 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 
 jest.mock('../../supabaseClient', () => {
-  const mockSelect = jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) }));
+  const mockSelect = jest.fn(() => ({
+    order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+  }));
   const mockFrom = jest.fn(() => ({ select: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-comp' }));

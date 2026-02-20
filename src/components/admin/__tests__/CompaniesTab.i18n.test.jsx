@@ -95,7 +95,7 @@ import CompaniesTab from '../CompaniesTab';
 
 test('renders companies tab labels in Dutch (i18n) and modal heading', async () => {
   render(
-    <MemoryRouter initialEntries={["/companies"]}>
+    <MemoryRouter initialEntries={['/companies']}>
       <CompaniesTab />
     </MemoryRouter>,
   );

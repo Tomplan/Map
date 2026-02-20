@@ -61,17 +61,15 @@ describe('useCompanyTranslations cache/dedupe', () => {
     const { supabase, __mocks__ } = require('../../supabaseClient');
 
     // initial fetch returns one english translation
-    __mocks__.mockEq.mockResolvedValueOnce({ data: [{ language_code: 'en', info: 'Hello' }], error: null });
+    __mocks__.mockEq.mockResolvedValueOnce({
+      data: [{ language_code: 'en', info: 'Hello' }],
+      error: null,
+    });
 
     // render component that exercises helper methods
     function ActionProbe({ companyId }) {
-      const {
-        translations,
-        loading,
-        getTranslation,
-        saveTranslation,
-        deleteTranslation,
-      } = useCompanyTranslations(companyId);
+      const { translations, loading, getTranslation, saveTranslation, deleteTranslation } =
+        useCompanyTranslations(companyId);
       const [text, setText] = React.useState('');
 
       React.useEffect(() => {

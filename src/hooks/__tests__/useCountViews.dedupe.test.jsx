@@ -25,7 +25,15 @@ jest.mock('../../supabaseClient', () => {
       removeChannel: mockRemoveChannel,
     },
     // expose mocks for assertions
-    __mocks__: { mockFrom, mockSelect, mockMaybeSingle, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
+    __mocks__: {
+      mockFrom,
+      mockSelect,
+      mockMaybeSingle,
+      mockChannel,
+      mockSubscribe,
+      mockRemoveChannel,
+      mockOn,
+    },
   };
 });
 

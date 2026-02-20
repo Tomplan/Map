@@ -3,7 +3,10 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
 // stub out utilities that reference import.meta or browser APIs
-jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: () => '', getResponsiveLogoSources: () => [] }));
+jest.mock('../../../utils/getLogoPath', () => ({
+  getLogoPath: () => '',
+  getResponsiveLogoSources: () => [],
+}));
 jest.mock('../../../utils/getDefaultLogo', () => ({ getDefaultLogoPath: () => '' }));
 
 // replicate mocks from CompaniesTab.organizationPrivateInfo.test
@@ -20,7 +23,10 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 
-jest.mock('../../../utils/getLogoPath', () => ({ getLogoPath: () => '', getResponsiveLogoSources: () => [] }));
+jest.mock('../../../utils/getLogoPath', () => ({
+  getLogoPath: () => '',
+  getResponsiveLogoSources: () => [],
+}));
 jest.mock('../../../utils/getDefaultLogo', () => ({ getDefaultLogoPath: () => '' }));
 
 jest.mock('../../../hooks/useCompanies', () => {
@@ -73,12 +79,13 @@ jest.mock('../../../contexts/DialogContext', () => ({
   useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }),
 }));
 
-
 // reuse existing supabase mock from other tests
 jest.mock('../../../supabaseClient', () => {
   // simulate a single company returned from the API so we can assert on it
   const sampleCompanies = [{ id: 1, name: 'TestCo', logo: '', website: '', info: '' }];
-  const mockSelect = jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: sampleCompanies, error: null })) }));
+  const mockSelect = jest.fn(() => ({
+    order: jest.fn(() => Promise.resolve({ data: sampleCompanies, error: null })),
+  }));
   const mockFrom = jest.fn(() => ({ select: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-comp' }));
@@ -96,7 +103,6 @@ jest.mock('../../../supabaseClient', () => {
 });
 
 import CompaniesTab from '../CompaniesTab';
-
 
 function renderWithRouter(initial, navRef) {
   // navRef is a ref object that will receive the navigate function
@@ -119,7 +125,6 @@ function renderWithRouter(initial, navRef) {
     </MemoryRouter>,
   );
 }
-
 
 describe('CompaniesTab routing', () => {
   beforeEach(() => jest.clearAllMocks());

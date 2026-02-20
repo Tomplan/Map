@@ -93,7 +93,7 @@ import CompaniesTab from '../CompaniesTab';
 
 test('organization row shows manager-only (private) contact/phone/email in Manager tab', async () => {
   render(
-    <MemoryRouter initialEntries={["/companies"]}>
+    <MemoryRouter initialEntries={['/companies']}>
       <CompaniesTab />
     </MemoryRouter>,
   );
