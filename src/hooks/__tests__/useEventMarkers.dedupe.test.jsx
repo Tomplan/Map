@@ -14,9 +14,24 @@ beforeAll(() => {
 jest.mock('../../supabaseClient', () => {
   const mockSelect = jest.fn(() => ({
     eq: jest.fn(() => Promise.resolve({ data: [], error: null })),
+    or: jest.fn(() => Promise.resolve({ data: [], error: null })),
+    in: jest.fn(() => Promise.resolve({ data: [], error: null })),
+    select: jest.fn(() => ({
+      limit: jest.fn(() => Promise.resolve({ data: [], error: null })),
+      maybeSingle: jest.fn(() => Promise.resolve({ data: null, error: null })),
+      or: jest.fn(() => Promise.resolve({ data: [], error: null })),
+      eq: jest.fn(() => Promise.resolve({ data: [], error: null })),
+      then: (resolve) => resolve({ data: [], error: null }),
+    })),
     order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+    then: (resolve) => resolve({ data: [], error: null }),
   }));
-  const mockFrom = jest.fn(() => ({ select: mockSelect, eq: mockSelect }));
+  const mockFrom = jest.fn(() => ({ 
+    select: mockSelect, 
+    eq: mockSelect,
+    or: mockSelect,
+    in: mockSelect
+  }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-mk' }));
   const mockChannel = jest.fn(() => ({ on: mockOn, subscribe: mockSubscribe }));
@@ -80,7 +95,10 @@ describe('useEventMarkers cache/dedupe', () => {
     // make first call to view return not-found error
     __mocks__.mockFrom.mockImplementationOnce(() => ({
       select: () => Promise.resolve({ data: null, error: { code: 'PGRST205', message: 'Could not find the table' } }),
-      eq: () => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) }),
+      eq: () => ({
+        select: () => Promise.resolve({ data: null, error: { code: 'PGRST205', message: 'Could not find the table' } }),
+        order: jest.fn(() => Promise.resolve({ data: [], error: null })),
+      }),
     }));
 
     render(<Probe id="c" year={2027} />);

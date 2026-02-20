@@ -71,7 +71,11 @@ function _startOrgChannel(entry) {
 
 function _stopOrgEntry() {
   if (_orgCacheEntry.channel) {
-    supabase.removeChannel(_orgCacheEntry.channel).catch((err) => console.error('Error removing channel:', err));
+    try {
+      supabase.removeChannel(_orgCacheEntry.channel);
+    } catch (err) {
+      console.error('Error removing channel:', err);
+    }
     _orgCacheEntry.channel = null;
   }
   // Do not reset state for safety - keep cache across unmounts

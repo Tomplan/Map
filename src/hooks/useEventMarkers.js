@@ -148,7 +148,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                   )
                   .eq('event_year', targetYear),
                 supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
-                supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
+                supabase.from('organization_settings').select('*').limit(1).maybeSingle(), // defaults
               ]);
             if (coreRes.error) throw coreRes.error;
             if (appearanceRes.error) throw appearanceRes.error;

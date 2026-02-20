@@ -36,11 +36,13 @@ self.addEventListener('activate', () => {
         caches.open('map-tiles').then((cache) =>
           cache.match(event.request).then((response) => {
             if (response) return response;
-            // perform a network fetch; allow opaque responses (mode no-cors)
-            return fetch(event.request, { mode: 'no-cors' })
+            // perform a network fetch; preserve original request mode (likely cors)
+            // so that we don't get opaque responses for requests that need CORS (like Leaflet tiles with crossOrigin: true)
+            return fetch(event.request)
               .then((networkResponse) => {
+                // cache successful responses. For opaque (type='opaque'), only cache if we really meant to used no-cors.
+                // But generally, map tiles should be CORS enabled.
                 if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
-                  // we intentionally cache even opaque, since tiles are large and safe
                   cache.put(event.request, networkResponse.clone()).catch(() => {});
                 }
                 return networkResponse;
@@ -54,7 +56,7 @@ self.addEventListener('activate', () => {
       );
     };
 
-    if (url.includes('cartodb-basemaps') || url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery')) {
+    if (url.includes('cartodb-basemaps') || url.includes('cartocdn.com') || url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery')) {
       // intercept and cache cross-origin tile requests
       cacheTile();
       return;
