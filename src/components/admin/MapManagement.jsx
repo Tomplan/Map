@@ -346,14 +346,24 @@ export default function MapManagement({
       } catch (err) {
         console.warn('Header BrowserPrint call failed:', err);
         cleanup();
-        await snapshotHeaderPrint();
+        
+        const isLandscape = mode?.title?.toLowerCase().includes('landscape') || 
+                           mode?.name?.toLowerCase().includes('landscape');
+                           
+        console.info(`[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`);
+        alert('Browser print failed. Falling back to snapshot print (popup window). Verify the orientation in the dialog.');
+
+        await snapshotHeaderPrint({ 
+            orientation: isLandscape ? 'landscape' : 'portrait' 
+        });
         return;
       }
 
       const waitStart = () =>
         new Promise((resolve) => {
           if (started) return resolve('started');
-          timeoutId = setTimeout(() => resolve('timeout'), 2500);
+          // Increased timeout to 8000ms to allow large maps/complex DOMs to prepare for print
+          timeoutId = setTimeout(() => resolve('timeout'), 8000);
           const poll = setInterval(() => {
             if (started || finished) {
               clearInterval(poll);
@@ -370,14 +380,24 @@ export default function MapManagement({
       if (result === 'timeout') {
         console.warn('Header BrowserPrint did not start; falling back to snapshot export');
         cleanup();
-        await snapshotHeaderPrint();
+        
+        // Detect configuration from mode object safely handling both structure variants
+        const title = mode?.title || mode?.options?.title || mode?.name || '';
+        const isLandscape = title.toLowerCase().includes('landscape');
+                           
+        console.info(`[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`);
+        alert('Browser print timed out. Falling back to snapshot print (popup window). Verify the orientation in the dialog.');
+
+        await snapshotHeaderPrint({ 
+            orientation: isLandscape ? 'landscape' : 'portrait' 
+        });
       }
     } finally {
       setIsPrintingHeader(false);
     }
   };
 
-  const snapshotHeaderPrint = async () => {
+  const snapshotHeaderPrint = async (options = {}) => {
     if (isPrintingHeader) return;
     setIsPrintingHeader(true);
     try {
@@ -398,7 +418,10 @@ export default function MapManagement({
 
       const imageDataUrl = canvas.toDataURL('image/png', 1.0);
       const printWindow = window.open('', '_blank', 'width=900,height=700');
-      if (!printWindow) return;
+      if (!printWindow) {
+        alert('Popup blocked! Please allow popups for map printing.');
+        return;
+      }
 
       // Avoid document.write (browser warns). Build DOM safely using DOM APIs
       const doc = printWindow.document;
@@ -408,7 +431,35 @@ export default function MapManagement({
       const title = doc.createElement('title');
       title.textContent = 'Map Print';
       const style = doc.createElement('style');
-      style.textContent = `*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}`;
+      
+      // Determine orientation if needed
+      const pageOrientation = options.orientation === 'landscape' ? 'landscape' : 'portrait';
+      
+      style.textContent = `
+        * { margin: 0; padding: 0 }
+        body { 
+          display: flex; 
+          justify-content: center; 
+          align-items: center; 
+          min-height: 100vh; 
+          background: white 
+        }
+        img { 
+          max-width: 100%; 
+          max-height: 100vh; 
+          object-fit: contain 
+        }
+        @media print { 
+          @page { size: ${pageOrientation}; margin: 0; }
+          img { width: 100%; height: auto } 
+          body { 
+            display: block !important; 
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+          }
+        }
+      `;
       head.appendChild(title);
       head.appendChild(style);
 
@@ -428,8 +479,16 @@ export default function MapManagement({
       body.appendChild(img);
 
       // Attach head/body to document
-      while (doc.documentElement?.firstChild)
+      // Ensure document has an HTML element
+      if (!doc.documentElement) {
+        doc.appendChild(doc.createElement('html'));
+      }
+      
+      // Clear existing content safely
+      while (doc.documentElement.firstChild) {
         doc.documentElement.removeChild(doc.documentElement.firstChild);
+      }
+      
       doc.documentElement.appendChild(head);
       doc.documentElement.appendChild(body);
       doc.close();
