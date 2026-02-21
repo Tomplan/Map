@@ -631,24 +631,45 @@ function EventMap({
               return;
             }
 
+            // Derive orientation from mode title if not already available
+            // This is critical for the logic below to work
+            let detectedOrientation = undefined;
+            if (modeTitle && modeTitle.toLowerCase().includes('portrait')) {
+              detectedOrientation = 'Portrait';
+            } else if (modeTitle && modeTitle.toLowerCase().includes('landscape')) {
+              detectedOrientation = 'Landscape';
+            }
+
             // Only modify Portrait and Landscape orientations with fixed home positions
-            if (orientation === 'Portrait' || orientation === 'Landscape') {
+            // If a specific print config exists (A4, A3, etc), prioritize its settings
+            if (
+              printModeConfig ||
+              detectedOrientation === 'Portrait' ||
+              detectedOrientation === 'Landscape'
+            ) {
               // Save current view to restore after printing
               originalView = {
                 center: browserPrint._map.getCenter(),
                 zoom: browserPrint._map.getZoom(),
               };
 
-              // Use different center and zoom for Portrait vs Landscape
-              const centerPosition =
-                orientation === 'Portrait'
-                  ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
-                  : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+              let centerPosition, zoomLevel;
 
-              const zoomLevel =
-                orientation === 'Portrait'
-                  ? 18 // Portrait uses zoom 17.8
-                  : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+              if (printModeConfig && printModeConfig.center && printModeConfig.zoom) {
+                centerPosition = printModeConfig.center;
+                zoomLevel = printModeConfig.zoom;
+              } else {
+                // Use different center and zoom for Portrait vs Landscape fallback
+                centerPosition =
+                  detectedOrientation === 'Portrait'
+                    ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                    : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+                zoomLevel =
+                  detectedOrientation === 'Portrait'
+                    ? 18 // Portrait uses zoom 17.8
+                    : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+              }
 
               // Move the real map to the target position
               // The plugin will then use this view when creating the print overlay
@@ -848,7 +869,7 @@ function EventMap({
       };
 
   return (
-    <div style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
+    <div className="event-map-wrapper" style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}
