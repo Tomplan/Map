@@ -54,7 +54,7 @@ export default function MapManagement({
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [printModes, setPrintModes] = useState([]);
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
-  
+
   // Collapse state for sidebars
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true); // Default to open for Markers
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false); // Default to closed for Subscriptions
@@ -79,7 +79,7 @@ export default function MapManagement({
         setRightSidebarWidth(newWidth);
       } else if (isResizing === 'split') {
         // Approx header height + padding offset
-        const containerTop = 144; 
+        const containerTop = 144;
         const containerHeight = window.innerHeight - containerTop;
         const relativeY = e.clientY - containerTop;
         const rawRatio = relativeY / containerHeight;
@@ -408,15 +408,20 @@ export default function MapManagement({
       } catch (err) {
         console.warn('Header BrowserPrint call failed:', err);
         cleanup();
-        
-        const isLandscape = mode?.title?.toLowerCase().includes('landscape') || 
-                           mode?.name?.toLowerCase().includes('landscape');
-                           
-        console.info(`[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`);
-        alert('Browser print failed. Falling back to snapshot print (popup window). Verify the orientation in the dialog.');
 
-        await snapshotHeaderPrint({ 
-            orientation: isLandscape ? 'landscape' : 'portrait' 
+        const isLandscape =
+          mode?.title?.toLowerCase().includes('landscape') ||
+          mode?.name?.toLowerCase().includes('landscape');
+
+        console.info(
+          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
+        );
+        alert(
+          'Browser print failed. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
+        );
+
+        await snapshotHeaderPrint({
+          orientation: isLandscape ? 'landscape' : 'portrait',
         });
         return;
       }
@@ -442,16 +447,20 @@ export default function MapManagement({
       if (result === 'timeout') {
         console.warn('Header BrowserPrint did not start; falling back to snapshot export');
         cleanup();
-        
+
         // Detect configuration from mode object safely handling both structure variants
         const title = mode?.title || mode?.options?.title || mode?.name || '';
         const isLandscape = title.toLowerCase().includes('landscape');
-                           
-        console.info(`[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`);
-        alert('Browser print timed out. Falling back to snapshot print (popup window). Verify the orientation in the dialog.');
 
-        await snapshotHeaderPrint({ 
-            orientation: isLandscape ? 'landscape' : 'portrait' 
+        console.info(
+          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
+        );
+        alert(
+          'Browser print timed out. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
+        );
+
+        await snapshotHeaderPrint({
+          orientation: isLandscape ? 'landscape' : 'portrait',
         });
       }
     } finally {
@@ -493,10 +502,10 @@ export default function MapManagement({
       const title = doc.createElement('title');
       title.textContent = 'Map Print';
       const style = doc.createElement('style');
-      
+
       // Determine orientation if needed
       const pageOrientation = options.orientation === 'landscape' ? 'landscape' : 'portrait';
-      
+
       style.textContent = `
         * { margin: 0; padding: 0 }
         body { 
@@ -545,12 +554,12 @@ export default function MapManagement({
       if (!doc.documentElement) {
         doc.appendChild(doc.createElement('html'));
       }
-      
+
       // Clear existing content safely
       while (doc.documentElement.firstChild) {
         doc.documentElement.removeChild(doc.documentElement.firstChild);
       }
-      
+
       doc.documentElement.appendChild(head);
       doc.documentElement.appendChild(body);
       doc.close();
@@ -720,10 +729,7 @@ export default function MapManagement({
                 }`}
                 title={isLeftSidebarOpen ? 'Hide Markers & Details' : 'Show Markers & Details'}
               >
-                <Icon
-                  path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight}
-                  size={1}
-                />
+                <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={1} />
               </button>
 
               {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
@@ -736,10 +742,7 @@ export default function MapManagement({
                 }`}
                 title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
               >
-                <Icon
-                  path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft}
-                  size={1}
-                />
+                <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={1} />
               </button>
             </div>
           )}
@@ -752,9 +755,9 @@ export default function MapManagement({
               className={`border-r border-gray-200 overflow-hidden flex-shrink-0 bg-white flex flex-col relative ${
                 !isLeftSidebarOpen && 'border-r-0'
               }`}
-              style={{ 
+              style={{
                 width: isLeftSidebarOpen ? leftSidebarWidth : 0,
-                transition: isResizing === 'left' ? 'none' : 'width 0.3s ease-in-out'
+                transition: isResizing === 'left' ? 'none' : 'width 0.3s ease-in-out',
               }}
             >
               {/* Resize Handle (Right Edge) */}
@@ -804,7 +807,10 @@ export default function MapManagement({
                     aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
                     className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
                   >
-                    <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.7} />
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.7}
+                    />
                     <span className="sr-only">Sort</span>
                   </button>
                 </div>
@@ -814,7 +820,9 @@ export default function MapManagement({
               <div
                 className="w-full overflow-y-auto p-2 border-b border-gray-200 relative scrollbar-hide"
                 style={{
-                  height: selectedMarkerId ? `calc(${listSplitRatio * 100}% - 146px)` : 'calc(100% - 146px)',
+                  height: selectedMarkerId
+                    ? `calc(${listSplitRatio * 100}% - 146px)`
+                    : 'calc(100% - 146px)',
                   transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
                 }}
               >
@@ -854,7 +862,9 @@ export default function MapManagement({
                                   : 'Unassigned Booth'
                                 : marker.glyph || `Marker ${marker.id}`}
                             </span>
-                            <span className="text-xs text-gray-400 font-mono ml-2">#{marker.id}</span>
+                            <span className="text-xs text-gray-400 font-mono ml-2">
+                              #{marker.id}
+                            </span>
                           </div>
                           {marker.name && (
                             <div className="text-xs text-gray-500 truncate">{marker.name}</div>
@@ -876,9 +886,9 @@ export default function MapManagement({
 
               {/* Bottom Section: Details/Edit */}
               {selectedMarkerId && (
-                <div 
+                <div
                   className="w-full overflow-y-auto p-6 bg-gray-50/50 flex-shrink-0"
-                  style={{ 
+                  style={{
                     height: `${(1 - listSplitRatio) * 100}%`,
                     transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
                   }}
@@ -891,56 +901,57 @@ export default function MapManagement({
                     <div>
                       {/* Header */}
                       <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-900">
-                          {isDefaultMarker
-                            ? selectedMarker.id === -1
-                              ? 'Assigned Booth Default'
-                              : 'Unassigned Booth Default'
-                            : selectedMarker.glyph || `Marker ${selectedMarker.id}`}
-                        </h2>
-                        <p className="text-sm text-gray-600">
-                          ID: {selectedMarker.id}
-                          {isDefaultMarker && ' ⚙️ Global Default for Booth Markers'}
-                          {isSpecialMarker && ' (Special Marker)'}
-                          {isBoothMarker && ' (Booth - Content managed via Companies/Assignments)'}
-                        </p>
+                        <div>
+                          <h2 className="text-xl font-bold text-gray-900">
+                            {isDefaultMarker
+                              ? selectedMarker.id === -1
+                                ? 'Assigned Booth Default'
+                                : 'Unassigned Booth Default'
+                              : selectedMarker.glyph || `Marker ${selectedMarker.id}`}
+                          </h2>
+                          <p className="text-sm text-gray-600">
+                            ID: {selectedMarker.id}
+                            {isDefaultMarker && ' ⚙️ Global Default for Booth Markers'}
+                            {isSpecialMarker && ' (Special Marker)'}
+                            {isBoothMarker &&
+                              ' (Booth - Content managed via Companies/Assignments)'}
+                          </p>
+                        </div>
+                        {!editMode && !isReadOnly && (
+                          <button
+                            onClick={handleStartEdit}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Edit
+                          </button>
+                        )}
                       </div>
-                      {!editMode && !isReadOnly && (
-                        <button
-                          onClick={handleStartEdit}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                          Edit
-                        </button>
+
+                      {editMode ? (
+                        <EditPanel
+                          marker={editData}
+                          isDefaultMarker={isDefaultMarker}
+                          isSpecialMarker={isSpecialMarker}
+                          isBoothMarker={isBoothMarker}
+                          getDefaultColorName={getDefaultColorName}
+                          onChange={handleFieldChange}
+                          onSave={handleSave}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : (
+                        <ViewPanel
+                          marker={selectedMarker}
+                          isSpecialMarker={isSpecialMarker}
+                          isDefaultMarker={isDefaultMarker}
+                          isBoothMarker={isBoothMarker}
+                          getDefaultColorName={getDefaultColorName}
+                        />
                       )}
                     </div>
-
-                    {editMode ? (
-                      <EditPanel
-                        marker={editData}
-                        isDefaultMarker={isDefaultMarker}
-                        isSpecialMarker={isSpecialMarker}
-                        isBoothMarker={isBoothMarker}
-                        getDefaultColorName={getDefaultColorName}
-                        onChange={handleFieldChange}
-                        onSave={handleSave}
-                        onCancel={handleCancelEdit}
-                      />
-                    ) : (
-                      <ViewPanel
-                        marker={selectedMarker}
-                        isSpecialMarker={isSpecialMarker}
-                        isDefaultMarker={isDefaultMarker}
-                        isBoothMarker={isBoothMarker}
-                        getDefaultColorName={getDefaultColorName}
-                      />
-                    )}
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
               )}
-          </div>
+            </div>
           )}
 
           {/* CENTER: Map View */}
@@ -988,9 +999,9 @@ export default function MapManagement({
               className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative ${
                 !isRightSidebarOpen && 'border-l-0'
               }`}
-              style={{ 
+              style={{
                 width: isRightSidebarOpen ? rightSidebarWidth : 0,
-                transition: isResizing === 'right' ? 'none' : 'width 0.3s ease-in-out'
+                transition: isResizing === 'right' ? 'none' : 'width 0.3s ease-in-out',
               }}
             >
               {/* Resize Handle (Left Edge) */}
@@ -1000,7 +1011,9 @@ export default function MapManagement({
               />
 
               <div className="p-4 w-full h-full flex items-center justify-center text-gray-400 text-sm text-center">
-                Subscriptions List<br />(Coming Soon)
+                Subscriptions List
+                <br />
+                (Coming Soon)
               </div>
             </div>
           )}

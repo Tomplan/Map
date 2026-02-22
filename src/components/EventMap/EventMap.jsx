@@ -869,7 +869,13 @@ function EventMap({
       };
 
   return (
-    <div className="event-map-wrapper" style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
+    <div
+      className="event-map-wrapper"
+      style={containerStyle}
+      tabIndex={0}
+      aria-label="Event Map"
+      role="region"
+    >
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}
