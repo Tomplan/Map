@@ -39,9 +39,10 @@ export default function useEventSubscriptions(eventYear) {
 
       // If we already have data and aren't forcing a reload, return early
       if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
-        if (local.loading) {
-          setLocal((prev) => ({ ...prev, loading: false }));
-        }
+        setLocal((prev) => {
+          if (!prev.loading) return prev;
+          return { ...prev, loading: false };
+        });
         return Promise.resolve();
       }
 
@@ -83,7 +84,7 @@ export default function useEventSubscriptions(eventYear) {
 
       await entry.loadPromise;
     },
-    [eventYear],
+    [eventYear, entry],
   );
 
   // Subscribe a company to the event year
@@ -326,10 +327,10 @@ export default function useEventSubscriptions(eventYear) {
   // hook instance lifecycle: register listener / kick off load / start channel
   useEffect(() => {
     // update entry reference (in case eventYear changed)
-    entry = useEventSubscriptions.cache.get(eventYear);
-    if (!entry) {
+    let currentEntry = useEventSubscriptions.cache.get(eventYear);
+    if (!currentEntry) {
       // unexpected, recreate entry so we don't crash
-      entry = {
+      currentEntry = {
         state: { subscriptions: [], loading: true, error: null },
         listeners: new Set(),
         refCount: 0,
@@ -337,44 +338,47 @@ export default function useEventSubscriptions(eventYear) {
         reloadTimeout: null,
         loadPromise: null,
       };
-      useEventSubscriptions.cache.set(eventYear, entry);
+      useEventSubscriptions.cache.set(eventYear, currentEntry);
     }
 
-    entry.refCount += 1;
+    currentEntry.refCount += 1;
     const listener = (s) =>
       setLocal({
         subscriptions: s.subscriptions,
         loading: s.loading,
         error: s.error,
       });
-    entry.listeners.add(listener);
+    currentEntry.listeners.add(listener);
 
     // sync local state if different (data or loading)
     // If cache has data, ensure we use it AND turn off loading
-    if (entry.state.subscriptions.length > 0) {
+    if (currentEntry.state.subscriptions.length > 0) {
       setLocal({
-        subscriptions: entry.state.subscriptions,
+        subscriptions: currentEntry.state.subscriptions,
         loading: false,
-        error: entry.state.error,
+        error: currentEntry.state.error,
       });
-    } else if (local.subscriptions !== entry.state.subscriptions) {
-      setLocal({
-        subscriptions: entry.state.subscriptions,
-        loading: entry.state.loading,
-        error: entry.state.error,
+    } else {
+      setLocal((prev) => {
+        if (prev.subscriptions === currentEntry.state.subscriptions) return prev;
+        return {
+          subscriptions: currentEntry.state.subscriptions,
+          loading: currentEntry.state.loading,
+          error: currentEntry.state.error,
+        };
       });
     }
 
-    if (entry.state.subscriptions.length === 0) {
+    if (currentEntry.state.subscriptions.length === 0) {
       // If empty, we should load.
-      if (!entry.loadPromise) {
+      if (!currentEntry.loadPromise) {
         loadSubscriptions();
       }
     }
 
     // start realtime channel if first subscriber
-    if (!entry.channel) {
-      entry.channel = supabase
+    if (!currentEntry.channel) {
+      currentEntry.channel = supabase
         .channel(`event-subscriptions-changes-${eventYear}`)
         .on(
           'postgres_changes',
@@ -385,8 +389,8 @@ export default function useEventSubscriptions(eventYear) {
             filter: `event_year=eq.${eventYear}`,
           },
           () => {
-            if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
-            entry.reloadTimeout = setTimeout(() => {
+            if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
+            currentEntry.reloadTimeout = setTimeout(() => {
               loadSubscriptions(true);
             }, 500);
           },
@@ -395,8 +399,8 @@ export default function useEventSubscriptions(eventYear) {
     }
 
     return () => {
-      entry.listeners.delete(listener);
-      entry.refCount -= 1;
+      currentEntry.listeners.delete(listener);
+      currentEntry.refCount -= 1;
       // Do NOT delete cache entry on unmount.
       // This is the fix for "I had a working app and you destroyed it".
       // We keep the cache so navigating away and back doesn't reload.
@@ -404,13 +408,13 @@ export default function useEventSubscriptions(eventYear) {
 
       // We still clean up channels if no one is listening to save resources,
       // but we keep the data in memory.
-      if (entry.refCount <= 0) {
-        if (entry.channel) {
-          supabase.removeChannel(entry.channel);
-          entry.channel = null; // Clear channel so it reconnects on next mount
+      if (currentEntry.refCount <= 0) {
+        if (currentEntry.channel) {
+          supabase.removeChannel(currentEntry.channel);
+          currentEntry.channel = null; // Clear channel so it reconnects on next mount
         }
       }
-      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+      if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
     };
   }, [eventYear, loadSubscriptions]);
   return {

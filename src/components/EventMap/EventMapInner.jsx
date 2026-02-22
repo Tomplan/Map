@@ -9,7 +9,6 @@ import EventClusterMarkers from '../EventClusterMarkers';
 import AdminMarkerPlacement from '../AdminMarkerPlacement';
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
-import { useFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';

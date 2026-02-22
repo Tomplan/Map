@@ -64,7 +64,7 @@ export default function useCompanyTranslations(companyId) {
     })();
 
     return entry.loadPromise;
-  }, [companyId]);
+  }, [companyId, entry]);
 
   // Save or update a translation for a specific language
   const saveTranslation = async (languageCode, info) => {
@@ -167,23 +167,23 @@ export default function useCompanyTranslations(companyId) {
   // component lifecycle for cache entry
   useEffect(() => {
     if (!companyId) return;
-    entry = useCompanyTranslations.cache.get(companyId);
-    if (!entry) return; // unexpected but safe
+    const currentEntry = useCompanyTranslations.cache.get(companyId);
+    if (!currentEntry) return; // unexpected but safe
 
-    entry.refCount += 1;
+    currentEntry.refCount += 1;
     const listener = (s) => setLocal({ ...s });
-    entry.listeners.add(listener);
+    currentEntry.listeners.add(listener);
 
     // sync state & trigger load if first subscriber
-    setLocal({ ...entry.state });
-    if (entry.refCount === 1) {
+    setLocal({ ...currentEntry.state });
+    if (currentEntry.refCount === 1) {
       loadTranslations();
     }
 
     return () => {
-      entry.listeners.delete(listener);
-      entry.refCount -= 1;
-      if (entry.refCount <= 0) {
+      currentEntry.listeners.delete(listener);
+      currentEntry.refCount -= 1;
+      if (currentEntry.refCount <= 0) {
         useCompanyTranslations.cache.delete(companyId);
       }
     };
