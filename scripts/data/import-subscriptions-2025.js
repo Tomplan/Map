@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import normalizePhone from './src/utils/phone.js';
+import normalizePhone from '../../src/utils/phone.js';
 import XLSX from 'xlsx';
 
 // Supabase credentials

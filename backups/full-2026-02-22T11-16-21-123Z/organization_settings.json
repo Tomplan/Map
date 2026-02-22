@@ -1,0 +1,37 @@
+{
+  "table": "organization_settings",
+  "timestamp": "2026-02-22T11-16-21-123Z",
+  "recordCount": 1,
+  "data": [
+    {
+      "id": 1,
+      "default_breakfast_sat": 0,
+      "default_lunch_sat": 0,
+      "default_bbq_sat": 0,
+      "default_breakfast_sun": 0,
+      "default_lunch_sun": 0,
+      "theme_color": "#ffffff",
+      "font_family": "Arvo, Sans-serif",
+      "map_center_lat": 51.898095,
+      "map_center_lng": 5.772961,
+      "map_default_zoom": 17,
+      "map_min_zoom": 14,
+      "map_max_zoom": 22,
+      "map_search_zoom": 21,
+      "map_enabled_layers": [
+        "carto",
+        "esri"
+      ],
+      "public_default_year": 2026,
+      "notification_settings": {
+        "emailNotifications": true,
+        "newSubscriptionNotify": true,
+        "assignmentChangeNotify": true
+      },
+      "created_at": "2025-11-26T12:19:47.580085+00:00",
+      "updated_at": "2025-12-10T15:24:52.13489+00:00",
+      "row_version": 15,
+      "updated_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
+    }
+  ]
+}

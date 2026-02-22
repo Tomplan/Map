@@ -122,6 +122,7 @@ function AppContent() {
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
   } = useEventMarkers(publicYear);
+
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, publicYear);
 
@@ -184,7 +185,7 @@ function AppContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [t]);
 
   // Track Supabase auth state
   const [user, setUser] = useState(null);

@@ -65,9 +65,10 @@ export function useCategories(language = 'nl') {
     async (isReload = false) => {
       // If we already have data and aren't forcing a reload, return early
       if (entry.state.categories.length > 0 && !entry.state.loading && !isReload) {
-        if (local.loading) {
-          setLocal((prev) => ({ ...prev, loading: false }));
-        }
+        setLocal((prev) => {
+          if (!prev.loading) return prev;
+          return { ...prev, loading: false };
+        });
         return;
       }
 
@@ -133,7 +134,7 @@ export function useCategories(language = 'nl') {
         entry.listeners.forEach((l) => l(entry.state));
       }
     },
-    [language],
+    [language, entry],
   );
 
   // Real-time subscription
@@ -156,7 +157,7 @@ export function useCategories(language = 'nl') {
       entry.listeners.forEach((l) => l(entry.state));
       return {};
     }
-  }, []);
+  }, [entry]);
 
   // effect that ties the hook instance into the shared cache entry
   useEffect(() => {
@@ -171,21 +172,23 @@ export function useCategories(language = 'nl') {
     entry.listeners.add(listener);
 
     // sync state immediately
-    setLocal({
-      categories: entry.state.categories,
-      loading: entry.state.loading,
-      error: entry.state.error,
-      categoryStats: entry.state.categoryStats,
-    });
-
-    if (local.loading !== entry.state.loading) {
-      setLocal({
+    setLocal((prev) => {
+      // Avoid re-render if state is already identical
+      if (
+        prev.categories === entry.state.categories &&
+        prev.loading === entry.state.loading &&
+        prev.error === entry.state.error &&
+        prev.categoryStats === entry.state.categoryStats
+      ) {
+        return prev;
+      }
+      return {
         categories: entry.state.categories,
         loading: entry.state.loading,
         error: entry.state.error,
         categoryStats: entry.state.categoryStats,
-      });
-    }
+      };
+    });
 
     // only trigger initial load once per cache entry
     if (entry.state.loading && entry.refCount === 1) {
@@ -233,7 +236,7 @@ export function useCategories(language = 'nl') {
         // Do NOT delete the cache entry
       }
     };
-  }, [entryKey, loadCategories, loadCategoryStats]);
+  }, [entryKey, entry, loadCategories, loadCategoryStats]);
 
   // Create category with translations
   const createCategory = async (categoryData) => {

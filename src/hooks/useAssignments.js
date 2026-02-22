@@ -39,9 +39,10 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     async (isReload = false) => {
       // If we already have data and aren't forcing a reload, return early
       if (entry.state.assignments.length > 0 && !entry.state.loading && !isReload) {
-        if (local.loading) {
-          setLocal((prev) => ({ ...prev, loading: false }));
-        }
+        setLocal((prev) => {
+          if (!prev.loading) return prev;
+          return { ...prev, loading: false };
+        });
         return;
       }
 
@@ -94,7 +95,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
       return entry.loadPromise;
     },
-    [eventYear],
+    [eventYear, entry],
   );
 
   // Create new assignment
@@ -273,55 +274,57 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
   // hook instance lifecycle: register listener / kick off load / manage channel
   useEffect(() => {
     // update entry reference if year changed
-    entry = useAssignments.cache.get(eventYear);
-    if (!entry) {
-      // unexpected but rebuild cache entry to avoid crash
-      entry = {
-        state: { assignments: [], loading: true, error: null },
-        listeners: new Set(),
-        refCount: 0,
-        channel: null,
-        reloadTimeout: null,
-        loadPromise: null,
-      };
-      useAssignments.cache.set(eventYear, entry);
+    // entry is stable for a given eventYear because it comes from the static cache
+    const currentEntry = useAssignments.cache.get(eventYear);
+
+    if (!currentEntry) {
+      // This should ideally strictly mirror the initialization in the hook body,
+      // but since we are inside useEffect we should be careful about side effects.
+      // However, if the cache was cleared, we might need to recreate it.
+      // But typically entry is created in render body.
+      // So currentEntry should exist.
+      // We will skip recreation here to avoid desync, or we can trust render body.
+      return;
     }
 
-    entry.refCount += 1;
+    currentEntry.refCount += 1;
     const listener = (s) =>
       setLocal({
         assignments: s.assignments,
         loading: s.loading,
         error: s.error,
       });
-    entry.listeners.add(listener);
+    currentEntry.listeners.add(listener);
 
     // sync current state (data)
     // If cache has data, ensure we use it AND turn off loading
-    if (entry.state.assignments.length > 0) {
+    if (currentEntry.state.assignments.length > 0) {
       setLocal({
-        assignments: entry.state.assignments,
+        assignments: currentEntry.state.assignments,
         loading: false,
-        error: entry.state.error,
+        error: currentEntry.state.error,
       });
-    } else if (local.assignments !== entry.state.assignments) {
-      setLocal({
-        assignments: entry.state.assignments,
-        loading: entry.state.loading,
-        error: entry.state.error,
+    } else {
+      setLocal((prev) => {
+        if (prev.assignments === currentEntry.state.assignments) return prev;
+        return {
+          assignments: currentEntry.state.assignments,
+          loading: currentEntry.state.loading,
+          error: currentEntry.state.error,
+        };
       });
     }
 
-    if (entry.state.assignments.length === 0) {
+    if (currentEntry.state.assignments.length === 0) {
       // If empty, ensure we try to load
-      if (!entry.loadPromise) {
+      if (!currentEntry.loadPromise) {
         loadAssignments();
       }
     }
 
     // start realtime channel if first subscriber
-    if (!entry.channel) {
-      entry.channel = supabase
+    if (!currentEntry.channel) {
+      currentEntry.channel = supabase
         .channel(`assignments-changes-${eventYear}`)
         .on(
           'postgres_changes',
@@ -334,13 +337,13 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
           (payload) => {
             if (payload.eventType === 'INSERT' && payload.new) {
               // insert could come from self, just reload to keep logic simple
-              entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(() => {
+              currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
+              currentEntry.reloadTimeout = setTimeout(() => {
                 loadAssignments(true);
               }, 500);
             } else {
-              entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
-              entry.reloadTimeout = setTimeout(() => {
+              currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
+              currentEntry.reloadTimeout = setTimeout(() => {
                 loadAssignments(true);
               }, 500);
             }
@@ -350,14 +353,14 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
     }
 
     return () => {
-      entry.listeners.delete(listener);
-      entry.refCount -= 1;
-      if (entry.refCount <= 0) {
-        if (entry.channel) supabase.removeChannel(entry.channel);
-        entry.channel = null;
+      currentEntry.listeners.delete(listener);
+      currentEntry.refCount -= 1;
+      if (currentEntry.refCount <= 0) {
+        if (currentEntry.channel) supabase.removeChannel(currentEntry.channel);
+        currentEntry.channel = null;
         // useAssignments.cache.delete(eventYear); // Keep cache (fix for destroyed views)
       }
-      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+      if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
     };
   }, [eventYear, loadAssignments]);
 

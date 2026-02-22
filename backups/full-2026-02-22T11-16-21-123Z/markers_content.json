@@ -1,0 +1,2347 @@
+{
+  "table": "markers_content",
+  "timestamp": "2026-02-22T11-16-21-123Z",
+  "recordCount": 260,
+  "data": [
+    {
+      "id": 84,
+      "name": "Autobedrijf van der Zweerde",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Autobedrijf%20van%20der%20Zweerde.webp",
+      "website": "https://autobedrijfvanderzweerde.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 85,
+      "name": "Autobedrijf van der Zweerde",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Autobedrijf%20van%20der%20Zweerde.webp",
+      "website": "https://autobedrijfvanderzweerde.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 85,
+      "name": "Autobedrijf van der Zweerde",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Autobedrijf%20van%20der%20Zweerde.webp",
+      "website": "https://autobedrijfvanderzweerde.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 93,
+      "name": "Further Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Further%20Adventures.png",
+      "website": "https://further-adventures.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 93,
+      "name": "Further Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Further%20Adventures.png",
+      "website": "https://further-adventures.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 84,
+      "name": "Autobedrijf van der Zweerde",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Autobedrijf%20van%20der%20Zweerde.webp",
+      "website": "https://autobedrijfvanderzweerde.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 19,
+      "name": "Tent Vent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tent%20Vent.png",
+      "website": "https://tent-vent.nl",
+      "info": "De nieuwe manier van kamperen. Geen haringen. Geen trapjes. Geen gedoe. Wél in 90 seconden opgezet en uitgerust met een écht goed bed.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 9999,
+      "name": "",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 5,
+      "name": "The Kings Elephant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/The%20King's%20Elephant.jpg",
+      "website": "https://thekingselephant.com",
+      "info": "CLASSIC ADVENTURE WEAR !",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 51,
+      "name": "Vouwwagencentrum N-bergum Noordbergum",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Vouwwagencentrumnoordbergum.png",
+      "website": "https://vouwwagencentrumnoordbergum.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 5,
+      "name": "The Kings Elephant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/The%20King's%20Elephant.jpg",
+      "website": "https://thekingselephant.com",
+      "info": "CLASSIC ADVENTURE WEAR !",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 52,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 79,
+      "name": "Kleinwier Subaru",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Subaru%20Kleinwier.jpg",
+      "website": "https://kleinwier.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1403,
+      "name": "Climbing",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 19,
+      "name": "Tent Vent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tent%20Vent.png",
+      "website": "https://tent-vent.nl",
+      "info": "De nieuwe manier van kamperen. Geen haringen. Geen trapjes. Geen gedoe. Wél in 90 seconden opgezet en uitgerust met een écht goed bed.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 9999,
+      "name": "",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 52,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 43,
+      "name": "Campingplatz Braunlage GmbH",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 92,
+      "name": "4x4 Vakantie Reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4%20Vakantie.png",
+      "website": "https://4x4vakantie.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 46,
+      "name": "Dutch overland EG techniek",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Dutch%20Overland.svg",
+      "website": "https://dutch-overland.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 77,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 38,
+      "name": "Tracking Trailer",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tracking%20Trailer.webp",
+      "website": "https://trackingtrailer.nl",
+      "info": "Squaredroptrailers zijn ongekend populair in onder andere Australië, Canada en Zuid-Afrika. En inmiddels zien we deze stoere mini-caravans in Nederland ook steeds vaker. Tracking Trailer was het eerste Nederlandse merk dat deze kampeertrailers handmatig bouwde met voornamelijk Nederlandse materialen en leveranciers.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 72,
+      "name": "Camping Le Prahay",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Le%20Prahay.png",
+      "website": "https://camping-leprahay.com/nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 80,
+      "name": "Kleinwier Subaru",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Subaru%20Kleinwier.jpg",
+      "website": "https://kleinwier.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 79,
+      "name": "Kleinwier Subaru",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Subaru%20Kleinwier.jpg",
+      "website": "https://kleinwier.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 43,
+      "name": "Campingplatz Braunlage GmbH",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1302,
+      "name": "Camping",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 77,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 78,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 72,
+      "name": "Camping Le Prahay",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Le%20Prahay.png",
+      "website": "https://camping-leprahay.com/nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 81,
+      "name": "Outback Daktenten",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Outback.jpg",
+      "website": "https://outback.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1203,
+      "name": "Restaurant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 36,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 73,
+      "name": "Fennec Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://fnnc.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 29,
+      "name": "Jefi wild",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Jefi%20Wild.png",
+      "website": "https://jefiwild.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 73,
+      "name": "Fennec Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://fnnc.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 80,
+      "name": "Kleinwier Subaru",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Subaru%20Kleinwier.jpg",
+      "website": "https://kleinwier.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1302,
+      "name": "Camping",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 81,
+      "name": "Outback Daktenten",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Outback.jpg",
+      "website": "https://outback.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 68,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 14,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1203,
+      "name": "Restaurant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 74,
+      "name": "Fennec Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://fnnc.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 96,
+      "name": "quint 4x4 reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Quint%204x4%20Reizen.png",
+      "website": "https://quint4x4reizen.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 56,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1004,
+      "name": "Shuttle",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 25,
+      "name": "Gitrax",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gitrax.avif",
+      "website": "https://gitrax.net",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 25,
+      "name": "Gitrax",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gitrax.avif",
+      "website": "https://gitrax.net",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 99,
+      "name": "SandandStone",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Sand%20and%20Stone.webp",
+      "website": "https://sandandstone.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 103,
+      "name": "PSP Expeditioncampers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
+      "website": "https://psp-expeditioncampers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 96,
+      "name": "quint 4x4 reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Quint%204x4%20Reizen.png",
+      "website": "https://quint4x4reizen.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 75,
+      "name": "Campventure B.V.",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Campventure.png",
+      "website": "https://camp-venture.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 35,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 83,
+      "name": "Roofspace",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roof%20Space.png",
+      "website": "https://dutch-roofspace.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 65,
+      "name": "Defendershop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Defendershop.png",
+      "website": "https://defendershop.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 83,
+      "name": "Roofspace",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roof%20Space.png",
+      "website": "https://dutch-roofspace.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 55,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 75,
+      "name": "Campventure B.V.",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Campventure.png",
+      "website": "https://camp-venture.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 103,
+      "name": "PSP Expeditioncampers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
+      "website": "https://psp-expeditioncampers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 57,
+      "name": "Saris 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
+      "website": "https://saris4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 35,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 7,
+      "name": "Tembo Travel service",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tembo%20travel%20services.png",
+      "website": "https://tembotravelservices.nl",
+      "info": "4×4 Expedition Camper Units & Expedition Truck",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 24,
+      "name": "Gitrax",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gitrax.avif",
+      "website": "https://gitrax.net",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 42,
+      "name": "Camping Donnersberg",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Donnersberg.png",
+      "website": "https://campingdonnersberg.com/nl/home",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 6,
+      "name": "The Kings Elephant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/The%20King's%20Elephant.jpg",
+      "website": "https://thekingselephant.com",
+      "info": "CLASSIC ADVENTURE WEAR !",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 6,
+      "name": "The Kings Elephant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/The%20King's%20Elephant.jpg",
+      "website": "https://thekingselephant.com",
+      "info": "CLASSIC ADVENTURE WEAR !",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 12,
+      "name": "Viking Mink Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Viking%20Campers.png",
+      "website": "https://viking-campers.nl",
+      "info": "Met de MINK CAMPERS kom je overal!",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 12,
+      "name": "Viking Mink Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Viking%20Campers.png",
+      "website": "https://viking-campers.nl",
+      "info": "Met de MINK CAMPERS kom je overal!",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 13,
+      "name": "Overland Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Overland%20Campers.jpg",
+      "website": "https://overlandcampers.nl",
+      "info": "Elke Overland camper maakt van de bestemming jouw thuis en van de reis een verhaal. Ons uniek modulair design is speciaal ontworpen voor Mercedes Sprinters. Met de volledig uitgeruste off-grid 4x4 camper beleef je comfort en avontuur in een",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 20,
+      "name": "Totalcool",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/TotalCool.jpg",
+      "website": "https://totalcool.nl",
+      "info": "De beste draagbare koeloplossing op de markt. 12V Draagbare koelboxen met vriezfunctie.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 16,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 55,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 44,
+      "name": "3Dotzero",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/3DotZero%20CampUniq.jpg",
+      "website": "https://3dotzero.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 56,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 68,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 4,
+      "name": "Widebird",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Widebird.jpg",
+      "website": "https://widebird.com",
+      "info": "Uw partner voor producten en oplossingen in expeditievoertuigen en langeafstandscampers.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 41,
+      "name": "Smokey Goose Barbecue & More",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Smokey%20Goose.jpg",
+      "website": "https://smokeygoose.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 4,
+      "name": "Widebird",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Widebird.jpg",
+      "website": "https://widebird.com",
+      "info": "Uw partner voor producten en oplossingen in expeditievoertuigen en langeafstandscampers.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 40,
+      "name": "fladde outdoor",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fladde%20Outdoor.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 7,
+      "name": "Tembo Travel service",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tembo%20travel%20services.png",
+      "website": "https://tembotravelservices.nl",
+      "info": "4×4 Expedition Camper Units & Expedition Truck",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 48,
+      "name": "Lost tracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Lost%20Tracks.png",
+      "website": "https://losttracks.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 42,
+      "name": "Camping Donnersberg",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Donnersberg.png",
+      "website": "https://campingdonnersberg.com/nl/home",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 70,
+      "name": "Bolt adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Bolt%20Adventure.jpg",
+      "website": "https://boltadventure.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1406,
+      "name": "Off-road",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Ga zelf met jouw 4×4 het terrein in! \nGRATIS voor leden van de LRCH. \nNiet leden betalen € 20,-\nMeerijden met Land Rover Defender\n11:00 – 16:00 uur\nLocatie: Offroad terrein\n\nOmnivents 4×4 laat jouw droom in vervulling gaan!\n\nKijken langs de kant is leuk, maar meerijden in het offroad parcours is nog veel gaver.\nStap in, rijd mee en krijg de smaak van 4×4 rijden te pakken!\nReserveer vast een tijdblok via de website of meld je op locatie aan bij de stand van de LRCH.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 57,
+      "name": "Saris 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
+      "website": "https://saris4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 9,
+      "name": "Kifaru Services",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Kifaru4x4.jpg",
+      "website": "https://kifaru4x4.nl",
+      "info": "Je overweegt jouw mooie reisvoertuig zélf af te bouwen of het geheel of gedeeltelijk uit te besteden? Dan ben je bij KIFARU4X4 aan het juiste adres. Wij zijn zelf reizigers, hebben voor onszelf gebouwd en daarna in opdracht van reizigers bij veel voertuigen de afbouw gedaan. We begrijpen dus wat er in jouw hoofd speelt.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 90,
+      "name": "Booth 91",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1040,
+      "name": "VW CLUB Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 16,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 41,
+      "name": "Smokey Goose Barbecue & More",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Smokey%20Goose.jpg",
+      "website": "https://smokeygoose.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 104,
+      "name": "de nieuwe standhouder",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 45,
+      "name": "4WD travel",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4wd%20Travel.png",
+      "website": "https://4wdtravel.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 59,
+      "name": "Stormproducts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Strom%20daktenten.webp",
+      "website": "https://stormdaktenten.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 9,
+      "name": "Kifaru Services",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Kifaru4x4.jpg",
+      "website": "https://kifaru4x4.nl",
+      "info": "Je overweegt jouw mooie reisvoertuig zélf af te bouwen of het geheel of gedeeltelijk uit te besteden? Dan ben je bij KIFARU4X4 aan het juiste adres. Wij zijn zelf reizigers, hebben voor onszelf gebouwd en daarna in opdracht van reizigers bij veel voertuigen de afbouw gedaan. We begrijpen dus wat er in jouw hoofd speelt.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1030,
+      "name": "Parking Wheelchair",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 40,
+      "name": "fladde outdoor",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fladde%20Outdoor.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 44,
+      "name": "3Dotzero",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/3DotZero%20CampUniq.jpg",
+      "website": "https://3dotzero.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 59,
+      "name": "Stormproducts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Strom%20daktenten.webp",
+      "website": "https://stormdaktenten.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1040,
+      "name": "VW CLUB Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1050,
+      "name": "RC Airplanes",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Demonstratie RC Vliegen met watervliegtuigen\n11:00 – 12:30 uur\n13:00 – 15:00 uur\nLocatie: Waterfront\n\nDe Vliegclub Nimbus uit Bemmel is een club die met RC (radiografisch bestuurde) vliegtuigen wel raad weet. Leden van Nimbus geven diverse spectaculaire demonstraties en laten zien wat er allemaal kan met deze watervliegtuigen. ",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 82,
+      "name": "Roofspace",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roof%20Space.png",
+      "website": "https://dutch-roofspace.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 82,
+      "name": "Roofspace",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roof%20Space.png",
+      "website": "https://dutch-roofspace.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 94,
+      "name": "Further Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Further%20Adventures.png",
+      "website": "https://further-adventures.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 23,
+      "name": "Expeditech / Larorent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Larorent.png",
+      "website": "https://larorent.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 28,
+      "name": "DutchDefenderX & Lowlands",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": null,
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 105,
+      "name": "de nieuwe standhouder II",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 70,
+      "name": "Bolt adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Bolt%20Adventure.jpg",
+      "website": "https://boltadventure.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 105,
+      "name": "de nieuwe standhouder II",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 23,
+      "name": "Expeditech / Larorent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Larorent.png",
+      "website": "https://larorent.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 21,
+      "name": "CB-shop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/CB-webshop.jpg",
+      "website": "https://cb-webshop.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 21,
+      "name": "CB-shop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/CB-webshop.jpg",
+      "website": "https://cb-webshop.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 28,
+      "name": "DutchDefenderX & Lowlands",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": null,
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 62,
+      "name": "Landroamer",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Roamer.jpg",
+      "website": "https://landroamer.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1,
+      "name": "Camp Impuls Bruder X",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camp%20Impuls.png",
+      "website": "https://camp-impuls.de/bruderx",
+      "info": "BruderX is een fabrikant die zich onderscheidt door zijn uitzonderlijke offroad caravans. Het vlaggenschip, de EXP-10 , loopt voorop . Met het nieuwe model, de ADX-21, betreedt Bruder nieuw terrein door conventionele caravanconstructie te combineren met het unieke Bruder-chassis. Offroad caravans zijn al lang een vertrouwd gezicht in Duitsland, maar met de Bruder caravans zetten we nieuwe normen in de offroad sector en brengen we een uniek product uit Australië naar Europa.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 104,
+      "name": "de nieuwe standhouder",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1030,
+      "name": "Parking Wheelchair",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1406,
+      "name": "Off-road",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Ga zelf met jouw 4×4 het terrein in! \nGRATIS voor leden van de LRCH. \nNiet leden betalen € 20,-\nMeerijden met Land Rover Defender\n11:00 – 16:00 uur\nLocatie: Offroad terrein\n\nOmnivents 4×4 laat jouw droom in vervulling gaan!\n\nKijken langs de kant is leuk, maar meerijden in het offroad parcours is nog veel gaver.\nStap in, rijd mee en krijg de smaak van 4×4 rijden te pakken!\nReserveer vast een tijdblok via de website of meld je op locatie aan bij de stand van de LRCH.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 53,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1103,
+      "name": "WC - Restaurant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 62,
+      "name": "Landroamer",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Roamer.jpg",
+      "website": "https://landroamer.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1101,
+      "name": "WC - Small Area",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1101,
+      "name": "WC - Small Area",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 91,
+      "name": "Booth 92",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 88,
+      "name": "L-R-Parts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
+      "website": "https://l-r-parts.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1103,
+      "name": "WC - Restaurant",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1008,
+      "name": "LRCH",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 89,
+      "name": "L-R-Parts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
+      "website": "https://l-r-parts.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1005,
+      "name": "DJ",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Bij een jubileum hoort een feestje en bij een feestje hoort muziek!\nDJ Lungarno gaat de feestvreugde op het beursterrein op de zaterdag naar een next level brengen met ontspannen lounge en uptempo disco klassiekers!",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1009,
+      "name": "ClubShop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 100,
+      "name": "Camping MAKA",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Maka.png",
+      "website": "https://campingmaka.be",
+      "info": "'SOMETIMES NATURE IS ALL YOU NEED'\nRust, natuur, (actief) buiten leven...\nSpot de vuursalamander, wasbeer en ijsvogel, ga vissen, kanoën, tokkel over de Semois, bezoek de kleine speeltuin, rooster marshmallows op je zelf gemaakte kampvuur, neem een duik in de rivier, wandel /fiets/ren in de bossen rondom de camping, geniet van een hapje en drankje op het terras of doe even helemaal niets en geniet. Kortom, de plek voor jong en oud en natuurlijk zijn de trouwe viervoeters ook welkom.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 49,
+      "name": "UAZ specials",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/UAZ-Specials.jpg",
+      "website": "https://uaz-specials.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 30,
+      "name": "Balou adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Balou%20Adventures.png",
+      "website": "https://balouadventures.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1303,
+      "name": "Showers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1201,
+      "name": "Drinks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1003,
+      "name": "Shuttle",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 102,
+      "name": "PSP Expeditioncampers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
+      "website": "https://psp-expeditioncampers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 39,
+      "name": "Geoshower europe",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Geo%20Shower.jpg",
+      "website": "https://geoshower.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 8,
+      "name": "Tembo Travel service",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tembo%20travel%20services.png",
+      "website": "https://tembotravelservices.nl",
+      "info": "4×4 Expedition Camper Units & Expedition Truck",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1202,
+      "name": "Food",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "French Fries, Hotdogs",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 50,
+      "name": "Vouwwagencentrum N-bergum Noordbergum",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Vouwwagencentrumnoordbergum.png",
+      "website": "https://vouwwagencentrumnoordbergum.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1008,
+      "name": "LRCH",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1202,
+      "name": "Food",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "French Fries, Hotdogs",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1201,
+      "name": "Drinks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 32,
+      "name": "XFood.nl",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/XFood.png",
+      "website": "https://xfood.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 102,
+      "name": "PSP Expeditioncampers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
+      "website": "https://psp-expeditioncampers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1303,
+      "name": "Showers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 34,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 39,
+      "name": "Geoshower europe",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Geo%20Shower.jpg",
+      "website": "https://geoshower.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1001,
+      "name": "Entrance",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Het beursterrein is voor bezoekers geopend op zaterdag 11 oktober van 10:00 – 17:00 en op zondag 12 oktober van 10:00 – 16:00 uur.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 76,
+      "name": "Campventure B.V.",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Campventure.png",
+      "website": "https://camp-venture.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 86,
+      "name": "Booth 87",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1009,
+      "name": "ClubShop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 49,
+      "name": "UAZ specials",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/UAZ-Specials.jpg",
+      "website": "https://uaz-specials.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1005,
+      "name": "DJ",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Bij een jubileum hoort een feestje en bij een feestje hoort muziek!\nDJ Lungarno gaat de feestvreugde op het beursterrein op de zaterdag naar een next level brengen met ontspannen lounge en uptempo disco klassiekers!",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 10,
+      "name": "Off road Juf",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/OFFROADJUF.jpg",
+      "website": "https://offroadjuf.nl",
+      "info": "4x4-instructie • offroadreizen • outdooravonturen",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 54,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 61,
+      "name": "Saris Adventure Vehicles Jip",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%20Adventure%20Vehicles.jpg",
+      "website": "https://buildbyjip.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 95,
+      "name": "Booth 96",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 98,
+      "name": "Dream Trails Off Road Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Dream%20Trails%20Off%20Road%20Adventures.png",
+      "website": "https://dreamtrails.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 97,
+      "name": "quint 4x4 reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Quint%204x4%20Reizen.png",
+      "website": "https://quint4x4reizen.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 17,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 76,
+      "name": "Campventure B.V.",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Campventure.png",
+      "website": "https://camp-venture.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 91,
+      "name": "Booth 92",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 54,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 61,
+      "name": "Saris Adventure Vehicles Jip",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%20Adventure%20Vehicles.jpg",
+      "website": "https://buildbyjip.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1001,
+      "name": "Entrance",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Het beursterrein is voor bezoekers geopend op zaterdag 11 oktober van 10:00 – 17:00 en op zondag 12 oktober van 10:00 – 16:00 uur.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 10,
+      "name": "Off road Juf",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/OFFROADJUF.jpg",
+      "website": "https://offroadjuf.nl",
+      "info": "4x4-instructie • offroadreizen • outdooravonturen",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 63,
+      "name": "Roverland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roverland%20Expeditions.jpg",
+      "website": "https://roverland-expedition.be",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1301,
+      "name": "Parking Compan",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 86,
+      "name": "Booth 87",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 31,
+      "name": "XFood.nl",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/XFood.png",
+      "website": "https://xfood.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 66,
+      "name": "Defendershop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Defendershop.png",
+      "website": "https://defendershop.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 69,
+      "name": "Bolt adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Bolt%20Adventure.jpg",
+      "website": "https://boltadventure.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 64,
+      "name": "Roverland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roverland%20Expeditions.jpg",
+      "website": "https://roverland-expedition.be",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 26,
+      "name": "Made for Adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Made%20for%20Adventure.avif",
+      "website": "https://madeforadventure.store",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 18,
+      "name": "Tent Vent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tent%20Vent.png",
+      "website": "https://tent-vent.nl",
+      "info": "De nieuwe manier van kamperen. Geen haringen. Geen trapjes. Geen gedoe. Wél in 90 seconden opgezet en uitgerust met een écht goed bed.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 30,
+      "name": "Balou adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Balou%20Adventures.png",
+      "website": "https://balouadventures.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 67,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1102,
+      "name": "WC - Big Area",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 33,
+      "name": "Gobanna",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gobanna.webp",
+      "website": "https://gobanna.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 37,
+      "name": "Lumberjackoutdoor",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LumberjackOutdoor.webp",
+      "website": "https://lumberjackoutdoor.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 37,
+      "name": "Lumberjackoutdoor",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LumberjackOutdoor.webp",
+      "website": "https://lumberjackoutdoor.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 63,
+      "name": "Roverland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roverland%20Expeditions.jpg",
+      "website": "https://roverland-expedition.be",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 66,
+      "name": "Defendershop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Defendershop.png",
+      "website": "https://defendershop.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 64,
+      "name": "Roverland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Roverland%20Expeditions.jpg",
+      "website": "https://roverland-expedition.be",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 18,
+      "name": "Tent Vent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tent%20Vent.png",
+      "website": "https://tent-vent.nl",
+      "info": "De nieuwe manier van kamperen. Geen haringen. Geen trapjes. Geen gedoe. Wél in 90 seconden opgezet en uitgerust met een écht goed bed.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1301,
+      "name": "Parking Companies",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 26,
+      "name": "Made for Adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Made%20for%20Adventure.avif",
+      "website": "https://madeforadventure.store",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 95,
+      "name": "Booth 96",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 98,
+      "name": "Dream Trails Off Road Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Dream%20Trails%20Off%20Road%20Adventures.png",
+      "website": "https://dreamtrails.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 67,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1403,
+      "name": "Climbing",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 97,
+      "name": "quint 4x4 reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Quint%204x4%20Reizen.png",
+      "website": "https://quint4x4reizen.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 101,
+      "name": "AdventureVan.EU",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Adventure%20Van.png",
+      "website": "https://adventurevan.eu",
+      "info": "De avontuurlijke camper voor buitensporters.\nMet aandacht voor comfortabele voorzieningen, een flexibele inrichting en stoere look bouwen we Mercedes Sprinter en Volkswagen Crafter om tot unieke blikvangers, klaar voor elk avontuur.\nOf je nou gaat mountainbiken, (kite) surfen, boulderen, snowboarden of met jouw kajak op pad wilt.\nDe Adventure Van is geschikt voor elk seizoen, flexibel in te zetten en 100% op maat te maken.\nWe denken en bouwen mee aan de perfecte camper voor avontuurlijke genieters.\nOFF YOU GO!",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 3,
+      "name": "Char Art Leatherworks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/CharArt.png",
+      "website": "https://charart.nl",
+      "info": "Bent u op zoek naar een goede tas, een oersterk ceintuur, of bijvoorbeeld een foedraal voor uw favoriete mes? Dan bent u bij Charlotte Heuvelmans aan het juiste adres. Met haar jarenlange ervaring, nauwkeurige afwerking en de mogelijkheden tot unieke personalisatie zijn de producten van CharArt Leatherworks niet alleen van hoge kwaliteit, maar ook nog eens een lust voor het oog. Het resultaat laat zich wellicht nog het beste omschrijven als draagbare kunst.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 22,
+      "name": "Expeditech / Larorent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Expeditech.png",
+      "website": "https://expeditech.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 22,
+      "name": "Expeditech / Larorent",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Expeditech.png",
+      "website": "https://expeditech.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 27,
+      "name": "Made for Adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Made%20for%20Adventure.avif",
+      "website": "https://madeforadventure.store",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 33,
+      "name": "Gobanna",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gobanna.webp",
+      "website": "https://gobanna.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 31,
+      "name": "XFood.nl",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/XFood.png",
+      "website": "https://xfood.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1102,
+      "name": "WC - Big Area",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 3,
+      "name": "Char Art Leatherworks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/CharArt.png",
+      "website": "https://charart.nl",
+      "info": "Bent u op zoek naar een goede tas, een oersterk ceintuur, of bijvoorbeeld een foedraal voor uw favoriete mes? Dan bent u bij Charlotte Heuvelmans aan het juiste adres. Met haar jarenlange ervaring, nauwkeurige afwerking en de mogelijkheden tot unieke personalisatie zijn de producten van CharArt Leatherworks niet alleen van hoge kwaliteit, maar ook nog eens een lust voor het oog. Het resultaat laat zich wellicht nog het beste omschrijven als draagbare kunst.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 51,
+      "name": "Vouwwagencentrum N-bergum Noordbergum",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Vouwwagencentrumnoordbergum.png",
+      "website": "https://vouwwagencentrumnoordbergum.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 92,
+      "name": "4x4 Vakantie Reizen",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4%20Vakantie.png",
+      "website": "https://4x4vakantie.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1402,
+      "name": "Bungee",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1402,
+      "name": "Bungee",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 36,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 38,
+      "name": "Tracking Trailer",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tracking%20Trailer.webp",
+      "website": "https://trackingtrailer.nl",
+      "info": "Squaredroptrailers zijn ongekend populair in onder andere Australië, Canada en Zuid-Afrika. En inmiddels zien we deze stoere mini-caravans in Nederland ook steeds vaker. Tracking Trailer was het eerste Nederlandse merk dat deze kampeertrailers handmatig bouwde met voornamelijk Nederlandse materialen en leveranciers.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 46,
+      "name": "Dutch overland EG techniek",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Dutch%20Overland.svg",
+      "website": "https://dutch-overland.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 78,
+      "name": "Pathfinder Adventure Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Pathfinder%20Adventure%20Campers.webp",
+      "website": "https://pathfinder-campers.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 29,
+      "name": "Jefi wild",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Jefi%20Wild.png",
+      "website": "https://jefiwild.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 99,
+      "name": "SandandStone",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Sand%20and%20Stone.webp",
+      "website": "https://sandandstone.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1004,
+      "name": "Shuttle",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 74,
+      "name": "Fennec Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://fnnc.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 45,
+      "name": "4WD travel",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4wd%20Travel.png",
+      "website": "https://4wdtravel.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1401,
+      "name": "Jump",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1401,
+      "name": "Jump",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Activity Arena\nGa op avontuur!\nNaast de radiografische auto's vind je de 'avontuur-hoek' 😉 Hier kun je naar hartelust onder begeleiding op het springkussen annex stormbaan jezelf helemaal gek springen. Wil je eens weten hoe het voelt als je bijna zweeft? Ga dan op de bungee-trampoline. Of wil jij je liever al voorbereiden op de avontuurlijke vakantie in de Ardennen? Dan pak je natuurlijk de klimwand!\n\nUiteraard zijn al deze attracties onder begeleiding van professionals die je helpen boven jezelf uit te stijgen (en zorgen dat het nooit te eng wordt!)",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 14,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 20,
+      "name": "Totalcool",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/TotalCool.jpg",
+      "website": "https://totalcool.nl",
+      "info": "De beste draagbare koeloplossing op de markt. 12V Draagbare koelboxen met vriezfunctie.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 24,
+      "name": "Gitrax",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Gitrax.avif",
+      "website": "https://gitrax.net",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 58,
+      "name": "Saris 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
+      "website": "https://saris4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 58,
+      "name": "Saris 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
+      "website": "https://saris4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 60,
+      "name": "Saris Adventure Vehicles Jip",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%20Adventure%20Vehicles.jpg",
+      "website": "https://buildbyjip.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 13,
+      "name": "Overland Campers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Overland%20Campers.jpg",
+      "website": "https://overlandcampers.nl",
+      "info": "Elke Overland camper maakt van de bestemming jouw thuis en van de reis een verhaal. Ons uniek modulair design is speciaal ontworpen voor Mercedes Sprinters. Met de volledig uitgeruste off-grid 4x4 camper beleef je comfort en avontuur in een",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 2,
+      "name": "Camp Impuls Bruder X",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camp%20Impuls.png",
+      "website": "https://camp-impuls.de/bruderx",
+      "info": "BruderX is een fabrikant die zich onderscheidt door zijn uitzonderlijke offroad caravans. Het vlaggenschip, de EXP-10 , loopt voorop . Met het nieuwe model, de ADX-21, betreedt Bruder nieuw terrein door conventionele caravanconstructie te combineren met het unieke Bruder-chassis. Offroad caravans zijn al lang een vertrouwd gezicht in Duitsland, maar met de Bruder caravans zetten we nieuwe normen in de offroad sector en brengen we een uniek product uit Australië naar Europa.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 2,
+      "name": "Camp Impuls Bruder X",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camp%20Impuls.png",
+      "website": "https://camp-impuls.de/bruderx",
+      "info": "BruderX is een fabrikant die zich onderscheidt door zijn uitzonderlijke offroad caravans. Het vlaggenschip, de EXP-10 , loopt voorop . Met het nieuwe model, de ADX-21, betreedt Bruder nieuw terrein door conventionele caravanconstructie te combineren met het unieke Bruder-chassis. Offroad caravans zijn al lang een vertrouwd gezicht in Duitsland, maar met de Bruder caravans zetten we nieuwe normen in de offroad sector en brengen we een uniek product uit Australië naar Europa.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 94,
+      "name": "Further Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Further%20Adventures.png",
+      "website": "https://further-adventures.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1003,
+      "name": "Shuttle",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 100,
+      "name": "Camping MAKA",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Maka.png",
+      "website": "https://campingmaka.be",
+      "info": "'SOMETIMES NATURE IS ALL YOU NEED'\nRust, natuur, (actief) buiten leven...\nSpot de vuursalamander, wasbeer en ijsvogel, ga vissen, kanoën, tokkel over de Semois, bezoek de kleine speeltuin, rooster marshmallows op je zelf gemaakte kampvuur, neem een duik in de rivier, wandel /fiets/ren in de bossen rondom de camping, geniet van een hapje en drankje op het terras of doe even helemaal niets en geniet. Kortom, de plek voor jong en oud en natuurlijk zijn de trouwe viervoeters ook welkom.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 27,
+      "name": "Made for Adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Made%20for%20Adventure.avif",
+      "website": "https://madeforadventure.store",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 48,
+      "name": "Lost tracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Lost%20Tracks.png",
+      "website": "https://losttracks.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 60,
+      "name": "Saris Adventure Vehicles Jip",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%20Adventure%20Vehicles.jpg",
+      "website": "https://buildbyjip.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1050,
+      "name": "RC Airplanes",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Demonstratie RC Vliegen met watervliegtuigen\n11:00 – 12:30 uur\n13:00 – 15:00 uur\nLocatie: Waterfront\n\nDe Vliegclub Nimbus uit Bemmel is een club die met RC (radiografisch bestuurde) vliegtuigen wel raad weet. Leden van Nimbus geven diverse spectaculaire demonstraties en laten zien wat er allemaal kan met deze watervliegtuigen. ",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 53,
+      "name": "Offroadcaravans.eu",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Offroad%20Caravans.png",
+      "website": "https://offroadcaravans.eu",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 32,
+      "name": "XFood.nl",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/XFood.png",
+      "website": "https://xfood.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 89,
+      "name": "L-R-Parts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
+      "website": "https://l-r-parts.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 1002,
+      "name": "Parking",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1002,
+      "name": "Parking",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Parkeren geschiedt op:  Strandpark Sleijk-Ewijk, Valburgsestraat 45, 6677 PC Slijk-Ewijk. Parkeren kost € 5,- voor de dag en er zijn GRATIS pendelbussen die je naar het beursterrein kunnen brengen en weer terug.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 15,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 15,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 47,
+      "name": "Lost tracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Lost%20Tracks.png",
+      "website": "https://losttracks.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 47,
+      "name": "Lost tracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Lost%20Tracks.png",
+      "website": "https://losttracks.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 87,
+      "name": "Flex Adventure 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://flexadventure4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 87,
+      "name": "Flex Adventure 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Fennec%20Adventures.jpg",
+      "website": "https://flexadventure4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 11,
+      "name": "All road events",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/All%20Road%20Events.png",
+      "website": "https://allroadevents.nl",
+      "info": "Of het nu gaat om een toeristische autoroute over het asfalt is met een vleugje avontuur, een mooie Greenlaneroute of een 4x4 Roadbook, wij doen ons uiterste best om mooie routes te maken langs historische punten, mooie landschappen, bunkers, kastelen en wat we nog meer mogen ontdekken. Ook organiseren we regelmatig evenementen  zoals kampeer weekenden.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 11,
+      "name": "All road events",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/All%20Road%20Events.png",
+      "website": "https://allroadevents.nl",
+      "info": "Of het nu gaat om een toeristische autoroute over het asfalt is met een vleugje avontuur, een mooie Greenlaneroute of een 4x4 Roadbook, wij doen ons uiterste best om mooie routes te maken langs historische punten, mooie landschappen, bunkers, kastelen en wat we nog meer mogen ontdekken. Ook organiseren we regelmatig evenementen  zoals kampeer weekenden.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 65,
+      "name": "Defendershop",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Defendershop.png",
+      "website": "https://defendershop.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 90,
+      "name": "Booth 91",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "https://www.4x4vakantiebeurs.nl/",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1,
+      "name": "Camp Impuls Bruder X",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camp%20Impuls.png",
+      "website": "https://camp-impuls.de/bruderx",
+      "info": "BruderX is een fabrikant die zich onderscheidt door zijn uitzonderlijke offroad caravans. Het vlaggenschip, de EXP-10 , loopt voorop . Met het nieuwe model, de ADX-21, betreedt Bruder nieuw terrein door conventionele caravanconstructie te combineren met het unieke Bruder-chassis. Offroad caravans zijn al lang een vertrouwd gezicht in Duitsland, maar met de Bruder caravans zetten we nieuwe normen in de offroad sector en brengen we een uniek product uit Australië naar Europa.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1404,
+      "name": "RC-Arena",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Aan de rand van het water wordt weer een geweldige baan uitgezet waar met RC auto’s gereden kan worden. Heb je zelf een auto? Neem hem mee en kom jouw kunsten vertonen.\nGeen eigen auto, maar wil je het ook eens proberen? Ook dát kan!\nMeld je even bij de stand van de RC baan.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 88,
+      "name": "L-R-Parts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
+      "website": "https://l-r-parts.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 8,
+      "name": "Tembo Travel service",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Tembo%20travel%20services.png",
+      "website": "https://tembotravelservices.nl",
+      "info": "4×4 Expedition Camper Units & Expedition Truck",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 101,
+      "name": "AdventureVan.EU",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Adventure%20Van.png",
+      "website": "https://adventurevan.eu",
+      "info": "De avontuurlijke camper voor buitensporters.\nMet aandacht voor comfortabele voorzieningen, een flexibele inrichting en stoere look bouwen we Mercedes Sprinter en Volkswagen Crafter om tot unieke blikvangers, klaar voor elk avontuur.\nOf je nou gaat mountainbiken, (kite) surfen, boulderen, snowboarden of met jouw kajak op pad wilt.\nDe Adventure Van is geschikt voor elk seizoen, flexibel in te zetten en 100% op maat te maken.\nWe denken en bouwen mee aan de perfecte camper voor avontuurlijke genieters.\nOFF YOU GO!",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1404,
+      "name": "RC-Arena",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Aan de rand van het water wordt weer een geweldige baan uitgezet waar met RC auto’s gereden kan worden. Heb je zelf een auto? Neem hem mee en kom jouw kunsten vertonen.\nGeen eigen auto, maar wil je het ook eens proberen? Ook dát kan!\nMeld je even bij de stand van de RC baan.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 34,
+      "name": "Land cruiser club Nederland",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/LandCruiserClub.png",
+      "website": "https://landcruiser-club.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 71,
+      "name": "Camping Le Prahay",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Le%20Prahay.png",
+      "website": "https://camping-leprahay.com/nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 71,
+      "name": "Camping Le Prahay",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Camping%20Le%20Prahay.png",
+      "website": "https://camping-leprahay.com/nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 17,
+      "name": "4wdspecialist BV",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/4WD%20Specialist.webp",
+      "website": "https://4wd-specialist.nl",
+      "info": "Wij zijn dé specialist op het gebied van offroad rijden en avontuurlijk kamperen. Voor zowel particuliere als zakelijke 4WD-rijders. Van preparatie tot volledige opbouw van jouw 4X4 voertuig. Daarnaast kun je bij ons terecht voor daktenten, camper-units, onderdelen en accessoires.",
+      "contentLocked": true,
+      "event_year": 2025
+    },
+    {
+      "id": 50,
+      "name": "Vouwwagencentrum N-bergum Noordbergum",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Vouwwagencentrumnoordbergum.png",
+      "website": "https://vouwwagencentrumnoordbergum.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 69,
+      "name": "Bolt adventure",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Bolt%20Adventure.jpg",
+      "website": "https://boltadventure.com",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "contentLocked": true,
+      "event_year": 2025
+    }
+  ]
+}

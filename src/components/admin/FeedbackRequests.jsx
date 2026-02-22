@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import useFeedbackRequests from '../../hooks/useFeedbackRequests';
 import useUserRole from '../../hooks/useUserRole';
@@ -27,7 +27,7 @@ export default function FeedbackRequests() {
   // const { preferences, loading: preferencesLoading, updatePreference } = useUserPreferences();
   const preferences = null;
   const preferencesLoading = false;
-  const updatePreference = () => {};
+  const updatePreference = useCallback(() => {}, []);
 
   const {
     requests,

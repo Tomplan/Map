@@ -2,10 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 // Lightweight mocks used across the repo
+const mockGetAllCompanyCategories = async () => ({});
 jest.mock('../../hooks/useCategories', () => () => ({
   categories: [],
   loading: false,
-  getAllCompanyCategories: async () => ({}),
+  getAllCompanyCategories: mockGetAllCompanyCategories,
 }));
 jest.mock('../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: null }),
@@ -15,6 +16,11 @@ jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({ getTranslatedInfo: (m
 // Favorities context - return a single favorite (companyId 100)
 jest.mock('../../contexts/FavoritesContext', () => ({
   useFavoritesContext: () => ({
+    favorites: [100],
+    isFavorite: (id) => id === 100,
+    toggleFavorite: jest.fn(),
+  }),
+  useOptionalFavoritesContext: () => ({
     favorites: [100],
     isFavorite: (id) => id === 100,
     toggleFavorite: jest.fn(),

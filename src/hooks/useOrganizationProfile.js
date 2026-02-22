@@ -96,9 +96,10 @@ export default function useOrganizationProfile() {
     entry.listeners.add(listener);
 
     // Sync immediately just in case
-    if (local.profile !== entry.state.profile || local.loading !== entry.state.loading) {
-      setLocal({ ...entry.state });
-    }
+    setLocal((prev) => {
+      if (prev.profile === entry.state.profile && prev.loading === entry.state.loading) return prev;
+      return { ...entry.state };
+    });
 
     if (entry.state.loading && !entry.loadPromise) _loadInitialProfile(entry);
 

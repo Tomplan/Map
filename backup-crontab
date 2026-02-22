@@ -1,0 +1,12 @@
+
+# Supabase Backup Environment
+SUPABASE_DB_HOST=db.xtkbvnnkovogqwcwdhkg.supabase.co
+SUPABASE_DB_PORT=5432
+SUPABASE_DB_NAME=postgres
+SUPABASE_DB_USER=postgres
+SUPABASE_DB_PASSWORD=VkM53SUqhIP2QJvM
+
+# Backup cron jobs
+0 2 * * * cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-critical.js --compress >> ./logs/backup-cron.log 2>&1
+0 3 * * 0 cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-full.js --compress >> ./logs/backup-cron.log 2>&1
+0 4 1 * * cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-full.js --schema-only --compress >> ./logs/backup-cron.log 2>&1

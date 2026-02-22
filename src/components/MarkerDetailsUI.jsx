@@ -4,7 +4,7 @@ import Icon from '@mdi/react';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../hooks/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
-import { useFavoritesContext } from '../contexts/FavoritesContext';
+import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 import { useCategories } from '../hooks/useCategories';
@@ -20,8 +20,9 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
         <div className="w-8 h-8 flex items-center justify-center bg-white rounded-sm border border-gray-200 overflow-hidden">
           <img
             src={getLogoWithFallback(marker.logo, organizationLogo)}
-            alt=""
             className="max-w-[70%] max-h-[70%] object-contain"
+            // Use 'logo' as alt text if available, otherwise empty string for decorative
+            alt={marker.name || ''}
           />
         </div>
       )}
@@ -42,7 +43,9 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
 // --- Desktop Popup with scrollable content ---
 const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }) => {
   const hasCompanyData = marker.name || marker.companyId;
-  const { isFavorite, toggleFavorite } = useFavoritesContext();
+  const favoritesContext = useOptionalFavoritesContext();
+  const isFavorite = favoritesContext?.isFavorite || (() => false);
+  const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
   const translatedInfo = useTranslatedCompanyInfo(marker);
   const { i18n } = useTranslation();
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);

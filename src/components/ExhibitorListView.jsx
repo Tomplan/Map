@@ -12,11 +12,15 @@ import {
 } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
-import { useFavoritesContext } from '../contexts/FavoritesContext';
+import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
 import useCategories from '../hooks/useCategories';
+
+const EMPTY_FAVORITES = [];
+const NO_FAVORITE_CHECK = () => false;
+const NO_TOGGLE_FAVORITES = () => {};
 
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
@@ -46,7 +50,10 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   };
 
   // Favorites context
-  const { favorites, isFavorite, toggleFavorite } = useFavoritesContext();
+  const favoritesContext = useOptionalFavoritesContext();
+  const favorites = favoritesContext?.favorites || EMPTY_FAVORITES;
+  const isFavorite = favoritesContext?.isFavorite || NO_FAVORITE_CHECK;
+  const toggleFavorite = favoritesContext?.toggleFavorite || NO_TOGGLE_FAVORITES;
 
   // Categories
   const {

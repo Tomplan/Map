@@ -63,9 +63,10 @@ export default function useCompanies() {
 
     // if we already have data and we aren't explicitly asked to reload, skip
     if (e.state.companies.length > 0 && !e.state.loading && !isReload) {
-      if (local.loading) {
-        setLocal((prev) => ({ ...prev, loading: false }));
-      }
+      setLocal((prev) => {
+        if (!prev.loading) return prev;
+        return { ...prev, loading: false };
+      });
       return Promise.resolve();
     }
 
@@ -101,79 +102,88 @@ export default function useCompanies() {
   }, []);
 
   // Create new company
-  const createCompany = useCallback(async (companyData) => {
-    try {
-      // Normalize phone number when provided
-      if (companyData?.phone) companyData.phone = normalizePhone(companyData.phone);
-      // Normalize email to lowercase
-      if (companyData?.email) companyData.email = companyData.email.toLowerCase().trim();
-      const { data, error: insertError } = await supabase
-        .from('companies')
-        .insert([companyData])
-        .select()
-        .single();
+  const createCompany = useCallback(
+    async (companyData) => {
+      try {
+        // Normalize phone number when provided
+        if (companyData?.phone) companyData.phone = normalizePhone(companyData.phone);
+        // Normalize email to lowercase
+        if (companyData?.email) companyData.email = companyData.email.toLowerCase().trim();
+        const { data, error: insertError } = await supabase
+          .from('companies')
+          .insert([companyData])
+          .select()
+          .single();
 
-      if (insertError) throw insertError;
+        if (insertError) throw insertError;
 
-      const newCompanies = [...entry.state.companies, data].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      );
-      entry.state.companies = newCompanies;
-      entry.listeners.forEach((l) => l(entry.state));
+        const newCompanies = [...entry.state.companies, data].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        entry.state.companies = newCompanies;
+        entry.listeners.forEach((l) => l(entry.state));
 
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error creating company:', err);
-      return { data: null, error: err.message };
-    }
-  }, []);
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error creating company:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [entry],
+  );
 
   // Update existing company
-  const updateCompany = useCallback(async (id, updates) => {
-    try {
-      // Normalize phone number when provided
-      if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
-      // Normalize email to lowercase
-      if (updates?.email) updates.email = updates.email.toLowerCase().trim();
-      const { data, error: updateError } = await supabase
-        .from('companies')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
+  const updateCompany = useCallback(
+    async (id, updates) => {
+      try {
+        // Normalize phone number when provided
+        if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
+        // Normalize email to lowercase
+        if (updates?.email) updates.email = updates.email.toLowerCase().trim();
+        const { data, error: updateError } = await supabase
+          .from('companies')
+          .update(updates)
+          .eq('id', id)
+          .select()
+          .single();
 
-      if (updateError) throw updateError;
+        if (updateError) throw updateError;
 
-      const newCompanies = entry.state.companies
-        .map((c) => (c.id === id ? data : c))
-        .sort((a, b) => a.name.localeCompare(b.name));
-      entry.state.companies = newCompanies;
-      entry.listeners.forEach((l) => l(entry.state));
+        const newCompanies = entry.state.companies
+          .map((c) => (c.id === id ? data : c))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        entry.state.companies = newCompanies;
+        entry.listeners.forEach((l) => l(entry.state));
 
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error updating company:', err);
-      return { data: null, error: err.message };
-    }
-  }, []);
+        return { data, error: null };
+      } catch (err) {
+        console.error('Error updating company:', err);
+        return { data: null, error: err.message };
+      }
+    },
+    [entry],
+  );
 
   // Delete company
-  const deleteCompany = useCallback(async (id) => {
-    try {
-      const { error: deleteError } = await supabase.from('companies').delete().eq('id', id);
+  const deleteCompany = useCallback(
+    async (id) => {
+      try {
+        const { error: deleteError } = await supabase.from('companies').delete().eq('id', id);
 
-      if (deleteError) throw deleteError;
+        if (deleteError) throw deleteError;
 
-      const newCompanies = entry.state.companies.filter((c) => c.id !== id);
-      entry.state.companies = newCompanies;
-      entry.listeners.forEach((l) => l(entry.state));
+        const newCompanies = entry.state.companies.filter((c) => c.id !== id);
+        entry.state.companies = newCompanies;
+        entry.listeners.forEach((l) => l(entry.state));
 
-      return { error: null };
-    } catch (err) {
-      console.error('Error deleting company:', err);
-      return { error: err.message };
-    }
-  }, []);
+        return { error: null };
+      } catch (err) {
+        console.error('Error deleting company:', err);
+        return { error: err.message };
+      }
+    },
+    [entry],
+  );
 
   // Search companies by name
   const searchCompanies = useCallback(
@@ -206,11 +216,14 @@ export default function useCompanies() {
         loading: false,
         error: entry.state.error,
       });
-    } else if (local.companies !== entry.state.companies) {
-      setLocal({
-        companies: entry.state.companies,
-        loading: entry.state.loading,
-        error: entry.state.error,
+    } else {
+      setLocal((prev) => {
+        if (prev.companies === entry.state.companies) return prev;
+        return {
+          companies: entry.state.companies,
+          loading: entry.state.loading,
+          error: entry.state.error,
+        };
       });
     }
 
@@ -248,7 +261,7 @@ export default function useCompanies() {
       // available to future subscribers; channels remain open indefinitely
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
-  }, [loadCompanies]);
+  }, [entry, loadCompanies]);
 
   return {
     companies: local.companies,
