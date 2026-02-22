@@ -1,27 +1,26 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
-// Provide a Dutch translation mapping for keys we want to assert
+// Mock i18n so tab labels are stable
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k, opts) => {
       const map = {
-        'companies.publicInfoTab': 'Publieke Info',
-        'companies.privateInfoTab': 'Privé Info',
-        'companies.modal.publicInfoHeading': 'Publieke informatie (zichtbaar voor bezoekers)',
-        'companies.create': 'Aanmaken',
-        'companies.loadingData': 'Gegevens laden...',
-        'companies.errorWithMessage': 'Fout: {{message}}',
+        'companies.publicInfoTab': 'Public Info',
+        'companies.privateInfoTab': 'Private Info',
+        'companies.table.contact': 'Contact',
+        'companies.table.phone': 'Phone',
+        'companies.table.email': 'Email',
       };
       return map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
     },
-    i18n: { language: 'nl' },
+    i18n: { language: 'en' },
   }),
 }));
 
-// Mock helpers that touch runtime-only APIs or import.meta
 jest.mock('../../../utils/getLogoPath', () => ({
   getLogoPath: (src) => src || '',
   getResponsiveLogoSources: () => null,
@@ -30,9 +29,9 @@ jest.mock('../../../utils/getDefaultLogo', () => ({
   getDefaultLogoPath: () => '/assets/default.png',
 }));
 
-// Mock all hooks used by CompaniesTab so rendering is deterministic
+// Hooks used by CompaniesTab
 jest.mock('../../../hooks/useCompanies', () => () => ({
-  companies: [{ id: 1, name: 'Acme', logo: '', website: '', info: '' }],
+  companies: [],
   loading: false,
   error: null,
   createCompany: jest.fn(),
@@ -43,7 +42,13 @@ jest.mock('../../../hooks/useCompanies', () => () => ({
 }));
 
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
-  profile: { id: 1, name: 'Org' },
+  profile: {
+    id: 1,
+    name: 'Org name',
+    contact: 'Organization Contact',
+    phone: '+31201234567',
+    email: 'org@example.com',
+  },
   loading: false,
   error: null,
   updateProfile: jest.fn(),
@@ -54,8 +59,8 @@ jest.mock('../../../hooks/useCompanyMutations', () => ({
     editingId: null,
     editForm: {},
     setEditForm: jest.fn(),
-    isCreating: true,
-    newCompanyForm: { name: 'NewCo' },
+    isCreating: false,
+    newCompanyForm: {},
     setNewCompanyForm: jest.fn(),
     handleEdit: jest.fn(),
     handleSave: jest.fn(),
@@ -74,13 +79,7 @@ jest.mock('../../../hooks/useCompanyTranslations', () => () => ({
 jest.mock('../../../hooks/useCategories', () => () => ({
   categories: [],
   getCompanyCategories: async () => [],
-  getAllCompanyCategories: async (ids) => {
-    const out = {};
-    ids.forEach((id) => {
-      out[id] = [];
-    });
-    return out;
-  },
+  getAllCompanyCategories: async () => ({}),
   assignCategoriesToCompany: jest.fn(),
 }));
 jest.mock('../../../contexts/OrganizationLogoContext', () => ({
@@ -89,21 +88,25 @@ jest.mock('../../../contexts/OrganizationLogoContext', () => ({
 jest.mock('../../../contexts/DialogContext', () => ({
   useDialog: () => ({ toastError: jest.fn(), confirm: async () => true }),
 }));
-jest.mock('../../../supabaseClient');
 
 import CompaniesTab from '../CompaniesTab';
 
-test('renders companies tab labels in Dutch (i18n) and modal heading', async () => {
+test('organization row shows manager-only (private) contact/phone/email in Manager tab', async () => {
   render(
     <MemoryRouter initialEntries={['/companies']}>
       <CompaniesTab />
     </MemoryRouter>,
   );
 
-  // Tabs should show Dutch labels from mocked t()
-  expect(await screen.findByText('Publieke Info')).toBeInTheDocument();
-  expect(await screen.findByText('Privé Info')).toBeInTheDocument();
+  // Switch to Manager/Private Info tab
+  await userEvent.click(screen.getByText('Private Info'));
 
-  // Modal action should show the Dutch Create label when creating
-  expect(await screen.findByText('Aanmaken')).toBeInTheDocument();
+  // Organization contact should be visible in the first row
+  expect(screen.getByText('Organization Contact')).toBeInTheDocument();
+
+  // Email should be visible
+  expect(screen.getByText('org@example.com')).toBeInTheDocument();
+
+  // Phone is formatted and displayed as text (we check country code)
+  expect(screen.getByText(/\+31/)).toBeInTheDocument();
 });

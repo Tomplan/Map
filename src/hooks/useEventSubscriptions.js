@@ -8,44 +8,83 @@ import normalizePhone from '../utils/phone';
  * @returns {object} Subscriptions data and CRUD operations
  */
 export default function useEventSubscriptions(eventYear) {
-  const [subscriptions, setSubscriptions] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const reloadTimeoutRef = useRef(null);
+  // cache per eventYear
+  if (!useEventSubscriptions.cache) useEventSubscriptions.cache = new Map();
+  let entry = useEventSubscriptions.cache.get(eventYear);
+  if (!entry) {
+    entry = {
+      state: { subscriptions: [], loading: true, error: null },
+      listeners: new Set(),
+      refCount: 0,
+      channel: null,
+      reloadTimeout: null,
+      loadPromise: null,
+    };
+    useEventSubscriptions.cache.set(eventYear, entry);
+  }
+
+  const [local, setLocal] = useState({
+    subscriptions: entry.state.subscriptions,
+    loading: entry.state.loading,
+    error: entry.state.error,
+  });
 
   // Load subscriptions for the given year
-  const loadSubscriptions = useCallback(async () => {
-    try {
-      // Clear any pending debounced reload
-      if (reloadTimeoutRef.current) {
-        clearTimeout(reloadTimeoutRef.current);
-        reloadTimeoutRef.current = null;
+  const loadSubscriptions = useCallback(
+    async (isReload = false) => {
+      // If we have a pending load and this isn't a forced reload, return the existing promise
+      if (entry.loadPromise && !isReload) {
+        return entry.loadPromise;
       }
 
-      setLoading(true);
-      setError(null);
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
+        }
+        return Promise.resolve();
+      }
 
-      const { data, error: fetchError } = await supabase
-        .from('event_subscriptions')
-        .select(
-          `
-          *,
-          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
-        `,
-        )
-        .eq('event_year', eventYear)
-        .order('id', { ascending: true });
+      entry.loadPromise = (async () => {
+        try {
+          // Clear any pending debounced reload
+          if (entry.reloadTimeout) {
+            clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = null;
+          }
 
-      if (fetchError) throw fetchError;
+          entry.state.loading = true;
+          entry.state.error = null;
 
-      setSubscriptions(data || []);
-    } catch (err) {
-      console.error('Error loading event subscriptions:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [eventYear]);
+          const { data, error: fetchError } = await supabase
+            .from('event_subscriptions')
+            .select(
+              `
+            *,
+              company:companies(id, name, logo, website, info, contact, phone, email)
+
+          `,
+            )
+            .eq('event_year', eventYear)
+            .order('id', { ascending: true });
+
+          if (fetchError) throw fetchError;
+
+          entry.state.subscriptions = data || [];
+        } catch (err) {
+          console.error('Error loading event subscriptions:', err);
+          entry.state.error = err.message;
+        } finally {
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
+          entry.loadPromise = null;
+        }
+      })();
+
+      await entry.loadPromise;
+    },
+    [eventYear],
+  );
 
   // Subscribe a company to the event year
   const subscribeCompany = async (companyId, subscriptionData = {}) => {
@@ -136,7 +175,8 @@ export default function useEventSubscriptions(eventYear) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
+            company:companies(id, name, logo, website, info, contact, phone, email)
+
         `,
         )
         .single();
@@ -283,43 +323,100 @@ export default function useEventSubscriptions(eventYear) {
     }
   };
 
-  // Load subscriptions on mount and when year changes
+  // hook instance lifecycle: register listener / kick off load / start channel
   useEffect(() => {
-    loadSubscriptions();
-  }, [loadSubscriptions]);
+    // update entry reference (in case eventYear changed)
+    entry = useEventSubscriptions.cache.get(eventYear);
+    if (!entry) {
+      // unexpected, recreate entry so we don't crash
+      entry = {
+        state: { subscriptions: [], loading: true, error: null },
+        listeners: new Set(),
+        refCount: 0,
+        channel: null,
+        reloadTimeout: null,
+        loadPromise: null,
+      };
+      useEventSubscriptions.cache.set(eventYear, entry);
+    }
 
-  // Subscribe to real-time changes
-  useEffect(() => {
-    const channel = supabase
-      .channel(`event-subscriptions-changes-${eventYear}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_subscriptions',
-          filter: `event_year=eq.${eventYear}`,
-        },
-        () => {
-          // Debounce: wait 500ms after last change before reloading
-          if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-          reloadTimeoutRef.current = setTimeout(() => {
-            loadSubscriptions();
-          }, 500);
-        },
-      )
-      .subscribe();
+    entry.refCount += 1;
+    const listener = (s) =>
+      setLocal({
+        subscriptions: s.subscriptions,
+        loading: s.loading,
+        error: s.error,
+      });
+    entry.listeners.add(listener);
+
+    // sync local state if different (data or loading)
+    // If cache has data, ensure we use it AND turn off loading
+    if (entry.state.subscriptions.length > 0) {
+      setLocal({
+        subscriptions: entry.state.subscriptions,
+        loading: false,
+        error: entry.state.error,
+      });
+    } else if (local.subscriptions !== entry.state.subscriptions) {
+      setLocal({
+        subscriptions: entry.state.subscriptions,
+        loading: entry.state.loading,
+        error: entry.state.error,
+      });
+    }
+
+    if (entry.state.subscriptions.length === 0) {
+      // If empty, we should load.
+      if (!entry.loadPromise) {
+        loadSubscriptions();
+      }
+    }
+
+    // start realtime channel if first subscriber
+    if (!entry.channel) {
+      entry.channel = supabase
+        .channel(`event-subscriptions-changes-${eventYear}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'event_subscriptions',
+            filter: `event_year=eq.${eventYear}`,
+          },
+          () => {
+            if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = setTimeout(() => {
+              loadSubscriptions(true);
+            }, 500);
+          },
+        )
+        .subscribe();
+    }
 
     return () => {
-      if (reloadTimeoutRef.current) clearTimeout(reloadTimeoutRef.current);
-      supabase.removeChannel(channel);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      // Do NOT delete cache entry on unmount.
+      // This is the fix for "I had a working app and you destroyed it".
+      // We keep the cache so navigating away and back doesn't reload.
+      // useEventSubscriptions.cache.delete(eventYear); // REMOVED
+
+      // We still clean up channels if no one is listening to save resources,
+      // but we keep the data in memory.
+      if (entry.refCount <= 0) {
+        if (entry.channel) {
+          supabase.removeChannel(entry.channel);
+          entry.channel = null; // Clear channel so it reconnects on next mount
+        }
+      }
+      if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };
   }, [eventYear, loadSubscriptions]);
-
   return {
-    subscriptions,
-    loading,
-    error,
+    subscriptions: local.subscriptions,
+    loading: local.loading,
+    error: local.error,
     subscribeCompany,
     updateSubscription,
     unsubscribeCompany,

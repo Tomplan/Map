@@ -121,7 +121,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="admin-layout-root flex h-screen bg-gray-100">
       {/* Sidebar */}
       {/*
         Use a flexible expanded width (min width) instead of a strict fixed
@@ -315,7 +315,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="admin-main-content flex-1 overflow-y-auto">
         <div className="h-full p-4">
           <Outlet />
         </div>

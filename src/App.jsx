@@ -21,7 +21,7 @@ function AppContent() {
   const currentYear = new Date().getFullYear();
 
   // i18n hook for language management
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Load user preferences from context (single source of truth)
   const { preferences, loading: preferencesLoading, updatePreference } = usePreferences();
@@ -137,7 +137,7 @@ function AppContent() {
     logo: null, // Will be set from Organization_Profile
     themeColor: '#ffffff',
     fontFamily: 'Arvo, Sans-serif',
-    eventName: '4x4 Vakantiebeurs',
+    eventName: null, // Will be set from database or use translation
   });
 
   // Fetch branding from organization_profile and subscribe to changes
@@ -158,7 +158,7 @@ function AppContent() {
         const logoPath = data.logo || '';
         setBranding({
           logo: logoPath ? getLogoPath(logoPath) : null,
-          eventName: data.name || '4x4 Vakantiebeurs',
+          eventName: data.name || t('branding.defaultEventName'),
           themeColor: '#ffffff',
           fontFamily: 'Arvo, Sans-serif',
         });
@@ -181,7 +181,7 @@ function AppContent() {
             const logoPath = payload.new.logo || '';
             setBranding({
               logo: logoPath ? getLogoPath(logoPath) : null,
-              eventName: payload.new.name || '4x4 Vakantiebeurs',
+              eventName: payload.new.name || t('branding.defaultEventName'),
               themeColor: '#ffffff',
               fontFamily: 'Arvo, Sans-serif',
             });

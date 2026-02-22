@@ -21,7 +21,7 @@ This document outlines the current active database schema after all migrations h
 
 ### System Configuration
 
-- **organization_profile**: Singleton table with event branding, settings, and defaults
+- **organization_profile**: Singleton table with event branding, settings, defaults and manager-only contact fields (`contact`, `phone`, `email`)
 - **user_roles**: Secure role-based access control
 - **categories**: Company categorization system
 - **category_translations**: Bilingual category names

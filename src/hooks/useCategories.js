@@ -32,22 +32,54 @@ const ICON_MAP = {
  * Provides CRUD operations and real-time updates
  */
 export function useCategories(language = 'nl') {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [categoryStats, setCategoryStats] = useState({});
+  // cache keyed by language string
+  const key = language || 'nl';
+  const entryKey = `categories:${key}`;
+  // ensure cache entry exists
+  if (!useCategories.cache) {
+    useCategories.cache = new Map();
+  }
+  if (!useCategories.cache.has(entryKey)) {
+    useCategories.cache.set(entryKey, {
+      state: { categories: [], loading: true, error: null, categoryStats: {} },
+      listeners: new Set(),
+      refCount: 0,
+      channel: null,
+      statsChannel: null,
+      loadPromise: null,
+      statsLoadPromise: null,
+    });
+  }
 
-  // Load categories with translations
-  const loadCategories = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const entry = useCategories.cache.get(entryKey);
+  // local state mirrors cache state
+  const [local, setLocal] = useState({
+    categories: entry.state.categories,
+    loading: entry.state.loading,
+    error: entry.state.error,
+    categoryStats: entry.state.categoryStats,
+  });
 
-      // Fetch categories with their translations
-      const { data: categoriesData, error: categoriesError } = await supabase
-        .from('categories')
-        .select(
-          `
+  // Load categories with translations (updates cache entry)
+  const loadCategories = useCallback(
+    async (isReload = false) => {
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.categories.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
+        }
+        return;
+      }
+
+      try {
+        // don't call external set* helpers; update entry directly
+        entry.state.loading = true;
+        entry.state.error = null;
+
+        const { data: categoriesData, error: categoriesError } = await supabase
+          .from('categories')
+          .select(
+            `
           id,
           slug,
           icon,
@@ -60,57 +92,49 @@ export function useCategories(language = 'nl') {
             description
           )
         `,
-        )
-        .eq('active', true)
-        .order('sort_order');
+          )
+          .eq('active', true)
+          .order('sort_order');
 
-      if (categoriesError) throw categoriesError;
+        if (categoriesError) throw categoriesError;
 
-      // Transform data to include localized fields
-      const transformed = categoriesData.map((cat) => {
-        const translation =
-          cat.category_translations.find((t) => t.language === language) ||
-          cat.category_translations.find((t) => t.language === 'nl') ||
-          cat.category_translations[0];
+        const transformed = (categoriesData || []).map((cat) => {
+          const translation =
+            cat.category_translations.find((t) => t.language === language) ||
+            cat.category_translations.find((t) => t.language === 'nl') ||
+            cat.category_translations[0];
 
-        return {
-          id: cat.id,
-          slug: cat.slug,
-          icon: ICON_MAP[cat.icon] || mdiDotsHorizontal, // Convert string to icon path
-          iconName: cat.icon, // Keep original for admin editing
-          color: cat.color,
-          sort_order: cat.sort_order,
-          active: cat.active,
-          name: translation?.name || cat.slug,
-          description: translation?.description || '',
-          translations: cat.category_translations,
-        };
-      });
+          return {
+            id: cat.id,
+            slug: cat.slug,
+            icon: ICON_MAP[cat.icon] || mdiDotsHorizontal,
+            iconName: cat.icon,
+            color: cat.color,
+            sort_order: cat.sort_order,
+            active: cat.active,
+            name: translation?.name || cat.slug,
+            description: translation?.description || '',
+            translations: cat.category_translations,
+          };
+        });
 
-      // Avoid unnecessary re-renders by checking if the transformed data changed
-      setCategories((prev) => {
-        const prevStr = JSON.stringify(prev || []);
-        const nextStr = JSON.stringify(transformed || []);
-        if (prevStr !== nextStr) return transformed;
-        return prev;
-      });
-    } catch (err) {
-      console.error('Error loading categories:', err);
-      setError(err.message);
-      // If table doesn't exist, set empty array
-      if (err.message?.includes('does not exist') || err.code === '42P01') {
-        console.warn('Categories table not found. Please run migration 007.');
-        setCategories([]);
+        entry.state.categories = transformed;
+        entry.state.error = null;
+      } catch (err) {
+        console.error('Error loading categories:', err);
+        entry.state.error = err.message;
+        if (err.message?.includes('does not exist') || err.code === '42P01') {
+          console.warn('Categories table not found. Please run migration 007.');
+          entry.state.categories = [];
+        }
+      } finally {
+        entry.state.loading = false;
+        // notify listeners
+        entry.listeners.forEach((l) => l(entry.state));
       }
-    } finally {
-      setLoading(false);
-    }
-  }, [language]);
-
-  // Initial load
-  useEffect(() => {
-    loadCategories();
-  }, [loadCategories]);
+    },
+    [language],
+  );
 
   // Real-time subscription
   // Dedicated loader for category stats (used by subscription)
@@ -123,41 +147,93 @@ export function useCategories(language = 'nl') {
         if (!stats[cc.category_id]) stats[cc.category_id] = 0;
         stats[cc.category_id]++;
       });
-      // Only set if changed to avoid re-render loops
-      setCategoryStats((prev) => {
-        const prevStr = JSON.stringify(prev || {});
-        const nextStr = JSON.stringify(stats || {});
-        if (prevStr !== nextStr) return stats;
-        return prev;
-      });
+      entry.state.categoryStats = stats;
+      entry.listeners.forEach((l) => l(entry.state));
       return stats;
     } catch (err) {
       console.error('Error loading category stats:', err);
-      setCategoryStats({});
+      entry.state.categoryStats = {};
+      entry.listeners.forEach((l) => l(entry.state));
       return {};
     }
   }, []);
 
+  // effect that ties the hook instance into the shared cache entry
   useEffect(() => {
-    const channel = supabase
-      .channel('categories-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
-        loadCategories(),
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'category_translations' },
-        () => loadCategories(),
-      )
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
-        loadCategoryStats(),
-      )
-      .subscribe();
+    entry.refCount += 1;
+    const listener = (s) =>
+      setLocal({
+        categories: s.categories,
+        loading: s.loading,
+        error: s.error,
+        categoryStats: s.categoryStats,
+      });
+    entry.listeners.add(listener);
+
+    // sync state immediately
+    setLocal({
+      categories: entry.state.categories,
+      loading: entry.state.loading,
+      error: entry.state.error,
+      categoryStats: entry.state.categoryStats,
+    });
+
+    if (local.loading !== entry.state.loading) {
+      setLocal({
+        categories: entry.state.categories,
+        loading: entry.state.loading,
+        error: entry.state.error,
+        categoryStats: entry.state.categoryStats,
+      });
+    }
+
+    // only trigger initial load once per cache entry
+    if (entry.state.loading && entry.refCount === 1) {
+      loadCategories();
+    }
+
+    // start channels only once per entry
+    if (!entry.channel) {
+      entry.channel = supabase
+        .channel('categories-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
+          loadCategories(),
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'category_translations' },
+          () => loadCategories(),
+        )
+        .subscribe();
+    }
+    if (!entry.statsChannel) {
+      entry.statsChannel = supabase
+        .channel('company-categories-stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
+          loadCategoryStats(),
+        )
+        .subscribe();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+
+      // Cleanup channels if no one is listening, but KEEP the data
+      // This is crucial for avoiding page flickers/loading states on navigation
+      if (entry.refCount <= 0) {
+        if (entry.channel) {
+          supabase.removeChannel(entry.channel);
+          entry.channel = null;
+        }
+        if (entry.statsChannel) {
+          supabase.removeChannel(entry.statsChannel);
+          entry.statsChannel = null;
+        }
+        // Do NOT delete the cache entry
+      }
     };
-  }, [loadCategories, loadCategoryStats]);
+  }, [entryKey, loadCategories, loadCategoryStats]);
 
   // Create category with translations
   const createCategory = async (categoryData) => {
@@ -404,15 +480,10 @@ export function useCategories(language = 'nl') {
     }
   };
 
-  useEffect(() => {
-    // Initial load for category stats
-    loadCategoryStats();
-  }, [loadCategoryStats]);
-
   return {
-    categories,
-    loading,
-    error,
+    categories: local.categories,
+    loading: local.loading,
+    error: local.error,
     createCategory,
     updateCategory,
     deleteCategory,
@@ -420,7 +491,7 @@ export function useCategories(language = 'nl') {
     getAllCompanyCategories,
     assignCategoriesToCompany,
     getCategoryStats,
-    categoryStats,
+    categoryStats: local.categoryStats,
     refetch: loadCategories,
   };
 }

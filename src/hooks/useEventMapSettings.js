@@ -14,54 +14,127 @@ import { supabase } from '../supabaseClient';
  * @property {Function} updateSettings - Update map settings for the event year
  * @property {Function} resetToGlobal - Reset event settings to use global defaults
  */
-export default function useEventMapSettings(eventYear) {
-  const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+/*
+  Cached version of useEventMapSettings
+  - Shared in-memory cache per event year
+  - Single Supabase realtime subscription per year
+  - Reference-counted listeners so multiple components/hook instances reuse the same network work
+*/
+const _settingsCache = new Map();
 
-  /**
-   * Fetch event map settings for the specified year
-   */
-  const fetchSettings = useCallback(async () => {
-    if (!eventYear) {
-      setSettings(null);
-      setLoading(false);
-      return;
-    }
+function _getKey(year) {
+  return `event_map_settings:${year}`;
+}
 
+function _ensureCacheEntry(year) {
+  const key = _getKey(year);
+  if (_settingsCache.has(key)) return _settingsCache.get(key);
+
+  const entry = {
+    state: { settings: null, loading: true, error: null },
+    listeners: new Set(),
+    refCount: 0,
+    channel: null,
+    loadPromise: null,
+  };
+  _settingsCache.set(key, entry);
+  return entry;
+}
+
+async function _loadInitialSettings(year, entry) {
+  if (entry.loadPromise) return entry.loadPromise;
+
+  entry.loadPromise = (async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const { data, error: fetchError } = await supabase
+      const { data, error } = await supabase
         .from('event_map_settings')
         .select('*')
-        .eq('event_year', eventYear)
+        .eq('event_year', year)
         .maybeSingle();
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 is "not found" which is OK
-        console.error('Error fetching event map settings:', fetchError);
-        setError(fetchError.message);
-        setSettings(null);
+      if (error && error.code !== 'PGRST116') {
+        entry.state.settings = null;
+        entry.state.error = error.message || String(error);
       } else {
-        setSettings(data); // Will be null if no event-specific settings exist
-        setError(null);
+        entry.state.settings = data || null;
+        entry.state.error = null;
       }
     } catch (err) {
-      console.error('Error in fetchSettings:', err);
-      setError(err.message);
-      setSettings(null);
+      console.error('Error loading event_map_settings for', year, err);
+      entry.state.settings = null;
+      entry.state.error = err?.message || String(err);
     } finally {
-      setLoading(false);
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
     }
+  })();
+
+  return entry.loadPromise;
+}
+
+function _startRealtimeChannel(year, entry) {
+  if (entry.channel) return;
+  const channelName = `event-map-settings-${year}`;
+  entry.channel = supabase
+    .channel(channelName)
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'event_map_settings',
+        filter: `event_year=eq.${year}`,
+      },
+      () => {
+        // reload cache on any change for this year
+        _loadInitialSettings(year, entry);
+      },
+    )
+    .subscribe();
+}
+
+function _stopCacheEntry(year) {
+  const key = _getKey(year);
+  const entry = _settingsCache.get(key);
+  if (!entry) return;
+  if (entry.channel) supabase.removeChannel(entry.channel);
+  _settingsCache.delete(key);
+}
+
+export default function useEventMapSettings(eventYear) {
+  const [local, setLocal] = useState({ settings: null, loading: true, error: null });
+
+  useEffect(() => {
+    if (!eventYear) {
+      setLocal({ settings: null, loading: false, error: null });
+      return undefined;
+    }
+
+    const entry = _ensureCacheEntry(eventYear);
+    entry.refCount += 1;
+
+    const listener = (s) => setLocal({ ...s });
+    entry.listeners.add(listener);
+
+    // sync immediate state
+    setLocal({ ...entry.state });
+
+    // kick off initial load if needed
+    if (entry.state.loading) _loadInitialSettings(eventYear, entry);
+
+    // ensure single realtime subscription
+    _startRealtimeChannel(eventYear, entry);
+
+    return () => {
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        _stopCacheEntry(eventYear);
+      }
+    };
   }, [eventYear]);
 
-  /**
-   * Update or create event map settings for the specified year
-   * @param {Object} updates - Settings to update
-   * @returns {Promise<boolean>} Success status
-   */
+  // updateSettings / resetToGlobal should update cache so all listeners see changes
   const updateSettings = useCallback(
     async (updates) => {
       if (!eventYear) {
@@ -69,108 +142,72 @@ export default function useEventMapSettings(eventYear) {
         return false;
       }
 
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('Cannot update settings: No user logged in');
+        return false;
+      }
+
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-        if (!user) {
-          console.error('Cannot update settings: No user logged in');
-          return false;
-        }
+        // use upsert to simplify create-or-update semantics
+        const { data, error } = await supabase
+          .from('event_map_settings')
+          .upsert([{ event_year: eventYear, ...updates, updated_by: user.id }], {
+            onConflict: 'event_year',
+          })
+          .select()
+          .maybeSingle();
 
-        // Check if settings already exist for this year
-        const existingSettings = settings;
+        if (error) throw error;
 
-        if (existingSettings) {
-          // Update existing settings
-          const { data, error: updateError } = await supabase
-            .from('event_map_settings')
-            .update({
-              ...updates,
-              updated_by: user.id,
-            })
-            .eq('event_year', eventYear)
-            .select()
-            .single();
-
-          if (updateError) {
-            console.error('Error updating event map settings:', updateError);
-            throw new Error(updateError.message);
-          }
-
-          setSettings(data);
-        } else {
-          // Create new settings for this year
-          const { data, error: insertError } = await supabase
-            .from('event_map_settings')
-            .insert([
-              {
-                event_year: eventYear,
-                ...updates,
-                created_by: user.id,
-                updated_by: user.id,
-              },
-            ])
-            .select()
-            .single();
-
-          if (insertError) {
-            console.error('Error creating event map settings:', insertError);
-            throw new Error(insertError.message);
-          }
-
-          setSettings(data);
-        }
-
+        const entry = _ensureCacheEntry(eventYear);
+        entry.state.settings = data || null;
+        entry.state.loading = false;
+        entry.state.error = null;
+        entry.listeners.forEach((l) => l(entry.state));
         return true;
-      } catch (error) {
-        console.error('Error in updateSettings:', error);
-        throw error;
+      } catch (err) {
+        console.error('Error updating event_map_settings:', err);
+        throw err;
       }
     },
-    [eventYear, settings],
+    [eventYear],
   );
 
-  /**
-   * Reset event settings to use global defaults (delete event-specific settings)
-   * @returns {Promise<boolean>} Success status
-   */
   const resetToGlobal = useCallback(async () => {
-    if (!eventYear) {
-      console.error('Cannot reset settings: No event year specified');
-      return false;
-    }
-
+    if (!eventYear) return false;
     try {
-      const { error: deleteError } = await supabase
+      const { error } = await supabase
         .from('event_map_settings')
         .delete()
         .eq('event_year', eventYear);
-
-      if (deleteError) {
-        console.error('Error resetting event map settings:', deleteError);
-        throw new Error(deleteError.message);
-      }
-
-      setSettings(null); // Now will use global defaults
+      if (error) throw error;
+      const entry = _ensureCacheEntry(eventYear);
+      entry.state.settings = null;
+      entry.state.error = null;
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
       return true;
-    } catch (error) {
-      console.error('Error in resetToGlobal:', error);
-      throw error;
+    } catch (err) {
+      console.error('Error resetting event_map_settings:', err);
+      throw err;
     }
   }, [eventYear]);
 
-  // Fetch settings when eventYear changes
-  useEffect(() => {
-    fetchSettings();
-  }, [fetchSettings]);
+  const refetch = useCallback(() => {
+    if (!eventYear) return Promise.resolve();
+    const entry = _ensureCacheEntry(eventYear);
+    return _loadInitialSettings(eventYear, entry);
+  }, [eventYear]);
 
   return {
-    settings,
-    loading,
-    error,
+    settings: local.settings,
+    loading: local.loading,
+    error: local.error,
     updateSettings,
     resetToGlobal,
-    refetch: fetchSettings,
+    refetch,
   };
 }

@@ -7,61 +7,111 @@ import normalizePhone from '../utils/phone';
  * It fetches, updates, and subscribes to real-time changes for the single-row organization_profile table.
  * Note: Uses 'logo' field to match companies table structure.
  */
-export default function useOrganizationProfile() {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+/*
+  Cached singleton hook for organization_profile
+  - Shared in-memory cache ensures only one REST query & realtime channel
+  - Reference-counted listener set so multiple consumers share state
+*/
+const _orgCacheEntry = {
+  state: { profile: null, loading: true, error: null },
+  listeners: new Set(),
+  refCount: 0,
+  channel: null,
+  loadPromise: null,
+};
 
-  const fetchProfile = useCallback(async () => {
+async function _loadInitialProfile(entry) {
+  if (entry.loadPromise) return entry.loadPromise;
+
+  entry.loadPromise = (async () => {
     try {
-      setLoading(true);
-      const { data, error } = await supabase.from('organization_profile').select('*').single(); // We only expect one row
-
+      const { data, error } = await supabase.from('organization_profile').select('*').single();
       if (error) {
-        // If no row is found, it might not be an error, but we should log it.
-        // Supabase returns an error if .single() finds no rows.
         if (error.code === 'PGRST116') {
           console.warn(
             'No organization profile found. A default one should be created by the migration.',
           );
-          setProfile(null);
+          entry.state.profile = null;
         } else {
           throw error;
         }
+      } else {
+        entry.state.profile = data;
       }
-
-      setProfile(data);
-      setError(null);
+      entry.state.error = null;
     } catch (err) {
       console.error('Error fetching organization profile:', err);
-      setError(err.message);
+      entry.state.error = err.message;
+      entry.state.profile = null;
     } finally {
-      setLoading(false);
+      entry.state.loading = false;
+      entry.listeners.forEach((l) => l(entry.state));
     }
-  }, []);
+  })();
+
+  return entry.loadPromise;
+}
+
+function _startOrgChannel(entry) {
+  if (entry.channel) return;
+  entry.channel = supabase
+    .channel('organization-profile')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
+      (payload) => {
+        if (payload.new) {
+          entry.state.profile = payload.new;
+          entry.listeners.forEach((l) => l(entry.state));
+        }
+      },
+    )
+    .subscribe();
+}
+
+function _stopOrgEntry() {
+  if (_orgCacheEntry.channel) {
+    try {
+      supabase.removeChannel(_orgCacheEntry.channel);
+    } catch (err) {
+      console.error('Error removing channel:', err);
+    }
+    _orgCacheEntry.channel = null;
+  }
+  // Do not reset state for safety - keep cache across unmounts
+  // _orgCacheEntry.state = { profile: null, loading: true, error: null };
+}
+
+export default function useOrganizationProfile() {
+  const [local, setLocal] = useState({
+    profile: _orgCacheEntry.state.profile,
+    loading: _orgCacheEntry.state.loading,
+    error: _orgCacheEntry.state.error,
+  });
 
   useEffect(() => {
-    fetchProfile();
+    const entry = _orgCacheEntry;
+    entry.refCount += 1;
+    const listener = (s) => setLocal({ ...s });
+    entry.listeners.add(listener);
 
-    // Subscribe to real-time updates
-    const subscription = supabase
-      .channel('public:organization_profile')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
-        (payload) => {
-          if (payload.new) {
-            setProfile(payload.new);
-          }
-        },
-      )
-      .subscribe();
+    // Sync immediately just in case
+    if (local.profile !== entry.state.profile || local.loading !== entry.state.loading) {
+      setLocal({ ...entry.state });
+    }
 
-    // Cleanup subscription on unmount
+    if (entry.state.loading && !entry.loadPromise) _loadInitialProfile(entry);
+
+    if (!entry.channel) _startOrgChannel(entry);
+
     return () => {
-      supabase.removeChannel(subscription);
+      entry.listeners.delete(listener);
+      entry.refCount -= 1;
+      if (entry.refCount <= 0) {
+        _stopOrgEntry();
+      }
     };
-  }, [fetchProfile]);
+  }, []);
 
   /**
    * Updates the organization profile.
@@ -83,7 +133,11 @@ export default function useOrganizationProfile() {
 
       if (error) throw error;
 
-      setProfile(data);
+      // update cache state so all listeners see it immediately
+      const entry = _orgCacheEntry;
+      entry.state.profile = data;
+      entry.listeners.forEach((l) => l(entry.state));
+
       return { data, error: null };
     } catch (err) {
       console.error('Error updating organization profile:', err);
@@ -91,5 +145,5 @@ export default function useOrganizationProfile() {
     }
   };
 
-  return { profile, loading, error, updateProfile };
+  return { profile: local.profile, loading: local.loading, error: local.error, updateProfile };
 }

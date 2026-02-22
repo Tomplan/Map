@@ -23,6 +23,15 @@ import '@testing-library/jest-dom';
 import YearScopeCard from './YearScopeCard';
 
 describe('YearScopeCard', () => {
+  // Make tests deterministic by fixing the system time so `new Date().getFullYear()` is stable for each test
+  beforeEach(() => {
+    jest.useFakeTimers('modern');
+    jest.setSystemTime(new Date('2025-06-01'));
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
   it('renders with counts and selector', () => {
     const { asFragment } = render(
       <YearScopeCard

@@ -67,7 +67,7 @@ describe('MapManagement glyphAnchor edit UI', () => {
     );
 
     // Select the marker list item by ID text and then click the surrounding button
-    const idNode = await screen.findByText(/ID:\s*5/i);
+    const idNode = await screen.findByText(/#\s*5/i);
     const button = idNode.closest('button');
     expect(button).toBeTruthy();
     fireEvent.click(button);

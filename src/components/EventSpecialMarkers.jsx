@@ -241,7 +241,7 @@ function EventSpecialMarkers({
 
           return (
             <Marker
-              key={marker.id}
+              key={`${marker.id}-${isDraggable ? 'drag' : 'static'}`}
               position={position}
               icon={icon}
               draggable={isDraggable}

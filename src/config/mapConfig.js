@@ -110,7 +110,7 @@ export const MAP_LAYERS = [
     key: 'carto',
     name: 'Carto Voyager',
     attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png',
+    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
   },
   {
     key: 'esri',
