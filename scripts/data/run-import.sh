@@ -22,4 +22,7 @@ fi
 echo "🚀 Running import with provided JWT token..."
 echo ""
 
-SUPABASE_JWT_TOKEN="$1" node import-subscriptions-2025.js
+# Get the directory of the script to resolve relative paths
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+SUPABASE_JWT_TOKEN="$1" node "$DIR/import-subscriptions-2025.js"
