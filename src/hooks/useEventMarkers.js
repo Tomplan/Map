@@ -408,7 +408,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     makeChannel(
       'markers-assignments-changes',
       { event: '*', schema: 'public', table: 'assignments' },
-      (payload) => {
+      async (payload) => {
         if (payload.eventType === 'DELETE') {
           entry.reloadTimeout && clearTimeout(entry.reloadTimeout);
           entry.reloadTimeout = setTimeout(() => loadMarkers(true, true), 500);
