@@ -3,8 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 // Mock supabase client to count queries/subscriptions
 jest.mock('../../supabaseClient', () => {
-  const mockMaybeSingle = jest.fn().mockResolvedValue({ data: { id: 1, event_year: 2026 }, error: null });
-  const mockSelect = jest.fn(() => ({ maybeSingle: mockMaybeSingle, eq: jest.fn(() => ({ maybeSingle: mockMaybeSingle })) }));
+  const mockMaybeSingle = jest
+    .fn()
+    .mockResolvedValue({ data: { id: 1, event_year: 2026 }, error: null });
+  const mockSelect = jest.fn(() => ({
+    maybeSingle: mockMaybeSingle,
+    eq: jest.fn(() => ({ maybeSingle: mockMaybeSingle })),
+  }));
   const mockFrom = jest.fn(() => ({ select: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-ems-1' }));
@@ -18,7 +23,15 @@ jest.mock('../../supabaseClient', () => {
       removeChannel: mockRemoveChannel,
       auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'u-1' } } }) },
     },
-    __mocks__: { mockFrom, mockSelect, mockMaybeSingle, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
+    __mocks__: {
+      mockFrom,
+      mockSelect,
+      mockMaybeSingle,
+      mockChannel,
+      mockSubscribe,
+      mockRemoveChannel,
+      mockOn,
+    },
   };
 });
 

@@ -16,7 +16,15 @@ jest.mock('../../supabaseClient', () => {
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
     },
-    __mocks__: { mockFrom, mockSelect, mockSingle, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
+    __mocks__: {
+      mockFrom,
+      mockSelect,
+      mockSingle,
+      mockChannel,
+      mockSubscribe,
+      mockRemoveChannel,
+      mockOn,
+    },
   };
 });
 

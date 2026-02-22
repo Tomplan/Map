@@ -535,14 +535,20 @@ function EventMap({
               if (event.printObjects && event.printObjects['L.Marker']) {
                 const printMarkers = event.printObjects['L.Marker'];
                 const printZoom = printMap.getZoom();
-                console.log(`[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`);
+                console.log(
+                  `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
+                );
 
                 try {
                   printMarkers.forEach((printMarker) => {
                     if (printMarker.options.icon && printMarker.options.icon.options) {
                       const originalIconOpts = printMarker.options.icon.options;
-                      const recomputedOpts = computePrintIconOptions(originalIconOpts, printZoom, isAdminView);
-                      
+                      const recomputedOpts = computePrintIconOptions(
+                        originalIconOpts,
+                        printZoom,
+                        isAdminView,
+                      );
+
                       if (recomputedOpts && recomputedOpts.iconSize) {
                         const newIcon = L.icon.glyph(recomputedOpts);
                         printMarker.setIcon(newIcon);
@@ -616,35 +622,60 @@ function EventMap({
             // "Current view" mode should preserve the current map position to avoid marker misplacement
             const isCurrentViewMode = modeTitle.toLowerCase().includes('current view');
             const isAutoMode = modeTitle.toLowerCase().includes('auto');
-            const isCustomMode = modeTitle.toLowerCase().includes('select area') || modeTitle.toLowerCase().includes('custom');
-            
+            const isCustomMode =
+              modeTitle.toLowerCase().includes('select area') ||
+              modeTitle.toLowerCase().includes('custom');
+
             // Skip center change for current view, auto, and custom modes
             if (isCurrentViewMode || isAutoMode || isCustomMode) {
               return;
             }
-            
+
+            // Derive orientation from mode title if not already available
+            // This is critical for the logic below to work
+            let detectedOrientation = undefined;
+            if (modeTitle && modeTitle.toLowerCase().includes('portrait')) {
+              detectedOrientation = 'Portrait';
+            } else if (modeTitle && modeTitle.toLowerCase().includes('landscape')) {
+              detectedOrientation = 'Landscape';
+            }
+
             // Only modify Portrait and Landscape orientations with fixed home positions
-            if (orientation === 'Portrait' || orientation === 'Landscape') {
+            // If a specific print config exists (A4, A3, etc), prioritize its settings
+            if (
+              printModeConfig ||
+              detectedOrientation === 'Portrait' ||
+              detectedOrientation === 'Landscape'
+            ) {
               // Save current view to restore after printing
               originalView = {
                 center: browserPrint._map.getCenter(),
                 zoom: browserPrint._map.getZoom(),
               };
 
-              // Use different center and zoom for Portrait vs Landscape
-              const centerPosition = orientation === 'Portrait'
-                ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
-                : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+              let centerPosition, zoomLevel;
 
-              const zoomLevel = orientation === 'Portrait'
-                ? 18 // Portrait uses zoom 17.8
-                : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+              if (printModeConfig && printModeConfig.center && printModeConfig.zoom) {
+                centerPosition = printModeConfig.center;
+                zoomLevel = printModeConfig.zoom;
+              } else {
+                // Use different center and zoom for Portrait vs Landscape fallback
+                centerPosition =
+                  detectedOrientation === 'Portrait'
+                    ? [51.89664504222346, 5.7749867622508875] // Portrait-specific center
+                    : MAP_CONFIG.DEFAULT_POSITION; // Landscape uses default home center
+
+                zoomLevel =
+                  detectedOrientation === 'Portrait'
+                    ? 18 // Portrait uses zoom 17.8
+                    : MAP_CONFIG.DEFAULT_ZOOM; // Landscape uses default zoom (17)
+              }
 
               // Move the real map to the target position
               // The plugin will then use this view when creating the print overlay
               // (because Portrait/Landscape modes have invalidateBounds: false)
               browserPrint._map.setView(centerPosition, zoomLevel, {
-                animate: false // Instant jump, no animation
+                animate: false, // Instant jump, no animation
               });
             }
           });
@@ -838,7 +869,13 @@ function EventMap({
       };
 
   return (
-    <div style={containerStyle} tabIndex={0} aria-label="Event Map" role="region">
+    <div
+      className="event-map-wrapper"
+      style={containerStyle}
+      tabIndex={0}
+      aria-label="Event Map"
+      role="region"
+    >
       <MapControls
         mapInstance={mapInstance}
         mapCenter={MAP_CONFIG.DEFAULT_POSITION}

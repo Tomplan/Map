@@ -551,7 +551,8 @@ function EventClusterMarkers({
           const isSelected = selectedMarker?.id === marker.id;
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
-          const markerKey = getMarkerKey(marker);
+          // Force remount when draggable state changes to ensure marker behavior updates
+          const markerKey = `${getMarkerKey(marker)}-${isDraggable ? 'drag' : 'static'}`;
 
           return (
             <MemoizedMarker

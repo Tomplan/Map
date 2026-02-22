@@ -9,6 +9,8 @@ import {
   mdiClose,
   mdiChevronUp,
   mdiChevronDown,
+  mdiChevronLeft,
+  mdiChevronRight,
   mdiContentCopy,
   mdiArchive,
   mdiEye,
@@ -52,6 +54,62 @@ export default function MapManagement({
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [printModes, setPrintModes] = useState([]);
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
+
+  // Collapse state for sidebars
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true); // Default to open for Markers
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false); // Default to closed for Subscriptions
+
+  // Resizing state
+  const [leftSidebarWidth, setLeftSidebarWidth] = useState(384); // Default w-96 (384px)
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(256); // Default w-64 (256px)
+  const [listSplitRatio, setListSplitRatio] = useState(0.5); // Default 50% split
+  const [isResizing, setIsResizing] = useState(null); // 'left', 'right', 'split'
+
+  // Handle global mouse events for resizing
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing) return;
+      e.preventDefault();
+
+      if (isResizing === 'left') {
+        const newWidth = Math.max(250, Math.min(800, e.clientX));
+        setLeftSidebarWidth(newWidth);
+      } else if (isResizing === 'right') {
+        const newWidth = Math.max(200, Math.min(600, window.innerWidth - e.clientX));
+        setRightSidebarWidth(newWidth);
+      } else if (isResizing === 'split') {
+        // Approx header height + padding offset
+        const containerTop = 144;
+        const containerHeight = window.innerHeight - containerTop;
+        const relativeY = e.clientY - containerTop;
+        const rawRatio = relativeY / containerHeight;
+        const newRatio = Math.max(0.2, Math.min(0.8, rawRatio));
+        setListSplitRatio(newRatio);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isResizing) {
+        setIsResizing(null);
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = '';
+      }
+    };
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none'; // Prevent selection
+      document.body.style.cursor = isResizing === 'split' ? 'row-resize' : 'col-resize';
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+      document.body.style.cursor = 'default';
+    };
+  }, [isResizing]);
 
   // Event managers have read-only access
   const isReadOnly = isEventManager;
@@ -143,7 +201,11 @@ export default function MapManagement({
 
   // Handle marker selection
   const handleSelectMarker = (marker) => {
-    setSelectedMarkerId(marker.id);
+    if (selectedMarkerId === marker.id) {
+      setSelectedMarkerId(null);
+    } else {
+      setSelectedMarkerId(marker.id);
+    }
     setEditMode(false);
   };
 
@@ -346,14 +408,29 @@ export default function MapManagement({
       } catch (err) {
         console.warn('Header BrowserPrint call failed:', err);
         cleanup();
-        await snapshotHeaderPrint();
+
+        const isLandscape =
+          mode?.title?.toLowerCase().includes('landscape') ||
+          mode?.name?.toLowerCase().includes('landscape');
+
+        console.info(
+          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
+        );
+        alert(
+          'Browser print failed. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
+        );
+
+        await snapshotHeaderPrint({
+          orientation: isLandscape ? 'landscape' : 'portrait',
+        });
         return;
       }
 
       const waitStart = () =>
         new Promise((resolve) => {
           if (started) return resolve('started');
-          timeoutId = setTimeout(() => resolve('timeout'), 2500);
+          // Increased timeout to 8000ms to allow large maps/complex DOMs to prepare for print
+          timeoutId = setTimeout(() => resolve('timeout'), 8000);
           const poll = setInterval(() => {
             if (started || finished) {
               clearInterval(poll);
@@ -370,14 +447,28 @@ export default function MapManagement({
       if (result === 'timeout') {
         console.warn('Header BrowserPrint did not start; falling back to snapshot export');
         cleanup();
-        await snapshotHeaderPrint();
+
+        // Detect configuration from mode object safely handling both structure variants
+        const title = mode?.title || mode?.options?.title || mode?.name || '';
+        const isLandscape = title.toLowerCase().includes('landscape');
+
+        console.info(
+          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
+        );
+        alert(
+          'Browser print timed out. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
+        );
+
+        await snapshotHeaderPrint({
+          orientation: isLandscape ? 'landscape' : 'portrait',
+        });
       }
     } finally {
       setIsPrintingHeader(false);
     }
   };
 
-  const snapshotHeaderPrint = async () => {
+  const snapshotHeaderPrint = async (options = {}) => {
     if (isPrintingHeader) return;
     setIsPrintingHeader(true);
     try {
@@ -398,7 +489,10 @@ export default function MapManagement({
 
       const imageDataUrl = canvas.toDataURL('image/png', 1.0);
       const printWindow = window.open('', '_blank', 'width=900,height=700');
-      if (!printWindow) return;
+      if (!printWindow) {
+        alert('Popup blocked! Please allow popups for map printing.');
+        return;
+      }
 
       // Avoid document.write (browser warns). Build DOM safely using DOM APIs
       const doc = printWindow.document;
@@ -408,7 +502,35 @@ export default function MapManagement({
       const title = doc.createElement('title');
       title.textContent = 'Map Print';
       const style = doc.createElement('style');
-      style.textContent = `*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:center;min-height:100vh;background:white}img{max-width:100%;max-height:100vh;object-fit:contain}@media print{img{width:100%;height:auto}}`;
+
+      // Determine orientation if needed
+      const pageOrientation = options.orientation === 'landscape' ? 'landscape' : 'portrait';
+
+      style.textContent = `
+        * { margin: 0; padding: 0 }
+        body { 
+          display: flex; 
+          justify-content: center; 
+          align-items: center; 
+          min-height: 100vh; 
+          background: white 
+        }
+        img { 
+          max-width: 100%; 
+          max-height: 100vh; 
+          object-fit: contain 
+        }
+        @media print { 
+          @page { size: ${pageOrientation}; margin: 0; }
+          img { width: 100%; height: auto } 
+          body { 
+            display: block !important; 
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100% !important;
+          }
+        }
+      `;
       head.appendChild(title);
       head.appendChild(style);
 
@@ -428,8 +550,16 @@ export default function MapManagement({
       body.appendChild(img);
 
       // Attach head/body to document
-      while (doc.documentElement?.firstChild)
+      // Ensure document has an HTML element
+      if (!doc.documentElement) {
+        doc.appendChild(doc.createElement('html'));
+      }
+
+      // Clear existing content safely
+      while (doc.documentElement.firstChild) {
         doc.documentElement.removeChild(doc.documentElement.firstChild);
+      }
+
       doc.documentElement.appendChild(head);
       doc.documentElement.appendChild(body);
       doc.close();
@@ -588,53 +718,114 @@ export default function MapManagement({
 
           {/* Search and Sort (hidden for read-only event managers) */}
           {!isReadOnly && (
-            <div className="flex gap-4">
-              {/* Search */}
-              <div className="relative flex-1">
-                <Icon
-                  path={mdiMagnify}
-                  size={1}
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                />
-                <input
-                  type="text"
-                  placeholder={t('mapManagement.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
+            <div className="flex gap-4 items-center">
+              {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
+              <button
+                onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
+                className={`p-2 rounded-lg border transition-colors ${
+                  isLeftSidebarOpen
+                    ? 'bg-blue-50 border-blue-200 text-blue-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`}
+                title={isLeftSidebarOpen ? 'Hide Markers & Details' : 'Show Markers & Details'}
+              >
+                <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={1} />
+              </button>
 
-              {/* Sort - new layout */}
-              <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white w-64">
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="flex-1 pl-3 pr-3 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-sm focus:ring-0 appearance-none"
-                  aria-label={t('mapManagement.sortBy')}
-                >
-                  <option value="id">{t('mapManagement.sortId')}</option>
-                  <option value="name">{t('mapManagement.sortName')}</option>
-                  <option value="type">{t('mapManagement.sortType')}</option>
-                </select>
-                <button
-                  type="button"
-                  onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                  aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
-                  className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
-                >
-                  <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
-                </button>
-              </div>
+              {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
+              <button
+                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+                className={`p-2 rounded-lg border transition-colors ${
+                  isRightSidebarOpen
+                    ? 'bg-blue-50 border-blue-200 text-blue-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                }`}
+                title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
+              >
+                <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={1} />
+              </button>
             </div>
           )}
         </div>
 
-        <div className="flex h-[calc(100vh-150px)]">
-          {/* LEFT: Marker List */}
+        <div className="flex h-[calc(100vh-150px)] relative">
+          {/* LEFT: Markers & Details Panel */}
           {!isReadOnly && (
-            <div className="w-64 border-r border-gray-200 overflow-y-auto flex-shrink-0">
-              <div className="p-2">
+            <div
+              className={`border-r border-gray-200 overflow-hidden flex-shrink-0 bg-white flex flex-col relative ${
+                !isLeftSidebarOpen && 'border-r-0'
+              }`}
+              style={{
+                width: isLeftSidebarOpen ? leftSidebarWidth : 0,
+                transition: isResizing === 'left' ? 'none' : 'width 0.3s ease-in-out',
+              }}
+            >
+              {/* Resize Handle (Right Edge) */}
+              <div
+                className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
+                onMouseDown={() => setIsResizing('left')}
+              />
+
+              {/* Title Header */}
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10">
+                Markers List
+              </div>
+
+              {/* Search and Sort Header */}
+              <div className="p-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-3">
+                {/* Search */}
+                <div className="relative">
+                  <Icon
+                    path={mdiMagnify}
+                    size={0.8}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('mapManagement.searchPlaceholder')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Sort */}
+                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
+                    aria-label={t('mapManagement.sortBy')}
+                  >
+                    <option value="id">{t('mapManagement.sortId')}</option>
+                    <option value="name">{t('mapManagement.sortName')}</option>
+                    <option value="type">{t('mapManagement.sortType')}</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                    className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
+                  >
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.7}
+                    />
+                    <span className="sr-only">Sort</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Top Section: Marker List */}
+              <div
+                className="w-full overflow-y-auto p-2 border-b border-gray-200 relative scrollbar-hide"
+                style={{
+                  height: selectedMarkerId
+                    ? `calc(${listSplitRatio * 100}% - 146px)`
+                    : 'calc(100% - 146px)',
+                  transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
+                }}
+              >
                 {filteredMarkers.map((marker) => {
                   const isSelected = marker.id === selectedMarkerId;
                   const isDefault = marker.id === -1 || marker.id === -2;
@@ -644,7 +835,7 @@ export default function MapManagement({
                     <button
                       key={marker.id}
                       onClick={() => handleSelectMarker(marker)}
-                      className={`w-full text-left p-3 rounded-lg mb-2 transition-colors ${
+                      className={`w-full text-left p-2 rounded-lg mb-1 transition-colors ${
                         isSelected
                           ? 'bg-blue-50 border-2 border-blue-500'
                           : isDefault
@@ -652,34 +843,31 @@ export default function MapManagement({
                             : 'bg-white border border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         {marker.iconUrl ? (
                           <div className="relative">
-                            <img src={getIconPath(marker.iconUrl)} alt="icon" className="w-6 h-6" />
-                            <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full flex items-center justify-center">
-                              <span className="text-white text-xs">•</span>
-                            </div>
+                            <img src={getIconPath(marker.iconUrl)} alt="icon" className="w-5 h-5" />
                           </div>
                         ) : (
-                          <div className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+                          <div className="w-5 h-5 bg-gray-200 rounded flex items-center justify-center text-[10px] text-gray-600">
                             D
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-gray-900 truncate">
-                            {isDefault
-                              ? marker.id === -1
-                                ? 'Assigned Booth Default'
-                                : 'Unassigned Booth Default'
-                              : marker.glyph || `Marker ${marker.id}`}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            ID: {marker.id}
-                            {isDefault && ' ⚙️ Global Default'}
-                            {isSpecial && ' (Special)'}
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium text-sm text-gray-900 truncate">
+                              {isDefault
+                                ? marker.id === -1
+                                  ? 'Assigned Booth'
+                                  : 'Unassigned Booth'
+                                : marker.glyph || `Marker ${marker.id}`}
+                            </span>
+                            <span className="text-xs text-gray-400 font-mono ml-2">
+                              #{marker.id}
+                            </span>
                           </div>
                           {marker.name && (
-                            <div className="text-xs text-gray-600 truncate">{marker.name}</div>
+                            <div className="text-xs text-gray-500 truncate">{marker.name}</div>
                           )}
                         </div>
                       </div>
@@ -687,11 +875,87 @@ export default function MapManagement({
                   );
                 })}
               </div>
+
+              {/* Resizer Splitter (Horizontal) */}
+              {selectedMarkerId && (
+                <div
+                  className="w-full h-1 cursor-row-resize bg-gray-200 hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
+                  onMouseDown={() => setIsResizing('split')}
+                />
+              )}
+
+              {/* Bottom Section: Details/Edit */}
+              {selectedMarkerId && (
+                <div
+                  className="w-full overflow-y-auto p-6 bg-gray-50/50 flex-shrink-0"
+                  style={{
+                    height: `${(1 - listSplitRatio) * 100}%`,
+                    transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
+                  }}
+                >
+                  {!selectedMarker ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      {t('mapManagement.selectMarker')}
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Header */}
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-xl font-bold text-gray-900">
+                            {isDefaultMarker
+                              ? selectedMarker.id === -1
+                                ? 'Assigned Booth Default'
+                                : 'Unassigned Booth Default'
+                              : selectedMarker.glyph || `Marker ${selectedMarker.id}`}
+                          </h2>
+                          <p className="text-sm text-gray-600">
+                            ID: {selectedMarker.id}
+                            {isDefaultMarker && ' ⚙️ Global Default for Booth Markers'}
+                            {isSpecialMarker && ' (Special Marker)'}
+                            {isBoothMarker &&
+                              ' (Booth - Content managed via Companies/Assignments)'}
+                          </p>
+                        </div>
+                        {!editMode && !isReadOnly && (
+                          <button
+                            onClick={handleStartEdit}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                          >
+                            Edit
+                          </button>
+                        )}
+                      </div>
+
+                      {editMode ? (
+                        <EditPanel
+                          marker={editData}
+                          isDefaultMarker={isDefaultMarker}
+                          isSpecialMarker={isSpecialMarker}
+                          isBoothMarker={isBoothMarker}
+                          getDefaultColorName={getDefaultColorName}
+                          onChange={handleFieldChange}
+                          onSave={handleSave}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : (
+                        <ViewPanel
+                          marker={selectedMarker}
+                          isSpecialMarker={isSpecialMarker}
+                          isDefaultMarker={isDefaultMarker}
+                          isBoothMarker={isBoothMarker}
+                          getDefaultColorName={getDefaultColorName}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
           {/* CENTER: Map View */}
-          <div className="flex-1 relative bg-gray-50">
+          <div className="flex-1 relative bg-gray-50 flex flex-col">
             <EventMap
               // This is the admin map page; always render the admin-sized map even
               // for read-only event managers so the app sidebar and admin layout
@@ -708,6 +972,8 @@ export default function MapManagement({
               onMarkerSelect={(id) => {
                 setSelectedMarkerId(id);
                 if (!isReadOnly) setEditMode(false);
+                // Auto-open left sidebar when inspecting a marker
+                if (!isLeftSidebarOpen) setIsLeftSidebarOpen(true);
               }}
               onMarkerDrag={(id, newLat, newLng) => {
                 // Update coordinates in edit data when marker is dragged
@@ -727,64 +993,28 @@ export default function MapManagement({
             />
           </div>
 
-          {/* RIGHT: Detail/Edit Panel */}
+          {/* RIGHT: Subscriptions Panel */}
           {!isReadOnly && (
-            <div className="w-96 border-l border-gray-200 overflow-y-auto p-6 flex-shrink-0">
-              {!selectedMarker ? (
-                <div className="flex items-center justify-center h-full text-gray-500">
-                  {t('mapManagement.selectMarker')}
-                </div>
-              ) : (
-                <div>
-                  {/* Header */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">
-                        {isDefaultMarker
-                          ? selectedMarker.id === -1
-                            ? 'Assigned Booth Default'
-                            : 'Unassigned Booth Default'
-                          : selectedMarker.glyph || `Marker ${selectedMarker.id}`}
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        ID: {selectedMarker.id}
-                        {isDefaultMarker && ' ⚙️ Global Default for Booth Markers'}
-                        {isSpecialMarker && ' (Special Marker)'}
-                        {isBoothMarker && ' (Booth - Content managed via Companies/Assignments)'}
-                      </p>
-                    </div>
-                    {!editMode && !isReadOnly && (
-                      <button
-                        onClick={handleStartEdit}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </div>
+            <div
+              className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative ${
+                !isRightSidebarOpen && 'border-l-0'
+              }`}
+              style={{
+                width: isRightSidebarOpen ? rightSidebarWidth : 0,
+                transition: isResizing === 'right' ? 'none' : 'width 0.3s ease-in-out',
+              }}
+            >
+              {/* Resize Handle (Left Edge) */}
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
+                onMouseDown={() => setIsResizing('right')}
+              />
 
-                  {editMode ? (
-                    <EditPanel
-                      marker={editData}
-                      isDefaultMarker={isDefaultMarker}
-                      isSpecialMarker={isSpecialMarker}
-                      isBoothMarker={isBoothMarker}
-                      getDefaultColorName={getDefaultColorName}
-                      onChange={handleFieldChange}
-                      onSave={handleSave}
-                      onCancel={handleCancelEdit}
-                    />
-                  ) : (
-                    <ViewPanel
-                      marker={selectedMarker}
-                      isSpecialMarker={isSpecialMarker}
-                      isDefaultMarker={isDefaultMarker}
-                      isBoothMarker={isBoothMarker}
-                      getDefaultColorName={getDefaultColorName}
-                    />
-                  )}
-                </div>
-              )}
+              <div className="p-4 w-full h-full flex items-center justify-center text-gray-400 text-sm text-center">
+                Subscriptions List
+                <br />
+                (Coming Soon)
+              </div>
             </div>
           )}
         </div>

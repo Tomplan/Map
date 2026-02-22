@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
@@ -91,7 +92,11 @@ jest.mock('../../../contexts/DialogContext', () => ({
 import CompaniesTab from '../CompaniesTab';
 
 test('organization row shows manager-only (private) contact/phone/email in Manager tab', async () => {
-  render(<CompaniesTab />);
+  render(
+    <MemoryRouter initialEntries={['/companies']}>
+      <CompaniesTab />
+    </MemoryRouter>,
+  );
 
   // Switch to Manager/Private Info tab
   await userEvent.click(screen.getByText('Private Info'));

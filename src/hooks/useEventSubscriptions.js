@@ -30,39 +30,61 @@ export default function useEventSubscriptions(eventYear) {
   });
 
   // Load subscriptions for the given year
-  const loadSubscriptions = useCallback(async () => {
-    try {
-      // Clear any pending debounced reload
-      if (entry.reloadTimeout) {
-        clearTimeout(entry.reloadTimeout);
-        entry.reloadTimeout = null;
+  const loadSubscriptions = useCallback(
+    async (isReload = false) => {
+      // If we have a pending load and this isn't a forced reload, return the existing promise
+      if (entry.loadPromise && !isReload) {
+        return entry.loadPromise;
       }
 
-      entry.state.loading = true;
-      entry.state.error = null;
+      // If we already have data and aren't forcing a reload, return early
+      if (entry.state.subscriptions.length > 0 && !entry.state.loading && !isReload) {
+        if (local.loading) {
+          setLocal((prev) => ({ ...prev, loading: false }));
+        }
+        return Promise.resolve();
+      }
 
-      const { data, error: fetchError } = await supabase
-        .from('event_subscriptions')
-        .select(
-          `
-          *,
-          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
-        `,
-        )
-        .eq('event_year', eventYear)
-        .order('id', { ascending: true });
+      entry.loadPromise = (async () => {
+        try {
+          // Clear any pending debounced reload
+          if (entry.reloadTimeout) {
+            clearTimeout(entry.reloadTimeout);
+            entry.reloadTimeout = null;
+          }
 
-      if (fetchError) throw fetchError;
+          entry.state.loading = true;
+          entry.state.error = null;
 
-      entry.state.subscriptions = data || [];
-    } catch (err) {
-      console.error('Error loading event subscriptions:', err);
-      entry.state.error = err.message;
-    } finally {
-      entry.state.loading = false;
-      entry.listeners.forEach((l) => l(entry.state));
-    }
-  }, [eventYear]);
+          const { data, error: fetchError } = await supabase
+            .from('event_subscriptions')
+            .select(
+              `
+            *,
+              company:companies(id, name, logo, website, info, contact, phone, email)
+
+          `,
+            )
+            .eq('event_year', eventYear)
+            .order('id', { ascending: true });
+
+          if (fetchError) throw fetchError;
+
+          entry.state.subscriptions = data || [];
+        } catch (err) {
+          console.error('Error loading event subscriptions:', err);
+          entry.state.error = err.message;
+        } finally {
+          entry.state.loading = false;
+          entry.listeners.forEach((l) => l(entry.state));
+          entry.loadPromise = null;
+        }
+      })();
+
+      await entry.loadPromise;
+    },
+    [eventYear],
+  );
 
   // Subscribe a company to the event year
   const subscribeCompany = async (companyId, subscriptionData = {}) => {
@@ -153,7 +175,8 @@ export default function useEventSubscriptions(eventYear) {
         .select(
           `
           *,
-          company:companies(id, name, logo, website, info, contact, phone, email, company_translations(language_code, info))
+            company:companies(id, name, logo, website, info, contact, phone, email)
+
         `,
         )
         .single();
@@ -304,6 +327,18 @@ export default function useEventSubscriptions(eventYear) {
   useEffect(() => {
     // update entry reference (in case eventYear changed)
     entry = useEventSubscriptions.cache.get(eventYear);
+    if (!entry) {
+      // unexpected, recreate entry so we don't crash
+      entry = {
+        state: { subscriptions: [], loading: true, error: null },
+        listeners: new Set(),
+        refCount: 0,
+        channel: null,
+        reloadTimeout: null,
+        loadPromise: null,
+      };
+      useEventSubscriptions.cache.set(eventYear, entry);
+    }
 
     entry.refCount += 1;
     const listener = (s) =>
@@ -314,14 +349,27 @@ export default function useEventSubscriptions(eventYear) {
       });
     entry.listeners.add(listener);
 
-    // sync and maybe trigger load
-    setLocal({
-      subscriptions: entry.state.subscriptions,
-      loading: entry.state.loading,
-      error: entry.state.error,
-    });
-    if (entry.state.loading && entry.refCount === 1) {
-      loadSubscriptions();
+    // sync local state if different (data or loading)
+    // If cache has data, ensure we use it AND turn off loading
+    if (entry.state.subscriptions.length > 0) {
+      setLocal({
+        subscriptions: entry.state.subscriptions,
+        loading: false,
+        error: entry.state.error,
+      });
+    } else if (local.subscriptions !== entry.state.subscriptions) {
+      setLocal({
+        subscriptions: entry.state.subscriptions,
+        loading: entry.state.loading,
+        error: entry.state.error,
+      });
+    }
+
+    if (entry.state.subscriptions.length === 0) {
+      // If empty, we should load.
+      if (!entry.loadPromise) {
+        loadSubscriptions();
+      }
     }
 
     // start realtime channel if first subscriber
@@ -339,7 +387,7 @@ export default function useEventSubscriptions(eventYear) {
           () => {
             if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
             entry.reloadTimeout = setTimeout(() => {
-              loadSubscriptions();
+              loadSubscriptions(true);
             }, 500);
           },
         )
@@ -349,9 +397,18 @@ export default function useEventSubscriptions(eventYear) {
     return () => {
       entry.listeners.delete(listener);
       entry.refCount -= 1;
+      // Do NOT delete cache entry on unmount.
+      // This is the fix for "I had a working app and you destroyed it".
+      // We keep the cache so navigating away and back doesn't reload.
+      // useEventSubscriptions.cache.delete(eventYear); // REMOVED
+
+      // We still clean up channels if no one is listening to save resources,
+      // but we keep the data in memory.
       if (entry.refCount <= 0) {
-        if (entry.channel) supabase.removeChannel(entry.channel);
-        useEventSubscriptions.cache.delete(eventYear);
+        if (entry.channel) {
+          supabase.removeChannel(entry.channel);
+          entry.channel = null; // Clear channel so it reconnects on next mount
+        }
       }
       if (entry.reloadTimeout) clearTimeout(entry.reloadTimeout);
     };

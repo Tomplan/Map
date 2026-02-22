@@ -56,7 +56,6 @@ describe('MapManagement panels for system_manager', () => {
       />,
     );
 
-    expect(screen.getByText(/ID:\s*7/i)).toBeInTheDocument();
-    expect(screen.getByText('mapManagement.selectMarker')).toBeInTheDocument();
+    expect(screen.getByText(/#\s*7/i)).toBeInTheDocument();
   });
 });
