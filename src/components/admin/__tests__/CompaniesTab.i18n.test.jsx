@@ -71,17 +71,21 @@ jest.mock('../../../hooks/useCompanyTranslations', () => () => ({
   translations: {},
   getTranslation: () => '',
 }));
+const mockGetCompanyCategories = async () => [];
+const mockGetAllCompanyCategories = async (ids) => {
+  const out = {};
+  ids.forEach((id) => {
+    out[id] = [];
+  });
+  return out;
+};
+const mockAssignCategories = jest.fn();
+
 jest.mock('../../../hooks/useCategories', () => () => ({
   categories: [],
-  getCompanyCategories: async () => [],
-  getAllCompanyCategories: async (ids) => {
-    const out = {};
-    ids.forEach((id) => {
-      out[id] = [];
-    });
-    return out;
-  },
-  assignCategoriesToCompany: jest.fn(),
+  getCompanyCategories: mockGetCompanyCategories,
+  getAllCompanyCategories: mockGetAllCompanyCategories,
+  assignCategoriesToCompany: mockAssignCategories,
 }));
 jest.mock('../../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: '' }),

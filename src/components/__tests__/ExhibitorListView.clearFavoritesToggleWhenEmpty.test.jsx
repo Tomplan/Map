@@ -5,10 +5,11 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k) => k, i18n: { language: 'en' } }),
 }));
+const mockGetAllCompanyCategories = async () => ({});
 jest.mock('../../hooks/useCategories', () => () => ({
   categories: [],
   loading: false,
-  getAllCompanyCategories: async () => ({}),
+  getAllCompanyCategories: mockGetAllCompanyCategories,
 }));
 jest.mock('../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: null }),

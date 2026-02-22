@@ -2,10 +2,11 @@ import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 
 // Lightweight mocks used across the repo
+const mockGetAllCompanyCategories = async () => ({});
 jest.mock('../../hooks/useCategories', () => () => ({
   categories: [],
   loading: false,
-  getAllCompanyCategories: async () => ({}),
+  getAllCompanyCategories: mockGetAllCompanyCategories,
 }));
 jest.mock('../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: null }),
