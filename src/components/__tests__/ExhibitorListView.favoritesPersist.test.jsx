@@ -19,6 +19,11 @@ jest.mock('../../contexts/FavoritesContext', () => ({
     isFavorite: (id) => id === 100,
     toggleFavorite: jest.fn(),
   }),
+  useOptionalFavoritesContext: () => ({
+    favorites: [100],
+    isFavorite: (id) => id === 100,
+    toggleFavorite: jest.fn(),
+  }),
 }));
 
 // Keep translation simple - return key

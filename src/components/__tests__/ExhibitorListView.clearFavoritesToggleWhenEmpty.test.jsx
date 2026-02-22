@@ -28,6 +28,11 @@ jest.mock('../../contexts/FavoritesContext', () => ({
     isFavorite: () => false,
     toggleFavorite: jest.fn(),
   }),
+  useOptionalFavoritesContext: () => ({
+    favorites: [],
+    isFavorite: () => false,
+    toggleFavorite: jest.fn(),
+  }),
 }));
 
 import ExhibitorListView from '../ExhibitorListView';

@@ -22,6 +22,7 @@ jest.mock('../../contexts/OrganizationLogoContext', () => ({
 }));
 jest.mock('../../contexts/FavoritesContext', () => ({
   useFavoritesContext: () => ({ isFavorite: () => false }),
+  useOptionalFavoritesContext: () => ({ isFavorite: () => false }),
 }));
 jest.mock('../../hooks/useEventSubscriptions', () => () => ({ subscriptions: [] }));
 jest.mock('../../hooks/useAssignments', () => () => ({

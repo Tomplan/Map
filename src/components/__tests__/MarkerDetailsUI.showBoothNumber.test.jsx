@@ -26,6 +26,7 @@ jest.mock('../../hooks/useCategories', () => ({
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ i18n: { language: 'en' } }) }));
 jest.mock('../../contexts/FavoritesContext', () => ({
   useFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),
+  useOptionalFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),
 }));
 
 import { MarkerUI } from '../MarkerDetailsUI';
