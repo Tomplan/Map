@@ -32,7 +32,9 @@ jest.mock('../../supabaseClient', () => {
   return {
     supabase: {
       from,
-      auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }) },
+      auth: {
+        getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }),
+      },
     },
     // expose mocks for assertions
     __mocks__: { insertSelect, upsertMock, categoriesSelect },

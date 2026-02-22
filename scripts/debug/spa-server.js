@@ -2,7 +2,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-function startServer({ host = '127.0.0.1', port = 5173, root = path.resolve(__dirname, '..', 'dist') } = {}) {
+function startServer({
+  host = '127.0.0.1',
+  port = 5173,
+  root = path.resolve(__dirname, '..', 'dist'),
+} = {}) {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const urlPath = decodeURIComponent(req.url.split('?')[0]);
