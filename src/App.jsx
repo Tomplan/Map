@@ -116,7 +116,14 @@ function AppContent() {
   const publicYear = resolvePublicYear(selectedYear, orgSettings);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.debug('[App] selectedYear ->', selectedYear, 'org.public_default_year ->', orgSettings?.public_default_year, 'publicYear ->', publicYear);
+    console.debug(
+      '[App] selectedYear ->',
+      selectedYear,
+      'org.public_default_year ->',
+      orgSettings?.public_default_year,
+      'publicYear ->',
+      publicYear,
+    );
   }
 
   // Fetch marker data from Supabase filtered by publicYear

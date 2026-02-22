@@ -2,7 +2,14 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 // Mock i18n used by translateSafe
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => { const map = { 'languages.dutch': 'Nederlands', 'languages.english': 'English' }; return map[k] || k; } }) }));
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (k) => {
+      const map = { 'languages.dutch': 'Nederlands', 'languages.english': 'English' };
+      return map[k] || k;
+    },
+  }),
+}));
 
 // Mock the useCompanyMutations hook
 jest.mock('../../../hooks/useCompanyMutations', () => ({

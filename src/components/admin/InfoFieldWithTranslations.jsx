@@ -74,9 +74,7 @@ export default function InfoFieldWithTranslations({
         })}
         disabled={isSaving}
       />
-      {isSaving && (
-        <span className="text-xs text-gray-500 italic">{t('companies.saving')}</span>
-      )}
+      {isSaving && <span className="text-xs text-gray-500 italic">{t('companies.saving')}</span>}
     </div>
   );
 }
