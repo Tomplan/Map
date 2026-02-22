@@ -85,7 +85,12 @@ const createIcon = (
   );
 
   // Calculate size based on zoom (disabled in admin view)
-  const iconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
+  const baseIconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
+  let iconSize = baseIconSize;
+  
+  if (isActive) {
+    iconSize = [baseIconSize[0] * 1.5, baseIconSize[1] * 1.5];
+  }
 
   return createMarkerIcon({
     className,

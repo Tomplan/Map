@@ -4,7 +4,10 @@ import { supabase } from '../supabaseClient';
 /**
  * Hook to manage Assignments (Company-to-Marker mappings per year)
  */
-export default function useAssignments(eventYear = new Date().getFullYear()) {
+export default function useAssignments(eventYearInput = new Date().getFullYear()) {
+  // Ensure we always work with a number to prevent cache fragmentation
+  const eventYear = parseInt(eventYearInput, 10);
+
   // shared cache keyed by year
   if (!useAssignments.cache) useAssignments.cache = new Map();
   let entry = useAssignments.cache.get(eventYear);
@@ -122,7 +125,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (insertError) throw insertError;
 
-        await loadAssignments();
+        await loadAssignments(true);
         return { data, error: null };
       } catch (err) {
         console.error('Error creating assignment:', err);
@@ -151,7 +154,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (updateError) throw updateError;
 
-        await loadAssignments();
+        await loadAssignments(true);
         return { data, error: null };
       } catch (err) {
         console.error('Error updating assignment:', err);
@@ -169,7 +172,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (deleteError) throw deleteError;
 
-        await loadAssignments();
+        await loadAssignments(true);
         return { error: null };
       } catch (err) {
         console.error('Error deleting assignment:', err);
@@ -204,7 +207,7 @@ export default function useAssignments(eventYear = new Date().getFullYear()) {
 
         if (deleteError) throw deleteError;
 
-        await loadAssignments();
+        await loadAssignments(true);
         return { error: null };
       } catch (err) {
         console.error('Error unassigning company:', err);
