@@ -130,3 +130,13 @@ h1 {
     background-color: #f9f9f9;
   }
 }
+
+/* Active marker highlight (e.g. from subscription selection) */
+
+/* Active marker highlight (e.g. from subscription selection) */
+/* Apply filter only, avoid transform which breaks Leaflet positioning */
+.leaflet-marker-icon.marker-active {
+  filter: drop-shadow(0 0 8px #ffd700) brightness(1.2) !important;
+  z-index: 9999 !important;
+  /* Do not use transform: scale() here as it overrides Leaflet positioning */
+}
