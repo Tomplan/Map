@@ -307,7 +307,21 @@ export default function AssignmentsTab({ selectedYear }) {
     const assignment = getAssignment(companyId, markerId);
 
     if (assignment) {
-      // Unassign
+      // Unassign - Check with confirmation
+      const company = subscribedCompanies.find((c) => c.id === companyId);
+      const companyName = company?.name || 'this company';
+      const marker = sortedMarkers.find((m) => m.id === markerId);
+      const boothLabel = marker?.glyph || markerId;
+
+      const confirmed = await confirm({
+        title: 'Remove Assignment',
+        message: `Are you sure you want to unassign ${companyName} from Booth ${boothLabel}?`,
+        confirmText: 'Unassign',
+        variant: 'destructive',
+      });
+
+      if (!confirmed) return;
+
       const { error } = await unassignCompanyFromMarker(markerId, companyId);
       if (error) {
         toastError(`Error removing assignment: ${error}`);

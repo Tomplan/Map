@@ -633,6 +633,10 @@
     },
     "subscriptions": {
       "searchPlaceholder": "Search subscribed companies...",
+      "contactInformation": "Contact Information",
+      "eventLogistics": "Event Logistics",
+      "additionalInfo": "Additional Information",
+      "meals": "Meals",
       "booths": "Booths",
       "company": "Company",
       "contact": "Contact",

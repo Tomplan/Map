@@ -39,7 +39,7 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
     return () => {
       cancelled = true;
     };
-  }, [organizationLogo]);
+  }, [organizationLogo, visibleLogo]);
 
   const responsiveSources = useMemo(
     () =>

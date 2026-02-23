@@ -22,3 +22,10 @@ export function useFavoritesContext() {
   }
   return context;
 }
+
+/**
+ * useOptionalFavoritesContext - Hook to access favorites context gracefully (returns null if not provided)
+ */
+export function useOptionalFavoritesContext() {
+  return useContext(FavoritesContext);
+}

@@ -115,17 +115,6 @@ function AppContent() {
   // otherwise fall back to admin's selectedYear
   const publicYear = resolvePublicYear(selectedYear, orgSettings);
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug(
-      '[App] selectedYear ->',
-      selectedYear,
-      'org.public_default_year ->',
-      orgSettings?.public_default_year,
-      'publicYear ->',
-      publicYear,
-    );
-  }
-
   // Fetch marker data from Supabase filtered by publicYear
   // This ensures both public views AND admin views show the same event year data
   const {
@@ -134,9 +123,6 @@ function AppContent() {
     copyFromPreviousYear: copyMarkers,
   } = useEventMarkers(publicYear);
 
-  if (process.env.NODE_ENV !== 'production') {
-    console.debug('[App] useEventMarkers invoked with publicYear', publicYear);
-  }
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, publicYear);
 
@@ -199,7 +185,7 @@ function AppContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [t]);
 
   // Track Supabase auth state
   const [user, setUser] = useState(null);

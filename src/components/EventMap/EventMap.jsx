@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from 'react';
 import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -9,7 +9,7 @@ import EventClusterMarkers from '../EventClusterMarkers';
 const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
-import { useFavoritesContext } from '../../contexts/FavoritesContext';
+import { useOptionalFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
@@ -76,14 +76,12 @@ function EventMap({
   const [zoomAnimating, setZoomAnimating] = useState(null);
 
   // Favorites context (only available in visitor view)
-  let favoritesContext = null;
-  try {
-    favoritesContext = useFavoritesContext();
-  } catch (e) {
-    // Context not available in admin view, ignore
-  }
-  const favorites = favoritesContext?.favorites || [];
-  const isFavorite = favoritesContext?.isFavorite || (() => false);
+  const favoritesContext = useOptionalFavoritesContext();
+
+  const fallbackFavorites = useMemo(() => [], []);
+  const fallbackIsFavorite = useCallback(() => false, []);
+  const favorites = favoritesContext?.favorites || fallbackFavorites;
+  const isFavorite = favoritesContext?.isFavorite || fallbackIsFavorite;
 
   const { t } = useTranslation();
 
@@ -228,7 +226,14 @@ function EventMap({
       updateMarker,
       rectangleLayerRef,
     });
-  }, [mapInstance, safeMarkers, isAdminView, showRectanglesAndHandles, updateMarker]);
+  }, [
+    mapInstance,
+    safeMarkers,
+    isAdminView,
+    showRectanglesAndHandles,
+    updateMarker,
+    MAP_CONFIG.RECTANGLE_SIZE,
+  ]);
 
   // Setup search layer and populate it with markers
   useEffect(() => {
@@ -257,6 +262,8 @@ function EventMap({
 
   // Attach EventMap-specific behavior to the centralized search control:
   // - Set focusMarkerId so the UI opens the marker popup after the search fly-to.
+  const searchControlReady = Boolean(searchControlRef && searchControlRef.current);
+
   useEffect(() => {
     const control = searchControlRef && searchControlRef.current;
     if (!mapInstance || !searchLayer || !control) return;
@@ -282,13 +289,7 @@ function EventMap({
     return () => {
       control.off('search:locationfound', handleFound);
     };
-  }, [
-    mapInstance,
-    searchLayer,
-    /* track when control instance becomes available */ Boolean(
-      searchControlRef && searchControlRef.current,
-    ),
-  ]);
+  }, [mapInstance, searchLayer, searchControlRef, searchControlReady]);
 
   // Setup minimap control
   useEffect(() => {
@@ -332,7 +333,16 @@ function EventMap({
       miniMapControl.addTo(mapInstance);
       mapInstance._minimapControl = miniMapControl;
     }
-  }, [mapInstance]);
+  }, [
+    mapInstance,
+    MAP_CONFIG.DEFAULT_POSITION,
+    MAP_CONFIG.MINIMAP.AIMING_COLOR,
+    MAP_CONFIG.MINIMAP.HEIGHT,
+    MAP_CONFIG.MINIMAP.SHADOW_COLOR,
+    MAP_CONFIG.MINIMAP.WIDTH,
+    MAP_CONFIG.MINIMAP.ZOOM_LEVEL,
+    MAP_LAYERS,
+  ]);
 
   // Browser print is now initialized synchronously in handleMapCreated
   // to ensure printControl is available before onMapReady is called
@@ -362,7 +372,7 @@ function EventMap({
         setSearchParams({}, { replace: true });
       }
     }
-  }, [mapInstance, safeMarkers, searchParams, setSearchParams]);
+  }, [mapInstance, safeMarkers, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
 
   const handleMapCreated = async (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
@@ -935,7 +945,7 @@ function EventMap({
             height: isAdminView ? '100%' : '100svh',
             minHeight: isAdminView ? '400px' : '100svh',
           }}
-          className="focus:outline-none focus:ring-2 focus:ring-primary"
+          className={`focus:outline-none focus:ring-2 focus:ring-primary ${isAdminView ? 'admin-map-view' : ''}`}
           whenReady={handleMapCreated}
           attributionControl={false}
         >

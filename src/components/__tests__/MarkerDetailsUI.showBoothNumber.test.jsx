@@ -20,12 +20,14 @@ jest.mock('../../contexts/OrganizationLogoContext', () => ({
 jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({
   useTranslatedCompanyInfo: () => 'Some translated info',
 }));
+const mockGetCompanyCategories = async () => [];
 jest.mock('../../hooks/useCategories', () => ({
-  useCategories: () => ({ getCompanyCategories: async () => [] }),
+  useCategories: () => ({ getCompanyCategories: mockGetCompanyCategories }),
 }));
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ i18n: { language: 'en' } }) }));
 jest.mock('../../contexts/FavoritesContext', () => ({
   useFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),
+  useOptionalFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),
 }));
 
 import { MarkerUI } from '../MarkerDetailsUI';

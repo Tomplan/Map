@@ -25,6 +25,8 @@ import EventMap from '../EventMap/EventMap';
 import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
+import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useAssignments from '../../hooks/useAssignments';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -56,14 +58,85 @@ export default function MapManagement({
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
 
   // Collapse state for sidebars
-  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true); // Default to open for Markers
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false); // Default to closed for Subscriptions
+  const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false); // Default to closed for Markers
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true); // Default to open for Subscriptions
 
   // Resizing state
   const [leftSidebarWidth, setLeftSidebarWidth] = useState(384); // Default w-96 (384px)
-  const [rightSidebarWidth, setRightSidebarWidth] = useState(256); // Default w-64 (256px)
-  const [listSplitRatio, setListSplitRatio] = useState(0.5); // Default 50% split
-  const [isResizing, setIsResizing] = useState(null); // 'left', 'right', 'split'
+  const [rightSidebarWidth, setRightSidebarWidth] = useState(384); // Default w-96 (384px)
+  const [listSplitRatio, setListSplitRatio] = useState(0.5); // Default 50% split (Left)
+  const [rightListSplitRatio, setRightListSplitRatio] = useState(0.4); // Default 40% split for List (60% for Details)
+  const [isResizing, setIsResizing] = useState(null); // 'left', 'right', 'split-left', 'split-right'
+
+  // Subscriptions state
+  const { subscriptions: rawSubscriptions, loading: loadingSubscriptions } =
+    useEventSubscriptions(selectedYear);
+  const { assignments } = useAssignments(selectedYear);
+  const [subscriptionSearch, setSubscriptionSearch] = useState('');
+  const [subscriptionSortBy, setSubscriptionSortBy] = useState('assigned'); // name, booths, assigned
+  const [subscriptionSortDirection, setSubscriptionSortDirection] = useState('asc'); // asc, desc
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
+
+  // Filter and Sort subscriptions
+  const filteredSubscriptions = useMemo(() => {
+    if (!rawSubscriptions) return [];
+    
+    // Create a shallow copy to execute sort
+    let result = [...rawSubscriptions];
+    
+    if (subscriptionSearch) {
+      const lower = subscriptionSearch.toLowerCase();
+      result = result.filter((sub) => {
+        const coName = sub.company?.name || '';
+        return coName.toLowerCase().includes(lower);
+      });
+    }
+
+    // Then Sort
+    return result.sort((a, b) => {
+      let valA, valB;
+
+      switch (subscriptionSortBy) {
+        case 'name':
+          valA = a.company?.name || '';
+          valB = b.company?.name || '';
+          return subscriptionSortDirection === 'asc' 
+            ? ((valA || '').localeCompare(valB || '')) 
+            : ((valB || '').localeCompare(valA || ''));
+        
+        case 'booths':
+          valA = a.booth_count || 0;
+          valB = b.booth_count || 0;
+          return subscriptionSortDirection === 'asc' ? valA - valB : valB - valA;
+          
+        case 'assigned': {
+          const getBoothId = (sub) => {
+            const assignment = assignments?.find((as) => as.company_id === sub.company?.id);
+            // If assigned, return marker ID. If unassigned, we want it FIRST.
+            // Using -1 for unassigned ensures it comes before marker IDs (which start at >0).
+            return assignment ? (assignment.marker_id || 999999) : -1;
+          };
+          
+          const idA = getBoothId(a);
+          const idB = getBoothId(b);
+
+          if (idA === idB) {
+            // Secondary sort by name
+            return (a.company?.name || '').localeCompare(b.company?.name || '');
+          }
+
+          return subscriptionSortDirection === 'asc' 
+            ? idA - idB 
+            : idB - idA;
+        }
+      }
+    });
+  }, [rawSubscriptions, assignments, subscriptionSearch, subscriptionSortBy, subscriptionSortDirection]);
+
+  const selectedSubscription = useMemo(
+    () => rawSubscriptions?.find((s) => s.id === selectedSubscriptionId),
+    [rawSubscriptions, selectedSubscriptionId],
+  );
 
   // Handle global mouse events for resizing
   useEffect(() => {
@@ -77,7 +150,7 @@ export default function MapManagement({
       } else if (isResizing === 'right') {
         const newWidth = Math.max(200, Math.min(600, window.innerWidth - e.clientX));
         setRightSidebarWidth(newWidth);
-      } else if (isResizing === 'split') {
+      } else if (isResizing === 'split-left') {
         // Approx header height + padding offset
         const containerTop = 144;
         const containerHeight = window.innerHeight - containerTop;
@@ -85,6 +158,13 @@ export default function MapManagement({
         const rawRatio = relativeY / containerHeight;
         const newRatio = Math.max(0.2, Math.min(0.8, rawRatio));
         setListSplitRatio(newRatio);
+      } else if (isResizing === 'split-right') {
+        const containerTop = 144;
+        const containerHeight = window.innerHeight - containerTop;
+        const relativeY = e.clientY - containerTop;
+        const rawRatio = relativeY / containerHeight;
+        const newRatio = Math.max(0.2, Math.min(0.8, rawRatio));
+        setRightListSplitRatio(newRatio);
       }
     };
 
@@ -100,7 +180,7 @@ export default function MapManagement({
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
       document.body.style.userSelect = 'none'; // Prevent selection
-      document.body.style.cursor = isResizing === 'split' ? 'row-resize' : 'col-resize';
+      document.body.style.cursor = isResizing.startsWith('split') ? 'row-resize' : 'col-resize';
     }
 
     return () => {
@@ -203,8 +283,21 @@ export default function MapManagement({
   const handleSelectMarker = (marker) => {
     if (selectedMarkerId === marker.id) {
       setSelectedMarkerId(null);
+      setSelectedSubscriptionId(null);
     } else {
       setSelectedMarkerId(marker.id);
+      // Sync subscription selection
+      const assignment = assignments?.find((a) => a.marker_id === marker.id);
+      if (assignment) {
+        const sub = rawSubscriptions?.find((s) => s.company_id === assignment.company_id);
+        if (sub) {
+          setSelectedSubscriptionId(sub.id);
+        } else {
+          setSelectedSubscriptionId(null);
+        }
+      } else {
+        setSelectedSubscriptionId(null);
+      }
     }
     setEditMode(false);
   };
@@ -603,9 +696,9 @@ export default function MapManagement({
   return (
     <ProtectedSection requiredRole={['super_admin', 'system_manager', 'event_manager']}>
       <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200">
           {/* Header with year info and actions */}
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex justify-between items-center mb-0">
             <div className="flex items-center gap-3">
               <h1 className="text-xl font-semibold text-gray-900">
                 {isReadOnly ? 'Event Map Viewer' : t('mapManagement.title')}
@@ -718,37 +811,37 @@ export default function MapManagement({
 
           {/* Search and Sort (hidden for read-only event managers) */}
           {!isReadOnly && (
-            <div className="flex gap-4 items-center">
+            <div className="flex justify-between items-center w-full">
               {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
               <button
                 onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-                className={`p-2 rounded-lg border transition-colors ${
+                className={`p-1 rounded-lg border transition-colors ${
                   isLeftSidebarOpen
                     ? 'bg-blue-50 border-blue-200 text-blue-600'
                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                 }`}
                 title={isLeftSidebarOpen ? 'Hide Markers & Details' : 'Show Markers & Details'}
               >
-                <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={1} />
+                <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
               </button>
 
               {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
               <button
                 onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className={`p-2 rounded-lg border transition-colors ${
+                className={`p-1 rounded-lg border transition-colors ${
                   isRightSidebarOpen
                     ? 'bg-blue-50 border-blue-200 text-blue-600'
                     : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
                 }`}
                 title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
               >
-                <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={1} />
+                <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={0.8} />
               </button>
             </div>
           )}
         </div>
 
-        <div className="flex h-[calc(100vh-150px)] relative">
+        <div className="flex h-[calc(100vh-120px)] relative">
           {/* LEFT: Markers & Details Panel */}
           {!isReadOnly && (
             <div
@@ -880,7 +973,7 @@ export default function MapManagement({
               {selectedMarkerId && (
                 <div
                   className="w-full h-1 cursor-row-resize bg-gray-200 hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
-                  onMouseDown={() => setIsResizing('split')}
+                  onMouseDown={() => setIsResizing('split-left')}
                 />
               )}
 
@@ -974,6 +1067,25 @@ export default function MapManagement({
                 if (!isReadOnly) setEditMode(false);
                 // Auto-open left sidebar when inspecting a marker
                 if (!isLeftSidebarOpen) setIsLeftSidebarOpen(true);
+                
+                // Sync with subscription list
+                if (id) {
+                  const assignment = assignments?.find((a) => a.marker_id === id);
+                  if (assignment) {
+                    const sub = rawSubscriptions?.find(
+                      (s) => s.company_id === assignment.company_id,
+                    );
+                    if (sub) {
+                      setSelectedSubscriptionId(sub.id);
+                    } else {
+                      setSelectedSubscriptionId(null);
+                    }
+                  } else {
+                    setSelectedSubscriptionId(null);
+                  }
+                } else {
+                  setSelectedSubscriptionId(null);
+                }
               }}
               onMarkerDrag={(id, newLat, newLng) => {
                 // Update coordinates in edit data when marker is dragged
@@ -996,7 +1108,7 @@ export default function MapManagement({
           {/* RIGHT: Subscriptions Panel */}
           {!isReadOnly && (
             <div
-              className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative ${
+              className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative flex flex-col ${
                 !isRightSidebarOpen && 'border-l-0'
               }`}
               style={{
@@ -1010,10 +1122,258 @@ export default function MapManagement({
                 onMouseDown={() => setIsResizing('right')}
               />
 
-              <div className="p-4 w-full h-full flex items-center justify-center text-gray-400 text-sm text-center">
-                Subscriptions List
-                <br />
-                (Coming Soon)
+              {/* Title Header */}
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
+                <span>Subscription List</span>
+                <span className="text-[10px] font-normal">
+                  {(() => {
+                    if (!rawSubscriptions || !assignments) return '0 / 0';
+                    // Count how many subscriptions have at least one assignment
+                    const assignedCount = rawSubscriptions.filter((sub) =>
+                      assignments.some((a) => a.company_id === sub.company_id),
+                    ).length;
+                    return `${assignedCount} / ${rawSubscriptions.length}`;
+                  })()}
+                </span>
+              </div>
+
+              {/* Search Header */}
+              <div className="p-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-3 flex-shrink-0">
+                <div className="relative">
+                  <Icon
+                    path={mdiMagnify}
+                    size={0.8}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search company..."
+                    value={subscriptionSearch}
+                    onChange={(e) => setSubscriptionSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Sort */}
+                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                  <select
+                    value={subscriptionSortBy}
+                    onChange={(e) => setSubscriptionSortBy(e.target.value)}
+                    className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
+                    aria-label="Sort subscriptions by"
+                  >
+                    <option value="name">Sort by Company</option>
+                    <option value="booths">Sort by Booths</option>
+                    <option value="assigned">Sort by Assigned</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSubscriptionSortDirection(
+                        subscriptionSortDirection === 'asc' ? 'desc' : 'asc',
+                      )
+                    }
+                    aria-label={`Toggle sort direction to ${
+                      subscriptionSortDirection === 'asc' ? 'descending' : 'ascending'
+                    }`}
+                    className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
+                  >
+                    <Icon
+                      path={subscriptionSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.7}
+                    />
+                    <span className="sr-only">Sort</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* List and Details Container */}
+              <div className="flex-1 flex flex-col min-h-0 relative">
+                {/* List */}
+                <div
+                  className="overflow-y-auto w-full"
+                  style={{
+                    height: selectedSubscriptionId ? `${rightListSplitRatio * 100}%` : '100%',
+                    transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
+                  }}
+                >
+                  {loadingSubscriptions ? (
+                    <div className="p-4 text-center text-gray-400 text-sm">Loading...</div>
+                  ) : filteredSubscriptions?.length === 0 ? (
+                    <div className="p-4 text-center text-gray-400 text-sm">No subscriptions</div>
+                  ) : (
+                    filteredSubscriptions.map((sub) => {
+                      const isSelected = selectedSubscriptionId === sub.id;
+                      const company = sub.company || {};
+                      
+                      // Find assignment and linked marker (booth)
+                      const assignment = assignments?.find((a) => a.company_id === company.id);
+                      const isAssigned = !!assignment;
+                      const assignedMarkerId = assignment?.marker_id;
+                      const assignedMarker = markersState?.find((m) => m.id === assignedMarkerId);
+                      const boothLabel = assignedMarker ? `Booth ${assignedMarker.id}` : 'Assigned';
+
+                      return (
+                        <button
+                          key={sub.id}
+                          onClick={() => {
+                            const newId = isSelected ? null : sub.id;
+                            setSelectedSubscriptionId(newId);
+                            
+                            // Visual feedback: Select marker if assigned
+                            if (newId && assignedMarkerId) {
+                              setSelectedMarkerId(assignedMarkerId);
+                            } else {
+                                // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
+                                // we clear the map selection so the previously highlighted marker returns to normal scale/color.
+                                setSelectedMarkerId(null);
+                            }
+                          }}
+                          className={`w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
+                            isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500 pl-[11px]' : ''
+                          }`}
+                        >
+                          <div className="w-8 h-8 flex-shrink-0 bg-white border border-gray-200 rounded flex items-center justify-center overflow-hidden">
+                            {company.logo ? (
+                              <img
+                                src={getLogoPath(company.logo)}
+                                alt={company.name}
+                                className="w-full h-full object-contain"
+                              />
+                            ) : (
+                              <Icon path={mdiArchive} size={0.6} className="text-gray-300" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                              {company.name || 'Unknown Company'}
+                            </div>
+                            <div className="text-xs text-gray-500 flex items-center gap-2">
+                              {isAssigned ? (
+                                <span className="text-green-600 flex items-center gap-0.5">
+                                  <Icon path={mdiContentSave} size={0.5} /> {boothLabel}
+                                </span>
+                              ) : (
+                                <span className="text-orange-500">Unassigned</span>
+                              )}
+                              {sub.booth_count > 0 && (
+                                <span>
+                                  • {sub.booth_count} {sub.booth_count === 1 ? 'booth' : 'booths'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Resizer Splitter (Horizontal) */}
+                {selectedSubscriptionId && (
+                  <div
+                    className="w-full h-1 cursor-row-resize bg-gray-200 hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors flex-shrink-0"
+                    onMouseDown={() => setIsResizing('split-right')}
+                  />
+                )}
+
+                {/* Bottom Section: Details */}
+                {selectedSubscriptionId && (
+                  <div
+                    className="w-full overflow-y-auto p-4 bg-gray-50/50 border-t border-gray-200"
+                    style={{
+                      height: `${(1 - rightListSplitRatio) * 100}%`,
+                      transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
+                    }}
+                  >
+                  {!selectedSubscription ? (
+                    <div className="text-center text-gray-400 py-4">Select a subscription</div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-gray-900">Subscription Details</h4>
+                        <button
+                          onClick={() => {
+                            setSelectedSubscriptionId(null);
+                            setSelectedMarkerId(null); // Also clear marker highlight when closing details
+                          }}
+                          className="text-gray-400 hover:text-gray-600"
+                          title="Close details"
+                        >
+                          <Icon path={mdiClose} size={0.8} />
+                        </button>
+                      </div>
+
+                      {/* Read-only details view */}
+                      <div className="bg-white p-3 rounded border border-gray-200 shadow-sm text-left">
+                        {/* Details - Compact Layout */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
+                          {/* Company */}
+                          <div className="col-span-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Company
+                            </label>
+                            <div className="text-sm font-medium text-gray-900 truncate text-left" title={selectedSubscription.company?.name}>
+                              {selectedSubscription.company?.name || 'Unknown'}
+                            </div>
+                          </div>
+
+                          {/* Booths */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Booths
+                            </label>
+                            <div className="text-sm text-gray-900 text-left">
+                              {selectedSubscription.booth_count || 0}
+                            </div>
+                          </div>
+
+                          {/* Coins */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Coins
+                            </label>
+                            <div className="text-sm text-gray-900 text-left">{selectedSubscription.coins || 0}</div>
+                          </div>
+
+                          {/* Meals (Sat) */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Meals (Saturday)
+                            </label>
+                            <div className="text-xs text-gray-700 flex gap-3 text-left">
+                              <span>Breakfast: <span className="font-medium text-gray-900">{selectedSubscription.breakfast_sat || 0}</span></span>
+                              <span>Lunch: <span className="font-medium text-gray-900">{selectedSubscription.lunch_sat || 0}</span></span>
+                              <span>BBQ: <span className="font-medium text-gray-900">{selectedSubscription.bbq_sat || 0}</span></span>
+                            </div>
+                          </div>
+
+                          {/* Meals (Sun) */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Meals (Sunday)
+                            </label>
+                            <div className="text-xs text-gray-700 flex gap-3 text-left">
+                              <span>Breakfast: <span className="font-medium text-gray-900">{selectedSubscription.breakfast_sun || 0}</span></span>
+                              <span>Lunch: <span className="font-medium text-gray-900">{selectedSubscription.lunch_sun || 0}</span></span>
+                            </div>
+                          </div>
+
+                          {/* Notes - Always visible, even if empty */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              Notes
+                            </label>
+                            <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
+                              {selectedSubscription.notes || <span className="text-gray-400 italic">No notes</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               </div>
             </div>
           )}

@@ -11,7 +11,7 @@ import useIsMobile from '../hooks/useIsMobile';
 import BottomSheet from './MobileBottomSheet';
 import { MarkerUI } from './MarkerDetailsUI';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
-import { useFavoritesContext } from '../contexts/FavoritesContext';
+import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
@@ -85,7 +85,12 @@ const createIcon = (
   );
 
   // Calculate size based on zoom (disabled in admin view)
-  const iconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
+  const baseIconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
+  let iconSize = baseIconSize;
+  
+  if (isActive) {
+    iconSize = [baseIconSize[0] * 1.5, baseIconSize[1] * 1.5];
+  }
 
   return createMarkerIcon({
     className,
@@ -250,12 +255,8 @@ function EventClusterMarkers({
   const { organizationLogo, loading: logoLoading } = useOrganizationLogo();
 
   // Favorites context (only available in visitor view)
-  let favoritesContext = null;
-  try {
-    favoritesContext = useFavoritesContext();
-  } catch (e) {
-    // Context not available in admin view, ignore
-  }
+  const favoritesContext = useOptionalFavoritesContext();
+
   // Stable reference to the favorites checker function to avoid changing
   // identity between renders when favoritesContext is not present.
   const isFavorite = React.useMemo(
