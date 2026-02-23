@@ -1,13 +1,16 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
+import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock, mdiMap } from '@mdi/js';
 import { useSubscriptionCount, useAssignmentCount } from '../../hooks/useCountViews';
 import SidebarTile from './SidebarTile';
+import useUserRole from '../../hooks/useUserRole';
 
 export default function YearScopeSidebar({ selectedYear, onYearChange }) {
   const location = useLocation();
   const { t } = useTranslation();
+  const { hasAnyRole } = useUserRole();
+
   const tSafe = (key, fallback = '') => {
     const v = t(key);
     return !v || v === key ? fallback : v;
@@ -55,6 +58,24 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           ariaLabel={`${tSafe('adminNav.eventSubscriptions', 'Subscriptions')} ${subscriptionsLoading ? '...' : subscriptionCount}`}
         />
 
+        {/* Map Management - Moved above Program per user request */}
+        {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
+          <SidebarTile
+            to="/admin/map"
+            icon={mdiMap}
+            label={tSafe('adminNav.mapManagement', 'Map Management')}
+            isActive={location.pathname === '/admin/map'}
+          />
+        )}
+
+        <SidebarTile
+          to="/admin/program"
+          icon={mdiCalendarClock}
+          label={tSafe('adminNav.programManagement', 'Program Management')}
+          isActive={location.pathname === '/admin/program'}
+        />
+        
+        {/* Assignments Tab parked for now 
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
@@ -63,14 +84,9 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={`${tSafe('adminNav.assignments', 'Assignments')} ${assignmentsLoading ? '...' : assignmentCount}`}
         />
-
-        <SidebarTile
-          to="/admin/program"
-          icon={mdiCalendarClock}
-          label={tSafe('adminNav.programManagement', 'Program Management')}
-          isActive={location.pathname === '/admin/program'}
-        />
+        */}
       </div>
     </div>
   );
 }
+
