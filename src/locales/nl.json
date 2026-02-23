@@ -741,5 +741,30 @@
     "navigationRequiredText": "Om de rondleiding te starten moeten we naar {{page}} navigeren. Wil je doorgaan?",
     "startFailed": "Kon de rondleiding niet starten — vereiste elementen op de pagina ontbreken of laden nog. Probeer het later of controleer of je op de juiste pagina bent.",
     "duration": "Duur: ~{{minutes}} min"
+  },
+  "mapManagement": {
+    "title": "Kaartbeheer",
+    "undo": "Ongedaan maken",
+    "redo": "Opnieuw uitvoeren",
+    "undoRedo": "Ongedaan maken / Opnieuw",
+    "searchPlaceholder": "Zoek markers...",
+    "sortBy": "Sorteer op",
+    "sortId": "ID",
+    "sortName": "Naam",
+    "sortType": "Type",
+    "selectMarker": "Selecteer een marker om te bewerken",
+    "undoMarker": "Marker verplaatsing ongedaan maken",
+    "redoMarker": "Marker verplaatsing opnieuw uitvoeren",
+    "undoAssignment": "Toewijzing ongedaan maken",
+    "redoAssignment": "Toewijzing opnieuw uitvoeren",
+    "print": {
+      "assignmentsList": "Toewijzingenlijst",
+      "columns": {
+        "booth": "Stand",
+        "company": "Bedrijf",
+        "contact": "Contact",
+        "phone": "Telefoon"
+      }
+    }
   }
 }

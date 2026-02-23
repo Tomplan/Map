@@ -751,5 +751,30 @@
     "navigationRequiredText": "To run the tour we need to navigate to {{page}}. Do you want to continue?",
     "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
+  },
+  "mapManagement": {
+    "title": "Map Management",
+    "undo": "Undo last action",
+    "redo": "Redo last action",
+    "undoRedo": "Undo / Redo Actions",
+    "searchPlaceholder": "Search markers...",
+    "sortBy": "Sort by",
+    "sortId": "ID",
+    "sortName": "Name",
+    "sortType": "Type",
+    "selectMarker": "Select a marker to edit",
+    "undoMarker": "Undo marker move",
+    "redoMarker": "Redo marker move",
+    "undoAssignment": "Undo assignment",
+    "redoAssignment": "Redo assignment",
+    "print": {
+      "assignmentsList": "Assignments List",
+      "columns": {
+        "booth": "Booth",
+        "company": "Company",
+        "contact": "Contact",
+        "phone": "Phone"
+      }
+    }
   }
 }
