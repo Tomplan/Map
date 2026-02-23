@@ -945,7 +945,7 @@ function EventMap({
             height: isAdminView ? '100%' : '100svh',
             minHeight: isAdminView ? '400px' : '100svh',
           }}
-          className="focus:outline-none focus:ring-2 focus:ring-primary"
+          className={`focus:outline-none focus:ring-2 focus:ring-primary ${isAdminView ? 'admin-map-view' : ''}`}
           whenReady={handleMapCreated}
           attributionControl={false}
         >

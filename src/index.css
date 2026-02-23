@@ -136,7 +136,18 @@ h1 {
 /* Active marker highlight (e.g. from subscription selection) */
 /* Apply filter only, avoid transform which breaks Leaflet positioning */
 .leaflet-marker-icon.marker-active {
-  filter: drop-shadow(0 0 8px #ffd700) brightness(1.2) !important;
+  filter: drop-shadow(0 0 8px #ef4444) brightness(1.2) !important;
   z-index: 9999 !important;
   /* Do not use transform: scale() here as it overrides Leaflet positioning */
+}
+
+/* Custom positioning for Admin View MiniMap */
+.leaflet-container.admin-map-view .leaflet-control-minimap {
+  margin-bottom: 2px !important;
+  margin-right: 2px !important;
+}
+
+/* Reset bottom position for admin map view controls */
+.leaflet-container.admin-map-view .leaflet-bottom.leaflet-right {
+  bottom: 0 !important;
 }
