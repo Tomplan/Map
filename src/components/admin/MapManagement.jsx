@@ -934,12 +934,12 @@ export default function MapManagement({
                 <button
                   onClick={() => setPrintMenuOpen((v) => !v)}
                   className={`flex items-center gap-2 px-4 py-2 ${isReadOnly ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'} rounded-lg`}
-                  title="Print map"
+                  title="Print"
                   aria-haspopup="menu"
                   aria-expanded={printMenuOpen}
                 >
                   <Icon path={mdiPrinter} size={0.8} />
-                  Print Map
+                  Print
                 </button>
 
                 {printMenuOpen && (
