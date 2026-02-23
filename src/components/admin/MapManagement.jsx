@@ -73,7 +73,7 @@ export default function MapManagement({
     useEventSubscriptions(selectedYear);
   const { assignments } = useAssignments(selectedYear);
   const [subscriptionSearch, setSubscriptionSearch] = useState('');
-  const [subscriptionSortBy, setSubscriptionSortBy] = useState('name'); // name, booths, assigned
+  const [subscriptionSortBy, setSubscriptionSortBy] = useState('assigned'); // name, booths, assigned
   const [subscriptionSortDirection, setSubscriptionSortDirection] = useState('asc'); // asc, desc
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
 
@@ -109,13 +109,26 @@ export default function MapManagement({
           valB = b.booth_count || 0;
           return subscriptionSortDirection === 'asc' ? valA - valB : valB - valA;
           
-        case 'assigned':
-          const isAssignedA = assignments?.some((as) => as.company_id === a.company?.id) ? 1 : 0;
-          const isAssignedB = assignments?.some((as) => as.company_id === b.company?.id) ? 1 : 0;
-          return subscriptionSortDirection === 'asc' ? isAssignedA - isAssignedB : isAssignedB - isAssignedA;
+        case 'assigned': {
+          const getBoothId = (sub) => {
+            const assignment = assignments?.find((as) => as.company_id === sub.company?.id);
+            // If assigned, return marker ID. If unassigned, we want it FIRST.
+            // Using -1 for unassigned ensures it comes before marker IDs (which start at >0).
+            return assignment ? (assignment.marker_id || 999999) : -1;
+          };
           
-        default:
-          return 0;
+          const idA = getBoothId(a);
+          const idB = getBoothId(b);
+
+          if (idA === idB) {
+            // Secondary sort by name
+            return (a.company?.name || '').localeCompare(b.company?.name || '');
+          }
+
+          return subscriptionSortDirection === 'asc' 
+            ? idA - idB 
+            : idB - idA;
+        }
       }
     });
   }, [rawSubscriptions, assignments, subscriptionSearch, subscriptionSortBy, subscriptionSortDirection]);
@@ -1113,7 +1126,14 @@ export default function MapManagement({
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
                 <span>Subscription List</span>
                 <span className="text-[10px] font-normal">
-                  {filteredSubscriptions?.length || 0} / {rawSubscriptions?.length || 0}
+                  {(() => {
+                    if (!rawSubscriptions || !assignments) return '0 / 0';
+                    // Count how many subscriptions have at least one assignment
+                    const assignedCount = rawSubscriptions.filter((sub) =>
+                      assignments.some((a) => a.company_id === sub.company_id),
+                    ).length;
+                    return `${assignedCount} / ${rawSubscriptions.length}`;
+                  })()}
                 </span>
               </div>
 
@@ -1203,10 +1223,9 @@ export default function MapManagement({
                             // Visual feedback: Select marker if assigned
                             if (newId && assignedMarkerId) {
                               setSelectedMarkerId(assignedMarkerId);
-                            } else if (!newId) {
-                                // Optional: Clear marker selection when deselected? 
-                                // Keeping map selection active allows comparing details, but clearing implies focus shift back to list.
-                                // Let's clear it to match "deselecting ... should also close detail view" logic.
+                            } else {
+                                // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
+                                // we clear the map selection so the previously highlighted marker returns to normal scale/color.
                                 setSelectedMarkerId(null);
                             }
                           }}
@@ -1237,7 +1256,11 @@ export default function MapManagement({
                               ) : (
                                 <span className="text-orange-500">Unassigned</span>
                               )}
-                              {sub.booth_count > 0 && <span>• {sub.booth_count} booths</span>}
+                              {sub.booth_count > 0 && (
+                                <span>
+                                  • {sub.booth_count} {sub.booth_count === 1 ? 'booth' : 'booths'}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </button>
@@ -1270,7 +1293,10 @@ export default function MapManagement({
                       <div className="flex justify-between items-start">
                         <h4 className="font-medium text-gray-900">Subscription Details</h4>
                         <button
-                          onClick={() => setSelectedSubscriptionId(null)}
+                          onClick={() => {
+                            setSelectedSubscriptionId(null);
+                            setSelectedMarkerId(null); // Also clear marker highlight when closing details
+                          }}
                           className="text-gray-400 hover:text-gray-600"
                           title="Close details"
                         >

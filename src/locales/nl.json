@@ -622,7 +622,11 @@
       "reordering": "Bezig met herschikken..."
     },
     "subscriptions": {
-      "searchPlaceholder": "Zoek ingeschreven bedrijven...",
+      "searchPlaceholder": "Zoek bedrijven...",
+      "contactInformation": "Contactinformatie",
+      "eventLogistics": "Evenement Logistiek",
+      "additionalInfo": "Extra Informatie",
+      "meals": "Maaltijden",
       "booths": "Stands",
       "company": "Bedrijf",
       "contact": "Contact",
