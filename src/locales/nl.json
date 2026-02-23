@@ -102,6 +102,12 @@
   "settings": {
     "title": "Instellingen",
     "subtitle": "Beheer systeemconfiguratie en voorkeuren",
+    "fullScreen": {
+      "title": "Volledig Scherm",
+      "description": "Schakel volledig scherm in",
+      "enter": "Volledig Scherm",
+      "exit": "Sluit Volledig Scherm"
+    },
     "categoryManagement": {
       "title": "Categoriebeheer",
       "description": "Beheer exposantcategorieën voor filtering en organisatie"

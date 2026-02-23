@@ -108,6 +108,12 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage system configuration and preferences",
+    "fullScreen": {
+      "title": "Full Screen Mode",
+      "description": "Toggle full screen display",
+      "enter": "Enter Full Screen",
+      "exit": "Exit Full Screen"
+    },
     "categoryManagement": {
       "title": "Category Management",
       "description": "Manage exhibitor categories for filtering and organization"

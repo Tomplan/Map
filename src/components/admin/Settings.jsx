@@ -12,6 +12,7 @@ import {
   mdiCalendarEdit,
   mdiAccountCircle,
   mdiDomain,
+  mdiFullscreen,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -23,6 +24,7 @@ import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
 import MapDefaults from './MapDefaults';
 import MapSettings from './MapSettings';
+import FullScreenSettings from './FullScreenSettings';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -36,6 +38,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
   // Define sections with role requirements and scope (personal vs organization)
   const sections = [
     // Personal Settings (affect only the current user)
+    {
+      id: 'full-screen',
+      label: t('settings.fullScreen.title', 'Full Screen'),
+      icon: mdiFullscreen,
+      roles: ['super_admin', 'system_manager', 'event_manager', 'content_editor'],
+      component: <FullScreenSettings />,
+      scope: 'personal',
+      description: t('settings.fullScreen.description', 'Toggle full screen mode'),
+    },
     {
       id: 'ui-language',
       label: t('settings.uiLanguage.title'),
