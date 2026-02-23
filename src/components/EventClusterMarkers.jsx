@@ -87,7 +87,7 @@ const createIcon = (
   // Calculate size based on zoom (disabled in admin view)
   const baseIconSize = getIconSizeForZoom(currentZoom, baseSize, false, isAdminView);
   let iconSize = baseIconSize;
-  
+
   if (isActive) {
     iconSize = [baseIconSize[0] * 1.5, baseIconSize[1] * 1.5];
   }
@@ -237,6 +237,7 @@ function EventClusterMarkers({
   currentZoom,
   applyVisitorSizing = false,
   onMarkerDrag = null,
+  assignmentsState,
 }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
@@ -274,9 +275,9 @@ function EventClusterMarkers({
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
-  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(
-    selectedYear || new Date().getFullYear(),
-  );
+  const localAssignmentsState = useAssignments(selectedYear || new Date().getFullYear());
+  const finalAssignmentsState = assignmentsState || localAssignmentsState;
+  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
   // Load default markers for fallback colors
   const [defaultMarkers, setDefaultMarkers] = useState({ assigned: null, unassigned: null });

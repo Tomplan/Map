@@ -26,6 +26,7 @@ function EventSpecialMarkers({
   currentZoom,
   applyVisitorSizing = false,
   onMarkerDrag = null,
+  assignmentsState,
 }) {
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -52,9 +53,9 @@ function EventSpecialMarkers({
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
-  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = useAssignments(
-    selectedYear || new Date().getFullYear(),
-  );
+  const localAssignmentsState = useAssignments(selectedYear || new Date().getFullYear());
+  const finalAssignmentsState = assignmentsState || localAssignmentsState;
+  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
   // Dialog context for confirmations
   const { confirm } = useDialog();

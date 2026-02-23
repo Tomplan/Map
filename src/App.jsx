@@ -5,6 +5,7 @@ import { HashRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import useMarkersState from './hooks/useMarkersState';
 import useEventMarkers from './hooks/useEventMarkers';
+import useAssignments from './hooks/useAssignments';
 import useOrganizationSettings from './hooks/useOrganizationSettings';
 import resolvePublicYear from './utils/resolvePublicYear';
 import { PreferencesProvider, usePreferences } from './contexts/PreferencesContext';
@@ -25,6 +26,24 @@ function AppContent() {
 
   // Load user preferences from context (single source of truth)
   const { preferences, loading: preferencesLoading, updatePreference } = usePreferences();
+
+  // Track Supabase auth state
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    // Get initial session (this is the ONLY getSession call in the app)
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data?.session?.user || null);
+    });
+
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      listener?.subscription?.unsubscribe();
+    };
+  }, []);
 
   // Load language from localStorage on mount (instant feedback while DB loads)
   useEffect(() => {
@@ -115,16 +134,32 @@ function AppContent() {
   // otherwise fall back to admin's selectedYear
   const publicYear = resolvePublicYear(selectedYear, orgSettings);
 
-  // Fetch marker data from Supabase filtered by publicYear
-  // This ensures both public views AND admin views show the same event year data
+  // Determine the effective year for data fetching:
+  // If user is logged in (admin), use their selectedYear directly so they can switch years freely.
+  // If user is public (not logged in), use the resolved publicYear.
+  const effectiveYear = user ? selectedYear : publicYear;
+
+  // Fetch marker data from Supabase filtered by effectiveYear
   const {
     markers,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
-  } = useEventMarkers(publicYear);
+  } = useEventMarkers(effectiveYear);
 
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
-  const [markersState, updateMarker, setMarkersState] = useMarkersState(markers, publicYear);
+  const {
+    markersState,
+    updateMarker,
+    setMarkersState,
+    undo,
+    canUndo,
+    redo,
+    canRedo,
+    historyStack: markerHistoryStack,
+    redoStack: markerRedoStack,
+  } = useMarkersState(markers, effectiveYear);
+
+  const assignmentsState = useAssignments(effectiveYear);
 
   const [branding, setBranding] = useState({
     logo: null, // Will be set from Organization_Profile
@@ -187,24 +222,6 @@ function AppContent() {
     };
   }, [t]);
 
-  // Track Supabase auth state
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    // Get initial session (this is the ONLY getSession call in the app)
-    supabase.auth.getSession().then(({ data }) => {
-      setUser(data?.session?.user || null);
-    });
-
-    // Listen for auth state changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      listener?.subscription?.unsubscribe();
-    };
-  }, []);
-
   return (
     <OnboardingProvider>
       <DialogProvider>
@@ -216,12 +233,19 @@ function AppContent() {
               markersState={markersState}
               updateMarker={updateMarker}
               setMarkersState={setMarkersState}
+              undo={undo}
+              canUndo={canUndo}
+              redo={redo}
+              canRedo={canRedo}
+              assignmentsState={assignmentsState}
               onLogin={setUser}
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
               publicYear={publicYear}
               archiveMarkers={archiveMarkers}
               copyMarkers={copyMarkers}
+              markerHistoryStack={markerHistoryStack}
+              markerRedoStack={markerRedoStack}
             />
           </HashRouter>
         </OrganizationLogoProvider>

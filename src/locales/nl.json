@@ -391,6 +391,15 @@
     "ariaLabel": "Interactieve evenementenkaart"
   },
   "mapManagement": {
+    "print": {
+      "assignmentsList": "Opdrachtenlijst",
+      "columns": {
+        "booth": "Stand",
+        "company": "Naam Exposant",
+        "contact": "Contactpersoon",
+        "phone": "Telefoon"
+      }
+    },
     "addMarker": "Marker toevoegen",
     "sortId": "ID",
     "sortName": "Naam",
@@ -401,6 +410,7 @@
     "markerIdPlaceholder": "Marker ID (geheel getal)",
     "confirm": "Bevestigen",
     "cancel": "Annuleren",
+    "undo": "Laatste wijziging ongedaan maken",
     "errorInvalidId": "Voer een geldig numeriek ID in.",
     "errorIdExists": "ID bestaat al. Kies een ander ID.",
     "searchPlaceholder": "Zoek op ID, standlabel of naam...",

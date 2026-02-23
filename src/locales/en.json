@@ -399,6 +399,15 @@
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
+    "print": {
+      "assignmentsList": "Assignments List",
+      "columns": {
+        "booth": "Number",
+        "company": "Company Name",
+        "contact": "Contact",
+        "phone": "Phone"
+      }
+    },
     "sortId": "ID",
     "sortName": "Name",
     "sortType": "Type",
@@ -409,6 +418,7 @@
     "markerIdPlaceholder": "Marker ID (integer)",
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "undo": "Undo last change",
     "errorInvalidId": "Please enter a valid numeric ID.",
     "errorIdExists": "ID already exists. Please choose another.",
     "searchPlaceholder": "Search by ID, booth label, or name...",

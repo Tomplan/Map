@@ -44,6 +44,7 @@ function EventMap({
   markersState,
   updateMarker,
   selectedYear,
+  assignmentsState,
   selectedMarkerId,
   onMarkerSelect,
   previewUseVisitorSizing = false,
@@ -960,6 +961,7 @@ function EventMap({
           ))}
 
           <EventClusterMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={filteredMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
@@ -982,6 +984,7 @@ function EventMap({
           />
 
           <EventSpecialMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={safeMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
