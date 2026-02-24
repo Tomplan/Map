@@ -75,14 +75,16 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           isActive={location.pathname === '/admin/program'}
         />
 
-        <SidebarTile
+        {/* Assignments Tab Hidden per User Request (re-hidden) */}
+        {/* <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
           label={tSafe('adminNav.assignments', 'Assignments')}
           badge={assignmentsLoading ? '...' : assignmentCount.toString()}
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={`${tSafe('adminNav.assignments', 'Assignments')} ${assignmentsLoading ? '...' : assignmentCount}`}
-        />
+        /> */}
+
       </div>
     </div>
   );

@@ -248,6 +248,7 @@ const MemoizedMarker = memo(
 function EventClusterMarkers({
   safeMarkers,
   updateMarker,
+  deleteMarker, // Exposed for bulk edit delete
   isMarkerDraggable,
   iconCreateFunction,
   selectedYear,
@@ -375,16 +376,29 @@ function EventClusterMarkers({
   // Handle context menu open
   const handleContextMenu = useCallback(
     (marker) => (e) => {
-      if (!isAdminView) return; // Only show in admin view
-      L.DomEvent.preventDefault(e); // Prevent default browser context menu
+      // Allow context menu only if admin view AND marker is in edit mode
+      // User requested: "delete marker should only be visible when a marker is in edit mode"
+      // Also implies context menu itself might only be relevant in edit mode if delete is main action?
+      // Or maybe existing assignment actions should also only be available in edit mode?
+      // Assuming context menu should always open in admin view for consistency, or does user want strict restriction?
+      
+      // The user says "i cannot right click a marker in edit mode now".
+      // This implies they WANT to right click in edit mode.
+      
+      if (!isAdminView) return; 
+      
+      // Make sure we prevent default
+      L.DomEvent.preventDefault(e);
+      L.DomEvent.stopPropagation(e); // Also stop propagation just in case
+      
       setContextMenu({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), // Force React to recognize as new state
+        timestamp: Date.now(), 
       });
     },
-    [isAdminView],
+    [isAdminView], // isMarkerDraggable not needed here as we check dynamic conditions or just allow it
   );
 
   // Handle assignment
@@ -459,6 +473,30 @@ function EventClusterMarkers({
       }
     },
     [unassignCompanyFromMarker],
+  );
+
+  const handleDelete = useCallback(
+    async (markerId) => {
+      if (!deleteMarker) return;
+      const confirmed = await confirm({
+        title: 'Delete Marker',
+        message: 'Are you sure you want to delete this marker?',
+        confirmText: 'Delete',
+        variant: 'destructive',
+      });
+      if (confirmed) {
+        setContextMenuLoading(true);
+        try {
+          await deleteMarker(markerId);
+          setContextMenu({ isOpen: false, position: null, marker: null });
+        } catch (error) {
+          console.error('Error deleting marker:', error);
+        } finally {
+          setContextMenuLoading(false);
+        }
+      }
+    },
+    [deleteMarker, confirm],
   );
 
   // Memoize event handlers by marker ID to prevent recreation
@@ -617,6 +655,11 @@ function EventClusterMarkers({
             assignments={assignments}
             onAssign={handleAssign}
             onUnassign={handleUnassign}
+            onDelete={
+              deleteMarker && isMarkerDraggable && isMarkerDraggable(contextMenu.marker)
+                ? handleDelete
+                : null
+            }
             isLoading={contextMenuLoading}
             onClose={() => setContextMenu({ isOpen: false, position: null, marker: null })}
           />

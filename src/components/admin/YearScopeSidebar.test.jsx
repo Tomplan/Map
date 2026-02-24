@@ -57,12 +57,13 @@ describe('YearScopeSidebar (icon + labels)', () => {
 
     // items should render with nav text and counts
     expect(await screen.findByText(/Inschrijvingen/)).toBeInTheDocument();
-    expect(screen.getByText(/Toewijzingen/)).toBeInTheDocument();
+    // expect(screen.getByText(/Toewijzingen/)).toBeInTheDocument(); // Hidden
     expect(screen.getByText(/Programmabeheer/)).toBeInTheDocument();
+
 
     // counts from mocked supabase should be visible
     expect(await screen.findByText('63')).toBeInTheDocument();
-    expect(screen.getByText('99')).toBeInTheDocument();
+    // expect(screen.getByText('99')).toBeInTheDocument();
 
     // each tile should use the same rounded/nav styling as the main nav (px-4, rounded-lg)
     const links = screen.getAllByRole('link');

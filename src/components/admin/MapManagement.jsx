@@ -23,6 +23,7 @@ import {
   mdiDockLeft,
   mdiDockRight,
   mdiContentSaveCheck,
+  mdiPencil,
 } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
@@ -48,6 +49,7 @@ export default function MapManagement({
   markersState,
   setMarkersState,
   updateMarker,
+  deleteMarker,
   undo,
   canUndo,
   redo,
@@ -76,6 +78,7 @@ export default function MapManagement({
   const [printModes, setPrintModes] = useState([]);
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
 
   // Collapse state for sidebars
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false); // Default to closed for Markers
@@ -1138,8 +1141,31 @@ export default function MapManagement({
               />
 
               {/* Title Header */}
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10">
-                Markers List
+              <div className="flex items-center justify-between px-3 py-2 bg-white sticky top-0 z-10 border-b border-gray-100">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Markers List
+                </div>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => {
+                      setIsBulkEditMode((prev) => !prev);
+                      if (!isBulkEditMode) {
+                        toastSuccess('Bulk edit mode enabled: You can move and remove markers');
+                      } else {
+                        toastSuccess('Bulk edit mode disabled');
+                      }
+                    }}
+                    className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded transition-colors ${
+                      isBulkEditMode
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
+                    }`}
+                    title={isBulkEditMode ? 'Finish Editing' : 'Edit Mode'}
+                  >
+                    <Icon path={isBulkEditMode ? mdiContentSave : mdiPencil} size={0.6} />
+                    <span>{isBulkEditMode ? 'Done' : 'Edit Mode'}</span>
+                  </button>
+                )}
               </div>
 
               {/* Search and Sort Header */}
@@ -1338,14 +1364,40 @@ export default function MapManagement({
               markersState={markersState}
               assignmentsState={finalAssignmentsState}
               updateMarker={isReadOnly ? null : updateMarker}
+              deleteMarker={isReadOnly ? null : deleteMarker}
               selectedYear={selectedYear}
               selectedMarkerId={selectedMarkerId}
-              editMode={!isReadOnly && editMode}
+              editMode={!isReadOnly && (editMode || isBulkEditMode)}
+              isBulkEditMode={!isReadOnly && isBulkEditMode}
               onMarkerSelect={(id) => {
                 setSelectedMarkerId(id);
-                if (!isReadOnly) setEditMode(false);
-                // Auto-open left sidebar when inspecting a marker
-                if (!isLeftSidebarOpen) setIsLeftSidebarOpen(true);
+                
+                // STRICT REQUIREMENT:
+                // 1. Left/Right click does NOT open markers list automatically (handled by UI state).
+                // 2. Do NOT enter edit mode automatically. User must press "Edit" in detail view.
+                
+                if (id) {
+                    if (!isReadOnly) {
+                       // Just update the data reference, but DO NOT enable edit mode yet.
+                       const marker = markersState.find((m) => String(m.id) === String(id));
+                       if (marker) {
+                         // We set editData just in case they click "Edit" later, 
+                         // but we keep editMode = false for now.
+                         setEditData({ ...marker });
+                         
+                         // If we are ALREADY in single edit mode for a DIFFERENT marker, 
+                         // we might want to switch? Or exit?
+                         // Let's exit single edit mode to be safe and show detail view first.
+                         if (editMode && !isBulkEditMode) {
+                            setEditMode(false);
+                         }
+                       }
+                    }
+                } else if (!isBulkEditMode) {
+                    // Deselecting checks
+                    setEditMode(false);
+                    setEditData(null);
+                }
 
                 // Sync with subscription list
                 if (id) {
@@ -1375,6 +1427,7 @@ export default function MapManagement({
                     lng: newLng,
                   }));
                 }
+                // Note: For bulk edit mode, EventClusterMarkers handles dragging directly via updateMarker
               }}
               onMapReady={(map) => {
                 setMapInstance(map);
