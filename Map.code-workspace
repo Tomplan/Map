@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"CodeGPT.apiKey": "Anthropic",
+		"commands.commands": [
+			{
+				"name": "Kill Dev Servers (Safe)",
+				"command": "workbench.action.tasks.runTask",
+				"args": "Kill Dev Servers (Safe)",
+				"tooltip": "Run Kill Dev Servers (Safe)",
+				"icon": "debug-stop-conditional"
+			}
+		]
+	}
+}

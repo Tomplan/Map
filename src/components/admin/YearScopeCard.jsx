@@ -63,7 +63,8 @@ export default function YearScopeCard({ selectedYear, setSelectedYear, counts = 
           <div className="text-2xl font-bold text-gray-900 mt-1">{counts.subscriptions ?? '-'}</div>
         </a>
 
-        <a
+        {/* Assignments Tab Hidden per User Request (re-hidden) */}
+        {/* <a
           href="/admin/assignments"
           className="p-3 border rounded-lg hover:bg-blue-50 transition-colors"
           aria-label={`${t('admin.yearScope.assignments')} ${counts.assignments ?? '-'}`}
@@ -72,7 +73,8 @@ export default function YearScopeCard({ selectedYear, setSelectedYear, counts = 
             {tSafe('admin.yearScope.assignments', 'Assignments')}
           </div>
           <div className="text-2xl font-bold text-gray-900 mt-1">{counts.assignments ?? '-'}</div>
-        </a>
+        </a> */}
+
 
         <a
           href="/admin/program"

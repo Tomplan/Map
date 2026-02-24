@@ -39,13 +39,21 @@ function AppRoutes({
   user,
   markersState,
   updateMarker,
+  deleteMarker,
   setMarkersState,
+  undo,
+  canUndo,
+  redo,
+  canRedo,
   onLogin,
   selectedYear,
   setSelectedYear,
   publicYear,
   archiveMarkers,
   copyMarkers,
+  assignmentsState,
+  markerHistoryStack,
+  markerRedoStack,
 }) {
   const location = useLocation();
   const { startTour } = useOnboarding();
@@ -93,7 +101,7 @@ function AppRoutes({
   // Mobile-only design - bottom tabs always visible
   const VisitorLayout = ({ children }) => (
     <ErrorBoundary>
-      <FavoritesProvider selectedYear={publicYear}>
+      <FavoritesProvider selectedYear={user ? selectedYear : publicYear}>
         <OfflineStatus />
         <main className="pb-16">{children}</main>
         <TabNavigation />
@@ -113,7 +121,7 @@ function AppRoutes({
                 <div className="flex items-center justify-center min-h-screen">Loading...</div>
               }
             >
-              <HomePage selectedYear={publicYear} branding={branding} />
+              <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
             </Suspense>
           </VisitorLayout>
         }
@@ -128,7 +136,9 @@ function AppRoutes({
                 markersState={markersState}
                 updateMarker={updateMarker}
                 setMarkersState={setMarkersState}
-                selectedYear={publicYear}
+                // If logged in, show the currently selected admin year.
+                // Otherwise show the resolved public year.
+                selectedYear={user ? selectedYear : publicYear}
               />
             </Suspense>
           </VisitorLayout>
@@ -145,7 +155,10 @@ function AppRoutes({
                 </div>
               }
             >
-              <ExhibitorListView markersState={markersState} selectedYear={publicYear} />
+              <ExhibitorListView
+                markersState={markersState}
+                selectedYear={user ? selectedYear : publicYear}
+              />
             </Suspense>
           </VisitorLayout>
         }
@@ -175,7 +188,7 @@ function AppRoutes({
                 </div>
               }
             >
-              <EventSchedule selectedYear={publicYear} />
+              <EventSchedule selectedYear={user ? selectedYear : publicYear} />
             </Suspense>
           </VisitorLayout>
         }
@@ -240,9 +253,17 @@ function AppRoutes({
                 markersState={markersState}
                 setMarkersState={setMarkersState}
                 updateMarker={updateMarker}
+                deleteMarker={deleteMarker}
+                undo={undo}
+                canUndo={canUndo}
+                redo={redo}
+                canRedo={canRedo}
+                assignmentsState={assignmentsState}
                 selectedYear={selectedYear}
                 archiveMarkers={archiveMarkers}
                 copyMarkers={copyMarkers}
+                markerHistoryStack={markerHistoryStack}
+                markerRedoStack={markerRedoStack}
               />
             </Suspense>
           }

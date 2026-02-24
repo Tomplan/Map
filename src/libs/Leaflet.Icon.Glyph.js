@@ -17,6 +17,10 @@ L.Icon.Glyph = L.Icon.extend({
     glyphColor: 'white',
     glyphSize: '11px', // in CSS units
     glyphAnchor: [0, 0], // In pixels, counting from the center of the image.
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    textDecoration: 'none',
+    fontFamily: 'sans-serif'
   },
 
   createIcon: function () {
@@ -59,6 +63,10 @@ L.Icon.Glyph = L.Icon.extend({
     span.style.position = 'absolute';
     span.style.fontSize = options.glyphSize;
     span.style.color = options.glyphColor;
+    span.style.fontWeight = options.fontWeight;
+    span.style.fontStyle = options.fontStyle;
+    span.style.textDecoration = options.textDecoration;
+    span.style.fontFamily = options.fontFamily;
     span.style.width = options.iconSize[0] + 'px';
     span.style.lineHeight = options.iconSize[1] + 'px';
     span.style.textAlign = 'center';

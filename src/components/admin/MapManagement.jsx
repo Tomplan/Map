@@ -15,6 +15,15 @@ import {
   mdiArchive,
   mdiEye,
   mdiPrinter,
+  mdiUndo,
+  mdiRedo,
+  mdiHistory,
+  mdiDotsVertical,
+  mdiViewSplitVertical,
+  mdiDockLeft,
+  mdiDockRight,
+  mdiContentSaveCheck,
+  mdiPencil,
 } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
@@ -27,6 +36,8 @@ import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
+import useOrganizationProfile from '../../hooks/useOrganizationProfile';
+import SnapshotModal from './SnapshotModal';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -38,12 +49,21 @@ export default function MapManagement({
   markersState,
   setMarkersState,
   updateMarker,
+  deleteMarker,
+  undo,
+  canUndo,
+  redo,
+  canRedo,
   selectedYear,
   archiveMarkers,
   copyMarkers,
+  assignmentsState,
+  markerHistoryStack = [], // History stack from props
+  markerRedoStack = [],    // Redo stack from props
 }) {
   const { t } = useTranslation();
   const { isEventManager, isSystemManager, isSuperAdmin } = useUserRole();
+  const { profile: orgProfile } = useOrganizationProfile();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMarkerId, setSelectedMarkerId] = useState(null);
   const [editMode, setEditMode] = useState(false);
@@ -54,8 +74,11 @@ export default function MapManagement({
   const { confirm, toastError, toastSuccess } = useDialog();
   const [mapInstance, setMapInstance] = useState(null);
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [printModes, setPrintModes] = useState([]);
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
+  const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
+  const [isBulkEditMode, setIsBulkEditMode] = useState(false);
 
   // Collapse state for sidebars
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false); // Default to closed for Markers
@@ -71,7 +94,58 @@ export default function MapManagement({
   // Subscriptions state
   const { subscriptions: rawSubscriptions, loading: loadingSubscriptions } =
     useEventSubscriptions(selectedYear);
-  const { assignments } = useAssignments(selectedYear);
+
+  // Use passed assignments state or local if not provided (fallback)
+  // This state MUST be passed down to EventMap -> EventClusterMarkers to share history stack
+  const localAssignmentsState = useAssignments(selectedYear);
+  const finalAssignmentsState = assignmentsState || localAssignmentsState;
+  const {
+    assignments,
+    undo: undoAssignments,
+    canUndo: canUndoAssignments,
+    redo: redoAssignments,
+    canRedo: canRedoAssignments,
+    historyStack: assignmentHistoryStack = [],
+    redoStack: assignmentRedoStack = [],
+  } = finalAssignmentsState;
+
+  // --- Unified Undo/Redo Logic ---
+  const canGlobalUndo = (canUndo || canUndoAssignments);
+  const canGlobalRedo = (canRedo || canRedoAssignments);
+
+  const handleGlobalUndo = () => {
+    const lastMarkerAction = markerHistoryStack.length > 0 ? markerHistoryStack[markerHistoryStack.length - 1] : null;
+    const lastAssignmentAction = assignmentHistoryStack.length > 0 ? assignmentHistoryStack[assignmentHistoryStack.length - 1] : null;
+
+    const markerTime = lastMarkerAction?.timestamp || 0;
+    const assignmentTime = lastAssignmentAction?.timestamp || 0;
+
+    if (markerTime === 0 && assignmentTime === 0) return;
+
+    if (markerTime >= assignmentTime) {
+      if (undo) undo();
+    } else {
+      if (undoAssignments) undoAssignments();
+    }
+  };
+
+  const handleGlobalRedo = () => {
+    const lastMarkerAction = markerRedoStack.length > 0 ? markerRedoStack[markerRedoStack.length - 1] : null;
+    const lastAssignmentAction = assignmentRedoStack.length > 0 ? assignmentRedoStack[assignmentRedoStack.length - 1] : null;
+
+    const markerTime = lastMarkerAction?.timestamp || 0;
+    const assignmentTime = lastAssignmentAction?.timestamp || 0;
+
+    if (markerTime === 0 && assignmentTime === 0) return;
+
+    if (markerTime >= assignmentTime) {
+      if (redo) redo();
+    } else {
+      if (redoAssignments) redoAssignments();
+    }
+  };
+  // ------------------------------
+
   const [subscriptionSearch, setSubscriptionSearch] = useState('');
   const [subscriptionSortBy, setSubscriptionSortBy] = useState('assigned'); // name, booths, assigned
   const [subscriptionSortDirection, setSubscriptionSortDirection] = useState('asc'); // asc, desc
@@ -80,10 +154,10 @@ export default function MapManagement({
   // Filter and Sort subscriptions
   const filteredSubscriptions = useMemo(() => {
     if (!rawSubscriptions) return [];
-    
+
     // Create a shallow copy to execute sort
     let result = [...rawSubscriptions];
-    
+
     if (subscriptionSearch) {
       const lower = subscriptionSearch.toLowerCase();
       result = result.filter((sub) => {
@@ -100,23 +174,23 @@ export default function MapManagement({
         case 'name':
           valA = a.company?.name || '';
           valB = b.company?.name || '';
-          return subscriptionSortDirection === 'asc' 
-            ? ((valA || '').localeCompare(valB || '')) 
-            : ((valB || '').localeCompare(valA || ''));
-        
+          return subscriptionSortDirection === 'asc'
+            ? (valA || '').localeCompare(valB || '')
+            : (valB || '').localeCompare(valA || '');
+
         case 'booths':
           valA = a.booth_count || 0;
           valB = b.booth_count || 0;
           return subscriptionSortDirection === 'asc' ? valA - valB : valB - valA;
-          
+
         case 'assigned': {
           const getBoothId = (sub) => {
             const assignment = assignments?.find((as) => as.company_id === sub.company?.id);
             // If assigned, return marker ID. If unassigned, we want it FIRST.
             // Using -1 for unassigned ensures it comes before marker IDs (which start at >0).
-            return assignment ? (assignment.marker_id || 999999) : -1;
+            return assignment ? assignment.marker_id || 999999 : -1;
           };
-          
+
           const idA = getBoothId(a);
           const idB = getBoothId(b);
 
@@ -125,13 +199,17 @@ export default function MapManagement({
             return (a.company?.name || '').localeCompare(b.company?.name || '');
           }
 
-          return subscriptionSortDirection === 'asc' 
-            ? idA - idB 
-            : idB - idA;
+          return subscriptionSortDirection === 'asc' ? idA - idB : idB - idA;
         }
       }
     });
-  }, [rawSubscriptions, assignments, subscriptionSearch, subscriptionSortBy, subscriptionSortDirection]);
+  }, [
+    rawSubscriptions,
+    assignments,
+    subscriptionSearch,
+    subscriptionSortBy,
+    subscriptionSortDirection,
+  ]);
 
   const selectedSubscription = useMemo(
     () => rawSubscriptions?.find((s) => s.id === selectedSubscriptionId),
@@ -335,6 +413,10 @@ export default function MapManagement({
           iconSize: editData.iconSize,
           glyphColor: editData.glyphColor,
           glyphSize: editData.glyphSize,
+          fontWeight: editData.fontWeight,
+          fontStyle: editData.fontStyle,
+          textDecoration: editData.textDecoration,
+          fontFamily: editData.fontFamily,
           shadowScale: editData.shadowScale,
         };
 
@@ -674,6 +756,124 @@ export default function MapManagement({
     }
   };
 
+  const handlePrintAssignments = () => {
+    if (!assignments || !rawSubscriptions || !markersState) {
+      return;
+    }
+
+    const assignedData = assignments
+      .map((assignment) => {
+        const sub = rawSubscriptions.find((s) => s.company_id === assignment.company_id);
+        const marker = markersState.find((m) => m.id === assignment.marker_id);
+
+        if (!sub || !marker) return null;
+
+        return {
+          booth: marker.id?.toString() || '?',
+          company: sub.company?.name || 'Unknown',
+          contact: sub.company?.contact || '-',
+          phone: sub.company?.phone || '-',
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => {
+        // Sort numerically if possible, else alphabetically
+        const numA = parseInt(a.booth, 10);
+        const numB = parseInt(b.booth, 10);
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return numA - numB;
+        }
+        return a.booth.localeCompare(b.booth, undefined, { numeric: true });
+      });
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Allow popups to print assignments.');
+      return;
+    }
+
+    const assignmentsTitle = t('mapManagement.print.assignmentsList', 'Assignments List');
+    const orgName = orgProfile?.name || 'Event Map';
+    let logoSrc = orgProfile?.logo ? getLogoPath(orgProfile.logo) : null;
+
+    // Ensure logo source is absolute for print window
+    if (logoSrc && logoSrc.startsWith('/')) {
+      logoSrc = window.location.origin + logoSrc;
+    }
+
+    const doc = printWindow.document;
+    doc.open();
+    doc.write(`
+      <html>
+      <head>
+        <title>${assignmentsTitle} - ${selectedYear}</title>
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 40px; }
+          .header { display: flex; align-items: center; gap: 24px; margin-bottom: 32px; border-bottom: 2px solid #f3f4f6; padding-bottom: 24px; }
+          .logo { max-height: 80px; width: auto; object-fit: contain; }
+          .titles { display: flex; flex-direction: column; gap: 4px; }
+          .org-name { font-size: 24px; font-weight: 700; color: #111827; margin: 0; line-height: 1.2; }
+          .doc-title { font-size: 18px; color: #4b5563; margin: 0; font-weight: 500; }
+          table { width: 100%; border-collapse: collapse; font-size: 14px; }
+          th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; }
+          th { background-color: #f9fafb; font-weight: 600; color: #374151; white-space: nowrap; }
+          tr:nth-child(even) { background-color: #fff; }
+          tr:nth-child(odd) { background-color: #fcfcfd; }
+          @media print {
+            body { padding: 0; }
+            button { display: none; }
+            .header { border-bottom-color: #000; }
+            th { background-color: #eee !important; color: #000; -webkit-print-color-adjust: exact; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          ${logoSrc ? `<img src="${logoSrc}" class="logo" alt="Logo" />` : ''}
+          <div class="titles">
+            <h1 class="org-name">${orgName}</h1>
+            <h2 class="doc-title">${assignmentsTitle} - ${selectedYear}</h2>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>${t('mapManagement.print.columns.booth', 'Booth')}</th>
+              <th>${t('mapManagement.print.columns.company', 'Company')}</th>
+              <th>${t('mapManagement.print.columns.contact', 'Contact')}</th>
+              <th>${t('mapManagement.print.columns.phone', 'Phone')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${assignedData
+              .map(
+                (item) => `
+              <tr>
+                <td style="font-weight: 600;">${item.booth}</td>
+                <td>${item.company}</td>
+                <td>${item.contact}</td>
+                <td style="font-family: monospace;">${item.phone}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+        <script>
+          // Wait for logo to load if present before printing
+          window.onload = () => {
+             // Small delay to ensure rendering is complete
+            setTimeout(() => {
+              window.print();
+            }, 500);
+          }
+        </script>
+      </body>
+      </html>
+    `);
+    doc.close();
+  };
+
   const isDefaultMarker = selectedMarker && (selectedMarker.id === -1 || selectedMarker.id === -2);
   const isSpecialMarker = selectedMarker && selectedMarker.id >= 1000;
   const isBoothMarker = selectedMarker && selectedMarker.id > 0 && selectedMarker.id < 1000;
@@ -706,79 +906,168 @@ export default function MapManagement({
               <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {selectedYear}
               </div>
-              {/* Read-only badge removed per request - keep header title behavior unchanged */}
-            </div>
-            <div className="flex gap-2 items-center">
-              {/* Canonical header print action for Event/Org roles */}
-              <div className="relative">
-                <button
-                  onClick={() => setPrintMenuOpen((v) => !v)}
-                  className={`flex items-center gap-2 px-4 py-2 ${isReadOnly ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'} rounded-lg`}
-                  title="Print map"
-                  aria-haspopup="menu"
-                  aria-expanded={printMenuOpen}
-                >
-                  <Icon path={mdiPrinter} size={0.8} />
-                  Print Map
-                </button>
-
-                {printMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden border border-gray-200">
-                    {printModes.length > 0 ? (
-                      <div className="py-1">
-                        {printModes.map((m, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={async () => {
-                              setPrintMenuOpen(false);
-                              await programmaticHeaderPrint(m);
-                            }}
-                            className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                          >
-                            {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-1">
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            setPrintMenuOpen(false);
-                            await snapshotHeaderPrint();
-                          }}
-                          className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                        >
-                          Snapshot (PNG)
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Maintain Copy and Archive buttons for full admin users */}
               {!isReadOnly && (
-                <>
+                <div className="flex gap-1 items-center">
+                  {/* Unified History Operations */}
+                  <div className="flex bg-gray-100 rounded-full p-0.5 ml-2" title={t('mapManagement.undoRedo', 'Undo / Redo Actions')}>
+                    <button
+                      type="button"
+                      onClick={handleGlobalUndo}
+                      disabled={!canGlobalUndo}
+                      className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${
+                        canGlobalUndo
+                          ? 'text-gray-700 hover:bg-white hover:text-gray-900 hover:shadow-sm'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={t('mapManagement.undo', 'Undo last action')}
+                    >
+                      <Icon path={mdiUndo} size={0.7} />
+                      <span className="sr-only">Undo</span>
+                    </button>
+                    <div className="w-px h-4 bg-gray-200 self-center mx-0.5"></div>
+                    <button
+                      type="button"
+                      onClick={handleGlobalRedo}
+                      disabled={!canGlobalRedo}
+                      className={`p-1.5 rounded-full transition-colors flex items-center justify-center ${
+                        canGlobalRedo
+                          ? 'text-gray-700 hover:bg-white hover:text-gray-900 hover:shadow-sm'
+                          : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                      title={t('mapManagement.redo', 'Redo last action')}
+                    >
+                      <Icon path={mdiRedo} size={0.7} />
+                      <span className="sr-only">Redo</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 items-center relative z-50">
+              <button
+                type="button"
+                onClick={() => setIsActionsOpen(!isActionsOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+                title="Actions Menu"
+              >
+                <span>Actions</span>
+                <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+              </button>
+
+              {isActionsOpen && (
+                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] overflow-hidden py-1">
+                  {/* Tools Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Tools
+                  </div>
+                  
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => {
+                        setIsSnapshotModalOpen(true);
+                        setIsActionsOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
+                      <span>Manage Snapshots</span>
+                    </button>
+                  )}
+
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => {
+                        handleCopyFromPreviousYear();
+                        setIsActionsOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
+                      <span>Copy from {selectedYear - 1}</span>
+                    </button>
+                  )}
+
+                  {/* Print Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-y border-gray-100 mt-1">
+                    Print
+                  </div>
+                  
+                  {printModes.length > 0 ? (
+                    printModes.map((m, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={async () => {
+                          setIsActionsOpen(false);
+                          await programmaticHeaderPrint(m);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                        <span>{m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsActionsOpen(false);
+                        await snapshotHeaderPrint();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                      <span>Snapshot (PNG)</span>
+                    </button>
+                  )}
+                  
+                  {(assignments?.length || 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsActionsOpen(false);
+                        handlePrintAssignments();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                      <span>Assignments List</span>
+                    </button>
+                  )}
+
+                  {/* View Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-y border-gray-100 mt-1">
+                    View
+                  </div>
+
                   <button
-                    onClick={handleCopyFromPreviousYear}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                    title={`Copy markers from ${selectedYear - 1}`}
+                    onClick={() => {
+                      setIsLeftSidebarOpen(!isLeftSidebarOpen);
+                      // Don't close menu to allow multiple toggles, or close? User preference. Usually toggle closes menu.
+                      // setIsActionsOpen(false); 
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <Icon path={mdiContentCopy} size={0.8} />
-                    Copy from {selectedYear - 1}
+                    <div className="flex items-center gap-2">
+                      <Icon path={mdiDockLeft} size={0.7} className="text-gray-400" />
+                      <span>Markers Sidebar</span>
+                    </div>
+                    {isLeftSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
                   </button>
+
                   <button
-                    onClick={handleArchive}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={(markersState?.length || 0) === 0}
-                    title={`Archive all markers for ${selectedYear}`}
+                    onClick={() => {
+                      setIsRightSidebarOpen(!isRightSidebarOpen);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <Icon path={mdiArchive} size={0.8} />
-                    Archive {selectedYear}
+                    <div className="flex items-center gap-2">
+                       <Icon path={mdiDockRight} size={0.7} className="text-gray-400" />
+                       <span>Subscriptions Sidebar</span>
+                    </div>
+                     {isRightSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -815,11 +1104,7 @@ export default function MapManagement({
               {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
               <button
                 onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-                className={`p-1 rounded-lg border transition-colors ${
-                  isLeftSidebarOpen
-                    ? 'bg-blue-50 border-blue-200 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                }`}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 title={isLeftSidebarOpen ? 'Hide Markers & Details' : 'Show Markers & Details'}
               >
                 <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
@@ -828,11 +1113,7 @@ export default function MapManagement({
               {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
               <button
                 onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className={`p-1 rounded-lg border transition-colors ${
-                  isRightSidebarOpen
-                    ? 'bg-blue-50 border-blue-200 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                }`}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
               >
                 <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={0.8} />
@@ -860,8 +1141,31 @@ export default function MapManagement({
               />
 
               {/* Title Header */}
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10">
-                Markers List
+              <div className="flex items-center justify-between px-3 py-2 bg-white sticky top-0 z-10 border-b border-gray-100">
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Markers List
+                </div>
+                {!isReadOnly && (
+                  <button
+                    onClick={() => {
+                      setIsBulkEditMode((prev) => !prev);
+                      if (!isBulkEditMode) {
+                        toastSuccess('Bulk edit mode enabled: You can move and remove markers');
+                      } else {
+                        toastSuccess('Bulk edit mode disabled');
+                      }
+                    }}
+                    className={`flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded transition-colors ${
+                      isBulkEditMode
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
+                        : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
+                    }`}
+                    title={isBulkEditMode ? 'Finish Editing' : 'Edit Mode'}
+                  >
+                    <Icon path={isBulkEditMode ? mdiContentSave : mdiPencil} size={0.6} />
+                    <span>{isBulkEditMode ? 'Done' : 'Edit Mode'}</span>
+                  </button>
+                )}
               </div>
 
               {/* Search and Sort Header */}
@@ -1058,16 +1362,43 @@ export default function MapManagement({
               isAdminView={true}
               previewUseVisitorSizing={true}
               markersState={markersState}
+              assignmentsState={finalAssignmentsState}
               updateMarker={isReadOnly ? null : updateMarker}
+              deleteMarker={isReadOnly ? null : deleteMarker}
               selectedYear={selectedYear}
               selectedMarkerId={selectedMarkerId}
-              editMode={!isReadOnly && editMode}
+              editMode={!isReadOnly && (editMode || isBulkEditMode)}
+              isBulkEditMode={!isReadOnly && isBulkEditMode}
               onMarkerSelect={(id) => {
                 setSelectedMarkerId(id);
-                if (!isReadOnly) setEditMode(false);
-                // Auto-open left sidebar when inspecting a marker
-                if (!isLeftSidebarOpen) setIsLeftSidebarOpen(true);
                 
+                // STRICT REQUIREMENT:
+                // 1. Left/Right click does NOT open markers list automatically (handled by UI state).
+                // 2. Do NOT enter edit mode automatically. User must press "Edit" in detail view.
+                
+                if (id) {
+                    if (!isReadOnly) {
+                       // Just update the data reference, but DO NOT enable edit mode yet.
+                       const marker = markersState.find((m) => String(m.id) === String(id));
+                       if (marker) {
+                         // We set editData just in case they click "Edit" later, 
+                         // but we keep editMode = false for now.
+                         setEditData({ ...marker });
+                         
+                         // If we are ALREADY in single edit mode for a DIFFERENT marker, 
+                         // we might want to switch? Or exit?
+                         // Let's exit single edit mode to be safe and show detail view first.
+                         if (editMode && !isBulkEditMode) {
+                            setEditMode(false);
+                         }
+                       }
+                    }
+                } else if (!isBulkEditMode) {
+                    // Deselecting checks
+                    setEditMode(false);
+                    setEditData(null);
+                }
+
                 // Sync with subscription list
                 if (id) {
                   const assignment = assignments?.find((a) => a.marker_id === id);
@@ -1096,6 +1427,7 @@ export default function MapManagement({
                     lng: newLng,
                   }));
                 }
+                // Note: For bulk edit mode, EventClusterMarkers handles dragging directly via updateMarker
               }}
               onMapReady={(map) => {
                 setMapInstance(map);
@@ -1205,7 +1537,7 @@ export default function MapManagement({
                     filteredSubscriptions.map((sub) => {
                       const isSelected = selectedSubscriptionId === sub.id;
                       const company = sub.company || {};
-                      
+
                       // Find assignment and linked marker (booth)
                       const assignment = assignments?.find((a) => a.company_id === company.id);
                       const isAssigned = !!assignment;
@@ -1219,14 +1551,14 @@ export default function MapManagement({
                           onClick={() => {
                             const newId = isSelected ? null : sub.id;
                             setSelectedSubscriptionId(newId);
-                            
+
                             // Visual feedback: Select marker if assigned
                             if (newId && assignedMarkerId) {
                               setSelectedMarkerId(assignedMarkerId);
                             } else {
-                                // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
-                                // we clear the map selection so the previously highlighted marker returns to normal scale/color.
-                                setSelectedMarkerId(null);
+                              // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
+                              // we clear the map selection so the previously highlighted marker returns to normal scale/color.
+                              setSelectedMarkerId(null);
                             }
                           }}
                           className={`w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
@@ -1286,99 +1618,144 @@ export default function MapManagement({
                       transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
                     }}
                   >
-                  {!selectedSubscription ? (
-                    <div className="text-center text-gray-400 py-4">Select a subscription</div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium text-gray-900">Subscription Details</h4>
-                        <button
-                          onClick={() => {
-                            setSelectedSubscriptionId(null);
-                            setSelectedMarkerId(null); // Also clear marker highlight when closing details
-                          }}
-                          className="text-gray-400 hover:text-gray-600"
-                          title="Close details"
-                        >
-                          <Icon path={mdiClose} size={0.8} />
-                        </button>
-                      </div>
+                    {!selectedSubscription ? (
+                      <div className="text-center text-gray-400 py-4">Select a subscription</div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-medium text-gray-900">Subscription Details</h4>
+                          <button
+                            onClick={() => {
+                              setSelectedSubscriptionId(null);
+                              setSelectedMarkerId(null); // Also clear marker highlight when closing details
+                            }}
+                            className="text-gray-400 hover:text-gray-600"
+                            title="Close details"
+                          >
+                            <Icon path={mdiClose} size={0.8} />
+                          </button>
+                        </div>
 
-                      {/* Read-only details view */}
-                      <div className="bg-white p-3 rounded border border-gray-200 shadow-sm text-left">
-                        {/* Details - Compact Layout */}
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
-                          {/* Company */}
-                          <div className="col-span-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Company
-                            </label>
-                            <div className="text-sm font-medium text-gray-900 truncate text-left" title={selectedSubscription.company?.name}>
-                              {selectedSubscription.company?.name || 'Unknown'}
+                        {/* Read-only details view */}
+                        <div className="bg-white p-3 rounded border border-gray-200 shadow-sm text-left">
+                          {/* Details - Compact Layout */}
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
+                            {/* Company */}
+                            <div className="col-span-2">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Company
+                              </label>
+                              <div
+                                className="text-sm font-medium text-gray-900 truncate text-left"
+                                title={selectedSubscription.company?.name}
+                              >
+                                {selectedSubscription.company?.name || 'Unknown'}
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Booths */}
-                          <div className="col-span-2 text-left">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Booths
-                            </label>
-                            <div className="text-sm text-gray-900 text-left">
-                              {selectedSubscription.booth_count || 0}
+                            {/* Booths */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Booths
+                              </label>
+                              <div className="text-sm text-gray-900 text-left">
+                                {selectedSubscription.booth_count || 0}
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Coins */}
-                          <div className="col-span-2 text-left">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Coins
-                            </label>
-                            <div className="text-sm text-gray-900 text-left">{selectedSubscription.coins || 0}</div>
-                          </div>
-
-                          {/* Meals (Sat) */}
-                          <div className="col-span-2 text-left">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Meals (Saturday)
-                            </label>
-                            <div className="text-xs text-gray-700 flex gap-3 text-left">
-                              <span>Breakfast: <span className="font-medium text-gray-900">{selectedSubscription.breakfast_sat || 0}</span></span>
-                              <span>Lunch: <span className="font-medium text-gray-900">{selectedSubscription.lunch_sat || 0}</span></span>
-                              <span>BBQ: <span className="font-medium text-gray-900">{selectedSubscription.bbq_sat || 0}</span></span>
+                            {/* Coins */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Coins
+                              </label>
+                              <div className="text-sm text-gray-900 text-left">
+                                {selectedSubscription.coins || 0}
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Meals (Sun) */}
-                          <div className="col-span-2 text-left">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Meals (Sunday)
-                            </label>
-                            <div className="text-xs text-gray-700 flex gap-3 text-left">
-                              <span>Breakfast: <span className="font-medium text-gray-900">{selectedSubscription.breakfast_sun || 0}</span></span>
-                              <span>Lunch: <span className="font-medium text-gray-900">{selectedSubscription.lunch_sun || 0}</span></span>
+                            {/* Meals (Sat) */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Meals (Saturday)
+                              </label>
+                              <div className="text-xs text-gray-700 flex gap-3 text-left">
+                                <span>
+                                  Breakfast:{' '}
+                                  <span className="font-medium text-gray-900">
+                                    {selectedSubscription.breakfast_sat || 0}
+                                  </span>
+                                </span>
+                                <span>
+                                  Lunch:{' '}
+                                  <span className="font-medium text-gray-900">
+                                    {selectedSubscription.lunch_sat || 0}
+                                  </span>
+                                </span>
+                                <span>
+                                  BBQ:{' '}
+                                  <span className="font-medium text-gray-900">
+                                    {selectedSubscription.bbq_sat || 0}
+                                  </span>
+                                </span>
+                              </div>
                             </div>
-                          </div>
 
-                          {/* Notes - Always visible, even if empty */}
-                          <div className="col-span-2 text-left">
-                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                              Notes
-                            </label>
-                            <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
-                              {selectedSubscription.notes || <span className="text-gray-400 italic">No notes</span>}
+                            {/* Meals (Sun) */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Meals (Sunday)
+                              </label>
+                              <div className="text-xs text-gray-700 flex gap-3 text-left">
+                                <span>
+                                  Breakfast:{' '}
+                                  <span className="font-medium text-gray-900">
+                                    {selectedSubscription.breakfast_sun || 0}
+                                  </span>
+                                </span>
+                                <span>
+                                  Lunch:{' '}
+                                  <span className="font-medium text-gray-900">
+                                    {selectedSubscription.lunch_sun || 0}
+                                  </span>
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Notes - Always visible, even if empty */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                                Notes
+                              </label>
+                              <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
+                                {selectedSubscription.notes || (
+                                  <span className="text-gray-400 italic">No notes</span>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
         </div>
       </div>
+      
+      {/* Snapshot Management Modal */}
+      <SnapshotModal
+        isOpen={isSnapshotModalOpen}
+        onClose={() => setIsSnapshotModalOpen(false)}
+        eventYear={selectedYear}
+        onRestore={() => {
+          // Force a full reload of markers to reflect the restored state
+          // The subscription for real-time updates should handle it, 
+          // but a local state refresh ensures immediate UI consistency.
+          window.location.reload(); 
+        }}
+      />
     </ProtectedSection>
   );
 }
@@ -1443,6 +1820,10 @@ function ViewPanel({
         {!isDefaultMarker && <Field label="Glyph (Booth Label)" value={marker.glyph} />}
         <Field label="Glyph Color" value={marker.glyphColor} />
         <Field label="Glyph Size" value={marker.glyphSize} />
+        {marker.fontWeight && <Field label="Weight" value={marker.fontWeight} />}
+        {marker.fontStyle && <Field label="Style" value={marker.fontStyle} />}
+        {marker.textDecoration && <Field label="Decoration" value={marker.textDecoration} />}
+        {marker.fontFamily && <Field label="Font Family" value={marker.fontFamily} />}
         <Field
           label="Glyph Anchor"
           value={marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : '—'}
@@ -1595,6 +1976,67 @@ function EditPanel({
           value={marker.glyphSize}
           onChange={(v) => onChange('glyphSize', parseFloat(v))}
         />
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+            <select
+              value={marker.fontWeight || ''}
+              onChange={(e) => onChange('fontWeight', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="normal">Normal</option>
+              <option value="bold">Bold</option>
+              <option value="bolder">Bolder</option>
+              <option value="lighter">Lighter</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Style</label>
+            <select
+              value={marker.fontStyle || ''}
+              onChange={(e) => onChange('fontStyle', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="normal">Normal</option>
+              <option value="italic">Italic</option>
+              <option value="oblique">Oblique</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Decor</label>
+            <select
+              value={marker.textDecoration || ''}
+              onChange={(e) => onChange('textDecoration', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="none">None</option>
+              <option value="underline">Underline</option>
+              <option value="overline">Overline</option>
+              <option value="line-through">Strike</option>
+            </select>
+          </div>
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Font Family</label>
+          <select
+            value={marker.fontFamily || ''}
+            onChange={(e) => onChange('fontFamily', e.target.value || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            <option value="">Default</option>
+            <option value="sans-serif">Sans Serif</option>
+            <option value="serif">Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <InputField
             label="Glyph Anchor X"

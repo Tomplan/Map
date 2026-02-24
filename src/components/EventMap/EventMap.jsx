@@ -6,6 +6,7 @@ import { MapContainer, TileLayer } from 'react-leaflet';
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
+import MapContextMenu from './MapContextMenu';
 const AdminMarkerPlacement = lazy(() => import('../AdminMarkerPlacement'));
 import MapControls from './MapControls';
 import FavoritesFilterButton from './FavoritesFilterButton';
@@ -43,11 +44,14 @@ function EventMap({
   isAdminView,
   markersState,
   updateMarker,
+  deleteMarker,
   selectedYear,
+  assignmentsState,
   selectedMarkerId,
   onMarkerSelect,
   previewUseVisitorSizing = false,
   editMode = false,
+  isBulkEditMode = false,
   onMarkerDrag = null,
   onMapReady = null,
 }) {
@@ -85,6 +89,59 @@ function EventMap({
 
   const { t } = useTranslation();
 
+  const safeMarkers = useMemo(
+    () => (Array.isArray(markersState) ? markersState : []),
+    [markersState],
+  );
+
+  const handleContextAddMarker = useCallback(
+    ({ id, lat, lng, type }) => {
+      // Find the next available numeric glyph for standard booth markers
+      let nextGlyph = '';
+      if (type !== 'special') {
+        const existingNumbers = safeMarkers
+          .map((m) => parseInt(m.glyph, 10))
+          .filter((n) => !isNaN(n) && n > 0 && n < 1000); // Exclude special markers
+        
+        if (existingNumbers.length > 0) {
+          nextGlyph = (Math.max(...existingNumbers) + 1).toString();
+        } else {
+          nextGlyph = '1';
+        }
+      }
+
+      const newMarker = {
+        id,
+        lat,
+        lng,
+        name: '',
+        label: '', // This seems unused or legacy? glyph is the main visual label
+        glyph: type === 'special' ? '?' : nextGlyph,
+        logo: '',
+        type: type === 'special' ? 'default' : undefined,
+        // Default appearance settings (matches unassigned marker defaults)
+        iconUrl: 'glyph-marker-icon-gray.svg',
+        iconColor: 'gray',
+        glyphColor: 'white',
+        shadowScale: 1,
+        glyphSize: '14px',
+        fontFamily: 'Roboto',
+        fontWeight: 'bold',
+        fontStyle: 'normal',
+        textDecoration: 'none',
+        glyphAnchor: [0, -5],
+        coreLocked: false,
+        appearanceLocked: false,
+        contentLocked: false,
+        event_year: selectedYear,
+      };
+      // Trigger update which handles creation via ensureMarkerRow if needed
+      updateMarker(id, newMarker, { add: true });
+      if (onMarkerSelect) onMarkerSelect(id);
+    },
+    [updateMarker, selectedYear, onMarkerSelect, safeMarkers],
+  );
+
   const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {
     textPlaceholder: t('map.searchPlaceholder'),
   });
@@ -101,35 +158,44 @@ function EventMap({
   const isMobile = useIsMobile();
   const { trackMarkerView } = useAnalytics();
 
-  const safeMarkers = useMemo(
-    () => (Array.isArray(markersState) ? markersState : []),
-    [markersState],
-  );
+  // safeMarkers definition moved up to fix reference error in handleContextAddMarker
 
   // Filter markers based on favorites toggle
   const filteredMarkers = useMemo(() => {
     if (!showFavoritesOnly || favorites.length === 0) {
       return safeMarkers;
     }
+
     return safeMarkers.filter((marker) => {
       return marker.companyId && isFavorite(marker.companyId);
     });
   }, [safeMarkers, showFavoritesOnly, favorites, isFavorite]);
 
-  // Preload marker logos
+  // Preload marker logos - Optimized to not block main thread
   useEffect(() => {
-    safeMarkers.forEach((marker) => {
-      if (marker.logo) {
-        const img = new window.Image();
-        const r = getResponsiveLogoSources(marker.logo);
-        if (r && 'srcSet' in r) {
-          img.src = r.src;
-          img.srcset = r.srcSet;
-        } else {
-          img.src = getLogoPath(marker.logo);
+    const preloadLogos = () => {
+      safeMarkers.forEach((marker) => {
+        if (marker.logo) {
+          const img = new window.Image();
+          const r = getResponsiveLogoSources(marker.logo);
+          if (r && 'srcSet' in r) {
+            img.src = r.src;
+            img.srcset = r.srcSet;
+          } else {
+            img.src = getLogoPath(marker.logo);
+          }
         }
-      }
-    });
+      });
+    };
+
+    // Use requestIdleCallback if available, otherwise setTimeout
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(preloadLogos, { timeout: 2000 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      const timeout = setTimeout(preloadLogos, 200);
+      return () => clearTimeout(timeout);
+    }
   }, [safeMarkers]);
 
   // Persist favorites-only toggle across page navigation / refresh per event year
@@ -418,9 +484,22 @@ function EventMap({
             zoom: modeSettings['A4 — Portrait'].zoom,
             invalidateBounds: false,
           }),
-          Mode.Landscape('A4', { title: 'Current view — landscape', margin }),
-          Mode.Auto('A4', { title: 'Auto fit', margin }),
-          Mode.Custom('A4', { title: 'Select area', customArea: true, margin }),
+          /*
+          Mode.Landscape('A4', {
+            title: 'Current view — landscape',
+            margin,
+            invalidateBounds: true,
+          }),
+          */
+          // Mode.Auto removed as requested
+          /*
+          Mode.Custom('A4', {
+            title: 'Select area',
+            customArea: true, // Re-adding explicit property as hint
+            margin,
+            invalidateBounds: true,
+          }),
+          */
         ];
 
         // Register custom marker cloner to preserve icon properties
@@ -464,6 +543,11 @@ function EventMap({
 
           // Helper: find print config for a given mode title
           const findPrintConfig = (modeTitleRaw) => {
+            if (!modeTitleRaw) return null;
+            // Skip config lookup for Custom/Select Area modes to let plugin handle bounds
+            if (modeTitleRaw.includes('Select area') || modeTitleRaw.includes('Custom')) {
+              return null;
+            }
             const modeTitle = normalizeModeTitle(modeTitleRaw);
             // Normalized exact lookup
             let config = PRINT_CONFIG.modes[modeTitle];
@@ -491,6 +575,9 @@ function EventMap({
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintInit, (event) => {
             const modeTitleRaw = event.mode?.options?.title || 'unknown';
             const printConfig = findPrintConfig(modeTitleRaw);
+
+            // Always reset pending config at start of print cycle
+            pendingPrintConfig = null;
 
             if (printConfig && printConfig.center) {
               // Save original view for restore if not saved yet
@@ -525,49 +612,45 @@ function EventMap({
           // At this point the plugin has already set its view and waited for tiles
           // We apply our custom center/zoom here as a fallback verification
           browserPrint._map.on(window.L.BrowserPrint.Event.Print, async (event) => {
-            if (!pendingPrintConfig) {
-              console.log('[Print] Print - no pending config');
-              return;
-            }
-
-            const { center, zoom } = pendingPrintConfig;
             const printMap = event.printMap;
+            if (!printMap) return;
 
-            console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
-
-            if (printMap) {
-              // Apply our desired view - this ensures the correct center is used
+            if (pendingPrintConfig) {
+              const { center, zoom } = pendingPrintConfig;
+              console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
+              // Apply our desired view - this ensures the correct center is used for presets
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
               console.log('[Print] Print - view applied');
+            }
 
-              // Recompute marker sizes for print zoom using ZOOM_BUCKETS
-              if (event.printObjects && event.printObjects['L.Marker']) {
-                const printMarkers = event.printObjects['L.Marker'];
-                const printZoom = printMap.getZoom();
-                console.log(
-                  `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
-                );
+            // Recompute marker sizes for print zoom using ZOOM_BUCKETS
+            // This runs for ALL modes, including Custom/Area selection
+            if (event.printObjects && event.printObjects['L.Marker']) {
+              const printMarkers = event.printObjects['L.Marker'];
+              const printZoom = printMap.getZoom();
+              console.log(
+                `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
+              );
 
-                try {
-                  printMarkers.forEach((printMarker) => {
-                    if (printMarker.options.icon && printMarker.options.icon.options) {
-                      const originalIconOpts = printMarker.options.icon.options;
-                      const recomputedOpts = computePrintIconOptions(
-                        originalIconOpts,
-                        printZoom,
-                        isAdminView,
-                      );
+              try {
+                printMarkers.forEach((printMarker) => {
+                  if (printMarker.options.icon && printMarker.options.icon.options) {
+                    const originalIconOpts = printMarker.options.icon.options;
+                    const recomputedOpts = computePrintIconOptions(
+                      originalIconOpts,
+                      printZoom,
+                      isAdminView,
+                    );
 
-                      if (recomputedOpts && recomputedOpts.iconSize) {
-                        const newIcon = L.icon.glyph(recomputedOpts);
-                        printMarker.setIcon(newIcon);
-                      }
+                    if (recomputedOpts && recomputedOpts.iconSize) {
+                      const newIcon = L.icon.glyph(recomputedOpts);
+                      printMarker.setIcon(newIcon);
                     }
-                  });
-                } catch (error) {
-                  console.error('[Print] Error recomputing marker sizes:', error);
-                }
+                  }
+                });
+              } catch (error) {
+                console.error('[Print] Error recomputing marker sizes:', error);
               }
             }
 
@@ -960,17 +1043,21 @@ function EventMap({
           ))}
 
           <EventClusterMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={filteredMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
+            deleteMarker={isBulkEditMode || (editMode && selectedMarkerId) ? deleteMarker : null} // Allow delete in bulk edit OR single edit
             isMarkerDraggable={(marker) =>
-              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+              isMarkerDraggable(marker, isAdminView) &&
+              (isBulkEditMode || (editMode && marker.id === selectedMarkerId))
             }
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
+            isBulkEditMode={isBulkEditMode}
             applyVisitorSizing={previewUseVisitorSizing}
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
@@ -980,19 +1067,37 @@ function EventMap({
             zoomAnimating={zoomAnimating}
             onMarkerDrag={onMarkerDrag}
           />
+          
+          <MapContextMenu
+            isBulkEditMode={(isBulkEditMode || editMode) && isAdminView} // Only allow adding if implicitly or explicitly in edit mode (and admin)
+            onAddMarker={handleContextAddMarker}
+          />
 
           <EventSpecialMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={safeMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
+            // Logic for delete permission:
+            // 1. Bulk Edit Mode: ALWAYS ALLOWED
+            // 2. Single Edit Mode: ALLOWED ONLY for the currently edited marker
+            deleteMarker={(markerId) => {
+               if (isBulkEditMode) return deleteMarker(markerId);
+               if (editMode && selectedMarkerId && String(markerId) === String(selectedMarkerId)) {
+                   return deleteMarker(markerId);
+               }
+               return null;
+            }}
             isMarkerDraggable={(marker) =>
-              isMarkerDraggable(marker, isAdminView) || (editMode && marker.id === selectedMarkerId)
+              (isBulkEditMode && isMarkerDraggable(marker, isAdminView)) ||
+              (editMode && String(marker.id) === String(selectedMarkerId) && isMarkerDraggable(marker, isAdminView))
             }
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}
+            isBulkEditMode={isBulkEditMode}
             applyVisitorSizing={previewUseVisitorSizing}
             selectedYear={selectedYear}
             currentZoom={currentZoom}
@@ -1010,11 +1115,13 @@ EventMap.propTypes = {
   previewUseVisitorSizing: PropTypes.bool,
   markersState: PropTypes.array,
   updateMarker: PropTypes.func.isRequired,
+  deleteMarker: PropTypes.func, // Optional, only provided in admin mode
   selectedYear: PropTypes.number,
   selectedMarkerId: PropTypes.number,
   onMarkerSelect: PropTypes.func,
   editMode: PropTypes.bool,
   onMarkerDrag: PropTypes.func,
+  isBulkEditMode: PropTypes.bool,
 };
 
 EventMap.defaultProps = {
@@ -1026,6 +1133,7 @@ EventMap.defaultProps = {
   previewUseVisitorSizing: false,
   editMode: false,
   onMarkerDrag: null,
+  isBulkEditMode: false,
 };
 
 export default EventMap;

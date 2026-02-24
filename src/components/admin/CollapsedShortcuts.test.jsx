@@ -2,6 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+jest.mock('../../supabaseClient', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
+    },
+  },
+}));
+
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }) =>
@@ -24,8 +32,9 @@ describe('CollapsedShortcuts', () => {
     const sub = screen.getByRole('link', { name: /adminNav.eventSubscriptions/i });
     expect(sub).toHaveAttribute('href', '/admin/subscriptions');
 
-    const assign = screen.getByRole('link', { name: /adminNav.assignments/i });
-    expect(assign).toHaveAttribute('href', '/admin/assignments');
+    // Assignments hidden
+    // const assign = screen.getByRole('link', { name: /adminNav.assignments/i });
+    // expect(assign).toHaveAttribute('href', '/admin/assignments');
 
     const prog = screen.getByRole('link', { name: /adminNav.programManagement/i });
     expect(prog).toHaveAttribute('href', '/admin/program');

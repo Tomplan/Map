@@ -108,6 +108,12 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Manage system configuration and preferences",
+    "fullScreen": {
+      "title": "Full Screen Mode",
+      "description": "Toggle full screen display",
+      "enter": "Enter Full Screen",
+      "exit": "Exit Full Screen"
+    },
     "categoryManagement": {
       "title": "Category Management",
       "description": "Manage exhibitor categories for filtering and organization"
@@ -399,6 +405,15 @@
     "ariaLabel": "Interactive event map"
   },
   "mapManagement": {
+    "print": {
+      "assignmentsList": "Assignments List",
+      "columns": {
+        "booth": "Number",
+        "company": "Company Name",
+        "contact": "Contact",
+        "phone": "Phone"
+      }
+    },
     "sortId": "ID",
     "sortName": "Name",
     "sortType": "Type",
@@ -409,6 +424,7 @@
     "markerIdPlaceholder": "Marker ID (integer)",
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "undo": "Undo last change",
     "errorInvalidId": "Please enter a valid numeric ID.",
     "errorIdExists": "ID already exists. Please choose another.",
     "searchPlaceholder": "Search by ID, booth label, or name...",
@@ -549,8 +565,7 @@
     "addNewCompanyDesc": "Register a new company in the system",
     "manageSubscriptions": "Manage Subscriptions",
     "manageSubscriptionsDesc": "Add or update event subscriptions",
-    "assignBooths": "Assign Booths",
-    "assignBoothsDesc": "Manage booth assignments for companies",
+    "mapManagementDesc": "Manage map markers and booth locations",
     "recentActivity": "Recent Activity",
     "recentActivityPlaceholder": "Activity tracking will be added in a future update."
   },
@@ -741,5 +756,30 @@
     "navigationRequiredText": "To run the tour we need to navigate to {{page}}. Do you want to continue?",
     "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
+  },
+  "mapManagement": {
+    "title": "Map Management",
+    "undo": "Undo last action",
+    "redo": "Redo last action",
+    "undoRedo": "Undo / Redo Actions",
+    "searchPlaceholder": "Search markers...",
+    "sortBy": "Sort by",
+    "sortId": "ID",
+    "sortName": "Name",
+    "sortType": "Type",
+    "selectMarker": "Select a marker to edit",
+    "undoMarker": "Undo marker move",
+    "redoMarker": "Redo marker move",
+    "undoAssignment": "Undo assignment",
+    "redoAssignment": "Redo assignment",
+    "print": {
+      "assignmentsList": "Assignments List",
+      "columns": {
+        "booth": "Booth",
+        "company": "Company",
+        "contact": "Contact",
+        "phone": "Phone"
+      }
+    }
   }
 }

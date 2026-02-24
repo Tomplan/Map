@@ -57,6 +57,7 @@ export default function AssignmentsTab({ selectedYear }) {
   const [sortDirection, setSortDirection] = useState(initialPrefs.sortDirection); // 'asc' or 'desc'
   const [columnSort, setColumnSort] = useState(initialPrefs.columnSort); // 'marker_id' or 'glyph_text'
   const [columnSortDirection, setColumnSortDirection] = useState(initialPrefs.columnSortDirection); // 'asc' or 'desc'
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
 
   // Sync with database preferences when they load
   useEffect(() => {
@@ -431,23 +432,48 @@ export default function AssignmentsTab({ selectedYear }) {
             {filteredCompanies.length} of {subscribedCompanies.length}
           </span>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => handleViewArchived(selectedYear)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            title={`View archived assignments for ${selectedYear}`}
-          >
-            <Icon path={mdiHistory} size={0.8} />
-            <span>{t('helpPanel.assignments.archive')}</span>
-          </button>
-          <button
-            onClick={handleArchive}
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={assignments.length === 0}
-            title={`Archive all assignments for ${selectedYear}`}
-          >
-            <Icon path={mdiArchive} size={0.8} />
-          </button>
+        <div className="flex gap-2 relative z-50">
+          <div className="relative">
+            <button
+              onClick={() => setIsActionsOpen(!isActionsOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+              title="Actions Menu"
+            >
+              <span>Actions</span>
+              <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+            </button>
+
+            {isActionsOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                  Data Tools
+                </div>
+
+                <button
+                  onClick={() => {
+                    handleViewArchived(selectedYear);
+                    setIsActionsOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  title={`View archived assignments for ${selectedYear}`}
+                >
+                  <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
+                  <span>{t('helpPanel.assignments.archive')}</span>
+                </button>
+                
+                {/* <button
+                  onClick={handleArchive}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                  disabled={assignments.length === 0}
+                  title={`Archive all assignments for ${selectedYear}`}
+                >
+                  <Icon path={mdiArchive} size={0.7} />
+                  <span>Archive {selectedYear}</span>
+                </button> */}
+              </div>
+            )}
+          </div>
+
           {/* Sort Controls */}
           <div className="flex items-end gap-3">
             <div>

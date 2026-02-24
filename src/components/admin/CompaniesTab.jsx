@@ -14,6 +14,8 @@ import {
   mdiMagnify,
   mdiDomain,
   mdiTag,
+  mdiChevronDown,
+  mdiChevronUp,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
@@ -186,6 +188,7 @@ export default function CompaniesTab() {
   const [activeTab, setActiveTab] = useState('public');
   const [companyCategories, setCompanyCategories] = useState({});
   const [editingCategories, setEditingCategories] = useState([]);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
 
   // Use company mutations hook
   const {
@@ -321,28 +324,53 @@ export default function CompaniesTab() {
         </div>
 
         {/* Action buttons: Export, Import, Add */}
-        <div className="flex gap-2">
-          <ExportButton
-            dataType="companies"
-            data={companies}
-            filename={`companies-${new Date().toISOString().split('T')[0]}`}
-            additionalData={{ supabase }}
-          />
-          <ImportButton
-            dataType="companies"
-            existingData={companies}
-            onImportComplete={async () => {
-              // Reload companies - categories will reload automatically via useEffect
-              await reloadCompanies();
-            }}
-          />
+        <div className="flex gap-2 relative z-50">
           <button
             onClick={handleStartCreate}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <Icon path={mdiPlus} size={0.8} />
             {translateSafe('companies.addCompany')}
           </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsActionsOpen(!isActionsOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+              title="Actions Menu"
+            >
+              <span>Actions</span>
+              <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+            </button>
+
+            {isActionsOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                  Data Tools
+                </div>
+                
+                <ImportButton
+                  dataType="companies"
+                  existingData={companies}
+                  onImportComplete={async () => {
+                    await reloadCompanies();
+                    setIsActionsOpen(false);
+                  }}
+                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent"
+                  className="block w-full"
+                />
+
+                <ExportButton
+                  dataType="companies"
+                  data={companies}
+                  filename={`companies-${new Date().toISOString().split('T')[0]}`}
+                  additionalData={{ supabase }}
+                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 justify-between bg-transparent"
+                  className="block w-full"
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

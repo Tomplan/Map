@@ -51,6 +51,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
@@ -311,54 +312,75 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
         </div>
-        <div className="flex gap-2" data-testid="import-export-buttons">
-          <ExportButton
-            dataType="event_subscriptions"
-            data={subscriptions}
-            additionalData={{
-              supabase,
-              eventYear: selectedYear,
-            }}
-            filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
-          />
-          <ImportButton
-            dataType="event_subscriptions"
-            existingData={subscriptions}
-            eventYear={selectedYear}
-            additionalData={{
-              supabase,
-              selectedYear,
-            }}
-            onImportComplete={async () => {
-              // Reload subscriptions after import completes
-              await reload();
-            }}
-          />
-          <button
-            onClick={handleCopyFromPreviousYear}
-            data-testid="copy-from-previous-year-button"
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            title={`Copy from ${selectedYear - 1}`}
-          >
-            <Icon path={mdiContentCopy} size={0.8} />
-            Copy from {selectedYear - 1}
-          </button>
-          <button
-            onClick={handleArchive}
-            data-testid="archive-year-button"
-            className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
-          >
-            <Icon path={mdiArchive} size={0.8} />
-            Archive {selectedYear}
-          </button>
+        <div className="flex gap-2 relative z-50">
           <button
             onClick={() => setIsAdding(true)}
             data-testid="subscribe-company-button"
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             <Icon path={mdiPlus} size={0.8} />
             Subscribe Company
           </button>
+
+          <div className="relative">
+            <button
+              onClick={() => setIsActionsOpen(!isActionsOpen)}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+              title="Actions Menu"
+            >
+              <span>Actions</span>
+              <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+            </button>
+            
+            {isActionsOpen && (
+              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                  Data Tools
+                </div>
+
+                <ImportButton
+                  dataType="event_subscriptions"
+                  existingData={subscriptions}
+                  eventYear={selectedYear}
+                  additionalData={{
+                    supabase,
+                    selectedYear,
+                  }}
+                  onImportComplete={async () => {
+                    await reload();
+                    setIsActionsOpen(false);
+                  }}
+                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent"
+                  className="block w-full"
+                />
+
+                <ExportButton
+                  dataType="event_subscriptions"
+                  data={subscriptions}
+                  additionalData={{
+                    supabase,
+                    eventYear: selectedYear,
+                  }}
+                  filename={`subscriptions-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
+                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 justify-between bg-transparent"
+                  className="block w-full"
+                />
+
+                <button
+                  onClick={() => {
+                    handleCopyFromPreviousYear();
+                    setIsActionsOpen(false);
+                  }}
+                  data-testid="copy-from-previous-year-button"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  title={`Copy from ${selectedYear - 1}`}
+                >
+                  <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
+                  <span>Copy from {selectedYear - 1}</span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
