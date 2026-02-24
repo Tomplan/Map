@@ -15,6 +15,7 @@ const ImportModal = lazy(() => import('./ImportModal'));
  * @param {function} props.onImportComplete - Callback when import completes successfully
  * @param {function} props.onImportError - Callback when import fails
  * @param {string} props.className - Additional CSS classes
+ * @param {string} props.buttonClassName - Additional CSS classes for the button
  */
 export default function ImportButton({
   dataType,
@@ -24,6 +25,7 @@ export default function ImportButton({
   onImportComplete,
   onImportError,
   className = '',
+  buttonClassName = '',
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const config = getDataConfig(dataType);
@@ -45,7 +47,10 @@ export default function ImportButton({
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className={`flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors ${className}`}
+        className={
+          buttonClassName ||
+          `flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors ${className}`
+        }
         title={config.labels.importButton}
       >
         <Icon path={mdiUpload} size={0.8} />

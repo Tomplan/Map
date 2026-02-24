@@ -44,6 +44,7 @@ function EventMap({
   markersState,
   updateMarker,
   selectedYear,
+  assignmentsState,
   selectedMarkerId,
   onMarkerSelect,
   previewUseVisitorSizing = false,
@@ -418,9 +419,22 @@ function EventMap({
             zoom: modeSettings['A4 — Portrait'].zoom,
             invalidateBounds: false,
           }),
-          Mode.Landscape('A4', { title: 'Current view — landscape', margin }),
-          Mode.Auto('A4', { title: 'Auto fit', margin }),
-          Mode.Custom('A4', { title: 'Select area', customArea: true, margin }),
+          /*
+          Mode.Landscape('A4', {
+            title: 'Current view — landscape',
+            margin,
+            invalidateBounds: true,
+          }),
+          */
+          // Mode.Auto removed as requested
+          /*
+          Mode.Custom('A4', {
+            title: 'Select area',
+            customArea: true, // Re-adding explicit property as hint
+            margin,
+            invalidateBounds: true,
+          }),
+          */
         ];
 
         // Register custom marker cloner to preserve icon properties
@@ -464,6 +478,11 @@ function EventMap({
 
           // Helper: find print config for a given mode title
           const findPrintConfig = (modeTitleRaw) => {
+            if (!modeTitleRaw) return null;
+            // Skip config lookup for Custom/Select Area modes to let plugin handle bounds
+            if (modeTitleRaw.includes('Select area') || modeTitleRaw.includes('Custom')) {
+              return null;
+            }
             const modeTitle = normalizeModeTitle(modeTitleRaw);
             // Normalized exact lookup
             let config = PRINT_CONFIG.modes[modeTitle];
@@ -491,6 +510,9 @@ function EventMap({
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintInit, (event) => {
             const modeTitleRaw = event.mode?.options?.title || 'unknown';
             const printConfig = findPrintConfig(modeTitleRaw);
+
+            // Always reset pending config at start of print cycle
+            pendingPrintConfig = null;
 
             if (printConfig && printConfig.center) {
               // Save original view for restore if not saved yet
@@ -525,49 +547,45 @@ function EventMap({
           // At this point the plugin has already set its view and waited for tiles
           // We apply our custom center/zoom here as a fallback verification
           browserPrint._map.on(window.L.BrowserPrint.Event.Print, async (event) => {
-            if (!pendingPrintConfig) {
-              console.log('[Print] Print - no pending config');
-              return;
-            }
-
-            const { center, zoom } = pendingPrintConfig;
             const printMap = event.printMap;
+            if (!printMap) return;
 
-            console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
-
-            if (printMap) {
-              // Apply our desired view - this ensures the correct center is used
+            if (pendingPrintConfig) {
+              const { center, zoom } = pendingPrintConfig;
+              console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
+              // Apply our desired view - this ensures the correct center is used for presets
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
               console.log('[Print] Print - view applied');
+            }
 
-              // Recompute marker sizes for print zoom using ZOOM_BUCKETS
-              if (event.printObjects && event.printObjects['L.Marker']) {
-                const printMarkers = event.printObjects['L.Marker'];
-                const printZoom = printMap.getZoom();
-                console.log(
-                  `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
-                );
+            // Recompute marker sizes for print zoom using ZOOM_BUCKETS
+            // This runs for ALL modes, including Custom/Area selection
+            if (event.printObjects && event.printObjects['L.Marker']) {
+              const printMarkers = event.printObjects['L.Marker'];
+              const printZoom = printMap.getZoom();
+              console.log(
+                `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
+              );
 
-                try {
-                  printMarkers.forEach((printMarker) => {
-                    if (printMarker.options.icon && printMarker.options.icon.options) {
-                      const originalIconOpts = printMarker.options.icon.options;
-                      const recomputedOpts = computePrintIconOptions(
-                        originalIconOpts,
-                        printZoom,
-                        isAdminView,
-                      );
+              try {
+                printMarkers.forEach((printMarker) => {
+                  if (printMarker.options.icon && printMarker.options.icon.options) {
+                    const originalIconOpts = printMarker.options.icon.options;
+                    const recomputedOpts = computePrintIconOptions(
+                      originalIconOpts,
+                      printZoom,
+                      isAdminView,
+                    );
 
-                      if (recomputedOpts && recomputedOpts.iconSize) {
-                        const newIcon = L.icon.glyph(recomputedOpts);
-                        printMarker.setIcon(newIcon);
-                      }
+                    if (recomputedOpts && recomputedOpts.iconSize) {
+                      const newIcon = L.icon.glyph(recomputedOpts);
+                      printMarker.setIcon(newIcon);
                     }
-                  });
-                } catch (error) {
-                  console.error('[Print] Error recomputing marker sizes:', error);
-                }
+                  }
+                });
+              } catch (error) {
+                console.error('[Print] Error recomputing marker sizes:', error);
               }
             }
 
@@ -960,6 +978,7 @@ function EventMap({
           ))}
 
           <EventClusterMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={filteredMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}
@@ -982,6 +1001,7 @@ function EventMap({
           />
 
           <EventSpecialMarkers
+            assignmentsState={assignmentsState}
             safeMarkers={safeMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}

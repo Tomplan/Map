@@ -211,34 +211,16 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                   setPendingYear(newY);
                   setShowYearModal(true);
                 }}
+                hasMapManagement={true}
               />
-
-              {/* Map Management - Now year-scoped since markers are per-year */}
-              {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
-                <SidebarTile
-                  to="/admin/map"
-                  icon={mdiMap}
-                  label={t('adminNav.mapManagement')}
-                  isActive={location.pathname === '/admin/map'}
-                />
-              )}
+              
+              {/* Map Management was here, moved inside YearScopeSidebar for better ordering */}
             </div>
 
             <div
               className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}
             >
               <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-
-              {/* Map Management - Collapsed state */}
-              {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
-                <SidebarTile
-                  to="/admin/map"
-                  icon={mdiMap}
-                  label={t('adminNav.mapManagement')}
-                  isCollapsed={isCollapsed}
-                  isActive={location.pathname === '/admin/map'}
-                />
-              )}
             </div>
           </div>
 

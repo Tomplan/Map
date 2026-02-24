@@ -29,6 +29,15 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
     error: entry.state.error,
   });
 
+  const [historyStack, setHistoryStack] = useState([]);
+  const [redoStack, setRedoStack] = useState([]);
+
+  // Clear history on year change to prevent cross-year undo confusion
+  useEffect(() => {
+    setHistoryStack([]);
+    setRedoStack([]);
+  }, [eventYear]);
+
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
 
@@ -101,6 +110,94 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
     [eventYear, entry],
   );
 
+  // Undo last action (create, update, delete)
+  const undo = useCallback(async () => {
+    if (historyStack.length === 0) return;
+
+    const action = historyStack[historyStack.length - 1];
+    const newStack = historyStack.slice(0, -1);
+    setHistoryStack(newStack);
+    // Add to redo stack with new timestamp
+    setRedoStack((prev) => [...prev, { ...action, timestamp: Date.now() }]);
+
+    try {
+      if (action.type === 'CREATE') {
+        // Undo create = delete
+        await supabase.from('assignments').delete().eq('id', action.id);
+      } else if (action.type === 'DELETE') {
+        // Undo delete = create (restore)
+        // Remove id to let DB generate it, or keep it if we want to restore exactly?
+        // Supabase allows inserting with specific ID.
+        const { error } = await supabase.from('assignments').insert([action.data]);
+        if (error) throw error;
+      } else if (action.type === 'UPDATE') {
+        // Undo update = update with previous props
+        const { error } = await supabase
+          .from('assignments')
+          .update(action.previousProps)
+          .eq('id', action.id);
+        if (error) throw error;
+      }
+      await loadAssignments(true);
+    } catch (err) {
+      console.error('Error undoing assignment action:', err);
+      // If undo failed, maybe put it back on stack?
+      // For now, we assume success or user can retry manually.
+      // And remove from redo stack
+      setHistoryStack((prev) => [...prev, action]); // Restore if failed
+      setRedoStack((prev) => prev.slice(0, -1));
+    }
+  }, [historyStack, loadAssignments]);
+
+  // Redo last undone action
+  const redo = useCallback(async () => {
+    if (redoStack.length === 0) return;
+
+    const action = redoStack[redoStack.length - 1];
+    const newRedoStack = redoStack.slice(0, -1);
+    setRedoStack(newRedoStack);
+    // Add back to history stack with new timestamp
+    setHistoryStack((prev) => [...prev, { ...action, timestamp: Date.now() }]);
+
+    try {
+      if (action.type === 'CREATE') {
+        // Redo create = re-insert
+        // 'CREATE' action means we originally created it. Undo deleted it. Redo should recreate it.
+        // We need the data.
+        if (action.data) {
+          // Clone data to avoid mutating state
+          const insertData = { ...action.data };
+          // Remove any nested objects that might have slipped in (just in case)
+          delete insertData.company;
+          delete insertData.marker;
+          
+          const { error } = await supabase.from('assignments').insert([insertData]);
+          if (error) throw error;
+        } else {
+          console.error('Cannot redo CREATE: missing data');
+        }
+      } else if (action.type === 'DELETE') {
+        // Redo delete = delete again
+        await supabase.from('assignments').delete().eq('id', action.data.id);
+      } else if (action.type === 'UPDATE') {
+        // Redo update = update with NEW props
+        if (action.newProps) {
+          const { error } = await supabase
+            .from('assignments')
+            .update(action.newProps)
+            .eq('id', action.id);
+          if (error) throw error;
+        }
+      }
+      await loadAssignments(true);
+    } catch (err) {
+      console.error('Error redoing assignment action:', err);
+      // Restore stacks if failed
+      setRedoStack((prev) => [...prev, action]);
+      setHistoryStack((prev) => prev.slice(0, -1));
+    }
+  }, [redoStack, loadAssignments]);
+
   // Create new assignment
   const createAssignment = useCallback(
     async (assignmentData) => {
@@ -114,17 +211,19 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
           .from('assignments')
           .insert([dataWithYear])
           .select(
-            `
-          *,
-            company:companies(id, name, logo, website, info),
-            marker:markers_core(id, lat, lng)
-
-        `,
+            `*, company:companies(id, name, logo, website, info), marker:markers_core(id, lat, lng)`,
           )
           .single();
 
         if (insertError) throw insertError;
 
+        // Strip nested relation data for history stack to ensure clean re-insertion
+        const { company, marker, ...cleanData } = data;
+        setHistoryStack((prev) => [
+          ...prev,
+          { type: 'CREATE', id: data.id, data: cleanData, timestamp: Date.now() },
+        ]);
+        setRedoStack([]);
         await loadAssignments(true);
         return { data, error: null };
       } catch (err) {
@@ -198,6 +297,15 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
   const unassignCompanyFromMarker = useCallback(
     async (markerId, companyId) => {
       try {
+        // Fetch assignment first for history
+        const { data: existingAssignment } = await supabase
+          .from('assignments')
+          .select('*')
+          .eq('marker_id', markerId)
+          .eq('company_id', companyId)
+          .eq('event_year', eventYear)
+          .single();
+
         const { error: deleteError } = await supabase
           .from('assignments')
           .delete()
@@ -207,6 +315,23 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
 
         if (deleteError) throw deleteError;
 
+        if (existingAssignment) {
+          // Ensure we don't accidentally store joined data if select ever changes
+          const cleanHistoryData = { ...existingAssignment };
+          // Standard cleanup
+          delete cleanHistoryData.company;
+          delete cleanHistoryData.marker;
+          // Also remove system fields that might cause issues on re-insert if RLS is strict
+          // But usually we WANT to restore with original ID and created_at if possible
+          // to maintain history. If specific RLS prevents this, we might need to remove them.
+          // For now, assuming we can restore fully.
+          
+          setHistoryStack((prev) => [
+            ...prev,
+            { type: 'DELETE', data: cleanHistoryData, timestamp: Date.now() },
+          ]);
+          setRedoStack([]);
+        }
         await loadAssignments(true);
         return { error: null };
       } catch (err) {
@@ -376,10 +501,16 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
     deleteAssignment,
     assignCompanyToMarker,
     unassignCompanyFromMarker,
+    undo,
+    canUndo: historyStack.length > 0,
     getMarkerAssignments,
     getCompanyAssignments,
     archiveCurrentYear,
     loadArchivedAssignments,
     reload: loadAssignments,
+    redo,
+    canRedo: redoStack.length > 0,
+    historyStack,
+    redoStack,
   };
 }
