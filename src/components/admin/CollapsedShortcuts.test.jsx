@@ -32,8 +32,9 @@ describe('CollapsedShortcuts', () => {
     const sub = screen.getByRole('link', { name: /adminNav.eventSubscriptions/i });
     expect(sub).toHaveAttribute('href', '/admin/subscriptions');
 
-    const assign = screen.getByRole('link', { name: /adminNav.assignments/i });
-    expect(assign).toHaveAttribute('href', '/admin/assignments');
+    // Assignments hidden
+    // const assign = screen.getByRole('link', { name: /adminNav.assignments/i });
+    // expect(assign).toHaveAttribute('href', '/admin/assignments');
 
     const prog = screen.getByRole('link', { name: /adminNav.programManagement/i });
     expect(prog).toHaveAttribute('href', '/admin/program');
