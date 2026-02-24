@@ -54,47 +54,47 @@ const isTestEnv =
   process.env &&
   (process.env.JEST_WORKER_ID !== undefined || process.env.NODE_ENV === 'test');
 
-let supabase;
+// Lazy-initialized supabase client. We create the client only when `getSupabase`
+// is called which allows the app to delay expensive network/WS setups until a
+// feature actually needs Supabase. Tests still get a deterministic mock client.
+let _internalSupabase = null;
 
-if (isTestEnv) {
-  // shallow, resilient mock for unit tests. Provide simple chainable methods
-  // used in tests to avoid network calls and keep tests deterministic.
-  const chainable = () => {
-    const api = {
-      select() {
-        return api;
-      },
-      in() {
-        return api;
-      },
-      or() {
-        return api;
-      },
-      eq() {
-        return api;
-      },
-      order() {
-        return api;
-      },
-      limit() {
-        return api;
-      },
-      single() {
-        return Promise.resolve({ data: null, error: null });
-      },
-      then(fn) {
-        return Promise.resolve({ data: [] }).then(fn);
-      },
-    };
-    return api;
+function makeChainable() {
+  const api = {
+    select() {
+      return api;
+    },
+    in() {
+      return api;
+    },
+    or() {
+      return api;
+    },
+    eq() {
+      return api;
+    },
+    order() {
+      return api;
+    },
+    limit() {
+      return api;
+    },
+    single() {
+      return Promise.resolve({ data: null, error: null });
+    },
+    then(fn) {
+      return Promise.resolve({ data: [] }).then(fn);
+    },
   };
+  return api;
+}
 
-  supabase = {
+function makeTestClient() {
+  _internalSupabase = {
     from: function () {
-      return chainable();
+      return makeChainable();
     },
     channel: function () {
-      // Chainable channel mock for tests: supports .on(...).on(...).subscribe()
       return (function () {
         const obj = {
           on() {
@@ -124,138 +124,137 @@ if (isTestEnv) {
         return { data: null, error: null };
       },
     },
+    // Add getUser to match Supabase client API used by hooks/tests
+    auth: {
+      signIn: async function () {
+        return { data: null, error: null };
+      },
+      getUser: async function () {
+        return { data: { user: null }, error: null };
+      },
+      getSession: async function () {
+        return { data: { session: null }, error: null };
+      },
+      onAuthStateChange: function () {
+        return { data: { subscription: { unsubscribe() {} } } };
+      },
+    },
   };
-} else {
+  return _internalSupabase;
+}
+
+function makeRuntimeFallback() {
+  _internalSupabase = {
+    from: function () {
+      return makeChainable();
+    },
+    channel: function () {
+      const obj = {
+        on() {
+          return obj;
+        },
+        subscribe() {
+          return obj;
+        },
+        unsubscribe() {},
+      };
+      return obj;
+    },
+    removeChannel: function () {
+      return true;
+    },
+    storage: {
+      from: function () {
+        return {
+          upload: async function () {
+            return { data: null, error: new Error('Supabase storage not configured') };
+          },
+        };
+      },
+    },
+    auth: {
+      getSession: async function () {
+        return { data: { session: null }, error: null };
+      },
+      onAuthStateChange: function (cb) {
+        return { data: { subscription: { unsubscribe() {} } } };
+      },
+      getUser: async function () {
+        return { data: { user: null }, error: null };
+      },
+      signInWithPassword: async function () {
+        console.warn(
+          'Supabase auth called but Supabase is not configured. Returning no-op error from signInWithPassword.',
+        );
+        return { data: null, error: new Error('Supabase auth not configured') };
+      },
+      signIn: async function () {
+        console.warn('Supabase auth.signIn called but Supabase is not configured.');
+        return { data: null, error: new Error('Supabase auth not configured') };
+      },
+    },
+  };
+  return _internalSupabase;
+}
+
+function createRuntimeClient() {
+  _internalSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      storageKey: 'supabase.auth.token',
+      storage: window.localStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  });
+
+  if (!isTestEnv && typeof globalThis !== 'undefined') {
+    try {
+      globalThis.__supabase_client__ = _internalSupabase;
+    } catch (e) {
+      // ignore failures to set global
+    }
+  }
+
+  return _internalSupabase;
+}
+
+export function getSupabase() {
+  if (_internalSupabase) return _internalSupabase;
+
+  if (isTestEnv) return makeTestClient();
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Don't throw in runtime — many development environments (or CI) may not
-    // have Supabase creds available. Export a resilient no-op client instead
-    // so the app can still run, and features that require Supabase will
-    // behave gracefully. This prevents uncaught runtime errors in the browser.
-    //
-    // If you do need a working Supabase client for local development, set
-    // VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in a `.env` or
-    // `.env.local` file at the project root. Example:
-    //
-    // VITE_SUPABASE_URL=https://xxxx.supabase.co
-    // VITE_SUPABASE_ANON_KEY=eyJ...your-anon-key
     console.warn(
       'Supabase is not configured: missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Falling back to a non-operational supabase client. (env source: ' +
         envSource +
         ')',
     );
-
-    // Minimal graceful fallback used at runtime when configured values are missing
-    const chainable = () => {
-      const api = {
-        select() {
-          return api;
-        },
-        in() {
-          return api;
-        },
-        or() {
-          return api;
-        },
-        eq() {
-          return api;
-        },
-        order() {
-          return api;
-        },
-        limit() {
-          return api;
-        },
-        single() {
-          return Promise.resolve({ data: null, error: null });
-        },
-        then(fn) {
-          return Promise.resolve({ data: null, error: null }).then(fn);
-        },
-      };
-      return api;
-    };
-
-    supabase = {
-      from: function () {
-        return chainable();
-      },
-      channel: function () {
-        // Graceful chainable runtime fallback for environments without a working supabase
-        const obj = {
-          on() {
-            return obj;
-          },
-          subscribe() {
-            return obj;
-          },
-          unsubscribe() {},
-        };
-        return obj;
-      },
-      removeChannel: function () {
-        return true;
-      },
-      storage: {
-        from: function () {
-          return {
-            upload: async function () {
-              return { data: null, error: new Error('Supabase storage not configured') };
-            },
-          };
-        },
-      },
-      auth: {
-        getSession: async function () {
-          return { data: { session: null }, error: null };
-        },
-        onAuthStateChange: function (cb) {
-          return { data: { subscription: { unsubscribe() {} } } };
-        },
-        // Provide modern supabase-js methods used by app UI. When missing
-        // runtime credentials are present we keep these no-op and return
-        // informative errors so callers can handle the situation gracefully.
-        signInWithPassword: async function () {
-          console.warn(
-            'Supabase auth called but Supabase is not configured. Returning no-op error from signInWithPassword.',
-          );
-          return { data: null, error: new Error('Supabase auth not configured') };
-        },
-        // Some older call sites use `signIn` historically; keep an alias
-        signIn: async function () {
-          console.warn('Supabase auth.signIn called but Supabase is not configured.');
-          return { data: null, error: new Error('Supabase auth not configured') };
-        },
-      },
-    };
-  } else {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        // Persist session in localStorage (default, but explicit for clarity)
-        storageKey: 'supabase.auth.token',
-        storage: window.localStorage,
-        // Auto-refresh tokens before they expire
-        autoRefreshToken: true,
-        // Persist session across browser restarts
-        persistSession: true,
-        // Detect session in URL (for password reset, email confirmation)
-        detectSessionInUrl: true,
-      },
-    });
-
-    // Expose a dev-only global for interactive debugging in the browser
-    // so developers can run `window.__supabase_client__` in DevTools.
-    // Only expose when not running tests.
-    if (!isTestEnv && typeof globalThis !== 'undefined') {
-      try {
-        globalThis.__supabase_client__ = supabase;
-      } catch (e) {
-        // ignore failures to set global
-      }
-    }
+    return makeRuntimeFallback();
   }
+
+  return createRuntimeClient();
 }
 
-export { supabase };
+// Export a proxy so existing `import { supabase }` call sites continue to work
+// and will lazily initialize the client when first used.
+export const supabase = new Proxy(
+  {},
+  {
+    get(_, prop) {
+      const client = getSupabase();
+      // Return bound functions where appropriate
+      const value = client[prop];
+      if (typeof value === 'function') return value.bind(client);
+      return value;
+    },
+    set(_, prop, val) {
+      const client = getSupabase();
+      client[prop] = val;
+      return true;
+    },
+  },
+);
 
 // Export a tiny helper so unit tests can verify where the runtime env
 // was detected without the tests having to inspect private variables.
