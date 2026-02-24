@@ -29,14 +29,16 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
           isActive={location.pathname === '/admin/subscriptions'}
           ariaLabel={t('adminNav.eventSubscriptions')}
         />
-        <SidebarTile
+        {/* Assignments Tab Hidden per User Request (re-hidden) */}
+        {/* <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
           label={t('adminNav.assignments')}
           isCollapsed={true}
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={t('adminNav.assignments')}
-        />
+        /> */}
+
         {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
           <SidebarTile
             to="/admin/map"

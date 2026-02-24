@@ -18,6 +18,7 @@ import { useDialog } from '../contexts/DialogContext';
 function EventSpecialMarkers({
   safeMarkers,
   updateMarker,
+  deleteMarker, // Exposed for bulk edit delete
   isMarkerDraggable,
   selectedYear,
   isAdminView,
@@ -51,11 +52,8 @@ function EventSpecialMarkers({
   });
   const [contextMenuLoading, setContextMenuLoading] = useState(false);
 
-  // Load subscriptions and assignments (only when in admin view and year is provided)
+  // Load subscriptions (assignments not needed for special markers)
   const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
-  const localAssignmentsState = useAssignments(selectedYear || new Date().getFullYear());
-  const finalAssignmentsState = assignmentsState || localAssignmentsState;
-  const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
   // Dialog context for confirmations
   const { confirm } = useDialog();
@@ -75,83 +73,48 @@ function EventSpecialMarkers({
   // Handle context menu open
   const handleContextMenu = useCallback(
     (marker) => (e) => {
-      if (!isAdminView) return; // Only show in admin view
-      L.DomEvent.preventDefault(e); // Prevent default browser context menu
+      // Allow context menu only if admin view
+      if (!isAdminView) return; 
+
+      // Make sure we prevent default
+      L.DomEvent.preventDefault(e);
+      L.DomEvent.stopPropagation(e); // Also stop propagation
+
+      // We do NOT modify selection state here automatically to respect user preference
+      // "left or right clicking a marker in non edit mode should never open the markers list only when a user opens it by him/herself"
+
       setContextMenu({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), // Force React to recognize as new state
+        timestamp: Date.now(), 
       });
     },
-    [isAdminView],
+    [isAdminView], 
   );
 
-  // Handle assignment
-  const handleAssign = useCallback(
-    async (markerId, companyId) => {
-      // Check if marker already has assignments
-      const existingAssignments = assignments.filter((a) => a.marker_id === markerId);
-
-      if (existingAssignments.length > 0) {
-        // Get company name being assigned
-        const newCompany = subscriptions.find((s) => s.company_id === companyId)?.company;
-        const newCompanyName = newCompany?.name || 'this company';
-
-        // Get booth number/glyph from marker
-        const marker = safeMarkers.find((m) => m.id === markerId);
-        const boothLabel = marker?.glyph || marker?.id || 'this booth';
-
-        // Build warning message
-        let warningMessage;
-        if (existingAssignments.length === 1) {
-          const existingCompanyName = existingAssignments[0].company?.name || 'another company';
-          warningMessage = `Booth ${boothLabel} is already assigned to ${existingCompanyName}.\n\nAssign ${newCompanyName} as an additional company for this booth?`;
-        } else {
-          const companyNames = existingAssignments
-            .map((a) => a.company?.name)
-            .filter(Boolean)
-            .join(', ');
-          warningMessage = `Booth ${boothLabel} is already assigned to ${existingAssignments.length} companies: ${companyNames}.\n\nAssign ${newCompanyName} as another company for this booth?`;
-        }
-
-        // Show confirmation
-        const confirmed = await confirm({
-          title: 'Multiple Assignments',
-          message: warningMessage,
-          confirmText: 'Assign',
-          variant: 'warning',
-        });
-        if (!confirmed) {
-          return; // User cancelled
+  const handleDelete = useCallback(
+    async (markerId) => {
+      if (!deleteMarker) return;
+      const confirmed = await confirm({
+        title: 'Delete Marker',
+        message: 'Are you sure you want to delete this marker?',
+        confirmText: 'Delete',
+        variant: 'destructive',
+      });
+      if (confirmed) {
+        setContextMenuLoading(true);
+        try {
+          await deleteMarker(markerId);
+          setContextMenu({ isOpen: false, position: null, marker: null });
+        } catch (error) {
+          console.error('Error deleting marker:', error);
+        } finally {
+          setContextMenuLoading(false);
         }
       }
-
-      setContextMenuLoading(true);
-      try {
-        await assignCompanyToMarker(markerId, companyId);
-      } catch (error) {
-        console.error('Error assigning company:', error);
-      } finally {
-        setContextMenuLoading(false);
-      }
     },
-    [assignCompanyToMarker, assignments, subscriptions, safeMarkers, confirm],
-  );
-
-  // Handle unassignment
-  const handleUnassign = useCallback(
-    async (markerId, companyId) => {
-      setContextMenuLoading(true);
-      try {
-        await unassignCompanyFromMarker(markerId, companyId);
-      } catch (error) {
-        console.error('Error unassigning company:', error);
-      } finally {
-        setContextMenuLoading(false);
-      }
-    },
-    [unassignCompanyFromMarker],
+    [deleteMarker, confirm],
   );
 
   return (
@@ -277,9 +240,12 @@ function EventSpecialMarkers({
           <MarkerContextMenu
             marker={contextMenu.marker}
             subscriptions={subscriptions}
-            assignments={assignments}
-            onAssign={handleAssign}
-            onUnassign={handleUnassign}
+            // Special markers cannot be assigned companies
+            onDelete={
+              deleteMarker && isMarkerDraggable && isMarkerDraggable(contextMenu.marker)
+                ? handleDelete
+                : null
+            }
             isLoading={contextMenuLoading}
             onClose={() => setContextMenu({ isOpen: false, position: null, marker: null })}
           />

@@ -39,6 +39,7 @@ function AppRoutes({
   user,
   markersState,
   updateMarker,
+  deleteMarker,
   setMarkersState,
   undo,
   canUndo,
@@ -252,6 +253,7 @@ function AppRoutes({
                 markersState={markersState}
                 setMarkersState={setMarkersState}
                 updateMarker={updateMarker}
+                deleteMarker={deleteMarker}
                 undo={undo}
                 canUndo={canUndo}
                 redo={redo}

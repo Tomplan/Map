@@ -150,6 +150,7 @@ function AppContent() {
   const {
     markersState,
     updateMarker,
+    deleteMarker,
     setMarkersState,
     undo,
     canUndo,
@@ -232,6 +233,7 @@ function AppContent() {
               user={user}
               markersState={markersState}
               updateMarker={updateMarker}
+              deleteMarker={deleteMarker}
               setMarkersState={setMarkersState}
               undo={undo}
               canUndo={canUndo}

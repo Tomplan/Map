@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import { updateMarkerField } from '../services/markerUpdateService';
 
 const CORE_FIELDS = ['id', 'lat', 'lng', 'rectangle', 'angle', 'coreLocked'];
@@ -183,6 +184,55 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
     });
   }, [updateMarker]);
 
+  const deleteMarker = useCallback(async (id) => {
+    // 1. Optimistic UI update
+    const originalMarkers = [...markersState];
+    setMarkersState((prev) => prev.filter((m) => m.id !== id));
+
+    // 2. Perform DB deletion
+    // We must manually delete from related tables first because ON DELETE CASCADE is not set up
+    // in the database schema for these relationships.
+    try {
+      // Delete from assignments first (referencing table)
+      const { error: assignError } = await supabase
+        .from('assignments')
+        .delete()
+        .eq('marker_id', id);
+      
+      if (assignError) throw assignError;
+
+      // Delete from extension tables (shared PK)
+      const { error: appError } = await supabase
+        .from('markers_appearance')
+        .delete()
+        .eq('id', id);
+      
+      if (appError) throw appError;
+
+      const { error: contentError } = await supabase
+        .from('markers_content')
+        .delete()
+        .eq('id', id);
+      
+      if (contentError) throw contentError;
+
+      // Finally delete from core table
+      const { error: coreError } = await supabase
+        .from('markers_core')
+        .delete()
+        .eq('id', id);
+
+      if (coreError) throw coreError;
+      
+      return { error: null };
+    } catch (error) {
+      console.error('Error deleting marker:', error);
+      // 3. Rollback on error
+      setMarkersState(originalMarkers);
+      return { error };
+    }
+  }, [markersState]);
+
   const canUndo = historyStack.length > 0;
   const canRedo = redoStack.length > 0;
 
@@ -190,6 +240,7 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
   return {
     markersState,
     updateMarker,
+    deleteMarker,
     setMarkersState,
     undo,
     canUndo,

@@ -11,10 +11,11 @@ import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
  */
 function MarkerContextMenu({
   marker,
-  subscriptions,
-  assignments,
+  subscriptions = [],
+  assignments = [],
   onAssign,
   onUnassign,
+  onDelete, // Optional: if provided, shows delete button
   isLoading,
   onClose,
 }) {
@@ -24,38 +25,40 @@ function MarkerContextMenu({
   // Find current assignment for this marker
   const currentAssignment = assignments.find((a) => a.marker_id === marker.id);
 
-  // Filter available companies: subscribed and have available booth slots
-  const availableCompanies = subscriptions
-    .filter((sub) => {
-      // Count current assignments for this company in this year
-      const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
+  // Only calculate available companies if assignment is allowed (onAssign provided)
+  const availableCompanies = onAssign 
+    ? subscriptions
+        .filter((sub) => {
+          // Count current assignments for this company in this year
+          const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
 
-      const assignedBoothCount = companyAssignments.length;
-      const totalBoothCount = sub.booth_count || 1;
+          const assignedBoothCount = companyAssignments.length;
+          const totalBoothCount = sub.booth_count || 1;
 
-      // Check if already assigned to this specific marker
-      const isAssignedToThisMarker = companyAssignments.some((a) => a.marker_id === marker.id);
+          // Check if already assigned to this specific marker
+          const isAssignedToThisMarker = companyAssignments.some((a) => a.marker_id === marker.id);
 
-      // Show if: NOT assigned to this marker AND has available booths
-      return !isAssignedToThisMarker && assignedBoothCount < totalBoothCount;
-    })
-    .map((sub) => {
-      const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
-      const assignedBoothCount = companyAssignments.length;
-      const totalBoothCount = sub.booth_count || 1;
-      const remainingBooths = totalBoothCount - assignedBoothCount;
+          // Show if: NOT assigned to this marker AND has available booths
+          return !isAssignedToThisMarker && assignedBoothCount < totalBoothCount;
+        })
+        .map((sub) => {
+          const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
+          const assignedBoothCount = companyAssignments.length;
+          const totalBoothCount = sub.booth_count || 1;
+          const remainingBooths = totalBoothCount - assignedBoothCount;
 
-      return {
-        id: sub.company_id,
-        name: sub.company?.name || 'Unknown Company',
-        logo: sub.company?.logo || null,
-        website: sub.company?.website || null,
-        assignedBooths: assignedBoothCount,
-        totalBooths: totalBoothCount,
-        remainingBooths: remainingBooths,
-      };
-    })
-    .filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()));
+          return {
+            id: sub.company_id,
+            name: sub.company?.name || 'Unknown Company',
+            logo: sub.company?.logo || null,
+            website: sub.company?.website || null,
+            assignedBooths: assignedBoothCount,
+            totalBooths: totalBoothCount,
+            remainingBooths: remainingBooths,
+          };
+        })
+        .filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    : [];
 
   // Focus search input when menu opens
   useEffect(() => {
@@ -125,6 +128,7 @@ function MarkerContextMenu({
                     </div>
                   </div>
                 </div>
+                {onUnassign && (
                 <button
                   onClick={handleUnassign}
                   disabled={isLoading}
@@ -133,13 +137,14 @@ function MarkerContextMenu({
                 >
                   <Icon path={mdiClose} size={0.55} className="inline" />
                 </button>
+                )}
               </div>
             </div>
           );
         })()}
 
       {/* Search Input */}
-      {availableCompanies.length > 5 && (
+      {onAssign && availableCompanies.length > 5 && (
         <div className="mb-2 relative">
           <Icon path={mdiMagnify} size={0.65} className="absolute left-2 top-2 text-gray-400" />
           <input
@@ -154,50 +159,68 @@ function MarkerContextMenu({
       )}
 
       {/* Available Companies List */}
-      <div className="max-h-64 overflow-y-auto">
-        {availableCompanies.length === 0 ? (
-          <div className="text-sm text-gray-500 text-center py-4">
-            {searchTerm
-              ? 'No companies match your search'
-              : currentAssignment
-                ? 'No other companies available'
-                : 'No subscribed companies available'}
-          </div>
-        ) : (
-          <div className="space-y-1">
-            {availableCompanies.map((company) => (
-              <button
-                key={company.id}
-                onClick={() => handleAssign(company.id)}
-                disabled={isLoading}
-                className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
-                title={`Assign ${company.name} (${company.remainingBooths} booth${company.remainingBooths !== 1 ? 's' : ''} available)`}
-              >
-                {company.logo ? (
-                  <img
-                    {...(() => {
-                      const r = getResponsiveLogoSources(company.logo);
-                      if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
-                      return { src: getLogoPath(company.logo) };
-                    })()}
-                    alt={company.name}
-                    className="w-8 h-8 object-contain flex-shrink-0"
-                  />
-                ) : (
-                  <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-gray-800 truncate">{company.name}</div>
-                  <div className="text-xs text-gray-500">
-                    {company.remainingBooths} of {company.totalBooths} booth
-                    {company.totalBooths !== 1 ? 's' : ''} available
+      {onAssign && (
+        <div className="max-h-64 overflow-y-auto">
+          {availableCompanies.length === 0 ? (
+            <div className="text-sm text-gray-500 text-center py-4">
+              {searchTerm
+                ? 'No companies match your search'
+                : currentAssignment
+                  ? 'No other companies available'
+                  : 'No subscribed companies available'}
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {availableCompanies.map((company) => (
+                <button
+                  key={company.id}
+                  onClick={() => handleAssign(company.id)}
+                  disabled={isLoading}
+                  className="w-full flex items-center gap-2 p-2 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                  title={`Assign ${company.name} (${company.remainingBooths} booth${company.remainingBooths !== 1 ? 's' : ''} available)`}
+                >
+                  {company.logo ? (
+                    <img
+                      {...(() => {
+                        const r = getResponsiveLogoSources(company.logo);
+                        if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                        return { src: getLogoPath(company.logo) };
+                      })()}
+                      alt={company.name}
+                      className="w-8 h-8 object-contain flex-shrink-0"
+                    />
+                  ) : (
+                    <Icon path={mdiDomain} size={1.2} className="text-gray-400 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-gray-800 truncate">{company.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {company.remainingBooths} of {company.totalBooths} booth
+                      {company.totalBooths !== 1 ? 's' : ''} available
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Delete Marker Option */}
+      {onDelete && (
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <button
+            onClick={() => {
+              onDelete(marker.id);
+              onClose();
+            }}
+            className="w-full text-left px-2 py-1 text-sm text-red-600 hover:bg-red-50 rounded flex items-center gap-2"
+          >
+            <Icon path={mdiClose} size={0.7} />
+            Delete Marker
+          </button>
+        </div>
+      )}
 
       {/* Loading Indicator */}
       {isLoading && <div className="mt-2 text-xs text-center text-blue-600">Processing...</div>}
