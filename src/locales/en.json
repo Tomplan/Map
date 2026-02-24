@@ -565,8 +565,7 @@
     "addNewCompanyDesc": "Register a new company in the system",
     "manageSubscriptions": "Manage Subscriptions",
     "manageSubscriptionsDesc": "Add or update event subscriptions",
-    "assignBooths": "Assign Booths",
-    "assignBoothsDesc": "Manage booth assignments for companies",
+    "mapManagementDesc": "Manage map markers and booth locations",
     "recentActivity": "Recent Activity",
     "recentActivityPlaceholder": "Activity tracking will be added in a future update."
   },

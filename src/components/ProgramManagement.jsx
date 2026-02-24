@@ -11,6 +11,8 @@ import {
   MdContentCopy,
   MdContentPaste,
   MdRestore,
+  MdExpandMore,
+  MdExpandLess,
 } from 'react-icons/md';
 import { supabase } from '../supabaseClient';
 import ActivityForm from './ActivityForm';
@@ -112,6 +114,7 @@ export default function ProgramManagement({ selectedYear }) {
   const [reordering, setReordering] = useState(false);
   const [copiedActivity, setCopiedActivity] = useState(null); // Store copied activity data
   const [dropTargetIndex, setDropTargetIndex] = useState(null);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
 
   const currentActivities = activities[activeTab] || [];
 
@@ -339,37 +342,7 @@ export default function ProgramManagement({ selectedYear }) {
               <YearScopeBadge scope="year" year={selectedYear} />
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCopyFromPreviousYear}
-              data-testid="copy-from-previous-year-button"
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              title={`Copy from ${selectedYear - 1}`}
-            >
-              <MdContentCopy className="text-lg" />
-              Copy from {selectedYear - 1}
-            </button>
-            <button
-              onClick={handleArchive}
-              data-testid="archive-year-button"
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={(activities.saturday?.length || 0) + (activities.sunday?.length || 0) === 0}
-              title={`Archive all activities for ${selectedYear}`}
-            >
-              <MdArchive className="text-lg" />
-              Archive {selectedYear}
-            </button>
-            {copiedActivity && (
-              <button
-                onClick={handlePasteActivity}
-                data-testid="paste-activity-button"
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                title="Paste copied activity"
-              >
-                <MdContentPaste className="text-lg" />
-                Paste Activity
-              </button>
-            )}
+          <div className="flex gap-2 relative z-50">
             <button
               onClick={() => {
                 setEditActivity(null);
@@ -377,11 +350,68 @@ export default function ProgramManagement({ selectedYear }) {
                 setShowForm(true);
               }}
               data-testid="add-activity-button"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <MdAdd className="text-xl" />
               <span>{t('programManagement.addActivity')}</span>
             </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setIsActionsOpen(!isActionsOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+                title="Actions Menu"
+              >
+                <span>Actions</span>
+                {isActionsOpen ? <MdExpandLess className="text-lg" /> : <MdExpandMore className="text-lg" />}
+              </button>
+
+              {isActionsOpen && (
+                <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Tools
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      handleCopyFromPreviousYear();
+                      setIsActionsOpen(false);
+                    }}
+                    data-testid="copy-from-previous-year-button"
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <MdContentCopy className="text-lg text-gray-400" />
+                    Copy from {selectedYear - 1}
+                  </button>
+
+                  {copiedActivity && (
+                    <button
+                      onClick={() => {
+                        handlePasteActivity();
+                        setIsActionsOpen(false);
+                      }}
+                      data-testid="paste-activity-button"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <MdContentPaste className="text-lg text-gray-400" />
+                      Paste Activity
+                    </button>
+                  )}
+
+                  {/* <button
+                    onClick={() => {
+                      handleArchive();
+                      setIsActionsOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                    disabled={(activities.saturday?.length || 0) + (activities.sunday?.length || 0) === 0}
+                  >
+                    <MdArchive className="text-lg" />
+                    Archive {selectedYear}
+                  </button> */}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,10 +1,13 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock } from '@mdi/js';
+import { mdiCalendarCheck, mdiMapMarkerMultiple, mdiCalendarClock, mdiMap } from '@mdi/js';
 import SidebarTile from './SidebarTile';
+import useUserRole from '../../hooks/useUserRole';
 
 export default function CollapsedShortcuts({ selectedYear, t }) {
   const location = useLocation();
+  const { hasAnyRole } = useUserRole();
+
   return (
     // Panel is narrow when collapsed, so stack year above the icons in a small column
     // Year-scoped operations only (Map and Settings are in a separate section)
@@ -26,6 +29,7 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
           isActive={location.pathname === '/admin/subscriptions'}
           ariaLabel={t('adminNav.eventSubscriptions')}
         />
+        {/*
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
@@ -34,6 +38,17 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={t('adminNav.assignments')}
         />
+        */}
+        {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
+          <SidebarTile
+            to="/admin/map"
+            icon={mdiMap}
+            label={t('adminNav.mapManagement')}
+            isCollapsed={true}
+            isActive={location.pathname === '/admin/map'}
+            ariaLabel={t('adminNav.mapManagement')}
+          />
+        )}
         <SidebarTile
           to="/admin/program"
           icon={mdiCalendarClock}

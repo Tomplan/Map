@@ -14,6 +14,10 @@ const APPEARANCE_FIELDS = [
   'shadowScale',
   'glyphAnchor',
   'appearanceLocked',
+  'fontWeight',
+  'fontStyle',
+  'textDecoration',
+  'fontFamily',
 ];
 const CONTENT_FIELDS = ['name', 'logo', 'website', 'info', 'contentLocked'];
 

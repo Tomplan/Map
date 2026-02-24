@@ -221,17 +221,6 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               className={`${isCollapsed ? 'opacity-100 h-auto' : 'opacity-0 h-0 overflow-hidden'}`}
             >
               <CollapsedShortcuts selectedYear={selectedYear} t={t} />
-
-              {/* Map Management - Collapsed state */}
-              {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
-                <SidebarTile
-                  to="/admin/map"
-                  icon={mdiMap}
-                  label={t('adminNav.mapManagement')}
-                  isCollapsed={isCollapsed}
-                  isActive={location.pathname === '/admin/map'}
-                />
-              )}
             </div>
           </div>
 

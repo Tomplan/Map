@@ -17,6 +17,12 @@ import {
   mdiPrinter,
   mdiUndo,
   mdiRedo,
+  mdiHistory,
+  mdiDotsVertical,
+  mdiViewSplitVertical,
+  mdiDockLeft,
+  mdiDockRight,
+  mdiContentSaveCheck,
 } from '@mdi/js';
 import ProtectedSection from '../ProtectedSection';
 import { getIconPath } from '../../utils/getIconPath';
@@ -30,6 +36,7 @@ import useUserRole from '../../hooks/useUserRole';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
+import SnapshotModal from './SnapshotModal';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -65,8 +72,10 @@ export default function MapManagement({
   const { confirm, toastError, toastSuccess } = useDialog();
   const [mapInstance, setMapInstance] = useState(null);
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
+  const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [printModes, setPrintModes] = useState([]);
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
+  const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
 
   // Collapse state for sidebars
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false); // Default to closed for Markers
@@ -401,6 +410,10 @@ export default function MapManagement({
           iconSize: editData.iconSize,
           glyphColor: editData.glyphColor,
           glyphSize: editData.glyphSize,
+          fontWeight: editData.fontWeight,
+          fontStyle: editData.fontStyle,
+          textDecoration: editData.textDecoration,
+          fontFamily: editData.fontFamily,
           shadowScale: editData.shadowScale,
         };
 
@@ -926,91 +939,132 @@ export default function MapManagement({
                   </div>
                 </div>
               )}
-              {/* Read-only badge removed per request - keep header title behavior unchanged */}
             </div>
-            <div className="flex gap-2 items-center">
-              {/* Canonical header print action for Event/Org roles */}
-              <div className="relative">
-                <button
-                  onClick={() => setPrintMenuOpen((v) => !v)}
-                  className={`flex items-center gap-2 px-4 py-2 ${isReadOnly ? 'bg-gray-600 text-white hover:bg-gray-700' : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'} rounded-lg`}
-                  title="Print"
-                  aria-haspopup="menu"
-                  aria-expanded={printMenuOpen}
-                >
-                  <Icon path={mdiPrinter} size={0.8} />
-                  Print
-                </button>
+            <div className="flex gap-2 items-center relative z-50">
+              <button
+                type="button"
+                onClick={() => setIsActionsOpen(!isActionsOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
+                title="Actions Menu"
+              >
+                <span>Actions</span>
+                <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+              </button>
 
-                {printMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg z-40 overflow-hidden border border-gray-200">
-                    <div className="py-1">
-                      {printModes.length > 0 ? (
-                        printModes.map((m, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={async () => {
-                              setPrintMenuOpen(false);
-                              await programmaticHeaderPrint(m);
-                            }}
-                            className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                          >
-                            {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
-                          </button>
-                        ))
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            setPrintMenuOpen(false);
-                            await snapshotHeaderPrint();
-                          }}
-                          className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                        >
-                          Snapshot (PNG)
-                        </button>
-                      )}
-                    </div>
-                    {(assignments?.length || 0) > 0 && (
-                      <div className="border-t border-gray-100 py-1">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPrintMenuOpen(false);
-                            handlePrintAssignments();
-                          }}
-                          className="w-full text-left px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                        >
-                          Assignments List
-                        </button>
-                      </div>
-                    )}
+              {isActionsOpen && (
+                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] overflow-hidden py-1">
+                  {/* Tools Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                    Tools
                   </div>
-                )}
-              </div>
+                  
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => {
+                        setIsSnapshotModalOpen(true);
+                        setIsActionsOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
+                      <span>Manage Snapshots</span>
+                    </button>
+                  )}
 
-              {/* Maintain Copy and Archive buttons for full admin users */}
-              {!isReadOnly && (
-                <>
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => {
+                        handleCopyFromPreviousYear();
+                        setIsActionsOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
+                      <span>Copy from {selectedYear - 1}</span>
+                    </button>
+                  )}
+
+                  {/* Print Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-y border-gray-100 mt-1">
+                    Print
+                  </div>
+                  
+                  {printModes.length > 0 ? (
+                    printModes.map((m, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={async () => {
+                          setIsActionsOpen(false);
+                          await programmaticHeaderPrint(m);
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                        <span>{m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}</span>
+                      </button>
+                    ))
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setIsActionsOpen(false);
+                        await snapshotHeaderPrint();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                      <span>Snapshot (PNG)</span>
+                    </button>
+                  )}
+                  
+                  {(assignments?.length || 0) > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsActionsOpen(false);
+                        handlePrintAssignments();
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
+                      <span>Assignments List</span>
+                    </button>
+                  )}
+
+                  {/* View Section */}
+                  <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-y border-gray-100 mt-1">
+                    View
+                  </div>
+
                   <button
-                    onClick={handleCopyFromPreviousYear}
-                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                    title={`Copy markers from ${selectedYear - 1}`}
+                    onClick={() => {
+                      setIsLeftSidebarOpen(!isLeftSidebarOpen);
+                      // Don't close menu to allow multiple toggles, or close? User preference. Usually toggle closes menu.
+                      // setIsActionsOpen(false); 
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <Icon path={mdiContentCopy} size={0.8} />
-                    Copy from {selectedYear - 1}
+                    <div className="flex items-center gap-2">
+                      <Icon path={mdiDockLeft} size={0.7} className="text-gray-400" />
+                      <span>Markers Sidebar</span>
+                    </div>
+                    {isLeftSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
                   </button>
+
                   <button
-                    onClick={handleArchive}
-                    className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={(markersState?.length || 0) === 0}
-                    title={`Archive all markers for ${selectedYear}`}
+                    onClick={() => {
+                      setIsRightSidebarOpen(!isRightSidebarOpen);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
-                    <Icon path={mdiArchive} size={0.8} />
-                    Archive {selectedYear}
+                    <div className="flex items-center gap-2">
+                       <Icon path={mdiDockRight} size={0.7} className="text-gray-400" />
+                       <span>Subscriptions Sidebar</span>
+                    </div>
+                     {isRightSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -1047,11 +1101,7 @@ export default function MapManagement({
               {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
               <button
                 onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
-                className={`p-1 rounded-lg border transition-colors ${
-                  isLeftSidebarOpen
-                    ? 'bg-blue-50 border-blue-200 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                }`}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 title={isLeftSidebarOpen ? 'Hide Markers & Details' : 'Show Markers & Details'}
               >
                 <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
@@ -1060,11 +1110,7 @@ export default function MapManagement({
               {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
               <button
                 onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className={`p-1 rounded-lg border transition-colors ${
-                  isRightSidebarOpen
-                    ? 'bg-blue-50 border-blue-200 text-blue-600'
-                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                }`}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
                 title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
               >
                 <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={0.8} />
@@ -1644,6 +1690,19 @@ export default function MapManagement({
           )}
         </div>
       </div>
+      
+      {/* Snapshot Management Modal */}
+      <SnapshotModal
+        isOpen={isSnapshotModalOpen}
+        onClose={() => setIsSnapshotModalOpen(false)}
+        eventYear={selectedYear}
+        onRestore={() => {
+          // Force a full reload of markers to reflect the restored state
+          // The subscription for real-time updates should handle it, 
+          // but a local state refresh ensures immediate UI consistency.
+          window.location.reload(); 
+        }}
+      />
     </ProtectedSection>
   );
 }
@@ -1708,6 +1767,10 @@ function ViewPanel({
         {!isDefaultMarker && <Field label="Glyph (Booth Label)" value={marker.glyph} />}
         <Field label="Glyph Color" value={marker.glyphColor} />
         <Field label="Glyph Size" value={marker.glyphSize} />
+        {marker.fontWeight && <Field label="Weight" value={marker.fontWeight} />}
+        {marker.fontStyle && <Field label="Style" value={marker.fontStyle} />}
+        {marker.textDecoration && <Field label="Decoration" value={marker.textDecoration} />}
+        {marker.fontFamily && <Field label="Font Family" value={marker.fontFamily} />}
         <Field
           label="Glyph Anchor"
           value={marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : '—'}
@@ -1860,6 +1923,67 @@ function EditPanel({
           value={marker.glyphSize}
           onChange={(v) => onChange('glyphSize', parseFloat(v))}
         />
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+            <select
+              value={marker.fontWeight || ''}
+              onChange={(e) => onChange('fontWeight', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="normal">Normal</option>
+              <option value="bold">Bold</option>
+              <option value="bolder">Bolder</option>
+              <option value="lighter">Lighter</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Style</label>
+            <select
+              value={marker.fontStyle || ''}
+              onChange={(e) => onChange('fontStyle', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="normal">Normal</option>
+              <option value="italic">Italic</option>
+              <option value="oblique">Oblique</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Decor</label>
+            <select
+              value={marker.textDecoration || ''}
+              onChange={(e) => onChange('textDecoration', e.target.value || null)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">Default</option>
+              <option value="none">None</option>
+              <option value="underline">Underline</option>
+              <option value="overline">Overline</option>
+              <option value="line-through">Strike</option>
+            </select>
+          </div>
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Font Family</label>
+          <select
+            value={marker.fontFamily || ''}
+            onChange={(e) => onChange('fontFamily', e.target.value || null)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+          >
+            <option value="">Default</option>
+            <option value="sans-serif">Sans Serif</option>
+            <option value="serif">Serif</option>
+            <option value="monospace">Monospace</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+          </select>
+        </div>
         <div className="grid grid-cols-2 gap-2">
           <InputField
             label="Glyph Anchor X"

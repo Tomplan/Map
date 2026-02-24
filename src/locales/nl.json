@@ -556,8 +556,7 @@
     "addNewCompanyDesc": "Registreer een nieuw bedrijf in het systeem",
     "manageSubscriptions": "Inschrijvingen Beheren",
     "manageSubscriptionsDesc": "Voeg inschrijvingen toe of werk ze bij",
-    "assignBooths": "Stands Toewijzen",
-    "assignBoothsDesc": "Beheer standtoewijzingen voor bedrijven",
+    "mapManagementDesc": "Beheer kaartmarkeringen en standlocaties",
     "recentActivity": "Recente Activiteit",
     "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update."
   },

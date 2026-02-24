@@ -92,6 +92,8 @@ const createIcon = (
     iconSize = [baseIconSize[0] * 1.5, baseIconSize[1] * 1.5];
   }
 
+  const hasAssignment = marker.assignments?.length > 0;
+
   return createMarkerIcon({
     className,
     prefix: marker.prefix,
@@ -99,18 +101,25 @@ const createIcon = (
     iconSize,
     iconBaseSize: baseSize,
     glyph: marker.glyph || '',
-    glyphColor: marker.glyphColor || DEFAULT_ICON.GLYPH_COLOR,
+    glyphColor: marker.glyphColor || (hasAssignment ? assignedDefault?.glyphColor : unassignedDefault?.glyphColor) || DEFAULT_ICON.GLYPH_COLOR,
+    fontWeight: marker.fontWeight || (hasAssignment ? assignedDefault?.fontWeight : unassignedDefault?.fontWeight) || 'normal',
+    fontStyle: marker.fontStyle || (hasAssignment ? assignedDefault?.fontStyle : unassignedDefault?.fontStyle) || 'normal',
+    textDecoration: marker.textDecoration || (hasAssignment ? assignedDefault?.textDecoration : unassignedDefault?.textDecoration) || 'none',
+    fontFamily: marker.fontFamily || (hasAssignment ? assignedDefault?.fontFamily : unassignedDefault?.fontFamily) || 'sans-serif',
     // If glyphSize explicitly configured on marker, use it. Otherwise compute as a proportion
     // of the final icon height (no glyphBaseSize usage — glyphSize is the single source of truth).
     glyphSize: (() => {
+      // Use explicit glyph size or fallback from defaults
+      const effectiveGlyphSize = marker.glyphSize || (hasAssignment ? assignedDefault?.glyphSize : unassignedDefault?.glyphSize);
+
       // If glyphSize explicitly configured on marker, treat it as a base pixel size
       // and scale it proportionally based on current icon height vs marker's stored iconSize.
-      if (marker.glyphSize) {
+      if (effectiveGlyphSize) {
         // parse numeric px value
         let baseGlyphPx = null;
-        if (typeof marker.glyphSize === 'number') baseGlyphPx = marker.glyphSize;
-        else if (typeof marker.glyphSize === 'string')
-          baseGlyphPx = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
+        if (typeof effectiveGlyphSize === 'number') baseGlyphPx = effectiveGlyphSize;
+        else if (typeof effectiveGlyphSize === 'string')
+          baseGlyphPx = parseFloat(effectiveGlyphSize.replace(/[^0-9.-]/g, ''));
 
         // Determine marker's stored base icon height
         const markerBaseSize = normalizeIconSize(
@@ -126,15 +135,25 @@ const createIcon = (
         }
 
         // If parsing fails, fall back to returning provided glyphSize string (normalize to 2 decimals when possible)
-        if (typeof marker.glyphSize === 'number') return `${marker.glyphSize.toFixed(2)}px`;
-        if (typeof marker.glyphSize === 'string') {
-          const parsed = parseFloat(marker.glyphSize.replace(/[^0-9.-]/g, ''));
-          return Number.isFinite(parsed) ? `${parsed.toFixed(2)}px` : marker.glyphSize;
+        if (typeof effectiveGlyphSize === 'number') return `${effectiveGlyphSize.toFixed(2)}px`;
+        if (typeof effectiveGlyphSize === 'string') {
+          const parsed = parseFloat(effectiveGlyphSize.replace(/[^0-9.-]/g, ''));
+          return Number.isFinite(parsed) ? `${parsed.toFixed(2)}px` : effectiveGlyphSize;
         }
         return '';
       }
 
       // fallback proportion of the final icon height if glyphSize not provided
+      // Use DEFAULT_ICON.GLYPH_SIZE as base if available, otherwise 0.33
+      if (DEFAULT_ICON.GLYPH_SIZE) {
+        const baseGlyphPx = parseFloat(DEFAULT_ICON.GLYPH_SIZE.replace(/[^0-9.-]/g, ''));
+        const markerBaseSize = normalizeIconSize(DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE); // Use default base
+        const baseIconHeight = markerBaseSize[1];
+        if (baseGlyphPx && baseIconHeight) {
+           const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
+           return `${scaled.toFixed(2)}px`;
+        }
+      }
       return `${Math.round(iconSize[1] * 0.33)}px`;
     })(),
     glyphAnchor: (() => {
@@ -149,17 +168,20 @@ const createIcon = (
       const scaleX = baseW ? iconSize[0] / baseW : 1;
       const scaleY = baseH ? iconSize[1] / baseH : 1;
 
-      if (Array.isArray(marker.glyphAnchor) && marker.glyphAnchor.length >= 2) {
-        const ax = parseFloat(marker.glyphAnchor[0]) || 0;
-        const ay = parseFloat(marker.glyphAnchor[1]) || 0;
+      // Determine effective glyph anchor from marker -> defaults -> fallback
+      const effectiveGlyphAnchor =
+        marker.glyphAnchor ||
+        (hasAssignment ? assignedDefault?.glyphAnchor : unassignedDefault?.glyphAnchor) ||
+        DEFAULT_ICON.GLYPH_ANCHOR;
+
+      if (Array.isArray(effectiveGlyphAnchor) && effectiveGlyphAnchor.length >= 2) {
+        const ax = parseFloat(effectiveGlyphAnchor[0]) || 0;
+        const ay = parseFloat(effectiveGlyphAnchor[1]) || 0;
         return [parseFloat((ax * scaleX).toFixed(2)), parseFloat((ay * scaleY).toFixed(2))];
       }
 
-      // default anchor scales with current icon size proportionally
-      return [
-        parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[0] * scaleX).toFixed(2)),
-        parseFloat((DEFAULT_ICON.GLYPH_ANCHOR[1] * scaleY).toFixed(2)),
-      ];
+      // fallback default (technically unreachable if DEFAULT_ICON.GLYPH_ANCHOR is set, but safe)
+      return [0, 0];
     })(),
   });
 };
@@ -471,7 +493,11 @@ function EventClusterMarkers({
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
       const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
-      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}-${marker.assignments?.length || 0}`;
+      
+      // Use JSON.stringify for default markers to capture all style changes (glyphSize, fontWeight, etc.)
+      const defaultsKey = `${JSON.stringify(defaultMarkers.assigned || {})}-${JSON.stringify(defaultMarkers.unassigned || {})}`;
+      
+      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultsKey}-${marker.assignments?.length || 0}`;
       if (!iconsByMarker.current[key]) {
         iconsByMarker.current[key] = createIcon(
           marker,
