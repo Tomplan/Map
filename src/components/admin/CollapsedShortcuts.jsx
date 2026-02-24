@@ -29,7 +29,6 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
           isActive={location.pathname === '/admin/subscriptions'}
           ariaLabel={t('adminNav.eventSubscriptions')}
         />
-        {/*
         <SidebarTile
           to="/admin/assignments"
           icon={mdiMapMarkerMultiple}
@@ -38,7 +37,6 @@ export default function CollapsedShortcuts({ selectedYear, t }) {
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={t('adminNav.assignments')}
         />
-        */}
         {hasAnyRole(['super_admin', 'system_manager', 'event_manager']) && (
           <SidebarTile
             to="/admin/map"

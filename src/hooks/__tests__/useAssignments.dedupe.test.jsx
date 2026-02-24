@@ -2,9 +2,14 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('../../supabaseClient', () => {
-  const mockSelect = jest.fn(() => ({
-    eq: jest.fn(() => ({ order: jest.fn(() => Promise.resolve({ data: [], error: null })) })),
-  }));
+  const mockChain = {
+    eq: jest.fn().mockReturnThis(),
+    in: jest.fn().mockReturnThis(),
+    select: jest.fn().mockReturnThis(),
+    order: jest.fn().mockResolvedValue({ data: [], error: null }),
+    then: jest.fn((cb) => Promise.resolve({ data: [], error: null }).then(cb)),
+  };
+  const mockSelect = jest.fn(() => mockChain);
   const mockFrom = jest.fn(() => ({ select: mockSelect }));
   const mockOn = jest.fn().mockReturnThis();
   const mockSubscribe = jest.fn(() => ({ id: 'ch-asgn' }));

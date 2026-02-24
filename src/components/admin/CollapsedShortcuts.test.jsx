@@ -2,6 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+jest.mock('../../supabaseClient', () => ({
+  supabase: {
+    auth: {
+      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
+    },
+  },
+}));
+
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k) => k }) }));
 jest.mock('react-router-dom', () => ({
   Link: ({ children, to, ...props }) =>
