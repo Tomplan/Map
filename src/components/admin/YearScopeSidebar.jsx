@@ -84,9 +84,7 @@ export default function YearScopeSidebar({ selectedYear, onYearChange }) {
           isActive={location.pathname === '/admin/assignments'}
           ariaLabel={`${tSafe('adminNav.assignments', 'Assignments')} ${assignmentsLoading ? '...' : assignmentCount}`}
         /> */}
-
       </div>
     </div>
   );
 }
-

@@ -101,16 +101,33 @@ const createIcon = (
     iconSize,
     iconBaseSize: baseSize,
     glyph: marker.glyph || '',
-    glyphColor: marker.glyphColor || (hasAssignment ? assignedDefault?.glyphColor : unassignedDefault?.glyphColor) || DEFAULT_ICON.GLYPH_COLOR,
-    fontWeight: marker.fontWeight || (hasAssignment ? assignedDefault?.fontWeight : unassignedDefault?.fontWeight) || 'normal',
-    fontStyle: marker.fontStyle || (hasAssignment ? assignedDefault?.fontStyle : unassignedDefault?.fontStyle) || 'normal',
-    textDecoration: marker.textDecoration || (hasAssignment ? assignedDefault?.textDecoration : unassignedDefault?.textDecoration) || 'none',
-    fontFamily: marker.fontFamily || (hasAssignment ? assignedDefault?.fontFamily : unassignedDefault?.fontFamily) || 'sans-serif',
+    glyphColor:
+      marker.glyphColor ||
+      (hasAssignment ? assignedDefault?.glyphColor : unassignedDefault?.glyphColor) ||
+      DEFAULT_ICON.GLYPH_COLOR,
+    fontWeight:
+      marker.fontWeight ||
+      (hasAssignment ? assignedDefault?.fontWeight : unassignedDefault?.fontWeight) ||
+      'normal',
+    fontStyle:
+      marker.fontStyle ||
+      (hasAssignment ? assignedDefault?.fontStyle : unassignedDefault?.fontStyle) ||
+      'normal',
+    textDecoration:
+      marker.textDecoration ||
+      (hasAssignment ? assignedDefault?.textDecoration : unassignedDefault?.textDecoration) ||
+      'none',
+    fontFamily:
+      marker.fontFamily ||
+      (hasAssignment ? assignedDefault?.fontFamily : unassignedDefault?.fontFamily) ||
+      'sans-serif',
     // If glyphSize explicitly configured on marker, use it. Otherwise compute as a proportion
     // of the final icon height (no glyphBaseSize usage — glyphSize is the single source of truth).
     glyphSize: (() => {
       // Use explicit glyph size or fallback from defaults
-      const effectiveGlyphSize = marker.glyphSize || (hasAssignment ? assignedDefault?.glyphSize : unassignedDefault?.glyphSize);
+      const effectiveGlyphSize =
+        marker.glyphSize ||
+        (hasAssignment ? assignedDefault?.glyphSize : unassignedDefault?.glyphSize);
 
       // If glyphSize explicitly configured on marker, treat it as a base pixel size
       // and scale it proportionally based on current icon height vs marker's stored iconSize.
@@ -150,8 +167,8 @@ const createIcon = (
         const markerBaseSize = normalizeIconSize(DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE); // Use default base
         const baseIconHeight = markerBaseSize[1];
         if (baseGlyphPx && baseIconHeight) {
-           const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
-           return `${scaled.toFixed(2)}px`;
+          const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
+          return `${scaled.toFixed(2)}px`;
         }
       }
       return `${Math.round(iconSize[1] * 0.33)}px`;
@@ -381,21 +398,21 @@ function EventClusterMarkers({
       // Also implies context menu itself might only be relevant in edit mode if delete is main action?
       // Or maybe existing assignment actions should also only be available in edit mode?
       // Assuming context menu should always open in admin view for consistency, or does user want strict restriction?
-      
+
       // The user says "i cannot right click a marker in edit mode now".
       // This implies they WANT to right click in edit mode.
-      
-      if (!isAdminView) return; 
-      
+
+      if (!isAdminView) return;
+
       // Make sure we prevent default
       L.DomEvent.preventDefault(e);
       L.DomEvent.stopPropagation(e); // Also stop propagation just in case
-      
+
       setContextMenu({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), 
+        timestamp: Date.now(),
       });
     },
     [isAdminView], // isMarkerDraggable not needed here as we check dynamic conditions or just allow it
@@ -531,10 +548,10 @@ function EventClusterMarkers({
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
       const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
-      
+
       // Use JSON.stringify for default markers to capture all style changes (glyphSize, fontWeight, etc.)
       const defaultsKey = `${JSON.stringify(defaultMarkers.assigned || {})}-${JSON.stringify(defaultMarkers.unassigned || {})}`;
-      
+
       const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultsKey}-${marker.assignments?.length || 0}`;
       if (!iconsByMarker.current[key]) {
         iconsByMarker.current[key] = createIcon(

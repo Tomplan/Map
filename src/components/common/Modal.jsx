@@ -39,7 +39,9 @@ function Modal({
   if (isOpen) {
     // Preserve the earliest mount timestamp in case of strict-mode double renders
     // so the protection window is calculated from the first render time.
-    mountedAtRef.current = mountedAtRef.current || now;
+    if (!mountedAtRef.current) {
+        mountedAtRef.current = typeof testMountedAt === 'number' ? testMountedAt : now;
+    }
   } else {
     mountedAtRef.current = 0;
   }
@@ -48,6 +50,7 @@ function Modal({
     // Prevent immediate click-throughs that happen when the modal is mounted
     // synchronously while the user is still pressing the mouse (pointerdown)
     // and releases the pointer (pointerup) over the newly-mounted overlay.
+
     // Ignore backdrop clicks that occur within the first 150ms after mount.
     const now =
       typeof testNow === 'number'
@@ -55,9 +58,16 @@ function Modal({
         : typeof performance !== 'undefined'
           ? performance.now()
           : Date.now();
-    const mountAt = typeof testMountedAt === 'number' ? testMountedAt : mountedAtRef.current;
-    const timeSinceMount = now - mountAt;
+    
+    // In test environment with testNow, always use testNow 
+    const isTesting = typeof testNow === 'number';
+    const currentTime = isTesting ? testNow : now;
 
+    const mountAt = typeof testMountedAt === 'number' ? testMountedAt : mountedAtRef.current;
+    
+    // Safety check: if we are testing with manually controlled time, enforce it
+    const timeSinceMount = currentTime - mountAt;
+    
     // If the modal was opened just now, ignore very-early backdrop clicks (click-through)
     if (timeSinceMount < 150) {
       // swallow the event

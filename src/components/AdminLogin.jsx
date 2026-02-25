@@ -231,6 +231,7 @@ export default function AdminLogin({ onLogin, branding }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 className="input-base"
                 placeholder={t('adminLogin.emailPlaceholder')}
                 aria-label={t('adminLogin.email')}
@@ -249,6 +250,7 @@ export default function AdminLogin({ onLogin, branding }) {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
                   className="input-base pr-20"
                   placeholder={t('adminLogin.passwordPlaceholder')}
                   aria-label={t('adminLogin.password')}

@@ -82,10 +82,11 @@ export default function useMapSnapshots(eventYear) {
     async (snapshotId) => {
       const confirmed = await confirm({
         title: 'Restore Snapshot?',
-        message: 'This action will completely overwrite the current map state with the saved snapshot data.\n\nAll current marker positions, styles, and company assignments for this year will be replaced.\n\nAre you sure you want to proceed?',
+        message:
+          'This action will completely overwrite the current map state with the saved snapshot data.\n\nAll current marker positions, styles, and company assignments for this year will be replaced.\n\nAre you sure you want to proceed?',
         confirmText: 'Yes, Restore Snapshot',
         cancelText: 'Cancel',
-        variant: 'danger'
+        variant: 'danger',
       });
       if (!confirmed) return;
 
@@ -188,7 +189,7 @@ export default function useMapSnapshots(eventYear) {
         setLoading(true);
         const { error } = await supabase.from('map_snapshots').delete().eq('id', snapshotId);
         if (error) throw error;
-        
+
         toastSuccess('Snapshot deleted');
         await loadSnapshots();
       } catch (err) {

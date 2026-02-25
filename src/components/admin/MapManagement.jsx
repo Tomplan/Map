@@ -59,7 +59,7 @@ export default function MapManagement({
   copyMarkers,
   assignmentsState,
   markerHistoryStack = [], // History stack from props
-  markerRedoStack = [],    // Redo stack from props
+  markerRedoStack = [], // Redo stack from props
 }) {
   const { t } = useTranslation();
   const { isEventManager, isSystemManager, isSuperAdmin } = useUserRole();
@@ -110,12 +110,16 @@ export default function MapManagement({
   } = finalAssignmentsState;
 
   // --- Unified Undo/Redo Logic ---
-  const canGlobalUndo = (canUndo || canUndoAssignments);
-  const canGlobalRedo = (canRedo || canRedoAssignments);
+  const canGlobalUndo = canUndo || canUndoAssignments;
+  const canGlobalRedo = canRedo || canRedoAssignments;
 
   const handleGlobalUndo = () => {
-    const lastMarkerAction = markerHistoryStack.length > 0 ? markerHistoryStack[markerHistoryStack.length - 1] : null;
-    const lastAssignmentAction = assignmentHistoryStack.length > 0 ? assignmentHistoryStack[assignmentHistoryStack.length - 1] : null;
+    const lastMarkerAction =
+      markerHistoryStack.length > 0 ? markerHistoryStack[markerHistoryStack.length - 1] : null;
+    const lastAssignmentAction =
+      assignmentHistoryStack.length > 0
+        ? assignmentHistoryStack[assignmentHistoryStack.length - 1]
+        : null;
 
     const markerTime = lastMarkerAction?.timestamp || 0;
     const assignmentTime = lastAssignmentAction?.timestamp || 0;
@@ -130,8 +134,10 @@ export default function MapManagement({
   };
 
   const handleGlobalRedo = () => {
-    const lastMarkerAction = markerRedoStack.length > 0 ? markerRedoStack[markerRedoStack.length - 1] : null;
-    const lastAssignmentAction = assignmentRedoStack.length > 0 ? assignmentRedoStack[assignmentRedoStack.length - 1] : null;
+    const lastMarkerAction =
+      markerRedoStack.length > 0 ? markerRedoStack[markerRedoStack.length - 1] : null;
+    const lastAssignmentAction =
+      assignmentRedoStack.length > 0 ? assignmentRedoStack[assignmentRedoStack.length - 1] : null;
 
     const markerTime = lastMarkerAction?.timestamp || 0;
     const assignmentTime = lastAssignmentAction?.timestamp || 0;
@@ -909,7 +915,10 @@ export default function MapManagement({
               {!isReadOnly && (
                 <div className="flex gap-1 items-center">
                   {/* Unified History Operations */}
-                  <div className="flex bg-gray-100 rounded-full p-0.5 ml-2" title={t('mapManagement.undoRedo', 'Undo / Redo Actions')}>
+                  <div
+                    className="flex bg-gray-100 rounded-full p-0.5 ml-2"
+                    title={t('mapManagement.undoRedo', 'Undo / Redo Actions')}
+                  >
                     <button
                       type="button"
                       onClick={handleGlobalUndo}
@@ -960,7 +969,7 @@ export default function MapManagement({
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                     Tools
                   </div>
-                  
+
                   {!isReadOnly && (
                     <button
                       onClick={() => {
@@ -991,7 +1000,7 @@ export default function MapManagement({
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-y border-gray-100 mt-1">
                     Print
                   </div>
-                  
+
                   {printModes.length > 0 ? (
                     printModes.map((m, idx) => (
                       <button
@@ -1004,7 +1013,9 @@ export default function MapManagement({
                         className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                       >
                         <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
-                        <span>{m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}</span>
+                        <span>
+                          {m?.options?.title || m?.options?.pageSize || `Preset ${idx + 1}`}
+                        </span>
                       </button>
                     ))
                   ) : (
@@ -1020,7 +1031,7 @@ export default function MapManagement({
                       <span>Snapshot (PNG)</span>
                     </button>
                   )}
-                  
+
                   {(assignments?.length || 0) > 0 && (
                     <button
                       type="button"
@@ -1044,7 +1055,7 @@ export default function MapManagement({
                     onClick={() => {
                       setIsLeftSidebarOpen(!isLeftSidebarOpen);
                       // Don't close menu to allow multiple toggles, or close? User preference. Usually toggle closes menu.
-                      // setIsActionsOpen(false); 
+                      // setIsActionsOpen(false);
                     }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
@@ -1052,7 +1063,9 @@ export default function MapManagement({
                       <Icon path={mdiDockLeft} size={0.7} className="text-gray-400" />
                       <span>Markers Sidebar</span>
                     </div>
-                    {isLeftSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
+                    {isLeftSidebarOpen && (
+                      <Icon path={mdiClose} size={0.6} className="text-blue-500" />
+                    )}
                   </button>
 
                   <button
@@ -1062,10 +1075,12 @@ export default function MapManagement({
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                       <Icon path={mdiDockRight} size={0.7} className="text-gray-400" />
-                       <span>Subscriptions Sidebar</span>
+                      <Icon path={mdiDockRight} size={0.7} className="text-gray-400" />
+                      <span>Subscriptions Sidebar</span>
                     </div>
-                     {isRightSidebarOpen && <Icon path={mdiClose} size={0.6} className="text-blue-500" />}
+                    {isRightSidebarOpen && (
+                      <Icon path={mdiClose} size={0.6} className="text-blue-500" />
+                    )}
                   </button>
                 </div>
               )}
@@ -1371,32 +1386,32 @@ export default function MapManagement({
               isBulkEditMode={!isReadOnly && isBulkEditMode}
               onMarkerSelect={(id) => {
                 setSelectedMarkerId(id);
-                
+
                 // STRICT REQUIREMENT:
                 // 1. Left/Right click does NOT open markers list automatically (handled by UI state).
                 // 2. Do NOT enter edit mode automatically. User must press "Edit" in detail view.
-                
+
                 if (id) {
-                    if (!isReadOnly) {
-                       // Just update the data reference, but DO NOT enable edit mode yet.
-                       const marker = markersState.find((m) => String(m.id) === String(id));
-                       if (marker) {
-                         // We set editData just in case they click "Edit" later, 
-                         // but we keep editMode = false for now.
-                         setEditData({ ...marker });
-                         
-                         // If we are ALREADY in single edit mode for a DIFFERENT marker, 
-                         // we might want to switch? Or exit?
-                         // Let's exit single edit mode to be safe and show detail view first.
-                         if (editMode && !isBulkEditMode) {
-                            setEditMode(false);
-                         }
-                       }
+                  if (!isReadOnly) {
+                    // Just update the data reference, but DO NOT enable edit mode yet.
+                    const marker = markersState.find((m) => String(m.id) === String(id));
+                    if (marker) {
+                      // We set editData just in case they click "Edit" later,
+                      // but we keep editMode = false for now.
+                      setEditData({ ...marker });
+
+                      // If we are ALREADY in single edit mode for a DIFFERENT marker,
+                      // we might want to switch? Or exit?
+                      // Let's exit single edit mode to be safe and show detail view first.
+                      if (editMode && !isBulkEditMode) {
+                        setEditMode(false);
+                      }
                     }
+                  }
                 } else if (!isBulkEditMode) {
-                    // Deselecting checks
-                    setEditMode(false);
-                    setEditData(null);
+                  // Deselecting checks
+                  setEditMode(false);
+                  setEditData(null);
                 }
 
                 // Sync with subscription list
@@ -1743,7 +1758,7 @@ export default function MapManagement({
           )}
         </div>
       </div>
-      
+
       {/* Snapshot Management Modal */}
       <SnapshotModal
         isOpen={isSnapshotModalOpen}
@@ -1751,9 +1766,9 @@ export default function MapManagement({
         eventYear={selectedYear}
         onRestore={() => {
           // Force a full reload of markers to reflect the restored state
-          // The subscription for real-time updates should handle it, 
+          // The subscription for real-time updates should handle it,
           // but a local state refresh ensures immediate UI consistency.
-          window.location.reload(); 
+          window.location.reload();
         }}
       />
     </ProtectedSection>

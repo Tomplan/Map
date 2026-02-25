@@ -243,7 +243,9 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             className="p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
           >
             <div className="font-semibold text-gray-900">{t('adminNav.mapManagement')}</div>
-            <div className="text-sm text-gray-600 mt-1">{t('dashboard.mapManagementDesc', 'Manage map and booth locations')}</div>
+            <div className="text-sm text-gray-600 mt-1">
+              {t('dashboard.mapManagementDesc', 'Manage map and booth locations')}
+            </div>
           </Link>
         </div>
       </div>

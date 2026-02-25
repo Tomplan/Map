@@ -75,7 +75,6 @@ export default function YearScopeCard({ selectedYear, setSelectedYear, counts = 
           <div className="text-2xl font-bold text-gray-900 mt-1">{counts.assignments ?? '-'}</div>
         </a> */}
 
-
         <a
           href="/admin/program"
           className="p-3 border rounded-lg hover:bg-blue-50 transition-colors"

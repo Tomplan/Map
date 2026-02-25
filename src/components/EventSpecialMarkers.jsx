@@ -74,7 +74,7 @@ function EventSpecialMarkers({
   const handleContextMenu = useCallback(
     (marker) => (e) => {
       // Allow context menu only if admin view
-      if (!isAdminView) return; 
+      if (!isAdminView) return;
 
       // Make sure we prevent default
       L.DomEvent.preventDefault(e);
@@ -87,10 +87,10 @@ function EventSpecialMarkers({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), 
+        timestamp: Date.now(),
       });
     },
-    [isAdminView], 
+    [isAdminView],
   );
 
   const handleDelete = useCallback(
