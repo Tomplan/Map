@@ -50,20 +50,20 @@ jest.mock('../../../contexts/DialogContext', () => {
       toastError: jest.fn(),
       toastSuccess: mockToastSuccess,
     }),
-    DialogProvider: ({ children }) => <div>{children}</div>
+    DialogProvider: ({ children }) => <div>{children}</div>,
   };
 });
 
 // Mock Supabase & Hooks
 jest.mock('../../../supabaseClient', () => ({
   supabase: {
-    from: () => ({ 
-      select: () => ({ 
-        eq: () => ({ then: (cb) => cb({ data: [], error: null }) }) 
-      }) 
+    from: () => ({
+      select: () => ({
+        eq: () => ({ then: (cb) => cb({ data: [], error: null }) }),
+      }),
     }),
-    channel: () => ({ 
-      on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }) 
+    channel: () => ({
+      on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
     }),
     removeChannel: () => {},
     auth: { getUser: () => Promise.resolve({ data: { user: {} } }) },
@@ -84,7 +84,6 @@ jest.mock('../../../hooks/useAssignments', () => ({
 jest.mock('../../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ logoPath: '' }),
 }));
-
 
 const defaultProps = {
   selectedYear: '2025',
@@ -114,13 +113,13 @@ describe('MapManagement Edit All Button', () => {
     render(
       <DialogProvider>
         <MapManagement {...defaultProps} />
-      </DialogProvider>
+      </DialogProvider>,
     );
-    
+
     // Open the sidebar first (the toggle is the Chevron Right icon when closed)
     const toggleBtn = screen.getByTitle('Show Markers & Details');
     fireEvent.click(toggleBtn);
-    
+
     // Now Edit All button should be visible/accessible
     const editAllBtn = screen.getByTitle('Edit Mode'); // Title is 'Edit Mode' in code
     expect(editAllBtn).toBeInTheDocument();
@@ -130,7 +129,7 @@ describe('MapManagement Edit All Button', () => {
     render(
       <DialogProvider>
         <MapManagement {...defaultProps} />
-      </DialogProvider>
+      </DialogProvider>,
     );
 
     // Open the sidebar first

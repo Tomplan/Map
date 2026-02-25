@@ -35,17 +35,16 @@ export default function MapContextMenu({ isBulkEditMode, onAddMarker }) {
     };
   }, [map]);
 
-
   const handleAddMarker = async (type) => {
     if (!onAddMarker || !position) return;
-    
+
     // Determine ID range based on type
     // Normal (Booth) < 1000, Special >= 1000
     const isSpecial = type === 'special';
-    
+
     // Suggest next available ID
     let nextId = isSpecial ? 1001 : 1;
-    
+
     // Fetch existing IDs to find gap/next
     // This is a simple heuristic; a robust solution would be server-side or more comprehensive
     try {
@@ -53,30 +52,35 @@ export default function MapContextMenu({ isBulkEditMode, onAddMarker }) {
         .from('markers_core')
         .select('id')
         .order('id', { ascending: true });
-        
+
       if (!error && data) {
-        const ids = data.map(m => m.id).sort((a, b) => a - b);
+        const ids = data.map((m) => m.id).sort((a, b) => a - b);
         if (isSpecial) {
-           // Find max special ID
-           const specialIds = ids.filter(id => id >= 1000);
-           if (specialIds.length > 0) {
-             nextId = Math.max(...specialIds) + 1;
-           }
+          // Find max special ID
+          const specialIds = ids.filter((id) => id >= 1000);
+          if (specialIds.length > 0) {
+            nextId = Math.max(...specialIds) + 1;
+          }
         } else {
-           // Find first gap or max booth ID
-           const boothIds = ids.filter(id => id < 1000);
-           // Simple max + 1 for now
-           if (boothIds.length > 0) {
-             nextId = Math.max(...boothIds) + 1;
-           }
+          // Find first gap or max booth ID
+          const boothIds = ids.filter((id) => id < 1000);
+          // Simple max + 1 for now
+          if (boothIds.length > 0) {
+            nextId = Math.max(...boothIds) + 1;
+          }
         }
       }
     } catch (e) {
-      console.error("Error fetching marker IDs", e);
+      console.error('Error fetching marker IDs', e);
     }
-    
+
     // Automatically use the next available ID
-    onAddMarker({ id: nextId, lat: position.lat, lng: position.lng, type: isSpecial ? 'special' : 'booth' });
+    onAddMarker({
+      id: nextId,
+      lat: position.lat,
+      lng: position.lng,
+      type: isSpecial ? 'special' : 'booth',
+    });
     closeMenu();
   };
 

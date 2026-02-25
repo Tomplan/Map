@@ -348,7 +348,7 @@ export default function CompaniesTab() {
                 <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                   Data Tools
                 </div>
-                
+
                 <ImportButton
                   dataType="companies"
                   existingData={companies}

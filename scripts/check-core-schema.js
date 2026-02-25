@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -7,10 +6,13 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey =
+  process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  console.error('Missing VITE_SUPABASE_URL or VITE_SUPABASE_SERVICE_ROLE_KEY/VITE_SUPABASE_ANON_KEY');
+  console.error(
+    'Missing VITE_SUPABASE_URL or VITE_SUPABASE_SERVICE_ROLE_KEY/VITE_SUPABASE_ANON_KEY',
+  );
   process.exit(1);
 }
 
@@ -29,9 +31,9 @@ async function checkSchema() {
       // No, let's just try to select `rectWidth` explicitly.
       const { error: colError } = await supabase.from('markers_core').select('rectWidth').limit(1);
       if (colError) {
-          console.log('rectWidth column query error:', colError.message);
+        console.log('rectWidth column query error:', colError.message);
       } else {
-          console.log('rectWidth column exists');
+        console.log('rectWidth column exists');
       }
     }
   }

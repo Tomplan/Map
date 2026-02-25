@@ -363,7 +363,11 @@ export default function ProgramManagement({ selectedYear }) {
                 title="Actions Menu"
               >
                 <span>Actions</span>
-                {isActionsOpen ? <MdExpandLess className="text-lg" /> : <MdExpandMore className="text-lg" />}
+                {isActionsOpen ? (
+                  <MdExpandLess className="text-lg" />
+                ) : (
+                  <MdExpandMore className="text-lg" />
+                )}
               </button>
 
               {isActionsOpen && (

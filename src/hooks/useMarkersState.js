@@ -147,12 +147,12 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
 
           // Update marker state locally
           const updatedMarkers = currentMarkers.map((m) =>
-            m.id === lastAction.id ? { ...m, ...lastAction.previousProps } : m
+            m.id === lastAction.id ? { ...m, ...lastAction.previousProps } : m,
           );
-          
+
           // Perform the update with previous props (async, but we don't await here for UI update)
           updateMarker(lastAction.id, lastAction.previousProps, false);
-          
+
           resolve(true);
           return newStack;
         });
@@ -177,61 +177,58 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
 
         // Perform the update with NEW props (re-apply change)
         updateMarker(lastAction.id, lastAction.newProps, false);
-        
+
         resolve(true);
         return newStack;
       });
     });
   }, [updateMarker]);
 
-  const deleteMarker = useCallback(async (id) => {
-    // 1. Optimistic UI update
-    const originalMarkers = [...markersState];
-    setMarkersState((prev) => prev.filter((m) => m.id !== id));
+  const deleteMarker = useCallback(
+    async (id) => {
+      // 1. Optimistic UI update
+      const originalMarkers = [...markersState];
+      setMarkersState((prev) => prev.filter((m) => m.id !== id));
 
-    // 2. Perform DB deletion
-    // We must manually delete from related tables first because ON DELETE CASCADE is not set up
-    // in the database schema for these relationships.
-    try {
-      // Delete from assignments first (referencing table)
-      const { error: assignError } = await supabase
-        .from('assignments')
-        .delete()
-        .eq('marker_id', id);
-      
-      if (assignError) throw assignError;
+      // 2. Perform DB deletion
+      // We must manually delete from related tables first because ON DELETE CASCADE is not set up
+      // in the database schema for these relationships.
+      try {
+        // Delete from assignments first (referencing table)
+        const { error: assignError } = await supabase
+          .from('assignments')
+          .delete()
+          .eq('marker_id', id);
 
-      // Delete from extension tables (shared PK)
-      const { error: appError } = await supabase
-        .from('markers_appearance')
-        .delete()
-        .eq('id', id);
-      
-      if (appError) throw appError;
+        if (assignError) throw assignError;
 
-      const { error: contentError } = await supabase
-        .from('markers_content')
-        .delete()
-        .eq('id', id);
-      
-      if (contentError) throw contentError;
+        // Delete from extension tables (shared PK)
+        const { error: appError } = await supabase.from('markers_appearance').delete().eq('id', id);
 
-      // Finally delete from core table
-      const { error: coreError } = await supabase
-        .from('markers_core')
-        .delete()
-        .eq('id', id);
+        if (appError) throw appError;
 
-      if (coreError) throw coreError;
-      
-      return { error: null };
-    } catch (error) {
-      console.error('Error deleting marker:', error);
-      // 3. Rollback on error
-      setMarkersState(originalMarkers);
-      return { error };
-    }
-  }, [markersState]);
+        const { error: contentError } = await supabase
+          .from('markers_content')
+          .delete()
+          .eq('id', id);
+
+        if (contentError) throw contentError;
+
+        // Finally delete from core table
+        const { error: coreError } = await supabase.from('markers_core').delete().eq('id', id);
+
+        if (coreError) throw coreError;
+
+        return { error: null };
+      } catch (error) {
+        console.error('Error deleting marker:', error);
+        // 3. Rollback on error
+        setMarkersState(originalMarkers);
+        return { error };
+      }
+    },
+    [markersState],
+  );
 
   const canUndo = historyStack.length > 0;
   const canRedo = redoStack.length > 0;
@@ -247,6 +244,6 @@ export default function useMarkersState(markers = [], selectedYear = new Date().
     redo,
     canRedo,
     historyStack,
-    redoStack
+    redoStack,
   };
 }

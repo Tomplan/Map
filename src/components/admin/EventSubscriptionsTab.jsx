@@ -331,7 +331,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               <span>Actions</span>
               <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
             </button>
-            
+
             {isActionsOpen && (
               <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
                 <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">

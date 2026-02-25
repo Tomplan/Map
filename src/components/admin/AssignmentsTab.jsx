@@ -460,7 +460,7 @@ export default function AssignmentsTab({ selectedYear }) {
                   <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
                   <span>{t('helpPanel.assignments.archive')}</span>
                 </button>
-                
+
                 {/* <button
                   onClick={handleArchive}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 text-red-600"

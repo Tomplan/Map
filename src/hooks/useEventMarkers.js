@@ -334,8 +334,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           // Company data changed - update all markers using this company
           if (payload.eventType === 'UPDATE' && payload.new) {
             const company = payload.new;
-            setMarkers((prev) =>
-              prev.map((m) =>
+            setMarkers((prev) => {
+              const updated = prev.map((m) =>
                 m.companyId === company.id
                   ? {
                       ...m,
@@ -345,16 +345,12 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
                       info: company.info,
                     }
                   : m,
-              ),
-            );
-            // Persist updated markers asynchronously
-            setMarkers(async (current) => {
-              try {
-                await setMarkerSnapshot(current);
-              } catch (err) {
+              );
+              // Persist updated markers asynchronously
+              setMarkerSnapshot(updated).catch((err) => {
                 // ignore
-              }
-              return current;
+              });
+              return updated;
             });
           } else {
             // For INSERT/DELETE, do full reload (rare events)

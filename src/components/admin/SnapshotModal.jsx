@@ -7,7 +7,15 @@ import useMapSnapshots from '../../hooks/useMapSnapshots';
 
 export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore }) {
   const { t } = useTranslation();
-  const { snapshots, loading, error, loadSnapshots, createSnapshot, restoreSnapshot, deleteSnapshot } = useMapSnapshots(eventYear);
+  const {
+    snapshots,
+    loading,
+    error,
+    loadSnapshots,
+    createSnapshot,
+    restoreSnapshot,
+    deleteSnapshot,
+  } = useMapSnapshots(eventYear);
   const [newSnapshotName, setNewSnapshotName] = useState('');
   const [newSnapshotDesc, setNewSnapshotDesc] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -52,7 +60,7 @@ export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore })
               {t('snapshots.createNew', 'Create New Snapshot')}
             </h3>
           </div>
-          
+
           <div className="grid gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -66,7 +74,7 @@ export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore })
                 className="w-full px-3 py-2 border rounded-md"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('snapshots.description', 'Description (Optional)')}
@@ -99,7 +107,7 @@ export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore })
             <Icon path={mdiClockOutline} size={0.8} />
             {t('snapshots.history', 'Snapshot History')}
           </h3>
-          
+
           {loading && !snapshots.length ? (
             <div className="text-center py-8 text-gray-500">Loading...</div>
           ) : snapshots.length === 0 ? (
@@ -109,7 +117,10 @@ export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore })
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
               {snapshots.map((snap) => (
-                <div key={snap.id} className="flex items-start justify-between p-4 bg-white border rounded-lg hover:border-blue-300 transition-colors shadow-sm">
+                <div
+                  key={snap.id}
+                  className="flex items-start justify-between p-4 bg-white border rounded-lg hover:border-blue-300 transition-colors shadow-sm"
+                >
                   <div>
                     <h4 className="font-medium text-gray-900">{snap.name}</h4>
                     {snap.description && (
@@ -120,7 +131,7 @@ export default function SnapshotModal({ isOpen, onClose, eventYear, onRestore })
                       {snap.created_by && <span>• by User</span>}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleRestore(snap.id)}

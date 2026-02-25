@@ -20,7 +20,7 @@ L.Icon.Glyph = L.Icon.extend({
     fontWeight: 'normal',
     fontStyle: 'normal',
     textDecoration: 'none',
-    fontFamily: 'sans-serif'
+    fontFamily: 'sans-serif',
   },
 
   createIcon: function () {
