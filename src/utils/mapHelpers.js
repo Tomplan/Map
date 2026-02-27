@@ -14,5 +14,8 @@ export const createSearchText = (marker) => {
  * @returns {boolean} True if marker is draggable
  */
 export const isMarkerDraggable = (marker, isAdminView) => {
-  return isAdminView && marker && marker.coreLocked === false;
+  // If coreLocked is strictly true, it's locked.
+  // If coreLocked is false, null, or undefined, it's NOT locked.
+  const isLocked = marker && marker.coreLocked === true;
+  return isAdminView && marker && !isLocked;
 };

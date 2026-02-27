@@ -4,9 +4,10 @@
  */
 
 import { supabase } from '../supabaseClient';
+import { compressImage } from '../utils/imageCompression';
 
 const STORAGE_BUCKET = 'Logos'; // Matches the bucket name in Supabase
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_TYPES = [
   'image/png',
   'image/jpeg',
@@ -30,17 +31,36 @@ export async function uploadLogo(file, folder = 'companies') {
       return { error: validation.error };
     }
 
+    // Compress image if not SVG
+    let fileToUpload = file;
+    let fileExt = file.name.split('.').pop();
+    
+    if (file.type !== 'image/svg+xml') {
+      try {
+        const compressedBlob = await compressImage(file, {
+          maxWidth: 800,
+          maxHeight: 800,
+          quality: 0.8,
+          format: 'image/webp'
+        });
+        fileToUpload = compressedBlob;
+        fileExt = 'webp';
+      } catch (err) {
+        console.warn('Image compression failed, falling back to original file:', err);
+      }
+    }
+
     // Generate unique filename
-    const fileExt = file.name.split('.').pop();
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2, 8);
     const fileName = `${timestamp}_${randomString}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, file, {
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, fileToUpload, {
       cacheControl: '3600',
       upsert: false,
+      contentType: fileExt === 'webp' ? 'image/webp' : file.type
     });
 
     if (error) {

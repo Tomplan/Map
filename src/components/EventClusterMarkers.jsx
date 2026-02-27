@@ -205,8 +205,9 @@ const createIcon = (
 
 // Optimized marker key - only includes properties that affect visual rendering
 // Excludes metadata (companyId, assignmentId, name, locks) to prevent unnecessary unmount/remount
+// WARNING: Do NOT include lat/lng in key, as this forces unmount/remount on every drag frame, killing performance and drag state.
 const getMarkerKey = (marker) =>
-  `${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
+  `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
 
 // Memoized individual marker component to prevent unnecessary re-renders
 const MemoizedMarker = memo(
@@ -232,6 +233,7 @@ const MemoizedMarker = memo(
         isMobile={isMobile}
         organizationLogo={organizationLogo}
         onMoreInfo={() => onMarkerSelect(marker)}
+        showTooltip={!isDraggable}
       />
     </Marker>
   ),
@@ -252,9 +254,14 @@ const MemoizedMarker = memo(
         prevProps.marker.website !== nextProps.marker.website ||
         prevProps.marker.info !== nextProps.marker.info;
 
-      // If only metadata changed, allow re-render (return false)
+      // Check if position changed (crucial for undo/redo or external updates)
+      const positionChanged =
+        prevProps.marker.lat !== nextProps.marker.lat ||
+        prevProps.marker.lng !== nextProps.marker.lng;
+
+      // If only metadata changed or position changed, allow re-render (return false)
       // If nothing changed, skip re-render (return true)
-      return !metadataChanged;
+      return !metadataChanged && !positionChanged;
     }
 
     // Visual properties changed, must re-render
@@ -520,14 +527,16 @@ function EventClusterMarkers({
   const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
     (marker) => {
-      const key = `${marker.id}-${isMarkerDraggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}`;
+      const draggable = isMarkerDraggable(marker);
+      const key = `${marker.id}-${draggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
+      
       if (!eventHandlersByMarker.current[key]) {
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
         };
 
         // Only add handlers if they are defined
-        if (isMarkerDraggable) {
+        if (draggable) {
           handlers.dragend = handleDragEnd(marker.id);
         }
         if (isAdminView) {
@@ -538,8 +547,13 @@ function EventClusterMarkers({
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu],
+    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu, selectedYear],
   );
+
+  // Clear event handler cache when crucial props change to avoid stale closures
+  useEffect(() => {
+    eventHandlersByMarker.current = {};
+  }, [onMarkerDrag, updateMarker, isMarkerDraggable]);
 
   // Memoize icons by marker visual properties to prevent recreation
   const iconsByMarker = useRef({});
@@ -634,6 +648,7 @@ function EventClusterMarkers({
           const isSelected = selectedMarker?.id === marker.id;
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
+
           // Force remount when draggable state changes to ensure marker behavior updates
           const markerKey = `${getMarkerKey(marker)}-${isDraggable ? 'drag' : 'static'}`;
 
@@ -713,6 +728,7 @@ EventClusterMarkers.propTypes = {
     }),
   ),
   updateMarker: PropTypes.func.isRequired,
+  deleteMarker: PropTypes.func,
   isMarkerDraggable: PropTypes.func.isRequired,
   iconCreateFunction: PropTypes.func.isRequired,
   selectedYear: PropTypes.number,
@@ -730,6 +746,7 @@ EventClusterMarkers.defaultProps = {
   safeMarkers: [],
   selectedYear: new Date().getFullYear(),
   isAdminView: false,
+  deleteMarker: null,
   selectedMarkerId: null,
   onMarkerSelect: null,
   focusMarkerId: null,
