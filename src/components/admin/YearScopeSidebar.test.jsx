@@ -60,7 +60,6 @@ describe('YearScopeSidebar (icon + labels)', () => {
     // expect(screen.getByText(/Toewijzingen/)).toBeInTheDocument(); // Hidden
     expect(screen.getByText(/Programmabeheer/)).toBeInTheDocument();
 
-
     // counts from mocked supabase should be visible
     expect(await screen.findByText('63')).toBeInTheDocument();
     // expect(screen.getByText('99')).toBeInTheDocument();

@@ -149,46 +149,6 @@ function EventMap({
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
 
-  // Centralized draggable logic to avoid duplication and inconsistencies
-  const checkMarkerDraggability = useCallback(
-    (marker) => {
-      // 1. Bulk Edit Mode: Always allows dragging (overrides locks)
-      if (isBulkEditMode) return true;
-
-      // 2. Single Edit Mode: Only the selected marker is draggable
-      if (editMode && selectedMarkerId) {
-        // Must match selected ID
-        const isSelected = String(marker.id) === String(selectedMarkerId);
-        // Must be theoretically draggable (e.g. not locked in DB, unless we want edit mode to override that too?)
-        // Currently preserving "locked means locked" for single edit, unless user explicitly unlocks it in the form.
-        // But for consistency with bulk edit, maybe we should just check selection?
-        // Let's stick to the previous strict logic for single edit: must be admin, marker unlocked, and selected.
-        return isSelected && isMarkerDraggable(marker, isAdminView);
-      }
-
-      // 3. Default: Not draggable
-      return false;
-    },
-    [isBulkEditMode, editMode, selectedMarkerId, isAdminView],
-  );
-
-  // Centralized delete logic
-  const checkMarkerDeletability = useCallback(
-    (markerId) => {
-      // 1. Bulk Edit Mode: Always allowed
-      if (isBulkEditMode) return deleteMarker ? deleteMarker(markerId) : null;
-      
-      // 2. Single Edit Mode: Only selected marker
-      if (editMode && selectedMarkerId && String(markerId) === String(selectedMarkerId)) {
-        return deleteMarker ? deleteMarker(markerId) : null;
-      }
-
-      // 3. Default: Not allowed
-      return null;
-    },
-    [isBulkEditMode, editMode, selectedMarkerId, deleteMarker],
-  );
-
   // Create the iconCreateFunction with organization logo
   const iconCreateFunction = useMemo(
     () => createIconCreateFunction(organizationLogo),
@@ -628,10 +588,17 @@ function EventMap({
                   zoom: browserPrint._map.getZoom(),
                   maxZoom: browserPrint._map.getMaxZoom(),
                 };
+                console.log('[Print] PrintInit - saved original view', originalView);
               }
 
               // Set source map to desired center - plugin will use this when creating print map
               // The zoom is handled via mode options, we just need to set the center
+              console.log(
+                '[Print] PrintInit - setting source map center:',
+                printConfig.center,
+                'for mode:',
+                modeTitleRaw,
+              );
               browserPrint._map.setView(printConfig.center, browserPrint._map.getZoom(), {
                 animate: false,
               });
@@ -650,9 +617,11 @@ function EventMap({
 
             if (pendingPrintConfig) {
               const { center, zoom } = pendingPrintConfig;
+              console.log('[Print] Print - verifying/applying center:', center, 'zoom:', zoom);
               // Apply our desired view - this ensures the correct center is used for presets
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
+              console.log('[Print] Print - view applied');
             }
 
             // Recompute marker sizes for print zoom using ZOOM_BUCKETS
@@ -660,6 +629,9 @@ function EventMap({
             if (event.printObjects && event.printObjects['L.Marker']) {
               const printMarkers = event.printObjects['L.Marker'];
               const printZoom = printMap.getZoom();
+              console.log(
+                `[Print] Recomputing ${printMarkers.length} marker sizes for print zoom ${printZoom}`,
+              );
 
               try {
                 printMarkers.forEach((printMarker) => {
@@ -1077,13 +1049,11 @@ function EventMap({
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            deleteMarker={editMode && selectedMarkerId ? checkMarkerDeletability : (isBulkEditMode ? deleteMarker : null)} 
-            // Only pass complicated logic if needed, otherwise for bulk mode passing generic deleteMarker is safer/easier if context menu handles specific ID?
-            // Actually, EventClusterMarkers expects deleteMarker to be a function (id) => Promise.
-            // If I pass checkMarkerDeletability which returns the RESULT of deleteMarker(id), that works.
-            // Let's rely on checkMarkerDeletability which handles both cases cleanly.
-            deleteMarker={checkMarkerDeletability}
-            isMarkerDraggable={checkMarkerDraggability} // Centralized logic
+            deleteMarker={isBulkEditMode || (editMode && selectedMarkerId) ? deleteMarker : null} // Allow delete in bulk edit OR single edit
+            isMarkerDraggable={(marker) =>
+              isMarkerDraggable(marker, isAdminView) &&
+              (isBulkEditMode || (editMode && marker.id === selectedMarkerId))
+            }
             iconCreateFunction={iconCreateFunction}
             selectedYear={selectedYear}
             isAdminView={isAdminView}
@@ -1113,8 +1083,19 @@ function EventMap({
             // Logic for delete permission:
             // 1. Bulk Edit Mode: ALWAYS ALLOWED
             // 2. Single Edit Mode: ALLOWED ONLY for the currently edited marker
-            deleteMarker={checkMarkerDeletability}
-            isMarkerDraggable={checkMarkerDraggability} // Centralized logic
+            deleteMarker={(markerId) => {
+              if (isBulkEditMode) return deleteMarker(markerId);
+              if (editMode && selectedMarkerId && String(markerId) === String(selectedMarkerId)) {
+                return deleteMarker(markerId);
+              }
+              return null;
+            }}
+            isMarkerDraggable={(marker) =>
+              (isBulkEditMode && isMarkerDraggable(marker, isAdminView)) ||
+              (editMode &&
+                String(marker.id) === String(selectedMarkerId) &&
+                isMarkerDraggable(marker, isAdminView))
+            }
             selectedMarkerId={selectedMarkerId}
             onMarkerSelect={onMarkerSelect}
             isAdminView={isAdminView}

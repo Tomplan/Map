@@ -11,3 +11,8 @@ global.TextDecoder = global.TextDecoder || TextDecoder;
 if (typeof process !== 'undefined' && !process.env.NODE_ENV) {
   process.env.NODE_ENV = 'test';
 }
+
+// Polyfill structuredClone for fake-indexeddb which requires it
+if (typeof global.structuredClone === 'undefined') {
+  global.structuredClone = (val) => JSON.parse(JSON.stringify(val));
+}

@@ -12,6 +12,8 @@ import {
   mdiChevronRight,
   mdiHelpCircleOutline,
   mdiCommentAlertOutline,
+  mdiFullscreen,
+  mdiFullscreenExit,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
@@ -60,6 +62,32 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   // Year change confirmation state
   const [pendingYear, setPendingYear] = useState(null);
   const [showYearModal, setShowYearModal] = useState(false);
+
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        }
+      }
+    } catch (err) {
+      console.error('Error toggling fullscreen:', err);
+    }
+  };
 
   // Persist collapse state
   useEffect(() => {
@@ -157,17 +185,36 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
               </p>
             )}
           </div>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-2 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0 ${isCollapsed ? '' : 'ml-2'}`}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          <div
+            className={`flex ${isCollapsed ? 'flex-col gap-1' : 'flex-row gap-1'} items-center ${isCollapsed ? '' : 'ml-2'}`}
           >
-            <Icon
-              path={isCollapsed ? mdiChevronRight : mdiChevronLeft}
-              size={1}
-              className="text-gray-700"
-            />
-          </button>
+            <button
+              onClick={toggleFullscreen}
+              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+              title={
+                isFullscreen
+                  ? t('settings.fullScreen.exit', 'Exit Full Screen')
+                  : t('settings.fullScreen.enter', 'Enter Full Screen')
+              }
+            >
+              <Icon
+                path={isFullscreen ? mdiFullscreenExit : mdiFullscreen}
+                size={1}
+                className="text-gray-700"
+              />
+            </button>
+            <button
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors flex-shrink-0"
+              title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              <Icon
+                path={isCollapsed ? mdiChevronRight : mdiChevronLeft}
+                size={1}
+                className="text-gray-700"
+              />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable content area */}
@@ -213,7 +260,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                 }}
                 hasMapManagement={true}
               />
-              
+
               {/* Map Management was here, moved inside YearScopeSidebar for better ordering */}
             </div>
 

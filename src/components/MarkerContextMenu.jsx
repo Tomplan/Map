@@ -26,7 +26,7 @@ function MarkerContextMenu({
   const currentAssignment = assignments.find((a) => a.marker_id === marker.id);
 
   // Only calculate available companies if assignment is allowed (onAssign provided)
-  const availableCompanies = onAssign 
+  const availableCompanies = onAssign
     ? subscriptions
         .filter((sub) => {
           // Count current assignments for this company in this year
@@ -129,14 +129,14 @@ function MarkerContextMenu({
                   </div>
                 </div>
                 {onUnassign && (
-                <button
-                  onClick={handleUnassign}
-                  disabled={isLoading}
-                  className="ml-2 px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
-                  title="Unassign company"
-                >
-                  <Icon path={mdiClose} size={0.55} className="inline" />
-                </button>
+                  <button
+                    onClick={handleUnassign}
+                    disabled={isLoading}
+                    className="ml-2 px-2 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    title="Unassign company"
+                  >
+                    <Icon path={mdiClose} size={0.55} className="inline" />
+                  </button>
                 )}
               </div>
             </div>

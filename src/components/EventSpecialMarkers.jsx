@@ -74,7 +74,7 @@ function EventSpecialMarkers({
   const handleContextMenu = useCallback(
     (marker) => (e) => {
       // Allow context menu only if admin view
-      if (!isAdminView) return; 
+      if (!isAdminView) return;
 
       // Make sure we prevent default
       L.DomEvent.preventDefault(e);
@@ -87,10 +87,10 @@ function EventSpecialMarkers({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), 
+        timestamp: Date.now(),
       });
     },
-    [isAdminView], 
+    [isAdminView],
   );
 
   const handleDelete = useCallback(
@@ -198,6 +198,13 @@ function EventSpecialMarkers({
           const isDraggable = isMarkerDraggable(marker);
 
           const eventHandlers = {
+            click: (e) => {
+              // Only handle selection if NOT dragging (though Leaflet usually separates them)
+              // But strictly speaking, click fires after mouseup.
+              if (isAdminView) {
+                setSelectedMarker(marker);
+              }
+            },
             popupopen: (e) => e.target.closeTooltip(),
             ...(isDraggable && { dragend: handleDragEnd(marker.id) }),
             ...(isAdminView && { contextmenu: handleContextMenu(marker) }),

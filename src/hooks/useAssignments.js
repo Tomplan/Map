@@ -170,7 +170,7 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
           // Remove any nested objects that might have slipped in (just in case)
           delete insertData.company;
           delete insertData.marker;
-          
+
           const { error } = await supabase.from('assignments').insert([insertData]);
           if (error) throw error;
         } else {
@@ -325,7 +325,7 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
           // But usually we WANT to restore with original ID and created_at if possible
           // to maintain history. If specific RLS prevents this, we might need to remove them.
           // For now, assuming we can restore fully.
-          
+
           setHistoryStack((prev) => [
             ...prev,
             { type: 'DELETE', data: cleanHistoryData, timestamp: Date.now() },

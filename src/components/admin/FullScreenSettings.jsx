@@ -35,11 +35,18 @@ export default function FullScreenSettings() {
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
-            <Icon path={isFullscreen ? mdiFullscreenExit : mdiFullscreen} size={1} className="text-gray-500" />
+            <Icon
+              path={isFullscreen ? mdiFullscreenExit : mdiFullscreen}
+              size={1}
+              className="text-gray-500"
+            />
             {t('settings.fullScreen.title', 'Full Screen Mode')}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            {t('settings.fullScreen.description', 'Toggle full screen mode for an immersive experience.')}
+            {t(
+              'settings.fullScreen.description',
+              'Toggle full screen mode for an immersive experience.',
+            )}
           </p>
         </div>
         <button

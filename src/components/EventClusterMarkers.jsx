@@ -101,16 +101,33 @@ const createIcon = (
     iconSize,
     iconBaseSize: baseSize,
     glyph: marker.glyph || '',
-    glyphColor: marker.glyphColor || (hasAssignment ? assignedDefault?.glyphColor : unassignedDefault?.glyphColor) || DEFAULT_ICON.GLYPH_COLOR,
-    fontWeight: marker.fontWeight || (hasAssignment ? assignedDefault?.fontWeight : unassignedDefault?.fontWeight) || 'normal',
-    fontStyle: marker.fontStyle || (hasAssignment ? assignedDefault?.fontStyle : unassignedDefault?.fontStyle) || 'normal',
-    textDecoration: marker.textDecoration || (hasAssignment ? assignedDefault?.textDecoration : unassignedDefault?.textDecoration) || 'none',
-    fontFamily: marker.fontFamily || (hasAssignment ? assignedDefault?.fontFamily : unassignedDefault?.fontFamily) || 'sans-serif',
+    glyphColor:
+      marker.glyphColor ||
+      (hasAssignment ? assignedDefault?.glyphColor : unassignedDefault?.glyphColor) ||
+      DEFAULT_ICON.GLYPH_COLOR,
+    fontWeight:
+      marker.fontWeight ||
+      (hasAssignment ? assignedDefault?.fontWeight : unassignedDefault?.fontWeight) ||
+      'normal',
+    fontStyle:
+      marker.fontStyle ||
+      (hasAssignment ? assignedDefault?.fontStyle : unassignedDefault?.fontStyle) ||
+      'normal',
+    textDecoration:
+      marker.textDecoration ||
+      (hasAssignment ? assignedDefault?.textDecoration : unassignedDefault?.textDecoration) ||
+      'none',
+    fontFamily:
+      marker.fontFamily ||
+      (hasAssignment ? assignedDefault?.fontFamily : unassignedDefault?.fontFamily) ||
+      'sans-serif',
     // If glyphSize explicitly configured on marker, use it. Otherwise compute as a proportion
     // of the final icon height (no glyphBaseSize usage — glyphSize is the single source of truth).
     glyphSize: (() => {
       // Use explicit glyph size or fallback from defaults
-      const effectiveGlyphSize = marker.glyphSize || (hasAssignment ? assignedDefault?.glyphSize : unassignedDefault?.glyphSize);
+      const effectiveGlyphSize =
+        marker.glyphSize ||
+        (hasAssignment ? assignedDefault?.glyphSize : unassignedDefault?.glyphSize);
 
       // If glyphSize explicitly configured on marker, treat it as a base pixel size
       // and scale it proportionally based on current icon height vs marker's stored iconSize.
@@ -150,8 +167,8 @@ const createIcon = (
         const markerBaseSize = normalizeIconSize(DEFAULT_ICON.SIZE, DEFAULT_ICON.SIZE); // Use default base
         const baseIconHeight = markerBaseSize[1];
         if (baseGlyphPx && baseIconHeight) {
-           const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
-           return `${scaled.toFixed(2)}px`;
+          const scaled = (iconSize[1] * baseGlyphPx) / baseIconHeight;
+          return `${scaled.toFixed(2)}px`;
         }
       }
       return `${Math.round(iconSize[1] * 0.33)}px`;
@@ -188,8 +205,9 @@ const createIcon = (
 
 // Optimized marker key - only includes properties that affect visual rendering
 // Excludes metadata (companyId, assignmentId, name, locks) to prevent unnecessary unmount/remount
+// WARNING: Do NOT include lat/lng in key, as this forces unmount/remount on every drag frame, killing performance and drag state.
 const getMarkerKey = (marker) =>
-  `${marker.id}-${marker.lat}-${marker.lng}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
+  `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
 
 // Memoized individual marker component to prevent unnecessary re-renders
 const MemoizedMarker = memo(
@@ -215,6 +233,7 @@ const MemoizedMarker = memo(
         isMobile={isMobile}
         organizationLogo={organizationLogo}
         onMoreInfo={() => onMarkerSelect(marker)}
+        showTooltip={!isDraggable}
       />
     </Marker>
   ),
@@ -235,9 +254,14 @@ const MemoizedMarker = memo(
         prevProps.marker.website !== nextProps.marker.website ||
         prevProps.marker.info !== nextProps.marker.info;
 
-      // If only metadata changed, allow re-render (return false)
+      // Check if position changed (crucial for undo/redo or external updates)
+      const positionChanged =
+        prevProps.marker.lat !== nextProps.marker.lat ||
+        prevProps.marker.lng !== nextProps.marker.lng;
+
+      // If only metadata changed or position changed, allow re-render (return false)
       // If nothing changed, skip re-render (return true)
-      return !metadataChanged;
+      return !metadataChanged && !positionChanged;
     }
 
     // Visual properties changed, must re-render
@@ -381,21 +405,21 @@ function EventClusterMarkers({
       // Also implies context menu itself might only be relevant in edit mode if delete is main action?
       // Or maybe existing assignment actions should also only be available in edit mode?
       // Assuming context menu should always open in admin view for consistency, or does user want strict restriction?
-      
+
       // The user says "i cannot right click a marker in edit mode now".
       // This implies they WANT to right click in edit mode.
-      
-      if (!isAdminView) return; 
-      
+
+      if (!isAdminView) return;
+
       // Make sure we prevent default
       L.DomEvent.preventDefault(e);
       L.DomEvent.stopPropagation(e); // Also stop propagation just in case
-      
+
       setContextMenu({
         isOpen: true,
         position: e.latlng,
         marker: marker,
-        timestamp: Date.now(), 
+        timestamp: Date.now(),
       });
     },
     [isAdminView], // isMarkerDraggable not needed here as we check dynamic conditions or just allow it
@@ -503,14 +527,16 @@ function EventClusterMarkers({
   const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
     (marker) => {
-      const key = `${marker.id}-${isMarkerDraggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}`;
+      const draggable = isMarkerDraggable(marker);
+      const key = `${marker.id}-${draggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
+      
       if (!eventHandlersByMarker.current[key]) {
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
         };
 
         // Only add handlers if they are defined
-        if (isMarkerDraggable) {
+        if (draggable) {
           handlers.dragend = handleDragEnd(marker.id);
         }
         if (isAdminView) {
@@ -521,8 +547,13 @@ function EventClusterMarkers({
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu],
+    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu, selectedYear],
   );
+
+  // Clear event handler cache when crucial props change to avoid stale closures
+  useEffect(() => {
+    eventHandlersByMarker.current = {};
+  }, [onMarkerDrag, updateMarker, isMarkerDraggable]);
 
   // Memoize icons by marker visual properties to prevent recreation
   const iconsByMarker = useRef({});
@@ -531,10 +562,10 @@ function EventClusterMarkers({
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
       const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
-      
+
       // Use JSON.stringify for default markers to capture all style changes (glyphSize, fontWeight, etc.)
       const defaultsKey = `${JSON.stringify(defaultMarkers.assigned || {})}-${JSON.stringify(defaultMarkers.unassigned || {})}`;
-      
+
       const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultsKey}-${marker.assignments?.length || 0}`;
       if (!iconsByMarker.current[key]) {
         iconsByMarker.current[key] = createIcon(
@@ -617,6 +648,7 @@ function EventClusterMarkers({
           const isSelected = selectedMarker?.id === marker.id;
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
+
           // Force remount when draggable state changes to ensure marker behavior updates
           const markerKey = `${getMarkerKey(marker)}-${isDraggable ? 'drag' : 'static'}`;
 
@@ -696,6 +728,7 @@ EventClusterMarkers.propTypes = {
     }),
   ),
   updateMarker: PropTypes.func.isRequired,
+  deleteMarker: PropTypes.func,
   isMarkerDraggable: PropTypes.func.isRequired,
   iconCreateFunction: PropTypes.func.isRequired,
   selectedYear: PropTypes.number,
@@ -713,6 +746,7 @@ EventClusterMarkers.defaultProps = {
   safeMarkers: [],
   selectedYear: new Date().getFullYear(),
   isAdminView: false,
+  deleteMarker: null,
   selectedMarkerId: null,
   onMarkerSelect: null,
   focusMarkerId: null,
