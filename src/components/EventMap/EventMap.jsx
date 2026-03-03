@@ -177,7 +177,7 @@ function EventMap({
     (markerId) => {
       // 1. Bulk Edit Mode: Always allowed
       if (isBulkEditMode) return deleteMarker ? deleteMarker(markerId) : null;
-      
+
       // 2. Single Edit Mode: Only selected marker
       if (editMode && selectedMarkerId && String(markerId) === String(selectedMarkerId)) {
         return deleteMarker ? deleteMarker(markerId) : null;
@@ -467,11 +467,33 @@ function EventMap({
         setTimeout(() => {
           mapInstance.flyTo([marker.lat, marker.lng], MAP_CONFIG.SEARCH_ZOOM, {
             animate: true,
-            duration: 1,
+            duration: 1.5, // Slower animation to simulate search behavior
           });
+
+          // Add temporary highlight circle (red) to match search style
+          const highlightCircle = L.circleMarker([marker.lat, marker.lng], {
+            radius: 20,
+            color: '#d32f2f',
+            weight: 3,
+            opacity: 0.8,
+            fillColor: '#d32f2f',
+            fillOpacity: 0.2,
+          }).addTo(mapInstance);
+
+          // Remove highlight after 4 seconds or on map click
+          const removeHighlight = () => {
+            if (mapInstance.hasLayer(highlightCircle)) {
+              mapInstance.removeLayer(highlightCircle);
+            }
+            mapInstance.off('click', removeHighlight);
+          };
+
+          setTimeout(removeHighlight, 4000);
+          mapInstance.on('click', removeHighlight);
+
           // Set focus marker ID to trigger popup open
           setFocusMarkerId(markerId);
-        }, 300);
+        }, 500);
 
         // Mark as processed and clear URL parameter
         hasProcessedFocus.current = true;
@@ -1077,7 +1099,7 @@ function EventMap({
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            // deleteMarker={editMode && selectedMarkerId ? checkMarkerDeletability : (isBulkEditMode ? deleteMarker : null)} 
+            // deleteMarker={editMode && selectedMarkerId ? checkMarkerDeletability : (isBulkEditMode ? deleteMarker : null)}
             // Only pass complicated logic if needed, otherwise for bulk mode passing generic deleteMarker is safer/easier if context menu handles specific ID?
             // Actually, EventClusterMarkers expects deleteMarker to be a function (id) => Promise.
             // If I pass checkMarkerDeletability which returns the RESULT of deleteMarker(id), that works.
