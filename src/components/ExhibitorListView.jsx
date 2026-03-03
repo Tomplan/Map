@@ -4,6 +4,7 @@ import Icon from '@mdi/react';
 import {
   mdiMagnify,
   mdiMapMarker,
+  mdiMapMarkerRadius,
   mdiFilterVariant,
   mdiChevronUp,
   mdiChevronDown,
@@ -41,6 +42,17 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
   const [sortField, setSortField] = useState('name'); // name | booth | favorites
   const [sortDirection, setSortDirection] = useState('asc'); // asc | desc
   const [showCategoryMenu, setShowCategoryMenu] = useState(false);
+  // Expandable list state
+  const [expandedIds, setExpandedIds] = useState(new Set());
+  const toggleExpand = (id) => {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const categoryButtonRef = useRef(null);
   const categoryMenuRef = useRef(null);
   const sortFieldLabels = {
@@ -415,82 +427,111 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {sortedExhibitors.map((exhibitor) => (
-              <div
-                key={exhibitor.companyId || exhibitor.id}
-                onClick={() => handleExhibitorClick(exhibitor.markerIds)}
-                className="bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4"
-              >
-                <div className="flex items-center gap-4">
-                  {/* Logo */}
-                  <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
-                    <img
-                      src={getLogoWithFallback(exhibitor.logo, organizationLogo)}
-                      alt={exhibitor.name}
-                      className="max-w-full max-h-full object-contain p-2"
-                    />
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-semibold text-gray-900 text-lg break-words">
-                        {exhibitor.name}
-                      </h3>
-
-                      {/* Favorite Button */}
-                      {exhibitor.companyId && (
-                        <FavoriteButton
-                          isFavorite={isFavorite(exhibitor.companyId)}
-                          onToggle={() => toggleFavorite(exhibitor.companyId)}
-                          size="md"
-                          className="flex-shrink-0"
-                        />
-                      )}
+            {sortedExhibitors.map((exhibitor) => {
+              const info = getTranslatedInfo(
+                exhibitor.company_translations,
+                i18n.language,
+                exhibitor.info,
+              );
+              const isExpanded = expandedIds.has(exhibitor.companyId || exhibitor.id);
+              return (
+                <div
+                  key={exhibitor.companyId || exhibitor.id}
+                  onClick={() => toggleExpand(exhibitor.companyId || exhibitor.id)}
+                  className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 ${
+                    isExpanded ? 'ring-2 ring-orange-500' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Logo */}
+                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                      <img
+                        src={getLogoWithFallback(exhibitor.logo, organizationLogo)}
+                        alt={exhibitor.name}
+                        className="max-w-full max-h-full object-contain p-2"
+                      />
                     </div>
 
-                    {/* Booth Number(s) */}
-                    {exhibitor.boothNumbers && exhibitor.boothNumbers.length > 0 && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Icon path={mdiMapMarker} size={0.7} className="text-orange-600" />
-                        <span className="text-sm font-medium text-orange-600">
-                          {t('exhibitorPage.booth')} {exhibitor.boothNumbers.join(', ')}
-                        </span>
-                      </div>
-                    )}
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <h3 className="font-semibold text-gray-900 text-lg break-words">
+                          {exhibitor.name}
+                        </h3>
 
-                    {/* Category Badges */}
-                    {exhibitor.categories && exhibitor.categories.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {exhibitor.categories.map((category) => (
-                          <span
-                            key={category.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
-                            style={{ backgroundColor: category.color }}
-                            title={category.name}
-                          >
-                            <Icon path={category.icon} size={0.5} />
-                            {category.name}
+                        {/* Favorite Button */}
+                        {exhibitor.companyId && (
+                          <FavoriteButton
+                            isFavorite={isFavorite(exhibitor.companyId)}
+                            onToggle={() => toggleFavorite(exhibitor.companyId)}
+                            size="md"
+                            className="flex-shrink-0"
+                          />
+                        )}
+                      </div>
+
+                      {/* Booth Number(s) */}
+                      {exhibitor.boothNumbers && exhibitor.boothNumbers.length > 0 && (
+                        <div className="flex items-center gap-1 mt-1">
+                          <Icon path={mdiMapMarker} size={0.7} className="text-orange-600" />
+                          <span className="text-sm font-medium text-orange-600">
+                            {t('exhibitorPage.booth')} {exhibitor.boothNumbers.join(', ')}
                           </span>
-                        ))}
-                      </div>
-                    )}
+                        </div>
+                      )}
 
-                    {/* Info Preview */}
-                    {(() => {
-                      const translatedInfo = getTranslatedInfo(
-                        exhibitor.company_translations,
-                        i18n.language,
-                        exhibitor.info,
-                      );
-                      return translatedInfo ? (
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">{translatedInfo}</p>
-                      ) : null;
-                    })()}
+                      {/* Category Badges */}
+                      {exhibitor.categories && exhibitor.categories.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {exhibitor.categories.map((category) => (
+                            <span
+                              key={category.id}
+                              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
+                              style={{ backgroundColor: category.color }}
+                              title={category.name}
+                            >
+                              <Icon path={category.icon} size={0.5} />
+                              {category.name}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Info Preview (Only shown when collapsed) */}
+                      {!isExpanded && info && (
+                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">{info}</p>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Expanded Content */}
+                  {isExpanded && (
+                    <div className="mt-4 pt-4 border-t border-gray-100 animate-fadeIn">
+                      {info ? (
+                        <p className="text-gray-700 mb-4 whitespace-pre-line">{info}</p>
+                      ) : (
+                        <p className="text-gray-400 italic mb-4">
+                          {t('exhibitorPage.noDescription') || 'No description available'}
+                        </p>
+                      )}
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleExhibitorClick(exhibitor.markerIds);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                        >
+                          <Icon path={mdiMapMarkerRadius} size={0.8} />
+                          {t('exhibitorPage.viewOnMap') || 'View on Map'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
