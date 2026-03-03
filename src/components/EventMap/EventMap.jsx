@@ -455,52 +455,38 @@ function EventMap({
 
   // Handle focus parameter from URL (navigate from exhibitor list)
   useEffect(() => {
-    if (!mapInstance || !safeMarkers.length || hasProcessedFocus.current) return;
+    // Wait for map, search layer, and search control to be ready
+    const control = searchControlRef?.current;
+    if (
+      !mapInstance ||
+      !safeMarkers.length ||
+      !searchLayer ||
+      !control ||
+      hasProcessedFocus.current
+    ) {
+      return;
+    }
 
     const focusId = searchParams.get('focus');
     if (focusId) {
       const markerId = parseInt(focusId, 10);
       const marker = safeMarkers.find((m) => m.id === markerId);
 
-      if (marker && marker.lat && marker.lng) {
-        // Zoom to marker with animation
-        setTimeout(() => {
-          mapInstance.flyTo([marker.lat, marker.lng], MAP_CONFIG.SEARCH_ZOOM, {
-            animate: true,
-            duration: 1.5, // Slower animation to simulate search behavior
-          });
+      if (marker) {
+        // Use the search control to locate the marker programmatically.
+        // This ensures the behavior matches the manual search experience exactly
+        // (including the zoom animation and red circle highlight).
+        const searchText = createSearchText(marker);
 
-          // Add temporary highlight circle (red) to match search style
-          const highlightCircle = L.circleMarker([marker.lat, marker.lng], {
-            radius: 20,
-            color: '#d32f2f',
-            weight: 3,
-            opacity: 0.8,
-            fillColor: '#d32f2f',
-            fillOpacity: 0.2,
-          }).addTo(mapInstance);
-
-          // Remove highlight after 4 seconds or on map click
-          const removeHighlight = () => {
-            if (mapInstance.hasLayer(highlightCircle)) {
-              mapInstance.removeLayer(highlightCircle);
-            }
-            mapInstance.off('click', removeHighlight);
-          };
-
-          setTimeout(removeHighlight, 4000);
-          mapInstance.on('click', removeHighlight);
-
-          // Set focus marker ID to trigger popup open
-          setFocusMarkerId(markerId);
-        }, 500);
+        // Execute search (which triggers the zoom/highlight effects via the control's event handlers)
+        control.searchText(searchText);
 
         // Mark as processed and clear URL parameter
         hasProcessedFocus.current = true;
         setSearchParams({}, { replace: true });
       }
     }
-  }, [mapInstance, safeMarkers, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
+  }, [mapInstance, safeMarkers, searchLayer, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
 
   const handleMapCreated = async (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;
