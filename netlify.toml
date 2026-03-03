@@ -6,6 +6,10 @@
   VITE_DEFAULT_PATH = "/admin"
   SECRETS_SCAN_ENABLED = "false"
 
+[context.deploy-preview.environment]
+  VITE_DEFAULT_PATH = "/admin"
+  SECRETS_SCAN_ENABLED = "false"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
