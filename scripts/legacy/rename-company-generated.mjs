@@ -22,7 +22,7 @@ const confirm = process.argv.includes('--confirm');
 const DEFAULT_IDS = [2, 3, 4, 5, 6, 7, 8, 9, 10, 21];
 const targetIds = ids.length ? ids : DEFAULT_IDS;
 
-import { slugify } from './lib/logoUtils.js';
+import { slugify } from '../images/utils/logoUtils.js';
 
 const SIZES = [64, 128, 256, 512];
 const VARIANT_EXTS = ['.webp', '.avif'];

@@ -3,7 +3,7 @@ let contentTypeForExt, basenameOf, filterNumericCandidates, run;
 beforeAll(async () => {
   // storage-js expects a global Response in some node versions — provide a lightweight shim for tests
   if (typeof global.Response === 'undefined') global.Response = class Response {};
-  const mod = await import('../cleanup-numeric-generated.js');
+  const mod = await import('../legacy/cleanup-numeric-generated.js');
   contentTypeForExt = mod.contentTypeForExt;
   basenameOf = mod.basenameOf;
   filterNumericCandidates = mod.filterNumericCandidates;

@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const GENERATED_DIR = path.resolve(
-  path.join(__dirname, '..', 'public', 'assets', 'logos', 'generated'),
+  path.join(__dirname, '..', '..', 'public', 'assets', 'logos', 'generated'),
 );
 const BUCKET = 'Logos';
 

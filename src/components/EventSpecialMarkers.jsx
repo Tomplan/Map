@@ -198,6 +198,13 @@ function EventSpecialMarkers({
           const isDraggable = isMarkerDraggable(marker);
 
           const eventHandlers = {
+            click: (e) => {
+              // Only handle selection if NOT dragging (though Leaflet usually separates them)
+              // But strictly speaking, click fires after mouseup.
+              if (isAdminView) {
+                setSelectedMarker(marker);
+              }
+            },
             popupopen: (e) => e.target.closeTooltip(),
             ...(isDraggable && { dragend: handleDragEnd(marker.id) }),
             ...(isAdminView && { contextmenu: handleContextMenu(marker) }),

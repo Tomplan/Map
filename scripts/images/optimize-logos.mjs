@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import sharp from 'sharp';
 
 // Small reproducible script to generate responsive WebP/AVIF logo variants
-// Usage: node scripts/optimize-logos.mjs [--source public/assets/logos] [--out public/assets/logos/generated]
+// Usage: node scripts/images/optimize-logos.mjs [--source public/assets/logos] [--out public/assets/logos/generated]
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,7 +18,7 @@ const getArg = (key, fallback) => {
 };
 
 const SOURCE_DIR = path.resolve(
-  getArg('--source', path.join(__dirname, '..', 'public', 'assets', 'logos')),
+  getArg('--source', path.join(__dirname, '..', '..', 'public', 'assets', 'logos')),
 );
 const OUTPUT_DIR = path.resolve(getArg('--out', path.join(SOURCE_DIR, 'generated')));
 const ORIGINALS_DIR = path.resolve(getArg('--backup', path.join(SOURCE_DIR, 'originals')));

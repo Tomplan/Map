@@ -43,12 +43,25 @@
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this?",
     "vote": "Vote",
-    "voted": "Voted"
+    "voted": "Voted",
+    "refresh": "Regenerate"
   },
   "marker": {
     "event": "Event",
     "parking": "Parking",
     "food": "Food"
+  },
+  "shareApp": {
+    "title": "Share App",
+    "subtitle": "QR Code & Link",
+    "permanent": "Permanent QR Code",
+    "description": "This QR code links to the current app URL so others can easily open it on their mobile device or computer.",
+    "downloadPng": "Download PNG",
+    "appUrl": "Application URL",
+    "qrDescription": "Scan this QR code to open the map directly on your mobile device. The code includes the event logo and points to the secure HTTPS version.",
+    "downloadSvg": "Download SVG",
+    "copyLink": "Copy Link",
+    "copied": "Copied!"
   },
   "adminLogin": {
     "title": "Manager Login",
@@ -113,6 +126,10 @@
       "description": "Toggle full screen display",
       "enter": "Enter Full Screen",
       "exit": "Exit Full Screen"
+    },
+    "shareApp": {
+      "title": "Share App",
+      "description": "Get QR code and share link"
     },
     "categoryManagement": {
       "title": "Category Management",

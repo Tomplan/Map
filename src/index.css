@@ -20,8 +20,8 @@
 @tailwind utilities;
 
 /* Global form field styling - ensure white backgrounds */
-input:not([type='checkbox']):not([type='radio']):not([type='range']),
-textarea,
+input:not([type='checkbox']):not([type='radio']):not([type='range']):not([readonly]),
+textarea:not([readonly]),
 select {
   background-color: white !important;
   color: #111827 !important; /* text-gray-900 */

@@ -1403,7 +1403,7 @@ export default function MapManagement({
                       // If we are ALREADY in single edit mode for a DIFFERENT marker,
                       // we might want to switch? Or exit?
                       // Let's exit single edit mode to be safe and show detail view first.
-                      if (editMode && !isBulkEditMode) {
+                      if (editMode && !isBulkEditMode && String(marker.id) !== String(selectedMarkerId)) {
                         setEditMode(false);
                       }
                     }
