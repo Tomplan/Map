@@ -191,6 +191,7 @@ export const MarkerUI = ({
   isMobile,
   organizationLogo,
   showBoothNumber = true,
+  showTooltip = true, // Default to true if not provided
 }) => {
   // Only show tooltip if marker has meaningful content (glyph or name)
   // This prevents showing empty/incomplete tooltips on first hover
@@ -202,7 +203,7 @@ export const MarkerUI = ({
     <>
       {!isMobile && (
         <>
-          {hasTooltipContent && (
+          {showTooltip && hasTooltipContent && (
             <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
               <MarkerTooltipContent
                 marker={marker}

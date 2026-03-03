@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
  * so they point to the CDN-hosted generated variants under the public Logos bucket.
  *
  * Usage (dry-run):
- *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/migrate-logos-to-cdn.mjs
+ *   SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/images/migrate-logos-to-cdn.mjs
  *
  * To actually apply changes add --confirm
  */

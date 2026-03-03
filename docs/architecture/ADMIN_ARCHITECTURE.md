@@ -202,7 +202,7 @@ Planned features:
 3. **Markers_Content**: `id`, `name`, `logo`, `website`, `info`, `contentLocked`
    - ⚠️ For booths (ID < 1000): Read-only, deprecated
    - ✅ For special markers (ID >= 1000): Active
-4. **Markers_Admin**: ⚠️ **DEPRECATED** - Being migrated to Event_Subscriptions
+4. **Markers_Admin**: ⚠️ **DEPRECATED** - Migrated to Event_Subscriptions
 
 ### New Tables (Preferred)
 

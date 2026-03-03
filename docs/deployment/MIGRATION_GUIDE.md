@@ -102,12 +102,12 @@ const {
 } = useAssignments(2025);
 ```
 
-#### **useEventMarkers_v2(eventYear)**
+#### **useEventMarkers(eventYear)**
 
 Updated version that loads markers with assignments:
 
 ```javascript
-import useEventMarkers from './hooks/useEventMarkers_v2';
+import useEventMarkers from './hooks/useEventMarkers';
 
 const { markers, loading, isOnline } = useEventMarkers(2025);
 
@@ -191,7 +191,7 @@ const { markers, loading, isOnline } = useEventMarkers(2025);
 
 ## 🔄 **Backward Compatibility**
 
-The new `useEventMarkers_v2` maintains backward compatibility:
+The new `useEventMarkers` maintains backward compatibility:
 
 - `marker.name`, `marker.logo`, etc. still work
 - Primary assignment is spread at marker level
@@ -200,7 +200,7 @@ The new `useEventMarkers_v2` maintains backward compatibility:
 ### **Migration Path:**
 
 1. Run SQL migrations ✅
-2. Test with `useEventMarkers_v2` ✅
+2. Test with `useEventMarkers` ✅
 3. Update components gradually
 4. Eventually deprecate `Markers_Content`
 

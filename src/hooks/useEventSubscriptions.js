@@ -153,7 +153,7 @@ export default function useEventSubscriptions(eventYear) {
 
       if (insertError) throw insertError;
 
-      await loadSubscriptions();
+      await loadSubscriptions(true);
       return { data, error: null };
     } catch (err) {
       console.error('Error subscribing company:', err);
@@ -184,7 +184,7 @@ export default function useEventSubscriptions(eventYear) {
 
       if (updateError) throw updateError;
 
-      await loadSubscriptions();
+      await loadSubscriptions(true);
       return { data, error: null };
     } catch (err) {
       console.error('Error updating subscription:', err);
@@ -200,9 +200,10 @@ export default function useEventSubscriptions(eventYear) {
         .from('event_subscriptions')
         .select('company_id, event_year')
         .eq('id', subscriptionId)
-        .single();
+        .maybeSingle();
 
       if (fetchError) throw fetchError;
+      if (!subscription) throw new Error('Subscription not found');
 
       // Delete all booth assignments for this company in this year
       const { error: assignmentsError } = await supabase
@@ -221,7 +222,7 @@ export default function useEventSubscriptions(eventYear) {
 
       if (deleteError) throw deleteError;
 
-      await loadSubscriptions();
+      await loadSubscriptions(true);
       return { error: null };
     } catch (err) {
       console.error('Error unsubscribing company:', err);

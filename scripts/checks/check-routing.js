@@ -1,4 +1,14 @@
 import puppeteer from 'puppeteer';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRoot = path.resolve(__dirname, '..', '..');
+
+dotenv.config({ path: path.resolve(projectRoot, '.env') });
+dotenv.config({ path: path.resolve(projectRoot, '.env.local') });
 
 (async () => {
   const basePort = process.env.PORT || 5174;

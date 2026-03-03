@@ -13,6 +13,7 @@ import {
   mdiAccountCircle,
   mdiDomain,
   mdiFullscreen,
+  mdiQrcode,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -25,6 +26,7 @@ import CategorySettings from './CategorySettings';
 import MapDefaults from './MapDefaults';
 import MapSettings from './MapSettings';
 import FullScreenSettings from './FullScreenSettings';
+import ShareApp from './ShareApp';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -120,6 +122,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       component: <PublicDefaultYear />,
       scope: 'organization',
       description: 'Global public-facing default event year',
+    },
+    {
+      id: 'share-app',
+      label: t('settings.shareApp.title'),
+      icon: mdiQrcode,
+      roles: ['super_admin', 'system_manager', 'event_manager'],
+      component: <ShareApp />,
+      scope: 'organization',
+      description: t('settings.shareApp.description', 'Get QR code and share link'),
     },
     {
       id: 'advanced',
