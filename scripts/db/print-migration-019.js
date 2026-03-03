@@ -34,7 +34,7 @@ async function runMigration() {
     // Split SQL by semicolon if we were using pg directly, but Supabase RPC usually executes functions.
     // However, Supabase JS client doesn't support raw SQL execution directly on public schemas usually unless via RPC.
     // BUT since we don't have a pg client setup easily here, let's try to see if there is an existing pattern.
-    // The previous run-migration.js used direct table interaction (upsert).
+    // The previous insert-default-markers.js (formerly run-migration.js) used direct table interaction (upsert).
     // DDL (create table) requires SQL execution.
     // If we only have the supabase-js client and no raw SQL access via RPC, we are stuck unless we use pg-node or similar, or prompt user to run in SQL Editor.
 
@@ -44,7 +44,7 @@ async function runMigration() {
 
     // However, if we can't run raw SQL from node, we should instruct the user.
     // OR create a temporary RPC function to exec SQL if one exists? No.
-    // Wait, the previous run-migration.js was just inserting data.
+    // Wait, the previous insert-default-markers.js was just inserting data.
 
     // This is a DDL migration. It must be run in the Supabase SQL Editor.
     // I will instruct the user to run it.

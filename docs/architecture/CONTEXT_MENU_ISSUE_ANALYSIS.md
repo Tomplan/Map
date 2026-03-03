@@ -64,7 +64,7 @@
 4. handleAssign() → Calls assignCompanyToMarker() from useAssignments
 5. Supabase INSERT into assignments table (event_year, marker_id, company_id)
 6. Context menu closes: setContextMenu({ isOpen: false, ... })
-7. Real-time subscription in useEventMarkers_v2.js detects INSERT
+7. Real-time subscription in useEventMarkers.js detects INSERT
 8. Hook fetches company data (name, logo, website, info)
 9. Hook updates marker: setMarkers(prev => prev.map(m => m.id === marker_id ? {...m, ...companyData} : m))
 10. React detects marker prop changed
@@ -73,7 +73,7 @@
 13. Tooltip & Popup should update with new data
 ```
 
-### Real-Time Update Logic (useEventMarkers_v2.js lines 236-289):
+### Real-Time Update Logic (useEventMarkers.js lines 236-289):
 
 **For INSERT/UPDATE assignments:**
 
@@ -299,7 +299,7 @@ useEffect(() => {
 
 ## Key Files Reference (Unchanged)
 
-### src/hooks/useEventMarkers_v2.js
+### src/hooks/useEventMarkers.js
 
 - Lines 236-289: Real-time assignment subscription with granular updates
 - This logic is CORRECT and working properly
@@ -342,7 +342,7 @@ console.log('Comparing marker:', prevProps.marker.id, {
 ### Check real-time subscription:
 
 ```javascript
-// Add to useEventMarkers_v2.js assignment subscription
+// Add to useEventMarkers.js assignment subscription
 console.log('Assignment updated:', assignment, 'Company data:', companyData);
 ```
 

@@ -155,7 +155,7 @@ CREATE TABLE Event_Info (
 
 **Data Source:**
 
-- Reuse `useEventMarkers_v2` hook (existing)
+- Reuse `useEventMarkers` hook (existing)
 - Add filtering logic for categories and favorites
 
 **Files to create:**
@@ -238,7 +238,7 @@ if (isFavorite) {
 
 **Files to modify:**
 
-- `src/hooks/useEventMarkers_v2.js` - Integrate favorite icon logic
+- `src/hooks/useEventMarkers.js` - Integrate favorite icon logic
 - `src/components/EventClusterMarkers.jsx` - Use favorite markers
 - `src/components/MarkerDetailsUI.jsx` - Add favorite button to popup
 - `src/components/MobileBottomSheet.jsx` - Add favorite button to sheet

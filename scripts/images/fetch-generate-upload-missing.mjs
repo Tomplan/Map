@@ -8,7 +8,7 @@ import child_process from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const LOGOS_DIR = path.resolve(path.join(__dirname, '..', 'public', 'assets', 'logos'));
+const LOGOS_DIR = path.resolve(path.join(__dirname, '..', '..', 'public', 'assets', 'logos'));
 const GENERATED_DIR = path.join(LOGOS_DIR, 'generated');
 const BUCKET = 'Logos';
 
@@ -107,7 +107,7 @@ function runCommand(cmd, args = []) {
 
     // 2) Generate variants using the existing optimizer (it processes LOGOS_DIR)
     console.log('\n== Generating variants (webp/avif) ==');
-    await runCommand('node', ['scripts/optimize-logos.mjs']);
+    await runCommand('node', ['scripts/images/optimize-logos.mjs']);
 
     // 3) Upload generated variants for the affected basenames
     console.log('\n== Uploading generated variants to Supabase Logos/generated ==');
@@ -132,13 +132,13 @@ function runCommand(cmd, args = []) {
 
           // Use the repo's upload script to upload single file (it handles content-type and retries)
           console.log('Uploading variant:', genName);
-          await runCommand('node', ['scripts/upload-logos.mjs', genName]);
+          await runCommand('node', ['scripts/images/upload-logos.mjs', genName]);
         }
       }
     }
 
     console.log('\n== Re-running verification ==');
-    await runCommand('node', ['scripts/check-generated-vs-plan.mjs']);
+    await runCommand('node', ['scripts/checks/check-generated-vs-plan.mjs']);
 
     console.log('\nAll done — missing files should be uploaded.');
   } catch (err) {
