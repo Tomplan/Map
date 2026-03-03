@@ -1077,7 +1077,7 @@ function EventMap({
             setInfoButtonToggled={setInfoButtonToggled}
             isMobile={isMobile}
             updateMarker={updateMarker}
-            deleteMarker={editMode && selectedMarkerId ? checkMarkerDeletability : (isBulkEditMode ? deleteMarker : null)} 
+            // deleteMarker={editMode && selectedMarkerId ? checkMarkerDeletability : (isBulkEditMode ? deleteMarker : null)} 
             // Only pass complicated logic if needed, otherwise for bulk mode passing generic deleteMarker is safer/easier if context menu handles specific ID?
             // Actually, EventClusterMarkers expects deleteMarker to be a function (id) => Promise.
             // If I pass checkMarkerDeletability which returns the RESULT of deleteMarker(id), that works.
