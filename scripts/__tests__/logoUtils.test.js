@@ -1,4 +1,4 @@
-import { slugify, looksNumericBase, filenameFromUrl } from '../lib/logoUtils.js';
+import { slugify, looksNumericBase, filenameFromUrl } from '../images/utils/logoUtils.js';
 
 describe('logoUtils.slugify', () => {
   test('basic slugify', () => {

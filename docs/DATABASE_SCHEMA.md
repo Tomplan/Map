@@ -71,7 +71,7 @@ Event_Subscriptions (year-specific logistics)
 - **Phase 1-4 (2025-11)**: New admin architecture implemented
 - **2025-11-20**: Complete migration from Markers_Admin to Event_Subscriptions
 - **2025-11-20**: AdminDashboard.jsx removed, replaced with AdminLayout + individual components
-- **2025-11-20**: Old useEventMarkers.js removed, replaced with useEventMarkers_v2.js
+- **2025-11-20**: Old useEventMarkers.js updated to v2 architecture.
 
 ## Data Integrity Notes
 

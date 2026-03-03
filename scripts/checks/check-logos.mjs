@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const LOGOS_DIR = path.resolve(path.join(__dirname, '..', 'public', 'assets', 'logos'));
+const LOGOS_DIR = path.resolve(path.join(__dirname, '..', '..', 'public', 'assets', 'logos'));
 const GENERATED_DIR = path.join(LOGOS_DIR, 'generated');
 
 const SIZES = [128]; // ensure minimal variant exists

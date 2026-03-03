@@ -4,7 +4,7 @@
  */
 
 // delay importing createClient until runtime (keeps module test-friendly)
-import { looksNumericBase } from './lib/logoUtils.js';
+import { looksNumericBase } from '../images/utils/logoUtils.js';
 
 export const BUCKET = 'Logos';
 

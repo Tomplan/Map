@@ -4,10 +4,6 @@ import { FIELD_TABLE_MAP, LOCK_FIELDS } from '../config/markerTableConfig';
 // Fields that belong to companies table
 const COMPANY_FIELDS = ['name', 'logo', 'website', 'info'];
 
-// Fields that belong to assignments table
-// Note: booth_number removed - now using glyphText from Markers_Appearance
-const ASSIGNMENT_FIELDS = [];
-
 /**
  * Update a marker field in Supabase
  * Handles split architecture:
@@ -37,14 +33,9 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
       if (COMPANY_FIELDS.includes(key)) {
         return await updateCompanyField(id, key, sendValue, eventYear);
       }
-
-      // Handle assignment fields - update via assignments table
-      if (ASSIGNMENT_FIELDS.includes(key)) {
-        return await updateAssignmentField(id, key, sendValue, eventYear);
-      }
     } else {
       // For special markers (>= 1000), content fields go directly to Markers_Content
-      if (COMPANY_FIELDS.includes(key) || ASSIGNMENT_FIELDS.includes(key)) {
+      if (COMPANY_FIELDS.includes(key)) {
         const { error } = await supabase
           .from('markers_content')
           .update({ [key]: sendValue })
@@ -130,29 +121,6 @@ async function updateCompanyField(markerId, key, value, eventYear) {
   }
 }
 
-/**
- * Update an assignment field
- * NOTE: This function is deprecated as booth_number has been removed.
- * Keeping for backward compatibility but ASSIGNMENT_FIELDS is now empty.
- * @param {number} _markerId - Marker ID (unused)
- * @param {string} key - Assignment field name
- * @param {*} _value - New value (unused)
- * @param {number} _eventYear - Current event year (unused)
- * @returns {Promise<{error: Error | null}>}
- */
-async function updateAssignmentField(_markerId, key, _value, _eventYear) {
-  try {
-    // No assignment fields currently supported
-    // booth_number removed - now using glyphText from Markers_Appearance
-    console.warn(
-      `updateAssignmentField called with key: ${key}, but no assignment fields are supported`,
-    );
-    return { error: new Error('No assignment fields supported') };
-  } catch (error) {
-    console.error(`Exception updating assignment field ${key}:`, error);
-    return { error };
-  }
-}
 
 /**
  * Toggle lock status for a marker field
