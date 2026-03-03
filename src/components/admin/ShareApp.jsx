@@ -10,15 +10,16 @@ const ShareApp = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Use the homepage from package.json or hardcode the known URL
-  const APP_URL = 'https://tomplan.github.io/Map/';
-  
   // Path to the logo in public folder
   // Using BASE_URL ensures it works on GitHub Pages subpath
   // Ensure we have a trailing slash for the base url
   const baseUrl = import.meta.env.BASE_URL.endsWith('/') 
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`;
+    
+  // Use the current window location as the base for the QR code
+  // This ensures it works for Production, Staging, and Dev environments automatically
+  const APP_URL = window.location.origin + baseUrl;
     
   const LOGO_PATH = `${baseUrl}assets/logos/4x4Vakantiebeurs_FClogo_2026.png`;
 
