@@ -272,6 +272,8 @@ function HomePage({ selectedYear, branding }) {
           </div>
         </div>
       </div>
+
+      <div className="text-center text-xs text-gray-400 pb-4">v{__APP_VERSION__}</div>
     </div>
   );
 }

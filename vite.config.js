@@ -1,6 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Load environmental variables
+const packageJson = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf-8'));
 
 // Load environment variables when starting Vite so define/clients can
 // pick them up consistently in dev/preview builds.
@@ -30,5 +35,6 @@ export default defineConfig({
     __VITE_SUPABASE_ANON_KEY__: JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
     __VITE_ADMIN_EMAIL__: JSON.stringify(process.env.VITE_ADMIN_EMAIL),
     __VITE_ADMIN_PASSWORD__: JSON.stringify(process.env.VITE_ADMIN_PASSWORD),
+    __APP_VERSION__: JSON.stringify(packageJson.version),
   },
 });
