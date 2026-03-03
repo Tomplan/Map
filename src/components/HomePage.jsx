@@ -110,6 +110,12 @@ OrganizationLogoImage.propTypes = {
   eventName: PropTypes.string.isRequired,
 };
 
+const VersionDisplay = () => (
+    <div className="absolute bottom-4 right-4 text-xs text-gray-400 opacity-50 pointer-events-none hover:opacity-100 transition-opacity">
+        v{__APP_VERSION__}
+    </div>
+);
+
 /**
  * HomePage - Landing page for event visitors
  * Optimized with memoization to reduce unnecessary re-renders
@@ -272,6 +278,8 @@ function HomePage({ selectedYear, branding }) {
           </div>
         </div>
       </div>
+       {/* Version Display */}
+       <VersionDisplay />
     </div>
   );
 }

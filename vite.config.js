@@ -8,6 +8,9 @@ dotenv.config();
 
 export default defineConfig({
   base: '/Map',
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
+  },
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
   },
