@@ -109,6 +109,8 @@ function AppRoutes({
     </ErrorBoundary>
   );
 
+  const isVisitorMode = new URLSearchParams(location.search).get('mode') === 'visitor';
+
   return (
     <Routes>
       {/* Visitor Routes with Tab Navigation */}
@@ -116,7 +118,10 @@ function AppRoutes({
         path="/"
         element={
           /* If VITE_DEFAULT_PATH is set (e.g. for Staging/Admin deployments), redirect to it */
-          import.meta.env.VITE_DEFAULT_PATH && import.meta.env.VITE_DEFAULT_PATH !== '/' ? (
+          /* UNLESS ?mode=visitor is present (used for QR codes on staging) */
+          (import.meta.env.VITE_DEFAULT_PATH && 
+           import.meta.env.VITE_DEFAULT_PATH !== '/' && 
+           !isVisitorMode) ? (
             <Navigate to={import.meta.env.VITE_DEFAULT_PATH} replace />
           ) : (
             <VisitorLayout>
@@ -125,7 +130,10 @@ function AppRoutes({
                   <div className="flex items-center justify-center min-h-screen">Loading...</div>
                 }
               >
-                <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
+                <HomePage
+                  selectedYear={user ? selectedYear : publicYear}
+                  branding={branding}
+                />
               </Suspense>
             </VisitorLayout>
           )

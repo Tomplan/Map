@@ -19,7 +19,13 @@ const ShareApp = () => {
     
   // Use the current window location as the base for the QR code
   // This ensures it works for Production, Staging, and Dev environments automatically
-  const APP_URL = window.location.origin + baseUrl;
+  // If VITE_DEFAULT_PATH is set (staging), append ?mode=visitor to bypass the admin redirect
+  const queryString = 
+    import.meta.env.VITE_DEFAULT_PATH && import.meta.env.VITE_DEFAULT_PATH !== '/' 
+      ? '?mode=visitor' 
+      : '';
+      
+  const APP_URL = window.location.origin + baseUrl + queryString;
     
   const LOGO_PATH = `${baseUrl}assets/logos/4x4Vakantiebeurs_FClogo_2026.png`;
 
