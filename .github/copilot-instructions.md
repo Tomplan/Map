@@ -12,7 +12,32 @@ A production-ready, mobile-first React 19 web application for event navigation a
 - **State Management**: React hooks, context providers, Supabase subscriptions
 - **Testing**: Jest, React Testing Library, Puppeteer
 - **Development**: ESLint, Prettier, TypeScript types
-- **Deployment**: GitHub Pages with automated build pipeline
+- **Deployment**:
+  - **Production**: GitHub Pages (`npm run deploy`)
+  - **Development**: Netlify (via PR to `development` branch)
+
+## 🚧 MANDATORY GIT WORKFLOW
+
+**YOU MUST FOLLOW THIS PROCESS FOR EVERY CHANGE:**
+
+1.  **Create Feature Branch**:
+    `git checkout -b feat/your-feature-name` (or `fix/`)
+2.  **Update Version**:
+    Increment the version in `package.json` (e.g., `1.0.1` -> `1.0.2`).
+    *This allows verification of the deployment on mobile devices.*
+3.  **Commit Changes**:
+    `git commit -m "feat: description"`
+4.  **Push to Origin**:
+    `git push origin feat/your-feature-name`
+5.  **Create Pull Request**:
+    Create a PR from `feat/` to `development`.
+    *Netlify will automatically build and deploy the preview.*
+6.  **Merge**:
+    After approval/testing, merge to `development`.
+7.  **Production Release**:
+    Only merge `development` to `main` (or run `npm run deploy` if configured) for production.
+
+**NEVER PUSH DIRECTLY TO `development` OR `main`.**
 
 ## 🏗️ Architecture & Core Patterns
 
