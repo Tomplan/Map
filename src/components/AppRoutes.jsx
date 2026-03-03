@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import ErrorBoundary from './ErrorBoundary';
 import { useLocation } from 'react-router-dom';
 import { useOnboarding } from '../contexts/OnboardingContext';
@@ -115,15 +115,20 @@ function AppRoutes({
       <Route
         path="/"
         element={
-          <VisitorLayout>
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center min-h-screen">Loading...</div>
-              }
-            >
-              <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
-            </Suspense>
-          </VisitorLayout>
+          /* If VITE_DEFAULT_PATH is set (e.g. for Staging/Admin deployments), redirect to it */
+          import.meta.env.VITE_DEFAULT_PATH && import.meta.env.VITE_DEFAULT_PATH !== '/' ? (
+            <Navigate to={import.meta.env.VITE_DEFAULT_PATH} replace />
+          ) : (
+            <VisitorLayout>
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center min-h-screen">Loading...</div>
+                }
+              >
+                <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
+              </Suspense>
+            </VisitorLayout>
+          )
         }
       />
       <Route
