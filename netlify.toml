@@ -4,6 +4,7 @@
 
 [context.production.environment]
   VITE_DEFAULT_PATH = "/admin"
+  SECRETS_SCAN_ENABLED = "false"
 
 [[redirects]]
   from = "/*"
