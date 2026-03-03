@@ -109,7 +109,12 @@ function AppRoutes({
     </ErrorBoundary>
   );
 
-  const isVisitorMode = new URLSearchParams(location.search).get('mode') === 'visitor';
+  // Check both HashRouter location search AND window.location.search
+  // This supports ?mode=visitor in the root URL (e.g. netlify.app/?mode=visitor)
+  // as well as in the hash (e.g. netlify.app/#/?mode=visitor)
+  const isVisitorMode = 
+    new URLSearchParams(location.search).get('mode') === 'visitor' || 
+    new URLSearchParams(window.location.search).get('mode') === 'visitor';
 
   return (
     <Routes>
