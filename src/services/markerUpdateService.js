@@ -121,7 +121,6 @@ async function updateCompanyField(markerId, key, value, eventYear) {
   }
 }
 
-
 /**
  * Toggle lock status for a marker field
  * @param {number} id - Marker ID

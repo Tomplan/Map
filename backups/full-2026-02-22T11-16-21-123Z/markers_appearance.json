@@ -6,25 +6,16 @@
     {
       "id": 1404,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "jeepney",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -32,10 +23,7 @@
     {
       "id": 1103,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "human-male-female",
       "glyphColor": null,
@@ -44,10 +32,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -55,10 +40,7 @@
     {
       "id": 1101,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "human-male-female",
       "glyphColor": "white",
@@ -67,10 +49,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -979,10 +958,7 @@
     {
       "id": 1402,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "parachute",
       "glyphColor": null,
@@ -991,10 +967,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1002,25 +975,16 @@
     {
       "id": 1303,
       "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "shower",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -6
-      ],
+      "glyphAnchor": [-0.5, -6],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1028,25 +992,16 @@
     {
       "id": 1301,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "parking",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        0.5,
-        -5
-      ],
+      "glyphAnchor": [0.5, -5],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1054,25 +1009,16 @@
     {
       "id": 1201,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "glass-cocktail",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -3.5
-      ],
+      "glyphAnchor": [-0.5, -3.5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1085,17 +1031,11 @@
       "glyph": "1",
       "glyphColor": null,
       "glyphSize": null,
-      "glyphAnchor": [
-        -0.5,
-        -4
-      ],
+      "glyphAnchor": [-0.5, -4],
       "prefix": null,
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        25,
-        41
-      ],
+      "iconBaseSize": [25, 41],
       "glyphBaseSize": 16,
       "shadowScale": 1,
       "event_year": 2025
@@ -1120,25 +1060,16 @@
     {
       "id": 1050,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "airplane",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        35,
-        58
-      ],
+      "iconBaseSize": [35, 58],
       "glyphBaseSize": 25,
       "shadowScale": 1,
       "event_year": 2025
@@ -1146,25 +1077,16 @@
     {
       "id": 1406,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "truck-off-road",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1172,10 +1094,7 @@
     {
       "id": 1403,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "carabiner",
       "glyphColor": null,
@@ -1184,10 +1103,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1229,10 +1145,7 @@
     {
       "id": 1040,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "VW",
       "glyphColor": "black",
@@ -1241,10 +1154,7 @@
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 11,
       "shadowScale": 1,
       "event_year": 2025
@@ -1269,10 +1179,7 @@
     {
       "id": 1004,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "bus",
       "glyphColor": "white",
@@ -1281,10 +1188,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2025
@@ -1326,25 +1230,16 @@
     {
       "id": 1401,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "kangaroo",
       "glyphColor": null,
       "glyphSize": "22",
-      "glyphAnchor": [
-        -0.5,
-        -6
-      ],
+      "glyphAnchor": [-0.5, -6],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -1369,10 +1264,7 @@
     {
       "id": 1103,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "human-male-female",
       "glyphColor": null,
@@ -1381,10 +1273,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -1392,10 +1281,7 @@
     {
       "id": 1101,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "human-male-female",
       "glyphColor": "white",
@@ -1404,10 +1290,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -1891,25 +1774,16 @@
     {
       "id": 1303,
       "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "shower",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -6
-      ],
+      "glyphAnchor": [-0.5, -6],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2053,25 +1927,16 @@
     {
       "id": 1008,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "LRCH",
       "glyphColor": "black",
       "glyphSize": "7.5",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
+      "glyphAnchor": [0, -7],
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 65,
       "shadowScale": 1,
       "event_year": 2025
@@ -2079,25 +1944,16 @@
     {
       "id": 1005,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "music",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -4.8
-      ],
+      "glyphAnchor": [-0.5, -4.8],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -2105,25 +1961,16 @@
     {
       "id": 1404,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "jeepney",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2131,10 +1978,7 @@
     {
       "id": 1403,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "carabiner",
       "glyphColor": null,
@@ -2143,10 +1987,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2154,10 +1995,7 @@
     {
       "id": 1402,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "parachute",
       "glyphColor": null,
@@ -2166,10 +2004,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2177,25 +2012,16 @@
     {
       "id": 1401,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "kangaroo",
       "glyphColor": null,
       "glyphSize": "22",
-      "glyphAnchor": [
-        -0.5,
-        -6
-      ],
+      "glyphAnchor": [-0.5, -6],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2203,10 +2029,7 @@
     {
       "id": 1004,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "bus",
       "glyphColor": "white",
@@ -2215,10 +2038,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2026
@@ -2226,25 +2046,16 @@
     {
       "id": 1301,
       "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "parking",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        0.5,
-        -5
-      ],
+      "glyphAnchor": [0.5, -5],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2252,25 +2063,16 @@
     {
       "id": 1406,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "truck-off-road",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2278,25 +2080,16 @@
     {
       "id": 1201,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "glass-cocktail",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -3.5
-      ],
+      "glyphAnchor": [-0.5, -3.5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2304,10 +2097,7 @@
     {
       "id": 1040,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "VW",
       "glyphColor": "black",
@@ -2316,10 +2106,7 @@
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 11,
       "shadowScale": 1,
       "event_year": 2026
@@ -2667,10 +2454,7 @@
     {
       "id": 9999,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        41
-      ],
+      "iconSize": [25, 41],
       "iconColor": "blue",
       "glyph": "",
       "glyphColor": null,
@@ -2679,10 +2463,7 @@
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        25,
-        41
-      ],
+      "iconBaseSize": [25, 41],
       "glyphBaseSize": null,
       "shadowScale": 1,
       "event_year": 2026
@@ -2729,17 +2510,11 @@
       "glyph": "1",
       "glyphColor": null,
       "glyphSize": null,
-      "glyphAnchor": [
-        -0.5,
-        -4
-      ],
+      "glyphAnchor": [-0.5, -4],
       "prefix": null,
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        25,
-        41
-      ],
+      "iconBaseSize": [25, 41],
       "glyphBaseSize": 16,
       "shadowScale": 1,
       "event_year": 2026
@@ -2815,10 +2590,7 @@
     {
       "id": 1030,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "wheelchair",
       "glyphColor": "white",
@@ -2827,10 +2599,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -2838,25 +2607,16 @@
     {
       "id": 1050,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "airplane",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -7
-      ],
+      "glyphAnchor": [-0.5, -7],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        35,
-        58
-      ],
+      "iconBaseSize": [35, 58],
       "glyphBaseSize": 25,
       "shadowScale": 1,
       "event_year": 2026
@@ -2864,25 +2624,16 @@
     {
       "id": 1005,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "music",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -4.8
-      ],
+      "glyphAnchor": [-0.5, -4.8],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2890,25 +2641,16 @@
     {
       "id": 1008,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "LRCH",
       "glyphColor": "black",
       "glyphSize": "7.5",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
+      "glyphAnchor": [0, -7],
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 65,
       "shadowScale": 1,
       "event_year": 2026
@@ -2916,10 +2658,7 @@
     {
       "id": 1030,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "wheelchair",
       "glyphColor": "white",
@@ -2928,10 +2667,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2939,25 +2675,16 @@
     {
       "id": 1002,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "parking",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        0.5,
-        -5
-      ],
+      "glyphAnchor": [0.5, -5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2965,25 +2692,16 @@
     {
       "id": 1203,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "silverware-fork-knife",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -1.01,
-        -4.5
-      ],
+      "glyphAnchor": [-1.01, -4.5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -2991,25 +2709,16 @@
     {
       "id": 1202,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "french-fries",
       "glyphColor": null,
       "glyphSize": "21.99",
-      "glyphAnchor": [
-        -0.3,
-        -5
-      ],
+      "glyphAnchor": [-0.3, -5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -3017,10 +2726,7 @@
     {
       "id": 1102,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "human-male-female",
       "glyphColor": "white",
@@ -3029,10 +2735,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -3040,25 +2743,16 @@
     {
       "id": 1302,
       "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "tent",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
+      "glyphAnchor": [0, -7],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026
@@ -3066,10 +2760,7 @@
     {
       "id": 1003,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "bus",
       "glyphColor": null,
@@ -3078,10 +2769,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2026
@@ -3089,10 +2777,7 @@
     {
       "id": 1001,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        20,
-        33
-      ],
+      "iconSize": [20, 33],
       "iconColor": null,
       "glyph": "location-enter",
       "glyphColor": null,
@@ -3101,10 +2786,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2026
@@ -3265,25 +2947,16 @@
     {
       "id": 1203,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "silverware-fork-knife",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        -1.01,
-        -4.5
-      ],
+      "glyphAnchor": [-1.01, -4.5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -3308,25 +2981,16 @@
     {
       "id": 1202,
       "iconUrl": "glyph-marker-icon-orange.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "french-fries",
       "glyphColor": null,
       "glyphSize": "21.99",
-      "glyphAnchor": [
-        -0.3,
-        -5
-      ],
+      "glyphAnchor": [-0.3, -5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -3334,10 +2998,7 @@
     {
       "id": 1102,
       "iconUrl": "glyph-marker-icon-red.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "human-male-female",
       "glyphColor": "white",
@@ -3346,10 +3007,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -3357,10 +3015,7 @@
     {
       "id": 1009,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "cart",
       "glyphColor": "black",
@@ -3369,10 +3024,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 13,
       "shadowScale": 1,
       "event_year": 2025
@@ -3380,10 +3032,7 @@
     {
       "id": 9999,
       "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        41
-      ],
+      "iconSize": [25, 41],
       "iconColor": "blue",
       "glyph": "",
       "glyphColor": null,
@@ -3392,10 +3041,7 @@
       "prefix": "",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        25,
-        41
-      ],
+      "iconBaseSize": [25, 41],
       "glyphBaseSize": null,
       "shadowScale": 1,
       "event_year": 2025
@@ -3454,10 +3100,7 @@
     {
       "id": 1003,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "bus",
       "glyphColor": null,
@@ -3466,10 +3109,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2025
@@ -3528,25 +3168,16 @@
     {
       "id": 1002,
       "iconUrl": "glyph-marker-icon-blue.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": null,
       "glyph": "parking",
       "glyphColor": null,
       "glyphSize": "20",
-      "glyphAnchor": [
-        0.5,
-        -5
-      ],
+      "glyphAnchor": [0.5, -5],
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025
@@ -3622,10 +3253,7 @@
     {
       "id": 1009,
       "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "cart",
       "glyphColor": "black",
@@ -3634,10 +3262,7 @@
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 13,
       "shadowScale": 1,
       "event_year": 2026
@@ -3645,10 +3270,7 @@
     {
       "id": 1001,
       "iconUrl": "glyph-marker-icon-purple.svg",
-      "iconSize": [
-        20,
-        33
-      ],
+      "iconSize": [20, 33],
       "iconColor": null,
       "glyph": "location-enter",
       "glyphColor": null,
@@ -3657,10 +3279,7 @@
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 17,
       "shadowScale": 1,
       "event_year": 2025
@@ -3940,25 +3559,16 @@
     {
       "id": 1302,
       "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
+      "iconSize": [25, null],
       "iconColor": "blue",
       "glyph": "tent",
       "glyphColor": "white",
       "glyphSize": "20",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
+      "glyphAnchor": [0, -7],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
+      "iconBaseSize": [20, 33],
       "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2025

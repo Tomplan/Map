@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -21,11 +20,8 @@ async function checkColumns() {
   console.log('Checking markers_appearance columns...');
   // Try to insert a dummy row or select specific columns to see if they error?
   // Or just fetch one row and see keys.
-  
-  const { data, error } = await supabase
-    .from('markers_appearance')
-    .select('*')
-    .limit(1);
+
+  const { data, error } = await supabase.from('markers_appearance').select('*').limit(1);
 
   if (error) {
     console.error('Error fetching:', error);

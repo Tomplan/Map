@@ -112,8 +112,8 @@ function AppRoutes({
   // Check both HashRouter location search AND window.location.search
   // This supports ?mode=visitor in the root URL (e.g. netlify.app/?mode=visitor)
   // as well as in the hash (e.g. netlify.app/#/?mode=visitor)
-  const isVisitorMode = 
-    new URLSearchParams(location.search).get('mode') === 'visitor' || 
+  const isVisitorMode =
+    new URLSearchParams(location.search).get('mode') === 'visitor' ||
     new URLSearchParams(window.location.search).get('mode') === 'visitor';
 
   return (
@@ -124,9 +124,9 @@ function AppRoutes({
         element={
           /* If VITE_DEFAULT_PATH is set (e.g. for Staging/Admin deployments), redirect to it */
           /* UNLESS ?mode=visitor is present (used for QR codes on staging) */
-          (import.meta.env.VITE_DEFAULT_PATH && 
-           import.meta.env.VITE_DEFAULT_PATH !== '/' && 
-           !isVisitorMode) ? (
+          import.meta.env.VITE_DEFAULT_PATH &&
+          import.meta.env.VITE_DEFAULT_PATH !== '/' &&
+          !isVisitorMode ? (
             <Navigate to={import.meta.env.VITE_DEFAULT_PATH} replace />
           ) : (
             <VisitorLayout>
@@ -135,10 +135,7 @@ function AppRoutes({
                   <div className="flex items-center justify-center min-h-screen">Loading...</div>
                 }
               >
-                <HomePage
-                  selectedYear={user ? selectedYear : publicYear}
-                  branding={branding}
-                />
+                <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
               </Suspense>
             </VisitorLayout>
           )

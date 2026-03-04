@@ -11,7 +11,7 @@ Key points:
 - The app contains a client-side normalizer that ensures canonical forms such as:
   - `/Map` -> `/Map#/`
   - `/Map/#/admin` -> `/Map#/admin`
-  This improves predictability and prevents variants from confusing users or tooling.
+    This improves predictability and prevents variants from confusing users or tooling.
 
 ## Canonical local URLs (when `vite.base` or `BASE_URL` is `/Map`)
 

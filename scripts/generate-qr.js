@@ -19,11 +19,11 @@ async function generateQR() {
     }
 
     if (url.startsWith('http://')) {
-        url = url.replace('http://', 'https://');
+      url = url.replace('http://', 'https://');
     }
 
     console.log(`Generating QR codes for: ${url}`);
-    
+
     const outDir = path.join(rootDir, 'public', 'assets');
     if (!fs.existsSync(outDir)) {
       fs.mkdirSync(outDir, { recursive: true });
@@ -36,7 +36,7 @@ async function generateQR() {
         dark: '#000000',
         light: '#ffffff',
       },
-      errorCorrectionLevel: 'H'
+      errorCorrectionLevel: 'H',
     });
 
     await QRCode.toFile(path.join(outDir, 'app-qr.svg'), url, {
@@ -46,12 +46,11 @@ async function generateQR() {
         dark: '#000000',
         light: '#ffffff',
       },
-      errorCorrectionLevel: 'H'
+      errorCorrectionLevel: 'H',
     });
 
     console.log('✓ Generated public/assets/app-qr.png');
     console.log('✓ Generated public/assets/app-qr.svg');
-
   } catch (err) {
     console.error('Failed to generate QR codes:', err);
     process.exit(1);
