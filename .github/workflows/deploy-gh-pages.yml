@@ -6,10 +6,6 @@ on:
   # Allow manual (on-demand) deployments from the Actions UI
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Optional label to describe this manual deploy (for logs)'
-        required: false
-        default: 'manual'
       branch:
         description: 'Which branch should be built and deployed (e.g. development or main). Defaults to development.'
         required: false
@@ -21,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Remove concurrency cancellation if we want to allow simultaneous deploys to diff folders
+    # But usually sequential is safer for git push
     concurrency:
       group: gh-pages-deploy
-      cancel-in-progress: true
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
@@ -32,6 +30,17 @@ jobs:
           fetch-depth: 0
           # Use branch if provided through workflow_dispatch, otherwise use the event ref
           ref: ${{ github.event.inputs.branch || github.ref }}
+
+      - name: Set Environment Variables
+        id: set_env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/development" || "${{ github.event.inputs.branch }}" == "development" ]]; then
+            echo "VITE_BASE_PATH=/Map/dev/" >> $GITHUB_ENV
+            echo "DESTINATION_DIR=dev" >> $GITHUB_ENV
+          else
+            echo "VITE_BASE_PATH=/Map/" >> $GITHUB_ENV
+            echo "DESTINATION_DIR=." >> $GITHUB_ENV
+          fi
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -46,15 +55,21 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_BASE_PATH: '/Map/'
+          VITE_BASE_PATH: ${{ env.VITE_BASE_PATH }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      # Create 404.html to handle client-side routing refreshing
+      - name: Copy index.html to 404.html
+        run: cp dist/index.html dist/404.html
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           publish_dir: ./dist
           publish_branch: gh-pages
+          destination_dir: ${{ env.DESTINATION_DIR }}
+          keep_files: true  # Prevent wiping other environments (e.g., main keeps dev/, dev keeps root)
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           github_token: ${{ secrets.GITHUB_TOKEN }}

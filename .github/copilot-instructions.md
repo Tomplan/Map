@@ -13,8 +13,8 @@ A production-ready, mobile-first React 19 web application for event navigation a
 - **Testing**: Jest, React Testing Library, Puppeteer
 - **Development**: ESLint, Prettier, TypeScript types
 - **Deployment**:
-  - **Production**: GitHub Pages (`npm run deploy`)
-  - **Development**: Netlify (via PR to `development` branch)
+  - **Production**: GitHub Pages (`https://tomplan.github.io/Map/`) - Deploys automatically from `main`.
+  - **Development**: GitHub Pages (`https://tomplan.github.io/Map/dev/`) - Deploys automatically from `development`.
 
 ## 🚧 MANDATORY GIT WORKFLOW
 
@@ -24,20 +24,29 @@ A production-ready, mobile-first React 19 web application for event navigation a
     `git checkout -b feat/your-feature-name` (or `fix/`)
 2.  **Update Version**:
     Increment the version in `package.json` (e.g., `1.0.1` -> `1.0.2`).
-    *This allows verification of the deployment on mobile devices.*
+    _This allows verification of the deployment on mobile devices._
 3.  **Commit Changes**:
     `git commit -m "feat: description"`
 4.  **Push to Origin**:
     `git push origin feat/your-feature-name`
 5.  **Create Pull Request**:
     Create a PR from `feat/` to `development`.
-    *Netlify will automatically build and deploy the preview.*
-6.  **Merge**:
+    _GitHub Actions will build and deploy to the Development URL._
+6.  **Verify on Development URL**:
+    Check `https://tomplan.github.io/Map/dev/` (allow ~2 mins for build).
+7.  **Merge**:
     After approval/testing, merge to `development`.
-7.  **Production Release**:
-    Only merge `development` to `main` (or run `npm run deploy` if configured) for production.
+8.  **Production Release**:
+    Merge `development` to `main`.
+    _GitHub Actions will build and deploy to the Production URL._
 
 **NEVER PUSH DIRECTLY TO `development` OR `main`.**
+
+### Workflow Safety Rules
+
+- **Check PR Status**: Before pushing updates to an existing feature branch, ALWAYS check if the associated PR has been merged.
+  - If merged: Create a **new** feature branch (e.g., `feat/feature-name-refactor`) or a new PR. Do not push to a merged branch expecting the old PR to reopen.
+- **Version Control**: Always verify the current version in `package.json` before starting work.
 
 ## 🏗️ Architecture & Core Patterns
 
