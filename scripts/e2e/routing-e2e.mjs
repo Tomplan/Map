@@ -44,15 +44,20 @@ for (const c of cases) {
     if (c.type === 'admin') {
       try {
         // Wait longer for lazily loaded admin login to appear (look for the portal paragraph element)
-        await page.waitForFunction(() => {
-          const p = document.querySelector('p.text-gray-500.text-sm');
-          return p && p.innerText.trim().length > 0;
-        }, { timeout: 7000 });
+        await page.waitForFunction(
+          () => {
+            const p = document.querySelector('p.text-gray-500.text-sm');
+            return p && p.innerText.trim().length > 0;
+          },
+          { timeout: 7000 },
+        );
         console.log(`✔ ${url} -> ${final} (admin login visible)`);
       } catch (err) {
         console.error(`✖ ${url} -> admin UI not visible (no portal paragraph found)`);
         try {
-          const body = await page.evaluate(() => document.body ? document.body.innerText.slice(0, 1000) : '');
+          const body = await page.evaluate(() =>
+            document.body ? document.body.innerText.slice(0, 1000) : '',
+          );
           console.error('Body snippet:', body.replace(/\n/g, ' '));
         } catch (e) {}
         failed = true;
@@ -66,7 +71,9 @@ for (const c of cases) {
       } catch (err) {
         console.error(`✖ ${url} -> map did not render (no '.leaflet-container')`);
         try {
-          const body = await page.evaluate(() => document.body ? document.body.innerText.slice(0, 1000) : '');
+          const body = await page.evaluate(() =>
+            document.body ? document.body.innerText.slice(0, 1000) : '',
+          );
           console.error('Body snippet:', body.replace(/\n/g, ' '));
         } catch (e) {}
         failed = true;

@@ -134,7 +134,9 @@ body {
   }
 
   /* Force Map Container to take full viewport */
-  #map, .leaflet-container, .event-map-wrapper {
+  #map,
+  .leaflet-container,
+  .event-map-wrapper {
     width: 100vw !important;
     height: 100vh !important;
     position: fixed !important;

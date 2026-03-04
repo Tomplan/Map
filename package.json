@@ -2,7 +2,7 @@
   "homepage": "https://tomplan.github.io/Map/",
   "name": "map",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "scripts": {
     "dev": "npx vite",
@@ -62,6 +62,7 @@
     "libphonenumber-js": "^1.12.29",
     "material-icons": "^1.13.14",
     "node-fetch": "^3.3.2",
+    "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

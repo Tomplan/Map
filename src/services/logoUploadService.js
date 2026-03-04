@@ -34,14 +34,14 @@ export async function uploadLogo(file, folder = 'companies') {
     // Compress image if not SVG
     let fileToUpload = file;
     let fileExt = file.name.split('.').pop();
-    
+
     if (file.type !== 'image/svg+xml') {
       try {
         const compressedBlob = await compressImage(file, {
           maxWidth: 800,
           maxHeight: 800,
           quality: 0.8,
-          format: 'image/webp'
+          format: 'image/webp',
         });
         fileToUpload = compressedBlob;
         fileExt = 'webp';
@@ -57,11 +57,13 @@ export async function uploadLogo(file, folder = 'companies') {
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     // Upload to Supabase Storage
-    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, fileToUpload, {
-      cacheControl: '3600',
-      upsert: false,
-      contentType: fileExt === 'webp' ? 'image/webp' : file.type
-    });
+    const { data, error } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(filePath, fileToUpload, {
+        cacheControl: '3600',
+        upsert: false,
+        contentType: fileExt === 'webp' ? 'image/webp' : file.type,
+      });
 
     if (error) {
       console.error('Upload error:', error);

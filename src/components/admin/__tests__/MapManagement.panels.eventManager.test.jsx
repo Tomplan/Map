@@ -96,5 +96,3 @@ describe('MapManagement panels for event_manager', () => {
     });
   });
 });
-
-

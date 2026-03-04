@@ -206,8 +206,7 @@ const createIcon = (
 // Optimized marker key - only includes properties that affect visual rendering
 // Excludes metadata (companyId, assignmentId, name, locks) to prevent unnecessary unmount/remount
 // WARNING: Do NOT include lat/lng in key, as this forces unmount/remount on every drag frame, killing performance and drag state.
-const getMarkerKey = (marker) =>
-  `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
+const getMarkerKey = (marker) => `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}`;
 
 // Memoized individual marker component to prevent unnecessary re-renders
 const MemoizedMarker = memo(
@@ -529,7 +528,7 @@ function EventClusterMarkers({
     (marker) => {
       const draggable = isMarkerDraggable(marker);
       const key = `${marker.id}-${draggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
-      
+
       if (!eventHandlersByMarker.current[key]) {
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),

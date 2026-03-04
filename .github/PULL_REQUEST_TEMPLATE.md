@@ -1,5 +1,7 @@
 # IMPORTANT
+
 **Branch Check:**
+
 - Use `development` for all new features and routine fixes.
 - Use `main` ONLY for production releases (merging `development` → `main`) or critical hotfixes.
 

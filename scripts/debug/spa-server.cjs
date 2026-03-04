@@ -2,17 +2,22 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-function startServer({ host = '127.0.0.1', port = 5173, root = path.resolve(__dirname, '..', 'dist') } = {}) {
+function startServer({
+  host = '127.0.0.1',
+  port = 5173,
+  root = path.resolve(__dirname, '..', 'dist'),
+} = {}) {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       let urlPath = decodeURIComponent(req.url.split('?')[0]);
-      
+
       // Preserve /Map for asset requests
-      const isAssetRequest = urlPath.startsWith('/Map/assets') || urlPath.startsWith('/Map/vite.svg');
+      const isAssetRequest =
+        urlPath.startsWith('/Map/assets') || urlPath.startsWith('/Map/vite.svg');
       if (!isAssetRequest && urlPath.startsWith('/Map')) {
         urlPath = urlPath.slice(4);
       }
-      
+
       let filePath = path.join(root, urlPath);
 
       // Prevent directory traversal

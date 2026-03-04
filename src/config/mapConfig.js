@@ -43,7 +43,7 @@ export const MAP_CONFIG = {
 
 // Default branding configuration
 export const BRANDING_CONFIG = {
-  DEFAULT_LOGO: '4x4Vakantiebeurs.png',
+  DEFAULT_LOGO: '4x4Vakantiebeurs_FClogo_2026.png',
   getDefaultLogoPath: () => {
     // Access Vite's `import.meta.env.BASE_URL` safely. Jest (and some Node
     // environments) cannot parse `import.meta` at module parse time which

@@ -3,11 +3,19 @@ const puppeteer = require('puppeteer');
 (async () => {
   const url = process.env.URL || 'http://localhost:5173/Map/#/admin/map';
   console.log('Puppeteer checking', url);
-  const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
   const page = await browser.newPage();
 
-  page.on('console', (msg) => msg.args().map(a => a.jsonValue()).forEach(p => p.then(v => console.log('PAGE LOG:', v)).catch(()=>{})));
-  page.on('pageerror', err => console.error('PAGE ERROR:', err));
+  page.on('console', (msg) =>
+    msg
+      .args()
+      .map((a) => a.jsonValue())
+      .forEach((p) => p.then((v) => console.log('PAGE LOG:', v)).catch(() => {})),
+  );
+  page.on('pageerror', (err) => console.error('PAGE ERROR:', err));
 
   try {
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
@@ -20,7 +28,7 @@ const puppeteer = require('puppeteer');
   const state = await page.evaluate(() => {
     const Lp = !!window.L;
     const browserPrint = !!(window.L && window.L.browserPrint);
-    const maps = (window.L && window.L._maps) ? Object.values(window.L._maps) : [];
+    const maps = window.L && window.L._maps ? Object.values(window.L._maps) : [];
     const map = maps[0] || null;
     const printControl = map ? map.printControl : null;
     return {
