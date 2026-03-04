@@ -2141,7 +2141,23 @@ function EditPanel({
       {isSpecialMarker && (
         <Section title="Content (Special Marker)">
           <InputField label="Name" value={marker.name} onChange={(v) => onChange('name', v)} />
-          <InputField label="Logo URL" value={marker.logo} onChange={(v) => onChange('logo', v)} />
+          <div>
+            <InputField
+              label="Logo URL"
+              value={marker.logo}
+              onChange={(v) => onChange('logo', v)}
+              placeholder="Leave empty to use Organization Logo"
+            />
+            {marker.logo && (
+              <button
+                type="button"
+                onClick={() => onChange('logo', '')}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 block w-full text-right"
+              >
+                Use Organization Default
+              </button>
+            )}
+          </div>
           <InputField
             label="Website"
             value={marker.website}
