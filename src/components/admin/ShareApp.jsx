@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
 import Icon from '@mdi/react';
 import { mdiQrcode, mdiDownload, mdiRefresh } from '@mdi/js';
+import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 
 const ShareApp = () => {
   const { t } = useTranslation();
+  const { organizationLogo, loading: logoLoading } = useOrganizationLogo();
   const canvasRef = useRef(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -13,23 +15,24 @@ const ShareApp = () => {
   // Path to the logo in public folder
   // Using BASE_URL ensures it works on GitHub Pages subpath
   // Ensure we have a trailing slash for the base url
-  const baseUrl = import.meta.env.BASE_URL.endsWith('/') 
+  const baseUrl = import.meta.env.BASE_URL.endsWith('/')
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`;
-    
+
   // Use the current window location as the base for the QR code
   // This ensures it works for Production, Staging, and Dev environments automatically
   // If VITE_DEFAULT_PATH is set (staging), append ?mode=visitor to bypass the admin redirect
-  const queryString = 
-    import.meta.env.VITE_DEFAULT_PATH && import.meta.env.VITE_DEFAULT_PATH !== '/' 
-      ? '?mode=visitor' 
+  const queryString =
+    import.meta.env.VITE_DEFAULT_PATH && import.meta.env.VITE_DEFAULT_PATH !== '/'
+      ? '?mode=visitor'
       : '';
-      
+
   const APP_URL = window.location.origin + baseUrl + queryString;
-    
-  const LOGO_PATH = `${baseUrl}assets/logos/4x4Vakantiebeurs_FClogo_2026.png`;
 
   const generateQRCode = async () => {
+    // Wait for organization logo to be loaded
+    if (logoLoading) return;
+
     setLoading(true);
     setError(null);
     try {
@@ -56,13 +59,23 @@ const ShareApp = () => {
       // 3. Load and draw the logo
       const img = new Image();
       img.crossOrigin = 'anonymous'; // Important for canvas export if hosted externally
-      img.src = LOGO_PATH;
+      // Use the dynamic organization logo with cache busting to ensures updates
+      // are reflected immediately when the user clicks regenerate
+      const cacheBust = new Date().getTime();
+      // Check if URL already has query params
+      const separator = organizationLogo.includes('?') ? '&' : '?';
+      // Only append cache bust if it's not a data URL
+      const srcUrl = organizationLogo.startsWith('data:')
+        ? organizationLogo
+        : `${organizationLogo}${separator}t=${cacheBust}`;
+
+      img.src = srcUrl;
 
       img.onload = () => {
         // Draw white background for logo ensuring it's clearly visible
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(logoPos - 2, logoPos - 2, logoSize + 4, logoSize + 4);
-        
+
         // Draw logo
         ctx.drawImage(img, logoPos, logoPos, logoSize, logoSize);
         setLoading(false);
@@ -74,7 +87,6 @@ const ShareApp = () => {
         setError('Logo failed to load, but QR code is valid.');
         setLoading(false);
       };
-
     } catch (err) {
       console.error('QR Generation failed', err);
       setError(err.message);
@@ -82,10 +94,13 @@ const ShareApp = () => {
     }
   };
 
+  // Re-generate QR code when logo changes or finishes loading
   useEffect(() => {
-    generateQRCode();
+    if (!logoLoading) {
+      generateQRCode();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, [organizationLogo, logoLoading]); // Run when logo updates
 
   const handleDownload = () => {
     const canvas = canvasRef.current;
@@ -110,44 +125,50 @@ const ShareApp = () => {
       <div className="bg-white rounded-lg shadow-lg p-8">
         <div className="flex items-center gap-3 mb-6 border-b pb-4">
           <Icon path={mdiQrcode} size={1.5} className="text-blue-600" />
-          <h2 className="text-2xl font-bold text-gray-800">
-            {t('shareApp.title', 'Share App')}
-          </h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t('shareApp.title', 'Share App')}</h2>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8 items-center justify-center">
-          
           <div className="relative group">
-            <div className={`transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}>
-              <canvas 
-                ref={canvasRef} 
-                className="shadow-md rounded-md border border-gray-200"
-              />
+            <div
+              className={`transition-opacity duration-300 ${loading ? 'opacity-50' : 'opacity-100'}`}
+            >
+              <canvas ref={canvasRef} className="shadow-md rounded-md border border-gray-200" />
             </div>
-            
+
             {loading && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             )}
-            
+
             {error && (
-               <div className="text-amber-600 text-xs text-center mt-2 max-w-[300px]">{error}</div>
+              <div className="text-amber-600 text-xs text-center mt-2 max-w-[300px]">{error}</div>
             )}
           </div>
 
           <div className="space-y-6 max-w-md">
             <div>
-              <h3 className="text-lg font-semibold mb-2">{t('shareApp.appUrl', 'Application URL')}</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {t('shareApp.appUrl', 'Application URL')}
+              </h3>
               <p className="bg-gray-50 p-3 rounded border border-gray-200 text-blue-600 break-all font-mono text-sm">
-                <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                <a
+                  href={APP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
                   {APP_URL}
                 </a>
               </p>
             </div>
 
             <p className="text-gray-600 border-l-4 border-blue-100 pl-4 italic">
-              {t('shareApp.qrDescription', 'Scan this QR code to open the map directly on your mobile device. The code includes the event logo and points to the secure HTTPS version.')}
+              {t(
+                'shareApp.qrDescription',
+                'Scan this QR code to open the map directly on your mobile device. The code includes the event logo and points to the secure HTTPS version.',
+              )}
             </p>
 
             <div className="flex gap-4 pt-2">
@@ -170,7 +191,6 @@ const ShareApp = () => {
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>
