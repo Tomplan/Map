@@ -76,8 +76,6 @@ function EventMap({
     }
   });
   const [currentZoom, setCurrentZoom] = useState(MAP_CONFIG.DEFAULT_ZOOM);
-  // Fractional zoom while the map is animating (null when idle) — used for smooth marker scaling
-  const [zoomAnimating, setZoomAnimating] = useState(null);
 
   // Favorites context (only available in visitor view)
   const favoritesContext = useOptionalFavoritesContext();
@@ -272,25 +270,45 @@ function EventMap({
   // Track zoom changes for dynamic marker sizing
   useEffect(() => {
     if (!mapInstance) return;
-    // Throttle updates via requestAnimationFrame to avoid flooding DOM
-    let raf = null;
 
-    const handleZoomFrame = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        try {
-          const z = mapInstance.getZoom();
-          setZoomAnimating(z);
-        } catch (err) {
-          // ignore
+    // Use a CSS class to hide markers during zoom to prevent "pop" effect
+    // User requested this cleaner "hide and reappear" alternative to janky scaling
+    const updateZoomingClass = (isZooming) => {
+      try {
+        const container = mapInstance.getContainer();
+        if (isZooming) {
+          container.classList.add('map-is-zooming');
+        } else {
+          container.classList.remove('map-is-zooming');
         }
-      });
+      } catch (e) {
+        // ignore
+      }
+    };
+
+    const handleZoomStart = () => {
+      // debug pinch sequence
+      if (process.env.NODE_ENV !== 'production') {
+        console.debug(`[EventMap] zoomstart fired at ${performance.now()}`);
+      }
+      
+      // Force immediate visual update to hide artifacts
+      // Uses requestAnimationFrame to optimize for start of frame
+      requestAnimationFrame(() => updateZoomingClass(true));
+    };
+
+    // Helper to restore visibility after any interaction (zoom or move)
+    const restoreVisibility = () => {
+      setTimeout(() => {
+        requestAnimationFrame(() => updateZoomingClass(false));
+      }, 300);
     };
 
     const handleZoomEnd = () => {
+      // Delay showing markers until after the "jump" has likely finished and DOM updated
+      restoreVisibility();
+
       const zoom = mapInstance.getZoom();
-      // Clear animating value and commit the final zoom to state
-      setZoomAnimating(null);
       setCurrentZoom(zoom);
       // Development-only: log zoom level for debugging
       try {
@@ -302,20 +320,53 @@ function EventMap({
       }
     };
 
+    // Ensure markers return if the interaction was just a pan (or a cancelled zoom)
+    const handleMoveEnd = () => {
+      restoreVisibility();
+    };
+
     // Set initial zoom
     setCurrentZoom(mapInstance.getZoom());
 
-    // Subscribe to continuous/animated zoom events to update transforms smoothly
-    mapInstance.on('zoom', handleZoomFrame);
-    mapInstance.on('zoomanim', handleZoomFrame);
-    // On end commit final sizes
+    // Subscribe to events
+    mapInstance.on('zoomstart', handleZoomStart);
     mapInstance.on('zoomend', handleZoomEnd);
+    mapInstance.on('moveend', handleMoveEnd);
+
+    // Add native listeners for early pinch detection
+    // Leaflet's zoomstart fires too late for smooth pinch-to-zoom hiding
+    const container = mapInstance.getContainer();
+    
+    const handleTouchStart = (e) => {
+      // 2 fingers indicates a potential pinch-zoom or two-finger pan
+      // Hide markers immediately to catch the start of the transformation
+      if (e.touches.length >= 2) {
+        requestAnimationFrame(() => updateZoomingClass(true));
+        
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug(`[EventMap] touchstart(2+ fingers) - hiding UI at ${performance.now()}`);
+        }
+      }
+    };
+
+    // Safari-specific gesture event for even earlier detection on iOS
+    const handleGestureStart = () => {
+      requestAnimationFrame(() => updateZoomingClass(true));
+      
+      if (process.env.NODE_ENV !== 'production') {
+         console.debug(`[EventMap] gesturestart - hiding UI at ${performance.now()}`);
+      }
+    };
+
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('gesturestart', handleGestureStart, { passive: true });
 
     return () => {
-      if (raf) cancelAnimationFrame(raf);
-      mapInstance.off('zoom', handleZoomFrame);
-      mapInstance.off('zoomanim', handleZoomFrame);
+      mapInstance.off('zoomstart', handleZoomStart);
       mapInstance.off('zoomend', handleZoomEnd);
+      mapInstance.off('moveend', handleMoveEnd);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('gesturestart', handleGestureStart);
     };
   }, [mapInstance]);
 
@@ -1102,7 +1153,6 @@ function EventMap({
             focusMarkerId={focusMarkerId}
             onFocusHandled={() => setFocusMarkerId(null)}
             currentZoom={currentZoom}
-            zoomAnimating={zoomAnimating}
             onMarkerDrag={onMarkerDrag}
           />
 
@@ -1130,7 +1180,6 @@ function EventMap({
             applyVisitorSizing={previewUseVisitorSizing}
             selectedYear={selectedYear}
             currentZoom={currentZoom}
-            zoomAnimating={zoomAnimating}
             onMarkerDrag={onMarkerDrag}
           />
         </MapContainer>
