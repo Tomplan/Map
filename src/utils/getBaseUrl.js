@@ -6,13 +6,13 @@ export function getBaseUrl() {
     const path = window.location.pathname;
     
     // Check if we are in the development deployment (/Map/dev/)
-    if (path.includes('/Map/dev')) {
+    if (path.includes('/Map/dev') || path.includes('/map/dev')) {
       return '/Map/dev/';
     }
     
     // Check if we are in the production deployment (/Map/)
     // We check this AFTER /Map/dev/ because /Map/ is a substring of /Map/dev/
-    if (path.includes('/Map/')) {
+    if (path.includes('/Map/') || path.includes('/map/')) {
       return '/Map/';
     }
   }
