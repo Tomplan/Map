@@ -1,13 +1,22 @@
-/**
- * Get the normalized base URL with trailing slash.
- * This ensures consistent URL construction across the app.
- * @returns {string} Base URL with trailing slash
- */
+// Utility to get the base URL
 export function getBaseUrl() {
-  // Use the build-time injected constant (from Vite, Jest, etc.)
-  // Fallback to '/' if undefined (e.g., direct Node execution without config)
-  const baseUrl = typeof __APP_BASE_URL__ !== 'undefined' ? __APP_BASE_URL__ : '/';
-  return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  // Option 1: Prefer Vite's import.meta.env.BASE_URL if available (Build & Dev)
+  // We use a safe check to avoid crashing in environments that don't support import.meta
+  try {
+    // eslint-disable-next-line
+    if (import.meta && import.meta.env && import.meta.env.BASE_URL) {
+      return import.meta.env.BASE_URL;
+    }
+  } catch (e) {
+    // Ignore ReferenceError/SyntaxError
+  }
+
+  // Option 2: Fallback to global define (Jest/Node)
+  if (typeof __APP_BASE_URL__ !== 'undefined') {
+    return __APP_BASE_URL__;
+  }
+
+  return '/';
 }
 
 /**
