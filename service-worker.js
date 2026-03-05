@@ -1,19 +1,33 @@
 // Simple service worker for offline map tile caching
-const PRECACHE_NAME = 'static-assets-v1';
+const PRECACHE_NAME = 'static-assets-v2';
+
+// We can't know the base path at build time, so compute it dynamically from the
+// service worker's own scope (e.g. '/Map/' or '/Map/dev/').
+const getBase = () => {
+  try {
+    const url = new URL(self.registration.scope);
+    return url.pathname;
+  } catch (e) {
+    return '/';
+  }
+};
+
+const BASE = getBase();
+
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/assets/icons/default.svg',
-  '/assets/icons/glyph-marker-icon-blue.svg',
-  '/assets/icons/glyph-marker-icon-gray.svg',
-  '/assets/icons/glyph-marker-icon-green.svg',
-  '/assets/icons/glyph-marker-icon-orange.svg',
-  '/assets/icons/glyph-marker-icon-purple.svg',
-  '/assets/icons/glyph-marker-icon-red.svg',
-  '/assets/icons/glyph-marker-icon-yellow.svg',
-  '/assets/icons/glyph-marker-icon-black.svg',
-  '/assets/icons/marker-shadow.png',
-  '/assets/logos/4x4Vakantiebeurs.png',
+  BASE,
+  BASE + 'index.html',
+  BASE + 'assets/icons/default.svg',
+  BASE + 'assets/icons/glyph-marker-icon-blue.svg',
+  BASE + 'assets/icons/glyph-marker-icon-gray.svg',
+  BASE + 'assets/icons/glyph-marker-icon-green.svg',
+  BASE + 'assets/icons/glyph-marker-icon-orange.svg',
+  BASE + 'assets/icons/glyph-marker-icon-purple.svg',
+  BASE + 'assets/icons/glyph-marker-icon-red.svg',
+  BASE + 'assets/icons/glyph-marker-icon-yellow.svg',
+  BASE + 'assets/icons/glyph-marker-icon-black.svg',
+  BASE + 'assets/icons/marker-shadow.png',
+  BASE + 'assets/logos/4x4Vakantiebeurs_FClogo_2026.png',
 ];
 
 self.addEventListener('install', (event) => {
