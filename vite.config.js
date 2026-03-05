@@ -20,6 +20,12 @@ export default defineConfig({
     // If process.env.VITE_BASE_PATH is "/Map/dev/", JSON.stringify makes it '"/Map/dev/"'.
     // In code: __APP_BASE_URL__ -> "/Map/dev/"
     __APP_BASE_URL__: JSON.stringify(process.env.VITE_BASE_PATH || '/'),
+    // Provide explicit token replacements for non-import.meta usages.
+    __VITE_SUPABASE_URL__: JSON.stringify(process.env.VITE_SUPABASE_URL),
+    __VITE_SUPABASE_ANON_KEY__: JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
+    __VITE_ADMIN_EMAIL__: JSON.stringify(process.env.VITE_ADMIN_EMAIL),
+    __VITE_ADMIN_PASSWORD__: JSON.stringify(process.env.VITE_ADMIN_PASSWORD),
+    __APP_VERSION__: JSON.stringify(packageJson.version),
   },
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
@@ -34,13 +40,5 @@ export default defineConfig({
     // Let Vite/Rollup handle chunking automatically.
     // Manual chunking was causing React module initialization order issues
     // (e.g., "Cannot read properties of undefined (reading 'useState')")
-  },
-  define: {
-    // Provide explicit token replacements for non-import.meta usages.
-    __VITE_SUPABASE_URL__: JSON.stringify(process.env.VITE_SUPABASE_URL),
-    __VITE_SUPABASE_ANON_KEY__: JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
-    __VITE_ADMIN_EMAIL__: JSON.stringify(process.env.VITE_ADMIN_EMAIL),
-    __VITE_ADMIN_PASSWORD__: JSON.stringify(process.env.VITE_ADMIN_PASSWORD),
-    __APP_VERSION__: JSON.stringify(packageJson.version),
   },
 });
