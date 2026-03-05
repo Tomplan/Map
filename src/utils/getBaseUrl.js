@@ -4,18 +4,9 @@
  * @returns {string} Base URL with trailing slash
  */
 export function getBaseUrl() {
-  // Safely access Vite base URL using a runtime Function to avoid `import.meta` parse
-  // errors in non-Vite environments (Jest/Node). Fall back to process.env or '/'.
-  const getViteBase = () => {
-    try {
-      return new Function('return import.meta.env && import.meta.env.BASE_URL')();
-    } catch (e) {
-      return undefined;
-    }
-  };
-
-  const baseUrl =
-    getViteBase() || (typeof process !== 'undefined' && process.env && process.env.BASE_URL) || '/';
+  // Use the build-time injected constant (from Vite, Jest, etc.)
+  // Fallback to '/' if undefined (e.g., direct Node execution without config)
+  const baseUrl = typeof __APP_BASE_URL__ !== 'undefined' ? __APP_BASE_URL__ : '/';
   return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 }
 
