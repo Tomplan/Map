@@ -1,20 +1,12 @@
 // Utility to get the base URL
 export function getBaseUrl() {
-  // FINAL ATTEMPT: The most robust way to get the base URL is to check the current window location
-  // if we are in a browser environment. This bypasses all build-time variable issues.
+  // The most robust way to get the base URL is to check the current window location.
+  // Because we use a HashRouter, window.location.pathname will always resolve
+  // to the path containing index.html. We can simply substring to the last '/'
+  // to dynamically get the exact base path for any deployed environment.
   if (typeof window !== 'undefined' && window.location && window.location.pathname) {
     const path = window.location.pathname;
-    
-    // Check if we are in the development deployment (/Map/dev/)
-    if (path.includes('/Map/dev') || path.includes('/map/dev')) {
-      return '/Map/dev/';
-    }
-    
-    // Check if we are in the production deployment (/Map/)
-    // We check this AFTER /Map/dev/ because /Map/ is a substring of /Map/dev/
-    if (path.includes('/Map/') || path.includes('/map/')) {
-      return '/Map/';
-    }
+    return path.substring(0, path.lastIndexOf('/') + 1);
   }
 
   // Fallback 1: Global define (Vite/Jest/Node)
