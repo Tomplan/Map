@@ -49,6 +49,15 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
 // Register service worker for offline support
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${getBaseUrl()}service-worker.js`);
+    // When deploying to a subdirectory (like /Map/dev/), the service worker needs
+    // to be registered with the correct scope.
+    const swUrl = `${getBaseUrl()}service-worker.js`;
+    navigator.serviceWorker.register(swUrl, { scope: getBaseUrl() })
+      .then((registration) => {
+        // console.log('SW register success:', registration);
+      })
+      .catch((registrationError) => {
+        console.warn('SW register failed:', registrationError);
+      });
   });
 }
