@@ -17,17 +17,9 @@ export function getBaseUrl() {
     }
   }
 
-  // Fallback 1: Build-time variable (Vite) - wrapped for Jest safety
-  try {
-    // eslint-disable-next-line
-    if (import.meta && import.meta.env && import.meta.env.BASE_URL) {
-      return import.meta.env.BASE_URL;
-    }
-  } catch (e) {
-    // Ignore
-  }
-
-  // Fallback 2: Global define (Jest/Node)
+  // Fallback 1: Global define (Vite/Jest/Node)
+  // This is defined in vite.config.js and jest.config.cjs
+  // avoiding import.meta issues in Jest/CJS environments
   if (typeof __APP_BASE_URL__ !== 'undefined') {
     return __APP_BASE_URL__;
   }
