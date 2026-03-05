@@ -15,6 +15,9 @@ export default defineConfig({
   // Default to root (/) for Netlify, Vercel, Docker, etc.
   // Use VITE_BASE_PATH env var to override for subpaths (like GitHub Pages '/Map/')
   base: process.env.VITE_BASE_PATH || '/',
+  define: {
+    __APP_BASE_URL__: JSON.stringify(process.env.VITE_BASE_PATH || '/'),
+  },
   optimizeDeps: {
     include: ['xlsx', 'file-saver'],
   },
