@@ -1,12 +1,11 @@
 // Simple service worker for offline map tile caching
-const PRECACHE_NAME = 'static-assets-v2';
+const PRECACHE_NAME = 'static-assets-v3';
 
 // We can't know the base path at build time, so compute it dynamically from the
 // service worker's own scope (e.g. '/Map/' or '/Map/dev/').
 const getBase = () => {
   try {
-    const url = new URL(self.registration.scope);
-    return url.pathname;
+    return self.location.pathname.substring(0, self.location.pathname.lastIndexOf('/') + 1);
   } catch (e) {
     return '/';
   }
