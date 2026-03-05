@@ -18,6 +18,7 @@
     "test:e2e:tour-help-no-reopen": "node scripts/e2e/tour-help-no-reopen.cjs",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
+    "sync": "git checkout development && git pull origin development && git fetch --all --prune",
     "lint": "eslint . --ext .js,.jsx",
     "lint:fix": "eslint . --ext .js,.jsx --fix",
     "kill:dev": "bash scripts/kill-dev-servers.sh",
