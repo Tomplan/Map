@@ -1,3 +1,5 @@
+import { getBaseUrl } from '../utils/getBaseUrl';
+
 // Map configuration constants
 export const MAP_CONFIG = {
   DEFAULT_POSITION: [51.898095078807025, 5.772961378097534],
@@ -45,25 +47,8 @@ export const MAP_CONFIG = {
 export const BRANDING_CONFIG = {
   DEFAULT_LOGO: '4x4Vakantiebeurs_FClogo_2026.png',
   getDefaultLogoPath: () => {
-    // Access Vite's `import.meta.env.BASE_URL` safely. Jest (and some Node
-    // environments) cannot parse `import.meta` at module parse time which
-    // causes tests to fail. Use a runtime Function to access it when
-    // available; otherwise fall back to process.env or '/'. This keeps the
-    // code compatible with both Vite and Jest without causing parse errors.
-    const getViteBase = () => {
-      try {
-        return new Function('return import.meta.env && import.meta.env.BASE_URL')();
-      } catch (e) {
-        return undefined;
-      }
-    };
-
-    const base =
-      getViteBase() ||
-      (typeof process !== 'undefined' && process.env && process.env.BASE_URL) ||
-      '/';
-    const baseUrl = base.endsWith('/') ? base : `${base}/`;
-    return `${baseUrl}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`;
+    // Delegates to the centralized utility which handles base URL correctly
+    return `${getBaseUrl()}assets/logos/${BRANDING_CONFIG.DEFAULT_LOGO}`;
   },
 };
 
