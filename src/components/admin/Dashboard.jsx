@@ -257,46 +257,46 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
           <Icon path={mdiAlertCircle} size={2} className="text-red-600 mt-0.5 flex-shrink-0" />
           <div>
             <h2 className="text-xl font-bold text-red-800">
-              Critical Pre-Event Action Required
+              {t('dashboard.checklist.title')}
             </h2>
             <p className="text-red-700 mt-1">
-              <strong>High Traffic Warning:</strong> We expect over <strong>5000 visitors</strong> during the event weekend. The application is currently running on the Supabase Free Tier, which is strictly limited to <strong>500 concurrent real-time connections</strong>. 
+              <strong>{t('dashboard.checklist.warning')}</strong> {t('dashboard.checklist.warningDesc')}
             </p>
             <p className="text-red-700 mt-2 font-semibold">
-              If the database is not upgraded before the event, the map will crash when visitors try to load it.
+              {t('dashboard.checklist.crashWarning')}
             </p>
           </div>
         </div>
         
         <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Event Week Checklist:</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('dashboard.checklist.weekChecklist')}</h3>
           <ul className="space-y-4 text-left">
             <li className="flex items-start gap-3">
               <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">Upgrade Supabase to Pro Plan</span>
-                <span className="text-gray-600 text-sm">Upgrade the project to allow for thousands of simultaneous connections. Review quotas for Realtime connections and Data Egress.</span>
+                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.upgradeTitle')}</span>
+                <span className="text-gray-600 text-sm">{t('dashboard.checklist.upgradeDesc')}</span>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">Lock Map Edits (Read-Only)</span>
-                <span className="text-gray-600 text-sm">To prevent accidental live updates while the event is ongoing, lock the map UI in the admin panel so no booths or markers can be moved.</span>
+                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.lockMapTitle')}</span>
+                <span className="text-gray-600 text-sm">{t('dashboard.checklist.lockMapDesc')}</span>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">Verify Automated Backups</span>
-                <span className="text-gray-600 text-sm">Confirm that the cron jobs are running successfully and the latest full database backups are stored safely off-site (Dropbox/Drive).</span>
+                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.verifyBackupsTitle')}</span>
+                <span className="text-gray-600 text-sm">{t('dashboard.checklist.verifyBackupsDesc')}</span>
               </div>
             </li>
             <li className="flex items-start gap-3">
               <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">Check App Performance</span>
-                <span className="text-gray-600 text-sm">Ensure PWA limits and caching are functioning so map tiles load quickly for users with poor cellular reception at the event.</span>
+                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.checkPerfTitle')}</span>
+                <span className="text-gray-600 text-sm">{t('dashboard.checklist.checkPerfDesc')}</span>
               </div>
             </li>
           </ul>

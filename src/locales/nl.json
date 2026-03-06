@@ -579,7 +579,22 @@
     "manageSubscriptionsDesc": "Voeg inschrijvingen toe of werk ze bij",
     "mapManagementDesc": "Beheer kaartmarkeringen en standlocaties",
     "recentActivity": "Recente Activiteit",
-    "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update."
+    "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update.",
+    "checklist": {
+      "title": "Kritieke Actie Vereist Voor Het Evenement",
+      "warning": "Waarschuwing Hoge Verkeersdrukte:",
+      "warningDesc": "We verwachten meer dan 5000 bezoekers tijdens het evenementenweekend. De applicatie draait momenteel op de Supabase Free Tier, welke strikt gelimiteerd is tot 500 gelijktijdige real-time verbindingen.",
+      "crashWarning": "Als de database niet is geüpgraded voor het evenement, zal de kaart crashen wanneer bezoekers deze proberen te laden.",
+      "weekChecklist": "Checklist Evenementenweek:",
+      "upgradeTitle": "Upgrade Supabase naar Pro",
+      "upgradeDesc": "Upgrade het project om duizenden gelijktijdige verbindingen toe te staan. Controleer de quota voor Realtime verbindingen en Egress data.",
+      "lockMapTitle": "Vergrendel Kaart (Alleen-Lezen)",
+      "lockMapDesc": "Om onbedoelde live updates te voorkomen tijdens het evenement, vergrendel de UI van de kaart in het beheerpaneel zodat geen stands of markeringen per ongeluk verplaatst kunnen worden.",
+      "verifyBackupsTitle": "Controleer Automatische Back-ups",
+      "verifyBackupsDesc": "Bevestig dat de cronjobs succesvol draaien en de nieuwste database back-ups veilig off-site (Dropbox/Drive) zijn opgeslagen.",
+      "checkPerfTitle": "Controleer App Prestaties",
+      "checkPerfDesc": "Zorg ervoor dat de PWA en caching naar behoren werken zodat de kaarttegels snel laden voor gebruikers met slechte mobiele internetverbinding op het evenement."
+    }
   },
   "helpPanel": {
     "title": "Hulp & Gids",

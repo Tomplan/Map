@@ -586,7 +586,22 @@
     "manageSubscriptionsDesc": "Add or update event subscriptions",
     "mapManagementDesc": "Manage map markers and booth locations",
     "recentActivity": "Recent Activity",
-    "recentActivityPlaceholder": "Activity tracking will be added in a future update."
+    "recentActivityPlaceholder": "Activity tracking will be added in a future update.",
+    "checklist": {
+      "title": "Critical Pre-Event Action Required",
+      "warning": "High Traffic Warning:",
+      "warningDesc": "We expect over 5000 visitors during the event weekend. The application is currently running on the Supabase Free Tier, which is strictly limited to 500 concurrent real-time connections.",
+      "crashWarning": "If the database is not upgraded before the event, the map will crash when visitors try to load it.",
+      "weekChecklist": "Event Week Checklist:",
+      "upgradeTitle": "Upgrade Supabase to Pro Plan",
+      "upgradeDesc": "Upgrade the project to allow for thousands of simultaneous connections. Review quotas for Realtime connections and Data Egress.",
+      "lockMapTitle": "Lock Map Edits (Read-Only)",
+      "lockMapDesc": "To prevent accidental live updates while the event is ongoing, lock the map UI in the admin panel so no booths or markers can be moved.",
+      "verifyBackupsTitle": "Verify Automated Backups",
+      "verifyBackupsDesc": "Confirm that the cron jobs are running successfully and the latest full database backups are stored safely off-site (Dropbox/Drive).",
+      "checkPerfTitle": "Check App Performance",
+      "checkPerfDesc": "Ensure PWA limits and caching are functioning so map tiles load quickly for users with poor cellular reception at the event."
+    }
   },
   "helpPanel": {
     "title": "Help & Guide",
