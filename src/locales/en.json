@@ -587,6 +587,9 @@
     "mapManagementDesc": "Manage map markers and booth locations",
     "recentActivity": "Recent Activity",
     "recentActivityPlaceholder": "Activity tracking will be added in a future update.",
+    "liveOverview": "Live Overview",
+    "liveOverviewDesc": "Real-time visitors connected to the map",
+    "activeUsers": "Active Users",
     "checklist": {
       "title": "Critical Pre-Event Action Required",
       "warning": "High Traffic Warning:",

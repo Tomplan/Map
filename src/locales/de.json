@@ -539,6 +539,9 @@
     "mapManagementDesc": "Kartenmarker und Standpositionen verwalten",
     "recentActivity": "Letzte Aktivitäten",
     "recentActivityPlaceholder": "Activity tracking will be added in a future update.",
+    "liveOverview": "Live Übersicht",
+    "liveOverviewDesc": "Echtzeit-Besucher verbunden mit der Karte",
+    "activeUsers": "Aktive Benutzer",
     "checklist": {
       "title": "Kritische Maßnahmen Vor Dem Event Erforderlich",
       "warning": "Warnung vor Hohem Datenverkehr:",

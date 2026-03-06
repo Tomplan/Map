@@ -580,6 +580,9 @@
     "mapManagementDesc": "Beheer kaartmarkeringen en standlocaties",
     "recentActivity": "Recente Activiteit",
     "recentActivityPlaceholder": "Activiteitentracking wordt toegevoegd in een toekomstige update.",
+    "liveOverview": "Live Overzicht",
+    "liveOverviewDesc": "Realtime bezoekers verbonden met de kaart",
+    "activeUsers": "Actieve Gebruikers",
     "checklist": {
       "title": "Kritieke Actie Vereist Voor Het Evenement",
       "warning": "Waarschuwing Hoge Verkeersdrukte:",

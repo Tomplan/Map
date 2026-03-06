@@ -12,6 +12,8 @@ import {
   mdiGrill,
   mdiCircleMultiple,
   mdiAlertCircle,
+  mdiAccountGroup,
+  mdiAlert,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import {
@@ -21,6 +23,7 @@ import {
   useCompanyCount,
 } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useVisitorPresence from '../../hooks/useVisitorPresence';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
 
@@ -35,6 +38,9 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
+  
+  // Real-time site visitors
+  const { onlineCount } = useVisitorPresence(false);
 
   // Keep subscriptions hook for totals calculation (meal counts, coins)
   const { subscriptions } = useEventSubscriptions(selectedYear);
@@ -252,51 +258,74 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       </div>
 
       {/* Event Preparations and System Limits Warning */}
-      <div className="bg-white rounded-lg shadow border-2 border-red-200 mt-6 overflow-hidden">
-        <div className="bg-red-50 p-4 border-b border-red-200 flex items-start gap-4">
-          <Icon path={mdiAlertCircle} size={2} className="text-red-600 mt-0.5 flex-shrink-0" />
+      <div className="bg-white rounded-lg shadow mt-6 overflow-hidden">
+        
+        {/* Header / Live Visitors */}
+        <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-red-800">
-              {t('dashboard.checklist.title')}
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+              {t('dashboard.liveOverview')}
             </h2>
-            <p className="text-red-700 mt-1">
+            <p className="text-sm text-slate-600">{t('dashboard.liveOverviewDesc')}</p>
+          </div>
+          
+          <div className="bg-white px-6 py-3 rounded-lg border shadow-sm flex items-center gap-3">
+            <Icon path={mdiAccountGroup} size={1.5} className="text-blue-500" />
+            <div>
+              <div className="text-2xl font-bold text-slate-800">{onlineCount}</div>
+              <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeUsers')}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Warning Banner - COMPACT */}
+        <div className="bg-red-50 p-4 flex items-start gap-3 border-b border-red-100">
+          <Icon path={mdiAlertCircle} size={1.2} className="text-red-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-red-800">
+              {t('dashboard.checklist.title')}
+            </h3>
+            <p className="text-xs text-red-700 mt-1 max-w-4xl">
               <strong>{t('dashboard.checklist.warning')}</strong> {t('dashboard.checklist.warningDesc')}
-            </p>
-            <p className="text-red-700 mt-2 font-semibold">
-              {t('dashboard.checklist.crashWarning')}
+              <br/>{t('dashboard.checklist.crashWarning')}
             </p>
           </div>
         </div>
         
-        <div className="p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">{t('dashboard.checklist.weekChecklist')}</h3>
-          <ul className="space-y-4 text-left">
-            <li className="flex items-start gap-3">
-              <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+        {/* Checklist */}
+        <div className="p-4 bg-slate-50/50">
+          <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboard.checklist.weekChecklist')}</h4>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
+            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.upgradeTitle')}</span>
-                <span className="text-gray-600 text-sm">{t('dashboard.checklist.upgradeDesc')}</span>
+                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.upgradeTitle')}</span>
+                <span className="text-slate-500 text-xs">{t('dashboard.checklist.upgradeDesc')}</span>
               </div>
             </li>
-            <li className="flex items-start gap-3">
-              <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.lockMapTitle')}</span>
-                <span className="text-gray-600 text-sm">{t('dashboard.checklist.lockMapDesc')}</span>
+                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.lockMapTitle')}</span>
+                <span className="text-slate-500 text-xs">{t('dashboard.checklist.lockMapDesc')}</span>
               </div>
             </li>
-            <li className="flex items-start gap-3">
-              <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.verifyBackupsTitle')}</span>
-                <span className="text-gray-600 text-sm">{t('dashboard.checklist.verifyBackupsDesc')}</span>
+                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.verifyBackupsTitle')}</span>
+                <span className="text-slate-500 text-xs">{t('dashboard.checklist.verifyBackupsDesc')}</span>
               </div>
             </li>
-            <li className="flex items-start gap-3">
-              <input type="checkbox" className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <div>
-                <span className="font-semibold text-gray-900 block">{t('dashboard.checklist.checkPerfTitle')}</span>
-                <span className="text-gray-600 text-sm">{t('dashboard.checklist.checkPerfDesc')}</span>
+                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.checkPerfTitle')}</span>
+                <span className="text-slate-500 text-xs">{t('dashboard.checklist.checkPerfDesc')}</span>
               </div>
             </li>
           </ul>
