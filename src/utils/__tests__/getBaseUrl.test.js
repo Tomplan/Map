@@ -1,35 +1,41 @@
 import { getBaseUrl } from '../getBaseUrl';
 
 describe('getBaseUrl', () => {
-  const setPathname = (path) => {
-    delete window.location;
-    window.location = { pathname: path };
-  };
+  let originalWindow;
+  
+  beforeEach(() => {
+    originalWindow = global.window;
+  });
+
+  afterEach(() => {
+    global.window = originalWindow;
+    global.__APP_BASE_URL__ = undefined;
+  });
 
   it('extracts base URL up to the last slash', () => {
-    setPathname('/Map/dev/');
+    // Mock window to avoid JSDOM location issues
+    global.window = {
+      location: {
+        pathname: '/Map/dev/'
+      }
+    };
     expect(getBaseUrl()).toBe('/Map/dev/');
 
-    setPathname('/Map/dev/index.html');
+    global.window.location.pathname = '/Map/dev/index.html';
     expect(getBaseUrl()).toBe('/Map/dev/');
     
-    setPathname('/Map/');
+    global.window.location.pathname = '/Map/';
     expect(getBaseUrl()).toBe('/Map/');
     
-    setPathname('/');
+    global.window.location.pathname = '/';
     expect(getBaseUrl()).toBe('/');
   });
 
   it('respects __APP_BASE_URL__ global when window not available', () => {
     // temporarily remove window
-    const oldWindow = global.window;
     delete global.window;
     global.__APP_BASE_URL__ = '/fake-base/';
 
     expect(getBaseUrl()).toBe('/fake-base/');
-
-    // cleanup
-    global.__APP_BASE_URL__ = undefined;
-    global.window = oldWindow;
   });
 });
