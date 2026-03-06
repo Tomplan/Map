@@ -219,7 +219,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       </div>
 
       {/* Quick Actions */}
-      <div className="quick-actions bg-white rounded-lg shadow p-6">
+      <div className="quick-actions bg-white rounded-lg shadow p-6 hidden">
         <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.quickActions')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
