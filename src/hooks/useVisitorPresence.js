@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 
-// Generates a simple random ID for the current session/tab so we don't need user login
 const getSessionId = () => {
   let sid = sessionStorage.getItem('visitor_session_id');
   if (!sid) {
@@ -11,66 +10,159 @@ const getSessionId = () => {
   return sid;
 };
 
-/**
- * Tracks and reports amount of online users.
- * 
- * @param {boolean} shouldTrack - If true, this client will add itself to the presence count.
- * @returns {object} { onlineCount } the current number of online users
- */
+// Global state for presence so multiple hooks can share it
+let globalChannel = null;
+let globalState = { onlineCount: 0, visitorCount: 0, adminUsers: [] };
+const listeners = new Set();
+
+const notifyListeners = () => {
+  for (const listener of listeners) {
+    listener(globalState);
+  }
+};
+
 export default function useVisitorPresence(shouldTrack = false, user = null) {
-  const [onlineCount, setOnlineCount] = useState(0);
-  const [visitorCount, setVisitorCount] = useState(0);
-  const [adminUsers, setAdminUsers] = useState([]);
+  const [localState, setLocalState] = useState(globalState);
 
   useEffect(() => {
-    const sessionId = getSessionId();
-    // Using a shared room for all project visitors
-    const presenceKey = user ? user.id : sessionId;
+    // Add this component to listeners
+    listeners.add(setLocalState);
 
-    const channel = supabase.channel('global_visitors', {
-      config: {
-        presence: { key: presenceKey },
-      },
-    });
+    // Provide initial state
+    setLocalState(globalState);
 
-    channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        let visitors = 0;
-        let admins = [];
+    const sessioimport { useEffect, useState } from 'react';
+iusimport { supabase } from '../supabaseClientha
+const getSessionId = () => {
+  let sid = se     let sid = sessionStorage.ha  if (!sid) {
+    sid = Math.random().toString(36).substes    sid = Ma p    sessionStorage.setItem('visitor_session_id', sid);
+  }
+  return sid;
+};
 
-        Object.values(state).forEach((presences) => {
-          // Take the first presence payload for this key (in case of multiple tabs)
-          const presence = presences[0];
-          if (presence.is_admin) {
-            admins.push({ email: presence.email, online_at: presence.online_at });
-          } else {
-            visitors++;
-          }
-        });
+// Global state for pr()  }
+  return sid;
+};
 
-        // Ensure unique admins by email if needed
-        const uniqueAdmins = Array.from(new Map(admins.map((a) => [a.email, a])).values());
+// Global state for presence sota  ()};
 
-        setOnlineCount(Object.keys(state).length);
-        setVisitorCount(visitors);
-        setAdminUsers(uniqueAdmins);
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED' && shouldTrack) {
-          // Once subscribed, track this user's presence so others see them
-          await channel.track({ 
-            is_admin: !!user,
-            email: user?.email,
-            online_at: new Date().toISOString() 
-          });
-        }
-      });
+// Glo  le
+ vilet globalChannel = null;
+let globalState = { onlineCount:allet globalState = { onlienconst listeners = new Set();
 
-    return () => {
-      supabase.removeChannel(channel);
+const notifyListeners = () => {
+  for (pr
+const notifyListeners = ()     for (const listener of listece    listener(globalState);
+  }
+};
+_at   }
+};
+
+export defaule {
+      
+     const [localState, setLocalState] = useState(globalState);
+
+  useEffect(() rr
+  useEffect(() => {
+    // Add this component to listeners
+      // Add this co g    listeners.add(setLocalState);
+
+  t:
+    // Provide initial state
+         setLocalState(globalSta,
+
+    const sessioimport { useEAdmiusimport { supabase } from '../supabaseClientha
+const getS  const getSessi();
+    }
+
+    // Effect for tracki  let sid = se     let sid  c    sid = Math.random().toString(36).substes    sid = Ma pnn  }
+  return sid;
+};
+
+// Global state for pr()  }
+  return sid;
+};
+
+// Global state for preseemail: user?.email,
     };
-  }, [shouldTrack, user]); // Re-run if auth state changes
 
-  return { onlineCount, visitorCount, adminUsers };
+// Globa_a
+: n  return sid;
+};
+
+// Globa  };
+
+// Globa(c
+nso
+// Glo  le
+ vilet globalChannel = nulait for channelet globalState = { onlineC  
+const notifyListeners = () => {
+  for (pr
+const notifyListeners = ()     for (const li     for (pr
+const notifyListener  const noad  }
+};
+_at   }
+};
+
+export defaule {
+      
+     const [localState, setLocalState] = usSO};ri_g()
+      
+     }).catch(consol     or
+  useEffect(() rr
+  useEffect(() => {
+    // Add this componethe  useEffect(() = i    // Add this cone      // Add this co g    listeners.ari
+  t:
+    // Provide initial state
+         setLocalSt
+                setLocalState(globnd
+    const sessioimport { useEturn const getS  const getSessi();
+    }
+
+    // Effect for tracki  let sid = se    th    }
+
+    // Effect for tra listener  return sid;
+};
+
+// Global state for pr()  }
+  return sid;
+};
+
+// Global state for preseemail: user?.email,
+    };
+ };
+
+// Globate
+ers  return sid;
+};
+
+// Globa(g};
+
+// Globa) {
+      };
+
+// Globa_a
+: n  return sid;
+};
+
+// l)
+// G   : n  retulC};
+
+// Globa  }      
+// Globa(c elnso
+// Glou//Tr vilet globconst notifyListeners = () => {
+  for (pr
+const notifyListeners = ()in  for (pr
+const notifyListene itconst no gconst notifyListener  const noad  }
+};rror);
+      }
+    };
+_at   }
+};
+
+export defaule {
+  eturn};
+
+exSt
+te;
 }
