@@ -14,6 +14,8 @@ import {
   mdiAlertCircle,
   mdiAccountGroup,
   mdiAlert,
+  mdiAccountTie,
+  mdiEarth,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import {
@@ -40,7 +42,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
   
   // Real-time site visitors
-  const { onlineCount } = useVisitorPresence(false);
+  const { onlineCount, visitorCount, adminUsers } = useVisitorPresence(false);
 
   // Keep subscriptions hook for totals calculation (meal counts, coins)
   const { subscriptions } = useEventSubscriptions(selectedYear);
@@ -273,11 +275,37 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <p className="text-sm text-slate-600">{t('dashboard.liveOverviewDesc')}</p>
           </div>
           
-          <div className="bg-white px-6 py-3 rounded-lg border shadow-sm flex items-center gap-3">
-            <Icon path={mdiAccountGroup} size={1.5} className="text-blue-500" />
-            <div>
-              <div className="text-2xl font-bold text-slate-800">{onlineCount}</div>
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeUsers')}</div>
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex items-center gap-3">
+              <Icon path={mdiEarth} size={1.2} className="text-blue-500" />
+              <div>
+                <div className="text-xl font-bold text-slate-800">{visitorCount}</div>
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeVisitors', 'Visitors')}</div>
+              </div>
+            </div>
+            
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col justify-center min-w-[140px] relative group">
+              <div className="flex items-center gap-3">
+                <Icon path={mdiAccountTie} size={1.2} className="text-purple-500" />
+                <div>
+                  <div className="text-xl font-bold text-slate-800">{adminUsers.length}</div>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeAdmins', 'Admins')}</div>
+                </div>
+              </div>
+              {/* Tooltip to show admin emails */}
+              {adminUsers.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-max min-w-full bg-slate-800 text-white text-xs rounded shadow-lg p-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="font-semibold border-b border-slate-600 pb-1 mb-1">Online Admins:</div>
+                  <ul className="space-y-1">
+                    {adminUsers.map((admin, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                        {admin.email}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         </div>

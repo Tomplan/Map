@@ -542,6 +542,8 @@
     "liveOverview": "Live Übersicht",
     "liveOverviewDesc": "Echtzeit-Besucher verbunden mit der Karte",
     "activeUsers": "Aktive Benutzer",
+    "activeVisitors": "Besucher",
+    "activeAdmins": "Admins",
     "checklist": {
       "title": "Kritische Maßnahmen Vor Dem Event Erforderlich",
       "warning": "Warnung vor Hohem Datenverkehr:",

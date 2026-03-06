@@ -19,9 +19,6 @@ import './i18n';
 import './App.css';
 
 function AppContent() {
-  // Always track presence continuously in the background
-  useVisitorPresence(true);
-
   // Global year selector for filtering markers by event year
   const currentYear = new Date().getFullYear();
 
@@ -48,6 +45,9 @@ function AppContent() {
       listener?.subscription?.unsubscribe();
     };
   }, []);
+
+  // Always track presence continuously in the background
+  useVisitorPresence(true, user);
 
   // Load language from localStorage on mount (instant feedback while DB loads)
   useEffect(() => {

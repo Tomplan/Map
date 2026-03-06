@@ -590,6 +590,8 @@
     "liveOverview": "Live Overview",
     "liveOverviewDesc": "Real-time visitors connected to the map",
     "activeUsers": "Active Users",
+    "activeVisitors": "Visitors",
+    "activeAdmins": "Admins",
     "checklist": {
       "title": "Critical Pre-Event Action Required",
       "warning": "High Traffic Warning:",
