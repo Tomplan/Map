@@ -12,12 +12,16 @@ let failed = false;
 try {
   await page.goto(url, { waitUntil: 'networkidle2' });
   // wait for admin login to be visible (portal paragraph present)
-  await page.waitForFunction(() => !!document.querySelector('p.text-gray-500.text-sm'), { timeout: 5000 });
+  await page.waitForFunction(() => !!document.querySelector('p.text-gray-500.text-sm'), {
+    timeout: 5000,
+  });
 
   // Find the portal paragraph (p immediately after the h1 with event name)
   const getPortalText = async () =>
     await page.evaluate(() => {
-      const h1 = Array.from(document.querySelectorAll('h1')).find((el) => el.innerText.trim().length > 0);
+      const h1 = Array.from(document.querySelectorAll('h1')).find(
+        (el) => el.innerText.trim().length > 0,
+      );
       if (!h1) return '';
       const p = h1.nextElementSibling;
       return p ? p.innerText.trim() : '';
@@ -37,7 +41,9 @@ try {
 
   // Click the Nederlands language button in LanguageToggle by finding a button with that text
   const clicked = await page.evaluate(() => {
-    const btn = Array.from(document.querySelectorAll('button')).find((el) => el.textContent.includes('Nederlands'));
+    const btn = Array.from(document.querySelectorAll('button')).find((el) =>
+      el.textContent.includes('Nederlands'),
+    );
     if (btn) {
       btn.click();
       return true;
@@ -52,7 +58,7 @@ try {
     // Wait for translation to apply
     await new Promise((r) => setTimeout(r, 500));
 
-      // Show portal text after click
+    // Show portal text after click
     const after = await getPortalText();
     const i18nAfter = await page.evaluate(() => {
       const i = window.__i18n || window.i18n || window.i18next;
@@ -67,7 +73,9 @@ try {
 
     // Dump header container HTML for debugging
     const headerHtml = await page.evaluate(() => {
-      const h1 = Array.from(document.querySelectorAll('h1')).find((el) => el.innerText.trim().length > 0);
+      const h1 = Array.from(document.querySelectorAll('h1')).find(
+        (el) => el.innerText.trim().length > 0,
+      );
       if (!h1) return '';
       const container = h1.parentElement;
       return container ? container.innerHTML : '';
@@ -75,12 +83,18 @@ try {
     console.log('Header container HTML:', headerHtml.slice(0, 500));
 
     // List other small paragraph texts (for debugging duplicate items)
-    const smallPs = await page.evaluate(() => Array.from(document.querySelectorAll('p.text-gray-500.text-sm')).map(p => p.innerText.trim()));
+    const smallPs = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('p.text-gray-500.text-sm')).map((p) =>
+        p.innerText.trim(),
+      ),
+    );
     console.log('Small p texts:', smallPs);
 
     // Check that the Nederlands button shows active state after single click
     const nlPressed = await page.evaluate(() => {
-      const btn = Array.from(document.querySelectorAll('button')).find((el) => el.textContent.includes('Nederlands'));
+      const btn = Array.from(document.querySelectorAll('button')).find((el) =>
+        el.textContent.includes('Nederlands'),
+      );
       return btn ? btn.getAttribute('aria-pressed') : null;
     });
     console.log('Nederlands aria-pressed after click:', nlPressed);

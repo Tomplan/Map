@@ -11,10 +11,10 @@ const STORAGE_KEY_PREFIX = 'favorites_';
  */
 export default function useFavorites(selectedYear) {
   // Track which year the current `favorites` state belongs to.
-  // We initialize it with selectedYear because the useState initializer below 
+  // We initialize it with selectedYear because the useState initializer below
   // loads the correct data for this year immediately.
   const favoritesYearRef = useRef(selectedYear);
-  
+
   // Initialize state from localStorage if available
   const [favorites, setFavorites] = useState(() => {
     try {
@@ -34,7 +34,7 @@ export default function useFavorites(selectedYear) {
     // If the data in `favorites` belongs to a different year than what is selected,
     // do NOT save. We are in a transition state (waiting for Load effect).
     if (favoritesYearRef.current !== selectedYear) {
-      return; 
+      return;
     }
 
     try {
@@ -55,14 +55,14 @@ export default function useFavorites(selectedYear) {
       const key = `${STORAGE_KEY_PREFIX}${selectedYear}`;
       const stored = localStorage.getItem(key);
       const newFavorites = stored ? JSON.parse(stored) : [];
-      
+
       setFavorites(newFavorites);
       // Now that we've scheduled the update, mark the ref as matching this year
       favoritesYearRef.current = selectedYear;
     } catch (error) {
-       console.error('Error reloading favorites for new year:', error);
-       setFavorites([]);
-       favoritesYearRef.current = selectedYear;
+      console.error('Error reloading favorites for new year:', error);
+      setFavorites([]);
+      favoritesYearRef.current = selectedYear;
     }
   }, [selectedYear]);
 

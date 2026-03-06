@@ -60,25 +60,35 @@ async function waitForPort(host, port, timeout = 15000) {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
   const foundLoginForm = await page.evaluate(() => {
-    const email = document.querySelector('input[type="email"], input[name="email"], input[id*=email], input[placeholder*="E-mail"], input[placeholder*="Email"]');
-    const pass = document.querySelector('input[type="password"], input[name="password"], input[id*=password], input[placeholder*="Wachtwoord"], input[placeholder*="Password"]');
+    const email = document.querySelector(
+      'input[type="email"], input[name="email"], input[id*=email], input[placeholder*="E-mail"], input[placeholder*="Email"]',
+    );
+    const pass = document.querySelector(
+      'input[type="password"], input[name="password"], input[id*=password], input[placeholder*="Wachtwoord"], input[placeholder*="Password"]',
+    );
     return !!(email && pass);
   });
 
   if (foundLoginForm) {
     if (adminEmail && adminPassword) {
-      console.log('Login form detected — attempting sign-in with provided ADMIN_EMAIL/ADMIN_PASSWORD');
+      console.log(
+        'Login form detected — attempting sign-in with provided ADMIN_EMAIL/ADMIN_PASSWORD',
+      );
       // Fill and submit login form
-      const emailHandle = await (await Promise.all([
-        page.$('input[type="email"]'),
-        page.$('input[name="email"]'),
-        page.$('input[id*=email]'),
-      ])).find(Boolean);
-      const passHandle = await (await Promise.all([
-        page.$('input[type="password"]'),
-        page.$('input[name="password"]'),
-        page.$('input[id*=password]'),
-      ])).find(Boolean);
+      const emailHandle = await (
+        await Promise.all([
+          page.$('input[type="email"]'),
+          page.$('input[name="email"]'),
+          page.$('input[id*=email]'),
+        ])
+      ).find(Boolean);
+      const passHandle = await (
+        await Promise.all([
+          page.$('input[type="password"]'),
+          page.$('input[name="password"]'),
+          page.$('input[id*=password]'),
+        ])
+      ).find(Boolean);
       if (emailHandle && passHandle) {
         await emailHandle.click({ clickCount: 3 });
         await emailHandle.type(adminEmail, { delay: 20 });
@@ -103,7 +113,9 @@ async function waitForPort(host, port, timeout = 15000) {
         // Wait for navigation or for the app to render map container
         await Promise.race([
           page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).catch(() => {}),
-          page.waitForSelector('#map-container, .leaflet-container', { timeout: 15000 }).catch(() => {}),
+          page
+            .waitForSelector('#map-container, .leaflet-container', { timeout: 15000 })
+            .catch(() => {}),
         ]);
 
         // Small delay for app initialization
@@ -112,13 +124,19 @@ async function waitForPort(host, port, timeout = 15000) {
         // Inspect post-login state
         const postAuthState = await page.evaluate(() => {
           const Lp = !!window.L;
-          const maps = (window.L && window.L._maps) ? Object.values(window.L._maps) : [];
+          const maps = window.L && window.L._maps ? Object.values(window.L._maps) : [];
           return {
             L_present: Lp,
             maps_count: maps.length,
             selectedEventYear: window.localStorage.getItem('selectedEventYear'),
-            eventMarkers: (() => { try { return JSON.parse(window.localStorage.getItem('eventMarkers')||'null'); } catch(e) { return null; } })(),
-            localStorageKeys: Object.keys(window.localStorage || {}).slice(0,50),
+            eventMarkers: (() => {
+              try {
+                return JSON.parse(window.localStorage.getItem('eventMarkers') || 'null');
+              } catch (e) {
+                return null;
+              }
+            })(),
+            localStorageKeys: Object.keys(window.localStorage || {}).slice(0, 50),
           };
         });
         console.log('Post-auth state:', postAuthState);
@@ -128,7 +146,10 @@ async function waitForPort(host, port, timeout = 15000) {
           const setYearResult = await page.evaluate(() => {
             try {
               const markers = JSON.parse(window.localStorage.getItem('eventMarkers') || 'null');
-              const year = markers && markers.length ? (markers[0].event_year || markers[0].eventYear || null) : null;
+              const year =
+                markers && markers.length
+                  ? markers[0].event_year || markers[0].eventYear || null
+                  : null;
               if (year) {
                 const sel = document.querySelector('#sidebar-year-select');
                 if (sel) {
@@ -140,13 +161,21 @@ async function waitForPort(host, port, timeout = 15000) {
                 return { action: 'set-localstorage', year };
               }
               return { action: 'no-year' };
-            } catch (e) { return { error: String(e) }; }
+            } catch (e) {
+              return { error: String(e) };
+            }
           });
           console.log('Set year result:', setYearResult);
 
           // Attempt to click Admin Map tile, then navigate to ensure route is active
           await page.evaluate(() => {
-            const admin = Array.from(document.querySelectorAll('a, button')).find(el => (el.getAttribute && el.getAttribute('href') && el.getAttribute('href').includes('/admin/map')) || (el.innerText && /map management|map|plattegrond/i.test(el.innerText)));
+            const admin = Array.from(document.querySelectorAll('a, button')).find(
+              (el) =>
+                (el.getAttribute &&
+                  el.getAttribute('href') &&
+                  el.getAttribute('href').includes('/admin/map')) ||
+                (el.innerText && /map management|map|plattegrond/i.test(el.innerText)),
+            );
             if (admin) admin.click();
           });
 
@@ -158,19 +187,25 @@ async function waitForPort(host, port, timeout = 15000) {
           }
 
           // Wait longer for map to appear
-          await page.waitForSelector('#map-container, .leaflet-container', { timeout: 20000 }).catch(() => {});
+          await page
+            .waitForSelector('#map-container, .leaflet-container', { timeout: 20000 })
+            .catch(() => {});
         }
       } else {
         console.log('Login fields not found via selectors — manual login required');
       }
     } else {
-      console.log('Login form detected — set ADMIN_EMAIL and ADMIN_PASSWORD to let script sign in automatically');
+      console.log(
+        'Login form detected — set ADMIN_EMAIL and ADMIN_PASSWORD to let script sign in automatically',
+      );
     }
   }
 
   // Try to open header print menu
   await page.evaluate(() => {
-    const btn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent && b.textContent.trim().startsWith('Print Map'));
+    const btn = Array.from(document.querySelectorAll('button')).find(
+      (b) => b.textContent && b.textContent.trim().startsWith('Print Map'),
+    );
     if (btn) btn.click();
   });
 
@@ -179,7 +214,8 @@ async function waitForPort(host, port, timeout = 15000) {
 
   // Capture menu items
   const menuItems = await page.evaluate(() => {
-    const menu = document.querySelector('div[role="menu"]') || document.querySelector('.absolute .w-56');
+    const menu =
+      document.querySelector('div[role="menu"]') || document.querySelector('.absolute .w-56');
     if (!menu) return null;
     return Array.from(menu.querySelectorAll('button')).map((b) => ({ text: b.textContent.trim() }));
   });
@@ -188,7 +224,8 @@ async function waitForPort(host, port, timeout = 15000) {
 
   // If presets, click the first preset
   const clicked = await page.evaluate(() => {
-    const menu = document.querySelector('div[role="menu"]') || document.querySelector('.absolute .w-56');
+    const menu =
+      document.querySelector('div[role="menu"]') || document.querySelector('.absolute .w-56');
     if (!menu) return 'no-menu';
     const btn = menu.querySelector('button');
     if (!btn) return 'no-button';
@@ -199,26 +236,46 @@ async function waitForPort(host, port, timeout = 15000) {
   console.log('Clicked preset result:', clicked);
 
   // Wait for plugin events to fire - instrument map events
-  const events = await page.evaluate(() => new Promise((resolve) => {
-    const maps = (window.L && window.L._maps) ? Object.values(window.L._maps) : [];
-    const map = maps[0];
-    if (!map) return resolve({ error: 'no-map' });
-    const Ev = (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) ? window.L.BrowserPrint.Event : null;
-    if (!Ev) return resolve({ error: 'no-Ev' });
+  const events = await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        const maps = window.L && window.L._maps ? Object.values(window.L._maps) : [];
+        const map = maps[0];
+        if (!map) return resolve({ error: 'no-map' });
+        const Ev =
+          window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event
+            ? window.L.BrowserPrint.Event
+            : null;
+        if (!Ev) return resolve({ error: 'no-Ev' });
 
-    const res = [];
-    const on = (name) => (e) => { res.push(name); if (name === 'PrintEnd' || res.length > 5) { cleanup(); resolve({ events: res }); } };
-    const cleanup = () => {
-      try { map.off(Ev.PrintStart, on('PrintStart')); map.off(Ev.Print, on('Print')); map.off(Ev.PrintEnd, on('PrintEnd')); map.off(Ev.PrintCancel, on('PrintCancel')); } catch (e) {}
-    };
-    map.on(Ev.PrintStart, on('PrintStart'));
-    map.on(Ev.Print, on('Print'));
-    map.on(Ev.PrintEnd, on('PrintEnd'));
-    map.on(Ev.PrintCancel, on('PrintCancel'));
+        const res = [];
+        const on = (name) => (e) => {
+          res.push(name);
+          if (name === 'PrintEnd' || res.length > 5) {
+            cleanup();
+            resolve({ events: res });
+          }
+        };
+        const cleanup = () => {
+          try {
+            map.off(Ev.PrintStart, on('PrintStart'));
+            map.off(Ev.Print, on('Print'));
+            map.off(Ev.PrintEnd, on('PrintEnd'));
+            map.off(Ev.PrintCancel, on('PrintCancel'));
+          } catch (e) {}
+        };
+        map.on(Ev.PrintStart, on('PrintStart'));
+        map.on(Ev.Print, on('Print'));
+        map.on(Ev.PrintEnd, on('PrintEnd'));
+        map.on(Ev.PrintCancel, on('PrintCancel'));
 
-    // Also set a timeout to resolve
-    setTimeout(() => { cleanup(); resolve({ events: res, timeout: true }); }, 5000);
-  }));
+        // Also set a timeout to resolve
+        setTimeout(() => {
+          cleanup();
+          resolve({ events: res, timeout: true });
+        }, 5000);
+      }),
+  );
 
   console.log('Captured events:', events);
 

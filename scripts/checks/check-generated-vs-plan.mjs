@@ -14,7 +14,9 @@ dotenv.config({ path: path.resolve(projectRoot, '.env.local') });
 const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const key = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!url || !key) {
-  console.error('SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY environment variables required');
+  console.error(
+    'SUPABASE_URL (or VITE_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY environment variables required',
+  );
   process.exit(2);
 }
 

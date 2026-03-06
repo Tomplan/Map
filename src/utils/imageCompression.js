@@ -1,7 +1,7 @@
 /**
  * Resize and compress an image file before upload.
  * It maintains aspect ratio and converts to web-friendly format if needed.
- * 
+ *
  * @param {File} file - The original image file
  * @param {Object} options - Configuration options
  * @param {number} options.maxWidth - Maximum width in pixels (default: 800)
@@ -11,12 +11,7 @@
  * @returns {Promise<Blob>} - The resized image blob
  */
 export const compressImage = (file, options = {}) => {
-  const {
-    maxWidth = 800,
-    maxHeight = 800,
-    quality = 0.85,
-    format = 'image/webp'
-  } = options;
+  const { maxWidth = 800, maxHeight = 800, quality = 0.85, format = 'image/webp' } = options;
 
   return new Promise((resolve, reject) => {
     // If it's an SVG, don't compress
@@ -27,11 +22,11 @@ export const compressImage = (file, options = {}) => {
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    
+
     reader.onload = (event) => {
       const img = new Image();
       img.src = event.target.result;
-      
+
       img.onload = () => {
         let width = img.width;
         let height = img.height;
@@ -56,15 +51,19 @@ export const compressImage = (file, options = {}) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Canvas is empty'));
-            return;
-          }
-          // Preserve filename and create a File object (optional, but good for upload APIs expecting File)
-          // However, Supabase upload accepts Blob.
-          resolve(blob);
-        }, format, quality);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Canvas is empty'));
+              return;
+            }
+            // Preserve filename and create a File object (optional, but good for upload APIs expecting File)
+            // However, Supabase upload accepts Blob.
+            resolve(blob);
+          },
+          format,
+          quality,
+        );
       };
 
       img.onerror = (err) => {
