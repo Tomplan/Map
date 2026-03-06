@@ -252,14 +252,18 @@ export default function ExportButton({
         title={config.labels.exportButton}
       >
         {isExporting ? (
-          <>
-            <Icon path={mdiLoading} size={0.8} spin />
-            <span>Exporting...</span>
-          </>
+          <div className="flex items-center gap-2 w-full">
+            <div className="flex items-center gap-2">
+              <Icon path={mdiLoading} size={0.8} spin />
+              <span>Exporting...</span>
+            </div>
+          </div>
         ) : (
           <>
-            <Icon path={mdiDownload} size={0.8} />
-            <span>Export</span>
+            <div className="flex items-center gap-2">
+              <Icon path={mdiDownload} size={0.8} />
+              <span>Export</span>
+            </div>
             <Icon path={mdiChevronDown} size={0.6} />
           </>
         )}
