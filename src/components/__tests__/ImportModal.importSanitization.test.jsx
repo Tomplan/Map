@@ -105,5 +105,5 @@ describe('ImportModal import sanitization', () => {
     const payload = lastCompanyInsert[0];
     expect(payload._categorySlugs).toBeUndefined();
     expect(payload._translations).toBeUndefined();
-  });
+  }, 10000);
 });

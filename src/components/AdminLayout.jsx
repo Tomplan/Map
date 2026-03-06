@@ -341,6 +341,13 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
             ariaLabel="Logout"
           />
         </div>
+
+        {/* Version Display */}
+        <div
+          className={`text-center text-xs text-gray-400 pb-2 ${isCollapsed ? 'hidden' : 'block'}`}
+        >
+          v{__APP_VERSION__}
+        </div>
       </aside>
 
       {/* Main Content Area */}

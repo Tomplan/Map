@@ -1,22 +1,22 @@
-/**
- * Get the normalized base URL with trailing slash.
- * This ensures consistent URL construction across the app.
- * @returns {string} Base URL with trailing slash
- */
+// Utility to get the base URL
 export function getBaseUrl() {
-  // Safely access Vite base URL using a runtime Function to avoid `import.meta` parse
-  // errors in non-Vite environments (Jest/Node). Fall back to process.env or '/'.
-  const getViteBase = () => {
-    try {
-      return new Function('return import.meta.env && import.meta.env.BASE_URL')();
-    } catch (e) {
-      return undefined;
-    }
-  };
+  // The most robust way to get the base URL is to check the current window location.
+  // Because we use a HashRouter, window.location.pathname will always resolve
+  // to the path containing index.html. We can simply substring to the last '/'
+  // to dynamically get the exact base path for any deployed environment.
+  if (typeof window !== 'undefined' && window.location && window.location.pathname) {
+    const path = window.location.pathname;
+    return path.substring(0, path.lastIndexOf('/') + 1);
+  }
 
-  const baseUrl =
-    getViteBase() || (typeof process !== 'undefined' && process.env && process.env.BASE_URL) || '/';
-  return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  // Fallback 1: Global define (Vite/Jest/Node)
+  // This is defined in vite.config.js and jest.config.cjs
+  // avoiding import.meta issues in Jest/CJS environments
+  if (typeof __APP_BASE_URL__ !== 'undefined') {
+    return __APP_BASE_URL__;
+  }
+
+  return '/';
 }
 
 /**

@@ -40,7 +40,7 @@ function Modal({
     // Preserve the earliest mount timestamp in case of strict-mode double renders
     // so the protection window is calculated from the first render time.
     if (!mountedAtRef.current) {
-        mountedAtRef.current = typeof testMountedAt === 'number' ? testMountedAt : now;
+      mountedAtRef.current = typeof testMountedAt === 'number' ? testMountedAt : now;
     }
   } else {
     mountedAtRef.current = 0;
@@ -58,16 +58,16 @@ function Modal({
         : typeof performance !== 'undefined'
           ? performance.now()
           : Date.now();
-    
-    // In test environment with testNow, always use testNow 
+
+    // In test environment with testNow, always use testNow
     const isTesting = typeof testNow === 'number';
     const currentTime = isTesting ? testNow : now;
 
     const mountAt = typeof testMountedAt === 'number' ? testMountedAt : mountedAtRef.current;
-    
+
     // Safety check: if we are testing with manually controlled time, enforce it
     const timeSinceMount = currentTime - mountAt;
-    
+
     // If the modal was opened just now, ignore very-early backdrop clicks (click-through)
     if (timeSinceMount < 150) {
       // swallow the event

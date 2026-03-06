@@ -1,3 +1,10 @@
+# IMPORTANT
+
+**Branch Check:**
+
+- Use `development` for all new features and routine fixes.
+- Use `main` ONLY for production releases (merging `development` → `main`) or critical hotfixes.
+
 ## Summary
 
 Provide a short description of what this PR changes and why.

@@ -1,5 +1,11 @@
+const packageJson = require('./package.json');
+
 module.exports = {
   testEnvironment: 'jest-environment-jsdom',
+  globals: {
+    __APP_VERSION__: packageJson.version,
+    __APP_BASE_URL__: '/',
+  },
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/?(*.)+(spec|test).[jt]s?(x)'],
   transform: {
     '^.+\\.[jt]sx?$': 'babel-jest',

@@ -964,7 +964,7 @@ export default function MapManagement({
               </button>
 
               {isActionsOpen && (
-                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] overflow-hidden py-1">
+                <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-[60] py-1">
                   {/* Tools Section */}
                   <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                     Tools
@@ -1403,7 +1403,11 @@ export default function MapManagement({
                       // If we are ALREADY in single edit mode for a DIFFERENT marker,
                       // we might want to switch? Or exit?
                       // Let's exit single edit mode to be safe and show detail view first.
-                      if (editMode && !isBulkEditMode && String(marker.id) !== String(selectedMarkerId)) {
+                      if (
+                        editMode &&
+                        !isBulkEditMode &&
+                        String(marker.id) !== String(selectedMarkerId)
+                      ) {
                         setEditMode(false);
                       }
                     }
@@ -2137,7 +2141,23 @@ function EditPanel({
       {isSpecialMarker && (
         <Section title="Content (Special Marker)">
           <InputField label="Name" value={marker.name} onChange={(v) => onChange('name', v)} />
-          <InputField label="Logo URL" value={marker.logo} onChange={(v) => onChange('logo', v)} />
+          <div>
+            <InputField
+              label="Logo URL"
+              value={marker.logo}
+              onChange={(v) => onChange('logo', v)}
+              placeholder="Leave empty to use Organization Logo"
+            />
+            {marker.logo && (
+              <button
+                type="button"
+                onClick={() => onChange('logo', '')}
+                className="text-xs text-blue-600 hover:text-blue-800 hover:underline mt-1 block w-full text-right"
+              >
+                Use Organization Default
+              </button>
+            )}
+          </div>
           <InputField
             label="Website"
             value={marker.website}

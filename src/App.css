@@ -72,19 +72,36 @@ body {
 }
 
 /* Smooth scaling transitions for markers when bucket sizes change */
+/* IMPORTANT: Do NOT transition 'transform' - this causes markers to 'drift' or 'bounce' during zoom/pan */
+/* size transitions removed to prevent "pop" effect during fade-in */
 .leaflet-glyph-icon,
 .marker-icon {
-  transition:
-    width 160ms ease,
-    height 160ms ease,
-    transform 180ms ease;
-  will-change: width, height, transform;
+  transition: opacity 250ms ease-in; /* Slower fade in after zoom ends */
+  will-change: opacity;
 }
+
 .leaflet-glyph-icon span {
-  transition:
-    font-size 160ms ease,
-    line-height 160ms ease;
-  will-change: font-size, line-height;
+  /* transitions removed to prevent text scaling artifacts during fade-in */
+}
+
+/* User Experience Improvement:
+   Aggressively hide markers during zoom to prevent "pop" artifacts.
+   Using !important to ensure this overrides any specific marker styles or inline styles.
+   Targeting multiple class variants to catch all marker types.
+*/
+.map-is-zooming .leaflet-marker-icon,
+.map-is-zooming .leaflet-marker-shadow,
+.map-is-zooming .leaflet-glyph-icon,
+.map-is-zooming .marker-icon,
+.map-is-zooming .marker-cluster {
+  opacity: 0 !important;
+  transition: none !important;
+}
+
+/* Ensure markers are visible otherwise with a nice fade-in */
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+  opacity: 1;
 }
 
 /* Adjust minimap position to be above bottom navigation bar */
@@ -134,7 +151,9 @@ body {
   }
 
   /* Force Map Container to take full viewport */
-  #map, .leaflet-container, .event-map-wrapper {
+  #map,
+  .leaflet-container,
+  .event-map-wrapper {
     width: 100vw !important;
     height: 100vh !important;
     position: fixed !important;

@@ -344,7 +344,7 @@ export default function CompaniesTab() {
             </button>
 
             {isActionsOpen && (
-              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden py-1">
+              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
                 <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
                   Data Tools
                 </div>
@@ -688,13 +688,12 @@ export default function CompaniesTab() {
                             // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
                             // when a specific company has no logo set.
                             const fallback = getDefaultLogoPath();
-                            // For organization rows prefer the canonical default branding logo
-                            // (e.g. 4x4Vakantiebeurs-128.webp) rather than any uploaded org PNG filename.
-                            const source = isOrg
-                              ? fallback
-                              : item.logo && item.logo.trim() !== ''
+                            
+                            // Use the item's logo if present; otherwise use fallback
+                            const source = (item.logo && item.logo.trim() !== '')
                                 ? item.logo
                                 : fallback;
+                                
                             const r = getResponsiveLogoSources(source);
                             if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
                             return { src: getLogoPath(source) };

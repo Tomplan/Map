@@ -17,7 +17,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function insertDefaultMarkers() {
   try {
     console.log('Inserting default marker appearance entries...');
-// ... checks ...
+    // ... checks ...
     console.log('Default markers inserted successfully');
   } catch (err) {
     console.error('Error:', err);

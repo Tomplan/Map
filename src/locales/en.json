@@ -404,6 +404,8 @@
     "sortName": "Name",
     "sortBooth": "Booth",
     "sortFavoritesBase": "Favorites",
+    "viewOnMap": "View on Map",
+    "noDescription": "No description available",
     "noExhibitors": "No exhibitors found",
     "booth": "Booth",
     "categoriesComingSoon": "Coming Soon: Categories",

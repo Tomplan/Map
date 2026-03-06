@@ -19,7 +19,7 @@ describe('Modal backdrop click guard', () => {
   test('ignores backdrop clicks that occur within 150ms after open', () => {
     const onClose = jest.fn();
     const base = 1000;
-    
+
     // Set initial time
     nowVal = base;
 
@@ -33,18 +33,18 @@ describe('Modal backdrop click guard', () => {
     // Click immediately, time is still `base` or `base+50`
     // We update `nowVal` just in case logic uses global.performance
     nowVal = base + 50;
-    
-    // Simulate re-render or prop update if needed? 
+
+    // Simulate re-render or prop update if needed?
     // No, handleBackdropClick reads values at click time.
-    // However, if we passed `testNow` as prop, component uses that prop value. 
+    // However, if we passed `testNow` as prop, component uses that prop value.
     // And that prop value IS STILL `base` because we didn't re-render with new prop.
-    
+
     // Wait, if we passed `testNow={base}`, then `currentTime` inside handler is `base`.
     // `mountAt` is `base`.
     // `timeSinceMount` is 0.
     // 0 < 150 is true.
     // So it should ignore.
-    
+
     fireEvent.click(getByRole('dialog'));
 
     expect(onClose).not.toHaveBeenCalled();
@@ -53,7 +53,7 @@ describe('Modal backdrop click guard', () => {
   test('allows backdrop clicks after the 150ms guard window', async () => {
     const onClose = jest.fn();
     const base = 2000;
-    
+
     // Render with initial time
     const { getByRole, rerender } = render(
       <Modal isOpen={true} onClose={onClose} title="Test" testMountedAt={base} testNow={base}>
@@ -68,7 +68,7 @@ describe('Modal backdrop click guard', () => {
         <div>content</div>
       </Modal>,
     );
-    
+
     const backdrop = getByRole('dialog');
     fireEvent.click(backdrop);
 
