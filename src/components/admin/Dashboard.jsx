@@ -310,53 +310,48 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
           </div>
         </div>
 
-        {/* Warning Banner - COMPACT */}
-        <div className="bg-red-50 p-4 flex items-start gap-3 border-b border-red-100">
-          <Icon path={mdiAlertCircle} size={1.2} className="text-red-500 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <h3 className="text-sm font-bold text-red-800">
-              {t('dashboard.checklist.title')}
-            </h3>
-            <p className="text-xs text-red-700 mt-1 max-w-4xl">
-              <strong>{t('dashboard.checklist.warning')}</strong> {t('dashboard.checklist.warningDesc')}
-              <br/>{t('dashboard.checklist.crashWarning')}
-            </p>
+        {/* Subtle Warning & Checklist */}
+        <div className="bg-amber-50/50 border-t border-b border-amber-100/50 p-3 mt-2 text-xs">
+          <div className="flex items-start gap-2 mb-2 text-amber-700">
+            <Icon path={mdiAlertCircle} size={0.7} className="mt-0.5 flex-shrink-0" />
+            <div className="leading-snug">
+              <span className="font-bold mr-1">{t('dashboard.checklist.title')}:</span>
+              <span className="opacity-90">
+                {t('dashboard.checklist.warning')} {t('dashboard.checklist.warningDesc')} {t('dashboard.checklist.crashWarning')}
+              </span>
+            </div>
           </div>
-        </div>
-        
-        {/* Checklist */}
-        <div className="p-4 bg-slate-50/50">
-          <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboard.checklist.weekChecklist')}</h4>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-left">
-            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
-              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-              <div>
-                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.upgradeTitle')}</span>
-                <span className="text-slate-500 text-xs">{t('dashboard.checklist.upgradeDesc')}</span>
+          
+          <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.upgradeTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.upgradeDesc')}</span>
               </div>
-            </li>
-            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
-              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-              <div>
-                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.lockMapTitle')}</span>
-                <span className="text-slate-500 text-xs">{t('dashboard.checklist.lockMapDesc')}</span>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.lockMapTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.lockMapDesc')}</span>
               </div>
-            </li>
-            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
-              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-              <div>
-                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.verifyBackupsTitle')}</span>
-                <span className="text-slate-500 text-xs">{t('dashboard.checklist.verifyBackupsDesc')}</span>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.verifyBackupsTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.verifyBackupsDesc')}</span>
               </div>
-            </li>
-            <li className="flex items-start gap-2 bg-white p-3 rounded border border-slate-100 shadow-sm">
-              <input type="checkbox" className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-              <div>
-                <span className="font-semibold text-slate-800 text-sm block">{t('dashboard.checklist.checkPerfTitle')}</span>
-                <span className="text-slate-500 text-xs">{t('dashboard.checklist.checkPerfDesc')}</span>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.checkPerfTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.checkPerfDesc')}</span>
               </div>
-            </li>
-          </ul>
+            </label>
+          </div>
         </div>
       </div>
     </div>
