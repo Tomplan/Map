@@ -43,17 +43,15 @@ const syncPresenceState = () => {
     }
   });
 
-  // Since presences are grouped by presenceKey (which is user.id or sessionId),
-  // they are intrinsically uniquely scoped per device/user account.
-  // Using email strictly for uniqueness hides two separate Admins with the same email.
-  // Instead, rely on unique key presence map:
-  const uniqueAdminsByKey = Array.from(new Map(admins.map(a => [a.key, a])).values());
+  // Deduplicate admins by email so if the same admin is logged in 
+  // on multiple devices/tabs, they only count as 1 Admin.
+  const uniqueAdminsByEmail = Array.from(new Map(admins.map(a => [a.email, a])).values());
 
   globalState = {
     // Real accurate count of distinctly connected presence keys
     onlineCount: Object.keys(state).length,
     visitorCount: visitors,
-    adminUsers: uniqueAdminsByKey
+    adminUsers: uniqueAdminsByEmail
   };
   notifyListeners();
 };
