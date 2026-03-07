@@ -2,7 +2,39 @@
   "appTitle": "Event Map App",
   "welcome": "Welcome to the event!",
   "home": "Home",
-  "admin": "Admin Dashboard",
+  "admin": {
+    "yearScope": {
+      "global": "Global (all years)",
+      "eventSpecific": "Event-specific (changes with year)",
+      "title": "Year-scoped data",
+      "viewingYear": "Viewing year",
+      "subscriptions": "Subscriptions",
+      "assignments": "Assignments",
+      "program": "Program",
+      "preview": "Preview changes"
+    },
+    "yearSwitcher": {
+      "bannerBold": "Note:",
+      "bannerText": "Companies are shared across all years. Subscriptions, assignments and the program schedule are scoped to the selected year — switching the year will change those datasets.",
+      "bannerLink": "What changes when I switch the year?",
+      "modalTitle": "Switch to {{year}}?",
+      "modalIntro": "Are you sure you want to switch the admin view to <strong>{{year}}</strong>? The following data will update to reflect the selected year:",
+      "willChange": {
+        "subscriptions": "Subscriptions",
+        "subscriptionsDesc": "registrations and meal/coin selections for that event year",
+        "assignments": "Assignments",
+        "assignmentsDesc": "booth assignments and marker-to-company mappings for that year",
+        "program": "Program Management",
+        "programDesc": "the schedule / activities for the selected year"
+      },
+      "wontChangeIntro": "The following data is not affected when switching years:",
+      "wontChange": {
+        "companies": "Companies",
+        "companiesDesc": "company profiles and master data are global and shared across years"
+      },
+      "switchButton": "Switch to {{year}}"
+    }
+  },
   "adminNav": {
     "adminPanel": "Admin Panel",
     "dashboard": "Dashboard",
@@ -44,7 +76,9 @@
     "confirmDelete": "Are you sure you want to delete this?",
     "vote": "Vote",
     "voted": "Voted",
-    "refresh": "Regenerate"
+    "refresh": "Regenerate",
+    "actions": "Actions",
+    "actionsMenu": "Actions Menu"
   },
   "marker": {
     "event": "Event",
@@ -427,8 +461,8 @@
     "print": {
       "assignmentsList": "Assignments List",
       "columns": {
-        "booth": "Number",
-        "company": "Company Name",
+        "booth": "Booth",
+        "company": "Company",
         "contact": "Contact",
         "phone": "Phone"
       }
@@ -443,17 +477,95 @@
     "markerIdPlaceholder": "Marker ID (integer)",
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "undo": "Undo last change",
+    "undo": "Undo last action",
     "errorInvalidId": "Please enter a valid numeric ID.",
     "errorIdExists": "ID already exists. Please choose another.",
-    "searchPlaceholder": "Search by ID, booth label, or name...",
-    "selectMarker": "Select a marker to view details"
-  },
-  "navigation": {
-    "home": "Home",
-    "map": "Map",
-    "exhibitors": "Exhibitors",
-    "schedule": "Schedule"
+    "searchPlaceholder": "Search markers...",
+    "selectMarker": "Select a marker to edit",
+    "title": "Map Management",
+    "redo": "Redo last action",
+    "undoRedo": "Undo / Redo Actions",
+    "sortBy": "Sort by",
+    "undoMarker": "Undo marker move",
+    "redoMarker": "Redo marker move",
+    "undoAssignment": "Undo assignment",
+    "redoAssignment": "Redo assignment",
+    "subscriptionList": "Subscription List",
+    "markersList": "Markers List",
+    "assignedBoothDefault": "Assigned Booth Default",
+    "unassignedBoothDefault": "Unassigned Booth Default",
+    "globalDefaultForBoothMarkers": "Global Default for Booth Markers",
+    "editMode": "Edit Mode",
+    "finishEditing": "Finish Editing",
+    "doneEditing": "Done",
+    "aboutDefaultMarkers": "About Default Markers",
+    "defaultAppearanceAssigned": "This defines the default appearance for booth markers (ID < 1000) that have a company assigned.",
+    "defaultAppearanceUnassigned": "This defines the default appearance for booth markers (ID < 1000) that have no company assigned.",
+    "overrideDefaultsNote": "Individual booth markers can override these defaults by having their own values in the Appearance table.",
+    "defaultVisualStyling": "Default Visual Styling",
+    "visualStyling": "Visual Styling",
+    "boothContentManaged": "Booth - Content managed via Companies/Assignments",
+    "positionAndStructure": "Position & Structure",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "rectangle": "Rectangle",
+    "angle": "Angle",
+    "icon": "Icon",
+    "iconSize": "Icon Size",
+    "glyphBoothLabel": "Glyph (Booth Label)",
+    "glyphColor": "Glyph Color",
+    "glyphSize": "Glyph Size",
+    "weight": "Weight",
+    "style": "Style",
+    "decoration": "Decoration",
+    "fontFamily": "Font Family",
+    "glyphAnchor": "Glyph Anchor",
+    "glyphAnchorX": "Glyph Anchor X",
+    "glyphAnchorY": "Glyph Anchor Y",
+    "iconWidth": "Icon Width",
+    "iconHeight": "Icon Height",
+    "shadowScale": "Shadow Scale",
+    "rectangleWidth": "Rectangle Width",
+    "rectangleHeight": "Rectangle Height",
+    "name": "Name",
+    "logo": "Logo",
+    "logoUrl": "Logo URL",
+    "website": "Website",
+    "info": "Info",
+    "customColor": "Custom Color",
+    "usingCustomColorOverride": "Using custom color override",
+    "grayUnassigned": "Gray (unassigned)",
+    "edit": "Edit",
+    "default": "Default",
+    "assignedBooth": "Assigned Booth",
+    "unassignedBooth": "Unassigned Booth",
+    "searchCompany": "Search company...",
+    "sortSubscriptionsBy": "Sort subscriptions by",
+    "sortByCompany": "Sort by Company",
+    "sortByBooths": "Sort by Booths",
+    "sortByAssigned": "Sort by Assigned",
+    "toggleSortDesc": "Toggle sort direction to descending",
+    "toggleSortAsc": "Toggle sort direction to ascending",
+    "sort": "Sort",
+    "subscriptionDetails": "Subscription Details",
+    "closeDetails": "Close details",
+    "company": "Company",
+    "unknown": "Unknown",
+    "booths": "Booths",
+    "coins": "Coins",
+    "mealsSaturday": "Meals (Saturday)",
+    "mealsSunday": "Meals (Sunday)",
+    "breakfast": "Breakfast:",
+    "lunch": "Lunch:",
+    "bbq": "BBQ:",
+    "notes": "Notes",
+    "noNotes": "No notes",
+    "actions": "Actions",
+    "actionsMenu": "Actions Menu",
+    "manageSnapshots": "Manage Snapshots",
+    "copyFromYear": "Copy from {{year}}",
+    "snapshotPng": "Snapshot (PNG)",
+    "printAssignments": "Assignments List"
   },
   "programManagement": {
     "eventDates": {
@@ -531,39 +643,6 @@
     "saveError": "Failed to save activity",
     "saveSuccess": "Activity saved",
     "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
-  },
-  "admin": {
-    "yearScope": {
-      "global": "Global (all years)",
-      "eventSpecific": "Event-specific (changes with year)",
-      "title": "Year-scoped data",
-      "viewingYear": "Viewing year",
-      "subscriptions": "Subscriptions",
-      "assignments": "Assignments",
-      "program": "Program",
-      "preview": "Preview changes"
-    },
-    "yearSwitcher": {
-      "bannerBold": "Note:",
-      "bannerText": "Companies are shared across all years. Subscriptions, assignments and the program schedule are scoped to the selected year — switching the year will change those datasets.",
-      "bannerLink": "What changes when I switch the year?",
-      "modalTitle": "Switch to {{year}}?",
-      "modalIntro": "Are you sure you want to switch the admin view to <strong>{{year}}</strong>? The following data will update to reflect the selected year:",
-      "willChange": {
-        "subscriptions": "Subscriptions",
-        "subscriptionsDesc": "registrations and meal/coin selections for that event year",
-        "assignments": "Assignments",
-        "assignmentsDesc": "booth assignments and marker-to-company mappings for that year",
-        "program": "Program Management",
-        "programDesc": "the schedule / activities for the selected year"
-      },
-      "wontChangeIntro": "The following data is not affected when switching years:",
-      "wontChange": {
-        "companies": "Companies",
-        "companiesDesc": "company profiles and master data are global and shared across years"
-      },
-      "switchButton": "Switch to {{year}}"
-    }
   },
   "dashboard": {
     "totalAssignableBooths": "Total Assignable Booths",
@@ -657,7 +736,7 @@
     "footer": "Need more help? Contact your system administrator",
     "categories": {
       "title": "Category Management",
-      "description": "Manage exhibitor categories for filtering and organization",
+      "description": "Description",
       "createNew": "Create Category",
       "editCategory": "Edit Category",
       "createCategory": "Create Category",
@@ -670,7 +749,6 @@
       "sortOrder": "Sort Order",
       "translations": "Translations",
       "name": "Name",
-      "description": "Description",
       "slugHelp": "Unique identifier (lowercase, no spaces, use hyphens)",
       "noCategories": "No categories yet. Create your first category to get started.",
       "confirmDelete": "Are you sure you want to delete \"{{name}}\"?",
@@ -795,30 +873,5 @@
     "navigationRequiredText": "To run the tour we need to navigate to {{page}}. Do you want to continue?",
     "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
-  },
-  "mapManagement": {
-    "title": "Map Management",
-    "undo": "Undo last action",
-    "redo": "Redo last action",
-    "undoRedo": "Undo / Redo Actions",
-    "searchPlaceholder": "Search markers...",
-    "sortBy": "Sort by",
-    "sortId": "ID",
-    "sortName": "Name",
-    "sortType": "Type",
-    "selectMarker": "Select a marker to edit",
-    "undoMarker": "Undo marker move",
-    "redoMarker": "Redo marker move",
-    "undoAssignment": "Undo assignment",
-    "redoAssignment": "Redo assignment",
-    "print": {
-      "assignmentsList": "Assignments List",
-      "columns": {
-        "booth": "Booth",
-        "company": "Company",
-        "contact": "Contact",
-        "phone": "Phone"
-      }
-    }
   }
 }

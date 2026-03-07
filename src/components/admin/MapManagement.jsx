@@ -776,7 +776,7 @@ export default function MapManagement({
 
         return {
           booth: marker.id?.toString() || '?',
-          company: sub.company?.name || 'Unknown',
+          company: sub.company?.name || t('mapManagement.unknown'),
           contact: sub.company?.contact || '-',
           phone: sub.company?.phone || '-',
         };
@@ -957,9 +957,9 @@ export default function MapManagement({
                 type="button"
                 onClick={() => setIsActionsOpen(!isActionsOpen)}
                 className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
-                title="Actions Menu"
+                title={t('mapManagement.actionsMenu')}
               >
-                <span>Actions</span>
+                <span>{t('mapManagement.actions')}</span>
                 <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
               </button>
 
@@ -979,7 +979,7 @@ export default function MapManagement({
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
-                      <span>Manage Snapshots</span>
+                      <span>{t('mapManagement.manageSnapshots')}</span>
                     </button>
                   )}
 
@@ -992,7 +992,7 @@ export default function MapManagement({
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
-                      <span>Copy from {selectedYear - 1}</span>
+                      <span>{t('mapManagement.copyFromYear', { year: selectedYear - 1 })}</span>
                     </button>
                   )}
 
@@ -1028,7 +1028,7 @@ export default function MapManagement({
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
-                      <span>Snapshot (PNG)</span>
+                      <span>{t('mapManagement.snapshotPng')}</span>
                     </button>
                   )}
 
@@ -1042,7 +1042,7 @@ export default function MapManagement({
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Icon path={mdiPrinter} size={0.7} className="text-gray-400" />
-                      <span>Assignments List</span>
+                      <span>{t('mapManagement.printAssignments')}</span>
                     </button>
                   )}
 
@@ -1157,9 +1157,7 @@ export default function MapManagement({
 
               {/* Title Header */}
               <div className="flex items-center justify-between px-3 py-2 bg-white sticky top-0 z-10 border-b border-gray-100">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                  Markers List
-                </div>
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('mapManagement.markersList')}</div>
                 {!isReadOnly && (
                   <button
                     onClick={() => {
@@ -1175,10 +1173,10 @@ export default function MapManagement({
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
                     }`}
-                    title={isBulkEditMode ? 'Finish Editing' : 'Edit Mode'}
+                    title={isBulkEditMode ? t('mapManagement.finishEditing') : t('mapManagement.editMode')}
                   >
                     <Icon path={isBulkEditMode ? mdiContentSave : mdiPencil} size={0.6} />
-                    <span>{isBulkEditMode ? 'Done' : 'Edit Mode'}</span>
+                    <span>{isBulkEditMode ? t('mapManagement.doneEditing') : t('mapManagement.editMode')}</span>
                   </button>
                 )}
               </div>
@@ -1216,14 +1214,14 @@ export default function MapManagement({
                   <button
                     type="button"
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                    aria-label={sortDirection === 'asc' ? t('mapManagement.toggleSortDesc') : t('mapManagement.toggleSortAsc')}
                     className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
                   >
                     <Icon
                       path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
                       size={0.7}
                     />
-                    <span className="sr-only">Sort</span>
+                    <span className="sr-only">{t('mapManagement.sort')}</span>
                   </button>
                 </div>
               </div>
@@ -1270,8 +1268,8 @@ export default function MapManagement({
                             <span className="font-medium text-sm text-gray-900 truncate">
                               {isDefault
                                 ? marker.id === -1
-                                  ? 'Assigned Booth'
-                                  : 'Unassigned Booth'
+                                  ? t('mapManagement.assignedBooth')
+                                  : t('mapManagement.unassignedBooth')
                                 : marker.glyph || `Marker ${marker.id}`}
                             </span>
                             <span className="text-xs text-gray-400 font-mono ml-2">
@@ -1317,8 +1315,8 @@ export default function MapManagement({
                           <h2 className="text-xl font-bold text-gray-900">
                             {isDefaultMarker
                               ? selectedMarker.id === -1
-                                ? 'Assigned Booth Default'
-                                : 'Unassigned Booth Default'
+                                ? t('mapManagement.assignedBoothDefault')
+                                : t('mapManagement.unassignedBoothDefault')
                               : selectedMarker.glyph || `Marker ${selectedMarker.id}`}
                           </h2>
                           <p className="text-sm text-gray-600">
@@ -1475,7 +1473,7 @@ export default function MapManagement({
 
               {/* Title Header */}
               <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
-                <span>Subscription List</span>
+                <span>{t("mapManagement.subscriptionList")}</span>
                 <span className="text-[10px] font-normal">
                   {(() => {
                     if (!rawSubscriptions || !assignments) return '0 / 0';
@@ -1498,7 +1496,7 @@ export default function MapManagement({
                   />
                   <input
                     type="text"
-                    placeholder="Search company..."
+                    placeholder={t('mapManagement.searchCompany')}
                     value={subscriptionSearch}
                     onChange={(e) => setSubscriptionSearch(e.target.value)}
                     className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
@@ -1511,11 +1509,11 @@ export default function MapManagement({
                     value={subscriptionSortBy}
                     onChange={(e) => setSubscriptionSortBy(e.target.value)}
                     className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
-                    aria-label="Sort subscriptions by"
+                    aria-label={t('mapManagement.sortSubscriptionsBy')}
                   >
-                    <option value="name">Sort by Company</option>
-                    <option value="booths">Sort by Booths</option>
-                    <option value="assigned">Sort by Assigned</option>
+                    <option value="name">{t('mapManagement.sortByCompany')}</option>
+                    <option value="booths">{t('mapManagement.sortByBooths')}</option>
+                    <option value="assigned">{t('mapManagement.sortByAssigned')}</option>
                   </select>
                   <button
                     type="button"
@@ -1533,7 +1531,7 @@ export default function MapManagement({
                       path={subscriptionSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
                       size={0.7}
                     />
-                    <span className="sr-only">Sort</span>
+                    <span className="sr-only">{t('mapManagement.sort')}</span>
                   </button>
                 </div>
               </div>
@@ -1642,14 +1640,14 @@ export default function MapManagement({
                     ) : (
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-gray-900">Subscription Details</h4>
+                          <h4 className="font-medium text-gray-900">{t('mapManagement.subscriptionDetails')}</h4>
                           <button
                             onClick={() => {
                               setSelectedSubscriptionId(null);
                               setSelectedMarkerId(null); // Also clear marker highlight when closing details
                             }}
                             className="text-gray-400 hover:text-gray-600"
-                            title="Close details"
+                            title={t('mapManagement.closeDetails')}
                           >
                             <Icon path={mdiClose} size={0.8} />
                           </button>
@@ -1661,22 +1659,18 @@ export default function MapManagement({
                           <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
                             {/* Company */}
                             <div className="col-span-2">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Company
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.company')}</label>
                               <div
                                 className="text-sm font-medium text-gray-900 truncate text-left"
                                 title={selectedSubscription.company?.name}
                               >
-                                {selectedSubscription.company?.name || 'Unknown'}
+                                {selectedSubscription.company?.name || t('mapManagement.unknown')}
                               </div>
                             </div>
 
                             {/* Booths */}
                             <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Booths
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.booths')}</label>
                               <div className="text-sm text-gray-900 text-left">
                                 {selectedSubscription.booth_count || 0}
                               </div>
@@ -1684,9 +1678,7 @@ export default function MapManagement({
 
                             {/* Coins */}
                             <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Coins
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.coins')}</label>
                               <div className="text-sm text-gray-900 text-left">
                                 {selectedSubscription.coins || 0}
                               </div>
@@ -1694,24 +1686,22 @@ export default function MapManagement({
 
                             {/* Meals (Sat) */}
                             <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Meals (Saturday)
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.mealsSaturday')}</label>
                               <div className="text-xs text-gray-700 flex gap-3 text-left">
                                 <span>
-                                  Breakfast:{' '}
+                                  {t('mapManagement.breakfast')} 
                                   <span className="font-medium text-gray-900">
                                     {selectedSubscription.breakfast_sat || 0}
                                   </span>
                                 </span>
                                 <span>
-                                  Lunch:{' '}
+                                  {t('mapManagement.lunch')} 
                                   <span className="font-medium text-gray-900">
                                     {selectedSubscription.lunch_sat || 0}
                                   </span>
                                 </span>
                                 <span>
-                                  BBQ:{' '}
+                                  {t('mapManagement.bbq')} 
                                   <span className="font-medium text-gray-900">
                                     {selectedSubscription.bbq_sat || 0}
                                   </span>
@@ -1721,18 +1711,16 @@ export default function MapManagement({
 
                             {/* Meals (Sun) */}
                             <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Meals (Sunday)
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.mealsSunday')}</label>
                               <div className="text-xs text-gray-700 flex gap-3 text-left">
                                 <span>
-                                  Breakfast:{' '}
+                                  {t('mapManagement.breakfast')} 
                                   <span className="font-medium text-gray-900">
                                     {selectedSubscription.breakfast_sun || 0}
                                   </span>
                                 </span>
                                 <span>
-                                  Lunch:{' '}
+                                  {t('mapManagement.lunch')} 
                                   <span className="font-medium text-gray-900">
                                     {selectedSubscription.lunch_sun || 0}
                                   </span>
@@ -1742,12 +1730,10 @@ export default function MapManagement({
 
                             {/* Notes - Always visible, even if empty */}
                             <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
-                                Notes
-                              </label>
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.notes')}</label>
                               <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
                                 {selectedSubscription.notes || (
-                                  <span className="text-gray-400 italic">No notes</span>
+                                  <span className="text-gray-400 italic">{t('mapManagement.noNotes')}</span>
                                 )}
                               </div>
                             </div>
