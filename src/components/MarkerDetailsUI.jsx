@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 
 // --- Tooltip for both cluster + special markers ---
 const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true }) => {
+  const { t } = useTranslation();
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
@@ -28,12 +29,12 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
       )}
       <div className="flex flex-col min-w-0">
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs font-semibold text-gray-700">Booth {marker.glyph}</div>
+          <div className="text-xs font-semibold text-gray-700">{t('map.booth', 'Booth')} {marker.glyph}</div>
         )}
         {marker.name ? (
           <div className="text-sm font-medium text-gray-900 truncate">{marker.name}</div>
         ) : (
-          <div className="text-xs font-medium text-gray-500 italic">Unassigned</div>
+          <div className="text-xs font-medium text-gray-500 italic">{t('map.unassigned', 'Unassigned')}</div>
         )}
       </div>
     </div>
@@ -47,7 +48,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
   const isFavorite = favoritesContext?.isFavorite || (() => false);
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
   const translatedInfo = useTranslatedCompanyInfo(marker);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const [categories, setCategories] = useState([]);
 
@@ -92,11 +93,11 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
             </div>
           ) : (
             <div className="text-base font-semibold text-gray-500 italic mb-1">
-              Unassigned Booth
+              {t('map.unassignedBooth', 'Unassigned Booth')}
             </div>
           )}
           {showBoothNumber && marker.glyph && (
-            <div className="text-sm text-gray-700 mb-2">Booth {marker.glyph}</div>
+            <div className="text-sm text-gray-700 mb-2">{t('map.booth', 'Booth')} {marker.glyph}</div>
           )}
           {/* Category Badges */}
           {categories && categories.length > 0 && (
@@ -149,6 +150,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
 
 // --- Mobile Popup + Bottom Sheet pair ---
 const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumber = true }) => {
+  const { t } = useTranslation();
   const hasCompanyData = marker.name || marker.companyId;
 
   return (
@@ -166,17 +168,17 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
         {marker.name ? (
           <div className="font-semibold text-gray-900 text-sm">{marker.name}</div>
         ) : (
-          <div className="font-semibold text-gray-500 italic text-sm">Unassigned Booth</div>
+          <div className="font-semibold text-gray-500 italic text-sm">{t('map.unassignedBooth', 'Unassigned Booth')}</div>
         )}
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs text-gray-700 mb-2">Booth {marker.glyph}</div>
+          <div className="text-xs text-gray-700 mb-2">{t('map.booth', 'Booth')} {marker.glyph}</div>
         )}
         {hasCompanyData && (
           <button
             onClick={onMoreInfo}
             className="bg-blue-500/90 text-white text-xs px-3 py-1 rounded-full hover:bg-blue-600"
           >
-            More Info
+            {t('map.moreInfo', 'More Info')}
           </button>
         )}
       </div>
