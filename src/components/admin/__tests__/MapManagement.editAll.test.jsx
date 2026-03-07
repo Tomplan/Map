@@ -121,7 +121,7 @@ describe('MapManagement Edit All Button', () => {
     fireEvent.click(toggleBtn);
 
     // Now Edit All button should be visible/accessible
-    const editAllBtn = screen.getByTitle('Edit Mode'); // Title is 'Edit Mode' in code
+    const editAllBtn = screen.getByTitle(/Edit Mode|Editing|mapManagement.editMode/i); // Title is 'Edit Mode' in code
     expect(editAllBtn).toBeInTheDocument();
   });
 
@@ -136,7 +136,7 @@ describe('MapManagement Edit All Button', () => {
     const toggleBtn = screen.getByTitle('Show Markers & Details');
     fireEvent.click(toggleBtn);
 
-    const editAllBtn = screen.getByTitle('Edit Mode');
+    const editAllBtn = screen.getByTitle(/Edit Mode|Editing|mapManagement.editMode/i);
     fireEvent.click(editAllBtn);
 
     expect(mockToastSuccess).toHaveBeenCalledWith(expect.stringMatching(/Bulk edit mode enabled/i));

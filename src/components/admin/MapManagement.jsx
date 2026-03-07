@@ -1174,7 +1174,7 @@ export default function MapManagement({
                         : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
                     }`}
                     title={isBulkEditMode ? t('mapManagement.finishEditing') : t('mapManagement.editMode')}
-                  >
+                    >
                     <Icon path={isBulkEditMode ? mdiContentSave : mdiPencil} size={0.6} />
                     <span>{isBulkEditMode ? t('mapManagement.doneEditing') : t('mapManagement.editMode')}</span>
                   </button>
