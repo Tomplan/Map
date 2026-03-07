@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 
 const getSessionId = () => {
@@ -10,13 +10,15 @@ const getSessionId = () => {
   return sid;
 };
 
-// Singleton state
+// --- SINGLETON PRESENCE MANAGER --- //
 let globalChannel = null;
 let globalState = { onlineCount: 0, visitorCount: 0, adminUsers: [] };
-let isJoined = false;
-let currentTrackedState = null; // keeps track of the latest params we tried to track
-
 const listeners = new Set();
+let isJoined = false;
+
+// We need a registry of who is actively asking to be tracked among all Hook instances.
+// Usually only App.jsx tracks. We just store the single tracked payload here.
+let activeTrackingPayload = null; 
 
 const notifyListeners = () => {
   for (const listener of listeners) {
@@ -30,12 +32,10 @@ const syncPresenceState = () => {
   let visitors = 0;
   let admins = [];
 
-  // Iterate over exactly the unique keys Supabase Presence identifies 
   Object.entries(state).forEach(([key, presences]) => {
-    // If a single user ID/session has multiple connections, group them
+    // Only care about the latest payload for a specific connection key
     const presence = presences[0];
     if (presence?.is_admin) {
-      // Use user.email if available, else fallback to something visible
       const displayEmail = presence.email || 'Admin';
       admins.push({ email: displayEmail, key: key, online_at: presence.online_at });
     } else {
@@ -44,11 +44,10 @@ const syncPresenceState = () => {
   });
 
   // Deduplicate admins by email so if the same admin is logged in 
-  // on multiple devices/tabs, they only count as 1 Admin.
+  // on multiple devices/browser tabs, they gracefully count as 1 Admin.
   const uniqueAdminsByEmail = Array.from(new Map(admins.map(a => [a.email, a])).values());
 
   globalState = {
-    // Real accurate count of distinctly connected presence keys
     onlineCount: Object.keys(state).length,
     visitorCount: visitors,
     adminUsers: uniqueAdminsByEmail
@@ -61,12 +60,10 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
 
   useEffect(() => {
     listeners.add(setLocalState);
-    setLocalState(globalState);
 
-    // Initialize channel once globally
+    // Initialize the shared websocket channel once globally
     if (!globalChannel) {
       const sessionId = getSessionId();
-      // Supabase will link presence exactly to this key.
       const presenceKey = user?.id || sessionId;
 
       globalChannel = supabase.channel('global_visitors', {
@@ -78,9 +75,9 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
       globalChannel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           isJoined = true;
-          // Apply any pending tracking state now that we are formally joined
-          if (currentTrackedState) {
-            globalChannel.track(currentTrackedState).catch(console.error);
+          // If a tracking payload was queued up while we were connecting, formally push it
+          if (activeTrackingPayload) {
+            globalChannel.track(activeTrackingPayload).catch(console.error);
           }
         } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
           isJoined = false;
@@ -91,39 +88,46 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
     return () => {
       listeners.delete(setLocalState);
       
-      // If no one is listening anymore, safely shutdown channel
+      // If no components are listening anymore across the whole app, cleanly shut down
       if (listeners.size === 0 && globalChannel) {
         supabase.removeChannel(globalChannel);
         globalChannel = null;
         isJoined = false;
+        activeTrackingPayload = null;
       }
     };
-  }, []); // Run setup strictly once for listeners
+  }, []); // Run socket initializer exactly once
 
-  // Track user presence if shouldTrack changes or user changes
+  // Isolate Tracking Actions specifically so non-tracking components (like Dashboard)
+  // don't accidentally "untrack" the main App component's connection.
   useEffect(() => {
-    if (!shouldTrack) {
-      if (currentTrackedState && isJoined && globalChannel) {
-         currentTrackedState = null;
-         globalChannel.untrack().catch(console.error);
-      }
-      return;
-    }
+    // If this Hook instance isn't trying to broadcast presence (shouldTrack = false)
+    // do absolutely nothing. Do not interfere with global tracking!
+    if (!shouldTrack) return; 
 
-    // Capture newest available trackable state
+    // Capture newest available trackable state for this user/admin
     const newState = {
       is_admin: !!user,
       email: user?.email,
       online_at: new Date().toISOString()
     };
     
-    currentTrackedState = newState;
+    // Store in global memory in case the socket is still handshaking
+    activeTrackingPayload = newState;
 
-    // Only broadcast track if we are already safely joined
-    // otherwise the pending state will be picked up by the subscribe callback
+    // Send the dynamic user heartbeat over the network right now if socket is open
     if (globalChannel && isJoined) {
       globalChannel.track(newState).catch(console.error);
     }
+
+    // Cleanup: ONLY untrack if the component that explicitly originally asked to track unmounts.
+    // (e.g. App.jsx unmounting... which rarely ever happens).
+    return () => {
+      if (isJoined && globalChannel) {
+         activeTrackingPayload = null;
+         globalChannel.untrack().catch(console.error);
+      }
+    };
   }, [shouldTrack, user]);
 
   return localState;
