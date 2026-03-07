@@ -563,7 +563,10 @@
     "manageSnapshots": "Snapshots beheren",
     "copyFromYear": "Kopiëren van {{year}}",
     "snapshotPng": "Snapshot (PNG)",
-    "printAssignments": "Toewijzingenlijst"
+    "printAssignments": "Toewijzingenlijst",
+    "statusUnassigned": "Niet-toegewezen",
+    "booth": "stand",
+    "booths_plural": "stands"
   },
   "navigation": {
     "home": "Home",

@@ -569,7 +569,10 @@
     "manageSnapshots": "Manage Snapshots",
     "copyFromYear": "Copy from {{year}}",
     "snapshotPng": "Snapshot (PNG)",
-    "printAssignments": "Assignments List"
+    "printAssignments": "Assignments List",
+    "statusUnassigned": "Unassigned",
+    "booth": "booth",
+    "booths_plural": "booths"
   },
   "programManagement": {
     "eventDates": {
