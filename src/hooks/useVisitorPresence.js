@@ -10,9 +10,12 @@ const getSessionId = () => {
   return sid;
 };
 
-// Global state for presence so multiple hooks can share it
+// Singleton state
 let globalChannel = null;
 let globalState = { onlineCount: 0, visitorCount: 0, adminUsers: [] };
+let isJoined = false;
+let currentTrackedState = null; // keeps track of the latest params we tried to track
+
 const listeners = new Set();
 
 const notifyListeners = () => {
@@ -21,91 +24,108 @@ const notifyListeners = () => {
   }
 };
 
+const syncPresenceState = () => {
+  if (!globalChannel) return;
+  const state = globalChannel.presenceState();
+  let visitors = 0;
+  let admins = [];
+
+  // Iterate over exactly the unique keys Supabase Presence identifies 
+  Object.entries(state).forEach(([key, presences]) => {
+    // If a single user ID/session has multiple connections, group them
+    const presence = presences[0];
+    if (presence?.is_admin) {
+      // Use user.email if available, else fallback to something visible
+      const displayEmail = presence.email || 'Admin';
+      admins.push({ email: displayEmail, key: key, online_at: presence.online_at });
+    } else {
+      visitors++;
+    }
+  });
+
+  // Since presences are grouped by presenceKey (which is user.id or sessionId),
+  // they are intrinsically uniquely scoped per device/user account.
+  // Using email strictly for uniqueness hides two separate Admins with the same email.
+  // Instead, rely on unique key presence map:
+  const uniqueAdminsByKey = Array.from(new Map(admins.map(a => [a.key, a])).values());
+
+  globalState = {
+    // Real accurate count of distinctly connected presence keys
+    onlineCount: Object.keys(state).length,
+    visitorCount: visitors,
+    adminUsers: uniqueAdminsByKey
+  };
+  notifyListeners();
+};
+
 export default function useVisitorPresence(shouldTrack = false, user = null) {
   const [localState, setLocalState] = useState(globalState);
 
   useEffect(() => {
-    // Add this component to listeners
     listeners.add(setLocalState);
-
-    // Provide initial state
     setLocalState(globalState);
 
-    const sessionId = getSessionId();
-    const presenceKey = user ? user.id : sessionId;
-
+    // Initialize channel once globally
     if (!globalChannel) {
-      // Create channel only once
+      const sessionId = getSessionId();
+      // Supabase will link presence exactly to this key.
+      const presenceKey = user?.id || sessionId;
+
       globalChannel = supabase.channel('global_visitors', {
-        config: {
-          presence: { key: presenceKey },
-        },
+        config: { presence: { key: presenceKey } },
       });
 
-      globalChannel
-        .on('presence', { event: 'sync' }, () => {
-          const state = globalChannel.presenceState();
-          let visitors = 0;
-          let admins = [];
+      globalChannel.on('presence', { event: 'sync' }, syncPresenceState);
 
-          Object.values(state).forEach((presences) => {
-            const presence = presences[0];
-            if (presence.is_admin) {
-              admins.push({ email: presence.email, online_at: presence.online_at });
-            } else {
-              visitors++;
-            }
-          });
-
-          const uniqueAdmins = Array.from(new Map(admins.map((a) => [a.email, a])).values());
-          
-          globalState = {
-            onlineCount: Object.keys(state).length,
-            visitorCount: visitors,
-            adminUsers: uniqueAdmins
-          };
-          notifyListeners();
-        })
-        .subscribe();
-    }
-
-    // Effect for tracking - handle separately from channel creation
-    if (shouldTrack) {
-      if (globalChannel.state === 'joined') {
-        globalChannel.track({
-          is_admin: !!user,
-          email: user?.email,
-          online_at: new Date().toISOString()
-        }).catch(console.error);
-      } else {
-        // Wait for channel to join before tracking
-        const handleJoin = (status) => {
-          if (status === 'SUBSCRIBED') {
-            globalChannel.track({
-              is_admin: !!user,
-              email: user?.email,
-              online_at: new Date().toISOString()
-            }).catch(console.error);
+      globalChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          isJoined = true;
+          // Apply any pending tracking state now that we are formally joined
+          if (currentTrackedState) {
+            globalChannel.track(currentTrackedState).catch(console.error);
           }
-        };
-        // Re-subscribe just to get the status callback if it's already connecting
-        globalChannel.subscribe(handleJoin);
-      }
+        } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          isJoined = false;
+        }
+      });
     }
 
     return () => {
       listeners.delete(setLocalState);
       
-      // Keep channel alive while app runs unless all listeners drop
-      if (listeners.size === 0) {
-        if (globalChannel) {
-          supabase.removeChannel(globalChannel);
-          globalChannel = null;
-        }
-      } else if (shouldTrack && globalChannel?.state === 'joined') {
-        globalChannel.untrack().catch(console.error);
+      // If no one is listening anymore, safely shutdown channel
+      if (listeners.size === 0 && globalChannel) {
+        supabase.removeChannel(globalChannel);
+        globalChannel = null;
+        isJoined = false;
       }
     };
+  }, []); // Run setup strictly once for listeners
+
+  // Track user presence if shouldTrack changes or user changes
+  useEffect(() => {
+    if (!shouldTrack) {
+      if (currentTrackedState && isJoined && globalChannel) {
+         currentTrackedState = null;
+         globalChannel.untrack().catch(console.error);
+      }
+      return;
+    }
+
+    // Capture newest available trackable state
+    const newState = {
+      is_admin: !!user,
+      email: user?.email,
+      online_at: new Date().toISOString()
+    };
+    
+    currentTrackedState = newState;
+
+    // Only broadcast track if we are already safely joined
+    // otherwise the pending state will be picked up by the subscribe callback
+    if (globalChannel && isJoined) {
+      globalChannel.track(newState).catch(console.error);
+    }
   }, [shouldTrack, user]);
 
   return localState;
