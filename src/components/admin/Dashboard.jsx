@@ -294,13 +294,13 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
               </div>
               {/* Tooltip to show admin emails */}
               {adminUsers.length > 0 && (
-                <div className="absolute top-full left-0 mt-2 w-max min-w-full bg-slate-800 text-white text-xs rounded shadow-lg p-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                <div className="absolute top-full left-0 mt-2 w-max min-w-[200px] max-w-[300px] bg-slate-800 text-white text-xs rounded shadow-lg p-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                   <div className="font-semibold border-b border-slate-600 pb-1 mb-1">Online Admins:</div>
                   <ul className="space-y-1">
                     {adminUsers.map((admin, idx) => (
                       <li key={idx} className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-400"></span>
-                        {admin.email}
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0"></span>
+                        <span className="truncate" title={admin.email}>{admin.email}</span>
                       </li>
                     ))}
                   </ul>
