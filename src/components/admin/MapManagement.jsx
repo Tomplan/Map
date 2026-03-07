@@ -1603,11 +1603,11 @@ export default function MapManagement({
                                   <Icon path={mdiContentSave} size={0.5} /> {boothLabel}
                                 </span>
                               ) : (
-                                <span className="text-orange-500">Unassigned</span>
+                                <span className="text-orange-500">{t('mapManagement.statusUnassigned', 'Unassigned')}</span>
                               )}
                               {sub.booth_count > 0 && (
                                 <span>
-                                  • {sub.booth_count} {sub.booth_count === 1 ? 'booth' : 'booths'}
+                                  • {sub.booth_count} {sub.booth_count === 1 ? t('mapManagement.booth', 'booth') : t('mapManagement.booths_plural', 'booths')}
                                 </span>
                               )}
                             </div>

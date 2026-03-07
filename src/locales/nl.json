@@ -449,7 +449,11 @@
   },
   "map": {
     "searchPlaceholder": "Zoek op naam of standnummer...",
-    "ariaLabel": "Interactieve evenementenkaart"
+    "ariaLabel": "Interactieve evenementenkaart",
+    "moreInfo": "Meer Info",
+    "unassignedBooth": "Niet-toegewezen stand",
+    "booth": "Stand",
+    "unassigned": "Niet-toegewezen"
   },
   "mapManagement": {
     "print": {
@@ -559,7 +563,10 @@
     "manageSnapshots": "Snapshots beheren",
     "copyFromYear": "Kopiëren van {{year}}",
     "snapshotPng": "Snapshot (PNG)",
-    "printAssignments": "Toewijzingenlijst"
+    "printAssignments": "Toewijzingenlijst",
+    "statusUnassigned": "Niet-toegewezen",
+    "booth": "stand",
+    "booths_plural": "stands"
   },
   "navigation": {
     "home": "Home",

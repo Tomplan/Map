@@ -16,7 +16,7 @@ const BottomSheet = ({ marker, onClose }) => {
   const favoritesContext = useOptionalFavoritesContext();
   const isFavorite = favoritesContext?.isFavorite || (() => false);
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const [categories, setCategories] = useState([]);
 
@@ -90,7 +90,7 @@ const BottomSheet = ({ marker, onClose }) => {
               />
             )}
           </div>
-          {marker.glyph && <div className="text-sm text-gray-700 mb-1">Booth {marker.glyph}</div>}
+            {marker.glyph && <div className="text-sm text-gray-700 mb-1">{t('map.booth', 'Booth')} {marker.glyph}</div>}
 
           {/* Category Badges */}
           {categories && categories.length > 0 && (

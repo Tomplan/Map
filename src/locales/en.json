@@ -455,7 +455,11 @@
   },
   "map": {
     "searchPlaceholder": "Search for name or booth...",
-    "ariaLabel": "Interactive event map"
+    "ariaLabel": "Interactive event map",
+    "moreInfo": "More Info",
+    "unassignedBooth": "Unassigned Booth",
+    "booth": "Booth",
+    "unassigned": "Unassigned"
   },
   "mapManagement": {
     "print": {
@@ -565,7 +569,10 @@
     "manageSnapshots": "Manage Snapshots",
     "copyFromYear": "Copy from {{year}}",
     "snapshotPng": "Snapshot (PNG)",
-    "printAssignments": "Assignments List"
+    "printAssignments": "Assignments List",
+    "statusUnassigned": "Unassigned",
+    "booth": "booth",
+    "booths_plural": "booths"
   },
   "programManagement": {
     "eventDates": {
