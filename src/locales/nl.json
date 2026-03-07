@@ -566,7 +566,8 @@
     "printAssignments": "Toewijzingenlijst",
     "statusUnassigned": "Niet-toegewezen",
     "booth": "stand",
-    "booths_plural": "stands"
+    "booths_plural": "stands",
+    "statusAssigned": "Toegewezen"
   },
   "navigation": {
     "home": "Home",

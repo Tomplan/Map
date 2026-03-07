@@ -572,7 +572,8 @@
     "printAssignments": "Assignments List",
     "statusUnassigned": "Unassigned",
     "booth": "booth",
-    "booths_plural": "booths"
+    "booths_plural": "booths",
+    "statusAssigned": "Assigned"
   },
   "programManagement": {
     "eventDates": {
