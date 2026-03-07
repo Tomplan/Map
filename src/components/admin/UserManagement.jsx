@@ -11,6 +11,7 @@ import {
   mdiAlertCircle,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
+import { getAbsoluteUrl } from '../../utils/getBaseUrl';
 import useUserRole from '../../hooks/useUserRole';
 import Modal from '../common/Modal';
 import { useDialog } from '../../contexts/DialogContext';
@@ -103,12 +104,9 @@ export default function UserManagement() {
     setError(null);
 
     try {
-      // Build redirect URL for password setup
-      const isProd = import.meta.env.PROD;
-      const base = import.meta.env.BASE_URL || '/';
-      const redirectUrl = isProd
-        ? `${window.location.origin}${base}#/reset-password`
-        : `${window.location.origin}${base}reset-password`;
+      // Build absolute redirect URL using our robust utility that correctly handles 
+      // root deployments, GitHub Pages subdirectories, and HashRouter usage
+      const redirectUrl = getAbsoluteUrl('#/reset-password');
 
       // Use Supabase Admin API to invite user
       // Note: This requires server-side implementation or Supabase service role key

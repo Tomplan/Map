@@ -326,9 +326,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             <button
               onClick={() => setIsActionsOpen(!isActionsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
-              title="Actions Menu"
+              title={t('common.actionsMenu')}
             >
-              <span>Actions</span>
+              <span>{t('common.actions')}</span>
               <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
             </button>
 

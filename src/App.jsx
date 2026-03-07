@@ -14,6 +14,7 @@ import AppRoutes from './components/AppRoutes';
 import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
 import { getDefaultLogoPath } from './utils/getDefaultLogo';
+import useVisitorPresence from './hooks/useVisitorPresence';
 import './i18n';
 import './App.css';
 
@@ -44,6 +45,9 @@ function AppContent() {
       listener?.subscription?.unsubscribe();
     };
   }, []);
+
+  // Always track presence continuously in the background
+  useVisitorPresence(true, user);
 
   // Load language from localStorage on mount (instant feedback while DB loads)
   useEffect(() => {

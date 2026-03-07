@@ -538,7 +538,27 @@
     "manageSubscriptionsDesc": "Abonnements verwalten",
     "mapManagementDesc": "Kartenmarker und Standpositionen verwalten",
     "recentActivity": "Letzte Aktivitäten",
-    "recentActivityPlaceholder": "Activity tracking will be added in a future update."
+    "recentActivityPlaceholder": "Activity tracking will be added in a future update.",
+    "liveOverview": "Live Übersicht",
+    "liveOverviewDesc": "Echtzeit-Besucher verbunden mit der Karte",
+    "activeUsers": "Aktive Benutzer",
+    "activeVisitors": "Besucher",
+    "activeAdmins": "Admins",
+    "checklist": {
+      "title": "Kritische Maßnahmen Vor Dem Event Erforderlich",
+      "warning": "Warnung vor Hohem Datenverkehr:",
+      "warningDesc": "Wir erwarten über 5000 Besucher an diesem Event-Wochenende. Die App läuft aktuell auf dem Supabase Free Tier, welches auf streng limitierte 500 gleichzeitige Echtzeitverbindungen beschränkt ist.",
+      "crashWarning": "Wenn die Datenbank vor dem Event nicht aktualisiert wird, wird die Karte abstürzen, wenn Besucher versuchen, diese zu laden.",
+      "weekChecklist": "Checkliste für die Event-Woche:",
+      "upgradeTitle": "Supabase auf Pro Plan Aktualisieren",
+      "upgradeDesc": "Projekt aktualisieren um tausende gleichzeitige Verbindungen zu gewährleisten. Prüfe Quoten für Realtimeverbindungen und Daten-Egress.",
+      "lockMapTitle": "Karte Sperren (Schreibgeschützt)",
+      "lockMapDesc": "Um versehentliche Live-Updates während des fortlaufenden Events zu verhindern, sperre die Karten-UI im Admin Panel sodass keine Stände oder Marker verschoben werden können.",
+      "verifyBackupsTitle": "Automatische Backups Verifizieren",
+      "verifyBackupsDesc": "Stelle sicher, dass die Cron-Jobs erfolgreich durchgelaufen sind und die aktuellsten vollständigen Datenbank Backups sicher extern gespeichert wurden (Dropbox/Drive).",
+      "checkPerfTitle": "App-Performance Überprüfen",
+      "checkPerfDesc": "Stell sicher, dass das PWA-Limit und Caching richtig arbeiten, damit Kartenkacheln für Benutzer mit schwacher Internetverbindung auf dem Gelände schnell geladen werden können."
+    }
   },
   "helpPanel": {
     "title": "Help & Guide",

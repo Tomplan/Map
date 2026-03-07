@@ -15,6 +15,12 @@ jest.mock('react-i18next', () => ({
     t: (k, opts) => {
       const map = {
         'companies.publicInfoTab': 'Public Info',
+        'common.actionsMenu': 'Actions Menu',
+        'common.actions': 'Actions',
+        'common.actionsMenu': 'Actions Menu',
+        'common.actions': 'Actions',
+        'common.actionsMenu': 'Actions Menu',
+        'common.actions': 'Actions',
         'companies.privateInfoTab': 'Private Info',
       };
       return map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k;

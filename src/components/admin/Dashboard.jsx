@@ -11,6 +11,11 @@ import {
   mdiFoodForkDrink,
   mdiGrill,
   mdiCircleMultiple,
+  mdiAlertCircle,
+  mdiAccountGroup,
+  mdiAlert,
+  mdiAccountTie,
+  mdiEarth,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import {
@@ -20,6 +25,7 @@ import {
   useCompanyCount,
 } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useVisitorPresence from '../../hooks/useVisitorPresence';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
 
@@ -34,6 +40,9 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
+  
+  // Real-time site visitors
+  const { onlineCount, visitorCount, adminUsers } = useVisitorPresence(false);
 
   // Keep subscriptions hook for totals calculation (meal counts, coins)
   const { subscriptions } = useEventSubscriptions(selectedYear);
@@ -250,10 +259,100 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
         </div>
       </div>
 
-      {/* Recent Activity - Placeholder */}
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">{t('dashboard.recentActivity')}</h2>
-        <p className="text-gray-600">{t('dashboard.recentActivityPlaceholder')}</p>
+      {/* Event Preparations and System Limits Warning */}
+      <div className="bg-white rounded-lg shadow mt-6 overflow-hidden">
+        
+        {/* Header / Live Visitors */}
+        <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
+              {t('dashboard.liveOverview')}
+            </h2>
+            <p className="text-sm text-slate-600">{t('dashboard.liveOverviewDesc')}</p>
+          </div>
+          
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex items-center gap-3">
+              <Icon path={mdiEarth} size={1.2} className="text-blue-500" />
+              <div>
+                <div className="text-xl font-bold text-slate-800">{visitorCount}</div>
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeVisitors', 'Visitors')}</div>
+              </div>
+            </div>
+            
+            <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col justify-center min-w-[140px] relative group">
+              <div className="flex items-center gap-3">
+                <Icon path={mdiAccountTie} size={1.2} className="text-purple-500" />
+                <div>
+                  <div className="text-xl font-bold text-slate-800">{adminUsers.length}</div>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeAdmins', 'Admins')}</div>
+                </div>
+              </div>
+              {/* Tooltip to show admin emails */}
+              {adminUsers.length > 0 && (
+                <div className="absolute top-full left-0 mt-2 w-max min-w-[200px] max-w-[300px] bg-slate-800 text-white text-xs rounded shadow-lg p-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <div className="font-semibold border-b border-slate-600 pb-1 mb-1">Online Admins:</div>
+                  <ul className="space-y-1">
+                    {adminUsers.map((admin, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0"></span>
+                        <span className="truncate" title={admin.email}>{admin.email}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Subtle Warning & Checklist */}
+        <div className="bg-amber-50/50 border-t border-b border-amber-100/50 p-3 mt-2 text-xs">
+          <div className="flex items-start gap-2 mb-2 text-amber-700">
+            <Icon path={mdiAlertCircle} size={0.7} className="mt-0.5 flex-shrink-0" />
+            <div className="leading-snug">
+              <span className="font-bold mr-1">{t('dashboard.checklist.title')}:</span>
+              <span className="opacity-90">
+                {t('dashboard.checklist.warning')} {t('dashboard.checklist.warningDesc')} {t('dashboard.checklist.crashWarning')}
+              </span>
+            </div>
+          </div>
+          
+          <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.upgradeTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.upgradeDesc')}</span>
+              </div>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.lockMapTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.lockMapDesc')}</span>
+              </div>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.verifyBackupsTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.verifyBackupsDesc')}</span>
+              </div>
+            </label>
+            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <div className="flex flex-col text-[11px] leading-tight">
+                <span className="font-medium">{t('dashboard.checklist.checkPerfTitle')}</span>
+                <span className="opacity-70">{t('dashboard.checklist.checkPerfDesc')}</span>
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   );
