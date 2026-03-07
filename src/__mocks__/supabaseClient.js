@@ -116,15 +116,11 @@ const supabase = {
     return makeChain(table);
   },
   channel() {
-    // Provide a simple channel with on(...).subscribe() chain
     return {
-      on() {
-        return {
-          subscribe() {
-            return { unsubscribe() {}, then() {} };
-          },
-        };
-      },
+      on() { return this; },
+      subscribe(cb) { if (cb) cb('SUBSCRIBED'); return this; },
+      unsubscribe() {},
+      send() {}
     };
   },
   removeChannel() {

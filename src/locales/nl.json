@@ -2,7 +2,39 @@
   "appTitle": "Evenementenkaart App",
   "welcome": "Welkom op het evenement!",
   "home": "Startpagina",
-  "admin": "Admin Dashboard",
+  "admin": {
+    "yearScope": {
+      "global": "Globaal (alle jaren)",
+      "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)",
+      "title": "Evenement-specifieke gegevens",
+      "viewingYear": "Geselecteerd jaar",
+      "subscriptions": "Inschrijvingen",
+      "assignments": "Toewijzingen",
+      "program": "Programma",
+      "preview": "Voorvertoning"
+    },
+    "yearSwitcher": {
+      "bannerBold": "Opmerking:",
+      "bannerText": "Bedrijven worden gedeeld over alle jaren. Inschrijvingen, toewijzingen en het programma zijn gekoppeld aan het geselecteerde jaar — het wisselen van jaar verandert deze gegevens.",
+      "bannerLink": "Wat verandert er als ik het jaar wijzig?",
+      "modalTitle": "Overschakelen naar {{year}}?",
+      "modalIntro": "Weet u zeker dat u de beheerdersweergave wilt overschakelen naar <strong>{{year}}</strong>? De volgende gegevens worden bijgewerkt voor het geselecteerde jaar:",
+      "willChange": {
+        "subscriptions": "Inschrijvingen",
+        "subscriptionsDesc": "registraties en maaltijd/coin keuzes voor dat evenementjaar",
+        "assignments": "Toewijzingen",
+        "assignmentsDesc": "standtoewijzingen en marker→bedrijf koppelingen voor dat jaar",
+        "program": "Programmabeheer",
+        "programDesc": "het schema / activiteiten voor het geselecteerde jaar"
+      },
+      "wontChangeIntro": "De volgende gegevens worden niet gewijzigd bij het wisselen van jaar:",
+      "wontChange": {
+        "companies": "Bedrijven",
+        "companiesDesc": "Bedrijfsprofielen en masterdata blijven globaal en gelijk voor alle jaren"
+      },
+      "switchButton": "Overschakelen naar {{year}}"
+    }
+  },
   "adminNav": {
     "adminPanel": "Beheerderspaneel",
     "dashboard": "Dashboard",
@@ -38,7 +70,9 @@
     "confirmDelete": "Weet je zeker dat je dit wilt verwijderen?",
     "vote": "Stem",
     "voted": "Gestemd",
-    "refresh": "Vernieuwen"
+    "refresh": "Vernieuwen",
+    "actions": "Acties",
+    "actionsMenu": "Acties Menu"
   },
   "marker": {
     "event": "Evenement",
@@ -419,11 +453,11 @@
   },
   "mapManagement": {
     "print": {
-      "assignmentsList": "Opdrachtenlijst",
+      "assignmentsList": "Toewijzingenlijst",
       "columns": {
         "booth": "Stand",
-        "company": "Naam Exposant",
-        "contact": "Contactpersoon",
+        "company": "Bedrijf",
+        "contact": "Contact",
         "phone": "Telefoon"
       }
     },
@@ -437,11 +471,95 @@
     "markerIdPlaceholder": "Marker ID (geheel getal)",
     "confirm": "Bevestigen",
     "cancel": "Annuleren",
-    "undo": "Laatste wijziging ongedaan maken",
+    "undo": "Ongedaan maken",
     "errorInvalidId": "Voer een geldig numeriek ID in.",
     "errorIdExists": "ID bestaat al. Kies een ander ID.",
-    "searchPlaceholder": "Zoek op ID, standlabel of naam...",
-    "selectMarker": "Selecteer een marker om details te bekijken"
+    "searchPlaceholder": "Zoek markers...",
+    "selectMarker": "Selecteer een marker om te bewerken",
+    "title": "Kaartbeheer",
+    "redo": "Opnieuw uitvoeren",
+    "undoRedo": "Ongedaan maken / Opnieuw",
+    "sortBy": "Sorteer op",
+    "undoMarker": "Marker verplaatsing ongedaan maken",
+    "redoMarker": "Marker verplaatsing opnieuw uitvoeren",
+    "undoAssignment": "Toewijzing ongedaan maken",
+    "redoAssignment": "Toewijzing opnieuw uitvoeren",
+    "subscriptionList": "Inschrijvingen",
+    "markersList": "Markerlijst",
+    "assignedBoothDefault": "Standaard Toegewezen Stand",
+    "unassignedBoothDefault": "Standaard Niet-toegewezen Stand",
+    "globalDefaultForBoothMarkers": "Algemene Standaard voor Stand Markers",
+    "editMode": "Bewerkingsmodus",
+    "finishEditing": "Bewerken Voltooien",
+    "doneEditing": "Klaar",
+    "aboutDefaultMarkers": "Over Standaard Markers",
+    "defaultAppearanceAssigned": "Dit definieert de standaardweergave voor stand markers (ID < 1000) waaraan een bedrijf is toegewezen.",
+    "defaultAppearanceUnassigned": "Dit definieert de standaardweergave voor stand markers (ID < 1000) waaraan geen bedrijf is toegewezen.",
+    "overrideDefaultsNote": "Individuele stand markers kunnen deze standaarden overschrijven door hun eigen waarden in de Weergave-tabel in te vullen.",
+    "defaultVisualStyling": "Standaard Visuele Stijl",
+    "visualStyling": "Visuele Stijl",
+    "boothContentManaged": "Stand - Inhoud beheerd via Bedrijven/Toewijzingen",
+    "positionAndStructure": "Positie & Structuur",
+    "latitude": "Breedtegraad",
+    "longitude": "Lengtegraad",
+    "rectangle": "Rechthoek",
+    "angle": "Hoek",
+    "icon": "Icoon",
+    "iconSize": "Icoongrootte",
+    "glyphBoothLabel": "Symbool (Stand Label)",
+    "glyphColor": "Symbool Kleur",
+    "glyphSize": "Symbool Grootte",
+    "weight": "Gewicht",
+    "style": "Stijl",
+    "decoration": "Decoratie",
+    "fontFamily": "Lettertype",
+    "glyphAnchor": "Symbool Anker",
+    "glyphAnchorX": "Symbool Anker X",
+    "glyphAnchorY": "Symbool Anker Y",
+    "iconWidth": "Icoon Breedte",
+    "iconHeight": "Icoon Hoogte",
+    "shadowScale": "Schaduwschaal",
+    "rectangleWidth": "Breedte Rechthoek",
+    "rectangleHeight": "Hoogte Rechthoek",
+    "name": "Naam",
+    "logo": "Logo",
+    "logoUrl": "Logo URL",
+    "website": "Website",
+    "info": "Informatie",
+    "customColor": "Aangepaste Kleur",
+    "usingCustomColorOverride": "Gebruikt aangepaste kleuroverride",
+    "grayUnassigned": "Grijs (niet toegewezen)",
+    "edit": "Bewerken",
+    "default": "Standaard",
+    "assignedBooth": "Toegewezen stand",
+    "unassignedBooth": "Niet-toegewezen stand",
+    "searchCompany": "Zoek bedrijf...",
+    "sortSubscriptionsBy": "Sorteer inschrijvingen op",
+    "sortByCompany": "Sorteer op Bedrijf",
+    "sortByBooths": "Sorteer op Stands",
+    "sortByAssigned": "Sorteer op Toegewezen",
+    "toggleSortDesc": "Wissel sorteervolgorde naar aflopend",
+    "toggleSortAsc": "Wissel sorteervolgorde naar oplopend",
+    "sort": "Sorteren",
+    "subscriptionDetails": "Inschrijvingsdetails",
+    "closeDetails": "Details sluiten",
+    "company": "Bedrijf",
+    "unknown": "Onbekend",
+    "booths": "Stands",
+    "coins": "Munten",
+    "mealsSaturday": "Maaltijden (Zaterdag)",
+    "mealsSunday": "Maaltijden (Zondag)",
+    "breakfast": "Ontbijt:",
+    "lunch": "Lunch:",
+    "bbq": "BBQ:",
+    "notes": "Notities",
+    "noNotes": "Geen notities",
+    "actions": "Acties",
+    "actionsMenu": "Actiemenu",
+    "manageSnapshots": "Snapshots beheren",
+    "copyFromYear": "Kopiëren van {{year}}",
+    "snapshotPng": "Snapshot (PNG)",
+    "printAssignments": "Toewijzingenlijst"
   },
   "navigation": {
     "home": "Home",
@@ -524,39 +642,6 @@
     "saveError": "Fout bij opslaan activiteit",
     "saveSuccess": "Activiteit opgeslagen",
     "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
-  },
-  "admin": {
-    "yearScope": {
-      "global": "Globaal (alle jaren)",
-      "eventSpecific": "Evenement-specifiek (wijzigt met geselecteerd jaar)",
-      "title": "Evenement-specifieke gegevens",
-      "viewingYear": "Geselecteerd jaar",
-      "subscriptions": "Inschrijvingen",
-      "assignments": "Toewijzingen",
-      "program": "Programma",
-      "preview": "Voorvertoning"
-    },
-    "yearSwitcher": {
-      "bannerBold": "Opmerking:",
-      "bannerText": "Bedrijven worden gedeeld over alle jaren. Inschrijvingen, toewijzingen en het programma zijn gekoppeld aan het geselecteerde jaar — het wisselen van jaar verandert deze gegevens.",
-      "bannerLink": "Wat verandert er als ik het jaar wijzig?",
-      "modalTitle": "Overschakelen naar {{year}}?",
-      "modalIntro": "Weet u zeker dat u de beheerdersweergave wilt overschakelen naar <strong>{{year}}</strong>? De volgende gegevens worden bijgewerkt voor het geselecteerde jaar:",
-      "willChange": {
-        "subscriptions": "Inschrijvingen",
-        "subscriptionsDesc": "registraties en maaltijd/coin keuzes voor dat evenementjaar",
-        "assignments": "Toewijzingen",
-        "assignmentsDesc": "standtoewijzingen en marker→bedrijf koppelingen voor dat jaar",
-        "program": "Programmabeheer",
-        "programDesc": "het schema / activiteiten voor het geselecteerde jaar"
-      },
-      "wontChangeIntro": "De volgende gegevens worden niet gewijzigd bij het wisselen van jaar:",
-      "wontChange": {
-        "companies": "Bedrijven",
-        "companiesDesc": "Bedrijfsprofielen en masterdata blijven globaal en gelijk voor alle jaren"
-      },
-      "switchButton": "Overschakelen naar {{year}}"
-    }
   },
   "dashboard": {
     "totalAssignableBooths": "Totaal Toewijsbare Stands",
@@ -787,30 +872,5 @@
     "navigationRequiredText": "Om de rondleiding te starten moeten we naar {{page}} navigeren. Wil je doorgaan?",
     "startFailed": "Kon de rondleiding niet starten — vereiste elementen op de pagina ontbreken of laden nog. Probeer het later of controleer of je op de juiste pagina bent.",
     "duration": "Duur: ~{{minutes}} min"
-  },
-  "mapManagement": {
-    "title": "Kaartbeheer",
-    "undo": "Ongedaan maken",
-    "redo": "Opnieuw uitvoeren",
-    "undoRedo": "Ongedaan maken / Opnieuw",
-    "searchPlaceholder": "Zoek markers...",
-    "sortBy": "Sorteer op",
-    "sortId": "ID",
-    "sortName": "Naam",
-    "sortType": "Type",
-    "selectMarker": "Selecteer een marker om te bewerken",
-    "undoMarker": "Marker verplaatsing ongedaan maken",
-    "redoMarker": "Marker verplaatsing opnieuw uitvoeren",
-    "undoAssignment": "Toewijzing ongedaan maken",
-    "redoAssignment": "Toewijzing opnieuw uitvoeren",
-    "print": {
-      "assignmentsList": "Toewijzingenlijst",
-      "columns": {
-        "booth": "Stand",
-        "company": "Bedrijf",
-        "contact": "Contact",
-        "phone": "Telefoon"
-      }
-    }
   }
 }
