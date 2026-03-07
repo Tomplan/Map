@@ -791,7 +791,13 @@
       "breakfast": "Ontbijt",
       "lunch": "Lunch",
       "bbq": "BBQ",
-      "areaPlaceholder": "groot veld, klein veld..."
+      "areaPlaceholder": "groot veld, klein veld...",
+      "subscribeCompany": "Bedrijf Inschrijven",
+      "unsubscribeCompany": "Bedrijf Uitschrijven",
+      "unsubscribeMessage": "{{companyName}} uitschrijven voor {{year}}? Dit verwijdert hun inschrijving{{assignmentInfo}}",
+      "unsubscribeConfirm": "Uitschrijven",
+      "subscribeCompanyTo": "Bedrijf inschrijven voor {{year}}",
+      "noCompaniesSubscribed": "Nog geen bedrijven ingeschreven voor {{year}}. Klik op \"Bedrijf Inschrijven\" om er een toe te voegen."
     },
     "assignments": {
       "searchPlaceholder": "Zoek bedrijven...",

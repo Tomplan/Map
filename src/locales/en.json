@@ -792,7 +792,13 @@
       "breakfast": "Breakfast",
       "lunch": "Lunch",
       "bbq": "BBQ",
-      "areaPlaceholder": "large field, small field..."
+      "areaPlaceholder": "large field, small field...",
+      "subscribeCompany": "Subscribe Company",
+      "unsubscribeCompany": "Unsubscribe Company",
+      "unsubscribeMessage": "Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}",
+      "unsubscribeConfirm": "Unsubscribe",
+      "subscribeCompanyTo": "Subscribe Company to {{year}}",
+      "noCompaniesSubscribed": "No companies subscribed to {{year}} yet. Click \"Subscribe Company\" to add one."
     },
     "assignments": {
       "searchPlaceholder": "Search companies...",
