@@ -441,7 +441,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 rowSpan={3}
               >
                 <div className="flex items-center gap-1">
-                  <span>Booths</span>
+                  <span>{t('helpPanel.subscriptions.booths', 'Booths')}</span>
                   {sortBy === 'booths' && (
                     <Icon
                       path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
@@ -459,7 +459,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 rowSpan={3}
               >
                 <div className="flex items-center gap-1">
-                  <span>Company</span>
+                  <span>{t('helpPanel.subscriptions.company', 'Company')}</span>
                   {sortBy === 'company' && (
                     <Icon
                       path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
