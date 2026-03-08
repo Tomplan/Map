@@ -32,14 +32,14 @@ BEGIN
 
     RETURN QUERY
     SELECT 
-        ur.user_id,
-        ur.role::TEXT,
-        ur.created_at,
-        ur.updated_at,
+        au.id as user_id,
+        COALESCE(ur.role::TEXT, 'none') as role,
+        COALESCE(ur.created_at, au.created_at) as created_at,
+        COALESCE(ur.updated_at, au.updated_at) as updated_at,
         au.email::TEXT,
         au.last_sign_in_at
-    FROM public.user_roles ur
-    LEFT JOIN auth.users au ON ur.user_id = au.id;
+    FROM auth.users au
+    LEFT JOIN public.user_roles ur ON ur.user_id = au.id;
 END;
 $$;
 

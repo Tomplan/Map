@@ -182,14 +182,14 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Update role in user_roles table
+      // Update or Insert role in user_roles table
       const { error: updateError } = await supabase
         .from('user_roles')
-        .update({
+        .upsert({
+          user_id: userId,
           role: newRole,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
+        });
 
       if (updateError) {
         throw updateError;
@@ -254,15 +254,21 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Delete from user_roles table
-      // This will also trigger auth.users deletion due to ON DELETE CASCADE
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      // Attempt to delete from auth.users via RPC which will cascade to user_roles
+      const { error: rpcError } = await supabase.rpc('delete_auth_user', { target_user_id: userId });
 
-      if (deleteError) {
-        throw deleteError;
+      if (rpcError) {
+        // Fallback: If RPC doesn't exist yet, at least delete from user_roles
+        console.warn('delete_auth_user RPC failed or unavailable, falling back to deleting from user_roles. Error:', rpcError.message);
+        
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
       }
 
       // Refresh user list
@@ -277,12 +283,14 @@ export default function UserManagement() {
     super_admin: t('settings.userManagement.roles.superAdmin'),
     system_manager: t('settings.userManagement.roles.systemManager'),
     event_manager: t('settings.userManagement.roles.eventManager'),
+    none: t('settings.userManagement.roles.none', 'No Role (Orphaned)'),
   };
 
   const roleColors = {
     super_admin: 'bg-purple-100 text-purple-800 border-purple-200',
     system_manager: 'bg-blue-100 text-blue-800 border-blue-200',
     event_manager: 'bg-green-100 text-green-800 border-green-200',
+    none: 'bg-red-100 text-red-800 border-red-200',
   };
 
   if (loading) {
@@ -536,6 +544,7 @@ export default function UserManagement() {
                   className="input-base"
                   disabled={editingUser.isCurrentUser || !isSuperAdmin}
                 >
+                  {editingUser.role === 'none' && <option value="none" disabled>{roleLabels.none}</option>}
                   <option value="event_manager">{roleLabels.event_manager}</option>
                   <option value="system_manager">{roleLabels.system_manager}</option>
                   {isSuperAdmin && <option value="super_admin">{roleLabels.super_admin}</option>}
