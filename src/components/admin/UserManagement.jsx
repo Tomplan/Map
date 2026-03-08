@@ -23,7 +23,7 @@ import { useDialog } from '../../contexts/DialogContext';
  */
 export default function UserManagement() {
   const { t } = useTranslation();
-  const { isSuperAdmin } = useUserRole();
+  const { isSuperAdmin, isEventManager } = useUserRole();
   const { confirm } = useDialog();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -182,14 +182,14 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Update role in user_roles table
+      // Update or Insert role in user_roles table
       const { error: updateError } = await supabase
         .from('user_roles')
-        .update({
+        .upsert({
+          user_id: userId,
           role: newRole,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
+        });
 
       if (updateError) {
         throw updateError;
@@ -254,15 +254,21 @@ export default function UserManagement() {
     try {
       setError(null);
 
-      // Delete from user_roles table
-      // This will also trigger auth.users deletion due to ON DELETE CASCADE
-      const { error: deleteError } = await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      // Attempt to delete from auth.users via RPC which will cascade to user_roles
+      const { error: rpcError } = await supabase.rpc('delete_auth_user', { target_user_id: userId });
 
-      if (deleteError) {
-        throw deleteError;
+      if (rpcError) {
+        // Fallback: If RPC doesn't exist yet, at least delete from user_roles
+        console.warn('delete_auth_user RPC failed or unavailable, falling back to deleting from user_roles. Error:', rpcError.message);
+        
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+
+        if (deleteError) {
+          throw deleteError;
+        }
       }
 
       // Refresh user list
@@ -277,12 +283,14 @@ export default function UserManagement() {
     super_admin: t('settings.userManagement.roles.superAdmin'),
     system_manager: t('settings.userManagement.roles.systemManager'),
     event_manager: t('settings.userManagement.roles.eventManager'),
+    none: t('settings.userManagement.roles.none', 'No Role (Orphaned)'),
   };
 
   const roleColors = {
     super_admin: 'bg-purple-100 text-purple-800 border-purple-200',
     system_manager: 'bg-blue-100 text-blue-800 border-blue-200',
     event_manager: 'bg-green-100 text-green-800 border-green-200',
+    none: 'bg-red-100 text-red-800 border-red-200',
   };
 
   if (loading) {
@@ -307,13 +315,15 @@ export default function UserManagement() {
             </h2>
             <p className="text-sm text-gray-600 mt-1">{t('settings.userManagement.description')}</p>
           </div>
-          <button
-            onClick={() => setShowInviteModal(true)}
-            className="btn-primary flex items-center gap-2"
-          >
-            <Icon path={mdiPlus} size={0.8} />
-            {t('settings.userManagement.inviteUser')}
-          </button>
+          {!isEventManager && (
+            <button
+              onClick={() => setShowInviteModal(true)}
+              className="btn-primary flex items-center gap-2"
+            >
+              <Icon path={mdiPlus} size={0.8} />
+              {t('settings.userManagement.inviteUser')}
+            </button>
+          )}
         </div>
 
         {/* Roles Overview */}
@@ -364,9 +374,11 @@ export default function UserManagement() {
                 <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
                   {t('settings.userManagement.table.lastLogin')}
                 </th>
-                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
-                  {t('settings.userManagement.table.actions')}
-                </th>
+                {!isEventManager && (
+                  <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">
+                    {t('settings.userManagement.table.actions')}
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -393,40 +405,42 @@ export default function UserManagement() {
                       ? new Date(user.last_sign_in_at).toLocaleDateString()
                       : '-'}
                   </td>
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      {!(user.role === 'super_admin' && !isSuperAdmin) && (
-                        <>
-                          <button
-                            onClick={() => setEditingUser(user)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                            title={t('settings.userManagement.editUser', 'Edit User')}
-                          >
-                            <Icon path={mdiPencil} size={0.7} />
-                          </button>
-                          {user.isCurrentUser ? (
+                  {!isEventManager && (
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        {!(user.role === 'super_admin' && !isSuperAdmin) && (
+                          <>
                             <button
-                              disabled
-                              className="p-2 text-gray-400 cursor-not-allowed rounded"
-                              title={t('settings.userManagement.deleteSelfWarning')}
+                              onClick={() => setEditingUser(user)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                              title={t('settings.userManagement.editUser', 'Edit User')}
                             >
-                              <Icon path={mdiDelete} size={0.7} />
+                              <Icon path={mdiPencil} size={0.7} />
                             </button>
-                          ) : (
-                            <button
-                              onClick={() =>
-                                handleDeleteUser(user.id, user.email, user.role, user.isCurrentUser)
-                              }
-                              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                              title={t('settings.userManagement.deleteUser')}
-                            >
-                              <Icon path={mdiDelete} size={0.7} />
-                            </button>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </td>
+                            {user.isCurrentUser ? (
+                              <button
+                                disabled
+                                className="p-2 text-gray-400 cursor-not-allowed rounded"
+                                title={t('settings.userManagement.deleteSelfWarning')}
+                              >
+                                <Icon path={mdiDelete} size={0.7} />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleDeleteUser(user.id, user.email, user.role, user.isCurrentUser)
+                                }
+                                className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title={t('settings.userManagement.deleteUser')}
+                              >
+                                <Icon path={mdiDelete} size={0.7} />
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -536,6 +550,7 @@ export default function UserManagement() {
                   className="input-base"
                   disabled={editingUser.isCurrentUser || !isSuperAdmin}
                 >
+                  {editingUser.role === 'none' && <option value="none" disabled>{roleLabels.none}</option>}
                   <option value="event_manager">{roleLabels.event_manager}</option>
                   <option value="system_manager">{roleLabels.system_manager}</option>
                   {isSuperAdmin && <option value="super_admin">{roleLabels.super_admin}</option>}
