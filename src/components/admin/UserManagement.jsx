@@ -9,6 +9,7 @@ import {
   mdiEmail,
   mdiCheck,
   mdiAlertCircle,
+  mdiInformation,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
 import { getAbsoluteUrl } from '../../utils/getBaseUrl';
@@ -33,6 +34,8 @@ export default function UserManagement() {
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteSuccess, setInviteSuccess] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   // Fetch all users from Supabase auth
   const fetchUsers = React.useCallback(async () => {
@@ -44,20 +47,20 @@ export default function UserManagement() {
       let usersData;
       let usersError;
 
-      try {
-        const result = await supabase.rpc('get_user_roles_with_email');
+      const result = await supabase.rpc('get_user_roles_with_email');
+      
+      // rpc does not throw an exception on Postgres missing function, it returns an error object
+      if (!result.error && result.data) {
         usersData = result.data;
-        usersError = result.error;
-      } catch (rpcError) {
-        // Function doesn't exist yet, fall back to direct table query
-        console.warn('get_user_roles_with_email not available, using fallback');
-        const result = await supabase
+      } else {
+        console.warn('get_user_roles_with_email not available or failed:', result.error?.message, 'using fallback');
+        const fallbackResult = await supabase
           .from('user_roles')
           .select('user_id, role, created_at, updated_at')
           .order('created_at', { ascending: false });
 
-        usersData = result.data;
-        usersError = result.error;
+        usersData = fallbackResult.data;
+        usersError = fallbackResult.error;
       }
 
       if (usersError) {
@@ -104,7 +107,7 @@ export default function UserManagement() {
     setError(null);
 
     try {
-      // Build absolute redirect URL using our robust utility that correctly handles 
+      // Build absolute redirect URL using our robust utility that correctly handles
       // root deployments, GitHub Pages subdirectories, and HashRouter usage
       const redirectUrl = getAbsoluteUrl('#/reset-password');
 
@@ -201,7 +204,45 @@ export default function UserManagement() {
     }
   };
 
-  const handleDeleteUser = async (userId, userEmail) => {
+  const handleSendResetPassword = async (email) => {
+    try {
+      setResetLoading(true);
+      setError(null);
+      setResetSuccess(false);
+
+      const redirectUrl = getAbsoluteUrl('#/reset-password');
+
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+
+      if (resetError) throw resetError;
+
+      setResetSuccess(true);
+      setTimeout(() => {
+        setResetSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Password reset email failed:', err);
+      // Let's show the actual error message from Supabase if available
+      const errorMessage = err.message || 'Failed to send reset email.';
+      setError(t('settings.userManagement.errors.resetFailed', 'Failed to send reset email.') + ' (' + errorMessage + ')');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userEmail, userRole, isCurrentUser) => {
+    if (isCurrentUser) {
+      setError(t('settings.userManagement.deleteSelfWarning'));
+      return;
+    }
+
+    if (userRole === 'super_admin' && !isSuperAdmin) {
+      setError(t('settings.userManagement.errors.deleteFailed'));
+      return;
+    }
+
     const confirmed = await confirm({
       title: t('settings.userManagement.deleteUser'),
       message: t('settings.userManagement.confirmDelete', { email: userEmail }),
@@ -275,6 +316,28 @@ export default function UserManagement() {
           </button>
         </div>
 
+        {/* Roles Overview */}
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+          <h3 className="text-sm font-semibold text-blue-900 flex items-center gap-2 mb-2">
+            <Icon path={mdiInformation} size={0.7} />
+            {t('settings.userManagement.rolesOverview')}
+          </h3>
+          <ul className="text-sm text-blue-800 space-y-1 ml-6 list-disc">
+            <li>
+              <strong>{t('settings.userManagement.roles.superAdmin')}</strong>:{' '}
+              {t('settings.userManagement.roleDescriptions.super_admin')}
+            </li>
+            <li>
+              <strong>{t('settings.userManagement.roles.systemManager')}</strong>:{' '}
+              {t('settings.userManagement.roleDescriptions.system_manager')}
+            </li>
+            <li>
+              <strong>{t('settings.userManagement.roles.eventManager')}</strong>:{' '}
+              {t('settings.userManagement.roleDescriptions.event_manager')}
+            </li>
+          </ul>
+        </div>
+
         {error && (
           <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded-lg mb-4">
             <div className="flex items-center">
@@ -332,21 +395,35 @@ export default function UserManagement() {
                   </td>
                   <td className="py-3 px-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => setEditingUser(user)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title={t('settings.userManagement.editRole')}
-                      >
-                        <Icon path={mdiPencil} size={0.7} />
-                      </button>
-                      {isSuperAdmin && (
-                        <button
-                          onClick={() => handleDeleteUser(user.id, user.email)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                          title={t('settings.userManagement.deleteUser')}
-                        >
-                          <Icon path={mdiDelete} size={0.7} />
-                        </button>
+                      {!(user.role === 'super_admin' && !isSuperAdmin) && (
+                        <>
+                          <button
+                            onClick={() => setEditingUser(user)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                            title={t('settings.userManagement.editUser', 'Edit User')}
+                          >
+                            <Icon path={mdiPencil} size={0.7} />
+                          </button>
+                          {user.isCurrentUser ? (
+                            <button
+                              disabled
+                              className="p-2 text-gray-400 cursor-not-allowed rounded"
+                              title={t('settings.userManagement.deleteSelfWarning')}
+                            >
+                              <Icon path={mdiDelete} size={0.7} />
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleDeleteUser(user.id, user.email, user.role, user.isCurrentUser)
+                              }
+                              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title={t('settings.userManagement.deleteUser')}
+                            >
+                              <Icon path={mdiDelete} size={0.7} />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </td>
@@ -364,6 +441,7 @@ export default function UserManagement() {
         title={t('settings.userManagement.inviteUser')}
         size="md"
       >
+        {/* ... existing modal body ... */}
         <div className="p-6">
           {inviteSuccess ? (
             <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-4 py-3 rounded-lg">
@@ -424,6 +502,103 @@ export default function UserManagement() {
             </form>
           )}
         </div>
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        isOpen={!!editingUser}
+        onClose={() => {
+          setEditingUser(null);
+          setResetSuccess(false);
+          setResetLoading(false);
+        }}
+        title={t('settings.userManagement.editUser', 'Edit User')}
+        size="md"
+      >
+        {editingUser && (
+          <div className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div>
+                <label className="label-base">{t('settings.userManagement.emailLabel')}</label>
+                <input
+                  type="email"
+                  value={editingUser.email}
+                  disabled
+                  className="input-base bg-gray-50 opacity-75"
+                />
+              </div>
+
+              <div>
+                <label className="label-base">{t('settings.userManagement.roleLabel')}</label>
+                <select
+                  value={editingUser.role}
+                  onChange={(e) => handleUpdateRole(editingUser.id, e.target.value)}
+                  className="input-base"
+                  disabled={editingUser.isCurrentUser || !isSuperAdmin}
+                >
+                  <option value="event_manager">{roleLabels.event_manager}</option>
+                  <option value="system_manager">{roleLabels.system_manager}</option>
+                  {isSuperAdmin && <option value="super_admin">{roleLabels.super_admin}</option>}
+                </select>
+                {editingUser.isCurrentUser && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    {t(
+                      'settings.userManagement.editOwnRoleWarning',
+                      'You cannot change your own role.',
+                    )}
+                  </p>
+                )}
+                {!isSuperAdmin && !editingUser.isCurrentUser && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    {t(
+                      'settings.userManagement.editRolePermissionWarning',
+                      'Only Super Admins can change roles.',
+                    )}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <h4 className="text-sm font-medium text-gray-900 mb-3">
+                {t('settings.userManagement.security', 'Security')}
+              </h4>
+
+              <button
+                type="button"
+                onClick={() => handleSendResetPassword(editingUser.email)}
+                disabled={resetLoading}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                <Icon path={mdiEmail} size={0.8} />
+                {resetLoading
+                  ? t('settings.userManagement.sending', 'Sending...')
+                  : t('settings.userManagement.sendResetPassword', 'Send Reset Password Email')}
+              </button>
+
+              {resetSuccess && (
+                <p className="text-sm text-green-600 mt-3 flex items-center gap-1">
+                  <Icon path={mdiCheck} size={0.8} />
+                  {t('settings.userManagement.resetEmailSent', 'Reset email sent successfully.')}
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingUser(null);
+                  setResetSuccess(false);
+                  setResetLoading(false);
+                }}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors font-medium cursor-pointer"
+              >
+                {t('settings.userManagement.close', 'Close')}
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

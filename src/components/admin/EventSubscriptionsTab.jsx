@@ -206,9 +206,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     const assignmentInfo = boothLabels ? ` and their booth assignments (${boothLabels})` : '';
 
     const confirmed = await confirm({
-      title: 'Unsubscribe Company',
-      message: `Unsubscribe ${companyName} from ${selectedYear}? This will delete their subscription${assignmentInfo}.`,
-      confirmText: 'Unsubscribe',
+      title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
+      message: t('helpPanel.subscriptions.unsubscribeMessage', 'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}.', { companyName, year: selectedYear, assignmentInfo }),
+      confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
       variant: 'danger',
     });
     if (!confirmed) {
@@ -319,7 +319,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             <Icon path={mdiPlus} size={0.8} />
-            Subscribe Company
+            {t('helpPanel.subscriptions.subscribeCompany', 'Subscribe Company')}
           </button>
 
           <div className="relative">
@@ -387,7 +387,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       {/* Add new subscription form */}
       {isAdding && (
         <div className="mb-4 p-4 border rounded-lg bg-blue-50 flex-shrink-0">
-          <h3 className="font-bold mb-3">Subscribe Company to {selectedYear}</h3>
+          <h3 className="font-bold mb-3">{t('helpPanel.subscriptions.subscribeCompanyTo', 'Subscribe Company to {{year}}', { year: selectedYear })}</h3>
           <div className="flex items-center gap-3">
             <select
               value={selectedCompanyId}
@@ -441,7 +441,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 rowSpan={3}
               >
                 <div className="flex items-center gap-1">
-                  <span>Booths</span>
+                  <span>{t('helpPanel.subscriptions.booths', 'Booths')}</span>
                   {sortBy === 'booths' && (
                     <Icon
                       path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
@@ -459,7 +459,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 rowSpan={3}
               >
                 <div className="flex items-center gap-1">
-                  <span>Company</span>
+                  <span>{t('helpPanel.subscriptions.company', 'Company')}</span>
                   {sortBy === 'company' && (
                     <Icon
                       path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
@@ -701,8 +701,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         {filteredSubscriptions.length === 0 && (
           <div className="text-center py-8 text-gray-500">
             {searchTerm
-              ? 'No subscriptions found matching your search'
-              : `No companies subscribed to ${selectedYear} yet. Click "Subscribe Company" to add one.`}
+              ? t('admin.noSearchResults', 'No subscriptions found matching your search')
+              : t('helpPanel.subscriptions.noCompaniesSubscribed', 'No companies subscribed to {{year}} yet. Click "Subscribe Company" to add one.', { year: selectedYear })}
           </div>
         )}
       </div>

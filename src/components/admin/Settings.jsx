@@ -12,8 +12,7 @@ import {
   mdiCalendarEdit,
   mdiAccountCircle,
   mdiDomain,
-  mdiFullscreen,
-  mdiQrcode,
+    mdiQrcode,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -23,9 +22,7 @@ import PublicDefaultYear from './PublicDefaultYear';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
-import MapDefaults from './MapDefaults';
 import MapSettings from './MapSettings';
-import FullScreenSettings from './FullScreenSettings';
 import ShareApp from './ShareApp';
 
 /**
@@ -40,15 +37,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
   // Define sections with role requirements and scope (personal vs organization)
   const sections = [
     // Personal Settings (affect only the current user)
-    {
-      id: 'full-screen',
-      label: t('settings.fullScreen.title', 'Full Screen'),
-      icon: mdiFullscreen,
-      roles: ['super_admin', 'system_manager', 'event_manager', 'content_editor'],
-      component: <FullScreenSettings />,
-      scope: 'personal',
-      description: t('settings.fullScreen.description', 'Toggle full screen mode'),
-    },
+
     {
       id: 'ui-language',
       label: t('settings.uiLanguage.title'),
@@ -64,7 +53,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       id: 'user-management',
       label: t('settings.userManagement.title'),
       icon: mdiAccount,
-      roles: ['super_admin', 'system_manager'],
+      roles: ['super_admin', 'system_manager', 'event_manager'],
       component: <UserManagement />,
       scope: 'organization',
       description: 'Manage user accounts and roles',
@@ -88,17 +77,8 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       description: 'Logo, colors, and app name',
     },
     {
-      id: 'map-defaults',
-      label: t('settings.mapDefaults.title'),
-      icon: mdiMapMarker,
-      roles: ['super_admin', 'system_manager'],
-      component: <MapDefaults />,
-      scope: 'organization',
-      description: 'Default map position and zoom',
-    },
-    {
       id: 'map-settings',
-      label: 'Map Settings by Year',
+      label: 'Map Settings',
       icon: mdiMapMarker,
       roles: ['super_admin', 'system_manager'],
       component: <MapSettings selectedYear={selectedYear} setSelectedYear={setSelectedYear} />,
