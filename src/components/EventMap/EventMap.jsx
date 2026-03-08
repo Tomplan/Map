@@ -60,6 +60,20 @@ function EventMap({
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
 
+  const adminHomeConfig = useMemo(() => {
+    if (!isAdminView || !selectedYear) return null;
+    try {
+      const stored = localStorage.getItem(`adminHomePrefs_${selectedYear}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.lat && parsed.lng && parsed.zoom) {
+          return { center: [parsed.lat, parsed.lng], zoom: parsed.zoom };
+        }
+      }
+    } catch(e) {}
+    return null;
+  }, [isAdminView, selectedYear]);
+
   const initialAdminConfig = useMemo(() => {
     if (!isAdminView || !selectedYear) return null;
     try {
@@ -76,8 +90,11 @@ function EventMap({
     return null;
   }, [isAdminView, selectedYear]);
 
-  const mapCenter = isAdminView ? (initialAdminConfig?.center || MAP_CONFIG.ADMIN_DEFAULT_POSITION) : MAP_CONFIG.DEFAULT_POSITION;
-  const mapZoom = isAdminView ? (initialAdminConfig?.zoom || MAP_CONFIG.ADMIN_DEFAULT_ZOOM) : MAP_CONFIG.DEFAULT_ZOOM;
+  const homeCenter = isAdminView ? (adminHomeConfig?.center || MAP_CONFIG.ADMIN_DEFAULT_POSITION) : MAP_CONFIG.DEFAULT_POSITION;
+  const homeZoom = isAdminView ? (adminHomeConfig?.zoom || MAP_CONFIG.ADMIN_DEFAULT_ZOOM) : MAP_CONFIG.DEFAULT_ZOOM;
+
+  const mapCenter = isAdminView ? (initialAdminConfig?.center || homeCenter) : MAP_CONFIG.DEFAULT_POSITION;
+  const mapZoom = isAdminView ? (initialAdminConfig?.zoom || homeZoom) : MAP_CONFIG.DEFAULT_ZOOM;
 
 
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
@@ -1080,8 +1097,9 @@ function EventMap({
     >
       <MapControls
         mapInstance={mapInstance}
-        mapCenter={MAP_CONFIG.DEFAULT_POSITION}
-        mapZoom={MAP_CONFIG.DEFAULT_ZOOM}
+        mapCenter={homeCenter}
+        mapZoom={homeZoom}
+        selectedYear={selectedYear}
         searchControlRef={searchControlRef}
         isAdminView={isAdminView}
         showLayersMenu={showLayersMenu}

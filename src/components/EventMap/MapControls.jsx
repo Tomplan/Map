@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import Icon from '@mdi/react';
 import { mdiLayersTriple } from '@mdi/js';
-import { MdAdd, MdRemove, MdHome } from 'react-icons/md';
+import { MdAdd, MdRemove, MdHome, MdCheck } from 'react-icons/md';
 import {
   handleZoomIn,
   handleZoomOut,
@@ -39,11 +39,49 @@ export default function MapControls({
   setActiveLayer,
   showRectanglesAndHandles,
   setShowRectanglesAndHandles,
+  selectedYear,
   MAP_LAYERS,
 }) {
   const zoomIn = () => handleZoomIn(mapInstance);
   const zoomOut = () => handleZoomOut(mapInstance);
   const goHome = () => handleHome(mapInstance, mapCenter, mapZoom);
+
+  const [showHomeSaved, setShowHomeSaved] = useState(false);
+  const homePressTimer = useRef(null);
+
+  const handleHomePointerDown = () => {
+    if (!isAdminView || !selectedYear) return;
+    homePressTimer.current = setTimeout(() => {
+      homePressTimer.current = null;
+      if (mapInstance) {
+        const center = mapInstance.getCenter();
+        const zoom = mapInstance.getZoom();
+        localStorage.setItem(`adminHomePrefs_${selectedYear}`, JSON.stringify({
+          lat: center.lat,
+          lng: center.lng,
+          zoom: zoom
+        }));
+        setShowHomeSaved(true);
+        setTimeout(() => setShowHomeSaved(false), 2000);
+      }
+    }, 800); // 800ms long press
+  };
+
+  const handleHomePointerUp = () => {
+    if (homePressTimer.current) {
+      clearTimeout(homePressTimer.current);
+      homePressTimer.current = null;
+      goHome();
+    }
+  };
+
+  const handleHomePointerLeave = () => {
+    if (homePressTimer.current) {
+      clearTimeout(homePressTimer.current);
+      homePressTimer.current = null;
+    }
+  };
+
   const customSearchClick = () => handleCustomSearchClick(searchControlRef);
 
   return (
@@ -60,12 +98,23 @@ export default function MapControls({
       }}
     >
       <button
-        onClick={goHome}
+        onPointerDown={handleHomePointerDown}
+        onPointerUp={handleHomePointerUp}
+        onPointerLeave={handleHomePointerLeave}
+        onClick={(e) => {
+          if (!isAdminView) goHome();
+          else e.preventDefault();
+        }}
         aria-label="Home"
-        className="bg-white rounded-full shadow p-2 flex items-center justify-center"
-        style={{ width: 44, height: 44 }}
+        title={isAdminView ? "Click to go Home, Long-press to set current view as Home" : "Home"}
+        className={`bg-white rounded-full shadow p-2 flex items-center justify-center relative transition-colors duration-300 ${showHomeSaved ? 'bg-green-50' : 'hover:bg-gray-50'}`}
+        style={{ width: 44, height: 44, backgroundColor: showHomeSaved ? '#e8f5e9' : 'white' }}
       >
-        <MdHome size={28} color="#1976d2" aria-hidden="true" />
+        {showHomeSaved ? (
+          <MdCheck size={28} color="#2e7d32" aria-hidden="true" />
+        ) : (
+          <MdHome size={28} color="#1976d2" aria-hidden="true" />
+        )}
         <span className="sr-only">Home</span>
       </button>
       <button
