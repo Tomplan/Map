@@ -153,15 +153,17 @@ const COLOR_PRESETS = [
 // Helper functions for the color picker
 const hexToRgb = (hex) => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : { r: 0, g: 0, b: 0 };
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 0, g: 0, b: 0 };
 };
 
 const rgbToHex = (r, g, b) => {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 };
 
 const ColorPicker = ({ label, value, onChange, disabled }) => {
@@ -193,19 +195,19 @@ const ColorPicker = ({ label, value, onChange, disabled }) => {
         // Check if we should flip up (if at bottom of screen)
         const spaceBelow = window.innerHeight - rect.bottom;
         const popoverHeight = 350; // approximate max height
-        
+
         let top = rect.bottom + window.scrollY + 4;
         // If close to bottom, show above
         if (spaceBelow < popoverHeight && rect.top > popoverHeight) {
-             top = rect.top + window.scrollY - popoverHeight; // Simplified, ideally measure ref
+          top = rect.top + window.scrollY - popoverHeight; // Simplified, ideally measure ref
         }
-        
+
         setPopoverPos({
-            top: top,
-            left: rect.left + window.scrollX
+          top: top,
+          left: rect.left + window.scrollX,
         });
       };
-      
+
       updatePos();
       window.addEventListener('resize', updatePos);
       window.addEventListener('scroll', updatePos, true);
@@ -219,9 +221,9 @@ const ColorPicker = ({ label, value, onChange, disabled }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        triggerRef.current && 
+        triggerRef.current &&
         !triggerRef.current.contains(event.target) &&
-        popoverRef.current && 
+        popoverRef.current &&
         !popoverRef.current.contains(event.target)
       ) {
         setIsOpen(false);
@@ -254,143 +256,191 @@ const ColorPicker = ({ label, value, onChange, disabled }) => {
     if (!presets.includes(colorToAdd)) {
       const newPresets = [...presets, colorToAdd];
       // Keep only last 20 presets if it grows too large
-      if (newPresets.length > 20) newPresets.shift(); 
+      if (newPresets.length > 20) newPresets.shift();
       setPresets(newPresets);
       localStorage.setItem('qr-color-presets', JSON.stringify(newPresets));
     }
   };
 
-  const popoverContent = isOpen && !disabled ? (
-    <div 
+  const popoverContent =
+    isOpen && !disabled ? (
+      <div
         ref={popoverRef}
         className="absolute z-[9999] w-[280px] bg-[#f2f2f2] rounded-lg shadow-2xl border border-gray-300/50 p-3 animate-fade-in origin-top-left text-gray-800 font-sans select-none"
         style={{ top: popoverPos.top, left: popoverPos.left }}
-    >
-          {/* Header */}
-          <div className="text-center text-xs font-semibold text-gray-500 mb-3 tracking-wide">RGB Sliders</div>
+      >
+        {/* Header */}
+        <div className="text-center text-xs font-semibold text-gray-500 mb-3 tracking-wide">
+          RGB Sliders
+        </div>
 
-          {/* Sliders Section */}
-          <div className="space-y-3 mb-4 px-1">
-            {/* Red */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium w-8 text-right">Red</span>
-              <div className="flex-1 h-5 relative flex items-center">
-                 <div className="absolute inset-0 rounded-full h-1.5" style={{ background: `linear-gradient(to right, rgb(0, ${rgb.g}, ${rgb.b}), rgb(255, ${rgb.g}, ${rgb.b}))` }}></div>
-                 <input 
-                    type="range" min="0" max="255" value={rgb.r} 
-                    onChange={(e) => handleRgbChange('r', e.target.value)}
-                    className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                 />
-                 <div className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm" style={{ left: `${(rgb.r / 255) * 100}%`, transform: 'translateX(-50%)' }} />
-              </div>
-              <input 
-                type="number" min="0" max="255" value={rgb.r}
+        {/* Sliders Section */}
+        <div className="space-y-3 mb-4 px-1">
+          {/* Red */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium w-8 text-right">Red</span>
+            <div className="flex-1 h-5 relative flex items-center">
+              <div
+                className="absolute inset-0 rounded-full h-1.5"
+                style={{
+                  background: `linear-gradient(to right, rgb(0, ${rgb.g}, ${rgb.b}), rgb(255, ${rgb.g}, ${rgb.b}))`,
+                }}
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="255"
+                value={rgb.r}
                 onChange={(e) => handleRgbChange('r', e.target.value)}
-                className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
+                className="absolute inset-0 w-full opacity-0 cursor-pointer"
+              />
+              <div
+                className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm"
+                style={{ left: `${(rgb.r / 255) * 100}%`, transform: 'translateX(-50%)' }}
               />
             </div>
-            {/* Green */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium w-8 text-right">Green</span>
-              <div className="flex-1 h-5 relative flex items-center">
-                 <div className="absolute inset-0 rounded-full h-1.5" style={{ background: `linear-gradient(to right, rgb(${rgb.r}, 0, ${rgb.b}), rgb(${rgb.r}, 255, ${rgb.b}))` }}></div>
-                 <input 
-                    type="range" min="0" max="255" value={rgb.g} 
-                    onChange={(e) => handleRgbChange('g', e.target.value)}
-                    className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                 />
-                 <div className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm" style={{ left: `${(rgb.g / 255) * 100}%`, transform: 'translateX(-50%)' }} />
-              </div>
-              <input 
-                type="number" min="0" max="255" value={rgb.g}
-                onChange={(e) => handleRgbChange('g', e.target.value)}
-                className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            {/* Blue */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium w-8 text-right">Blue</span>
-              <div className="flex-1 h-5 relative flex items-center">
-                 <div className="absolute inset-0 rounded-full h-1.5" style={{ background: `linear-gradient(to right, rgb(${rgb.r}, ${rgb.g}, 0), rgb(${rgb.r}, ${rgb.g}, 255))` }}></div>
-                 <input 
-                    type="range" min="0" max="255" value={rgb.b} 
-                    onChange={(e) => handleRgbChange('b', e.target.value)}
-                    className="absolute inset-0 w-full opacity-0 cursor-pointer"
-                 />
-                 <div className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm" style={{ left: `${(rgb.b / 255) * 100}%`, transform: 'translateX(-50%)' }} />
-              </div>
-              <input 
-                type="number" min="0" max="255" value={rgb.b}
-                onChange={(e) => handleRgbChange('b', e.target.value)}
-                className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
-              />
-            </div>
-            
-            <div className="flex items-center justify-end gap-2 pt-1">
-                <span className="text-xs text-gray-500">Hex Colour #</span>
-                <input 
-                    type="text" 
-                    value={hexInput}
-                    onChange={(e) => {
-                       const val = e.target.value;
-                       if (/^[0-9A-Fa-f]{0,6}$/.test(val)) {
-                           setHexInput(val.toUpperCase());
-                           if (val.length === 6) onChange('#' + val);
-                       }
-                    }}
-                    onBlur={() => {
-                        if (hexInput.length !== 6) {
-                            setHexInput(value.replace('#', '').toUpperCase());
-                        }
-                    }}
-                    className="w-20 h-6 text-xs px-2 border border-gray-300 rounded shadow-sm bg-white uppercase focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-            </div>
-          </div>
-
-          <div className="border-t border-gray-300 my-3"></div>
-
-          {/* Footer: Swatch + Eyedropper + Presets */}
-          <div className="flex gap-2">
-            {/* Large Preview */}
-            <div 
-                className="w-12 h-12 rounded-lg border border-gray-300 shadow-sm shrink-0"
-                style={{ backgroundColor: value }}
+            <input
+              type="number"
+              min="0"
+              max="255"
+              value={rgb.r}
+              onChange={(e) => handleRgbChange('r', e.target.value)}
+              className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
             />
-            {/* Eyedropper */}
-            <button
-                onClick={handleEyeDropper}
-                className="w-8 h-full flex flex-col items-center justify-center text-gray-500 hover:text-gray-800"
-                title="Eyedropper"
-                disabled={!window.EyeDropper}
-            >
-                 <Icon path={mdiEyedropper} size={1} />
-            </button>
-            <div className="border-r border-gray-300 h-10 self-center mx-1"></div>
-            {/* Grid */}
-            <div className="grid grid-cols-5 gap-1 pt-1">
-                {presets.map((color, index) => (
-                    <button
-                        key={`${color}-${index}`}
-                        onClick={() => { onChange(color); setIsOpen(false); }}
-                        className="w-5 h-4 border border-gray-400/50 bg-black/5 rounded-[1px] overflow-hidden hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        title={color}
-                    >
-                        <div className="w-full h-full" style={{ backgroundColor: color }} />
-                    </button>
-                ))}
-                {/* Add Preset Button */}
-                <button
-                    onClick={handleAddPreset}
-                    className="w-5 h-4 border border-gray-400/50 bg-gray-50 hover:bg-gray-100 flex items-center justify-center rounded-[1px] text-gray-500"
-                    title="Save current color"
-                >
-                    <Icon path={mdiPlus} size={0.6} />
-                </button>
-            </div>
           </div>
-    </div>
-  ) : null;
+          {/* Green */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium w-8 text-right">Green</span>
+            <div className="flex-1 h-5 relative flex items-center">
+              <div
+                className="absolute inset-0 rounded-full h-1.5"
+                style={{
+                  background: `linear-gradient(to right, rgb(${rgb.r}, 0, ${rgb.b}), rgb(${rgb.r}, 255, ${rgb.b}))`,
+                }}
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="255"
+                value={rgb.g}
+                onChange={(e) => handleRgbChange('g', e.target.value)}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer"
+              />
+              <div
+                className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm"
+                style={{ left: `${(rgb.g / 255) * 100}%`, transform: 'translateX(-50%)' }}
+              />
+            </div>
+            <input
+              type="number"
+              min="0"
+              max="255"
+              value={rgb.g}
+              onChange={(e) => handleRgbChange('g', e.target.value)}
+              className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          {/* Blue */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium w-8 text-right">Blue</span>
+            <div className="flex-1 h-5 relative flex items-center">
+              <div
+                className="absolute inset-0 rounded-full h-1.5"
+                style={{
+                  background: `linear-gradient(to right, rgb(${rgb.r}, ${rgb.g}, 0), rgb(${rgb.r}, ${rgb.g}, 255))`,
+                }}
+              ></div>
+              <input
+                type="range"
+                min="0"
+                max="255"
+                value={rgb.b}
+                onChange={(e) => handleRgbChange('b', e.target.value)}
+                className="absolute inset-0 w-full opacity-0 cursor-pointer"
+              />
+              <div
+                className="pointer-events-none absolute h-3.5 w-3.5 bg-white border border-gray-300 rounded-full shadow-sm"
+                style={{ left: `${(rgb.b / 255) * 100}%`, transform: 'translateX(-50%)' }}
+              />
+            </div>
+            <input
+              type="number"
+              min="0"
+              max="255"
+              value={rgb.b}
+              onChange={(e) => handleRgbChange('b', e.target.value)}
+              className="w-10 h-5 text-xs text-center border border-gray-300 rounded shadow-sm bg-white focus:ring-1 focus:ring-blue-500 outline-none"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <span className="text-xs text-gray-500">Hex Colour #</span>
+            <input
+              type="text"
+              value={hexInput}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (/^[0-9A-Fa-f]{0,6}$/.test(val)) {
+                  setHexInput(val.toUpperCase());
+                  if (val.length === 6) onChange('#' + val);
+                }
+              }}
+              onBlur={() => {
+                if (hexInput.length !== 6) {
+                  setHexInput(value.replace('#', '').toUpperCase());
+                }
+              }}
+              className="w-20 h-6 text-xs px-2 border border-gray-300 rounded shadow-sm bg-white uppercase focus:ring-1 focus:ring-blue-500 outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="border-t border-gray-300 my-3"></div>
+
+        {/* Footer: Swatch + Eyedropper + Presets */}
+        <div className="flex gap-2">
+          {/* Large Preview */}
+          <div
+            className="w-12 h-12 rounded-lg border border-gray-300 shadow-sm shrink-0"
+            style={{ backgroundColor: value }}
+          />
+          {/* Eyedropper */}
+          <button
+            onClick={handleEyeDropper}
+            className="w-8 h-full flex flex-col items-center justify-center text-gray-500 hover:text-gray-800"
+            title="Eyedropper"
+            disabled={!window.EyeDropper}
+          >
+            <Icon path={mdiEyedropper} size={1} />
+          </button>
+          <div className="border-r border-gray-300 h-10 self-center mx-1"></div>
+          {/* Grid */}
+          <div className="grid grid-cols-5 gap-1 pt-1">
+            {presets.map((color, index) => (
+              <button
+                key={`${color}-${index}`}
+                onClick={() => {
+                  onChange(color);
+                  setIsOpen(false);
+                }}
+                className="w-5 h-4 border border-gray-400/50 bg-black/5 rounded-[1px] overflow-hidden hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                title={color}
+              >
+                <div className="w-full h-full" style={{ backgroundColor: color }} />
+              </button>
+            ))}
+            {/* Add Preset Button */}
+            <button
+              onClick={handleAddPreset}
+              className="w-5 h-4 border border-gray-400/50 bg-gray-50 hover:bg-gray-100 flex items-center justify-center rounded-[1px] text-gray-500"
+              title="Save current color"
+            >
+              <Icon path={mdiPlus} size={0.6} />
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="relative inline-block text-left" ref={triggerRef}>
@@ -405,7 +455,7 @@ const ColorPicker = ({ label, value, onChange, disabled }) => {
         }`}
         title="Choose color"
       >
-        <div 
+        <div
           className="w-full h-full rounded-[2px] border border-black/10"
           style={{ backgroundColor: value }}
         />
@@ -518,13 +568,13 @@ const ShareApp = () => {
             data: prev.data,
             // Prioritize the Organization Logo if the org default config doesn't specify one
             // (Since we usually delete it on save, this means it will use the default logic)
-            image: hasSavedImage ? data.qr_config.image : '', 
+            image: hasSavedImage ? data.qr_config.image : '',
           }));
           setIsDynamicLogo(!hasSavedImage);
           setSelectedPresetId(ORG_DEFAULT_ID);
         } else {
-            // No saved config, default to dynamic
-            setIsDynamicLogo(true);
+          // No saved config, default to dynamic
+          setIsDynamicLogo(true);
         }
       } catch (err) {
         console.error('Error loading org default:', err);
@@ -547,13 +597,13 @@ const ShareApp = () => {
 
     // Safe merge config
     const safeConfig = { ...config };
-    
+
     // Explicitly set gradient to null if not present, to clear it
     // The library deep merges, so we need to be careful.
     const dotsOptionsUpdate = { ...config.dotsOptions };
     if (!dotsOptionsUpdate.gradient) {
-       // Force removal by setting to null
-       dotsOptionsUpdate.gradient = null;
+      // Force removal by setting to null
+      dotsOptionsUpdate.gradient = null;
     }
 
     try {
@@ -579,7 +629,6 @@ const ShareApp = () => {
 
   // ... (rest of the code)
 
-
   // Initial render to container
   useEffect(() => {
     if (qrRef.current) {
@@ -603,7 +652,6 @@ const ShareApp = () => {
         ? organizationLogoRaw
         : organizationLogo;
 
-
     // Ensure we don't accidentally overwrite an Org Default image that loaded quickly
     // 2. We now allow overwriting if the config.image is empty (which happens if Org Default
     //    has no image, i.e., dynamic)
@@ -617,22 +665,29 @@ const ShareApp = () => {
       // Only update if current image is different (ignoring cache bust for check to avoid infinite loop?)
       // Actually srcUrl changes every render because of Date().getTime().
       // Use ref to store last updated timestamp or just check if config.image includes logoSource?
-      
+
       // Better: Check if config.image starts with logoSource (raw).
       const currentImage = config.image || '';
       if (!currentImage.includes(logoSource)) {
-         setConfig((prev) => ({
-            ...prev,
-            image: srcUrl,
-         }));
+        setConfig((prev) => ({
+          ...prev,
+          image: srcUrl,
+        }));
       }
     }
-  }, [logoLoading, organizationLogo, organizationLogoRaw, loadingOrgPreset, isDynamicLogo, config.image]);
+  }, [
+    logoLoading,
+    organizationLogo,
+    organizationLogoRaw,
+    loadingOrgPreset,
+    isDynamicLogo,
+    config.image,
+  ]);
 
   const handleDownload = async (extension = 'png') => {
     // Determine the rendering type: SVG for SVG downloads, Canvas for raster images (PNG/JPG)
     const type = extension === 'svg' ? 'svg' : 'canvas';
-    
+
     // Create a high-res instance specifically for download
     // Ensure sufficient margin on both exports to match the visual "white space" seen on screen
     // We add significant padding (+120px) to simulate the container padding
@@ -692,30 +747,34 @@ const ShareApp = () => {
 
   const handleDeletePreset = () => {
     if (!selectedPresetId || !selectedPresetId.startsWith('user-')) return;
-    
+
     if (window.confirm('Are you sure you want to delete this preset?')) {
-        const updatedPresets = savedPresets.filter((p) => p.id !== selectedPresetId);
-        setSavedPresets(updatedPresets);
-        localStorage.setItem('qr_presets', JSON.stringify(updatedPresets));
-        setSelectedPresetId(''); // Reset selection
+      const updatedPresets = savedPresets.filter((p) => p.id !== selectedPresetId);
+      setSavedPresets(updatedPresets);
+      localStorage.setItem('qr_presets', JSON.stringify(updatedPresets));
+      setSelectedPresetId(''); // Reset selection
     }
   };
 
   const handleSaveOrgDefault = async () => {
-    if (!window.confirm('Are you sure you want to update the Organization Default QR style? This will affect all new sessions for all users.')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to update the Organization Default QR style? This will affect all new sessions for all users.',
+      )
+    ) {
       return;
     }
 
     try {
       const configToSave = JSON.parse(JSON.stringify(config));
-      
+
       // If we are in "dynamic logo" mode, we want to save the image as empty.
       // This ensures that future sessions will load the CURRENT (possibly updated) dynamic logo.
       // If we saved the resolved string, it would become static.
       if (isDynamicLogo) {
         configToSave.image = '';
       }
-      
+
       const { error } = await supabase
         .from('organization_profile')
         .update({ qr_config: configToSave })
@@ -731,7 +790,7 @@ const ShareApp = () => {
       alert('Failed to save organization default: ' + err.message);
     }
   };
-    
+
   const updateConfig = (section, key, value, subKey = null) => {
     setConfig((prev) => {
       const newConfig = { ...prev };
@@ -805,7 +864,7 @@ const ShareApp = () => {
   const handleApplyPreset = (id) => {
     if (!id) return;
     setSelectedPresetId(id);
-    
+
     if (id === ORG_DEFAULT_ID && orgDefaultConfig) {
       applyPreset(orgDefaultConfig, ORG_DEFAULT_ID);
       return;
@@ -846,11 +905,11 @@ const ShareApp = () => {
     // If preset forces an image, we switch to static mode.
     // If preset is the Org Default (which we now know saves image as ''), we interpret empty as dynamic.
     if (presetId === ORG_DEFAULT_ID) {
-        setIsDynamicLogo(!hasPresetImage);
+      setIsDynamicLogo(!hasPresetImage);
     } else if (hasPresetImage) {
-        setIsDynamicLogo(false);
+      setIsDynamicLogo(false);
     }
-    
+
     // Use image from preset if available, otherwise keep current.
     // If we're loading an Org Default that has had its image stripped (undefined or empty),
     // we want to fall back to empty so the live logo loader kicks in.
@@ -859,7 +918,7 @@ const ShareApp = () => {
       targetImage = presetConfig.image;
     } else if (presetId === ORG_DEFAULT_ID) {
       // Special case: If loading org default and it has no image, we want to RESET to live logo
-      targetImage = ''; 
+      targetImage = '';
     } else {
       targetImage = undefined; // Signal to keep previous (undefined resolved below)
     }
@@ -874,9 +933,10 @@ const ShareApp = () => {
       // Couple image options (size, margin) to the image source.
       // If we use the preset's image (or reset it), we use its sizing.
       // If we keep our current image, we KEEP our current sizing.
-      imageOptions: (hasPresetImage || presetId === ORG_DEFAULT_ID)
-        ? { crossOrigin: 'anonymous', ...(presetConfig.imageOptions || {}) }
-        : { ...prev.imageOptions, crossOrigin: 'anonymous' },
+      imageOptions:
+        hasPresetImage || presetId === ORG_DEFAULT_ID
+          ? { crossOrigin: 'anonymous', ...(presetConfig.imageOptions || {}) }
+          : { ...prev.imageOptions, crossOrigin: 'anonymous' },
       // Ensure dimensions are high-res for crisp preview
       type: 'svg',
       width: 2048,
@@ -884,10 +944,10 @@ const ShareApp = () => {
       margin: 80,
       // If we are applying a preset that DOESN'T specify errorCorrectionLevel, ensure 'H' is maintained
       // Also preserve typeNumber if the preset doesn't override it (structure vs style)
-      qrOptions: { 
+      qrOptions: {
         typeNumber: prev.qrOptions?.typeNumber || 0,
-        errorCorrectionLevel: 'H', 
-        ...(presetConfig.qrOptions || {}) 
+        errorCorrectionLevel: 'H',
+        ...(presetConfig.qrOptions || {}),
       },
     }));
   };
@@ -913,7 +973,10 @@ const ShareApp = () => {
                 {t('shareApp.customQrTitle', 'Custom QR Designer')}
               </h2>
               <p className="text-sm text-gray-500">
-                {t('shareApp.customQrSubtitle', 'Customize style, colors and logo for your QR code')}
+                {t(
+                  'shareApp.customQrSubtitle',
+                  'Customize style, colors and logo for your QR code',
+                )}
               </p>
             </div>
           </div>
@@ -924,28 +987,33 @@ const ShareApp = () => {
             >
               <Icon path={mdiDownload} size={0.9} />
               Export
-              <Icon path={mdiChevronDown} size={0.8} className={`transition-transform duration-200 ${showExportMenu ? 'rotate-180' : ''}`} />
+              <Icon
+                path={mdiChevronDown}
+                size={0.8}
+                className={`transition-transform duration-200 ${showExportMenu ? 'rotate-180' : ''}`}
+              />
             </button>
-            
+
             {showExportMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowExportMenu(false)}
-                />
+                <div className="fixed inset-0 z-10" onClick={() => setShowExportMenu(false)} />
                 <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-20 py-1 overflow-hidden">
                   <button
                     onClick={() => handleDownload('png')}
                     className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-gray-700 border-b border-gray-50"
                   >
-                    <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">PNG</span>
+                    <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">
+                      PNG
+                    </span>
                     <span className="text-sm font-medium">Download Image</span>
                   </button>
                   <button
                     onClick={() => handleDownload('svg')}
                     className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-gray-700"
                   >
-                    <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">SVG</span>
+                    <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">
+                      SVG
+                    </span>
                     <span className="text-sm font-medium">Download Vector</span>
                   </button>
                 </div>
@@ -994,25 +1062,26 @@ const ShareApp = () => {
                     </optgroup>
                   )}
                 </select>
-                
-                {selectedPresetId && selectedPresetId.startsWith('user-') && role === 'super_admin' && (
-                    <button
-                        onClick={handleDeletePreset}
-                        className="px-3 bg-white border border-red-200 text-red-500 rounded hover:bg-red-50"
-                        title="Delete this preset"
-                    >
-                        <Icon path={mdiDelete} size={0.8} />
-                    </button>
-                )}
 
+                {selectedPresetId &&
+                  selectedPresetId.startsWith('user-') &&
+                  role === 'super_admin' && (
+                    <button
+                      onClick={handleDeletePreset}
+                      className="px-3 bg-white border border-red-200 text-red-500 rounded hover:bg-red-50"
+                      title="Delete this preset"
+                    >
+                      <Icon path={mdiDelete} size={0.8} />
+                    </button>
+                  )}
 
                 {role === 'super_admin' && (
                   <button
-                      onClick={handleSaveOrgDefault}
-                      className="px-3 bg-white border border-blue-200 text-blue-600 rounded hover:bg-blue-50"
-                      title="Set as Organization Default"
+                    onClick={handleSaveOrgDefault}
+                    className="px-3 bg-white border border-blue-200 text-blue-600 rounded hover:bg-blue-50"
+                    title="Set as Organization Default"
                   >
-                      <Icon path={mdiDomain} size={0.8} />
+                    <Icon path={mdiDomain} size={0.8} />
                   </button>
                 )}
 
@@ -1061,7 +1130,7 @@ const ShareApp = () => {
                   value={config.backgroundOptions.color}
                   onChange={(val) => updateConfig('backgroundOptions', 'color', val)}
                 />
-                
+
                 {/* User Requested: Background Radius in Pixels */}
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">
@@ -1072,18 +1141,21 @@ const ShareApp = () => {
                     min="0"
                     max={Math.min(config.width, config.height) / 2}
                     step="1"
-                    value={Math.round((config.backgroundOptions.round || 0) * (Math.min(config.width, config.height) / 2))}
+                    value={Math.round(
+                      (config.backgroundOptions.round || 0) *
+                        (Math.min(config.width, config.height) / 2),
+                    )}
                     onChange={(e) => {
-                       const px = parseInt(e.target.value) || 0;
-                       const maxPx = Math.min(config.width, config.height) / 2;
-                       // Convert px back to 0-1 ratio for the library
-                       updateConfig('backgroundOptions', 'round', px / maxPx);
+                      const px = parseInt(e.target.value) || 0;
+                      const maxPx = Math.min(config.width, config.height) / 2;
+                      // Convert px back to 0-1 ratio for the library
+                      updateConfig('backgroundOptions', 'round', px / maxPx);
                     }}
                     className="w-full h-9 px-2 border border-blue-200 rounded text-sm shadow-sm focus:ring-1 focus:ring-blue-500 outline-none"
                   />
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4 mt-2">
                 <ColorPicker
                   label="Dots Color"
@@ -1209,9 +1281,7 @@ const ShareApp = () => {
                     Pattern Density (QR Complexity)
                   </label>
                   <span className="text-xs text-blue-700 font-mono bg-blue-100 px-1.5 py-0.5 rounded">
-                    {config.qrOptions?.typeNumber
-                      ? `Level ${config.qrOptions.typeNumber}`
-                      : 'Auto'}
+                    {config.qrOptions?.typeNumber ? `Level ${config.qrOptions.typeNumber}` : 'Auto'}
                   </span>
                 </div>
                 <select
@@ -1231,7 +1301,9 @@ const ShareApp = () => {
                 <p className="text-[10px] text-blue-600/70 mt-1.5 leading-tight">
                   Controls how many small squares make up the code.
                   <br />
-                  <span className="opacity-75">Higher levels = smaller blocks = sharper look with logos.</span>
+                  <span className="opacity-75">
+                    Higher levels = smaller blocks = sharper look with logos.
+                  </span>
                 </p>
               </div>
 
@@ -1327,8 +1399,8 @@ const ShareApp = () => {
                     {!isDynamicLogo && (
                       <button
                         onClick={() => {
-                           setIsDynamicLogo(true);
-                           updateConfig(null, 'image', ''); // Will be refilled by effect
+                          setIsDynamicLogo(true);
+                          updateConfig(null, 'image', ''); // Will be refilled by effect
                         }}
                         className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-xs text-gray-700 rounded transition flex items-center gap-1"
                         title="Reset to Organization Logo"
@@ -1337,13 +1409,13 @@ const ShareApp = () => {
                         Reset to Organization Logo
                       </button>
                     )}
-                    
+
                     {/* OPTION: No Logo (Clear entirely) */}
                     {(isDynamicLogo || (config.image && config.image !== '')) && (
                       <button
                         onClick={() => {
-                           setIsDynamicLogo(false);
-                           updateConfig(null, 'image', '');
+                          setIsDynamicLogo(false);
+                          updateConfig(null, 'image', '');
                         }}
                         className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-xs text-red-700 rounded transition flex items-center gap-1 border border-red-100"
                         title="Remove Logo entirely"
@@ -1373,9 +1445,9 @@ const ShareApp = () => {
                     className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   />
                   {config.imageOptions.imageSize > 0.4 && (
-                      <div className="text-[10px] text-orange-600 mt-1">
-                        Warning: Large logos may make QR hard to scan.
-                      </div>
+                    <div className="text-[10px] text-orange-600 mt-1">
+                      Warning: Large logos may make QR hard to scan.
+                    </div>
                   )}
                 </div>
                 <div>
@@ -1401,9 +1473,9 @@ const ShareApp = () => {
           {/* Preview Panel */}
           <div className="lg:w-1/2 p-8 bg-gray-50 flex flex-col items-center justify-center min-h-[400px] lg:h-full lg:overflow-hidden">
             <div className="bg-white p-4 rounded-xl shadow-lg border border-gray-100 mb-8 max-w-full">
-              <div 
-                ref={qrRef} 
-                className="qr-container [&>canvas]:max-w-full [&>canvas]:h-auto [&>svg]:max-w-full [&>svg]:h-auto flex justify-center" 
+              <div
+                ref={qrRef}
+                className="qr-container [&>canvas]:max-w-full [&>canvas]:h-auto [&>svg]:max-w-full [&>svg]:h-auto flex justify-center"
                 style={{ width: '100%', maxWidth: '1024px' }}
               />
             </div>
@@ -1411,9 +1483,18 @@ const ShareApp = () => {
             <div className="text-center max-w-sm mx-auto space-y-4">
               <div>
                 <h3 className="text-sm font-semibold text-gray-700 mb-1">Target URL</h3>
-                <p className="bg-white p-2 px-3 rounded text-xs text-blue-600 break-all font-mono border">
-                  {APP_URL}
-                </p>
+                {role === 'super_admin' ? (
+                  <textarea
+                    value={config.data || APP_URL}
+                    onChange={(e) => updateConfig(null, 'data', e.target.value)}
+                    rows={2}
+                    className="w-full bg-white p-2 px-3 rounded text-xs text-blue-600 break-all font-mono border focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                  />
+                ) : (
+                  <p className="bg-white p-2 px-3 rounded text-xs text-blue-600 break-all font-mono border">
+                    {config.data || APP_URL}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 md:hidden w-full relative">
@@ -1425,21 +1506,25 @@ const ShareApp = () => {
                   Export QR Code
                   <Icon path={mdiChevronDown} size={0.8} />
                 </button>
-                
+
                 {showExportMenu && (
                   <div className="bg-white rounded-lg border border-gray-100 shadow-xl overflow-hidden mt-1">
                     <button
                       onClick={() => handleDownload('png')}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-gray-700 border-b border-gray-100"
                     >
-                      <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">PNG</span>
+                      <span className="bg-blue-100 text-blue-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">
+                        PNG
+                      </span>
                       <span className="text-sm font-medium">Download Image</span>
                     </button>
                     <button
                       onClick={() => handleDownload('svg')}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-gray-700"
                     >
-                      <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">SVG</span>
+                      <span className="bg-purple-100 text-purple-700 font-bold text-[10px] px-1.5 py-0.5 rounded uppercase w-8 text-center">
+                        SVG
+                      </span>
                       <span className="text-sm font-medium">Download Vector</span>
                     </button>
                   </div>

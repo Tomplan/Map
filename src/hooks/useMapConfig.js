@@ -1,15 +1,14 @@
 import { useMemo } from 'react';
-import useOrganizationSettings from './useOrganizationSettings';
 import useEventMapSettings from './useEventMapSettings';
 import { MAP_CONFIG as FALLBACK_CONFIG, MAP_LAYERS, BRANDING_CONFIG } from '../config/mapConfig';
 
 /**
  * useMapConfig Hook
  *
- * Provides map configuration from event_map_settings (per year) with fallback to organization_settings (global) and hard-coded defaults.
- * This ensures backward compatibility while allowing year-specific and database-driven configuration.
+ * Provides map configuration from event_map_settings (per year) with fallback to
+ * hard-coded defaults.
  *
- * @param {number} selectedYear - The event year to load map config for (optional, uses global if not provided)
+ * @param {number} selectedYear - The event year to load map config for
  * @returns {Object} Map configuration object
  * @property {Object} MAP_CONFIG - Complete map configuration
  * @property {Array} MAP_LAYERS - Available tile layers
@@ -18,21 +17,11 @@ import { MAP_CONFIG as FALLBACK_CONFIG, MAP_LAYERS, BRANDING_CONFIG } from '../c
  * @property {boolean} usingEventSettings - Whether using event-specific settings
  */
 export default function useMapConfig(selectedYear) {
-  const { settings: globalSettings, loading: globalLoading } = useOrganizationSettings();
   const { settings: eventSettings, loading: eventLoading } = useEventMapSettings(selectedYear);
 
-  const loading = globalLoading || eventLoading;
-
-  // Merge event settings (if available) with global settings and fallback defaults
-  // Priority: Event settings > Global settings > Fallback defaults
   const MAP_CONFIG = useMemo(() => {
-    if (globalLoading) {
-      // Use fallback config while loading
-      return FALLBACK_CONFIG;
-    }
-
-    // Determine which settings to use (event-specific takes priority)
-    const activeSettings = eventSettings || globalSettings;
+    // Priority: Event settings > Fallback defaults
+    const activeSettings = eventSettings;
 
     return {
       // Map center from database or fallback
@@ -57,13 +46,13 @@ export default function useMapConfig(selectedYear) {
       RECTANGLE_SIZE: FALLBACK_CONFIG.RECTANGLE_SIZE,
       MINIMAP: FALLBACK_CONFIG.MINIMAP,
     };
-  }, [globalSettings, eventSettings, globalLoading]);
+  }, [eventSettings]);
 
   return {
     MAP_CONFIG,
-    MAP_LAYERS, // Not configurable in organization_settings yet
+    MAP_LAYERS, // Not configurable yet
     BRANDING_CONFIG,
-    loading,
-    usingEventSettings: !!eventSettings, // Whether using event-specific settings
+    loading: eventLoading,
+    usingEventSettings: !!eventSettings,
   };
 }

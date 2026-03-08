@@ -86,7 +86,8 @@ export default function AdminLogin({ onLogin, branding }) {
     setResetLoading(false);
 
     if (resetError) {
-      setError(t('adminLogin.errors.resetFailed'));
+      console.error('Password reset email failed:', resetError);
+      setError(t('adminLogin.errors.resetFailed') + (resetError.message ? ` (${resetError.message})` : ''));
     } else {
       setResetSuccess(true);
       setTimeout(() => {

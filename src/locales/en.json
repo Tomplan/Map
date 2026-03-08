@@ -181,9 +181,18 @@
       "cancel": "Cancel",
       "editRole": "Edit role",
       "deleteUser": "Delete user",
+      "deleteSelfWarning": "You cannot delete yourself. Ask a different manager or super admin to do this.",
       "confirmDelete": "Are you sure you want to delete {{email}}?",
       "inviteSuccess": "Manager invitation sent!",
       "inviteSuccessMessage": "The new manager will receive 2 emails: (1) Confirmation email - IGNORE THIS, it will not work. (2) Password reset email - USE THIS to set password and access the admin panel.",
+      "editUser": "Edit User",
+      "editOwnRoleWarning": "You cannot change your own role.",
+      "editRolePermissionWarning": "Only Super Admins can change roles.",
+      "security": "Security",
+      "sendResetPassword": "Send Reset Password Email",
+      "resetEmailSent": "Reset email sent successfully.",
+      "close": "Close",
+      "rolesOverview": "Roles Overview",
       "table": {
         "email": "Email",
         "role": "Role",
@@ -205,7 +214,8 @@
         "fetchFailed": "Failed to load users",
         "inviteFailed": "Failed to send invitation",
         "updateFailed": "Failed to update user role",
-        "deleteFailed": "Failed to delete user"
+        "deleteFailed": "Failed to delete user",
+        "resetFailed": "Failed to send reset email"
       }
     },
     "organization": {

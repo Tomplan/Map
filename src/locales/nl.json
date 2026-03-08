@@ -175,9 +175,18 @@
       "cancel": "Annuleren",
       "editRole": "Rol bewerken",
       "deleteUser": "Gebruiker verwijderen",
+      "deleteSelfWarning": "U kunt uzelf niet verwijderen. Vraag een andere beheerder of super admin om dit te doen.",
       "confirmDelete": "Weet u zeker dat u {{email}} wilt verwijderen?",
       "inviteSuccess": "Manager uitnodiging verzonden!",
       "inviteSuccessMessage": "De nieuwe manager ontvangt 2 emails: (1) Bevestigingsmail - NEGEER DEZE, (2) Wachtwoordherstel-mail - GEBRUIK DEZE om wachtwoord in te stellen.",
+      "editUser": "Gebruiker Bewerken",
+      "editOwnRoleWarning": "U kunt uw eigen rol niet wijzigen.",
+      "editRolePermissionWarning": "Alleen Super Admins kunnen rollen wijzigen.",
+      "security": "Beveiliging",
+      "sendResetPassword": "Stuur wachtwoordherstel e-mail",
+      "resetEmailSent": "Wachtwoordherstel e-mail succesvol verzonden.",
+      "close": "Sluiten",
+      "rolesOverview": "Rollenoverzicht",
       "table": {
         "email": "E-mail",
         "role": "Rol",
@@ -199,7 +208,8 @@
         "fetchFailed": "Kan gebruikers niet laden",
         "inviteFailed": "Kan uitnodiging niet verzenden",
         "updateFailed": "Kan gebruikersrol niet bijwerken",
-        "deleteFailed": "Kan gebruiker niet verwijderen"
+        "deleteFailed": "Kan gebruiker niet verwijderen",
+        "resetFailed": "Kon wachtwoordherstel e-mail niet verzenden"
       }
     },
     "organization": {
