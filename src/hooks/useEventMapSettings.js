@@ -12,7 +12,7 @@ import { supabase } from '../supabaseClient';
  * @property {Object|null} settings - Event-specific map settings or null if not loaded
  * @property {boolean} loading - Whether settings are being loaded
  * @property {Function} updateSettings - Update map settings for the event year
- * @property {Function} resetToGlobal - Reset event settings to use global defaults
+ * @property {Function} copyFromYear - Reset event settings to use global defaults
  */
 /*
   Cached version of useEventMapSettings
@@ -134,7 +134,7 @@ export default function useEventMapSettings(eventYear) {
     };
   }, [eventYear]);
 
-  // updateSettings / resetToGlobal should update cache so all listeners see changes
+  // updateSettings / copyFromYear should update cache so all listeners see changes
   const updateSettings = useCallback(
     async (updates) => {
       if (!eventYear) {
@@ -176,25 +176,48 @@ export default function useEventMapSettings(eventYear) {
     [eventYear],
   );
 
-  const resetToGlobal = useCallback(async () => {
-    if (!eventYear) return false;
-    try {
-      const { error } = await supabase
-        .from('event_map_settings')
-        .delete()
-        .eq('event_year', eventYear);
-      if (error) throw error;
-      const entry = _ensureCacheEntry(eventYear);
-      entry.state.settings = null;
-      entry.state.error = null;
-      entry.state.loading = false;
-      entry.listeners.forEach((l) => l(entry.state));
-      return true;
-    } catch (err) {
-      console.error('Error resetting event_map_settings:', err);
-      throw err;
-    }
-  }, [eventYear]);
+  // copyFromYear loads map settings for a specific sourceYear and applies them to eventYear
+  const copyFromYear = useCallback(
+    async (sourceYear) => {
+      if (!eventYear || !sourceYear) return false;
+      try {
+        // Fetch from source year
+        const { data: prevData, error: fetchError } = await supabase
+          .from('event_map_settings')
+          .select('*')
+          .eq('event_year', sourceYear)
+          .maybeSingle();
+
+        if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+        if (!prevData) {
+          throw new Error(`No map settings found for year ${sourceYear}`);
+        }
+
+        // Apply these settings to current year via updateSettings
+        const {
+          map_center_lat,
+          map_center_lng,
+          map_default_zoom,
+          map_min_zoom,
+          map_max_zoom,
+          map_search_zoom,
+        } = prevData;
+
+        return await updateSettings({
+          map_center_lat,
+          map_center_lng,
+          map_default_zoom,
+          map_min_zoom,
+          map_max_zoom,
+          map_search_zoom,
+        });
+      } catch (err) {
+        console.error(`Error copying map settings from ${sourceYear}:`, err);
+        throw err;
+      }
+    },
+    [eventYear, updateSettings],
+  );
 
   const refetch = useCallback(() => {
     if (!eventYear) return Promise.resolve();
@@ -207,7 +230,7 @@ export default function useEventMapSettings(eventYear) {
     loading: local.loading,
     error: local.error,
     updateSettings,
-    resetToGlobal,
+    copyFromYear,
     refetch,
   };
 }

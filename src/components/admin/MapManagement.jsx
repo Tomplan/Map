@@ -1113,10 +1113,10 @@ export default function MapManagement({
             </div>
           )}
 
-          {/* Search and Sort (hidden for read-only event managers) */}
-          {!isReadOnly && (
-            <div className="flex justify-between items-center w-full">
-              {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
+          {/* Toggles Container */}
+          <div className="flex justify-between items-center w-full">
+            {/* Left Sidebar Toggle (DesktopOnly) - controls marker panel */}
+            {!isReadOnly ? (
               <button
                 onClick={() => setIsLeftSidebarOpen(!isLeftSidebarOpen)}
                 className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
@@ -1124,17 +1124,19 @@ export default function MapManagement({
               >
                 <Icon path={isLeftSidebarOpen ? mdiChevronLeft : mdiChevronRight} size={0.8} />
               </button>
+            ) : (
+              <div />
+            )}
 
-              {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
-              <button
-                onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-                className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-                title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
-              >
-                <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={0.8} />
-              </button>
-            </div>
-          )}
+            {/* Right Sidebar Toggle (DesktopOnly) - controls subscriptions panel */}
+            <button
+              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+              className="p-1 rounded-md text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              title={isRightSidebarOpen ? 'Hide Subscriptions List' : 'Show Subscriptions List'}
+            >
+              <Icon path={isRightSidebarOpen ? mdiChevronRight : mdiChevronLeft} size={0.8} />
+            </button>
+          </div>
         </div>
 
         <div className="flex h-[calc(100vh-120px)] relative">
@@ -1157,7 +1159,9 @@ export default function MapManagement({
 
               {/* Title Header */}
               <div className="flex items-center justify-between px-3 py-2 bg-white sticky top-0 z-10 border-b border-gray-100">
-                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('mapManagement.markersList')}</div>
+                <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {t('mapManagement.markersList')}
+                </div>
                 {!isReadOnly && (
                   <button
                     onClick={() => {
@@ -1173,10 +1177,18 @@ export default function MapManagement({
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100'
                     }`}
-                    title={isBulkEditMode ? t('mapManagement.finishEditing') : t('mapManagement.editMode')}
-                    >
+                    title={
+                      isBulkEditMode
+                        ? t('mapManagement.finishEditing')
+                        : t('mapManagement.editMode')
+                    }
+                  >
                     <Icon path={isBulkEditMode ? mdiContentSave : mdiPencil} size={0.6} />
-                    <span>{isBulkEditMode ? t('mapManagement.doneEditing') : t('mapManagement.editMode')}</span>
+                    <span>
+                      {isBulkEditMode
+                        ? t('mapManagement.doneEditing')
+                        : t('mapManagement.editMode')}
+                    </span>
                   </button>
                 )}
               </div>
@@ -1214,7 +1226,11 @@ export default function MapManagement({
                   <button
                     type="button"
                     onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                    aria-label={sortDirection === 'asc' ? t('mapManagement.toggleSortDesc') : t('mapManagement.toggleSortAsc')}
+                    aria-label={
+                      sortDirection === 'asc'
+                        ? t('mapManagement.toggleSortDesc')
+                        : t('mapManagement.toggleSortAsc')
+                    }
                     className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
                   >
                     <Icon
@@ -1455,297 +1471,328 @@ export default function MapManagement({
           </div>
 
           {/* RIGHT: Subscriptions Panel */}
-          {!isReadOnly && (
+          <div
+            className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative flex flex-col ${
+              !isRightSidebarOpen && 'border-l-0'
+            }`}
+            style={{
+              width: isRightSidebarOpen ? rightSidebarWidth : 0,
+              transition: isResizing === 'right' ? 'none' : 'width 0.3s ease-in-out',
+            }}
+          >
+            {/* Resize Handle (Left Edge) */}
             <div
-              className={`border-l border-gray-200 overflow-hidden flex-shrink-0 bg-white relative flex flex-col ${
-                !isRightSidebarOpen && 'border-l-0'
-              }`}
-              style={{
-                width: isRightSidebarOpen ? rightSidebarWidth : 0,
-                transition: isResizing === 'right' ? 'none' : 'width 0.3s ease-in-out',
-              }}
-            >
-              {/* Resize Handle (Left Edge) */}
-              <div
-                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
-                onMouseDown={() => setIsResizing('right')}
-              />
+              className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors"
+              onMouseDown={() => setIsResizing('right')}
+            />
 
-              {/* Title Header */}
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
-                <span>{t("mapManagement.subscriptionList")}</span>
-                <span className="text-[10px] font-normal">
-                  {(() => {
-                    if (!rawSubscriptions || !assignments) return '0 / 0';
-                    // Count how many subscriptions have at least one assignment
-                    const assignedCount = rawSubscriptions.filter((sub) =>
-                      assignments.some((a) => a.company_id === sub.company_id),
-                    ).length;
-                    return `${assignedCount} / ${rawSubscriptions.length}`;
-                  })()}
-                </span>
+            {/* Title Header */}
+            <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
+              <span>{t('mapManagement.subscriptionList')}</span>
+              <span className="text-[10px] font-normal">
+                {(() => {
+                  if (!rawSubscriptions || !assignments) return '0 / 0';
+                  // Count how many subscriptions have at least one assignment
+                  const assignedCount = rawSubscriptions.filter((sub) =>
+                    assignments.some((a) => a.company_id === sub.company_id),
+                  ).length;
+                  return `${assignedCount} / ${rawSubscriptions.length}`;
+                })()}
+              </span>
+            </div>
+
+            {/* Search Header */}
+            <div className="p-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-3 flex-shrink-0">
+              <div className="relative">
+                <Icon
+                  path={mdiMagnify}
+                  size={0.8}
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder={t('mapManagement.searchCompany')}
+                  value={subscriptionSearch}
+                  onChange={(e) => setSubscriptionSearch(e.target.value)}
+                  className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
 
-              {/* Search Header */}
-              <div className="p-3 border-b border-gray-200 bg-gray-50 flex flex-col gap-3 flex-shrink-0">
-                <div className="relative">
+              {/* Sort */}
+              <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
+                <select
+                  value={subscriptionSortBy}
+                  onChange={(e) => setSubscriptionSortBy(e.target.value)}
+                  className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
+                  aria-label={t('mapManagement.sortSubscriptionsBy')}
+                >
+                  <option value="name">{t('mapManagement.sortByCompany')}</option>
+                  <option value="booths">{t('mapManagement.sortByBooths')}</option>
+                  <option value="assigned">{t('mapManagement.sortByAssigned')}</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSubscriptionSortDirection(
+                      subscriptionSortDirection === 'asc' ? 'desc' : 'asc',
+                    )
+                  }
+                  aria-label={`Toggle sort direction to ${
+                    subscriptionSortDirection === 'asc' ? 'descending' : 'ascending'
+                  }`}
+                  className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
+                >
                   <Icon
-                    path={mdiMagnify}
-                    size={0.8}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    path={subscriptionSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                    size={0.7}
                   />
-                  <input
-                    type="text"
-                    placeholder={t('mapManagement.searchCompany')}
-                    value={subscriptionSearch}
-                    onChange={(e) => setSubscriptionSearch(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
+                  <span className="sr-only">{t('mapManagement.sort')}</span>
+                </button>
+              </div>
+            </div>
 
-                {/* Sort */}
-                <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
-                  <select
-                    value={subscriptionSortBy}
-                    onChange={(e) => setSubscriptionSortBy(e.target.value)}
-                    className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
-                    aria-label={t('mapManagement.sortSubscriptionsBy')}
-                  >
-                    <option value="name">{t('mapManagement.sortByCompany')}</option>
-                    <option value="booths">{t('mapManagement.sortByBooths')}</option>
-                    <option value="assigned">{t('mapManagement.sortByAssigned')}</option>
-                  </select>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSubscriptionSortDirection(
-                        subscriptionSortDirection === 'asc' ? 'desc' : 'asc',
-                      )
-                    }
-                    aria-label={`Toggle sort direction to ${
-                      subscriptionSortDirection === 'asc' ? 'descending' : 'ascending'
-                    }`}
-                    className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md text-xs"
-                  >
-                    <Icon
-                      path={subscriptionSortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
-                      size={0.7}
-                    />
-                    <span className="sr-only">{t('mapManagement.sort')}</span>
-                  </button>
-                </div>
+            {/* List and Details Container */}
+            <div className="flex-1 flex flex-col min-h-0 relative">
+              {/* List */}
+              <div
+                className="overflow-y-auto w-full"
+                style={{
+                  height: selectedSubscriptionId ? `${rightListSplitRatio * 100}%` : '100%',
+                  transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
+                }}
+              >
+                {loadingSubscriptions ? (
+                  <div className="p-4 text-center text-gray-400 text-sm">Loading...</div>
+                ) : filteredSubscriptions?.length === 0 ? (
+                  <div className="p-4 text-center text-gray-400 text-sm">No subscriptions</div>
+                ) : (
+                  filteredSubscriptions.map((sub) => {
+                    const isSelected = selectedSubscriptionId === sub.id;
+                    const company = sub.company || {};
+
+                    // Find assignment and linked marker (booth)
+                    const assignment = assignments?.find((a) => a.company_id === company.id);
+                    const isAssigned = !!assignment;
+                    const assignedMarkerId = assignment?.marker_id;
+                    const assignedMarker = markersState?.find((m) => m.id === assignedMarkerId);
+                    const boothLabel = assignedMarker
+                      ? `${t('map.booth', 'Booth')} ${assignedMarker.id}`
+                      : t('mapManagement.statusAssigned', 'Assigned');
+
+                    return (
+                      <button
+                        key={sub.id}
+                        onClick={() => {
+                          const newId = isSelected ? null : sub.id;
+                          setSelectedSubscriptionId(newId);
+
+                          // Visual feedback: Select marker if assigned
+                          if (newId && assignedMarkerId) {
+                            setSelectedMarkerId(assignedMarkerId);
+                          } else {
+                            // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
+                            // we clear the map selection so the previously highlighted marker returns to normal scale/color.
+                            setSelectedMarkerId(null);
+                          }
+                        }}
+                        className={`w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
+                          isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500 pl-[11px]' : ''
+                        }`}
+                      >
+                        <div className="w-8 h-8 flex-shrink-0 bg-white border border-gray-200 rounded flex items-center justify-center overflow-hidden">
+                          {company.logo ? (
+                            <img
+                              src={getLogoPath(company.logo)}
+                              alt={company.name}
+                              className="w-full h-full object-contain"
+                            />
+                          ) : (
+                            <Icon path={mdiArchive} size={0.6} className="text-gray-300" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-medium text-gray-900 truncate">
+                            {company.name || 'Unknown Company'}
+                          </div>
+                          <div className="text-xs text-gray-500 flex items-center gap-2">
+                            {isAssigned ? (
+                              <span className="text-green-600 flex items-center gap-0.5">
+                                <Icon path={mdiContentSave} size={0.5} /> {boothLabel}
+                              </span>
+                            ) : (
+                              <span className="text-orange-500">
+                                {t('mapManagement.statusUnassigned', 'Unassigned')}
+                              </span>
+                            )}
+                            {sub.booth_count > 0 && (
+                              <span>
+                                • {sub.booth_count}{' '}
+                                {sub.booth_count === 1
+                                  ? t('mapManagement.booth', 'booth')
+                                  : t('mapManagement.booths_plural', 'booths')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })
+                )}
               </div>
 
-              {/* List and Details Container */}
-              <div className="flex-1 flex flex-col min-h-0 relative">
-                {/* List */}
+              {/* Resizer Splitter (Horizontal) */}
+              {selectedSubscriptionId && (
                 <div
-                  className="overflow-y-auto w-full"
+                  className="w-full h-1 cursor-row-resize bg-gray-200 hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors flex-shrink-0"
+                  onMouseDown={() => setIsResizing('split-right')}
+                />
+              )}
+
+              {/* Bottom Section: Details */}
+              {selectedSubscriptionId && (
+                <div
+                  className="w-full overflow-y-auto p-4 bg-gray-50/50 border-t border-gray-200"
                   style={{
-                    height: selectedSubscriptionId ? `${rightListSplitRatio * 100}%` : '100%',
+                    height: `${(1 - rightListSplitRatio) * 100}%`,
                     transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
                   }}
                 >
-                  {loadingSubscriptions ? (
-                    <div className="p-4 text-center text-gray-400 text-sm">Loading...</div>
-                  ) : filteredSubscriptions?.length === 0 ? (
-                    <div className="p-4 text-center text-gray-400 text-sm">No subscriptions</div>
+                  {!selectedSubscription ? (
+                    <div className="text-center text-gray-400 py-4">Select a subscription</div>
                   ) : (
-                    filteredSubscriptions.map((sub) => {
-                      const isSelected = selectedSubscriptionId === sub.id;
-                      const company = sub.company || {};
-
-                      // Find assignment and linked marker (booth)
-                      const assignment = assignments?.find((a) => a.company_id === company.id);
-                      const isAssigned = !!assignment;
-                      const assignedMarkerId = assignment?.marker_id;
-                      const assignedMarker = markersState?.find((m) => m.id === assignedMarkerId);
-                      const boothLabel = assignedMarker ? `Booth ${assignedMarker.id}` : 'Assigned';
-
-                      return (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-start">
+                        <h4 className="font-medium text-gray-900">
+                          {t('mapManagement.subscriptionDetails')}
+                        </h4>
                         <button
-                          key={sub.id}
                           onClick={() => {
-                            const newId = isSelected ? null : sub.id;
-                            setSelectedSubscriptionId(newId);
-
-                            // Visual feedback: Select marker if assigned
-                            if (newId && assignedMarkerId) {
-                              setSelectedMarkerId(assignedMarkerId);
-                            } else {
-                              // If unassigning, OR if selecting a subscription that has no maker (unassigned company)
-                              // we clear the map selection so the previously highlighted marker returns to normal scale/color.
-                              setSelectedMarkerId(null);
-                            }
+                            setSelectedSubscriptionId(null);
+                            setSelectedMarkerId(null); // Also clear marker highlight when closing details
                           }}
-                          className={`w-full text-left p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors flex items-center gap-3 ${
-                            isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500 pl-[11px]' : ''
-                          }`}
+                          className="text-gray-400 hover:text-gray-600"
+                          title={t('mapManagement.closeDetails')}
                         >
-                          <div className="w-8 h-8 flex-shrink-0 bg-white border border-gray-200 rounded flex items-center justify-center overflow-hidden">
-                            {company.logo ? (
-                              <img
-                                src={getLogoPath(company.logo)}
-                                alt={company.name}
-                                className="w-full h-full object-contain"
-                              />
-                            ) : (
-                              <Icon path={mdiArchive} size={0.6} className="text-gray-300" />
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="text-sm font-medium text-gray-900 truncate">
-                              {company.name || 'Unknown Company'}
-                            </div>
-                            <div className="text-xs text-gray-500 flex items-center gap-2">
-                              {isAssigned ? (
-                                <span className="text-green-600 flex items-center gap-0.5">
-                                  <Icon path={mdiContentSave} size={0.5} /> {boothLabel}
-                                </span>
-                              ) : (
-                                <span className="text-orange-500">{t('mapManagement.statusUnassigned', 'Unassigned')}</span>
-                              )}
-                              {sub.booth_count > 0 && (
-                                <span>
-                                  • {sub.booth_count} {sub.booth_count === 1 ? t('mapManagement.booth', 'booth') : t('mapManagement.booths_plural', 'booths')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+                          <Icon path={mdiClose} size={0.8} />
                         </button>
-                      );
-                    })
-                  )}
-                </div>
+                      </div>
 
-                {/* Resizer Splitter (Horizontal) */}
-                {selectedSubscriptionId && (
-                  <div
-                    className="w-full h-1 cursor-row-resize bg-gray-200 hover:bg-blue-400 z-50 active:bg-blue-600 transition-colors flex-shrink-0"
-                    onMouseDown={() => setIsResizing('split-right')}
-                  />
-                )}
-
-                {/* Bottom Section: Details */}
-                {selectedSubscriptionId && (
-                  <div
-                    className="w-full overflow-y-auto p-4 bg-gray-50/50 border-t border-gray-200"
-                    style={{
-                      height: `${(1 - rightListSplitRatio) * 100}%`,
-                      transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
-                    }}
-                  >
-                    {!selectedSubscription ? (
-                      <div className="text-center text-gray-400 py-4">Select a subscription</div>
-                    ) : (
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-gray-900">{t('mapManagement.subscriptionDetails')}</h4>
-                          <button
-                            onClick={() => {
-                              setSelectedSubscriptionId(null);
-                              setSelectedMarkerId(null); // Also clear marker highlight when closing details
-                            }}
-                            className="text-gray-400 hover:text-gray-600"
-                            title={t('mapManagement.closeDetails')}
-                          >
-                            <Icon path={mdiClose} size={0.8} />
-                          </button>
-                        </div>
-
-                        {/* Read-only details view */}
-                        <div className="bg-white p-3 rounded border border-gray-200 shadow-sm text-left">
-                          {/* Details - Compact Layout */}
-                          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
-                            {/* Company */}
-                            <div className="col-span-2">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.company')}</label>
-                              <div
-                                className="text-sm font-medium text-gray-900 truncate text-left"
-                                title={selectedSubscription.company?.name}
-                              >
-                                {selectedSubscription.company?.name || t('mapManagement.unknown')}
-                              </div>
+                      {/* Read-only details view */}
+                      <div className="bg-white p-3 rounded border border-gray-200 shadow-sm text-left">
+                        {/* Details - Compact Layout */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-left">
+                          {/* Company */}
+                          <div className="col-span-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.company')}
+                            </label>
+                            <div
+                              className="text-sm font-medium text-gray-900 truncate text-left"
+                              title={selectedSubscription.company?.name}
+                            >
+                              {selectedSubscription.company?.name || t('mapManagement.unknown')}
                             </div>
+                          </div>
 
-                            {/* Booths */}
-                            <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.booths')}</label>
-                              <div className="text-sm text-gray-900 text-left">
-                                {selectedSubscription.booth_count || 0}
-                              </div>
+                          {/* Booths */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.booths')}
+                            </label>
+                            <div className="text-sm text-gray-900 text-left">
+                              {selectedSubscription.booth_count || 0}
                             </div>
+                          </div>
 
-                            {/* Coins */}
-                            <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.coins')}</label>
-                              <div className="text-sm text-gray-900 text-left">
-                                {selectedSubscription.coins || 0}
-                              </div>
+                          {/* Area */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.area', 'Area')}
+                            </label>
+                            <div className="text-sm text-gray-900 text-left">
+                              {selectedSubscription.area || '-'}
                             </div>
+                          </div>
 
-                            {/* Meals (Sat) */}
-                            <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.mealsSaturday')}</label>
-                              <div className="text-xs text-gray-700 flex gap-3 text-left">
-                                <span>
-                                  {t('mapManagement.breakfast')} 
-                                  <span className="font-medium text-gray-900">
-                                    {selectedSubscription.breakfast_sat || 0}
-                                  </span>
-                                </span>
-                                <span>
-                                  {t('mapManagement.lunch')} 
-                                  <span className="font-medium text-gray-900">
-                                    {selectedSubscription.lunch_sat || 0}
-                                  </span>
-                                </span>
-                                <span>
-                                  {t('mapManagement.bbq')} 
-                                  <span className="font-medium text-gray-900">
-                                    {selectedSubscription.bbq_sat || 0}
-                                  </span>
-                                </span>
-                              </div>
+                          {/* Coins */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.coins')}
+                            </label>
+                            <div className="text-sm text-gray-900 text-left">
+                              {selectedSubscription.coins || 0}
                             </div>
+                          </div>
 
-                            {/* Meals (Sun) */}
-                            <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.mealsSunday')}</label>
-                              <div className="text-xs text-gray-700 flex gap-3 text-left">
-                                <span>
-                                  {t('mapManagement.breakfast')} 
-                                  <span className="font-medium text-gray-900">
-                                    {selectedSubscription.breakfast_sun || 0}
-                                  </span>
+                          {/* Meals (Sat) */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.mealsSaturday')}
+                            </label>
+                            <div className="text-xs text-gray-700 flex gap-3 text-left">
+                              <span>
+                                {t('mapManagement.breakfast')}
+                                <span className="font-medium text-gray-900">
+                                  {selectedSubscription.breakfast_sat || 0}
                                 </span>
-                                <span>
-                                  {t('mapManagement.lunch')} 
-                                  <span className="font-medium text-gray-900">
-                                    {selectedSubscription.lunch_sun || 0}
-                                  </span>
+                              </span>
+                              <span>
+                                {t('mapManagement.lunch')}
+                                <span className="font-medium text-gray-900">
+                                  {selectedSubscription.lunch_sat || 0}
                                 </span>
-                              </div>
+                              </span>
+                              <span>
+                                {t('mapManagement.bbq')}
+                                <span className="font-medium text-gray-900">
+                                  {selectedSubscription.bbq_sat || 0}
+                                </span>
+                              </span>
                             </div>
+                          </div>
 
-                            {/* Notes - Always visible, even if empty */}
-                            <div className="col-span-2 text-left">
-                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.notes')}</label>
-                              <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
-                                {selectedSubscription.notes || (
-                                  <span className="text-gray-400 italic">{t('mapManagement.noNotes')}</span>
-                                )}
-                              </div>
+                          {/* Meals (Sun) */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.mealsSunday')}
+                            </label>
+                            <div className="text-xs text-gray-700 flex gap-3 text-left">
+                              <span>
+                                {t('mapManagement.breakfast')}
+                                <span className="font-medium text-gray-900">
+                                  {selectedSubscription.breakfast_sun || 0}
+                                </span>
+                              </span>
+                              <span>
+                                {t('mapManagement.lunch')}
+                                <span className="font-medium text-gray-900">
+                                  {selectedSubscription.lunch_sun || 0}
+                                </span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Notes - Always visible, even if empty */}
+                          <div className="col-span-2 text-left">
+                            <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">
+                              {t('mapManagement.notes')}
+                            </label>
+                            <div className="text-xs bg-gray-50 p-2 rounded text-gray-600 whitespace-pre-wrap min-h-[3rem] border border-gray-100 text-left">
+                              {selectedSubscription.notes || (
+                                <span className="text-gray-400 italic">
+                                  {t('mapManagement.noNotes')}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 

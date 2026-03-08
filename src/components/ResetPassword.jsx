@@ -32,25 +32,30 @@ export default function ResetPassword({ branding }) {
   useEffect(() => {
     const checkResetToken = async () => {
       // Handle HashRouter URL parsing
-      // Can be: /#error=... OR /#/reset-password#access_token=...
-      const fullHash = window.location.hash; // e.g., "#/reset-password#access_token=..."
+      // Supabase might append tokens as hash fragments or query strings.
+      // Cases to handle:
+      // 1. /#/reset-password#access_token=...
+      // 2. /#/reset-password?access_token=...
+      // 3. /#/reset-password#error=...
 
-      let urlParams;
+      const fullHash = window.location.hash;
+      const search = window.location.search;
 
-      // First check if error params are at root level: /#error=...
-      if (fullHash.includes('error=')) {
-        const errorPart = fullHash.substring(1); // Remove leading #
-        urlParams = new URLSearchParams(errorPart);
-      } else {
-        // Check for second # (tokens after route): /#/reset-password#access_token=...
+      let urlParams = new URLSearchParams();
+
+      // Check query string first (if PKCE is used, it appends here)
+      if (search.includes('access_token=') || search.includes('error=')) {
+        urlParams = new URLSearchParams(search);
+      }
+      // Check for a secondary hash: e.g. /#/reset-password#access_token=abcd
+      else if (fullHash.includes('#', 1)) {
         const secondHashIndex = fullHash.indexOf('#', 1);
-        if (secondHashIndex > 0) {
-          const tokenPart = fullHash.substring(secondHashIndex + 1);
-          urlParams = new URLSearchParams(tokenPart);
-        } else {
-          // Fallback: try query string
-          urlParams = new URLSearchParams(window.location.search);
-        }
+        urlParams = new URLSearchParams(fullHash.substring(secondHashIndex + 1));
+      }
+      // Check if tokens are in the same hash but maybe prefixed with ?
+      else if (fullHash.includes('?')) {
+        const queryPart = fullHash.substring(fullHash.indexOf('?') + 1);
+        urlParams = new URLSearchParams(queryPart);
       }
 
       const accessToken = urlParams.get('access_token');

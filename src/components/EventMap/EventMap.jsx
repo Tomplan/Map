@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer } from 'react-leaflet';
+import AdminMapStateHandler from './AdminMapStateHandler';
+
 import L from 'leaflet';
 import EventSpecialMarkers from '../EventSpecialMarkers';
 import EventClusterMarkers from '../EventClusterMarkers';
@@ -57,6 +59,43 @@ function EventMap({
 }) {
   // Load map configuration from database (with fallback to hard-coded defaults)
   const { MAP_CONFIG, MAP_LAYERS } = useMapConfig(selectedYear);
+
+  const adminHomeConfig = useMemo(() => {
+    if (!isAdminView || !selectedYear) return null;
+    try {
+      const stored = localStorage.getItem(`adminHomePrefs_${selectedYear}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.lat && parsed.lng && parsed.zoom) {
+          return { center: [parsed.lat, parsed.lng], zoom: parsed.zoom };
+        }
+      }
+    } catch(e) {}
+    return null;
+  }, [isAdminView, selectedYear]);
+
+  const initialAdminConfig = useMemo(() => {
+    if (!isAdminView || !selectedYear) return null;
+    try {
+      const stored = localStorage.getItem(`adminMapPrefs_${selectedYear}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.lat && parsed.lng && parsed.zoom) {
+          return { center: [parsed.lat, parsed.lng], zoom: parsed.zoom };
+        }
+      }
+    } catch(e) {
+      console.warn("Failed to parse admin map prefs", e);
+    }
+    return null;
+  }, [isAdminView, selectedYear]);
+
+  const homeCenter = isAdminView ? (adminHomeConfig?.center || MAP_CONFIG.ADMIN_DEFAULT_POSITION) : MAP_CONFIG.DEFAULT_POSITION;
+  const homeZoom = isAdminView ? (adminHomeConfig?.zoom || MAP_CONFIG.ADMIN_DEFAULT_ZOOM) : MAP_CONFIG.DEFAULT_ZOOM;
+
+  const mapCenter = isAdminView ? (initialAdminConfig?.center || homeCenter) : MAP_CONFIG.DEFAULT_POSITION;
+  const mapZoom = isAdminView ? (initialAdminConfig?.zoom || homeZoom) : MAP_CONFIG.DEFAULT_ZOOM;
+
 
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
@@ -1058,8 +1097,9 @@ function EventMap({
     >
       <MapControls
         mapInstance={mapInstance}
-        mapCenter={MAP_CONFIG.DEFAULT_POSITION}
-        mapZoom={MAP_CONFIG.DEFAULT_ZOOM}
+        mapCenter={homeCenter}
+        mapZoom={homeZoom}
+        selectedYear={selectedYear}
         searchControlRef={searchControlRef}
         isAdminView={isAdminView}
         showLayersMenu={showLayersMenu}
@@ -1103,8 +1143,8 @@ function EventMap({
         aria-label={t('map.ariaLabel')}
       >
         <MapContainer
-          center={isAdminView ? MAP_CONFIG.ADMIN_DEFAULT_POSITION : MAP_CONFIG.DEFAULT_POSITION}
-          zoom={isAdminView ? MAP_CONFIG.ADMIN_DEFAULT_ZOOM : MAP_CONFIG.DEFAULT_ZOOM}
+          center={mapCenter}
+          zoom={mapZoom}
           minZoom={MAP_CONFIG.MIN_ZOOM}
           maxZoom={MAP_CONFIG.MAX_ZOOM}
           zoomDelta={MAP_CONFIG.ZOOM_DELTA}
@@ -1119,6 +1159,7 @@ function EventMap({
           whenReady={handleMapCreated}
           attributionControl={false}
         >
+          <AdminMapStateHandler isAdminView={isAdminView} selectedYear={selectedYear} />
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
               key={layer.key}

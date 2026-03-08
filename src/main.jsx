@@ -13,6 +13,18 @@ if (typeof globalThis !== 'undefined' && typeof import.meta !== 'undefined' && i
   };
 }
 
+// Fix Supabase auth hashes when using HashRouter.
+// If a user clicks an email link (like reset password or invite) and Supabase falls back to the Site URL
+// or replaces the fragment, the hash might start with `#access_token=` instead of `#/reset-password`.
+// This breaks HashRouter, routing the user to the visitor website (`/`) instead of the reset page.
+if (typeof window !== 'undefined' && window.location.hash) {
+  const hash = window.location.hash;
+  if ((hash.includes('access_token=') || hash.includes('error=')) && !hash.startsWith('#/')) {
+    // Redirect it properly to the reset-password route and append the token data
+    window.location.hash = '#/reset-password' + hash;
+  }
+}
+
 import App from './App.jsx';
 import L from 'leaflet';
 // `leaflet.browser.print` does not provide a package entry suitable for Vite's
@@ -52,7 +64,8 @@ if ('serviceWorker' in navigator) {
     // When deploying to a subdirectory (like /Map/dev/), the service worker needs
     // to be registered with the correct scope.
     const swUrl = `${getBaseUrl()}service-worker.js`;
-    navigator.serviceWorker.register(swUrl, { scope: getBaseUrl() })
+    navigator.serviceWorker
+      .register(swUrl, { scope: getBaseUrl() })
       .then((registration) => {
         // console.log('SW register success:', registration);
       })

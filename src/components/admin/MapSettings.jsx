@@ -8,11 +8,11 @@ import {
   mdiInformation,
   mdiDomain,
   mdiCalendar,
-  mdiRefresh,
+  mdiContentCopy,
 } from '@mdi/js';
 import useEventMapSettings from '../../hooks/useEventMapSettings';
-import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
+import { MAP_CONFIG } from '../../config/mapConfig';
 
 /**
  * MapSettings - Component for managing map settings per year
@@ -21,18 +21,16 @@ import { useDialog } from '../../contexts/DialogContext';
  * - Year selector to choose which year's map settings to edit
  * - Default map center (lat/lng) per year
  * - Default/min/max zoom levels per year
- * - Fallback to global organization settings
  * - Saved to event_map_settings table
  * SCOPE: Event-specific (affects selected year only)
  */
 export default function MapSettings({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
-  const { settings: globalSettings, loading: globalLoading } = useOrganizationSettings();
   const {
     settings: eventSettings,
     loading: eventLoading,
     updateSettings,
-    resetToGlobal,
+    copyFromYear,
   } = useEventMapSettings(selectedYear);
   const { toastError, toastWarning, confirm } = useDialog();
 
@@ -40,34 +38,34 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
 
-  // Map configuration state - initialize with event settings or global defaults
-  const [mapCenterLat, setMapCenterLat] = useState(51.898095);
-  const [mapCenterLng, setMapCenterLng] = useState(5.772961);
-  const [mapDefaultZoom, setMapDefaultZoom] = useState(17);
-  const [mapMinZoom, setMapMinZoom] = useState(14);
-  const [mapMaxZoom, setMapMaxZoom] = useState(22);
-  const [mapSearchZoom, setMapSearchZoom] = useState(21);
+  // Map configuration state - initialize with event settings or hardcoded defaults
+  const [mapCenterLat, setMapCenterLat] = useState(MAP_CONFIG.DEFAULT_POSITION[0]);
+  const [mapCenterLng, setMapCenterLng] = useState(MAP_CONFIG.DEFAULT_POSITION[1]);
+  const [mapDefaultZoom, setMapDefaultZoom] = useState(MAP_CONFIG.DEFAULT_ZOOM);
+  const [mapMinZoom, setMapMinZoom] = useState(MAP_CONFIG.MIN_ZOOM);
+  const [mapMaxZoom, setMapMaxZoom] = useState(MAP_CONFIG.MAX_ZOOM);
+  const [mapSearchZoom, setMapSearchZoom] = useState(MAP_CONFIG.SEARCH_ZOOM);
 
   // Sync local state when settings change
   useEffect(() => {
     if (eventSettings) {
       // Use event-specific settings
-      setMapCenterLat(eventSettings.map_center_lat ?? 51.898095);
-      setMapCenterLng(eventSettings.map_center_lng ?? 5.772961);
-      setMapDefaultZoom(eventSettings.map_default_zoom ?? 17);
-      setMapMinZoom(eventSettings.map_min_zoom ?? 14);
-      setMapMaxZoom(eventSettings.map_max_zoom ?? 22);
-      setMapSearchZoom(eventSettings.map_search_zoom ?? 21);
-    } else if (globalSettings) {
-      // Fall back to global settings
-      setMapCenterLat(globalSettings.map_center_lat ?? 51.898095);
-      setMapCenterLng(globalSettings.map_center_lng ?? 5.772961);
-      setMapDefaultZoom(globalSettings.map_default_zoom ?? 17);
-      setMapMinZoom(globalSettings.map_min_zoom ?? 14);
-      setMapMaxZoom(globalSettings.map_max_zoom ?? 22);
-      setMapSearchZoom(globalSettings.map_search_zoom ?? 21);
+      setMapCenterLat(eventSettings.map_center_lat ?? MAP_CONFIG.DEFAULT_POSITION[0]);
+      setMapCenterLng(eventSettings.map_center_lng ?? MAP_CONFIG.DEFAULT_POSITION[1]);
+      setMapDefaultZoom(eventSettings.map_default_zoom ?? MAP_CONFIG.DEFAULT_ZOOM);
+      setMapMinZoom(eventSettings.map_min_zoom ?? MAP_CONFIG.MIN_ZOOM);
+      setMapMaxZoom(eventSettings.map_max_zoom ?? MAP_CONFIG.MAX_ZOOM);
+      setMapSearchZoom(eventSettings.map_search_zoom ?? MAP_CONFIG.SEARCH_ZOOM);
+    } else {
+      // Fall back to hardcoded config
+      setMapCenterLat(MAP_CONFIG.DEFAULT_POSITION[0]);
+      setMapCenterLng(MAP_CONFIG.DEFAULT_POSITION[1]);
+      setMapDefaultZoom(MAP_CONFIG.DEFAULT_ZOOM);
+      setMapMinZoom(MAP_CONFIG.MIN_ZOOM);
+      setMapMaxZoom(MAP_CONFIG.MAX_ZOOM);
+      setMapSearchZoom(MAP_CONFIG.SEARCH_ZOOM);
     }
-  }, [eventSettings, globalSettings]);
+  }, [eventSettings]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -110,11 +108,12 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
     }
   };
 
-  const handleResetToGlobal = async () => {
+  const handleCopyFromPrevious = async () => {
+    const sourceYear = parseInt(selectedYear) - 1;
     const confirmed = await confirm({
-      title: 'Reset to Global Settings',
-      message: `Reset map settings for ${selectedYear} to use global organization defaults? This will delete any event-specific settings.`,
-      confirmText: 'Reset',
+      title: 'Copy Map Settings',
+      message: `Copy map settings from ${sourceYear} to ${selectedYear}? This will overwrite current settings.`,
+      confirmText: 'Copy Settings',
       variant: 'warning',
     });
 
@@ -122,20 +121,20 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
 
     try {
       setSaving(true);
-      const result = await resetToGlobal();
+      const result = await copyFromYear(sourceYear);
       if (result) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       }
     } catch (err) {
-      console.error('Failed to reset to global settings:', err);
-      toastError('Failed to reset settings');
+      console.error(`Failed to copy settings from ${sourceYear}:`, err);
+      toastError(err.message || 'Failed to copy settings');
     } finally {
       setSaving(false);
     }
   };
 
-  const loading = globalLoading || eventLoading;
+  const loading = eventLoading;
   const usingEventSettings = !!eventSettings;
 
   if (loading) {
@@ -198,8 +197,8 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
 
         <p className="text-sm text-gray-600">
           {usingEventSettings
-            ? `Configure map settings specific to the ${selectedYear} event.`
-            : `Using global organization defaults for ${selectedYear}. Configure event-specific settings below.`}
+            ? `Settings specific to the ${selectedYear} event are active.`
+            : `No custom settings mapped for ${selectedYear} yet. Edit values below or copy from a prior year.`}
         </p>
       </div>
 
@@ -210,9 +209,7 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
           <div>
             <p className="font-semibold text-green-800">{t('settings.mapDefaults.saveSuccess')}</p>
             <p className="text-sm text-green-700">
-              {usingEventSettings
-                ? `Map settings updated for ${selectedYear}.`
-                : `Settings reset to global defaults for ${selectedYear}.`}
+              {`Map settings saved for ${selectedYear}.`}
             </p>
           </div>
         </div>
@@ -398,12 +395,12 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
         <div className="flex justify-between bg-white rounded-lg shadow p-6">
           <button
             type="button"
-            onClick={handleResetToGlobal}
-            disabled={saving || !usingEventSettings}
-            className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleCopyFromPrevious}
+            disabled={saving}
+            className="flex items-center gap-2 px-6 py-2 border border-blue-200 rounded-lg text-blue-700 font-medium hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Icon path={mdiRefresh} size={0.8} />
-            {t('settings.mapDefaults.reset')}
+            <Icon path={mdiContentCopy} size={0.8} />
+            Copy from {parseInt(selectedYear) - 1}
           </button>
           <button
             type="submit"
