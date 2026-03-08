@@ -567,7 +567,8 @@
     "statusUnassigned": "Niet-toegewezen",
     "booth": "stand",
     "booths_plural": "stands",
-    "statusAssigned": "Toegewezen"
+    "statusAssigned": "Toegewezen",
+    "area": "Gebied"
   },
   "navigation": {
     "home": "Home",

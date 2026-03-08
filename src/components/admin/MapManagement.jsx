@@ -1676,6 +1676,14 @@ export default function MapManagement({
                               </div>
                             </div>
 
+                            {/* Area */}
+                            <div className="col-span-2 text-left">
+                              <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.area', 'Area')}</label>
+                              <div className="text-sm text-gray-900 text-left">
+                                {selectedSubscription.area || '-'}
+                              </div>
+                            </div>
+
                             {/* Coins */}
                             <div className="col-span-2 text-left">
                               <label className="text-xs font-bold text-gray-500 uppercase block mb-0.5 text-left">{t('mapManagement.coins')}</label>

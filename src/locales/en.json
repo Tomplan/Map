@@ -573,7 +573,8 @@
     "statusUnassigned": "Unassigned",
     "booth": "booth",
     "booths_plural": "booths",
-    "statusAssigned": "Assigned"
+    "statusAssigned": "Assigned",
+    "area": "Area"
   },
   "programManagement": {
     "eventDates": {
