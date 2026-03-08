@@ -12,9 +12,22 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM public.user_roles 
         WHERE user_roles.user_id = auth.uid() 
-        AND user_roles.role IN ('super_admin', 'system_manager')
+        AND user_roles.role IN ('super_admin', 'system_manager', 'event_manager')
     ) THEN
         RAISE EXCEPTION 'Access denied';
+    END IF;
+
+    -- Prevent non-super_admins from deleting super_admins
+    IF EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_roles.user_id = target_user_id 
+        AND user_roles.role = 'super_admin'
+    ) AND NOT EXISTS (
+        SELECT 1 FROM public.user_roles 
+        WHERE user_roles.user_id = auth.uid() 
+        AND user_roles.role = 'super_admin'
+    ) THEN
+        RAISE EXCEPTION 'Only super admins can delete super admins';
     END IF;
 
     -- Note: Deleting from auth.users will naturally cascade to public.user_roles 
