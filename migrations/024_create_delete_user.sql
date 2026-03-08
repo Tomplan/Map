@@ -8,13 +8,15 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
-    -- Check if the current user is an admin
+    -- Check if the current user is an admin allowed to delete
+    -- super_admins and system_managers can delete
+    -- event_managers CANNOT delete
     IF NOT EXISTS (
         SELECT 1 FROM public.user_roles 
         WHERE user_roles.user_id = auth.uid() 
         AND user_roles.role IN ('super_admin', 'system_manager')
     ) THEN
-        RAISE EXCEPTION 'Access denied';
+        RAISE EXCEPTION 'Access denied: Event Managers cannot delete users';
     END IF;
 
     -- Note: Deleting from auth.users will naturally cascade to public.user_roles 
