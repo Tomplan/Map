@@ -1,19 +1,21 @@
 // Utility to get the base URL
 export function getBaseUrl() {
-  // The most robust way to get the base URL is to check the current window location.
-  // Because we use a HashRouter, window.location.pathname will always resolve
-  // to the path containing index.html. We can simply substring to the last '/'
-  // to dynamically get the exact base path for any deployed environment.
-  if (typeof window !== 'undefined' && window.location && window.location.pathname) {
-    const path = window.location.pathname;
-    return path.substring(0, path.lastIndexOf('/') + 1);
+  // Vite natively exposes the resolved base path (from vite.config.js `base` option)
+  // via import.meta.env.BASE_URL. This is the only 100% reliable way to know where 
+  // Vite thinks assets are served from, regardless of the browser address bar.
+  if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) {
+    return import.meta.env.BASE_URL;
   }
 
   // Fallback 1: Global define (Vite/Jest/Node)
-  // This is defined in vite.config.js and jest.config.cjs
-  // avoiding import.meta issues in Jest/CJS environments
   if (typeof __APP_BASE_URL__ !== 'undefined') {
     return __APP_BASE_URL__;
+  }
+
+  // Fallback 2: Browser path heuristics for non-Vite environments
+  if (typeof window !== 'undefined' && window.location && window.location.pathname) {
+    const path = window.location.pathname;
+    return path.substring(0, path.lastIndexOf('/') + 1);
   }
 
   return '/';

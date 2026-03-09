@@ -70,7 +70,11 @@ function parseInvoiceText(text, filename) {
         }
         
         if (itemLine.toLowerCase().includes('standhuur') || itemLine.toLowerCase().includes('stand')) {
-          result.stands_count += qty;
+          let multiplier = 1;
+          if (itemLine.toLowerCase().includes('6x12') || itemLine.toLowerCase().includes('6 x 12') || itemLine.toLowerCase().includes('dubbele')) {
+            multiplier = 2;
+          }
+          result.stands_count += (qty * multiplier);
           result.is_relevant = true;
           
           // Clean area extraction: pull text after slash but before the quantity+price chunk
