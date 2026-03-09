@@ -1,0 +1,125 @@
+                {processedInvoices.map((inv) => {
+                  const matchName = companies.find(
+                    (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
+                  );
+                  const typeMatch = inv.notes?.match(/Type: ([^-]+)(?: -|$)/);
+                  const typeStr = typeMatch ? typeMatch[1].trim() : '';
+                  const itemMatch = inv.notes?.match(/Item: ([^\n]+)/);
+                  const itemStr = itemMatch ? itemMatch[1].trim() : (typeStr || 'N/A');
+
+                  return (
+                    <tr
+                      key={inv.id}
+                      onClick={() => setEditingInvoice(inv)}
+                      className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                    >
+                      <td className="px-4 py-3 font-medium text-blue-600 border-r border-gray-50">
+                        <a 
+                          href={import.meta.env.BASE_URL + 'invoices/' + inv.invoice_number + '.pdf'}
+                          target="_blank"
+                          rel="noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title="Open PDF"
+                          className="hover:underline flex items-center gap-1"
+                        >
+                          {inv.invoice_number}
+                        </a>
+                      </td>
+                      <td className="px-4 py-3 border-r border-gray-50">
+                        <div className="font-medium text-gray-900">{inv.company_name}</div>
+                        {matchName ? (
+                          <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
+                            Match: {matchName.name}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-200 mt-1 inline-block">
+                            Will Create New Pin
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 border-r border-gray-50">
+                        <span className="text-sm text-indigo-700 font-medium">{itemStr}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center border-r border-gray-50">
+                        <div className="font-semibold text-gray-800 text-base">
+                          {inv.stands_count}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        {inv.meals_count}
+                      </td>
+                      <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
+                        {inv.area_preference && (
+                          <div className="text-xs font-semibold text-indigo-700 mb-1">
+                            Area: {inv.area_preference}
+                          </div>
+                        )}
+                        <div className="text-gray-500 text-xs whitespace-pre-wrap">{inv.notes}</div>
+                      </td>
+                      <td className="px-4 py-3 text-center border-r border-gray-50">
+                        <span
+                          className={
+                            'px-2 py-1 rounded text-xs font-semibold ' +
+                            (inv.status === 'approved'
+                              ? 'bg-green-100 text-green-700 border border-green-200'
+                              : inv.status === 'rejected'
+                                ? 'bg-red-100 text-red-700 border border-red-200'
+                                : 'bg-yellow-100 text-yellow-700 border border-yellow-300')
+                          }
+                        >
+                          {inv.status === 'approved'
+                            ? 'SUBSCRIBED'
+                            : inv.status
+                              ? inv.status.toUpperCase()
+                              : 'PENDING'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex flex-col gap-2 items-end">
+                          {inv.status === 'pending' && (
+                            <div className="flex gap-2 justify-end">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleApproveAndSync(inv);
+                                }}
+                                className="px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded text-xs font-medium inline-flex items-center gap-1 shadow-sm cursor-pointer border border-transparent"
+                                title="Subscribe to Event"
+                              >
+                                <Icon path={mdiSync} size={0.6} /> Subscribe
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(inv.id, 'rejected');
+                                }}
+                                className="px-3 py-1.5 bg-white border border-gray-300 text-red-600 hover:bg-red-50 rounded text-xs font-medium cursor-pointer"
+                                title="Reject and Ignore"
+                              >
+                                Reject
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="flex gap-3 justify-end items-center mt-1">
+                            {inv.status !== 'pending' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(inv.id, 'pending', inv.company_name);
+                                }}
+                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                              >
+                                Undo Status
+                              </button>
+                            )}
+                            {inv.status !== 'approved' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteInvoice(inv);
+                                }}
+                                className="text-xs text-red-500 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
+                                title="Delete Invoice"
+                              >
+                                <Icon path={mdiDeleteOutline} size={0.5} /> Delete

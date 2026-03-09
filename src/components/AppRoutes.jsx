@@ -27,6 +27,7 @@ const AdminLayout = lazy(() => import('./AdminLayout'));
 const Dashboard = lazy(() => import('./admin/Dashboard'));
 const MapManagement = lazy(() => import('./admin/MapManagement'));
 const CompaniesTab = lazy(() => import('./admin/CompaniesTab'));
+const InvoiceSyncTab = lazy(() => import('./admin/InvoiceSyncTab'));
 const EventSubscriptionsTab = lazy(() => import('./admin/EventSubscriptionsTab'));
 const ProgramManagement = lazy(() => import('./ProgramManagement'));
 const AssignmentsTab = lazy(() => import('./admin/AssignmentsTab'));
@@ -288,6 +289,14 @@ function AppRoutes({
           element={
             <Suspense fallback={<div className="p-4">Loading companies...</div>}>
               <CompaniesTab />
+            </Suspense>
+          }
+        />
+        <Route
+          path="invoices"
+          element={
+            <Suspense fallback={<div className="p-4">Loading invoice sync...</div>}>
+              <InvoiceSyncTab selectedYear={selectedYear} />
             </Suspense>
           }
         />

@@ -14,6 +14,7 @@ import {
   mdiCommentAlertOutline,
   mdiFullscreen,
   mdiFullscreenExit,
+  mdiSync,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
@@ -124,6 +125,12 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       label: t('adminNav.companiesNav'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
+    },
+    {
+      path: '/admin/invoices',
+      label: t('adminNav.invoiceSync', 'Invoice Sync'),
+      icon: mdiSync,
+      roles: ['super_admin', 'system_manager', 'event_manager'],
     },
     // Subscriptions, Assignments, and Program management are now surfaced
     // in the compact YearScopeSidebar (per recent UX changes). Keep these
