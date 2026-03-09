@@ -1,9 +1,14 @@
-import * as pdfjsLib from 'pdfjs-dist';
+// pdfjs-dist is heavy and uses CommonJS; importing at top-level trips Vite's
+// import-analysis when bundling the frontend.  Load it dynamically inside the
+// parser so the module only gets evaluated at runtime (and the build process
+// can skip it).
 
-// Standard worker pattern. Hardcoded version to match package.json to prevent Vite export undefined issues.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+export async function parsePdfInvoice(file, allowedItems = []) {
+  // import legacy build for browser compatibility
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+  // Standard worker pattern. Hardcoded version to match package.json to prevent Vite export undefined issues.
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
 
-export async function parsePdfInvoice(file) {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
@@ -29,14 +34,14 @@ export async function parsePdfInvoice(file) {
       allItems = allItems.concat(pageItems);
     }
 
-    return parseSpatialInvoice(allItems);
+    return parseSpatialInvoice(allItems, allowedItems);
   } catch (error) {
     console.error('Error parsing PDF:', error);
     throw error;
   }
 }
 
-function parseSpatialInvoice(items) {
+function parseSpatialInvoice(items, allowedItems) {
   // Sort items top-to-bottom. Y is higher for the top of the page.
   items.sort((a, b) => {
     // Treat items within 5 points of Y as being on the same line
@@ -93,7 +98,7 @@ function parseSpatialInvoice(items) {
     }
 
     // Detect if we've reached the line items table
-    if (lowerText.includes('omschrijving') || lowerText.includes('aantal') || lowerText.includes('bedrag') || lowerText.includes('item')) {
+    if (lowerText.includes('item') && lowerText.includes('aantal')) {
       inLineItems = true;
       collectingClientDetails = false; // Failsafe
       return; 
@@ -116,19 +121,34 @@ function parseSpatialInvoice(items) {
     }
 
     // 1) Find Invoice Number
-    if (lowerText.includes('factuurnummer') || lowerText.includes('factuur nr')) {
-      const match = textChunk.match(/(?:Factuurnummer|Factuur nr)[:\.\s]+([A-Z0-9-]+)/i);
-      if (match) {
-        parsed.invoice_number = match[1].trim();
-      } else {
+    if (!parsed.invoice_number) {
+      if (lowerText.includes('factuurnummer') || lowerText.includes('factuur nr')) {
+        // ALWAYS on the exact next line in the spatial block structure.
+        if (lines[index + 1]) {
+           const potentialNumbers = lines[index + 1].map(i => i.str.trim()).filter(str => str.length >= 4);
+           
+           // We are looking for an item on the next line that is just a block of digits (e.g. 2025091)
+           // and avoiding dates like "26 sep 2025" which contain letters or aren't a pure number sequence.
+           const validChunk = potentialNumbers.find(str => /^F?\d{4,}$/.test(str.replace(/\s+/g, '')));
+           
+           if (validChunk) {
+               // strip spaces in case of weird kerning like '2 0 2 5 0 9 1'
+               parsed.invoice_number = validChunk.replace(/\s+/g, '');
+           }
+        }
+        
+        // Inline fallback just in case 'Factuurnummer 2025091' actually is on a single line chunk
+        if (!parsed.invoice_number || parsed.invoice_number.length < 3) {
+           const inlineMatch = textChunk.match(/(?:Factuurnummer|Factuur nr)[:\.\s]+([A-Z0-9-]+)/i);
+           if (inlineMatch) parsed.invoice_number = inlineMatch[1].trim();
+        }
+      }
+      
+      // Standalone pattern fallback (only if "Factuurnummer" text was never seen)
+      if (!parsed.invoice_number && !lowerText.includes('factuurnummer')) {
         const fItem = lineItems.find(i => /F202\d-\d{4}/.test(i.str));
         if (fItem) parsed.invoice_number = fItem.str.trim();
-        const fItem2 = lineItems.find(i => /202\d{3,4}/.test(i.str));
-        if (fItem2 && !parsed.invoice_number) parsed.invoice_number = fItem2.str.trim();
       }
-    } else if (!parsed.invoice_number && /202\d{3,4}/.test(textChunk)) {
-      const match = textChunk.match(/(202\d{3,4})/);
-      if (match) parsed.invoice_number = match[1];
     }
 
     // 4) Notes / Opmerkingen
@@ -186,16 +206,19 @@ function parseSpatialInvoice(items) {
            }
         }
 
-        // Description is usually left-aligned
-        const descItems = lineItems.filter(i => i.x < 300);
-        const descMatch = descItems.map(i => i.str).join(' ').trim();
+        // Description is left-aligned, but we must exclude the item identified as the quantity
+        const descItems = lineItems.filter(i => i.x < 300 && i !== qtyItem);
+        let descMatch = descItems.map(i => i.str).join(' ').trim();
+        
+        // Failsafe in case a different quantity regex trapped it, strip solitary numbers at the end
+        descMatch = descMatch.replace(/\s+\d+$/, '').trim();
         
         // Price is usually right-aligned
         const priceItem = lineItems[lineItems.length - 1];
 
         if (descMatch && descMatch.length > 2) {
            parsed.line_items.push({
-             description: descMatch,
+             item: descMatch,
              quantity: qty,
              price: priceItem ? priceItem.str : ""
            });
@@ -204,19 +227,37 @@ function parseSpatialInvoice(items) {
         // Only 1 item, but placed left. Likely a multi-line description continuation.
         if (parsed.line_items.length > 0) {
            if (!lowerText.includes('subtotaal') && !lowerText.includes('btw') && !lowerText.includes('totaal') && !lowerText.includes('iban') && !lowerText.includes('betaal')) {
-             parsed.line_items[parsed.line_items.length - 1].description += " " + textChunk;
+             parsed.line_items[parsed.line_items.length - 1].item += " " + textChunk;
            }
         }
       }
     }
   });
 
+
+  // Filter line items based on whether they match the Allowed list
+  if (allowedItems && allowedItems.length > 0) {
+    parsed.line_items = parsed.line_items.filter(li => {
+      const descLower = li.item.toLowerCase();
+      // Only Keep items if they partially match one of the explicit allowed list strings
+      return allowedItems.some(allowedStr => {
+        const check = allowedStr.trim().toLowerCase();
+        return check.length > 0 && descLower.includes(check);
+      });
+    });
+
+    // If after filtering we have no items left, the invoice is irrelevant
+    if (parsed.line_items.length === 0) {
+      parsed.is_relevant = false;
+    }
+  }
+
   // Calculate totals for UI columns based on discovered line items
   parsed.stands_count = 0;
   parsed.meals_count = 0;
   
   parsed.line_items.forEach(li => {
-    const desc = li.description.toLowerCase();
+    const desc = li.item.toLowerCase();
     
     if (desc.includes('stand') || desc.includes('kraam')) {
        if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
@@ -232,17 +273,17 @@ function parseSpatialInvoice(items) {
   });
 
   // Failsafe: if the document didn't have 'omschrijving' header but did mention stands anywhere
-  if (parsed.line_items.length === 0) {
+  if (parsed.line_items.length === 0 && (!allowedItems || allowedItems.length === 0)) {
     const backupHits = items.filter(i => i.str.toLowerCase().includes('standhuur') || i.str.toLowerCase().includes('kraam'));
     backupHits.forEach(st => {
-      parsed.line_items.push({ description: st.str, quantity: 1, price: '?' });
+      parsed.line_items.push({ item: st.str, quantity: 1, price: '?' });
       parsed.stands_count += 1;
     });
   }
-  
+
   // Clean up client block
   if (parsed.client_details.length > 0) {
-     parsed.client_details = parsed.client_details.filter(l => l.length > 3);
+    parsed.client_details = parsed.client_details.filter(l => l.length > 3);
   }
 
   return parsed;

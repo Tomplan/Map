@@ -7,6 +7,31 @@ import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
   {
+    ignores: [
+      '.git/**',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      'backups/**',
+      'screenshots/**',
+      'docs/**',
+      '*.min.js',
+      'formatted.js',
+      'prod_formatted.js',
+      'curled.js',
+      'temp.js',
+      'prod_temp.js',
+      'fix-db.js',
+      'fix-db2.js',
+      'clear-invoices.js',
+      'test-clear.js',
+      'patch.cjs',
+      'patch-sw.cjs',
+      'get-map-keys.js'
+    ],
+  },
+  {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
       globals: globals.browser,
@@ -34,7 +59,7 @@ export default defineConfig([
     settings: {
       react: { version: 'detect' },
     },
-    ignores: ['node_modules/**', 'dist/**', 'build/**', 'coverage/**'],
+
   },
   // Additional overrides for scripts and tests
   {

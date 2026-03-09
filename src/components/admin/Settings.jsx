@@ -12,7 +12,8 @@ import {
   mdiCalendarEdit,
   mdiAccountCircle,
   mdiDomain,
-    mdiQrcode,
+  mdiQrcode,
+  mdiFilterMinus,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
@@ -24,6 +25,7 @@ import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
 import MapSettings from './MapSettings';
 import ShareApp from './ShareApp';
+import InvoiceFilters from './InvoiceFilters';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -111,6 +113,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       component: <ShareApp />,
       scope: 'organization',
       description: t('settings.shareApp.description', 'Get QR code and share link'),
+    },
+    {
+      id: 'invoice-filters',
+      label: 'Invoice Import Filters',
+      icon: mdiFilterMinus,
+      roles: ['super_admin', 'system_manager', 'event_manager'],
+      component: <InvoiceFilters />,
+      scope: 'organization',
+      description: 'Manage items that are ignored during invoice parsing',
     },
     {
       id: 'advanced',

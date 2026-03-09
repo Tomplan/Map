@@ -8,6 +8,9 @@ import {
   mdiAlertCircle,
   mdiDomain,
   mdiCurrencyUsd,
+  mdiFilterMinus,
+  mdiPlus,
+  mdiClose
 } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
@@ -48,6 +51,10 @@ export default function EventDefaults() {
   // Event default coins (stored on organization_profile)
   const [defaultCoins, setDefaultCoins] = useState(0);
 
+  // Invoice parsing ignored items
+  const [invoiceIgnoredItems, setInvoiceIgnoredItems] = useState([]);
+  const [newIgnoredItem, setNewIgnoredItem] = useState('');
+
   // Sync local state with organization settings when they load
   useEffect(() => {
     if (settings) {
@@ -56,6 +63,7 @@ export default function EventDefaults() {
       setDefaultBbqSat(settings.default_bbq_sat ?? 0);
       setDefaultBreakfastSun(settings.default_breakfast_sun ?? 0);
       setDefaultLunchSun(settings.default_lunch_sun ?? 0);
+      setInvoiceIgnoredItems(settings.invoice_ignored_items ?? []);
 
       // Parse notification settings from JSONB
       if (settings.notification_settings) {
@@ -100,6 +108,7 @@ export default function EventDefaults() {
         default_breakfast_sun: defaultBreakfastSun,
         default_lunch_sun: defaultLunchSun,
         notification_settings: notificationSettings,
+        invoice_ignored_items: invoiceIgnoredItems,
       });
 
       if (!result) {
@@ -146,6 +155,7 @@ export default function EventDefaults() {
       setDefaultBbqSat(settings.default_bbq_sat ?? 0);
       setDefaultBreakfastSun(settings.default_breakfast_sun ?? 0);
       setDefaultLunchSun(settings.default_lunch_sun ?? 0);
+      setInvoiceIgnoredItems(settings.invoice_ignored_items ?? []);
 
       if (settings.notification_settings) {
         const notifSettings =
@@ -160,6 +170,25 @@ export default function EventDefaults() {
       if (orgProfile && typeof orgProfile.default_coins === 'number') {
         setDefaultCoins(orgProfile.default_coins);
       }
+    }
+  };
+
+  const handleAddIgnoredItem = () => {
+    const trimmed = newIgnoredItem.trim();
+    if (trimmed && !invoiceIgnoredItems.includes(trimmed)) {
+      setInvoiceIgnoredItems([...invoiceIgnoredItems, trimmed]);
+      setNewIgnoredItem('');
+    }
+  };
+
+  const handleRemoveIgnoredItem = (itemToRemove) => {
+    setInvoiceIgnoredItems(invoiceIgnoredItems.filter((item) => item !== itemToRemove));
+  };
+
+  const handleIgnoredItemKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddIgnoredItem();
     }
   };
 
@@ -469,6 +498,77 @@ export default function EventDefaults() {
                   }`}
                 />
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Invoice Processing Settings Section */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Icon path={mdiFilterMinus} size={1} className="text-orange-600" />
+            <h3 className="text-lg font-semibold text-gray-900">
+              {t('settings.eventDefaults.invoiceProcessing.title', 'Invoice Processing')}
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">
+            {t('settings.eventDefaults.invoiceProcessing.description', 'Manage text strings that will cause a line item to be ignored during PDF invoice import.')}
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="newIgnoredItem" className="label-base">
+                {t('settings.eventDefaults.invoiceProcessing.addLabel', 'Add Ignored Text')}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="newIgnoredItem"
+                  value={newIgnoredItem}
+                  onChange={(e) => setNewIgnoredItem(e.target.value)}
+                  onKeyDown={handleIgnoredItemKeyDown}
+                  placeholder={t('settings.eventDefaults.invoiceProcessing.placeholder', 'e.g. Test, Verzendkosten')}
+                  className="input-base flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddIgnoredItem}
+                  disabled={!newIgnoredItem.trim()}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                >
+                  <Icon path={mdiPlus} size={0.8} />
+                  {t('common.add', 'Add')}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                {t('settings.eventDefaults.invoiceProcessing.currentList', 'Currently Ignored Strings:')}
+              </h4>
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 min-h-[100px] flex flex-wrap gap-2 content-start">
+                {invoiceIgnoredItems.length === 0 ? (
+                  <span className="text-gray-400 text-sm italic w-full text-center mt-6">
+                    {t('settings.eventDefaults.invoiceProcessing.emptyList', 'No items ignored. All line items will be processed.')}
+                  </span>
+                ) : (
+                  invoiceIgnoredItems.map((item, index) => (
+                    <div
+                      key={index}
+                      className="inline-flex items-center gap-1 bg-white border border-orange-200 text-orange-800 text-sm px-3 py-1 rounded-full shadow-sm"
+                    >
+                      <span className="font-medium">{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveIgnoredItem(item)}
+                        className="p-0.5 hover:bg-orange-100 rounded-full transition-colors text-orange-500 hover:text-orange-700 focus:outline-none"
+                        aria-label={t('common.remove', 'Remove') + ' ' + item}
+                      >
+                        <Icon path={mdiClose} size={0.6} />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>
