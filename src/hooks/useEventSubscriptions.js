@@ -107,7 +107,7 @@ export default function useEventSubscriptions(eventYear) {
       const { data: orgProfile } = await supabase
         .from('organization_profile')
         .select(
-          'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins',
+          'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun',
         )
         .eq('id', 1)
         .single();
@@ -131,7 +131,7 @@ export default function useEventSubscriptions(eventYear) {
 
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
-        .insert({
+        .upsert({
           company_id: companyId,
           event_year: eventYear,
           contact: subscriptionData.contact || company?.contact || '',
@@ -147,7 +147,7 @@ export default function useEventSubscriptions(eventYear) {
           coins: subscriptionData.coins ?? defaultCoins,
           notes: subscriptionData.notes || '',
           created_by,
-        })
+        }, { onConflict: 'company_id, event_year' })
         .select()
         .single();
 
@@ -312,7 +312,7 @@ export default function useEventSubscriptions(eventYear) {
 
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
-        .insert(newSubscriptions)
+        .upsert(newSubscriptions, { onConflict: 'company_id, event_year' })
         .select();
 
       if (insertError) throw insertError;

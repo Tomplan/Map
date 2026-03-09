@@ -1,5 +1,5 @@
 // Simple service worker for offline map tile caching
-const PRECACHE_NAME = 'static-assets-v3';
+const PRECACHE_NAME = 'static-assets-v4';
 
 // We can't know the base path at build time, so compute it dynamically from the
 // service worker's own scope (e.g. '/Map/' or '/Map/dev/').
