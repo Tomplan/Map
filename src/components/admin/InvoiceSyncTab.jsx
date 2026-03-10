@@ -761,39 +761,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Date {getSortIcon('date')}
                   </th>
                   <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    Stands
-                  </th>
                   {/* split meal columns */}
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    Bfst
-                  </th>
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    Lunch
-                  </th>
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    BBQ
-                  </th>
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    Bfst
-                  </th>
-                  <th
-                    className="px-2 py-2 text-center border-b border-gray-200"
-                  >
-                    Lunch
-                  </th>
-                  <th className="px-2 py-2 border-b border-gray-200">Notes</th>
-                  <th className="px-2 py-2 border-b border-gray-200">Area</th>
+
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('status')}
@@ -877,40 +846,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           </span>
                         </td>
                         <td className="px-2 py-2 text-center border-r border-gray-50">
-                          <div className="font-semibold text-gray-800 text-base">
-                            {inv.stands_count}
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
-                          {inv.breakfast_sat ?? 0}
-                        </td>
-                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
-                          {inv.lunch_sat ?? 0}
-                        </td>
-                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
-                          {inv.bbq_sat ?? 0}
-                        </td>
-                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
-                          {inv.breakfast_sun ?? 0}
-                        </td>
-                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
-                          {inv.lunch_sun ?? 0}
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-50 max-w-xs">
-                          <div className="text-gray-500 text-xs whitespace-pre-wrap truncate">
-                            {parsedData.rawNotes || parsedData.notes || rawNotesFallback || 'No notes'}
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-50 max-w-xs xl:max-w-md">
-                          {areaString || inv.area_preference ? (
-                            <div className="text-gray-500 text-xs whitespace-pre-wrap">
-                              {areaString || inv.area_preference}
-                            </div>
-                          ) : (
-                            'N/A'
-                          )}
-                        </td>
-                        <td className="px-2 py-2 text-center border-r border-gray-50">
                           <span
                             className={
                               'px-2 py-1 rounded text-xs font-semibold ' +
@@ -986,7 +921,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       {/* Expandable Subrow */}
                       {isExpanded && (
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <td colSpan="9" className="p-4 bg-slate-50 border-x border-gray-200">
+                          <td colSpan="6" className="p-4 bg-slate-50 border-x border-gray-200">
+                            {/* compact summary row with counts */}
+                            <div className="mb-3 text-sm text-gray-700">
+                              <strong>Stands:</strong> {inv.stands_count} &nbsp;|
+                              <strong>Sat:</strong> B {inv.breakfast_sat} L {inv.lunch_sat} BBQ {inv.bbq_sat} &nbsp;|
+                              <strong>Sun:</strong> B {inv.breakfast_sun} L {inv.lunch_sun}
+                            </div>
                             <div className="flex flex-col lg:flex-row gap-6">
                               {/* Sub Box 1: Client Address from PDF */}
                               <div className="flex-1 bg-white p-4 rounded border border-gray-300 shadow-sm relative overflow-hidden">
