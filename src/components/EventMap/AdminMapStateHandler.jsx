@@ -7,13 +7,16 @@ export default function AdminMapStateHandler({ isAdminView, selectedYear }) {
       if (isAdminView && selectedYear) {
         const center = map.getCenter();
         const zoom = map.getZoom();
-        localStorage.setItem(`adminMapPrefs_${selectedYear}`, JSON.stringify({
-          lat: center.lat,
-          lng: center.lng,
-          zoom: zoom
-        }));
+        localStorage.setItem(
+          `adminMapPrefs_${selectedYear}`,
+          JSON.stringify({
+            lat: center.lat,
+            lng: center.lng,
+            zoom: zoom,
+          }),
+        );
       }
-    }
+    },
   });
 
   return null;

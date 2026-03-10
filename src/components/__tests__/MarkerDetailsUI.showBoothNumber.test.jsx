@@ -24,7 +24,9 @@ const mockGetCompanyCategories = async () => [];
 jest.mock('../../hooks/useCategories', () => ({
   useCategories: () => ({ getCompanyCategories: mockGetCompanyCategories }),
 }));
-jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k, d) => d || k, i18n: { language: 'en' } }) }));
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (k, d) => d || k, i18n: { language: 'en' } }),
+}));
 jest.mock('../../contexts/FavoritesContext', () => ({
   useFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),
   useOptionalFavoritesContext: () => ({ isFavorite: () => false, toggleFavorite: () => {} }),

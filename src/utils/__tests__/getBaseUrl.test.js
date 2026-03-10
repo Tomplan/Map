@@ -11,10 +11,10 @@ describe('getBaseUrl browser behavior', () => {
 
     window.history.pushState({}, 'Test Title', '/Map/dev/index.html');
     expect(getBaseUrl()).toBe('/Map/dev/');
-    
+
     window.history.pushState({}, 'Test Title', '/Map/');
     expect(getBaseUrl()).toBe('/Map/');
-    
+
     window.history.pushState({}, 'Test Title', '/');
     expect(getBaseUrl()).toBe('/');
   });

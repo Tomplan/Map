@@ -58,8 +58,10 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
-// Register service worker for offline support
-if ('serviceWorker' in navigator) {
+// Register service worker for offline support (excluding standard development/HMR)
+const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+
+if ('serviceWorker' in navigator && !isDev) {
   window.addEventListener('load', () => {
     // When deploying to a subdirectory (like /Map/dev/), the service worker needs
     // to be registered with the correct scope.

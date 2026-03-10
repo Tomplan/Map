@@ -21,12 +21,12 @@ export function getLogoPath(logo) {
         const folder = parts[0];
         const filename = parts.slice(1).join('/');
 
-         // CRITICAL FIX: Do not rewrite URLs for 'companies' or 'organization' folders to 'generated'
-         // because the generated variants might not exist yet (async generation).
-         // Only rewrite if we are already in the 'generated' folder (to add size suffix)
-         if (folder !== 'generated') {
-             return logo;
-         }
+        // CRITICAL FIX: Do not rewrite URLs for 'companies' or 'organization' folders to 'generated'
+        // because the generated variants might not exist yet (async generation).
+        // Only rewrite if we are already in the 'generated' folder (to add size suffix)
+        if (folder !== 'generated') {
+          return logo;
+        }
 
         if (!filename) return logo;
 
@@ -84,7 +84,7 @@ export function getResponsiveLogoSources(iconUrl) {
 
         // CRITICAL FIX: Same as above, do not assume generated variants exist for non-generated folders.
         if (folder !== 'generated') {
-          return { src: iconUrl, srcSet: null, sizes: null }; 
+          return { src: iconUrl, srcSet: null, sizes: null };
         }
 
         if (!filename) return { src: iconUrl, srcSet: null, sizes: null };

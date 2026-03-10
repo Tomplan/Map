@@ -29,12 +29,16 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
       )}
       <div className="flex flex-col min-w-0">
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs font-semibold text-gray-700">{t('map.booth', 'Booth')} {marker.glyph}</div>
+          <div className="text-xs font-semibold text-gray-700">
+            {t('map.booth', 'Booth')} {marker.glyph}
+          </div>
         )}
         {marker.name ? (
           <div className="text-sm font-medium text-gray-900 truncate">{marker.name}</div>
         ) : (
-          <div className="text-xs font-medium text-gray-500 italic">{t('map.unassigned', 'Unassigned')}</div>
+          <div className="text-xs font-medium text-gray-500 italic">
+            {t('map.unassigned', 'Unassigned')}
+          </div>
         )}
       </div>
     </div>
@@ -97,7 +101,9 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
             </div>
           )}
           {showBoothNumber && marker.glyph && (
-            <div className="text-sm text-gray-700 mb-2">{t('map.booth', 'Booth')} {marker.glyph}</div>
+            <div className="text-sm text-gray-700 mb-2">
+              {t('map.booth', 'Booth')} {marker.glyph}
+            </div>
           )}
           {/* Category Badges */}
           {categories && categories.length > 0 && (
@@ -168,10 +174,14 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
         {marker.name ? (
           <div className="font-semibold text-gray-900 text-sm">{marker.name}</div>
         ) : (
-          <div className="font-semibold text-gray-500 italic text-sm">{t('map.unassignedBooth', 'Unassigned Booth')}</div>
+          <div className="font-semibold text-gray-500 italic text-sm">
+            {t('map.unassignedBooth', 'Unassigned Booth')}
+          </div>
         )}
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs text-gray-700 mb-2">{t('map.booth', 'Booth')} {marker.glyph}</div>
+          <div className="text-xs text-gray-700 mb-2">
+            {t('map.booth', 'Booth')} {marker.glyph}
+          </div>
         )}
         {hasCompanyData && (
           <button
