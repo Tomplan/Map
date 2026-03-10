@@ -6,12 +6,13 @@ import Icon from '@mdi/react';
 import {
   mdiRefresh,
   mdiAlertCircleOutline,
-  mdiSync,
+  mdiCheck,
+  mdiCancel,
   mdiUpload,
   mdiMagnify,
   mdiChevronUp,
   mdiChevronDown,
-  mdiDeleteOutline,
+  mdiDelete,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -486,7 +487,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-          {t('adminNav.invoiceSync', 'Invoice Sync')}
+          {t('adminNav.invoices', 'Invoices')}
         </h1>
         <div className="flex-1 max-w-md mx-6 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -548,7 +549,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   disabled={loading || invoices.length === 0}
                   className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
                 >
-                  <Icon path={mdiDeleteOutline} size={0.8} />
+                  <Icon path={mdiDelete} size={0.8} className="text-red-500" />
                   Clear Staging Area
                 </button>
               </div>
@@ -749,7 +750,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Invoice {getSortIcon('invoice_number')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[150px]"
                     onClick={() => handleSort('company_name')}
                   >
                     Company {getSortIcon('company_name')}
@@ -760,16 +761,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[150px]">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[300px]">Item</th>
                   {/* split meal columns */}
 
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[80px]"
                     onClick={() => handleSort('status')}
                   >
                     Status {getSortIcon('status')}
                   </th>
-                  <th className="px-4 py-3 text-right border-b border-gray-200 w-full">Actions</th>
+                  <th className="px-4 py-3 text-right border-b border-gray-200 w-[120px]">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
@@ -819,8 +820,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 align-top">
-                          <div className="font-medium text-gray-900">{inv.company_name}</div>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
+                          <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {matchName ? (
                             <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
                               Match: {matchName.name}
@@ -834,7 +835,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top">
                           {parsedData.date || 'N/A'}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 w-[150px] align-top">
+                        <td className="px-2 py-2 border-r border-gray-50 w-[250px] align-top">
                           <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
                             {firstItem}{' '}
                             {hasMore && (
@@ -844,7 +845,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-center border-r border-gray-50 align-top">
+                        <td className="px-2 py-2 text-center border-r border-gray-50 align-top w-[80px]">
                           <span
                             className={
                               'px-2 py-1 rounded text-xs font-semibold ' +
@@ -862,58 +863,40 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 : 'PENDING'}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-right w-full align-top">
-                          <div className="flex flex-col gap-2 items-end">
-                            {inv.status === 'pending' && (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleApproveAndSync(inv);
-                                  }}
-                                  className="px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded text-xs font-medium inline-flex items-center gap-1 shadow-sm cursor-pointer border border-transparent"
-                                  title="Subscribe to Event"
-                                >
-                                  <Icon path={mdiSync} size={0.6} /> Subscribe
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(inv.id, 'rejected');
-                                  }}
-                                  className="px-3 py-1.5 bg-white border border-gray-300 text-red-600 hover:bg-red-50 rounded text-xs font-medium cursor-pointer"
-                                  title="Reject and Ignore"
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            )}
-
-                            <div className="flex gap-3 justify-end items-center mt-1">
-                              {inv.status !== 'pending' && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(inv.id, 'pending', inv.company_name);
-                                  }}
-                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                                >
-                                  Undo Status
-                                </button>
-                              )}
-                              {inv.status !== 'approved' && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteInvoice(inv);
-                                  }}
-                                  className="text-xs text-red-500 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
-                                  title="Delete Invoice"
-                                >
-                                  <Icon path={mdiDeleteOutline} size={0.5} /> Delete
-                                </button>
-                              )}
-                            </div>
+                        <td className="px-2 py-2 text-right w-[120px] align-top">
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApproveAndSync(inv);
+                              }}
+                              disabled={inv.status !== 'pending'}
+                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                              title="Approve"
+                            >
+                              <Icon path={mdiCheck} size={0.8} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(inv.id, 'rejected');
+                              }}
+                              disabled={inv.status === 'rejected'}
+                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                              title="Reject"
+                            >
+                              <Icon path={mdiCancel} size={0.8} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteInvoice(inv);
+                              }}
+                              className="p-2 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
+                              title="Delete Invoice"
+                            >
+                              <Icon path={mdiDelete} size={0.8} className="text-red-500" />
+                            </button>
                           </div>
                         </td>
                       </tr>
