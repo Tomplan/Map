@@ -756,12 +756,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Company {getSortIcon('company_name')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left w-[120px]"
                     onClick={() => handleSort('date')}
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[300px]">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
                   {/* split meal columns */}
 
                   <th
@@ -832,10 +832,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top">
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top w-[120px]">
                           {parsedData.date || 'N/A'}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 w-[250px] align-top">
+                        <td className="px-2 py-2 border-r border-gray-50 align-top">
                           <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
                             {firstItem}{' '}
                             {hasMore && (
