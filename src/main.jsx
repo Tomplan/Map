@@ -58,19 +58,35 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
-// Register service worker for offline support
+// Service worker handling ------------------------------------------------
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // When deploying to a subdirectory (like /Map/dev/), the service worker needs
-    // to be registered with the correct scope.
-    const swUrl = `${getBaseUrl()}service-worker.js`;
+  if (import.meta.env.DEV) {
+    // During development we never want a persistent service worker – it will
+    // keep serving stale assets and makes the UI appear frozen.  Unregister any
+    // that may have been installed by a previous production build and clear the
+    // caches so HMR works reliably.
     navigator.serviceWorker
-      .register(swUrl, { scope: getBaseUrl() })
-      .then((registration) => {
-        // console.log('SW register success:', registration);
-      })
-      .catch((registrationError) => {
-        console.warn('SW register failed:', registrationError);
-      });
-  });
+      .getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {});
+    if (window.caches && window.caches.keys) {
+      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+    }
+  }
+
+  if (import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      // When deploying to a subdirectory (like /Map/dev/), the service worker
+      // needs to be registered with the correct scope.
+      const swUrl = `${getBaseUrl()}service-worker.js`;
+      navigator.serviceWorker
+        .register(swUrl, { scope: getBaseUrl() })
+        .then((registration) => {
+          // console.log('SW register success:', registration);
+        })
+        .catch((registrationError) => {
+          console.warn('SW register failed:', registrationError);
+        });
+    });
+  }
 }
