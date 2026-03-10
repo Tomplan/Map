@@ -7,6 +7,7 @@ import {
   mdiRefresh,
   mdiAlertCircleOutline,
   mdiSync,
+  mdiCancel,
   mdiUpload,
   mdiMagnify,
   mdiChevronUp,
@@ -863,57 +864,39 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           </span>
                         </td>
                         <td className="px-2 py-2 text-right w-full align-top">
-                          <div className="flex flex-col gap-2 items-end">
-                            {inv.status === 'pending' && (
-                              <div className="flex gap-2 justify-end">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleApproveAndSync(inv);
-                                  }}
-                                  className="px-3 py-1.5 bg-blue-600 text-white hover:bg-blue-700 rounded text-xs font-medium inline-flex items-center gap-1 shadow-sm cursor-pointer border border-transparent"
-                                  title="Subscribe to Event"
-                                >
-                                  <Icon path={mdiSync} size={0.6} /> Subscribe
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(inv.id, 'rejected');
-                                  }}
-                                  className="px-3 py-1.5 bg-white border border-gray-300 text-red-600 hover:bg-red-50 rounded text-xs font-medium cursor-pointer"
-                                  title="Reject and Ignore"
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            )}
-
-                            <div className="flex gap-3 justify-end items-center mt-1">
-                              {inv.status !== 'pending' && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleStatusChange(inv.id, 'pending', inv.company_name);
-                                  }}
-                                  className="text-xs text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
-                                >
-                                  Undo Status
-                                </button>
-                              )}
-                              {inv.status !== 'approved' && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteInvoice(inv);
-                                  }}
-                                  className="text-xs text-red-500 hover:text-red-700 hover:underline cursor-pointer inline-flex items-center gap-1"
-                                  title="Delete Invoice"
-                                >
-                                  <Icon path={mdiDeleteOutline} size={0.5} /> Delete
-                                </button>
-                              )}
-                            </div>
+                          <div className="flex items-center justify-end space-x-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApproveAndSync(inv);
+                              }}
+                              disabled={inv.status !== 'pending'}
+                              className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                              title="Subscribe"
+                            >
+                              <Icon path={mdiSync} size={0.8} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(inv.id, 'rejected');
+                              }}
+                              disabled={inv.status === 'rejected'}
+                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
+                              title="Reject"
+                            >
+                              <Icon path={mdiCancel} size={0.8} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteInvoice(inv);
+                              }}
+                              className="p-2 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
+                              title="Delete Invoice"
+                            >
+                              <Icon path={mdiDeleteOutline} size={0.8} />
+                            </button>
                           </div>
                         </td>
                       </tr>
