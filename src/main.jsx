@@ -58,19 +58,35 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
-// Register service worker for offline support
+const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    // When deploying to a subdirectory (like /Map/dev/), the service worker needs
-    // to be registered with the correct scope.
-    const swUrl = `${getBaseUrl()}service-worker.js`;
+  if (isDev) {
+    // In development we clear any existing workers/caches immediately so that
+    // the production bundle can never be served by a stale SW.  The helper in
+    // index.html also runs before this code executes.
     navigator.serviceWorker
-      .register(swUrl, { scope: getBaseUrl() })
-      .then((registration) => {
-        // console.log('SW register success:', registration);
-      })
-      .catch((registrationError) => {
-        console.warn('SW register failed:', registrationError);
-      });
-  });
+      .getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => {});
+    if (window.caches && window.caches.keys) {
+      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+    }
+  }
+
+  if (!isDev && import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      // When deploying to a subdirectory (like /Map/dev/), the service worker
+      // needs to be registered with the correct scope.
+      const swUrl = `${getBaseUrl()}service-worker.js`;
+      navigator.serviceWorker
+        .register(swUrl, { scope: getBaseUrl() })
+        .then((registration) => {
+          // console.log('SW register success:', registration);
+        })
+        .catch((registrationError) => {
+          console.warn('SW register failed:', registrationError);
+        });
+    });
+  }
 }

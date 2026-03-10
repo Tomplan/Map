@@ -16,6 +16,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- development helper: immediately clear any leftover service workers and caches
+         before the app bundle loads.  If a SW is still installed from a previous
+         production build it will otherwise intercept requests and serve stale
+         JS, preventing the new dev code (including our unregister logic) from
+         ever running. -->
+    <script type="module">
+      if (import.meta.env && import.meta.env.DEV && 'serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then((regs) => regs.forEach((r) => r.unregister()))
+          .catch(() => {});
+        if (window.caches && window.caches.keys) {
+          caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
+        }
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

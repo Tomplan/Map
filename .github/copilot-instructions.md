@@ -143,6 +143,9 @@ npm run restore:full -- --backup-dir ./backups/full-backup-2025-11-30
 ### Data Management Scripts
 
 ```bash
+# Data testing & clearing
+node clear-invoices.js                   # Clears the staged_invoices table in the database
+
 # Company data processing
 npm run normalize:phones -- --dry-run    # Normalize phone number formats
 npm run scrape:emails                    # Extract company email addresses

@@ -688,12 +688,11 @@ export default function CompaniesTab() {
                             // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
                             // when a specific company has no logo set.
                             const fallback = getDefaultLogoPath();
-                            
+
                             // Use the item's logo if present; otherwise use fallback
-                            const source = (item.logo && item.logo.trim() !== '')
-                                ? item.logo
-                                : fallback;
-                                
+                            const source =
+                              item.logo && item.logo.trim() !== '' ? item.logo : fallback;
+
                             const r = getResponsiveLogoSources(source);
                             if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
                             return { src: getLogoPath(source) };
