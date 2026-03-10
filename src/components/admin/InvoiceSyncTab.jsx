@@ -83,14 +83,19 @@ function findBestCompanyMatch(invoice, companies) {
 // ── Re-extract structured fields from a raw client_block array ──────────
 // (mirrors the logic in pdfParser.js so old records without stored fields still work)
 function extractFieldsFromBlock(lines = []) {
-  const r = { contact_name: null, contact_email: null, contact_phone: null,
+  const r = { contact_name: null, contact_name_2: null,
+               contact_email: null, contact_email_2: null,
+               contact_phone: null, contact_phone_2: null,
                address_line1: null, address_line2: null, postal_code: null,
                city: null, country: null, vat_number: null, kvk_number: null };
   // skip index 0 (company name)
   lines.slice(1).forEach((line) => {
     const l = (line || '').trim();
     if (!l) return;
-    if (!r.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) { r.contact_email = l; return; }
+    if (/@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
+      if (!r.contact_email) { r.contact_email = l; return; }
+      if (!r.contact_email_2) { r.contact_email_2 = l; return; }
+    }
     if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
       const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
       r.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
@@ -105,8 +110,14 @@ function extractFieldsFromBlock(lines = []) {
       return;
     }
     if (!r.country && /nederland|netherlands|germany|deutschland|belgi/i.test(l)) { r.country = l; return; }
-    if (!r.contact_phone && /^[+\d(][\d\s().\-]{6,}$/.test(l) && !/^\d{4}\s*[A-Z]{2}$/i.test(l)) { r.contact_phone = l; return; }
-    if (!r.contact_name && /^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) { r.contact_name = l; return; }
+    if (/^[+\d(][\d\s().\-]{6,}$/.test(l) && !/^\d{4}\s*[A-Z]{2}$/i.test(l)) {
+      if (!r.contact_phone) { r.contact_phone = l; return; }
+      if (!r.contact_phone_2) { r.contact_phone_2 = l; return; }
+    }
+    if (/^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) {
+      if (!r.contact_name) { r.contact_name = l; return; }
+      if (!r.contact_name_2) { r.contact_name_2 = l; return; }
+    }
     if (!r.address_line1 && /\d/.test(l)) { r.address_line1 = l; return; }
     if (r.address_line1 && !r.address_line2 && /\d/.test(l)) r.address_line2 = l;
   });
@@ -116,6 +127,13 @@ function extractFieldsFromBlock(lines = []) {
 // ── Verification Modal ──────────────────────────────────────────────────
 function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
   const [shouldPatch, setShouldPatch] = React.useState(false);
+  // Per-field override for rows where invoice and DB values differ.
+  // key = dbField, value = 'inv' (use invoice) or 'cmp' (keep DB, default)
+  const [fieldChoices, setFieldChoices] = React.useState({});
+
+  const toggleChoice = (dbField, choice) =>
+    setFieldChoices(prev => ({ ...prev, [dbField]: choice }));
+
   let inv = {};
   try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
 
@@ -123,23 +141,34 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
   // live from the raw client_block array that was always stored.
   const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
                           inv.address_line1 || inv.postal_code || inv.vat_number;
-  if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
-    Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+  if (Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+    const derived = extractFieldsFromBlock(inv.client_block);
+    if (!hasStoredFields) {
+      // Old record: fill everything from block
+      Object.assign(inv, derived);
+    } else {
+      // Newer record: primary fields already stored, but backfill any missing _2 fields
+      if (!inv.contact_name_2  && derived.contact_name_2)  inv.contact_name_2  = derived.contact_name_2;
+      if (!inv.contact_email_2 && derived.contact_email_2) inv.contact_email_2 = derived.contact_email_2;
+      if (!inv.contact_phone_2 && derived.contact_phone_2) inv.contact_phone_2 = derived.contact_phone_2;
+    }
   }
 
   const fields = [
-    { label: 'Company name',  inv: invoice.company_name,  cmp: company.name },
-    { label: 'Contact 1',     inv: inv.contact_name,       cmp: company.contact_name || company.contact },
-    { label: 'Contact 2',     inv: null,                   cmp: company.contact || null },
-    { label: 'Email',         inv: inv.contact_email,      cmp: company.contact_email || company.email },
-    { label: 'Phone',         inv: inv.contact_phone,      cmp: company.contact_phone || company.phone },
-    { label: 'Street',        inv: inv.address_line1,      cmp: company.address_line1 },
-    { label: 'Street 2',      inv: inv.address_line2,      cmp: company.address_line2 },
-    { label: 'Postal code',   inv: inv.postal_code,        cmp: company.postal_code },
-    { label: 'City',          inv: inv.city,               cmp: company.city },
-    { label: 'Country',       inv: inv.country,            cmp: company.country },
-    { label: 'VAT',           inv: inv.vat_number,         cmp: company.vat_number },
-    { label: 'KvK',           inv: inv.kvk_number,         cmp: company.kvk_number },
+    { label: 'Company name',  dbField: null,            inv: invoice.company_name,  cmp: company.name },
+    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true },
+    ...(inv.contact_name_2 ? [{ label: 'Contact 2', dbField: null, inv: inv.contact_name_2, cmp: null }] : []),
+    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true },
+    ...(inv.contact_email_2 ? [{ label: 'Email 2',   dbField: null, inv: inv.contact_email_2,  cmp: null }] : []),
+    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true },
+    ...(inv.contact_phone_2 ? [{ label: 'Phone 2',   dbField: null, inv: inv.contact_phone_2,  cmp: null }] : []),
+    { label: 'Street',        dbField: 'address_line1', inv: inv.address_line1,      cmp: company.address_line1 },
+    { label: 'Street 2',      dbField: 'address_line2', inv: inv.address_line2,      cmp: company.address_line2 },
+    { label: 'Postal code',   dbField: 'postal_code',   inv: inv.postal_code,        cmp: company.postal_code },
+    { label: 'City',          dbField: 'city',          inv: inv.city,               cmp: company.city },
+    { label: 'Country',       dbField: 'country',       inv: inv.country,            cmp: company.country },
+    { label: 'VAT',           dbField: 'vat_number',    inv: inv.vat_number,         cmp: company.vat_number },
+    { label: 'KvK',           dbField: 'kvk_number',    inv: inv.kvk_number,         cmp: company.kvk_number },
   ];
 
   // Check if any invoice field would fill an empty company field
@@ -171,21 +200,62 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
             {fields.map((f, i) => {
               const differs = f.inv && f.cmp && f.inv !== f.cmp;
               const missing = f.inv && !f.cmp;
+              const choice = fieldChoices[f.dbField] || 'cmp';
               return (
-                <div key={i} className={`grid grid-cols-[120px_1fr_1fr] text-sm border-b border-gray-100 last:border-0 ${differs ? 'bg-amber-50' : missing ? 'bg-blue-50/30' : ''}`}>
-                  <div className="px-3 py-2 font-medium text-gray-500 text-xs flex items-center border-r border-gray-100">{f.label}</div>
-                  <div className="px-3 py-2 text-gray-800 border-r border-gray-100 break-all">{f.inv || <span className="text-gray-300">—</span>}</div>
-                  <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
-                    {f.cmp || <span className="text-gray-300">—</span>}
-                    {differs && <span className="ml-1 text-xs text-amber-600">(differs)</span>}
-                    {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                <div key={i} className={`text-sm border-b border-gray-100 last:border-0 ${differs ? 'bg-amber-50' : missing ? 'bg-blue-50/30' : ''}`}>
+                  <div className="grid grid-cols-[120px_1fr_1fr] items-start">
+                    <div className="px-3 py-2 font-medium text-gray-500 text-xs flex items-center border-r border-gray-100 self-stretch">{f.label}</div>
+                    <div className="px-3 py-2 text-gray-800 border-r border-gray-100 break-all">{f.inv || <span className="text-gray-300">—</span>}</div>
+                    <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
+                      {f.cmp || <span className="text-gray-300">—</span>}
+                      {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                    </div>
                   </div>
+                  {/* Per-row conflict resolution — only shown when both sides have different values */}
+                  {differs && f.dbField && (
+                    <div className="flex items-center gap-1.5 px-3 pb-2 pt-0.5">
+                      <span className="text-[10px] text-amber-700 font-semibold uppercase tracking-wide mr-1">Use:</span>
+                      <button
+                        onClick={() => toggleChoice(f.dbField, 'inv')}
+                        className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                          choice === 'inv'
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        Invoice value
+                      </button>
+                      <button
+                        onClick={() => toggleChoice(f.dbField, 'cmp')}
+                        className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                          choice === 'cmp'
+                            ? 'bg-green-600 text-white border-green-600'
+                            : 'bg-white text-green-700 border-green-300 hover:bg-green-50'
+                        }`}
+                      >
+                        Keep DB
+                      </button>
+                      {f.hasBoth && (
+                        <button
+                          onClick={() => toggleChoice(f.dbField, 'both')}
+                          className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
+                            choice === 'both'
+                              ? 'bg-purple-600 text-white border-purple-600'
+                              : 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50'
+                          }`}
+                          title="Keep DB value as primary, store invoice value in secondary field"
+                        >
+                          Both
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
 
-          {/* Patch option */}
+          {/* Patch option for empty fields */}
           {hasPatchableData && (
             <label className="flex items-center gap-2 mt-4 text-sm text-gray-700 cursor-pointer select-none">
               <input type="checkbox" checked={shouldPatch} onChange={e => setShouldPatch(e.target.checked)}
@@ -206,7 +276,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
               className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
               No match — create new company
             </button>
-            <button onClick={() => onConfirm(invoice, company, shouldPatch)}
+            <button onClick={() => onConfirm(invoice, company, shouldPatch, fieldChoices)}
               className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
               ✓ Confirm match
             </button>
@@ -552,7 +622,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   // Called when user confirms a match in the MatchVerificationModal.
-  const handleConfirmMatch = async (invoice, company, shouldPatch) => {
+  const handleConfirmMatch = async (invoice, company, shouldPatch, fieldChoices = {}) => {
     setVerifyModal(null);
     try {
       // Persist the company link on the staged invoice record.
@@ -565,20 +635,53 @@ export default function InvoiceSyncTab({ selectedYear }) {
       setInvoices((prev) =>
         prev.map((i) => (i.id === invoice.id ? { ...i, company_id: company.id } : i)),
       );
-      // Optionally patch empty company fields from the extracted invoice data.
-      if (shouldPatch) {
-        let inv = {};
-        try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
-        // Fallback for old records that predate the structured-field extraction
-        const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
-                                inv.address_line1 || inv.postal_code || inv.vat_number;
-        if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
-          Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+
+      let inv = {};
+      try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+      // Fallback for old records that predate the structured-field extraction
+      const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
+                              inv.address_line1 || inv.postal_code || inv.vat_number;
+      if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+        Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+      }
+
+      const patch = {};
+
+      // Apply per-field conflict resolutions (user explicitly chose "Invoice value" or "Both" for a differing field)
+      const fieldMap = {
+        contact_name:  inv.contact_name,
+        contact_email: inv.contact_email,
+        contact_phone: inv.contact_phone,
+        address_line1: inv.address_line1,
+        address_line2: inv.address_line2,
+        postal_code:   inv.postal_code,
+        city:          inv.city,
+        country:       inv.country,
+        vat_number:    inv.vat_number,
+        kvk_number:    inv.kvk_number,
+      };
+      // Map primary → secondary company column for 'both' choice
+      const secondaryField = {
+        contact_name:  'contact_name_2',
+        contact_email: 'contact_email_2',
+        contact_phone: 'contact_phone_2',
+      };
+      Object.entries(fieldChoices).forEach(([dbField, choice]) => {
+        const val = fieldMap[dbField];
+        if (!val) return;
+        if (choice === 'inv') {
+          patch[dbField] = val;
+          if (dbField === 'contact_name') patch.contact = val;
+        } else if (choice === 'both' && secondaryField[dbField]) {
+          // Keep DB primary value; write invoice value into the secondary field
+          patch[secondaryField[dbField]] = val;
         }
-        const patch = {};
-        const fill = (field, val) => { if (val && !company[field]) patch[field] = val; };
+      });
+
+      // Optionally fill empty company fields from invoice (shouldPatch checkbox)
+      if (shouldPatch) {
+        const fill = (field, val) => { if (val && !company[field] && !(field in patch)) patch[field] = val; };
         fill('contact_name',  inv.contact_name);
-        // Also fill the legacy single-contact field if it's empty
         fill('contact',       inv.contact_name);
         fill('contact_email', inv.contact_email);
         fill('contact_phone', inv.contact_phone);
@@ -589,9 +692,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
         fill('country',       inv.country);
         fill('vat_number',    inv.vat_number);
         fill('kvk_number',    inv.kvk_number);
-        if (Object.keys(patch).length > 0) {
-          await supabase.from('companies').update(patch).eq('id', company.id);
-        }
+      }
+
+      if (Object.keys(patch).length > 0) {
+        await supabase.from('companies').update(patch).eq('id', company.id);
       }
 
       toastSuccess('Match confirmed — use the approve button to sync.');
@@ -1037,33 +1141,35 @@ export default function InvoiceSyncTab({ selectedYear }) {
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 <tr>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[100px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[90px] whitespace-nowrap"
                     onClick={() => handleSort('invoice_number')}
                   >
                     Invoice {getSortIcon('invoice_number')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[150px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('company_name')}
                   >
                     Company {getSortIcon('company_name')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left w-[120px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('date')}
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left whitespace-nowrap">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left min-w-[120px]">Area</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-full">Notes</th>
                   {/* split meal columns */}
 
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[80px]"
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[90px] whitespace-nowrap"
                     onClick={() => handleSort('status')}
                   >
                     Status {getSortIcon('status')}
                   </th>
-                  <th className="px-4 py-3 text-right border-b border-gray-200 w-[120px]">Actions</th>
+                  <th className="px-4 py-3 text-right border-b border-gray-200 w-[110px] whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
@@ -1113,7 +1219,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
+                        <td className="px-2 py-2 border-r border-gray-50 align-top overflow-hidden truncate">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {inv.status !== 'approved' && (
                             matchCompany ? (
@@ -1141,11 +1247,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )
                           )}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top w-[120px]">
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top">
                           {parsedData.date || 'N/A'}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top">
-                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
+                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap block">
                             {firstItem}{' '}
                             {hasMore && (
                               <span className="text-xs text-gray-500 font-normal">
@@ -1153,6 +1259,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               </span>
                             )}
                           </span>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top min-w-[120px]">
+                          {(areaString || inv.area_preference) ? (
+                            <div className="text-gray-500 text-xs">
+                              {areaString || inv.area_preference}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top">
+                          <div className="text-gray-500 text-xs whitespace-pre-wrap break-words line-clamp-3">
+                            {parsedData.rawNotes || parsedData.notes || rawNotesFallback || ''}
+                          </div>
                         </td>
                         <td className="px-2 py-2 text-center border-r border-gray-50 align-top w-[80px]">
                           <span
@@ -1224,7 +1342,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       {/* Expandable Subrow */}
                       {isExpanded && (
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <td colSpan="6" className="p-4 bg-slate-50 border-x border-gray-200">
+                          <td colSpan="8" className="p-4 bg-slate-50 border-x border-gray-200">
                             {/* compact summary row with counts */}
                             <div className="mb-3 text-sm text-gray-700">
                               <strong>Stands:</strong> {inv.stands_count} &nbsp;|

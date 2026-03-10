@@ -91,8 +91,11 @@ function parseSpatialInvoice(items, allowedItems) {
     bbq: 0,
     // structured fields extracted from client block
     contact_name: null,
+    contact_name_2: null,
     contact_email: null,
+    contact_email_2: null,
     contact_phone: null,
+    contact_phone_2: null,
     address_line1: null,
     address_line2: null,
     postal_code: null,
@@ -451,9 +454,9 @@ function parseSpatialInvoice(items, allowedItems) {
     if (!l) return;
 
     // Email — any line containing @
-    if (!parsed.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
-      parsed.contact_email = l;
-      return;
+    if (/@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
+      if (!parsed.contact_email) { parsed.contact_email = l; return; }
+      if (!parsed.contact_email_2) { parsed.contact_email_2 = l; return; }
     }
 
     // Dutch VAT: "BTW" or "NL[9digits]" patterns
@@ -491,23 +494,21 @@ function parseSpatialInvoice(items, allowedItems) {
 
     // Phone: starts with + or digit, has 6+ consecutive digits (exclude postal-code-like lines)
     if (
-      !parsed.contact_phone &&
       /^[+\d(][\d\s().\-]{6,}$/.test(l) &&
       !/^\d{4}\s*[A-Z]{2}$/i.test(l)
     ) {
-      parsed.contact_phone = l;
-      return;
+      if (!parsed.contact_phone) { parsed.contact_phone = l; return; }
+      if (!parsed.contact_phone_2) { parsed.contact_phone_2 = l; return; }
     }
 
     // Person name: has a capital first letter, no digits, at least two words
     if (
-      !parsed.contact_name &&
       /^[A-Z][a-z]/.test(l) &&
       !/\d/.test(l) &&
       l.split(' ').length >= 2
     ) {
-      parsed.contact_name = l;
-      return;
+      if (!parsed.contact_name) { parsed.contact_name = l; return; }
+      if (!parsed.contact_name_2) { parsed.contact_name_2 = l; return; }
     }
 
     // Address line (street + house number)
