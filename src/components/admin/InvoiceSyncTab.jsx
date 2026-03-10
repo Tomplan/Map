@@ -871,8 +871,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 handleApproveAndSync(inv);
                               }}
                               disabled={inv.status !== 'pending'}
-                              className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                              title="Subscribe"
+                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                              title="Approve"
                             >
                               <Icon path={mdiCheck} size={0.8} />
                             </button>
