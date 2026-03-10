@@ -849,11 +849,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   return (
                     <React.Fragment key={inv.id}>
+                      {/* top row with invoice number spans all detail columns */}
                       <tr
                         onClick={() => toggleRow(inv.id)}
-                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group bg-gray-50"
                       >
-                        <td className="px-4 py-3 font-medium text-blue-600 border-r border-gray-50 flex items-center gap-2">
+                        <td colSpan={13} className="px-4 py-3 font-medium text-blue-600 flex items-center gap-2">
                           <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} />
                           <a
                             href={
@@ -868,6 +869,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
+                      </tr>
+                      <tr
+                        onClick={() => toggleRow(inv.id)}
+                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
+                      >
                         <td className="px-4 py-3 border-r border-gray-50">
                           <div className="font-medium text-gray-900">{inv.company_name}</div>
                           {matchName ? (
@@ -913,8 +919,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
                           {inv.lunch_sun ?? 0}
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
-                          <div className="text-gray-500 text-xs whitespace-pre-wrap">
+                        <td className="px-4 py-3 border-r border-gray-50 max-w-xs">
+                          <div className="text-gray-500 text-xs whitespace-pre-wrap truncate">
                             {parsedData.rawNotes || parsedData.notes || rawNotesFallback || 'No notes'}
                           </div>
                         </td>
