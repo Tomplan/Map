@@ -21,7 +21,7 @@
          production build it will otherwise intercept requests and serve stale
          JS, preventing the new dev code (including our unregister logic) from
          ever running. -->
-    <script>
+    <script type="module">
       if (import.meta.env && import.meta.env.DEV && 'serviceWorker' in navigator) {
         navigator.serviceWorker
           .getRegistrations()
