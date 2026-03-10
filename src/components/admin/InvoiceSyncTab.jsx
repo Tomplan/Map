@@ -760,7 +760,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[150px]">Item</th>
                   {/* split meal columns */}
 
                   <th
@@ -834,8 +834,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 w-[90px]">
                           <div className="truncate">{parsedData.date || 'N/A'}</div>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50">
-                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis block max-w-[150px]">
+                        <td className="px-2 py-2 border-r border-gray-50 w-[150px]">
+                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
                             {firstItem}{' '}
                             {hasMore && (
                               <span className="text-xs text-gray-500 font-normal">
