@@ -739,7 +739,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             </div>
           )}
           <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100">
-            <table className="w-full text-left border-collapse table-fixed bg-white">
+            <table className="w-full text-left border-collapse bg-white">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 <tr>
                   <th
@@ -749,7 +749,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Invoice {getSortIcon('invoice_number')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[120px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 max-w-[200px]"
                     onClick={() => handleSort('company_name')}
                   >
                     Company {getSortIcon('company_name')}
@@ -819,7 +819,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 w-[120px] overflow-hidden">
+                        <td className="px-2 py-2 border-r border-gray-50 max-w-[200px] overflow-hidden">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {matchName ? (
                             <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
