@@ -58,6 +58,10 @@
     },
     "invoices": "Facturen"
   },
+  "invoiceSync": {
+    "matchLabel": "Match:",
+    "createCompany": "Geen match: maakt nieuw bedrijf aan!"
+  },
   "languages": {
     "english": "Engels",
     "dutch": "Nederlands"
@@ -829,8 +833,12 @@
       "publicInfoTab": "Publieke Info",
       "privateInfoTab": "Privé Info",
       "categoriesLabel": "Categorieën",
+      "privateDetailsLabel": "Privégegevens",
+      "detailsModalTitle": "Privégegevens voor {{name}}",
+      "notes": "Notities",
       "searchPlaceholder": "Zoek bedrijven...",
       "addCompany": "Bedrijf Toevoegen",
+      "actions": "Acties",
       "newCompany": "Nieuw Bedrijf",
       "noCompanies": "Nog geen bedrijven. Klik op \"Bedrijf Toevoegen\" om er een aan te maken.",
       "noResults": "Geen items gevonden die overeenkomen met uw zoekopdracht",
@@ -842,6 +850,13 @@
       "contactPlaceholder": "Contactpersoon",
       "phonePlaceholder": "Telefoon",
       "emailPlaceholder": "E-mail",
+      "addressLine1Placeholder": "Adresregel 1",
+      "addressLine2Placeholder": "Adresregel 2",
+      "cityPlaceholder": "Stad",
+      "postalCodePlaceholder": "Postcode",
+      "countryPlaceholder": "Land",
+      "vatNumberPlaceholder": "BTW-nummer",
+      "kvkNumberPlaceholder": "KvK-nummer",
       "name": "Naam",
       "logo": "Logo",
       "website": "Website",
@@ -850,6 +865,8 @@
       "contact": "Contact",
       "phone": "Telefoon",
       "email": "E-mail",
+      "address": "Adres",
+      "vatNumber": "BTW-nummer",
       "actions": "Acties",
       "notSet": "Niet ingesteld",
       "none": "Geen",
@@ -877,6 +894,9 @@
         "contact": "Contact",
         "phone": "Telefoon",
         "email": "E-mail",
+        "address": "Adres",
+        "vatNumber": "BTW-nummer",
+        "kvkNumber": "KvK-nummer",
         "actions": "Acties"
       },
       "create": "Aanmaken"

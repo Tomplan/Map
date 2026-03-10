@@ -6,19 +6,27 @@ import '@testing-library/jest-dom';
 
 // Mock i18n so tab labels are stable
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (k, opts) => {
-      const map = {
-        'companies.publicInfoTab': 'Public Info',
-        'companies.privateInfoTab': 'Private Info',
-        'companies.table.contact': 'Contact',
-        'companies.table.phone': 'Phone',
-        'companies.table.email': 'Email',
-      };
-      return map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
-    },
-    i18n: { language: 'en' },
-  }),
+  useTranslation: () => {
+    const map = {
+      'companies.publicInfoTab': 'Public Info',
+      'companies.privateInfoTab': 'Private Info',
+      'companies.table.contact': 'Contact',
+      'companies.table.phone': 'Phone',
+      'companies.table.email': 'Email',
+      'companies.table.address': 'Address',
+      'companies.table.vatNumber': 'VAT number',
+      'companies.table.kvkNumber': 'KvK number',
+      'companies.privateDetailsLabel': 'Private details',
+      'companies.detailsModalTitle': 'Private details for {{name}}',
+    };
+    return {
+      t: (k, opts) => map[k] || (typeof opts === 'string' ? opts : opts?.defaultValue) || k,
+      i18n: {
+        language: 'en',
+        exists: (k) => Object.prototype.hasOwnProperty.call(map, k),
+      },
+    };
+  },
 }));
 
 jest.mock('../../../utils/getLogoPath', () => ({
@@ -48,6 +56,12 @@ jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
     contact: 'Organization Contact',
     phone: '+31201234567',
     email: 'org@example.com',
+    address_line1: '123 Main St',
+    city: 'Amsterdam',
+    postal_code: '1000 AA',
+    country: 'NL',
+    vat_number: 'NL123456789B01',
+    kvk_number: '12345678',
   },
   loading: false,
   error: null,
@@ -95,22 +109,35 @@ jest.mock('../../../contexts/DialogContext', () => ({
 
 import CompaniesTab from '../CompaniesTab';
 
-test('organization row shows manager-only (private) contact/phone/email in Manager tab', async () => {
+test('clicking a company card selects it and shows private details in the detail panel', async () => {
   render(
     <MemoryRouter initialEntries={['/companies']}>
       <CompaniesTab />
     </MemoryRouter>,
   );
 
-  // Switch to Manager/Private Info tab
-  await userEvent.click(screen.getByText('Private Info'));
+  // The left-panel list should contain the org card
+  const orgCard = screen.getByRole('button', { name: /Org name/i });
+  expect(orgCard).toBeInTheDocument();
 
-  // Organization contact should be visible in the first row
+  // Before selection the detail panel shows the empty-state prompt
+  expect(screen.queryByText('Organization Contact')).not.toBeInTheDocument();
+
+  // Click the card to select it
+  await userEvent.click(orgCard);
+
+  // Private details should now be visible in the detail panel
   expect(screen.getByText('Organization Contact')).toBeInTheDocument();
 
-  // Email should be visible
+  // Email should be visible as a link
   expect(screen.getByText('org@example.com')).toBeInTheDocument();
 
-  // Phone is formatted and displayed as text (we check country code)
+  // Phone displays with country code
   expect(screen.getByText(/\+31/)).toBeInTheDocument();
+
+  // KvK number should be visible
+  expect(screen.getByText('12345678')).toBeInTheDocument();
+
+  // Address should be visible in the detail panel
+  expect(screen.getByText(/Main St/)).toBeInTheDocument();
 });

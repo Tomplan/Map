@@ -30,6 +30,19 @@ export function useCompanyMutations({
     logo: organizationLogo || '',
     website: '',
     info: '',
+    contact: '',
+    phone: '',
+    email: '',
+    contact_name: '',
+    contact_email: '',
+    contact_phone: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    postal_code: '',
+    country: '',
+    vat_number: '',
+    kvk_number: '',
   });
 
   // Start editing
@@ -42,8 +55,36 @@ export function useCompanyMutations({
   const handleSave = async () => {
     const id = editingId;
     if (id === 'organization') {
-      const { name, logo, website, info, contact, phone, email } = editForm;
-      await updateProfile({ name, logo, website, info, contact, phone, email });
+      const {
+        name,
+        logo,
+        website,
+        info,
+        contact,
+        phone,
+        email,
+        address_line1,
+        address_line2,
+        city,
+        postal_code,
+        country,
+        vat_number,
+      } = editForm;
+      await updateProfile({
+        name,
+        logo,
+        website,
+        info,
+        contact,
+        phone,
+        email,
+        address_line1,
+        address_line2,
+        city,
+        postal_code,
+        country,
+        vat_number,
+      });
     } else {
       await updateCompany(id, editForm);
     }
@@ -89,6 +130,20 @@ export function useCompanyMutations({
         logo: organizationLogo,
         website: '',
         info: '',
+        contact: '',
+        phone: '',
+        email: '',
+        contact_name: '',
+        contact_email: '',
+        contact_phone: '',
+        address_line1: '',
+        address_line2: '',
+        city: '',
+        postal_code: '',
+        country: '',
+        vat_number: '',
+        kvk_number: '',
+        kvk_number: '',
       });
     } else {
       toastError(`Error creating company: ${error}`);
@@ -114,6 +169,18 @@ export function useCompanyMutations({
       logo: organizationLogo,
       website: '',
       info: '',
+      contact: '',
+      phone: '',
+      email: '',
+      contact_name: '',
+      contact_email: '',
+      contact_phone: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      postal_code: '',
+      country: '',
+      vat_number: '',
     });
   };
 

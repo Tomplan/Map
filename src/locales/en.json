@@ -58,6 +58,10 @@
     },
     "invoices": "Invoices"
   },
+  "invoiceSync": {
+    "matchLabel": "Match:",
+    "createCompany": "No Match: create new company!"
+  },
   "languages": {
     "english": "English",
     "dutch": "Dutch"
@@ -830,8 +834,12 @@
       "publicInfoTab": "Public Info",
       "privateInfoTab": "Private Info",
       "categoriesLabel": "Categories",
+      "privateDetailsLabel": "Private details",
+      "detailsModalTitle": "Private details for {{name}}",
+      "notes": "Notes",
       "searchPlaceholder": "Search companies...",
       "addCompany": "Add Company",
+      "actions": "Actions",
       "newCompany": "New Company",
       "noCompanies": "No companies yet. Click \"Add Company\" to create one.",
       "noResults": "No items found matching your search",
@@ -843,6 +851,13 @@
       "contactPlaceholder": "Contact Person",
       "phonePlaceholder": "Phone",
       "emailPlaceholder": "Email",
+      "addressLine1Placeholder": "Address line 1",
+      "addressLine2Placeholder": "Address line 2",
+      "cityPlaceholder": "City",
+      "postalCodePlaceholder": "Postal Code",
+      "countryPlaceholder": "Country",
+      "vatNumberPlaceholder": "VAT / Tax ID",
+      "kvkNumberPlaceholder": "Chamber of Commerce (KvK) #",
       "name": "Name",
       "logo": "Logo",
       "website": "Website",
@@ -851,6 +866,8 @@
       "contact": "Contact",
       "phone": "Phone",
       "email": "Email",
+      "address": "Address",
+      "vatNumber": "VAT number",
       "actions": "Actions",
       "notSet": "Not set",
       "none": "None",
@@ -878,6 +895,9 @@
         "contact": "Contact",
         "phone": "Phone",
         "email": "Email",
+        "address": "Address",
+        "vatNumber": "VAT number",
+        "kvkNumber": "KvK number",
         "actions": "Actions"
       },
       "create": "Create"

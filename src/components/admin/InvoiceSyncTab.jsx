@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import { parsePdfInvoice } from '../../utils/pdfParser';
 import { useTranslation } from 'react-i18next';
+import { getBaseUrl } from '../../utils/getBaseUrl';
 import Icon from '@mdi/react';
 import {
   mdiRefresh,
@@ -20,6 +21,7 @@ import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
 export default function InvoiceSyncTab({ selectedYear }) {
+  const baseUrl = getBaseUrl();
   const { t } = useTranslation();
   const { companies } = useCompanies();
   const { settings } = useOrganizationSettings();
@@ -625,7 +627,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   <div className="flex justify-end mb-4">
                     <a
                       href={
-                        import.meta.env.BASE_URL +
+                        baseUrl +
                         'invoices/' +
                         editingInvoice.invoice_number +
                         '.pdf'
@@ -809,7 +811,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate align-top">
                           <a
                             href={
-                              import.meta.env.BASE_URL + 'invoices/' + inv.invoice_number + '.pdf'
+                              baseUrl + 'invoices/' + inv.invoice_number + '.pdf'
                             }
                             target="_blank"
                             rel="noreferrer"
@@ -824,11 +826,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {matchName ? (
                             <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
-                              Match: {matchName.name}
+                              {t('invoiceSync.matchLabel', 'Match:')} {matchName.name}
                             </span>
                           ) : (
                             <span className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-200 mt-1 inline-block">
-                              Will Create New Pin
+                              {t('invoiceSync.createCompany', 'No Match: create new company!')}
                             </span>
                           )}
                         </td>

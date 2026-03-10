@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { render, screen, waitFor, act, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { MemoryRouter, Routes, Route, useNavigate } from 'react-router-dom';
 
 // stub out utilities that reference import.meta or browser APIs
@@ -143,11 +143,10 @@ describe('CompaniesTab routing', () => {
     const navRef = { current: null };
     renderWithRouter('/companies', navRef);
 
-    // Wait for loading to finish and Actions menu to appear
-    const actionsButton = await screen.findByTitle('Actions Menu');
-    fireEvent.click(actionsButton);
-
-    await waitFor(() => expect(screen.getByTitle('Export Companies')).toBeInTheDocument());
+    // Wait for company data to load (language-agnostic signal that component is mounted)
+    await waitFor(() =>
+      expect(screen.getByText('TestCo')).toBeInTheDocument(),
+    );
 
     // navigate away
     act(() => {
@@ -160,10 +159,9 @@ describe('CompaniesTab routing', () => {
       navRef.current('/companies');
     });
 
-    const actionsButton2 = await screen.findByTitle('Actions Menu');
-    fireEvent.click(actionsButton2);
-
-    await waitFor(() => expect(screen.getByTitle('Export Companies')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByText('TestCo')).toBeInTheDocument(),
+    );
 
     const { supabase } = require('../../../supabaseClient');
     // since we only fetch when the cache is empty, the API should be called once

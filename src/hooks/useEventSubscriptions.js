@@ -62,7 +62,9 @@ export default function useEventSubscriptions(eventYear) {
             .select(
               `
             *,
-              company:companies(id, name, logo, website, info, contact, phone, email)
+              company:companies(id, name, logo, website, info, contact, phone, email,
+                address_line1, address_line2, city, postal_code, country, vat_number
+              )
 
           `,
             )
@@ -99,7 +101,7 @@ export default function useEventSubscriptions(eventYear) {
       // Fetch company defaults for contact info
       const { data: company } = await supabase
         .from('companies')
-        .select('contact, phone, email')
+        .select('contact, phone, email, address_line1, address_line2, city, postal_code, country, vat_number')
         .eq('id', companyId)
         .single();
 
