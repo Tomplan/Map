@@ -20,11 +20,46 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
+// ── Re-extract structured fields from a raw client_block array ──────────
+// (mirrors the logic in pdfParser.js so old records without stored fields still work)
+function extractFieldsFromBlock(lines = []) {
+  const r = { contact_name: null, contact_email: null, contact_phone: null,
+               address_line1: null, address_line2: null, postal_code: null,
+               city: null, country: null, vat_number: null };
+  // skip index 0 (company name)
+  lines.slice(1).forEach((line) => {
+    const l = (line || '').trim();
+    if (!l) return;
+    if (!r.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) { r.contact_email = l; return; }
+    if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) { r.vat_number = l.replace(/^BTW[:\s-]*/i,'').trim(); return; }
+    if (!r.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
+      const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
+      if (m) { r.postal_code = m[1]+m[2].toUpperCase(); r.city = m[3].trim(); }
+      else r.postal_code = l;
+      return;
+    }
+    if (!r.country && /nederland|netherlands|germany|deutschland|belgi/i.test(l)) { r.country = l; return; }
+    if (!r.contact_phone && /^[+\d(][\d\s().\-]{6,}$/.test(l) && !/^\d{4}\s*[A-Z]{2}$/i.test(l)) { r.contact_phone = l; return; }
+    if (!r.contact_name && /^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) { r.contact_name = l; return; }
+    if (!r.address_line1 && /\d/.test(l)) { r.address_line1 = l; return; }
+    if (r.address_line1 && !r.address_line2 && /\d/.test(l)) r.address_line2 = l;
+  });
+  return r;
+}
+
 // ── Verification Modal ──────────────────────────────────────────────────
 function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
   const [shouldPatch, setShouldPatch] = React.useState(false);
   let inv = {};
   try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+
+  // Fallback: if stored structured fields are all null (old record), derive them
+  // live from the raw client_block array that was always stored.
+  const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
+                          inv.address_line1 || inv.postal_code || inv.vat_number;
+  if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+    Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+  }
 
   const fields = [
     { label: 'Company name', inv: invoice.company_name, cmp: company.name },
@@ -467,6 +502,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
       if (shouldPatch) {
         let inv = {};
         try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+        // Fallback for old records that predate the structured-field extraction
+        const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
+                                inv.address_line1 || inv.postal_code || inv.vat_number;
+        if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+          Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+        }
         const patch = {};
         const fill = (field, val) => { if (val && !company[field]) patch[field] = val; };
         fill('contact_name',  inv.contact_name);
