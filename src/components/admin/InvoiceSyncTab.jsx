@@ -103,7 +103,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       title: 'Clear Staging Area',
       message: 'Are you sure you want to delete ALL staged invoices? This cannot be undone.',
       confirmText: 'Clear All',
-      cancelText: 'Cancel'
+      cancelText: 'Cancel',
     });
 
     if (yes) {
@@ -116,7 +116,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
           .not('id', 'is', null);
 
         if (deleteError) throw deleteError;
-        
+
         await fetchInvoices();
         toastSuccess('Staging area cleared successfully');
       } catch (err) {
@@ -390,13 +390,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
       const matchName = companies.find(
         (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
       );
-      
+
       let parsedDate = '';
       try {
         const parsedNotes = JSON.parse(inv.notes || '{}');
         parsedDate = parsedNotes.date || '';
-      } catch(e) {}
-      
+      } catch (e) {}
+
       return { ...inv, hasMatch: !!matchName, matchName: matchName?.name, date: parsedDate };
     });
 
@@ -414,13 +414,30 @@ export default function InvoiceSyncTab({ selectedYear }) {
         const parseDutchDate = (d) => {
           if (!d) return 0;
           // Map dutch month abbreviations to JS month index (0-11)
-          const months = { jan:0, feb:1, mrt:2, apr:3, mei:4, jun:5, jul:6, aug:7, sep:8, okt:9, nov:10, dec:11 };
-          
+          const months = {
+            jan: 0,
+            feb: 1,
+            mrt: 2,
+            apr: 3,
+            mei: 4,
+            jun: 5,
+            jul: 6,
+            aug: 7,
+            sep: 8,
+            okt: 9,
+            nov: 10,
+            dec: 11,
+          };
+
           // normalize "6 mrt 2026" or "01-01-2026"
-          const p = d.toLowerCase().replace(/[^a-z0-9]/g, ' ').trim().split(/\s+/);
+          const p = d
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, ' ')
+            .trim()
+            .split(/\s+/);
           if (p.length >= 3) {
             const day = parseInt(p[0], 10);
-            let month = months[p[1].substring(0,3)];
+            let month = months[p[1].substring(0, 3)];
             if (month === undefined) month = parseInt(p[1], 10) - 1; // fallback to numerical
             const year = parseInt(p[2], 10);
             if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
@@ -432,7 +449,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
         const timeA = parseDutchDate(a.date);
         const timeB = parseDutchDate(b.date);
-        
+
         if (timeA < timeB) return sortConfig.direction === 'asc' ? -1 : 1;
         if (timeA > timeB) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
@@ -750,7 +767,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Meals {getSortIcon('meals_count')}
                   </th>
-                  <th className="px-4 py-3 border-b border-gray-200">Notes / Area</th>
+                  <th className="px-4 py-3 border-b border-gray-200">Notes</th>
+                  <th className="px-4 py-3 border-b border-gray-200">Area</th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('status')}
@@ -777,8 +795,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   const lineItems = parsedData.line_items || [];
                   const clientBlock = parsedData.client_block || [];
                   const isExpanded = expandedRows.has(inv.id);
-                  const firstItem = lineItems.length > 0 ? (lineItems[0].item || lineItems[0].description) : 'N/A';
+                  const firstItem =
+                    lineItems.length > 0 ? lineItems[0].item || lineItems[0].description : 'N/A';
                   const hasMore = lineItems.length > 1;
+                  // compute area aggregate from each line item
+                  const areaList = lineItems
+                    .map((li) => li.area)
+                    .filter(Boolean)
+                    .filter((v, i, a) => a.indexOf(v) === i); // unique
+                  const areaString = areaList.join(', ');
 
                   return (
                     <React.Fragment key={inv.id}>
@@ -835,14 +860,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           {inv.meals_count}
                         </td>
                         <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
-                          {inv.area_preference && (
-                            <div className="text-xs font-semibold text-indigo-700 mb-1">
-                              Area: {inv.area_preference}
-                            </div>
-                          )}
                           <div className="text-gray-500 text-xs whitespace-pre-wrap">
-                            {parsedData.rawNotes || rawNotesFallback || 'No notes'}
+                            {parsedData.rawNotes || parsedData.notes || rawNotesFallback || 'No notes'}
                           </div>
+                        </td>
+                        <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
+                          {areaString || inv.area_preference ? (
+                            <div className="text-gray-500 text-xs whitespace-pre-wrap">
+                              {areaString || inv.area_preference}
+                            </div>
+                          ) : (
+                            'N/A'
+                          )}
                         </td>
                         <td className="px-4 py-3 text-center border-r border-gray-50">
                           <span
