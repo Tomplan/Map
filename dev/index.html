@@ -13,11 +13,17 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
     />
-    <script type="module" crossorigin src="/Map/dev/assets/index-707cd3b5.js"></script>
+    <script type="module" crossorigin src="/Map/dev/assets/index-0f962878.js"></script>
     <link rel="stylesheet" href="/Map/dev/assets/index-35065f23.css">
   </head>
   <body>
     <div id="root"></div>
+    <!-- development helper: immediately clear any leftover service workers and caches
+         before the app bundle loads.  If a SW is still installed from a previous
+         production build it will otherwise intercept requests and serve stale
+         JS, preventing the new dev code (including our unregister logic) from
+         ever running. -->
+    
     
   </body>
 </html>
