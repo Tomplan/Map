@@ -647,8 +647,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const invoiceNote =
       'Invoice ' + invoice.invoice_number +
       ': ' + (invoice.stands_count || 1) + ' booth(s)' +
-      (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '') +
-      (customerNote ? '. ' + customerNote : '');
+      (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '');
 
     // Check if a subscription already exists for this company + year
     const existing = subscriptions.find((s) => s.company_id === companyId);
