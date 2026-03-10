@@ -13,16 +13,17 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css"
     />
-    <script type="module" crossorigin src="/Map/dev/assets/index-f0a9a5ba.js"></script>
+    <script type="module" crossorigin src="/Map/dev/assets/index-3039a3f5.js"></script>
     <link rel="stylesheet" href="/Map/dev/assets/index-8dd0bfcb.css">
   </head>
   <body>
     <div id="root"></div>
-    <!-- development helper: immediately clear any leftover service workers and caches
+    <!-- localhost helper: immediately clear any leftover service workers and caches
          before the app bundle loads.  If a SW is still installed from a previous
          production build it will otherwise intercept requests and serve stale
-         JS, preventing the new dev code (including our unregister logic) from
-         ever running. -->
+         JS, preventing the new dev/preview code (including our unregister logic)
+         from ever running.  We run this on any localhost origin, not just Vite
+         DEV mode, so that `npm run preview` or a local build can't be affected. -->
     
     
   </body>
