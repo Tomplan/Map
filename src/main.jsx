@@ -58,16 +58,6 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
-<<<<<<< HEAD
-// Service worker handling ------------------------------------------------
-if ('serviceWorker' in navigator) {
-  if (import.meta.env.DEV) {
-    // During development we never want a persistent service worker – it will
-    // keep serving stale assets and makes the UI appear frozen.  Unregister any
-    // that may have been installed by a previous production build and clear the
-    // caches so HMR works reliably.
-=======
-// Service worker handling ------------------------------------------------
 const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
 
 if ('serviceWorker' in navigator) {
