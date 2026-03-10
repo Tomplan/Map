@@ -1055,6 +1055,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Date {getSortIcon('date')}
                   </th>
                   <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[160px]">Notes</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[80px]">Area</th>
                   {/* split meal columns */}
 
                   <th
@@ -1154,6 +1156,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )}
                           </span>
                         </td>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top max-w-[160px]">
+                          <div className="text-gray-500 text-xs whitespace-pre-wrap break-words line-clamp-3">
+                            {parsedData.rawNotes || parsedData.notes || rawNotesFallback || ''}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[80px]">
+                          {(areaString || inv.area_preference) ? (
+                            <div className="text-gray-500 text-xs">
+                              {areaString || inv.area_preference}
+                            </div>
+                          ) : null}
+                        </td>
                         <td className="px-2 py-2 text-center border-r border-gray-50 align-top w-[80px]">
                           <span
                             className={
@@ -1224,7 +1238,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       {/* Expandable Subrow */}
                       {isExpanded && (
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <td colSpan="6" className="p-4 bg-slate-50 border-x border-gray-200">
+                          <td colSpan="8" className="p-4 bg-slate-50 border-x border-gray-200">
                             {/* compact summary row with counts */}
                             <div className="mb-3 text-sm text-gray-700">
                               <strong>Stands:</strong> {inv.stands_count} &nbsp;|
