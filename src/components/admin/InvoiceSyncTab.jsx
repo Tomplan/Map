@@ -559,7 +559,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             lunch_sat: Math.max(0, (tempSub.lunch_sat || 0) - lunchSatVal),
             bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
             lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
-            notes: (tempSub.notes ? tempSub.notes + '\n' : '') +
+            history: (tempSub.history ? tempSub.history + '\n' : '') +
               '[Removed: Invoice ' + inv.invoice_number + ']',
           });
           if (error) throw new Error(error);
@@ -666,16 +666,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (merge) {
-        // Additive merge: add booth_count and meal counts; fill area if empty; append note
+        // Additive merge: add booth_count and meal counts; fill area if empty; append to history
         const mergedArea = existing.area || invoiceArea;
-        const mergedNotes = existing.notes
-          ? existing.notes + '\n' + invoiceNote
-          : 'Imported from: ' + invoiceNote;
+        const mergedHistory = existing.history
+          ? existing.history + '\n' + invoiceNote
+          : invoiceNote;
 
         const { error } = await updateSubscription(existing.id, {
           booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
           area: mergedArea,
-          notes: mergedNotes,
+          history: mergedHistory,
           breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
           lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
           bbq_sat: (existing.bbq_sat || 0) + bbqVal,
@@ -693,7 +693,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const subResult = await subscribeCompany(companyId, {
       booth_count: invoice.stands_count || 1,
       area: invoiceArea,
-      notes: 'Imported from: ' + invoiceNote,
+      notes: customerNote,
+      history: invoiceNote,
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
