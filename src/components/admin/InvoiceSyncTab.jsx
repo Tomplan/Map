@@ -739,11 +739,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
             </div>
           )}
           <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100">
-            <table className="w-full text-left border-collapse min-w-max bg-white">
+            <table className="w-full text-left border-collapse table-fixed bg-white">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 <tr>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 max-w-[100px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[100px]"
                     onClick={() => handleSort('invoice_number')}
                   >
                     Invoice {getSortIcon('invoice_number')}
@@ -805,8 +805,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         onClick={() => toggleRow(inv.id)}
                         className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-1 max-w-[100px] overflow-hidden">
-                          <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} className="flex-shrink-0" />
+                        <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate">
                           <a
                             href={
                               import.meta.env.BASE_URL + 'invoices/' + inv.invoice_number + '.pdf'
@@ -815,7 +814,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             title="Open PDF"
-                            className="hover:underline truncate block max-w-full"
+                            className="hover:underline truncate block w-full"
                           >
                             {inv.invoice_number}
                           </a>
