@@ -592,6 +592,23 @@ export default function CompaniesTab() {
                     placeholder={translateSafe('companies.contactPhonePlaceholder')} />
                 </EditRow>
 
+                {/* Billing contact 2 sub-heading */}
+                <div className="flex items-center gap-2 pt-4 pb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                </div>
+                <EditRow label="Contact 2">
+                  <input type="text" placeholder="Second contact name"
+                    value={form.contact_name_2 || ''} onChange={(e) => set({ contact_name_2: e.target.value })} className={inputCls} />
+                </EditRow>
+                <EditRow label="Email 2">
+                  <input type="email" placeholder="Second contact email"
+                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
+                </EditRow>
+                <EditRow label="Phone 2">
+                  <PhoneInput value={form.contact_phone_2 || ''} onChange={(value) => set({ contact_phone_2: value })}
+                    placeholder="Second contact phone" />
+                </EditRow>
+
                 <EditRow label={translateSafe('companies.table.address')}>
                   <div className="space-y-2">
                     <input type="text" placeholder={translateSafe('companies.addressLine1Placeholder')}
@@ -795,6 +812,24 @@ export default function CompaniesTab() {
                 <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone}>
                   {item.contact_phone
                     ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
+                    : dash}
+                </Row>
+                {(item.contact_name_2 || item.contact_email_2 || item.contact_phone_2) && (
+                  <div className="flex items-center gap-2 pt-3 pb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                  </div>
+                )}
+                <Row lbl="Contact 2" hidden={!item.contact_name_2}>
+                  {item.contact_name_2}
+                </Row>
+                <Row lbl="Email 2" hidden={!item.contact_email_2}>
+                  {item.contact_email_2
+                    ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
+                    : dash}
+                </Row>
+                <Row lbl="Phone 2" hidden={!item.contact_phone_2}>
+                  {item.contact_phone_2
+                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
                     : dash}
                 </Row>
                 <Row lbl={translateSafe('companies.table.vatNumber')}>{item.vat_number || dash}</Row>
