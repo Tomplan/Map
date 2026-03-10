@@ -805,7 +805,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         onClick={() => toggleRow(inv.id)}
                         className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate">
+                        <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate align-top">
                           <a
                             href={
                               import.meta.env.BASE_URL + 'invoices/' + inv.invoice_number + '.pdf'
@@ -819,7 +819,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50">
+                        <td className="px-2 py-2 border-r border-gray-50 align-top">
                           <div className="font-medium text-gray-900">{inv.company_name}</div>
                           {matchName ? (
                             <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
@@ -831,10 +831,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap">
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top">
                           {parsedData.date || 'N/A'}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 w-[150px]">
+                        <td className="px-2 py-2 border-r border-gray-50 w-[150px] align-top">
                           <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
                             {firstItem}{' '}
                             {hasMore && (
@@ -844,7 +844,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-center border-r border-gray-50">
+                        <td className="px-2 py-2 text-center border-r border-gray-50 align-top">
                           <span
                             className={
                               'px-2 py-1 rounded text-xs font-semibold ' +
@@ -862,7 +862,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 : 'PENDING'}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-right w-full">
+                        <td className="px-2 py-2 text-right w-full align-top">
                           <div className="flex flex-col gap-2 items-end">
                             {inv.status === 'pending' && (
                               <div className="flex gap-2 justify-end">
