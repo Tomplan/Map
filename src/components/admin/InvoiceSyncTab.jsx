@@ -783,31 +783,31 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('breakfast_sat')}
                   >
-                    Bfst (Sat) {getSortIcon('breakfast_sat')}
+                    Bfst {getSortIcon('breakfast_sat')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('lunch_sat')}
                   >
-                    Lunch (Sat) {getSortIcon('lunch_sat')}
+                    Lunch {getSortIcon('lunch_sat')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('bbq_sat')}
                   >
-                    BBQ (Sat) {getSortIcon('bbq_sat')}
+                    BBQ {getSortIcon('bbq_sat')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('breakfast_sun')}
                   >
-                    Bfst (Sun) {getSortIcon('breakfast_sun')}
+                    Bfst {getSortIcon('breakfast_sun')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('lunch_sun')}
                   >
-                    Lunch (Sun) {getSortIcon('lunch_sun')}
+                    Lunch {getSortIcon('lunch_sun')}
                   </th>
                   <th className="px-4 py-3 border-b border-gray-200">Notes</th>
                   <th className="px-4 py-3 border-b border-gray-200">Area</th>
