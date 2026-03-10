@@ -805,8 +805,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         onClick={() => toggleRow(inv.id)}
                         className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-2 max-w-[100px] overflow-hidden">
-                          <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} />
+                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-1 max-w-[100px] overflow-hidden">
+                          <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} className="flex-shrink-0" />
                           <a
                             href={
                               import.meta.env.BASE_URL + 'invoices/' + inv.invoice_number + '.pdf'
@@ -815,7 +815,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             title="Open PDF"
-                            className="hover:underline flex items-center gap-1 truncate"
+                            className="hover:underline truncate block max-w-full"
                           >
                             {inv.invoice_number}
                           </a>
