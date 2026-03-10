@@ -674,6 +674,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         const { error } = await updateSubscription(existing.id, {
           booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
           area: mergedArea,
+          notes: existing.notes || customerNote,
           history: mergedHistory,
           breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
           lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
