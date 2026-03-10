@@ -16,13 +16,14 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- development helper: immediately clear any leftover service workers and caches
+    <!-- localhost helper: immediately clear any leftover service workers and caches
          before the app bundle loads.  If a SW is still installed from a previous
          production build it will otherwise intercept requests and serve stale
-         JS, preventing the new dev code (including our unregister logic) from
-         ever running. -->
+         JS, preventing the new dev/preview code (including our unregister logic)
+         from ever running.  We run this on any localhost origin, not just Vite
+         DEV mode, so that `npm run preview` or a local build can't be affected. -->
     <script type="module">
-      if (import.meta.env && import.meta.env.DEV && 'serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && window.location.hostname === 'localhost') {
         navigator.serviceWorker
           .getRegistrations()
           .then((regs) => regs.forEach((r) => r.unregister()))

@@ -61,10 +61,8 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
 const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
 
 if ('serviceWorker' in navigator) {
-  if (isDev) {
-    // In development we clear any existing workers/caches immediately so that
-    // the production bundle can never be served by a stale SW.  The helper in
-    // index.html also runs before this code executes.
+  // wipe any existing SW on localhost (covering both `dev` and `preview`)
+  if (window.location.hostname === 'localhost') {
     navigator.serviceWorker
       .getRegistrations()
       .then((regs) => regs.forEach((r) => r.unregister()))
@@ -77,9 +75,11 @@ if ('serviceWorker' in navigator) {
   if (!isDev && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       // When deploying to a subdirectory (like /Map/dev/), the service worker
-      // needs to be registered with the correct scope.
-      const swUrl = `${getBaseUrl()}service-worker.js`;
-      navigator.serviceWorker
+      // needs to be registered with the correct scope.  Append a version query
+      // so browsers always fetch a fresh copy and never reuse a previously
+      // cached file; this avoids the "went back a few steps" problem when the
+      // SW itself is cached by GH Pages.
+      const swUrl = `${getBaseUrl()}service-worker.js?v=${__APP_VERSION__}`;
         .register(swUrl, { scope: getBaseUrl() })
         .then((registration) => {
           // console.log('SW register success:', registration);
