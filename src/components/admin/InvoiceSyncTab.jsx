@@ -441,10 +441,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
             bbq_sat: parsedData.bbq ?? 0,
             breakfast_sun: 0,
             lunch_sun: 0,
-            area_preference: '',
+            area_preference: parsedData.area || '',
             notes: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
               notes: parsedData.notes || '',
+              area: parsedData.area || '',
               date: parsedData.invoice_date || '',
               line_items: parsedData.line_items || [],
               client_block: parsedData.client_details || [],
@@ -597,16 +598,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const lunchSatVal = Math.ceil(lunchVal / 2);
     const lunchSunVal = Math.floor(lunchVal / 2);
 
+    // Extract human-readable notes and area from the JSON blob stored in the invoice
+    let parsedInvNotes = {};
+    try { parsedInvNotes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+    const customerNote = parsedInvNotes.notes || '';
+    const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
+
     const subResult = await subscribeCompany(companyId, {
       booth_count: invoice.stands_count || 1,
-      area: invoice.area_preference || '',
+      area: invoiceArea,
       notes:
         'Imported from Invoice ' +
         invoice.invoice_number +
         '. Meals ordered: ' +
         (invoice.meals_count || 0) +
-        '. ' +
-        (invoice.notes || ''),
+        (customerNote ? '. ' + customerNote : ''),
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
