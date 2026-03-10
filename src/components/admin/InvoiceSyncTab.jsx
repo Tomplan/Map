@@ -831,8 +831,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 max-w-[90px]">
-                          <div className="truncate">{parsedData.date || 'N/A'}</div>
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap">
+                          {parsedData.date || 'N/A'}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 w-[150px]">
                           <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
