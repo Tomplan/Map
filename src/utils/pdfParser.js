@@ -439,6 +439,14 @@ function parseSpatialInvoice(items, allowedItems) {
     }
   });
 
+  // Hoist area from the first stand line item that has one
+  if (!parsed.area) {
+    const firstWithArea = parsed.line_items.find((li) => li.area);
+    if (firstWithArea) {
+      parsed.area = firstWithArea.area;
+    }
+  }
+
   // Failsafe: if the document didn't have 'omschrijving' header but did mention stands anywhere
   if (parsed.line_items.length === 0 && (!allowedItems || allowedItems.length === 0)) {
     const backupHits = items.filter(

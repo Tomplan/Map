@@ -289,10 +289,98 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 }
 // ── End MatchVerificationModal ──────────────────────────────────────────────
 
+// ── CompanySearchModal ───────────────────────────────────────────────────────
+// Shown when no automatic match is found. User can search all companies and
+// pick one (opens MatchVerificationModal) or create a brand-new record.
+function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCancel }) {
+  const [query, setQuery] = React.useState('');
+
+  const filtered = React.useMemo(() => {
+    const q = query.toLowerCase().trim();
+    if (!q) return companies.slice(0, 30);
+    return companies
+      .filter(
+        (c) =>
+          c.name?.toLowerCase().includes(q) ||
+          c.email?.toLowerCase().includes(q) ||
+          c.city?.toLowerCase().includes(q),
+      )
+      .slice(0, 40);
+  }, [companies, query]);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col" style={{ maxHeight: '80vh' }}>
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">No automatic match found</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Invoice: <span className="font-semibold text-blue-600">{invoice.company_name}</span>
+            </p>
+          </div>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded">✕</button>
+        </div>
+
+        {/* Search input */}
+        <div className="p-4 border-b border-gray-100">
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search companies by name, email or city…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Results list */}
+        <div className="overflow-y-auto flex-1 divide-y divide-gray-100">
+          {filtered.length === 0 ? (
+            <p className="text-sm text-gray-400 p-6 text-center">No companies found</p>
+          ) : (
+            filtered.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => onSelect(c)}
+                className="w-full text-left px-4 py-3 hover:bg-blue-50 transition"
+              >
+                <div className="font-medium text-gray-900 text-sm">{c.name}</div>
+                {(c.city || c.email) && (
+                  <div className="text-xs text-gray-400 mt-0.5">
+                    {[c.city, c.email].filter(Boolean).join(' · ')}
+                  </div>
+                )}
+              </button>
+            ))
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onCreateNew}
+            className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+          >
+            + Create new company
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+// ── End CompanySearchModal ────────────────────────────────────────────────────
+
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
   const { t } = useTranslation();
-  const { companies } = useCompanies();
+  const { companies, createCompany } = useCompanies();
   const { settings } = useOrganizationSettings();
   const { subscriptions, subscribeCompany, updateSubscription, unsubscribeCompany } =
     useEventSubscriptions(selectedYear);
@@ -319,6 +407,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
+  const [companySearchModal, setCompanySearchModal] = useState(null); // invoice | null
   const fileInputRef = useRef(null);
 
   const handleSort = (key) => {
@@ -559,7 +648,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             lunch_sat: Math.max(0, (tempSub.lunch_sat || 0) - lunchSatVal),
             bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
             lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
-            notes: (tempSub.notes ? tempSub.notes + '\n' : '') +
+            history: (tempSub.history ? tempSub.history + '\n' : '') +
               '[Removed: Invoice ' + inv.invoice_number + ']',
           });
           if (error) throw new Error(error);
@@ -647,8 +736,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const invoiceNote =
       'Invoice ' + invoice.invoice_number +
       ': ' + (invoice.stands_count || 1) + ' booth(s)' +
-      (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '') +
-      (customerNote ? '. ' + customerNote : '');
+      (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '');
 
     // Check if a subscription already exists for this company + year
     const existing = subscriptions.find((s) => s.company_id === companyId);
@@ -666,16 +754,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (merge) {
-        // Additive merge: add booth_count and meal counts; fill area if empty; append note
+        // Additive merge: add booth_count and meal counts; fill area if empty; append to history
         const mergedArea = existing.area || invoiceArea;
-        const mergedNotes = existing.notes
-          ? existing.notes + '\n' + invoiceNote
-          : 'Imported from: ' + invoiceNote;
+        const mergedHistory = existing.history
+          ? existing.history + '\n' + invoiceNote
+          : invoiceNote;
 
         const { error } = await updateSubscription(existing.id, {
           booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
           area: mergedArea,
-          notes: mergedNotes,
+          notes: existing.notes || customerNote,
+          history: mergedHistory,
           breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
           lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
           bbq_sat: (existing.bbq_sat || 0) + bbqVal,
@@ -693,7 +782,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const subResult = await subscribeCompany(companyId, {
       booth_count: invoice.stands_count || 1,
       area: invoiceArea,
-      notes: 'Imported from: ' + invoiceNote,
+      notes: customerNote,
+      history: invoiceNote,
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
@@ -806,24 +896,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       return;
     }
 
-    // No candidate found — prompt to create a new company record (no sync yet).
-    const yes = await confirm({
-      title: 'No company found',
-      message: 'No matching company found for "' + invoice.company_name + '". Create a new company record now?',
-    });
-    if (!yes) return;
-    try {
-      const { data: newCompany, error: ce } = await supabase
-        .from('companies')
-        .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
-        .select().single();
-      if (ce) throw ce;
-      await supabase.from('staged_invoices').update({ company_id: newCompany.id }).eq('id', invoice.id);
-      setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCompany.id } : i)));
-      toastSuccess('Company created and linked — use the approve button to sync.');
-    } catch (err) {
-      toastError('Failed to create company: ' + (err?.message || String(err)));
-    }
+    // No candidate found — open search modal so user can pick an existing company or create new.
+    setCompanySearchModal(invoice);
   };
 
   const handleApproveAndSync = async (invoice) => {
@@ -938,6 +1012,33 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   return (
     <div>
+      {/* Company Search Modal — shown when no automatic match is found */}
+      {companySearchModal && (
+        <CompanySearchModal
+          invoice={companySearchModal}
+          companies={companies}
+          onSelect={(company) => {
+            const inv = companySearchModal;
+            setCompanySearchModal(null);
+            setVerifyModal({ invoice: inv, company });
+          }}
+          onCreateNew={async () => {
+            const inv = companySearchModal;
+            setCompanySearchModal(null);
+            try {
+              const { data: newCo, error: ce } = await createCompany({ name: inv.company_name, phone: inv.phone || '', email: inv.email || '' });
+              if (ce) throw new Error(ce);
+              await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', inv.id);
+              setInvoices((prev) => prev.map((i) => (i.id === inv.id ? { ...i, company_id: newCo.id } : i)));
+              toastSuccess('Company created and linked — use the approve button to sync.');
+            } catch (err) {
+              toastError('Failed to create company: ' + (err?.message || String(err)));
+            }
+          }}
+          onCancel={() => setCompanySearchModal(null)}
+        />
+      )}
+
       {/* Match Verification Modal */}
       {verifyModal && (
         <MatchVerificationModal
@@ -945,27 +1046,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
           company={verifyModal.company}
           onConfirm={handleConfirmMatch}
           onCancel={() => setVerifyModal(null)}
-          onCreateNew={async () => {
+          onCreateNew={() => {
             const { invoice } = verifyModal;
             setVerifyModal(null);
-            const yes = await confirm({
-              title: 'Create New Company',
-              message: `Create a new company record for "${invoice.company_name}"?`,
-            });
-            if (!yes) return;
-            try {
-              const { data: newCo, error: ce } = await supabase
-                .from('companies')
-                .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
-                .select()
-                .single();
-              if (ce) throw ce;
-              await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', invoice.id);
-              setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCo.id } : i)));
-              toastSuccess('Company created and linked — use the approve button to sync.');
-            } catch (err) {
-              toastError('Failed to create company: ' + (err?.message || String(err)));
-            }
+            setCompanySearchModal(invoice);
           }}
         />
       )}

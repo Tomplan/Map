@@ -231,7 +231,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       return;
     }
 
-    const { error } = await subscribeCompany(parseInt(selectedCompanyId));
+    const { error } = await subscribeCompany(parseInt(selectedCompanyId), {
+      history: 'Manually added on ' + new Date().toLocaleDateString('en-GB'),
+    });
     if (!error) {
       setIsAdding(false);
       setSelectedCompanyId('');
@@ -508,6 +510,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
                 {t('helpPanel.subscriptions.notes')}
               </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                History
+              </th>
               <th
                 className="p-2 text-center border-b bg-gray-100"
                 rowSpan={3}
@@ -679,6 +684,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   {/* Notes */}
                   <td className="p-2 text-left">
                     <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
+                  </td>
+
+                  {/* History */}
+                  <td className="p-2 text-left max-w-[200px]">
+                    <span className="text-xs text-gray-400 whitespace-pre-line">{subscription.history || '-'}</span>
                   </td>
 
                   {/* Actions */}

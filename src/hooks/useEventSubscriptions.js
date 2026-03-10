@@ -149,6 +149,7 @@ export default function useEventSubscriptions(eventYear) {
             lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
             coins: subscriptionData.coins ?? defaultCoins,
             notes: subscriptionData.notes || '',
+            history: subscriptionData.history || '',
             created_by,
           },
           { onConflict: 'company_id, event_year' },
