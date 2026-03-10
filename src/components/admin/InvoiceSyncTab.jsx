@@ -743,7 +743,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 <tr>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 max-w-[100px]"
                     onClick={() => handleSort('invoice_number')}
                   >
                     Invoice {getSortIcon('invoice_number')}
@@ -805,7 +805,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         onClick={() => toggleRow(inv.id)}
                         className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-2">
+                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-2 max-w-[100px] overflow-hidden">
                           <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} />
                           <a
                             href={
@@ -815,7 +815,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             title="Open PDF"
-                            className="hover:underline flex items-center gap-1"
+                            className="hover:underline flex items-center gap-1 truncate"
                           >
                             {inv.invoice_number}
                           </a>
