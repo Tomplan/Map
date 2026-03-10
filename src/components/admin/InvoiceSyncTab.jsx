@@ -14,6 +14,7 @@ import {
   mdiChevronUp,
   mdiChevronDown,
   mdiDelete,
+  mdiArrowULeftTop,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -1179,14 +1180,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             >
                               <Icon path={mdiCheck} size={0.8} />
                             </button>
+                            {inv.status === 'approved' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(inv.id, 'pending');
+                                }}
+                                className="p-2 bg-white border border-orange-300 text-orange-600 rounded hover:bg-orange-50"
+                                title="Undo subscription — revert to pending"
+                              >
+                                <Icon path={mdiArrowULeftTop} size={0.8} />
+                              </button>
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStatusChange(inv.id, 'rejected');
                               }}
-                              disabled={inv.status === 'rejected'}
-                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                              title="Reject"
+                              disabled={inv.status === 'approved' || inv.status === 'rejected'}
+                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={inv.status === 'approved' ? 'Use the undo button to revert a subscription' : 'Reject'}
                             >
                               <Icon path={mdiCancel} size={0.8} />
                             </button>
