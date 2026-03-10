@@ -741,70 +741,59 @@ export default function InvoiceSyncTab({ selectedYear }) {
           <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100">
             <table className="w-full text-left border-collapse min-w-max bg-white">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
-                {/* grouping row: day labels */}
-                <tr>
-                  <th className="px-4 py-1 border-b border-gray-200" colSpan={5}></th>
-                  <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={3}>
-                    Saturday
-                  </th>
-                  <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={2}>
-                    Sunday
-                  </th>
-                  <th className="px-4 py-1 border-b border-gray-200" colSpan={3}></th>
-                </tr>
                 <tr>
                   <th
-                    className="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('invoice_number')}
                   >
                     Invoice {getSortIcon('invoice_number')}
                   </th>
                   <th
-                    className="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('company_name')}
                   >
                     Company {getSortIcon('company_name')}
                   </th>
                   <th
-                    className="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left"
                     onClick={() => handleSort('date')}
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-4 py-3 border-b border-gray-200 text-left">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     Stands
                   </th>
                   {/* split meal columns */}
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     Bfst
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     Lunch
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     BBQ
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     Bfst
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200"
+                    className="px-2 py-2 text-center border-b border-gray-200"
                   >
                     Lunch
                   </th>
-                  <th className="px-4 py-3 border-b border-gray-200">Notes</th>
-                  <th className="px-4 py-3 border-b border-gray-200">Area</th>
+                  <th className="px-2 py-2 border-b border-gray-200">Notes</th>
+                  <th className="px-2 py-2 border-b border-gray-200">Area</th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('status')}
@@ -847,7 +836,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         onClick={() => toggleRow(inv.id)}
                         className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td className="px-4 py-3 font-medium text-blue-600 flex items-center gap-2">
+                        <td className="px-2 py-2 font-medium text-blue-600 flex items-center gap-2">
                           <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} />
                           <a
                             href={
@@ -862,7 +851,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50">
+                        <td className="px-2 py-2 border-r border-gray-50">
                           <div className="font-medium text-gray-900">{inv.company_name}</div>
                           {matchName ? (
                             <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
@@ -874,10 +863,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50 text-gray-600">
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600">
                           {parsedData.date || 'N/A'}
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50">
+                        <td className="px-2 py-2 border-r border-gray-50">
                           <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis block max-w-[150px]">
                             {firstItem}{' '}
                             {hasMore && (
@@ -887,32 +876,32 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center border-r border-gray-50">
+                        <td className="px-2 py-2 text-center border-r border-gray-50">
                           <div className="font-semibold text-gray-800 text-base">
                             {inv.stands_count}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
                           {inv.breakfast_sat ?? 0}
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
                           {inv.lunch_sat ?? 0}
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
                           {inv.bbq_sat ?? 0}
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
                           {inv.breakfast_sun ?? 0}
                         </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                        <td className="px-2 py-2 text-center text-gray-600 border-r border-gray-50">
                           {inv.lunch_sun ?? 0}
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50 max-w-xs">
+                        <td className="px-2 py-2 border-r border-gray-50 max-w-xs">
                           <div className="text-gray-500 text-xs whitespace-pre-wrap truncate">
                             {parsedData.rawNotes || parsedData.notes || rawNotesFallback || 'No notes'}
                           </div>
                         </td>
-                        <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
+                        <td className="px-2 py-2 border-r border-gray-50 max-w-xs xl:max-w-md">
                           {areaString || inv.area_preference ? (
                             <div className="text-gray-500 text-xs whitespace-pre-wrap">
                               {areaString || inv.area_preference}
@@ -921,7 +910,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             'N/A'
                           )}
                         </td>
-                        <td className="px-4 py-3 text-center border-r border-gray-50">
+                        <td className="px-2 py-2 text-center border-r border-gray-50">
                           <span
                             className={
                               'px-2 py-1 rounded text-xs font-semibold ' +
@@ -939,7 +928,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 : 'PENDING'}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-2 py-2 text-right">
                           <div className="flex flex-col gap-2 items-end">
                             {inv.status === 'pending' && (
                               <div className="flex gap-2 justify-end">
