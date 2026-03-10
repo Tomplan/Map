@@ -91,7 +91,12 @@ function extractFieldsFromBlock(lines = []) {
     const l = (line || '').trim();
     if (!l) return;
     if (!r.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) { r.contact_email = l; return; }
-    if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) { r.vat_number = l.replace(/^BTW[:\s-]*/i,'').trim(); return; }
+    if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
+      const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
+      r.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
+        : l.replace(/^[\w\s]*?(?:BTW|VAT|nummer|number|nr\.?)[\s:\-]*/i, '').trim();
+      return;
+    }
     if (!r.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) { const m = l.match(/\d{8}/); if (m) { r.kvk_number = m[0]; return; } }
     if (!r.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
       const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);

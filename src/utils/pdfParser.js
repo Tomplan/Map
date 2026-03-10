@@ -458,7 +458,10 @@ function parseSpatialInvoice(items, allowedItems) {
 
     // Dutch VAT: "BTW" or "NL[9digits]" patterns
     if (!parsed.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
-      parsed.vat_number = l.replace(/^BTW[:\s-]*/i, '').trim();
+      // Extract only the VAT number token, discarding any label text (e.g. "BTW nummer: NL001670643B62")
+      const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|NL|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
+      parsed.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
+        : l.replace(/^[\w\s]*?(?:BTW|VAT|nummer|number|nr\.?)[\s:\-]*/i, '').trim();
       return;
     }
 
