@@ -20,6 +20,65 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
+// ── Phone normalizer for fuzzy matching ─────────────────────────────────
+function normalizePhone(p) {
+  return (p || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
+}
+
+// ── Multi-field company matcher ───────────────────────────────────────────
+// Scores each company against invoice data and returns the best candidate
+// (score ≥ 40) with the reasons that contributed to the match.
+function findBestCompanyMatch(invoice, companies) {
+  let notes = {};
+  try { notes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+  const hasStoredFields = notes.contact_name || notes.contact_email || notes.kvk_number || notes.vat_number;
+  if (!hasStoredFields && Array.isArray(notes.client_block) && notes.client_block.length > 1) {
+    Object.assign(notes, extractFieldsFromBlock(notes.client_block));
+  }
+  const invName  = (invoice.company_name || '').toLowerCase().trim();
+  const invEmail = (notes.contact_email || '').toLowerCase().trim();
+  const invPhone = normalizePhone(notes.contact_phone || '');
+  const invKvk   = (notes.kvk_number || '').replace(/\s/g, '');
+  const invVat   = (notes.vat_number || '').replace(/\s/g, '').toLowerCase();
+
+  let best = null;
+  let bestScore = 0;
+
+  for (const c of companies) {
+    let score = 0;
+    const reasons = [];
+    const cName = (c.name || '').toLowerCase().trim();
+
+    if (cName === invName)                                    { score += 100; reasons.push('name'); }
+    else if (invName && cName && (cName.includes(invName) || invName.includes(cName))) { score += 40; reasons.push('~name'); }
+
+    if (invEmail) {
+      const emails = [c.email, c.contact_email].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
+      if (emails.includes(invEmail))                          { score += 80; reasons.push('email'); }
+    }
+    if (invPhone) {
+      const phones = [c.phone, c.contact_phone].map(p => normalizePhone(p || '')).filter(Boolean);
+      if (phones.some(p => p && p === invPhone))              { score += 70; reasons.push('phone'); }
+    }
+    if (invKvk && invKvk.length >= 8) {
+      const cKvk = (c.kvk_number || '').replace(/\s/g, '');
+      if (cKvk && cKvk === invKvk)                            { score += 90; reasons.push('KvK'); }
+    }
+    if (invVat && invVat.length >= 8) {
+      const cVat = (c.vat_number || '').replace(/\s/g, '').toLowerCase();
+      if (cVat && cVat === invVat)                            { score += 85; reasons.push('VAT'); }
+    }
+    if (notes.contact_name) {
+      const iCn = notes.contact_name.toLowerCase();
+      const companyCn = [c.contact_name, c.contact].map(x => (x || '').toLowerCase()).filter(Boolean);
+      if (companyCn.some(cn => cn && (cn.includes(iCn) || iCn.includes(cn)))) { score += 30; reasons.push('contact'); }
+    }
+
+    if (score > bestScore) { bestScore = score; best = { company: c, score, reasons }; }
+  }
+  return bestScore >= 40 ? best : null;
+}
+
 // ── Re-extract structured fields from a raw client_block array ──────────
 // (mirrors the logic in pdfParser.js so old records without stored fields still work)
 function extractFieldsFromBlock(lines = []) {
@@ -63,17 +122,21 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
   }
 
   const fields = [
-    { label: 'Company name', inv: invoice.company_name, cmp: company.name },
-    { label: 'Contact',      inv: inv.contact_name,   cmp: company.contact_name },
-    { label: 'Email',        inv: inv.contact_email,  cmp: company.contact_email || company.email },
-    { label: 'Phone',        inv: inv.contact_phone,  cmp: company.contact_phone || company.phone },
-    { label: 'Street',       inv: inv.address_line1,  cmp: company.address_line1 },
-    { label: 'Street 2',     inv: inv.address_line2,  cmp: company.address_line2 },
-    { label: 'Postal code',  inv: inv.postal_code,    cmp: company.postal_code },
-    { label: 'City',         inv: inv.city,           cmp: company.city },
-    { label: 'Country',      inv: inv.country,        cmp: company.country },
-    { label: 'VAT',          inv: inv.vat_number,     cmp: company.vat_number },
-    { label: 'KvK',          inv: inv.kvk_number,     cmp: company.kvk_number },
+    { label: 'Company name',  inv: invoice.company_name,  cmp: company.name },
+    // "Contact" = billing name extracted from PDF; fallback to the company's
+    // legacy single-contact field so the cell is never empty for existing records.
+    { label: 'Contact',       inv: inv.contact_name,       cmp: company.contact_name || company.contact },
+    // Always show the general/registered contact so the user can compare.
+    { label: 'Reg. contact',  inv: null,                   cmp: company.contact || null },
+    { label: 'Email',         inv: inv.contact_email,      cmp: company.contact_email || company.email },
+    { label: 'Phone',         inv: inv.contact_phone,      cmp: company.contact_phone || company.phone },
+    { label: 'Street',        inv: inv.address_line1,      cmp: company.address_line1 },
+    { label: 'Street 2',      inv: inv.address_line2,      cmp: company.address_line2 },
+    { label: 'Postal code',   inv: inv.postal_code,        cmp: company.postal_code },
+    { label: 'City',          inv: inv.city,               cmp: company.city },
+    { label: 'Country',       inv: inv.country,            cmp: company.country },
+    { label: 'VAT',           inv: inv.vat_number,         cmp: company.vat_number },
+    { label: 'KvK',           inv: inv.kvk_number,         cmp: company.kvk_number },
   ];
 
   // Check if any invoice field would fill an empty company field
@@ -391,21 +454,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (yes) {
-        const matchName = companies.find(
-          (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-        );
-        if (matchName?.id && unsubscribeCompany) {
+        // Prefer the persisted FK; fall back to multi-field best-match.
+        const undoCompanyId = inv.company_id ||
+          findBestCompanyMatch(inv, companies)?.company?.id || null;
+        if (undoCompanyId && unsubscribeCompany) {
           try {
-            const tempSub = subscriptions.find((s) => s.company_id === matchName.id);
+            const tempSub = subscriptions.find((s) => s.company_id === undoCompanyId);
             if (tempSub) {
               await unsubscribeCompany(tempSub.id);
               toastSuccess('Subscription removed.');
             } else {
-              // Could not find subscription for the matched company
-              console.warn(
-                'Could not find active subscription to remove for Company ID:',
-                matchName.id,
-              );
+              console.warn('Could not find active subscription to remove for Company ID:', undoCompanyId);
             }
           } catch (e) {
             console.error(e);
@@ -516,6 +575,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
         const patch = {};
         const fill = (field, val) => { if (val && !company[field]) patch[field] = val; };
         fill('contact_name',  inv.contact_name);
+        // Also fill the legacy single-contact field if it's empty
+        fill('contact',       inv.contact_name);
         fill('contact_email', inv.contact_email);
         fill('contact_phone', inv.contact_phone);
         fill('address_line1', inv.address_line1);
@@ -556,9 +617,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
 
     // Not yet verified — open the verification flow.
-    const matchedCompany = companies.find(
-      (c) => c.name.toLowerCase() === (invoice.company_name || '').toLowerCase(),
-    );
+    const matchResult = findBestCompanyMatch(invoice, companies);
+    const matchedCompany = matchResult?.company || null;
 
     if (!matchedCompany) {
       // No company record at all — prompt to create one.
@@ -602,9 +662,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
-      const matchName = companies.find(
-        (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-      );
+      const matchResult = findBestCompanyMatch(inv, companies);
 
       let parsedDate = '';
       try {
@@ -612,7 +670,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
         parsedDate = parsedNotes.date || '';
       } catch (e) {}
 
-      return { ...inv, hasMatch: !!matchName, matchName: matchName?.name, date: parsedDate };
+      return {
+        ...inv,
+        hasMatch: !!matchResult,
+        matchCompany: matchResult?.company || null,
+        matchScore: matchResult?.score || 0,
+        matchReasons: matchResult?.reasons || [],
+        date: parsedDate,
+      };
     });
 
     if (searchTerm) {
@@ -1000,9 +1065,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
                 {processedInvoices.map((inv) => {
-                  const matchName = companies.find(
-                    (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-                  );
+                  // matchCompany is pre-computed by processedInvoices (multi-field best-match)
+                  const matchCompany = inv.matchCompany;
+                  const matchReasons = inv.matchReasons || [];
 
                   let parsedData = {};
                   try {
@@ -1048,16 +1113,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {inv.status !== 'approved' && (
-                            matchName ? (
+                            matchCompany ? (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleApproveAndSync(inv); }}
-                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-block transition-colors cursor-pointer"
+                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
                                 style={inv.company_id
                                   ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
                                   : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
                                 title={inv.company_id ? 'Verified — click to re-check' : 'Click to verify match'}
                               >
-                                {inv.company_id ? '✓ Verified: ' : '? Match: '}{matchName.name}
+                                <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
+                                {!inv.company_id && matchReasons.length > 0 && (
+                                  <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
+                                )}
                               </button>
                             ) : (
                               <button
