@@ -45,4 +45,15 @@ describe('parseSpatialInvoice helper', () => {
     expect(result.notes).toBe('some note additional info');
     expect(result.opmerkingen).toBe(result.notes);
   });
+
+  it('skips header line containing both column titles', () => {
+    const items = [
+      { str: 'Betaalmethode Opmerking', x: 0, y: 10, height: 0, width: 0 },
+      { str: 'Betaald via iDEAL', x: 0, y: 5, height: 0, width: 0 },
+      { str: 'meer tekst', x: 0, y: 0, height: 0, width: 0 },
+    ];
+    const result = parseSpatialInvoice(items, []);
+    expect(result.notes).toBe('Betaald via iDEAL meer tekst');
+    expect(result.opmerkingen).toBe(result.notes);
+  });
 });

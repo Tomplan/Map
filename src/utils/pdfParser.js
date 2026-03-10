@@ -62,9 +62,11 @@ export { parseSpatialInvoice };
 
 function parseSpatialInvoice(items, allowedItems) {
   // Sort items top-to-bottom. Y is higher for the top of the page.
+  // use a tighter threshold so closely‑spaced rows aren’t merged accidentally.
+  const LINE_GAP = 4; // points
   items.sort((a, b) => {
-    // Treat items within 5 points of Y as being on the same line
-    if (Math.abs(b.y - a.y) < 5) {
+    // Treat items within LINE_GAP points of Y as being on the same line
+    if (Math.abs(b.y - a.y) < LINE_GAP) {
       return a.x - b.x; // sort left-to-right
     }
     return b.y - a.y; // sort top-to-bottom
@@ -92,7 +94,7 @@ function parseSpatialInvoice(items, allowedItems) {
   items.forEach((item) => {
     if (item.str.trim() === '') return;
 
-    if (currentY === null || Math.abs(currentY - item.y) > 5) {
+    if (currentY === null || Math.abs(currentY - item.y) >= LINE_GAP) {
       if (currentLine.length > 0) {
         lines.push(currentLine);
       }
@@ -194,6 +196,15 @@ function parseSpatialInvoice(items, allowedItems) {
       !notesStarted &&
       (lowerText.includes('opmerking') || lowerText.includes('opmerkingen') || lowerText.includes('betreft'))
     ) {
+      // ignore the header row that lists both column names like
+      // "Betaalmethode  Opmerking"; the real notes start on the next line.
+      if (lowerText.includes('betaalmethode')) {
+        // header row containing both column names – treat as start marker but
+        // do not consume any text.  subsequent line(s) should be appended.
+        console.debug('HEADER SKIP: setting notesStarted, ignoring line', textChunk);
+        notesStarted = true;
+        return; // skip to next line in the forEach
+      }
       notesStarted = true;
       // determine keyword match so we can slice after it
       const kwMatch = textChunk.match(/(opmerking(?:en)?|betreft)/i);
