@@ -701,33 +701,35 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       because those values are derived from the PDF or meals_count and
                       can be adjusted manually once the invoice has been synced to a
                       subscription. */}
-                      try {
-                        const { error } = await supabase
-                          .from('staged_invoices')
-                          .update({
-                            company_name: editingInvoice.company_name,
-                            stands_count: editingInvoice.stands_count,
-                            meals_count: editingInvoice.meals_count,
-                            breakfast_sat: editingInvoice.breakfast_sat,
-                            lunch_sat: editingInvoice.lunch_sat,
-                            bbq_sat: editingInvoice.bbq_sat,
-                            breakfast_sun: editingInvoice.breakfast_sun,
-                            lunch_sun: editingInvoice.lunch_sun,
-                            notes: editingInvoice.notes,
-                          })
-                          .eq('id', editingInvoice.id);
+                  <button
+                      onClick={async () => {
+                        try {
+                          const { error } = await supabase
+                            .from('staged_invoices')
+                            .update({
+                              company_name: editingInvoice.company_name,
+                              stands_count: editingInvoice.stands_count,
+                              meals_count: editingInvoice.meals_count,
+                              breakfast_sat: editingInvoice.breakfast_sat,
+                              lunch_sat: editingInvoice.lunch_sat,
+                              bbq_sat: editingInvoice.bbq_sat,
+                              breakfast_sun: editingInvoice.breakfast_sun,
+                              lunch_sun: editingInvoice.lunch_sun,
+                              notes: editingInvoice.notes,
+                            })
+                            .eq('id', editingInvoice.id);
 
-                        if (error) throw error;
+                          if (error) throw error;
 
-                        setInvoices((prev) =>
-                          prev.map((inv) => (inv.id === editingInvoice.id ? editingInvoice : inv)),
-                        );
-                        toastSuccess('Invoice updated');
-                        setEditingInvoice(null);
-                      } catch (err) {
-                        toastError(err.message);
-                      }
-                    }}
+                          setInvoices((prev) =>
+                            prev.map((inv) => (inv.id === editingInvoice.id ? editingInvoice : inv)),
+                          );
+                          toastSuccess('Invoice updated');
+                          setEditingInvoice(null);
+                        } catch (err) {
+                          toastError(err.message);
+                        }
+                      }}
                     className="px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700 rounded-lg transition-colors shadow-sm cursor-pointer"
                   >
                     Save Changes
@@ -764,6 +766,37 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     onClick={() => handleSort('stands_count')}
                   >
                     Stands {getSortIcon('stands_count')}
+                  </th>
+                  {/* split meal columns */}
+                  <th
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('breakfast_sat')}
+                  >
+                    Bfst (Sat) {getSortIcon('breakfast_sat')}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('lunch_sat')}
+                  >
+                    Lunch (Sat) {getSortIcon('lunch_sat')}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('bbq_sat')}
+                  >
+                    BBQ (Sat) {getSortIcon('bbq_sat')}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('breakfast_sun')}
+                  >
+                    Bfst (Sun) {getSortIcon('breakfast_sun')}
+                  </th>
+                  <th
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
+                    onClick={() => handleSort('lunch_sun')}
+                  >
+                    Lunch (Sun) {getSortIcon('lunch_sun')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
@@ -859,6 +892,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           <div className="font-semibold text-gray-800 text-base">
                             {inv.stands_count}
                           </div>
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                          {inv.breakfast_sat ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                          {inv.lunch_sat ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                          {inv.bbq_sat ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                          {inv.breakfast_sun ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
+                          {inv.lunch_sun ?? 0}
                         </td>
                         <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
                           {inv.meals_count}
