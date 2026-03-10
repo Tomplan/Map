@@ -74,6 +74,7 @@ function parseSpatialInvoice(items, allowedItems) {
 
   // track whether we've begun collecting notes lines
   let notesStarted = false;
+  let noteColumnX = null; // left boundary of the notes column, determined from header
 
   const parsed = {
     invoice_number: null,
@@ -196,11 +197,15 @@ function parseSpatialInvoice(items, allowedItems) {
       !notesStarted &&
       (lowerText.includes('opmerking') || lowerText.includes('opmerkingen') || lowerText.includes('betreft'))
     ) {
-      // ignore the header row that lists both column names like
+        // ignore the header row that lists both column names like
       // "Betaalmethode  Opmerking"; the real notes start on the next line.
       if (lowerText.includes('betaalmethode')) {
-        // header row containing both column names – treat as start marker but
-        // do not consume any text.  subsequent line(s) should be appended.
+        // record boundary for the notes column based on position of "Opmerking"
+        const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
+        if (opItem) {
+          noteColumnX = opItem.x;
+          console.debug('HEADER SKIP: recorded noteColumnX', noteColumnX);
+        }
         console.debug('HEADER SKIP: setting notesStarted, ignoring line', textChunk);
         notesStarted = true;
         return; // skip to next line in the forEach
@@ -231,9 +236,26 @@ function parseSpatialInvoice(items, allowedItems) {
       !/^\s*\d{2,}\s+[A-Z]{2}\d+/.test(textChunk)
     ) {
       // Continue capturing notes if we previously started and not past the notes section
-      console.debug('NOTE append:', textChunk);
-      parsed.notes += (parsed.notes ? ' ' : '') + textChunk;
-      parsed.opmerkingen = parsed.notes;
+      // if we know the notes column boundary, filter items accordingly
+      let appendText = textChunk;
+      if (noteColumnX !== null) {
+        const rightSide = lineItems
+          .filter((i) => i.x >= noteColumnX - 2)
+          .map((i) => i.str)
+          .join(' ')
+          .trim();
+        if (rightSide) {
+          appendText = rightSide;
+        } else {
+          console.debug('skipping left-column-only line', textChunk);
+          appendText = '';
+        }
+      }
+      if (appendText) {
+        console.debug('NOTE append:', appendText);
+        parsed.notes += (parsed.notes ? ' ' : '') + appendText;
+        parsed.opmerkingen = parsed.notes;
+      }
     }
 
     // 5) Client Block (top-left, x < 300)

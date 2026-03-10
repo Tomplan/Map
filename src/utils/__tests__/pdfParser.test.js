@@ -46,14 +46,18 @@ describe('parseSpatialInvoice helper', () => {
     expect(result.opmerkingen).toBe(result.notes);
   });
 
-  it('skips header line containing both column titles', () => {
+  it('skips header line containing both column titles and respects column boundary', () => {
     const items = [
-      { str: 'Betaalmethode Opmerking', x: 0, y: 10, height: 0, width: 0 },
-      { str: 'Betaald via iDEAL', x: 0, y: 5, height: 0, width: 0 },
-      { str: 'meer tekst', x: 0, y: 0, height: 0, width: 0 },
+      // simulate two columns: header has two text chunks with different x
+      { str: 'Betaalmethode', x: 10, y: 10, height: 0, width: 0 },
+      { str: 'Opmerking', x: 200, y: 10, height: 0, width: 0 },
+      // next line: value for betaalmethode should be ignored (x< noteColumnX)
+      { str: 'Betaald via iDEAL', x: 10, y: 5, height: 0, width: 0 },
+      // following line sits in notes column (x >= noteColumnX)
+      { str: 'meer tekst', x: 200, y: 0, height: 0, width: 0 },
     ];
     const result = parseSpatialInvoice(items, []);
-    expect(result.notes).toBe('Betaald via iDEAL meer tekst');
+    expect(result.notes).toBe('meer tekst');
     expect(result.opmerkingen).toBe(result.notes);
   });
 });
