@@ -123,11 +123,8 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 
   const fields = [
     { label: 'Company name',  inv: invoice.company_name,  cmp: company.name },
-    // "Contact" = billing name extracted from PDF; fallback to the company's
-    // legacy single-contact field so the cell is never empty for existing records.
-    { label: 'Contact',       inv: inv.contact_name,       cmp: company.contact_name || company.contact },
-    // Always show the general on-file contact so the user can compare.
-    { label: 'Contact on file', inv: null,                 cmp: company.contact || null },
+    { label: 'Contact 1',     inv: inv.contact_name,       cmp: company.contact_name || company.contact },
+    { label: 'Contact 2',     inv: null,                   cmp: company.contact || null },
     { label: 'Email',         inv: inv.contact_email,      cmp: company.contact_email || company.email },
     { label: 'Phone',         inv: inv.contact_phone,      cmp: company.contact_phone || company.phone },
     { label: 'Street',        inv: inv.address_line1,      cmp: company.address_line1 },
