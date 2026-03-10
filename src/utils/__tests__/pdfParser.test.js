@@ -46,6 +46,24 @@ describe('parseSpatialInvoice helper', () => {
     expect(result.opmerkingen).toBe(result.notes);
   });
 
+  it('counts breakfast, lunch and bbq separately', () => {
+    const items = [
+      { str: 'Item aantal', x: 0, y: 10, height: 0, width: 0 },
+      { str: 'Ontbijt (Breakfast)', x: 0, y: 0, height: 0, width: 0 },
+      { str: '2', x: 250, y: 0, height: 0, width: 0 },
+      { str: 'Lunch special', x: 0, y: -5, height: 0, width: 0 },
+      { str: '3', x: 250, y: -5, height: 0, width: 0 },
+      { str: 'BBQ pakket', x: 0, y: -10, height: 0, width: 0 },
+      { str: '1', x: 250, y: -10, height: 0, width: 0 },
+    ];
+    const result = parseSpatialInvoice(items, []);
+    expect(result.breakfast).toBe(2);
+    expect(result.lunch).toBe(3);
+    expect(result.bbq).toBe(1);
+    // legacy total remains sum of all types
+    expect(result.meals_count).toBe(6);
+  });
+
   it('skips header line containing both column titles and respects column boundary', () => {
     const items = [
       // simulate two columns: header has two text chunks with different x

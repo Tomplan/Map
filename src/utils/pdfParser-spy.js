@@ -53,8 +53,9 @@ function parseSpatialInvoice(items, allowedItems) {
     client_details: [],
     line_items: [],
     opmerkingen: '',
-    is_relevant: true,
-  };
+    is_relevant: true,    breakfast: 0,
+    lunch: 0,
+    bbq: 0,  };
 
   const lines = [];
   let currentY = null;
@@ -304,6 +305,16 @@ function parseSpatialInvoice(items, allowedItems) {
       desc.includes('ontbijt')
     ) {
       parsed.meals_count += li.quantity;
+    }
+
+    if (desc.includes('ontbijt') || desc.includes('breakfast')) {
+      parsed.breakfast += li.quantity;
+    }
+    if (desc.includes('lunch')) {
+      parsed.lunch += li.quantity;
+    }
+    if (desc.includes('bbq') || desc.includes('barbecue')) {
+      parsed.bbq += li.quantity;
     }
   });
 

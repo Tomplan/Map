@@ -85,6 +85,10 @@ function parseSpatialInvoice(items, allowedItems) {
     opmerkingen: '',
     notes: '', // extracted from opmerkingen block
     is_relevant: true,
+    // breakdowns added recently
+    breakfast: 0,
+    lunch: 0,
+    bbq: 0,
   };
 
   const lines = [];
@@ -394,7 +398,22 @@ function parseSpatialInvoice(items, allowedItems) {
       desc.includes('bbq') ||
       desc.includes('ontbijt')
     ) {
+      // maintain legacy total count for compatibility
       parsed.meals_count += li.quantity;
+    }
+
+    // break the meals out by type so sync logic can create sensible
+    // subscriptions.  By default we treat everything as Saturday; the
+    // InvoiceSyncTab will split lunches half/half and leave sunday counts
+    // at zero unless overwritten manually.
+    if (desc.includes('ontbijt') || desc.includes('breakfast')) {
+      parsed.breakfast += li.quantity;
+    }
+    if (desc.includes('lunch')) {
+      parsed.lunch += li.quantity;
+    }
+    if (desc.includes('bbq') || desc.includes('barbecue')) {
+      parsed.bbq += li.quantity;
     }
   });
 

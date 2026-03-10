@@ -162,6 +162,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
             phone: '',
             stands_count: parsedData.stands_count,
             meals_count: parsedData.meals_count,
+            // store breakdown as well so editing/sync can use real numbers
+            breakfast_sat: parsedData.breakfast ?? 0,
+            lunch_sat: parsedData.lunch ?? 0,
+            bbq_sat: parsedData.bbq ?? 0,
+            breakfast_sun: 0,
+            lunch_sun: 0,
             area_preference: '',
             notes: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
@@ -347,6 +353,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
 
     try {
+      // compute breakdown values from the parsed invoice; fall back
+      // to the old meals_count logic when necessary
+      const breakfastVal = invoice.breakfast ?? 0;
+      const lunchVal = invoice.lunch ?? invoice.meals_count ?? 0;
+      const bbqVal = invoice.bbq ?? 0;
+      const lunchSatVal = Math.ceil(lunchVal / 2);
+      const lunchSunVal = Math.floor(lunchVal / 2);
+
       const subResult = await subscribeCompany(companyId, {
         booth_count: invoice.stands_count || 1,
         area: invoice.area_preference || '',
@@ -359,8 +373,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
           (invoice.notes || ''),
         phone: invoice.phone,
         email: invoice.email,
-        lunch_sat: Math.ceil((invoice.meals_count || 0) / 2),
-        lunch_sun: Math.floor((invoice.meals_count || 0) / 2),
+        breakfast_sat: breakfastVal,
+        lunch_sat: lunchSatVal,
+        bbq_sat: bbqVal,
+        breakfast_sun: 0,
+        lunch_sun: lunchSunVal,
       });
 
       if (subResult?.error) throw new Error(subResult.error);
@@ -680,29 +697,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       />
                     </div>
                   </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                    <textarea
-                      value={editingInvoice.notes || ''}
-                      onChange={(e) =>
-                        setEditingInvoice({ ...editingInvoice, notes: e.target.value })
-                      }
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    ></textarea>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-                  <button
-                    onClick={() => setEditingInvoice(null)}
-                    className="px-4 py-2 text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-colors border border-gray-300 cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
+                  {/* note: we intentionally do not expose breakfast/lunch/bbq edits here
+                      because those values are derived from the PDF or meals_count and
+                      can be adjusted manually once the invoice has been synced to a
+                      subscription. */}
                       try {
                         const { error } = await supabase
                           .from('staged_invoices')
@@ -710,6 +708,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             company_name: editingInvoice.company_name,
                             stands_count: editingInvoice.stands_count,
                             meals_count: editingInvoice.meals_count,
+                            breakfast_sat: editingInvoice.breakfast_sat,
+                            lunch_sat: editingInvoice.lunch_sat,
+                            bbq_sat: editingInvoice.bbq_sat,
+                            breakfast_sun: editingInvoice.breakfast_sun,
+                            lunch_sun: editingInvoice.lunch_sun,
                             notes: editingInvoice.notes,
                           })
                           .eq('id', editingInvoice.id);
