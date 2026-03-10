@@ -741,6 +741,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
           <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100">
             <table className="w-full text-left border-collapse min-w-max bg-white">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
+                {/* grouping row: day labels */}
+                <tr>
+                  <th className="px-4 py-1 border-b border-gray-200" colSpan={5}></th>
+                  <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={3}>
+                    Saturday
+                  </th>
+                  <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={2}>
+                    Sunday
+                  </th>
+                  <th className="px-4 py-1 border-b border-gray-200" colSpan={3}></th>
+                </tr>
                 <tr>
                   <th
                     className="px-4 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
@@ -797,12 +808,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     onClick={() => handleSort('lunch_sun')}
                   >
                     Lunch (Sun) {getSortIcon('lunch_sun')}
-                  </th>
-                  <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('meals_count')}
-                  >
-                    Meals {getSortIcon('meals_count')}
                   </th>
                   <th className="px-4 py-3 border-b border-gray-200">Notes</th>
                   <th className="px-4 py-3 border-b border-gray-200">Area</th>
@@ -907,9 +912,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         </td>
                         <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
                           {inv.lunch_sun ?? 0}
-                        </td>
-                        <td className="px-4 py-3 text-center text-gray-600 border-r border-gray-50">
-                          {inv.meals_count}
                         </td>
                         <td className="px-4 py-3 border-r border-gray-50 max-w-xs xl:max-w-md">
                           <div className="text-gray-500 text-xs whitespace-pre-wrap">
