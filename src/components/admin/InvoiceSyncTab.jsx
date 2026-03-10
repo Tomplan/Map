@@ -292,7 +292,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
   const { t } = useTranslation();
-  const { companies } = useCompanies();
+  const { companies, createCompany } = useCompanies();
   const { settings } = useOrganizationSettings();
   const { subscriptions, subscribeCompany, updateSubscription, unsubscribeCompany } =
     useEventSubscriptions(selectedYear);
@@ -814,11 +814,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     });
     if (!yes) return;
     try {
-      const { data: newCompany, error: ce } = await supabase
-        .from('companies')
-        .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
-        .select().single();
-      if (ce) throw ce;
+      const { data: newCompany, error: ce } = await createCompany({ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' });
+      if (ce) throw new Error(ce);
       await supabase.from('staged_invoices').update({ company_id: newCompany.id }).eq('id', invoice.id);
       setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCompany.id } : i)));
       toastSuccess('Company created and linked — use the approve button to sync.');
@@ -955,12 +952,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
             });
             if (!yes) return;
             try {
-              const { data: newCo, error: ce } = await supabase
-                .from('companies')
-                .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
-                .select()
-                .single();
-              if (ce) throw ce;
+              const { data: newCo, error: ce } = await createCompany({ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' });
+              if (ce) throw new Error(ce);
               await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', invoice.id);
               setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCo.id } : i)));
               toastSuccess('Company created and linked — use the approve button to sync.');
