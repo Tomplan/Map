@@ -294,7 +294,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const { t } = useTranslation();
   const { companies } = useCompanies();
   const { settings } = useOrganizationSettings();
-  const { subscriptions, subscribeCompany, unsubscribeCompany } =
+  const { subscriptions, subscribeCompany, updateSubscription, unsubscribeCompany } =
     useEventSubscriptions(selectedYear);
   const { toastSuccess, toastWarning, toastError, confirm } = useDialog();
 
@@ -603,16 +603,56 @@ export default function InvoiceSyncTab({ selectedYear }) {
     try { parsedInvNotes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
     const customerNote = parsedInvNotes.notes || '';
     const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
+    const invoiceNote =
+      'Invoice ' + invoice.invoice_number +
+      ': ' + (invoice.stands_count || 1) + ' booth(s)' +
+      (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '') +
+      (customerNote ? '. ' + customerNote : '');
+
+    // Check if a subscription already exists for this company + year
+    const existing = subscriptions.find((s) => s.company_id === companyId);
+
+    if (existing) {
+      const merge = await confirm({
+        title: 'Subscription already exists',
+        message:
+          'A subscription for "' + (existing.company?.name || '') + '" already exists for ' +
+          selectedYear + ' (booths: ' + existing.booth_count + ').\n\n' +
+          'Merge will add counts from this invoice to the existing subscription.\n' +
+          'Replace will overwrite it completely.',
+        confirmText: 'Merge',
+        cancelText: 'Replace',
+      });
+
+      if (merge) {
+        // Additive merge: add booth_count and meal counts; fill area if empty; append note
+        const mergedArea = existing.area || invoiceArea;
+        const mergedNotes = existing.notes
+          ? existing.notes + '\n' + invoiceNote
+          : 'Imported from: ' + invoiceNote;
+
+        const { error } = await updateSubscription(existing.id, {
+          booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
+          area: mergedArea,
+          notes: mergedNotes,
+          breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
+          lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
+          bbq_sat: (existing.bbq_sat || 0) + bbqVal,
+          breakfast_sun: (existing.breakfast_sun || 0),
+          lunch_sun: (existing.lunch_sun || 0) + lunchSunVal,
+        });
+        if (error) throw new Error(error);
+        await handleStatusChange(invoice.id, 'approved');
+        toastSuccess('Merged into existing subscription!');
+        return;
+      }
+      // Replace: fall through to normal subscribeCompany (upsert will overwrite)
+    }
 
     const subResult = await subscribeCompany(companyId, {
       booth_count: invoice.stands_count || 1,
       area: invoiceArea,
-      notes:
-        'Imported from Invoice ' +
-        invoice.invoice_number +
-        '. Meals ordered: ' +
-        (invoice.meals_count || 0) +
-        (customerNote ? '. ' + customerNote : ''),
+      notes: 'Imported from: ' + invoiceNote,
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
