@@ -85,10 +85,20 @@ function parseSpatialInvoice(items, allowedItems) {
     opmerkingen: '',
     notes: '', // extracted from opmerkingen block
     is_relevant: true,
-    // breakdowns added recently
+    // breakdowns
     breakfast: 0,
     lunch: 0,
     bbq: 0,
+    // structured fields extracted from client block
+    contact_name: null,
+    contact_email: null,
+    contact_phone: null,
+    address_line1: null,
+    address_line2: null,
+    postal_code: null,
+    city: null,
+    country: null,
+    vat_number: null,
   };
 
   const lines = [];
@@ -432,6 +442,74 @@ function parseSpatialInvoice(items, allowedItems) {
   if (parsed.client_details.length > 0) {
     parsed.client_details = parsed.client_details.filter((l) => l.length > 3);
   }
+
+  // ── Extract structured contact / address from client block ──────────────
+  // Skip index 0 (company name already in parsed.company_name).
+  parsed.client_details.slice(1).forEach((line) => {
+    const l = line.trim();
+    if (!l) return;
+
+    // Email — any line containing @
+    if (!parsed.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
+      parsed.contact_email = l;
+      return;
+    }
+
+    // Dutch VAT: "BTW" or "NL[9digits]" patterns
+    if (!parsed.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
+      parsed.vat_number = l.replace(/^BTW[:\s-]*/i, '').trim();
+      return;
+    }
+
+    // Dutch postal code: 4 digits + 2 letters, often followed by city name
+    if (!parsed.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
+      const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
+      if (m) {
+        parsed.postal_code = m[1] + m[2].toUpperCase();
+        parsed.city = m[3].trim();
+      } else {
+        parsed.postal_code = l;
+      }
+      return;
+    }
+
+    // Country names (common)
+    if (!parsed.country && /nederland|netherlands|germany|deutschland|belgi/i.test(l)) {
+      parsed.country = l;
+      return;
+    }
+
+    // Phone: starts with + or digit, has 6+ consecutive digits (exclude postal-code-like lines)
+    if (
+      !parsed.contact_phone &&
+      /^[+\d(][\d\s().\-]{6,}$/.test(l) &&
+      !/^\d{4}\s*[A-Z]{2}$/i.test(l)
+    ) {
+      parsed.contact_phone = l;
+      return;
+    }
+
+    // Person name: has a capital first letter, no digits, at least two words
+    if (
+      !parsed.contact_name &&
+      /^[A-Z][a-z]/.test(l) &&
+      !/\d/.test(l) &&
+      l.split(' ').length >= 2
+    ) {
+      parsed.contact_name = l;
+      return;
+    }
+
+    // Address line (street + house number)
+    if (!parsed.address_line1 && /\d/.test(l)) {
+      parsed.address_line1 = l;
+      return;
+    }
+    if (parsed.address_line1 && !parsed.address_line2 && /\d/.test(l)) {
+      parsed.address_line2 = l;
+    }
+  });
+  // ── End extraction ───────────────────────────────────────────────────────
 
   return parsed;
 }

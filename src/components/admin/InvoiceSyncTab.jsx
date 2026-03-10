@@ -20,6 +20,100 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 
+// ── Verification Modal ──────────────────────────────────────────────────
+function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
+  const [shouldPatch, setShouldPatch] = React.useState(false);
+  let inv = {};
+  try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+
+  const fields = [
+    { label: 'Company name', inv: invoice.company_name, cmp: company.name },
+    { label: 'Contact',      inv: inv.contact_name,     cmp: company.contact_name },
+    { label: 'Email',        inv: inv.contact_email,    cmp: company.contact_email || company.email },
+    { label: 'Phone',        inv: inv.contact_phone,    cmp: company.contact_phone || company.phone },
+    { label: 'Address',      inv: [inv.address_line1, inv.address_line2].filter(Boolean).join(', '), cmp: [company.address_line1, company.address_line2].filter(Boolean).join(', ') },
+    { label: 'Postal / City',inv: [inv.postal_code, inv.city].filter(Boolean).join('  '), cmp: [company.postal_code, company.city].filter(Boolean).join('  ') },
+    { label: 'Country',      inv: inv.country,          cmp: company.country },
+    { label: 'VAT',          inv: inv.vat_number,       cmp: company.vat_number },
+  ];
+
+  // Check if any invoice field would fill an empty company field
+  const hasPatchableData = fields.some(f => f.inv && !f.cmp);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
+
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Confirm company match</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Invoice <span className="font-semibold text-blue-600">{invoice.invoice_number}</span> matches
+              &nbsp;<span className="font-semibold text-green-700">{company.name}</span> — verify the details below.
+            </p>
+          </div>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded">✕</button>
+        </div>
+
+        {/* Side-by-side table */}
+        <div className="p-5">
+          <div className="grid grid-cols-2 gap-3 mb-1">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 rounded px-3 py-1.5">Invoice data (parsed)</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-green-700 bg-green-50 rounded px-3 py-1.5">Company record (database)</div>
+          </div>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {fields.map((f, i) => {
+              const differs = f.inv && f.cmp && f.inv !== f.cmp;
+              const missing = f.inv && !f.cmp;
+              return (
+                <div key={i} className={`grid grid-cols-[120px_1fr_1fr] text-sm border-b border-gray-100 last:border-0 ${differs ? 'bg-amber-50' : missing ? 'bg-blue-50/30' : ''}`}>
+                  <div className="px-3 py-2 font-medium text-gray-500 text-xs flex items-center border-r border-gray-100">{f.label}</div>
+                  <div className="px-3 py-2 text-gray-800 border-r border-gray-100 break-all">{f.inv || <span className="text-gray-300">—</span>}</div>
+                  <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
+                    {f.cmp || <span className="text-gray-300">—</span>}
+                    {differs && <span className="ml-1 text-xs text-amber-600">(differs)</span>}
+                    {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Patch option */}
+          {hasPatchableData && (
+            <label className="flex items-center gap-2 mt-4 text-sm text-gray-700 cursor-pointer select-none">
+              <input type="checkbox" checked={shouldPatch} onChange={e => setShouldPatch(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+              Fill empty company fields from invoice data (contact, address, VAT)
+            </label>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+          <button onClick={onCancel}
+            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            Cancel
+          </button>
+          <div className="flex gap-3">
+            <button onClick={onCreateNew}
+              className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
+              No match — create new company
+            </button>
+            <button onClick={() => onConfirm(invoice, company, shouldPatch)}
+              className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
+              ✓ Confirm match &amp; sync
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+// ── End MatchVerificationModal ──────────────────────────────────────────────
+
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
   const { t } = useTranslation();
@@ -49,6 +143,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
+  const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
   const fileInputRef = useRef(null);
 
   const handleSort = (key) => {
@@ -179,6 +274,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
               line_items: parsedData.line_items || [],
               client_block: parsedData.client_details || [],
               filename: file.name,
+              // Structured fields extracted from the client address block
+              contact_name: parsedData.contact_name || null,
+              contact_email: parsedData.contact_email || null,
+              contact_phone: parsedData.contact_phone || null,
+              address_line1: parsedData.address_line1 || null,
+              address_line2: parsedData.address_line2 || null,
+              postal_code: parsedData.postal_code || null,
+              city: parsedData.city || null,
+              country: parsedData.country || null,
+              vat_number: parsedData.vat_number || null,
             }),
           };
 
@@ -310,14 +415,83 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
   };
 
+  // ─── Sync helpers ─────────────────────────────────────────────────────────────
+
+  // Core subscription creation — called both from modal confirm and direct create path.
+  const doSync = async (invoice, companyId) => {
+    const breakfastVal = invoice.breakfast_sat ?? invoice.breakfast ?? 0;
+    const lunchVal = invoice.lunch_sat ?? invoice.lunch ?? invoice.meals_count ?? 0;
+    const bbqVal = invoice.bbq_sat ?? invoice.bbq ?? 0;
+    const lunchSatVal = Math.ceil(lunchVal / 2);
+    const lunchSunVal = Math.floor(lunchVal / 2);
+
+    const subResult = await subscribeCompany(companyId, {
+      booth_count: invoice.stands_count || 1,
+      area: invoice.area_preference || '',
+      notes:
+        'Imported from Invoice ' +
+        invoice.invoice_number +
+        '. Meals ordered: ' +
+        (invoice.meals_count || 0) +
+        '. ' +
+        (invoice.notes || ''),
+      phone: invoice.phone,
+      email: invoice.email,
+      breakfast_sat: breakfastVal,
+      lunch_sat: lunchSatVal,
+      bbq_sat: bbqVal,
+      breakfast_sun: 0,
+      lunch_sun: lunchSunVal,
+    });
+
+    if (subResult?.error) throw new Error(subResult.error);
+    await handleStatusChange(invoice.id, 'approved');
+    toastSuccess('Successfully synced subscription!');
+  };
+
+  // Called when user confirms a match in the MatchVerificationModal.
+  const handleConfirmMatch = async (invoice, company, shouldPatch) => {
+    setVerifyModal(null);
+    try {
+      // Persist the company link on the staged invoice record.
+      await supabase
+        .from('staged_invoices')
+        .update({ company_id: company.id })
+        .eq('id', invoice.id);
+
+      // Optionally patch empty company fields from the extracted invoice data.
+      if (shouldPatch) {
+        let inv = {};
+        try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+        const patch = {};
+        const fill = (field, val) => { if (val && !company[field]) patch[field] = val; };
+        fill('contact_name',  inv.contact_name);
+        fill('contact_email', inv.contact_email);
+        fill('contact_phone', inv.contact_phone);
+        fill('address_line1', inv.address_line1);
+        fill('address_line2', inv.address_line2);
+        fill('postal_code',   inv.postal_code);
+        fill('city',          inv.city);
+        fill('country',       inv.country);
+        fill('vat_number',    inv.vat_number);
+        if (Object.keys(patch).length > 0) {
+          await supabase.from('companies').update(patch).eq('id', company.id);
+        }
+      }
+
+      await doSync(invoice, company.id);
+    } catch (err) {
+      toastError('Sync failed: ' + (err?.message || String(err)));
+    }
+  };
+
   const handleApproveAndSync = async (invoice) => {
     const matchedCompany = companies.find(
       (c) => c.name.toLowerCase() === (invoice.company_name || '').toLowerCase(),
     );
 
-    let companyId = matchedCompany?.id || null;
-
-    if (!companyId) {
+    if (!matchedCompany) {
+      // No company record at all — prompt to create one.
       const yes = await confirm({
         title: 'Company Not Found',
         message: 'No company named "' + invoice.company_name + '" found. Create it automatically?',
@@ -327,69 +501,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
       try {
         const { data: newCompany, error: createError } = await supabase
           .from('companies')
-          .insert([
-            {
-              name: invoice.company_name,
-              phone: invoice.phone || '',
-              email: invoice.email || '',
-            },
-          ])
+          .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
           .select()
           .single();
-
         if (createError) throw createError;
-        companyId = newCompany.id;
+        await doSync(invoice, newCompany.id);
       } catch (err) {
         toastError('Failed to create company: ' + (err?.message || String(err)));
-        return;
       }
-    } else {
-      const yes = await confirm({
-        title: 'Confirm Sync',
-        message:
-          'Create subscription for "' +
-          invoice.company_name +
-          '"? Stands: ' +
-          (invoice.stands_count || 1),
-      });
-      if (!yes) return;
+      return;
     }
 
-    try {
-      // compute breakdown values from the parsed invoice; fall back
-      // to the old meals_count logic when necessary
-      const breakfastVal = invoice.breakfast ?? 0;
-      const lunchVal = invoice.lunch ?? invoice.meals_count ?? 0;
-      const bbqVal = invoice.bbq ?? 0;
-      const lunchSatVal = Math.ceil(lunchVal / 2);
-      const lunchSunVal = Math.floor(lunchVal / 2);
-
-      const subResult = await subscribeCompany(companyId, {
-        booth_count: invoice.stands_count || 1,
-        area: invoice.area_preference || '',
-        notes:
-          'Imported from Invoice ' +
-          invoice.invoice_number +
-          '. Meals ordered: ' +
-          (invoice.meals_count || 0) +
-          '. ' +
-          (invoice.notes || ''),
-        phone: invoice.phone,
-        email: invoice.email,
-        breakfast_sat: breakfastVal,
-        lunch_sat: lunchSatVal,
-        bbq_sat: bbqVal,
-        breakfast_sun: 0,
-        lunch_sun: lunchSunVal,
-      });
-
-      if (subResult?.error) throw new Error(subResult.error);
-
-      await handleStatusChange(invoice.id, 'approved');
-      toastSuccess('Successfully synced subscription!');
-    } catch (err) {
-      toastError('Failed to sync to subscription: ' + (err?.message || String(err)));
-    }
+    // Match found — open side-by-side verification modal.
+    setVerifyModal({ invoice, company: matchedCompany });
   };
 
   const getSortIcon = (key) => {
@@ -487,6 +611,35 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   return (
     <div>
+      {/* Match Verification Modal */}
+      {verifyModal && (
+        <MatchVerificationModal
+          invoice={verifyModal.invoice}
+          company={verifyModal.company}
+          onConfirm={handleConfirmMatch}
+          onCancel={() => setVerifyModal(null)}
+          onCreateNew={async () => {
+            const { invoice } = verifyModal;
+            setVerifyModal(null);
+            const yes = await confirm({
+              title: 'Create New Company',
+              message: `Create a new company record for "${invoice.company_name}" and sync?`,
+            });
+            if (!yes) return;
+            try {
+              const { data: newCo, error: ce } = await supabase
+                .from('companies')
+                .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
+                .select()
+                .single();
+              if (ce) throw ce;
+              await doSync(invoice, newCo.id);
+            } catch (err) {
+              toastError('Failed to create company: ' + (err?.message || String(err)));
+            }
+          }}
+        />
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
           {t('adminNav.invoices', 'Invoices')}

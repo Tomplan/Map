@@ -858,6 +858,9 @@
       "countryPlaceholder": "Country",
       "vatNumberPlaceholder": "VAT / Tax ID",
       "kvkNumberPlaceholder": "Chamber of Commerce (KvK) #",
+      "contactNamePlaceholder": "Billing contact person",
+      "contactEmailPlaceholder": "billing@company.com",
+      "contactPhonePlaceholder": "+31 6 ...",
       "name": "Name",
       "logo": "Logo",
       "website": "Website",
@@ -898,6 +901,9 @@
         "address": "Address",
         "vatNumber": "VAT number",
         "kvkNumber": "KvK number",
+        "contactName": "Billing Contact",
+        "contactEmail": "Billing Email",
+        "contactPhone": "Billing Phone",
         "actions": "Actions"
       },
       "create": "Create"

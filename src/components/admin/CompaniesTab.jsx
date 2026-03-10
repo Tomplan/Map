@@ -574,6 +574,24 @@ export default function CompaniesTab() {
                   <input type="email" placeholder={translateSafe('companies.emailPlaceholder')}
                     value={form.email || ''} onChange={(e) => set({ email: e.target.value.toLowerCase() })} className={inputCls} />
                 </EditRow>
+
+                {/* Billing contact sub-heading */}
+                <div className="flex items-center gap-2 pt-4 pb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                </div>
+                <EditRow label={translateSafe('companies.table.contactName')}>
+                  <input type="text" placeholder={translateSafe('companies.contactNamePlaceholder')}
+                    value={form.contact_name || ''} onChange={(e) => set({ contact_name: e.target.value })} className={inputCls} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.contactEmail')}>
+                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
+                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.contactPhone')}>
+                  <PhoneInput value={form.contact_phone || ''} onChange={(value) => set({ contact_phone: value })}
+                    placeholder={translateSafe('companies.contactPhonePlaceholder')} />
+                </EditRow>
+
                 <EditRow label={translateSafe('companies.table.address')}>
                   <div className="space-y-2">
                     <input type="text" placeholder={translateSafe('companies.addressLine1Placeholder')}
@@ -759,6 +777,24 @@ export default function CompaniesTab() {
                 <Row lbl={translateSafe('companies.table.email')}>
                   {item.email
                     ? <a href={`mailto:${item.email}`} className="text-blue-600 hover:underline break-all">{item.email}</a>
+                    : dash}
+                </Row>
+                {(item.contact_name || item.contact_email || item.contact_phone) && (
+                  <div className="flex items-center gap-2 pt-3 pb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                  </div>
+                )}
+                <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name}>
+                  {item.contact_name}
+                </Row>
+                <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email}>
+                  {item.contact_email
+                    ? <a href={`mailto:${item.contact_email}`} className="text-blue-600 hover:underline break-all">{item.contact_email}</a>
+                    : dash}
+                </Row>
+                <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone}>
+                  {item.contact_phone
+                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
                     : dash}
                 </Row>
                 <Row lbl={translateSafe('companies.table.vatNumber')}>{item.vat_number || dash}</Row>
