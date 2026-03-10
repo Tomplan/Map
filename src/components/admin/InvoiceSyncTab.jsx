@@ -1054,9 +1054,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Date {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left">Item</th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[160px]">Notes</th>
                   <th className="px-2 py-2 border-b border-gray-200 text-left w-[80px]">Area</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[120px]">Item</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-[160px]">Notes</th>
                   {/* split meal columns */}
 
                   <th
@@ -1146,8 +1146,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top w-[120px]">
                           {parsedData.date || 'N/A'}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 align-top">
-                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block">
+                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[80px]">
+                          {(areaString || inv.area_preference) ? (
+                            <div className="text-gray-500 text-xs">
+                              {areaString || inv.area_preference}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[120px]">
+                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap overflow-hidden truncate block max-w-[120px]">
                             {firstItem}{' '}
                             {hasMore && (
                               <span className="text-xs text-gray-500 font-normal">
@@ -1160,13 +1167,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           <div className="text-gray-500 text-xs whitespace-pre-wrap break-words line-clamp-3">
                             {parsedData.rawNotes || parsedData.notes || rawNotesFallback || ''}
                           </div>
-                        </td>
-                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[80px]">
-                          {(areaString || inv.area_preference) ? (
-                            <div className="text-gray-500 text-xs">
-                              {areaString || inv.area_preference}
-                            </div>
-                          ) : null}
                         </td>
                         <td className="px-2 py-2 text-center border-r border-gray-50 align-top w-[80px]">
                           <span
