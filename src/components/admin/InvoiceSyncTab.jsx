@@ -1043,7 +1043,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Invoice {getSortIcon('invoice_number')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[150px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('company_name')}
                   >
                     Company {getSortIcon('company_name')}
@@ -1115,7 +1115,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
+                        <td className="px-2 py-2 border-r border-gray-50 align-top overflow-hidden truncate">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
                           {inv.status !== 'approved' && (
                             matchCompany ? (
