@@ -742,13 +742,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
             <table className="w-full text-left border-collapse min-w-max bg-white">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 {/* grouping row: day labels */}
-                <tr className="bg-gray-100">
+                <tr>
                   <th className="px-4 py-1 border-b border-gray-200" colSpan={5}></th>
                   <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={3}>
-                    Sat
+                    Saturday
                   </th>
                   <th className="px-4 py-1 border-b border-gray-200 text-center" colSpan={2}>
-                    Sun
+                    Sunday
                   </th>
                   <th className="px-4 py-1 border-b border-gray-200" colSpan={3}></th>
                 </tr>
@@ -783,52 +783,33 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('breakfast_sat')}
                   >
-                    <div className="flex flex-col items-center">
-                      <span>Bfast</span>
-                      <small className="text-xs">Sat</small>
-                    </div>
-                    {getSortIcon('breakfast_sat')}
+                    Bfst {getSortIcon('breakfast_sat')}
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border_gray-200 cursor-pointer hover:bg-gray-100"
+                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('lunch_sat')}
                   >
-                    <div className="flex flex-col items-center">
-                      <span>Lunch</span>
-                      <small className="text-xs">Sat</small>
-                    </div>
-                    {getSortIcon('lunch_sat')}
+                    Lunch {getSortIcon('lunch_sat')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('bbq_sat')}
                   >
-                    <div className="flex flex-col items-center">
-                      <span>BBQ</span>
-                      <small className="text-xs">Sat</small>
-                    </div>
-                    {getSortIcon('bbq_sat')}
+                    BBQ {getSortIcon('bbq_sat')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('breakfast_sun')}
                   >
-                    <div className="flex flex-col items-center">
-                      <span>Bfast</span>
-                      <small className="text-xs">Sun</small>
-                    </div>
-                    {getSortIcon('breakfast_sun')}
+                    Bfst {getSortIcon('breakfast_sun')}
                   </th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('lunch_sun')}
                   >
-                    <div className="flex flex-col items_center">
-                      <span>Lunch</span>
-                      <small className="text-xs">Sun</small>
-                    </div>
-                    {getSortIcon('lunch_sun')}
-                  </th>                  <th className="px-4 py-3 border-b border-gray-200">Notes</th>
+                    Lunch {getSortIcon('lunch_sun')}
+                  </th>
+                  <th className="px-4 py-3 border-b border-gray-200">Notes</th>
                   <th className="px-4 py-3 border-b border-gray-200">Area</th>
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
