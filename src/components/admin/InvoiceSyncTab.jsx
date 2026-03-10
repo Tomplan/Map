@@ -755,7 +755,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     Company {getSortIcon('company_name')}
                   </th>
                   <th
-                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left max-w-[90px]"
+                    className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 text-left w-[90px]"
                     onClick={() => handleSort('date')}
                   >
                     Date {getSortIcon('date')}
@@ -831,7 +831,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             </span>
                           )}
                         </td>
-                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 max-w-[90px]">
+                        <td className="px-2 py-2 border-r border-gray-50 text-gray-600 w-[90px]">
                           <div className="truncate">{parsedData.date || 'N/A'}</div>
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50">
