@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import useCompanies from '../../hooks/useCompanies';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import { useCompanyMutations } from '../../hooks/useCompanyMutations';
@@ -9,13 +9,11 @@ import {
   mdiPlus,
   mdiPencil,
   mdiDelete,
-  mdiCheck,
-  mdiClose,
   mdiMagnify,
   mdiDomain,
-  mdiTag,
   mdiChevronDown,
   mdiChevronUp,
+  mdiDotsVertical,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
@@ -57,7 +55,6 @@ function translateSafe(key, opts) {
     return i18n?.t ? i18n.t(key, opts) : key;
   }
 }
-import Modal from '../common/Modal';
 import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
@@ -185,10 +182,22 @@ export default function CompaniesTab() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [editingContentLanguage, setEditingContentLanguage] = useState('nl');
-  const [activeTab, setActiveTab] = useState('public');
   const [companyCategories, setCompanyCategories] = useState({});
   const [editingCategories, setEditingCategories] = useState([]);
-  const [isActionsOpen, setIsActionsOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [sortDir, setSortDir] = useState('asc');
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const actionsRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (actionsRef.current && !actionsRef.current.contains(e.target)) {
+        setActionsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Use company mutations hook
   const {
@@ -215,6 +224,11 @@ export default function CompaniesTab() {
     toastError,
   });
 
+  // When edit starts, auto-select that item in the left panel
+  useEffect(() => {
+    if (editingId) setSelectedId(editingId);
+  }, [editingId]);
+
   // Load categories when editing a company (only when editingId changes)
   useEffect(() => {
     const loadCompanyCategories = async () => {
@@ -240,11 +254,10 @@ export default function CompaniesTab() {
       }
     };
 
-    // Load when public tab is active and companies are available
-    if (activeTab === 'public' && companies.length > 0) {
+    if (companies.length > 0) {
       loadAllCategories();
     }
-  }, [activeTab, companies, companiesDepsKey, categoriesDepsKey, getAllCompanyCategories]); // Also depend on categories to refresh when their names change
+  }, [companies, companiesDepsKey, categoriesDepsKey, getAllCompanyCategories]); // Also depend on categories to refresh when their names change
 
   // Save categories when exiting edit mode
   const handleSaveWithCategories = async () => {
@@ -282,11 +295,17 @@ export default function CompaniesTab() {
     }
     allItems.push(...companies);
 
-    if (!searchTerm) return allItems;
+    const filtered = searchTerm
+      ? allItems.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+      : allItems;
 
-    const lowercasedTerm = searchTerm.toLowerCase();
-    return allItems.filter((item) => item.name?.toLowerCase().includes(lowercasedTerm));
-  }, [organizationProfile, companies, searchTerm]);
+    return [...filtered].sort((a, b) => {
+      if (a.isOrganization) return -1;
+      if (b.isOrganization) return 1;
+      const cmp = (a.name || '').localeCompare(b.name || '');
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }, [organizationProfile, companies, searchTerm, sortDir]);
 
   // debug: trace when companies or filtered items change
 
@@ -323,8 +342,42 @@ export default function CompaniesTab() {
           </span>
         </div>
 
-        {/* Action buttons: Export, Import, Add */}
-        <div className="flex gap-2 relative z-50">
+        {/* Action buttons: Actions dropdown + Add */}
+        <div className="flex gap-2 items-center">
+          {/* Actions dropdown */}
+          <div className="relative" ref={actionsRef}>
+            <button
+              onClick={() => setActionsOpen((o) => !o)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              <Icon path={mdiDotsVertical} size={0.8} />
+              {translateSafe('companies.actions')}
+              <Icon path={mdiChevronDown} size={0.7} className={`transition-transform ${actionsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {actionsOpen && (
+              <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                <div className="py-1">
+                  <div className="px-2 py-1">
+                    <ImportButton
+                      dataType="companies"
+                      existingData={companies}
+                      onImportComplete={() => { reloadCompanies(); setActionsOpen(false); }}
+                      buttonClassName="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                    />
+                  </div>
+                  <div className="px-2 py-1">
+                    <ExportButton
+                      dataType="companies"
+                      data={companies}
+                      filename={`companies-${new Date().toISOString().split('T')[0]}`}
+                      additionalData={{ supabase }}
+                      buttonClassName="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
           <button
             onClick={handleStartCreate}
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -332,535 +385,405 @@ export default function CompaniesTab() {
             <Icon path={mdiPlus} size={0.8} />
             {translateSafe('companies.addCompany')}
           </button>
+        </div>
+      </div>
 
-          <div className="relative">
+
+
+      {/* Master / Detail */}
+      <div className="flex-1 flex gap-0 min-h-0 border rounded-lg overflow-hidden">
+
+        {/* LEFT — company list */}
+        <div className="w-72 flex-shrink-0 flex flex-col border-r bg-gray-50">
+          {/* Sort bar */}
+          <div className="px-3 py-2 border-b bg-gray-100 flex items-center justify-between">
             <button
-              onClick={() => setIsActionsOpen(!isActionsOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
-              title={t('common.actionsMenu')}
+              onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
+              className="flex items-center gap-1 text-xs font-semibold text-gray-600 uppercase tracking-wide hover:text-blue-600"
             >
-              <span>{t('common.actions')}</span>
-              <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
+              {translateSafe('companies.table.name')}
+              <Icon path={sortDir === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} />
             </button>
+            <span className="text-xs text-gray-400">{filteredItems.length}</span>
+          </div>
 
-            {isActionsOpen && (
-              <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
-                <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                  Data Tools
-                </div>
-
-                <ImportButton
-                  dataType="companies"
-                  existingData={companies}
-                  onImportComplete={async () => {
-                    await reloadCompanies();
-                    setIsActionsOpen(false);
-                  }}
-                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent"
-                  className="block w-full"
-                />
-
-                <ExportButton
-                  dataType="companies"
-                  data={companies}
-                  filename={`companies-${new Date().toISOString().split('T')[0]}`}
-                  additionalData={{ supabase }}
-                  buttonClassName="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 justify-between bg-transparent"
-                  className="block w-full"
-                />
-              </div>
+          {/* Scrollable list */}
+          <div className="flex-1 overflow-y-auto">
+            {filteredItems.length === 0 && (
+              <p className="text-center text-sm text-gray-400 py-8">
+                {searchTerm ? translateSafe('companies.noResults') : translateSafe('companies.noCompanies')}
+              </p>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2 mb-4 border-b flex-shrink-0">
-        <button
-          onClick={() => setActiveTab('public')}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === 'public'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          {t('companies.publicInfoTab')}
-        </button>
-        <button
-          onClick={() => setActiveTab('manager')}
-          className={`px-4 py-2 font-medium transition-colors ${
-            activeTab === 'manager'
-              ? 'text-green-600 border-b-2 border-green-600'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          {t('companies.privateInfoTab')}
-        </button>
-      </div>
-
-      {/* Modal for Create/Edit */}
-      <Modal
-        isOpen={isCreating || !!editingId}
-        onClose={isCreating ? handleCancelCreate : handleCancelWithCategories}
-        title={
-          isCreating
-            ? translateSafe('companies.newCompany')
-            : translateSafe('companies.modal.editTitle', {
-                name: editForm.name || translateSafe('companies.newCompany'),
-              })
-        }
-        size="lg"
-      >
-        <div className="p-6">
-          {/* Public Information Section */}
-          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-sm mb-3 text-blue-800">
-              {translateSafe(
-                'companies.modal.publicInfoHeading',
-                'Public Info (visible to attendees)',
-              )}
-            </h4>
-            <div className="space-y-3">
-              <input
-                type="text"
-                placeholder={translateSafe('companies.companyNamePlaceholder')}
-                value={isCreating ? newCompanyForm.name : editForm.name}
-                onChange={(e) =>
-                  isCreating
-                    ? setNewCompanyForm({ ...newCompanyForm, name: e.target.value })
-                    : setEditForm({ ...editForm, name: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-              />
-              <div>
-                <label className="block text-sm font-medium mb-1 text-gray-900">
-                  {translateSafe('companies.companyLogo')}
-                </label>
-                <LogoUploader
-                  currentLogo={isCreating ? newCompanyForm.logo : editForm.logo}
-                  onUploadComplete={(url, path) => {
-                    isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, logo: url })
-                      : setEditForm({ ...editForm, logo: url });
-                  }}
-                  folder={editingId === 'organization' ? 'organization' : 'companies'}
-                  label={translateSafe('companies.modal.uploadLogo')}
-                  showPreview={true}
-                  allowDelete={true}
-                  onDelete={() => {
-                    isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, logo: organizationLogo })
-                      : setEditForm({ ...editForm, logo: organizationLogo });
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder={translateSafe('companies.logoUrlPlaceholder')}
-                  value={isCreating ? newCompanyForm.logo : editForm.logo || ''}
-                  onChange={(e) =>
-                    isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, logo: e.target.value })
-                      : setEditForm({ ...editForm, logo: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded mt-2 text-sm bg-white text-gray-900"
-                />
-              </div>
-              <input
-                type="text"
-                placeholder={translateSafe('companies.websiteUrlPlaceholder')}
-                value={isCreating ? newCompanyForm.website : editForm.website || ''}
-                onChange={(e) =>
-                  isCreating
-                    ? setNewCompanyForm({ ...newCompanyForm, website: e.target.value })
-                    : setEditForm({ ...editForm, website: e.target.value })
-                }
-                className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-              />
-              {editingId === 'organization' ? (
-                <textarea
-                  placeholder={translateSafe('companies.infoPlaceholder')}
-                  value={isCreating ? newCompanyForm.info : editForm.info || ''}
-                  onChange={(e) =>
-                    isCreating
-                      ? setNewCompanyForm({ ...newCompanyForm, info: e.target.value })
-                      : setEditForm({ ...editForm, info: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-                  rows={3}
-                />
-              ) : !isCreating ? (
-                <div>
-                  <label className="block text-sm font-medium mb-1 text-gray-900">
-                    {translateSafe('companies.modal.infoMultiLanguageLabel')}
-                  </label>
-                  <InfoFieldWithTranslations
-                    companyId={editingId}
-                    editingLanguage={editingContentLanguage}
-                    onLanguageChange={setEditingContentLanguage}
-                  />
-                </div>
-              ) : (
-                <textarea
-                  placeholder={translateSafe('companies.infoPlaceholder')}
-                  value={newCompanyForm.info}
-                  onChange={(e) => setNewCompanyForm({ ...newCompanyForm, info: e.target.value })}
-                  className="w-full px-3 py-2 border rounded bg-white text-gray-900"
-                  rows={3}
-                />
-              )}
-              {/* Categories - only for companies, not organization */}
-              {!isCreating && editingId !== 'organization' && (
-                <div>
-                  <label className="block text-sm font-medium mb-2 text-gray-900">
-                    {translateSafe('companies.modal.categoriesLabel')}
-                  </label>
-                  {categories.length > 0 ? (
-                    <div className="flex flex-col gap-1.5">
-                      {categories.map((cat) => (
-                        <label
-                          key={cat.id}
-                          className="inline-flex items-center gap-2 cursor-pointer px-2.5 py-1.5 rounded text-sm"
-                          style={{
-                            backgroundColor: editingCategories.includes(cat.id)
-                              ? cat.color + '30'
-                              : cat.color + '15',
-                            color: cat.color,
-                            border: `1px solid ${cat.color}40`,
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={editingCategories.includes(cat.id)}
-                            onChange={(e) => {
-                              const newCategories = e.target.checked
-                                ? [...editingCategories, cat.id]
-                                : editingCategories.filter((id) => id !== cat.id);
-                              setEditingCategories(newCategories);
-                            }}
-                            className="cursor-pointer"
-                          />
-                          {cat.icon && <Icon path={cat.icon} size={0.6} />}
-                          {cat.name}
-                        </label>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="text-red-500 text-sm italic">
-                      {translateSafe('companies.noCategoriesAvailable')}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Manager-Only Information Section */}
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h4 className="font-semibold text-sm mb-3 text-green-800">
-              {translateSafe(
-                'companies.modal.managerInfoHeading',
-                'Manager-only Info (default contact info)',
-              )}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <input
-                type="text"
-                placeholder={translateSafe('companies.contactPlaceholder')}
-                value={isCreating ? newCompanyForm.contact || '' : editForm.contact || ''}
-                onChange={(e) =>
-                  isCreating
-                    ? setNewCompanyForm({ ...newCompanyForm, contact: e.target.value })
-                    : setEditForm({ ...editForm, contact: e.target.value })
-                }
-                className="px-3 py-2 border rounded bg-white text-gray-900"
-              />
-              <PhoneInput
-                value={isCreating ? newCompanyForm.phone || '' : editForm.phone || ''}
-                onChange={(value) =>
-                  isCreating
-                    ? setNewCompanyForm({ ...newCompanyForm, phone: value })
-                    : setEditForm({ ...editForm, phone: value })
-                }
-                placeholder={translateSafe('companies.phonePlaceholder')}
-              />
-              <input
-                type="email"
-                placeholder={translateSafe('companies.emailPlaceholder')}
-                value={isCreating ? newCompanyForm.email || '' : editForm.email || ''}
-                onChange={(e) => {
-                  const email = e.target.value.toLowerCase();
-                  isCreating
-                    ? setNewCompanyForm({ ...newCompanyForm, email })
-                    : setEditForm({ ...editForm, email });
-                }}
-                className="px-3 py-2 border rounded bg-white text-gray-900"
-              />
-            </div>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-3 mt-6 justify-end">
-            <button
-              onClick={isCreating ? handleCancelCreate : handleCancelWithCategories}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
-              {t('cancel')}
-            </button>
-            <button
-              onClick={isCreating ? handleCreate : handleSaveWithCategories}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {isCreating ? t('companies.create') : t('save')}
-            </button>
-          </div>
-        </div>
-      </Modal>
-
-      {/* Companies table */}
-      <div className="flex-1 overflow-auto border rounded-lg">
-        <table className="w-full rounded" style={{ tableLayout: 'fixed', fontSize: '11px' }}>
-          <thead className="sticky top-0 z-10">
-            <tr>
-              {activeTab === 'public' ? (
-                <>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">
-                    {translateSafe('companies.table.name')}
-                  </th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">
-                    {translateSafe('companies.table.logo')}
-                  </th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">
-                    {translateSafe('companies.table.website')}
-                  </th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">
-                    {translateSafe('companies.table.info')}
-                  </th>
-                  <th className="p-2 text-left bg-blue-100 border-b text-gray-900">
-                    {translateSafe('companies.table.categories')}
-                  </th>
-                </>
-              ) : (
-                <>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">
-                    {translateSafe('companies.table.name')}
-                  </th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">
-                    {translateSafe('companies.table.contact')}
-                  </th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">
-                    {translateSafe('companies.table.phone')}
-                  </th>
-                  <th className="p-2 text-left bg-green-100 border-b text-gray-900">
-                    {translateSafe('companies.table.email')}
-                  </th>
-                </>
-              )}
-              <th
-                className="p-2 bg-gray-100 border-b font-semibold text-gray-900"
-                style={{ minWidth: '90px', width: '90px', maxWidth: '120px' }}
-              >
-                {translateSafe('companies.table.actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
             {filteredItems.map((item) => {
               const isOrg = item.isOrganization;
-              const rowClass = isOrg
-                ? 'bg-gray-700 text-white'
-                : 'bg-white text-gray-900 hover:bg-gray-50';
-              const bgColor = activeTab === 'public' ? 'bg-blue-50' : 'bg-green-50';
-
+              const isSelected = selectedId === item.id;
               return (
-                <tr key={item.id} className={`${rowClass} border-b`}>
-                  {/* Name - always shown */}
-                  <td className={`py-2 px-3 border-b text-left ${!isOrg ? bgColor : ''}`}>
-                    <span className="font-semibold">{item.name}</span>
-                  </td>
-
-                  {activeTab === 'public' ? (
-                    <>
-                      {/* Logo */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                        <img
-                          {...(() => {
-                            // Prefer an explicit default branding logo for organization-wide branding
-                            // so tables and lists show the canonical generated variant (4x4Vakantiebeurs-128.webp)
-                            // when a specific company has no logo set.
-                            const fallback = getDefaultLogoPath();
-
-                            // Use the item's logo if present; otherwise use fallback
-                            const source =
-                              item.logo && item.logo.trim() !== '' ? item.logo : fallback;
-
-                            const r = getResponsiveLogoSources(source);
-                            if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
-                            return { src: getLogoPath(source) };
-                          })()}
-                          alt={item.name}
-                          className="h-8 object-contain"
-                        />
-                      </td>
-
-                      {/* Website */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                        {item.website ? (
-                          <a
-                            href={
-                              item.website.startsWith('http')
-                                ? item.website
-                                : `https://${item.website}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={
-                              isOrg
-                                ? 'text-blue-300 hover:underline'
-                                : 'text-blue-600 hover:underline'
-                            }
-                          >
-                            {item.website.replace(/^https?:\/\//, '').substring(0, 30)}
-                          </a>
-                        ) : (
-                          <span className="text-gray-400 text-sm italic">
-                            {translateSafe('companies.notSet')}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Info - Multi-language */}
-                      <td
-                        className={`py-2 px-3 border-b text-left max-w-xs ${!isOrg ? 'bg-blue-50' : ''}`}
-                      >
-                        {isOrg ? (
-                          <p className="line-clamp-3 whitespace-pre-wrap">
-                            {item.info || (
-                              <span className="text-gray-400 text-sm italic">
-                                {translateSafe('companies.notSet')}
-                              </span>
-                            )}
-                          </p>
-                        ) : (
-                          <InfoFieldDisplay
-                            companyId={item.id}
-                            /*
-                          Show Dutch (nl) in the admin list when row is NOT being edited.
-                          When the row is opened for editing the modal controls editingLanguage
-                          so the textarea there remains language-aware.
-                        */
-                            currentLanguage={editingId === item.id ? i18n.language : 'nl'}
+                <button
+                  key={item.id}
+                  onClick={() => setSelectedId(isSelected ? null : item.id)}
+                  className={[
+                    'w-full text-left px-3 py-2.5 border-b flex items-center gap-3 transition-colors',
+                    isSelected
+                      ? 'bg-blue-600 text-white'
+                      : isOrg
+                        ? 'bg-gray-700 text-white hover:bg-gray-600'
+                        : 'bg-white text-gray-900 hover:bg-blue-50',
+                  ].join(' ')}
+                >
+                  <img
+                    {...(() => {
+                      const fallback = getDefaultLogoPath();
+                      const source = item.logo && item.logo.trim() !== '' ? item.logo : fallback;
+                      const r = getResponsiveLogoSources(source);
+                      if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
+                      return { src: getLogoPath(source) };
+                    })()}
+                    alt=""
+                    className="h-7 w-7 object-contain flex-shrink-0 rounded"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm truncate">{item.name}</p>
+                    {item.website && (
+                      <p className={`text-xs truncate ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                        {item.website.replace(/^https?:\/\//, '')}
+                      </p>
+                    )}
+                    {!isOrg && (companyCategories[item.id] || []).length > 0 && (
+                      <div className="flex gap-1 mt-0.5 flex-wrap">
+                        {(companyCategories[item.id] || []).map((cat) => (
+                          <span
+                            key={cat.id}
+                            className="inline-block w-2 h-2 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: cat.color }}
+                            title={cat.name}
                           />
-                        )}
-                      </td>
-
-                      {/* Categories */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-blue-50' : ''}`}>
-                        {isOrg ? (
-                          <span className="text-gray-400 text-xs italic">
-                            {translateSafe('companies.notApplicable')}
-                          </span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">
-                            {(companyCategories[item.id] || []).map((cat) => (
-                              <span
-                                key={cat.id}
-                                className="text-xs px-1.5 py-0.5 rounded inline-flex items-center gap-1"
-                                style={{ backgroundColor: cat.color + '20', color: cat.color }}
-                              >
-                                {cat.icon && <Icon path={cat.icon} size={0.5} />}
-                                {cat.name}
-                              </span>
-                            ))}
-                            {(!companyCategories[item.id] ||
-                              companyCategories[item.id].length === 0) && (
-                              <span className="text-gray-400 text-xs italic">
-                                {translateSafe('companies.none')}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      {/* Contact */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                        <span className="text-xs">
-                          {item.contact || (
-                            <span className="text-gray-400 italic">
-                              {translateSafe('companies.notSet')}
-                            </span>
-                          )}
-                        </span>
-                      </td>
-
-                      {/* Phone */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                        {item.phone ? (
-                          <span className="text-xs flex items-center gap-1">
-                            <span>{getPhoneFlag(item.phone)}</span>
-                            <span>{formatPhoneForDisplay(item.phone)}</span>
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 italic text-xs">
-                            {translateSafe('companies.notSet')}
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Email */}
-                      <td className={`py-2 px-3 border-b text-left ${!isOrg ? 'bg-green-50' : ''}`}>
-                        <span className="text-xs">
-                          {item.email || (
-                            <span className="text-gray-400 italic">
-                              {translateSafe('companies.notSet')}
-                            </span>
-                          )}
-                        </span>
-                      </td>
-                    </>
-                  )}
-
-                  {/* Actions */}
-                  <td className="py-2 px-3 border-b text-left">
-                    <div className="flex gap-1 justify-center">
-                      <button
-                        onClick={() => handleEdit(item)}
-                        className="p-1.5 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        title={translateSafe('companies.edit')}
-                      >
-                        <Icon path={mdiPencil} size={0.8} />
-                      </button>
-                      {!isOrg && (
-                        <button
-                          onClick={() => handleDelete(item.id, item.name)}
-                          className="p-1.5 bg-red-600 text-white rounded hover:bg-red-700"
-                          title={translateSafe('companies.delete')}
-                        >
-                          <Icon path={mdiDelete} size={0.8} />
-                        </button>
-                      )}
-                      {isOrg && (
-                        <div className="flex items-center justify-center pt-1 text-gray-300">
-                          <Icon path={mdiDomain} size={0.8} />
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {isOrg && <Icon path={mdiDomain} size={0.7} className="flex-shrink-0 ml-auto opacity-60" />}
+                </button>
               );
             })}
-          </tbody>
-        </table>
-
-        {filteredItems.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            {searchTerm
-              ? translateSafe('companies.noResults')
-              : translateSafe('companies.noCompanies')}
           </div>
-        )}
+        </div>
+
+        {/* RIGHT — detail panel */}
+        {(() => {
+          // ── Shared inline-form helpers ────────────────────────────
+          const inputCls =
+            'w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
+
+          const EditRow = ({ label, children }) => (
+            <div className="flex items-start gap-4 py-3 border-b border-gray-100 last:border-0">
+              <span className="w-28 flex-shrink-0 pt-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 leading-tight">
+                {label}
+              </span>
+              <div className="flex-1 text-left">{children}</div>
+            </div>
+          );
+
+          const renderForm = (form, set, isNew, targetId) => (
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-6">
+                {/* Public heading */}
+                <div className="flex items-center gap-2 pt-4 pb-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
+                    {translateSafe('companies.modal.publicInfoHeading', { defaultValue: 'Public info' })}
+                  </span>
+                </div>
+
+                <EditRow label={translateSafe('companies.table.name')}>
+                  <input type="text" placeholder={translateSafe('companies.companyNamePlaceholder')}
+                    value={form.name || ''} onChange={(e) => set({ name: e.target.value })} className={inputCls} />
+                </EditRow>
+
+                <EditRow label={translateSafe('companies.table.logo')}>
+                  <LogoUploader
+                    currentLogo={form.logo}
+                    onUploadComplete={(url) => set({ logo: url })}
+                    folder={targetId === 'organization' ? 'organization' : 'companies'}
+                    label={translateSafe('companies.modal.uploadLogo')}
+                    showPreview={true} allowDelete={true}
+                    onDelete={() => set({ logo: organizationLogo })}
+                  />
+                  <input type="text" placeholder={translateSafe('companies.logoUrlPlaceholder')}
+                    value={form.logo || ''} onChange={(e) => set({ logo: e.target.value })}
+                    className={`${inputCls} mt-2`} />
+                </EditRow>
+
+                <EditRow label={translateSafe('companies.table.website')}>
+                  <input type="text" placeholder={translateSafe('companies.websiteUrlPlaceholder')}
+                    value={form.website || ''} onChange={(e) => set({ website: e.target.value })} className={inputCls} />
+                </EditRow>
+
+                <EditRow label={translateSafe('companies.table.info')}>
+                  {targetId === 'organization' || isNew ? (
+                    <textarea placeholder={translateSafe('companies.infoPlaceholder')}
+                      value={form.info || ''} onChange={(e) => set({ info: e.target.value })}
+                      className={inputCls} rows={3} />
+                  ) : (
+                    <InfoFieldWithTranslations companyId={targetId}
+                      editingLanguage={editingContentLanguage} onLanguageChange={setEditingContentLanguage} />
+                  )}
+                </EditRow>
+
+                {!isNew && targetId !== 'organization' && (
+                  <EditRow label={translateSafe('companies.modal.categoriesLabel')}>
+                    {categories.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {categories.map((cat) => (
+                          <label key={cat.id}
+                            className="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-full text-xs font-medium select-none"
+                            style={{ backgroundColor: editingCategories.includes(cat.id) ? cat.color + '30' : cat.color + '12',
+                              color: cat.color, border: `1px solid ${cat.color}50` }}>
+                            <input type="checkbox" checked={editingCategories.includes(cat.id)}
+                              onChange={(e) => setEditingCategories(e.target.checked
+                                ? [...editingCategories, cat.id]
+                                : editingCategories.filter((id) => id !== cat.id))}
+                              className="cursor-pointer w-3 h-3" />
+                            {cat.icon && <Icon path={cat.icon} size={0.5} />}
+                            {cat.name}
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-red-500 text-sm italic">{translateSafe('companies.noCategoriesAvailable')}</span>
+                    )}
+                  </EditRow>
+                )}
+
+                {/* Private heading */}
+                <div className="flex items-center gap-2 pt-5 pb-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-green-600">
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                  </span>
+                </div>
+
+                <EditRow label={translateSafe('companies.table.contact')}>
+                  <input type="text" placeholder={translateSafe('companies.contactPlaceholder')}
+                    value={form.contact || ''} onChange={(e) => set({ contact: e.target.value })} className={inputCls} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.phone')}>
+                  <PhoneInput value={form.phone || ''} onChange={(value) => set({ phone: value })}
+                    placeholder={translateSafe('companies.phonePlaceholder')} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.email')}>
+                  <input type="email" placeholder={translateSafe('companies.emailPlaceholder')}
+                    value={form.email || ''} onChange={(e) => set({ email: e.target.value.toLowerCase() })} className={inputCls} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.address')}>
+                  <div className="space-y-2">
+                    <input type="text" placeholder={translateSafe('companies.addressLine1Placeholder')}
+                      value={form.address_line1 || ''} onChange={(e) => set({ address_line1: e.target.value })} className={inputCls} />
+                    <input type="text" placeholder={translateSafe('companies.addressLine2Placeholder')}
+                      value={form.address_line2 || ''} onChange={(e) => set({ address_line2: e.target.value })} className={inputCls} />
+                    <div className="grid grid-cols-3 gap-2">
+                      <input type="text" placeholder={translateSafe('companies.cityPlaceholder')}
+                        value={form.city || ''} onChange={(e) => set({ city: e.target.value })} className={inputCls} />
+                      <input type="text" placeholder={translateSafe('companies.postalCodePlaceholder')}
+                        value={form.postal_code || ''} onChange={(e) => set({ postal_code: e.target.value })} className={inputCls} />
+                      <input type="text" placeholder={translateSafe('companies.countryPlaceholder')}
+                        value={form.country || ''} onChange={(e) => set({ country: e.target.value })} className={inputCls} />
+                    </div>
+                  </div>
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.vatNumber')}>
+                  <input type="text" placeholder={translateSafe('companies.vatNumberPlaceholder')}
+                    value={form.vat_number || ''} onChange={(e) => set({ vat_number: e.target.value })} className={inputCls} />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.kvkNumber')}>
+                  <input type="text" placeholder={translateSafe('companies.kvkNumberPlaceholder')}
+                    value={form.kvk_number || ''} onChange={(e) => set({ kvk_number: e.target.value })} className={inputCls} />
+                </EditRow>
+
+                {/* Save / Cancel */}
+                <div className="flex gap-3 py-4 justify-end">
+                  <button onClick={isNew ? handleCancelCreate : handleCancelWithCategories}
+                    className="px-4 py-2 text-sm rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                    {t('cancel')}
+                  </button>
+                  <button onClick={isNew ? handleCreate : handleSaveWithCategories}
+                    className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium">
+                    {isNew ? t('companies.create') : t('save')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+
+          // ── Create mode ──────────────────────────────────────────
+          if (isCreating) {
+            return renderForm(
+              newCompanyForm,
+              (patch) => setNewCompanyForm({ ...newCompanyForm, ...patch }),
+              true,
+              null,
+            );
+          }
+
+          // ── No selection ─────────────────────────────────────────
+          const item = filteredItems.find((i) => i.id === selectedId);
+          if (!item) {
+            return (
+              <div className="flex-1 flex items-center justify-center text-gray-400 text-sm select-none">
+                ← {translateSafe('companies.selectCompany', { defaultValue: 'Select a company' })}
+              </div>
+            );
+          }
+
+          // ── Edit mode ────────────────────────────────────────────
+          if (editingId === item.id) {
+            return renderForm(
+              editForm,
+              (patch) => setEditForm({ ...editForm, ...patch }),
+              false,
+              item.id,
+            );
+          }
+
+          const isOrg = item.isOrganization;
+          const dash = <span className="text-gray-300">—</span>;
+
+          // Shared row: fixed-width label left, value right
+          const Row = ({ lbl, children, hidden }) =>
+            hidden ? null : (
+              <div className="flex items-start gap-4 py-3 border-b border-gray-100 last:border-0">
+                <span className="w-28 flex-shrink-0 pt-0.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 leading-tight">
+                  {lbl}
+                </span>
+                <div className="flex-1 text-left text-sm text-gray-900 leading-relaxed break-words">{children}</div>
+              </div>
+            );
+
+          const logoProps = (() => {
+            const fallback = getDefaultLogoPath();
+            const source = item.logo && item.logo.trim() !== '' ? item.logo : fallback;
+            const r = getResponsiveLogoSources(source);
+            return r ? { src: r.src, srcSet: r.srcSet, sizes: r.sizes } : { src: getLogoPath(source) };
+          })();
+
+          return (
+            <div className="flex-1 overflow-y-auto">
+              <div className="px-6">
+
+                {/* Actions row */}
+                <div className="flex items-center gap-2 py-4 border-b border-gray-100">
+                  <button
+                    onClick={() => handleEdit(item)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+                  >
+                    <Icon path={mdiPencil} size={0.7} />
+                    {translateSafe('companies.edit')}
+                  </button>
+                  {!isOrg && (
+                    <button
+                      onClick={() => handleDelete(item.id, item.name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-red-300 text-red-600 rounded-md hover:bg-red-50 transition"
+                    >
+                      <Icon path={mdiDelete} size={0.7} />
+                      {translateSafe('companies.delete')}
+                    </button>
+                  )}
+                </div>
+
+                {/* Public section heading */}
+                <div className="flex items-center gap-2 pt-4 pb-1">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
+                    {translateSafe('companies.modal.publicInfoHeading', { defaultValue: 'Public info' })}
+                  </span>
+                </div>
+
+                <Row lbl={translateSafe('companies.table.name')}>{item.name || dash}</Row>
+
+                <Row lbl={translateSafe('companies.companyLogo')}>
+                  <img
+                    {...logoProps}
+                    alt={item.name}
+                    className="h-10 w-10 object-contain rounded border bg-white"
+                  />
+                </Row>
+
+                <Row lbl={translateSafe('companies.table.website')}>
+                  {item.website
+                    ? <a
+                        href={item.website.startsWith('http') ? item.website : `https://${item.website}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline break-all"
+                      >
+                        {item.website}
+                      </a>
+                    : dash}
+                </Row>
+
+                {!isOrg && (
+                  <Row lbl={translateSafe('companies.modal.categoriesLabel')}>
+                    {(companyCategories[item.id] || []).length > 0
+                      ? <div className="flex flex-wrap gap-1.5">
+                          {(companyCategories[item.id] || []).map((cat) => (
+                            <span
+                              key={cat.id}
+                              className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                              style={{ backgroundColor: cat.color + '20', color: cat.color }}
+                            >
+                              {cat.icon && <Icon path={cat.icon} size={0.45} />}
+                              {cat.name}
+                            </span>
+                          ))}
+                        </div>
+                      : dash}
+                  </Row>
+                )}
+
+                <Row lbl={translateSafe('companies.table.info')}>
+                  {isOrg ? (item.info || dash) : <InfoFieldDisplay companyId={item.id} currentLanguage="nl" />}
+                </Row>
+
+                {/* Private section heading */}
+                <div className="flex items-center gap-2 pt-5 pb-1">
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-widest text-green-600">
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                  </span>
+                </div>
+                <Row lbl={translateSafe('companies.table.contact')}>{item.contact || dash}</Row>
+                <Row lbl={translateSafe('companies.table.phone')}>
+                  {item.phone
+                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.phone)} {formatPhoneForDisplay(item.phone)}</span>
+                    : dash}
+                </Row>
+                <Row lbl={translateSafe('companies.table.email')}>
+                  {item.email
+                    ? <a href={`mailto:${item.email}`} className="text-blue-600 hover:underline break-all">{item.email}</a>
+                    : dash}
+                </Row>
+                <Row lbl={translateSafe('companies.table.vatNumber')}>{item.vat_number || dash}</Row>
+                <Row lbl={translateSafe('companies.table.kvkNumber')}>{item.kvk_number || dash}</Row>
+                <Row lbl={translateSafe('companies.table.address')}>
+                  {(item.address_line1 || item.address_line2 || item.city || item.postal_code || item.country)
+                    ? <div className="space-y-0.5">
+                        {item.address_line1 && <p>{item.address_line1}</p>}
+                        {item.address_line2 && <p>{item.address_line2}</p>}
+                        {(item.city || item.postal_code || item.country) && (
+                          <p>{[item.city, item.postal_code, item.country].filter(Boolean).join(' ')}</p>
+                        )}
+                      </div>
+                    : dash}
+                </Row>
+                <Row lbl={translateSafe('companies.notes')}>
+                  {item.notes ? <span className="whitespace-pre-wrap">{item.notes}</span> : dash}
+                </Row>
+
+              </div>
+            </div>
+          );
+        })()}
       </div>
+
     </div>
   );
 }

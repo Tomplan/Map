@@ -1,0 +1,18 @@
+#!/bin/sh
+# Prevent commits on protected branches (main/development) unless explicitly bypassed
+# Usage: if you really need to commit on these branches, set SKIP_BRANCH_CHECK=1
+
+protected="main development"
+current=$(git rev-parse --abbrev-ref HEAD)
+
+if [ -z "$SKIP_BRANCH_CHECK" ]; then
+  for b in $protected; do
+    if [ "$current" = "$b" ]; then
+      echo "\033[31mError: committing directly on '$b' is disallowed.\033[0m"
+      echo "Create a feature branch instead (git checkout -b feat/your-feature)."
+      exit 1
+    fi
+  done
+fi
+
+exit 0
