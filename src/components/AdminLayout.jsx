@@ -15,7 +15,7 @@ import {
   mdiFullscreen,
   mdiFullscreenExit,
   mdiSync,
-  mdiFileInvoice,
+  mdiInvoice,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
 import YearChangeModal from './admin/YearChangeModal';
@@ -130,7 +130,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     {
       path: '/admin/invoices',
       label: t('adminNav.invoices', 'Invoices'),
-      icon: mdiFileInvoice,
+      icon: mdiInvoice,
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },
     // Subscriptions, Assignments, and Program management are now surfaced
