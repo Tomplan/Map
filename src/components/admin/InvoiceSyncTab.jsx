@@ -14,11 +14,210 @@ import {
   mdiChevronUp,
   mdiChevronDown,
   mdiDelete,
+  mdiArrowULeftTop,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
+
+// ── Phone normalizer for fuzzy matching ─────────────────────────────────
+function normalizePhone(p) {
+  return (p || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
+}
+
+// ── Multi-field company matcher ───────────────────────────────────────────
+// Scores each company against invoice data and returns the best candidate
+// (score ≥ 40) with the reasons that contributed to the match.
+function findBestCompanyMatch(invoice, companies) {
+  let notes = {};
+  try { notes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+  const hasStoredFields = notes.contact_name || notes.contact_email || notes.kvk_number || notes.vat_number;
+  if (!hasStoredFields && Array.isArray(notes.client_block) && notes.client_block.length > 1) {
+    Object.assign(notes, extractFieldsFromBlock(notes.client_block));
+  }
+  const invName  = (invoice.company_name || '').toLowerCase().trim();
+  const invEmail = (notes.contact_email || '').toLowerCase().trim();
+  const invPhone = normalizePhone(notes.contact_phone || '');
+  const invKvk   = (notes.kvk_number || '').replace(/\s/g, '');
+  const invVat   = (notes.vat_number || '').replace(/\s/g, '').toLowerCase();
+
+  let best = null;
+  let bestScore = 0;
+
+  for (const c of companies) {
+    let score = 0;
+    const reasons = [];
+    const cName = (c.name || '').toLowerCase().trim();
+
+    if (cName === invName)                                    { score += 100; reasons.push('name'); }
+    else if (invName && cName && (cName.includes(invName) || invName.includes(cName))) { score += 40; reasons.push('~name'); }
+
+    if (invEmail) {
+      const emails = [c.email, c.contact_email].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
+      if (emails.includes(invEmail))                          { score += 80; reasons.push('email'); }
+    }
+    if (invPhone) {
+      const phones = [c.phone, c.contact_phone].map(p => normalizePhone(p || '')).filter(Boolean);
+      if (phones.some(p => p && p === invPhone))              { score += 70; reasons.push('phone'); }
+    }
+    if (invKvk && invKvk.length >= 8) {
+      const cKvk = (c.kvk_number || '').replace(/\s/g, '');
+      if (cKvk && cKvk === invKvk)                            { score += 90; reasons.push('KvK'); }
+    }
+    if (invVat && invVat.length >= 8) {
+      const cVat = (c.vat_number || '').replace(/\s/g, '').toLowerCase();
+      if (cVat && cVat === invVat)                            { score += 85; reasons.push('VAT'); }
+    }
+    if (notes.contact_name) {
+      const iCn = notes.contact_name.toLowerCase();
+      const companyCn = [c.contact_name, c.contact].map(x => (x || '').toLowerCase()).filter(Boolean);
+      if (companyCn.some(cn => cn && (cn.includes(iCn) || iCn.includes(cn)))) { score += 30; reasons.push('contact'); }
+    }
+
+    if (score > bestScore) { bestScore = score; best = { company: c, score, reasons }; }
+  }
+  return bestScore >= 40 ? best : null;
+}
+
+// ── Re-extract structured fields from a raw client_block array ──────────
+// (mirrors the logic in pdfParser.js so old records without stored fields still work)
+function extractFieldsFromBlock(lines = []) {
+  const r = { contact_name: null, contact_email: null, contact_phone: null,
+               address_line1: null, address_line2: null, postal_code: null,
+               city: null, country: null, vat_number: null, kvk_number: null };
+  // skip index 0 (company name)
+  lines.slice(1).forEach((line) => {
+    const l = (line || '').trim();
+    if (!l) return;
+    if (!r.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) { r.contact_email = l; return; }
+    if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
+      const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
+      r.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
+        : l.replace(/^[\w\s]*?(?:BTW|VAT|nummer|number|nr\.?)[\s:\-]*/i, '').trim();
+      return;
+    }
+    if (!r.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) { const m = l.match(/\d{8}/); if (m) { r.kvk_number = m[0]; return; } }
+    if (!r.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
+      const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
+      if (m) { r.postal_code = m[1]+m[2].toUpperCase(); r.city = m[3].trim(); }
+      else r.postal_code = l;
+      return;
+    }
+    if (!r.country && /nederland|netherlands|germany|deutschland|belgi/i.test(l)) { r.country = l; return; }
+    if (!r.contact_phone && /^[+\d(][\d\s().\-]{6,}$/.test(l) && !/^\d{4}\s*[A-Z]{2}$/i.test(l)) { r.contact_phone = l; return; }
+    if (!r.contact_name && /^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) { r.contact_name = l; return; }
+    if (!r.address_line1 && /\d/.test(l)) { r.address_line1 = l; return; }
+    if (r.address_line1 && !r.address_line2 && /\d/.test(l)) r.address_line2 = l;
+  });
+  return r;
+}
+
+// ── Verification Modal ──────────────────────────────────────────────────
+function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
+  const [shouldPatch, setShouldPatch] = React.useState(false);
+  let inv = {};
+  try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+
+  // Fallback: if stored structured fields are all null (old record), derive them
+  // live from the raw client_block array that was always stored.
+  const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
+                          inv.address_line1 || inv.postal_code || inv.vat_number;
+  if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+    Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+  }
+
+  const fields = [
+    { label: 'Company name',  inv: invoice.company_name,  cmp: company.name },
+    { label: 'Contact 1',     inv: inv.contact_name,       cmp: company.contact_name || company.contact },
+    { label: 'Contact 2',     inv: null,                   cmp: company.contact || null },
+    { label: 'Email',         inv: inv.contact_email,      cmp: company.contact_email || company.email },
+    { label: 'Phone',         inv: inv.contact_phone,      cmp: company.contact_phone || company.phone },
+    { label: 'Street',        inv: inv.address_line1,      cmp: company.address_line1 },
+    { label: 'Street 2',      inv: inv.address_line2,      cmp: company.address_line2 },
+    { label: 'Postal code',   inv: inv.postal_code,        cmp: company.postal_code },
+    { label: 'City',          inv: inv.city,               cmp: company.city },
+    { label: 'Country',       inv: inv.country,            cmp: company.country },
+    { label: 'VAT',           inv: inv.vat_number,         cmp: company.vat_number },
+    { label: 'KvK',           inv: inv.kvk_number,         cmp: company.kvk_number },
+  ];
+
+  // Check if any invoice field would fill an empty company field
+  const hasPatchableData = fields.some(f => f.inv && !f.cmp);
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
+
+        {/* Header */}
+        <div className="flex items-start justify-between p-5 border-b border-gray-100">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Confirm company match</h2>
+            <p className="text-sm text-gray-500 mt-0.5">
+              Invoice <span className="font-semibold text-blue-600">{invoice.invoice_number}</span> matches
+              &nbsp;<span className="font-semibold text-green-700">{company.name}</span> — verify the details below.
+            </p>
+          </div>
+          <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded">✕</button>
+        </div>
+
+        {/* Side-by-side table */}
+        <div className="p-5">
+          <div className="grid grid-cols-2 gap-3 mb-1">
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 rounded px-3 py-1.5">Invoice data (parsed)</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-green-700 bg-green-50 rounded px-3 py-1.5">Company record (database)</div>
+          </div>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            {fields.map((f, i) => {
+              const differs = f.inv && f.cmp && f.inv !== f.cmp;
+              const missing = f.inv && !f.cmp;
+              return (
+                <div key={i} className={`grid grid-cols-[120px_1fr_1fr] text-sm border-b border-gray-100 last:border-0 ${differs ? 'bg-amber-50' : missing ? 'bg-blue-50/30' : ''}`}>
+                  <div className="px-3 py-2 font-medium text-gray-500 text-xs flex items-center border-r border-gray-100">{f.label}</div>
+                  <div className="px-3 py-2 text-gray-800 border-r border-gray-100 break-all">{f.inv || <span className="text-gray-300">—</span>}</div>
+                  <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
+                    {f.cmp || <span className="text-gray-300">—</span>}
+                    {differs && <span className="ml-1 text-xs text-amber-600">(differs)</span>}
+                    {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Patch option */}
+          {hasPatchableData && (
+            <label className="flex items-center gap-2 mt-4 text-sm text-gray-700 cursor-pointer select-none">
+              <input type="checkbox" checked={shouldPatch} onChange={e => setShouldPatch(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600" />
+              Fill empty company fields from invoice data (contact, address, VAT)
+            </label>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+          <button onClick={onCancel}
+            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+            Cancel
+          </button>
+          <div className="flex gap-3">
+            <button onClick={onCreateNew}
+              className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
+              No match — create new company
+            </button>
+            <button onClick={() => onConfirm(invoice, company, shouldPatch)}
+              className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
+              ✓ Confirm match
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+// ── End MatchVerificationModal ──────────────────────────────────────────────
 
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
@@ -49,6 +248,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
+  const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
   const fileInputRef = useRef(null);
 
   const handleSort = (key) => {
@@ -179,6 +379,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
               line_items: parsedData.line_items || [],
               client_block: parsedData.client_details || [],
               filename: file.name,
+              // Structured fields extracted from the client address block
+              contact_name: parsedData.contact_name || null,
+              contact_email: parsedData.contact_email || null,
+              contact_phone: parsedData.contact_phone || null,
+              address_line1: parsedData.address_line1 || null,
+              address_line2: parsedData.address_line2 || null,
+              postal_code: parsedData.postal_code || null,
+              city: parsedData.city || null,
+              country: parsedData.country || null,
+              vat_number: parsedData.vat_number || null,
+              kvk_number: parsedData.kvk_number || null,
             }),
           };
 
@@ -246,21 +457,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (yes) {
-        const matchName = companies.find(
-          (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-        );
-        if (matchName?.id && unsubscribeCompany) {
+        // Prefer the persisted FK; fall back to multi-field best-match.
+        const undoCompanyId = inv.company_id ||
+          findBestCompanyMatch(inv, companies)?.company?.id || null;
+        if (undoCompanyId && unsubscribeCompany) {
           try {
-            const tempSub = subscriptions.find((s) => s.company_id === matchName.id);
+            const tempSub = subscriptions.find((s) => s.company_id === undoCompanyId);
             if (tempSub) {
               await unsubscribeCompany(tempSub.id);
               toastSuccess('Subscription removed.');
             } else {
-              // Could not find subscription for the matched company
-              console.warn(
-                'Could not find active subscription to remove for Company ID:',
-                matchName.id,
-              );
+              console.warn('Could not find active subscription to remove for Company ID:', undoCompanyId);
             }
           } catch (e) {
             console.error(e);
@@ -310,86 +517,134 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
   };
 
-  const handleApproveAndSync = async (invoice) => {
-    const matchedCompany = companies.find(
-      (c) => c.name.toLowerCase() === (invoice.company_name || '').toLowerCase(),
-    );
+  // ─── Sync helpers ─────────────────────────────────────────────────────────────
 
-    let companyId = matchedCompany?.id || null;
+  // Core subscription creation — called both from modal confirm and direct create path.
+  const doSync = async (invoice, companyId) => {
+    const breakfastVal = invoice.breakfast_sat ?? invoice.breakfast ?? 0;
+    const lunchVal = invoice.lunch_sat ?? invoice.lunch ?? invoice.meals_count ?? 0;
+    const bbqVal = invoice.bbq_sat ?? invoice.bbq ?? 0;
+    const lunchSatVal = Math.ceil(lunchVal / 2);
+    const lunchSunVal = Math.floor(lunchVal / 2);
 
-    if (!companyId) {
-      const yes = await confirm({
-        title: 'Company Not Found',
-        message: 'No company named "' + invoice.company_name + '" found. Create it automatically?',
-      });
-      if (!yes) return;
+    const subResult = await subscribeCompany(companyId, {
+      booth_count: invoice.stands_count || 1,
+      area: invoice.area_preference || '',
+      notes:
+        'Imported from Invoice ' +
+        invoice.invoice_number +
+        '. Meals ordered: ' +
+        (invoice.meals_count || 0) +
+        '. ' +
+        (invoice.notes || ''),
+      phone: invoice.phone,
+      email: invoice.email,
+      breakfast_sat: breakfastVal,
+      lunch_sat: lunchSatVal,
+      bbq_sat: bbqVal,
+      breakfast_sun: 0,
+      lunch_sun: lunchSunVal,
+    });
 
-      try {
-        const { data: newCompany, error: createError } = await supabase
-          .from('companies')
-          .insert([
-            {
-              name: invoice.company_name,
-              phone: invoice.phone || '',
-              email: invoice.email || '',
-            },
-          ])
-          .select()
-          .single();
+    if (subResult?.error) throw new Error(subResult.error);
+    await handleStatusChange(invoice.id, 'approved');
+    toastSuccess('Successfully synced subscription!');
+  };
 
-        if (createError) throw createError;
-        companyId = newCompany.id;
-      } catch (err) {
-        toastError('Failed to create company: ' + (err?.message || String(err)));
-        return;
-      }
-    } else {
-      const yes = await confirm({
-        title: 'Confirm Sync',
-        message:
-          'Create subscription for "' +
-          invoice.company_name +
-          '"? Stands: ' +
-          (invoice.stands_count || 1),
-      });
-      if (!yes) return;
-    }
-
+  // Called when user confirms a match in the MatchVerificationModal.
+  const handleConfirmMatch = async (invoice, company, shouldPatch) => {
+    setVerifyModal(null);
     try {
-      // compute breakdown values from the parsed invoice; fall back
-      // to the old meals_count logic when necessary
-      const breakfastVal = invoice.breakfast ?? 0;
-      const lunchVal = invoice.lunch ?? invoice.meals_count ?? 0;
-      const bbqVal = invoice.bbq ?? 0;
-      const lunchSatVal = Math.ceil(lunchVal / 2);
-      const lunchSunVal = Math.floor(lunchVal / 2);
+      // Persist the company link on the staged invoice record.
+      await supabase
+        .from('staged_invoices')
+        .update({ company_id: company.id })
+        .eq('id', invoice.id);
 
-      const subResult = await subscribeCompany(companyId, {
-        booth_count: invoice.stands_count || 1,
-        area: invoice.area_preference || '',
-        notes:
-          'Imported from Invoice ' +
-          invoice.invoice_number +
-          '. Meals ordered: ' +
-          (invoice.meals_count || 0) +
-          '. ' +
-          (invoice.notes || ''),
-        phone: invoice.phone,
-        email: invoice.email,
-        breakfast_sat: breakfastVal,
-        lunch_sat: lunchSatVal,
-        bbq_sat: bbqVal,
-        breakfast_sun: 0,
-        lunch_sun: lunchSunVal,
-      });
+      // Update local state so approve button becomes active immediately.
+      setInvoices((prev) =>
+        prev.map((i) => (i.id === invoice.id ? { ...i, company_id: company.id } : i)),
+      );
+      // Optionally patch empty company fields from the extracted invoice data.
+      if (shouldPatch) {
+        let inv = {};
+        try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+        // Fallback for old records that predate the structured-field extraction
+        const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
+                                inv.address_line1 || inv.postal_code || inv.vat_number;
+        if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+          Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+        }
+        const patch = {};
+        const fill = (field, val) => { if (val && !company[field]) patch[field] = val; };
+        fill('contact_name',  inv.contact_name);
+        // Also fill the legacy single-contact field if it's empty
+        fill('contact',       inv.contact_name);
+        fill('contact_email', inv.contact_email);
+        fill('contact_phone', inv.contact_phone);
+        fill('address_line1', inv.address_line1);
+        fill('address_line2', inv.address_line2);
+        fill('postal_code',   inv.postal_code);
+        fill('city',          inv.city);
+        fill('country',       inv.country);
+        fill('vat_number',    inv.vat_number);
+        fill('kvk_number',    inv.kvk_number);
+        if (Object.keys(patch).length > 0) {
+          await supabase.from('companies').update(patch).eq('id', company.id);
+        }
+      }
 
-      if (subResult?.error) throw new Error(subResult.error);
-
-      await handleStatusChange(invoice.id, 'approved');
-      toastSuccess('Successfully synced subscription!');
+      toastSuccess('Match confirmed — use the approve button to sync.');
     } catch (err) {
-      toastError('Failed to sync to subscription: ' + (err?.message || String(err)));
+      toastError('Failed to confirm match: ' + (err?.message || String(err)));
     }
+  };
+
+  // Badge button: always opens the verification modal so the user can review/re-review.
+  const handleOpenVerifyModal = async (invoice) => {
+    // If already linked to a company, open modal showing that company.
+    if (invoice.company_id) {
+      const company = companies.find((c) => c.id === invoice.company_id);
+      if (company) { setVerifyModal({ invoice, company }); return; }
+    }
+
+    // Not yet linked — find best candidate.
+    const matchResult = findBestCompanyMatch(invoice, companies);
+    if (matchResult?.company) {
+      setVerifyModal({ invoice, company: matchResult.company });
+      return;
+    }
+
+    // No candidate found — prompt to create a new company record (no sync yet).
+    const yes = await confirm({
+      title: 'No company found',
+      message: 'No matching company found for "' + invoice.company_name + '". Create a new company record now?',
+    });
+    if (!yes) return;
+    try {
+      const { data: newCompany, error: ce } = await supabase
+        .from('companies')
+        .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
+        .select().single();
+      if (ce) throw ce;
+      await supabase.from('staged_invoices').update({ company_id: newCompany.id }).eq('id', invoice.id);
+      setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCompany.id } : i)));
+      toastSuccess('Company created and linked — use the approve button to sync.');
+    } catch (err) {
+      toastError('Failed to create company: ' + (err?.message || String(err)));
+    }
+  };
+
+  const handleApproveAndSync = async (invoice) => {
+    // Approve button is only enabled when company_id is set.
+    const company = companies.find((c) => c.id === invoice.company_id);
+    const yes = await confirm({
+      title: 'Sync to subscription',
+      message: 'Create subscription for "' + (company?.name || invoice.company_name) + '"?',
+    });
+    if (!yes) return;
+    try { await doSync(invoice, invoice.company_id); }
+    catch (err) { toastError('Sync failed: ' + (err?.message || String(err))); }
   };
 
   const getSortIcon = (key) => {
@@ -408,9 +663,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
-      const matchName = companies.find(
-        (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-      );
+      const matchResult = findBestCompanyMatch(inv, companies);
 
       let parsedDate = '';
       try {
@@ -418,7 +671,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
         parsedDate = parsedNotes.date || '';
       } catch (e) {}
 
-      return { ...inv, hasMatch: !!matchName, matchName: matchName?.name, date: parsedDate };
+      return {
+        ...inv,
+        hasMatch: !!matchResult,
+        matchCompany: matchResult?.company || null,
+        matchScore: matchResult?.score || 0,
+        matchReasons: matchResult?.reasons || [],
+        date: parsedDate,
+      };
     });
 
     if (searchTerm) {
@@ -487,6 +747,37 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   return (
     <div>
+      {/* Match Verification Modal */}
+      {verifyModal && (
+        <MatchVerificationModal
+          invoice={verifyModal.invoice}
+          company={verifyModal.company}
+          onConfirm={handleConfirmMatch}
+          onCancel={() => setVerifyModal(null)}
+          onCreateNew={async () => {
+            const { invoice } = verifyModal;
+            setVerifyModal(null);
+            const yes = await confirm({
+              title: 'Create New Company',
+              message: `Create a new company record for "${invoice.company_name}"?`,
+            });
+            if (!yes) return;
+            try {
+              const { data: newCo, error: ce } = await supabase
+                .from('companies')
+                .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
+                .select()
+                .single();
+              if (ce) throw ce;
+              await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', invoice.id);
+              setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCo.id } : i)));
+              toastSuccess('Company created and linked — use the approve button to sync.');
+            } catch (err) {
+              toastError('Failed to create company: ' + (err?.message || String(err)));
+            }
+          }}
+        />
+      )}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
           {t('adminNav.invoices', 'Invoices')}
@@ -777,9 +1068,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
                 {processedInvoices.map((inv) => {
-                  const matchName = companies.find(
-                    (c) => c.name.toLowerCase() === (inv.company_name || '').toLowerCase(),
-                  );
+                  // matchCompany is pre-computed by processedInvoices (multi-field best-match)
+                  const matchCompany = inv.matchCompany;
+                  const matchReasons = inv.matchReasons || [];
 
                   let parsedData = {};
                   try {
@@ -824,14 +1115,30 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
-                          {matchName ? (
-                            <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
-                              {t('invoiceSync.matchLabel', 'Match:')} {matchName.name}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-200 mt-1 inline-block">
-                              {t('invoiceSync.createCompany', 'No Match: create new company!')}
-                            </span>
+                          {inv.status !== 'approved' && (
+                            matchCompany ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
+                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
+                                style={inv.company_id
+                                  ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+                                  : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
+                                title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
+                              >
+                                <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
+                                {!inv.company_id && matchReasons.length > 0 && (
+                                  <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
+                                )}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
+                                className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
+                                title="Click to verify or create company"
+                              >
+                                ⚠ No match — verify
+                              </button>
+                            )
                           )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top w-[120px]">
@@ -872,20 +1179,32 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 e.stopPropagation();
                                 handleApproveAndSync(inv);
                               }}
-                              disabled={inv.status !== 'pending'}
-                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                              title="Approve"
+                              disabled={inv.status !== 'pending' || !inv.company_id}
+                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                              title={inv.status !== 'pending' ? 'Already synced' : !inv.company_id ? 'Verify company first (click the badge above)' : 'Sync to subscription'}
                             >
                               <Icon path={mdiCheck} size={0.8} />
                             </button>
+                            {inv.status === 'approved' && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(inv.id, 'pending');
+                                }}
+                                className="p-2 bg-white border border-orange-300 text-orange-600 rounded hover:bg-orange-50"
+                                title="Undo subscription — revert to pending"
+                              >
+                                <Icon path={mdiArrowULeftTop} size={0.8} />
+                              </button>
+                            )}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleStatusChange(inv.id, 'rejected');
                               }}
-                              disabled={inv.status === 'rejected'}
-                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50"
-                              title="Reject"
+                              disabled={inv.status === 'approved' || inv.status === 'rejected'}
+                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={inv.status === 'approved' ? 'Use the undo button to revert a subscription' : 'Reject'}
                             >
                               <Icon path={mdiCancel} size={0.8} />
                             </button>

@@ -698,6 +698,9 @@
       "countryPlaceholder": "Land",
       "vatNumberPlaceholder": "USt-IdNr.",
       "kvkNumberPlaceholder": "KvK-Nummer",
+      "contactNamePlaceholder": "Rechnungskontakt (Person)",
+      "contactEmailPlaceholder": "rechnung@firma.de",
+      "contactPhonePlaceholder": "+49 ...",
       "name": "Name",
       "logo": "Logo",
       "website": "Website",
@@ -738,6 +741,9 @@
         "address": "Adresse",
         "vatNumber": "USt-IdNr.",
         "kvkNumber": "KvK-Nummer",
+        "contactName": "Rechnungskontakt",
+        "contactEmail": "Rechnungs-E-Mail",
+        "contactPhone": "Rechnungstelefon",
         "actions": "Aktionen"
       },
       "create": "Erstellen"

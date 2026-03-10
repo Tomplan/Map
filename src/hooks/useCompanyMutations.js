@@ -155,9 +155,22 @@ export function useCompanyMutations({
     setIsCreating(true);
     setNewCompanyForm({
       name: '',
-      logo: organizationLogo,
+      logo: organizationLogo || '',
       website: '',
       info: '',
+      contact: '',
+      phone: '',
+      email: '',
+      contact_name: '',
+      contact_email: '',
+      contact_phone: '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      postal_code: '',
+      country: '',
+      vat_number: '',
+      kvk_number: '',
     });
   };
 

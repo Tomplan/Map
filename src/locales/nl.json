@@ -857,6 +857,9 @@
       "countryPlaceholder": "Land",
       "vatNumberPlaceholder": "BTW-nummer",
       "kvkNumberPlaceholder": "KvK-nummer",
+      "contactNamePlaceholder": "Contactpersoon voor facturatie",
+      "contactEmailPlaceholder": "facturatie@bedrijf.nl",
+      "contactPhonePlaceholder": "+31 6 ...",
       "name": "Naam",
       "logo": "Logo",
       "website": "Website",
@@ -897,6 +900,9 @@
         "address": "Adres",
         "vatNumber": "BTW-nummer",
         "kvkNumber": "KvK-nummer",
+        "contactName": "Facturatiecontact",
+        "contactEmail": "Facturatie-e-mail",
+        "contactPhone": "Facturatietelefoon",
         "actions": "Acties"
       },
       "create": "Aanmaken"

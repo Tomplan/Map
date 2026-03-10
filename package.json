@@ -2,7 +2,7 @@
   "homepage": "https://tomplan.github.io/Map/",
   "name": "map",
   "private": true,
-  "version": "1.0.12",
+  "version": "1.0.14",
   "type": "module",
   "scripts": {
     "dev": "npx vite",
