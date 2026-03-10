@@ -773,41 +773,35 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   </th>
                   <th className="px-4 py-3 border-b border-gray-200 text-left">Item</th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('stands_count')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    Stands {getSortIcon('stands_count')}
+                    Stands
                   </th>
                   {/* split meal columns */}
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('breakfast_sat')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    Bfst {getSortIcon('breakfast_sat')}
+                    Bfst
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('lunch_sat')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    Lunch {getSortIcon('lunch_sat')}
+                    Lunch
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('bbq_sat')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    BBQ {getSortIcon('bbq_sat')}
+                    BBQ
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('breakfast_sun')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    Bfst {getSortIcon('breakfast_sun')}
+                    Bfst
                   </th>
                   <th
-                    className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSort('lunch_sun')}
+                    className="px-4 py-3 text-center border-b border-gray-200"
                   >
-                    Lunch {getSortIcon('lunch_sun')}
+                    Lunch
                   </th>
                   <th className="px-4 py-3 border-b border-gray-200">Notes</th>
                   <th className="px-4 py-3 border-b border-gray-200">Area</th>
@@ -849,12 +843,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   return (
                     <React.Fragment key={inv.id}>
-                      {/* top row with invoice number spans all detail columns */}
                       <tr
                         onClick={() => toggleRow(inv.id)}
-                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group bg-gray-50"
+                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                       >
-                        <td colSpan={13} className="px-4 py-3 font-medium text-blue-600 flex items-center gap-2">
+                        <td className="px-4 py-3 font-medium text-blue-600 flex items-center gap-2">
                           <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.8} />
                           <a
                             href={
@@ -869,11 +862,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             {inv.invoice_number}
                           </a>
                         </td>
-                      </tr>
-                      <tr
-                        onClick={() => toggleRow(inv.id)}
-                        className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
-                      >
                         <td className="px-4 py-3 border-r border-gray-50">
                           <div className="font-medium text-gray-900">{inv.company_name}</div>
                           {matchName ? (
