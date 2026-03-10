@@ -131,23 +131,26 @@ export default function useEventSubscriptions(eventYear) {
 
       const { data, error: insertError } = await supabase
         .from('event_subscriptions')
-        .upsert({
-          company_id: companyId,
-          event_year: eventYear,
-          contact: subscriptionData.contact || company?.contact || '',
-          phone: phoneToInsert,
-          email: emailToInsert,
-          booth_count: subscriptionData.booth_count || 1,
-          area: subscriptionData.area || '',
-          breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
-          lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
-          bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
-          breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
-          lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
-          coins: subscriptionData.coins ?? defaultCoins,
-          notes: subscriptionData.notes || '',
-          created_by,
-        }, { onConflict: 'company_id, event_year' })
+        .upsert(
+          {
+            company_id: companyId,
+            event_year: eventYear,
+            contact: subscriptionData.contact || company?.contact || '',
+            phone: phoneToInsert,
+            email: emailToInsert,
+            booth_count: subscriptionData.booth_count || 1,
+            area: subscriptionData.area || '',
+            breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
+            lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
+            bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
+            breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
+            lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
+            coins: subscriptionData.coins ?? defaultCoins,
+            notes: subscriptionData.notes || '',
+            created_by,
+          },
+          { onConflict: 'company_id, event_year' },
+        )
         .select()
         .single();
 

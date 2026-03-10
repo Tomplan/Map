@@ -208,9 +208,7 @@ export default function MapSettings({ selectedYear, setSelectedYear }) {
           <Icon path={mdiCheckCircle} size={1} className="text-green-600 mr-3 flex-shrink-0" />
           <div>
             <p className="font-semibold text-green-800">{t('settings.mapDefaults.saveSuccess')}</p>
-            <p className="text-sm text-green-700">
-              {`Map settings saved for ${selectedYear}.`}
-            </p>
+            <p className="text-sm text-green-700">{`Map settings saved for ${selectedYear}.`}</p>
           </div>
         </div>
       )}

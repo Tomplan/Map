@@ -28,7 +28,10 @@ export default defineConfig([
       'test-clear.js',
       'patch.cjs',
       'patch-sw.cjs',
-      'get-map-keys.js'
+      'get-map-keys.js',
+      'temp_pdf_runner.cjs',
+      'parse-*.cjs',
+      'run-*.cjs',
     ],
   },
   {
@@ -59,7 +62,6 @@ export default defineConfig([
     settings: {
       react: { version: 'detect' },
     },
-
   },
   // Additional overrides for scripts and tests
   {

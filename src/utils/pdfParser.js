@@ -5,13 +5,29 @@
 
 export async function parsePdfInvoice(file, allowedItems = []) {
   // import legacy build for browser compatibility
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.js');
+  // pdfjs-dist exports differently depending on environment/packager.  In ESM imports
+  // we often get a namespace with a `default` that contains the real API. Normalize once.
+  const raw = await import('pdfjs-dist/legacy/build/pdf.js');
+  const pdfjsLib = raw.default || raw;
   // Standard worker pattern. Hardcoded version to match package.json to prevent Vite export undefined issues.
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+  // In Node.js the GlobalWorkerOptions object may not exist, so guard the assignment.
+  if (pdfjsLib.GlobalWorkerOptions) {
+    if (typeof window !== 'undefined') {
+      // browser path
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+    } else {
+      // running under Node; don't try to load remote worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    }
+  }
 
   try {
     const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    const loadingTask = pdfjsLib.getDocument({
+      data: arrayBuffer,
+      // pdfjs tries to load a worker script which fails in Node; disable when no window.
+      disableWorker: typeof window === 'undefined',
+    });
     const pdf = await loadingTask.promise;
 
     let allItems = [];
@@ -41,6 +57,9 @@ export async function parsePdfInvoice(file, allowedItems = []) {
   }
 }
 
+// export helper for tests
+export { parseSpatialInvoice };
+
 function parseSpatialInvoice(items, allowedItems) {
   // Sort items top-to-bottom. Y is higher for the top of the page.
   items.sort((a, b) => {
@@ -51,13 +70,18 @@ function parseSpatialInvoice(items, allowedItems) {
     return b.y - a.y; // sort top-to-bottom
   });
 
+  // track whether we've begun collecting notes lines
+  let notesStarted = false;
+
   const parsed = {
     invoice_number: null,
     invoice_date: null,
     company_name: null,
     client_details: [],
     line_items: [],
-    opmerkingen: '',    notes: "",                // extracted from opmerkingen block    is_relevant: true,
+    opmerkingen: '',
+    notes: '', // extracted from opmerkingen block
+    is_relevant: true,
   };
 
   const lines = [];
@@ -165,25 +189,40 @@ function parseSpatialInvoice(items, allowedItems) {
     }
 
     // 4) Notes / Opmerkingen
+    // We start collecting once we hit a line containing "opmerking(s)" or "betreft".
     if (
-      !parsed.notes &&
-      (lowerText.includes('opmerkingen') || lowerText.includes('betreft'))
+      !notesStarted &&
+      (lowerText.includes('opmerking') || lowerText.includes('opmerkingen') || lowerText.includes('betreft'))
     ) {
-      // Capture rest of line after keyword
-      const noteStart = textChunk.replace(/.*(opmerkingen|betreft)[:\s]*/i, '').trim();
-      if (noteStart.length > 2) {
-        parsed.notes = noteStart;
+      notesStarted = true;
+      // determine keyword match so we can slice after it
+      const kwMatch = textChunk.match(/(opmerking(?:en)?|betreft)/i);
+      let noteStart = '';
+      if (kwMatch) {
+        const idx = lowerText.indexOf(kwMatch[1].toLowerCase());
+        noteStart = textChunk.slice(idx + kwMatch[1].length).trim();
+        // strip leading colon/space
+        noteStart = noteStart.replace(/^[:\s]+/, '').trim();
       }
-      // We might want to capture subsequent lines too if needed (multi-line notes)
+      if (!noteStart) {
+        // fallback: take the entire line if we couldn't slice properly
+        noteStart = textChunk.trim();
+      }
+      console.debug('NOTE start:', noteStart);
+      parsed.notes = noteStart;
+      // maintain legacy field too
+      parsed.opmerkingen = parsed.notes;
     } else if (
-      parsed.notes &&
-      !lowerText.includes('totaal') &&
-      !lowerText.includes('btw') &&
-      !lowerText.includes('iban') &&
-      !inLineItems
+      notesStarted &&
+      !/(totaal|totale|btw|iban)/.test(lowerText) &&
+      !inLineItems &&
+      // ignore lines that appear to be bank/IBAN numbers or other purely numeric metadata
+      !/^\s*\d{2,}\s+[A-Z]{2}\d+/.test(textChunk)
     ) {
-      // Continue capturing notes if we found "Opmerkingen" previously and aren't in another section
-      parsed.notes += ' ' + textChunk;
+      // Continue capturing notes if we previously started and not past the notes section
+      console.debug('NOTE append:', textChunk);
+      parsed.notes += (parsed.notes ? ' ' : '') + textChunk;
+      parsed.opmerkingen = parsed.notes;
     }
 
     // 5) Client Block (top-left, x < 300)

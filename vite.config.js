@@ -16,7 +16,7 @@ export default defineConfig({
   // Use VITE_BASE_PATH env var to override for subpaths (like GitHub Pages '/Map/')
   base: process.env.VITE_BASE_PATH || '/',
   define: {
-    // Stringify twice? No. Vite replaces raw identifiers. 
+    // Stringify twice? No. Vite replaces raw identifiers.
     // If process.env.VITE_BASE_PATH is "/Map/dev/", JSON.stringify makes it '"/Map/dev/"'.
     // In code: __APP_BASE_URL__ -> "/Map/dev/"
     __APP_BASE_URL__: JSON.stringify(process.env.VITE_BASE_PATH || '/'),

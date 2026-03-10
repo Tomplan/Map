@@ -165,6 +165,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             area_preference: '',
             notes: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
+              notes: parsedData.notes || '',
               date: parsedData.invoice_date || '',
               line_items: parsedData.line_items || [],
               client_block: parsedData.client_details || [],

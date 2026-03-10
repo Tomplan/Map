@@ -40,7 +40,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
-  
+
   // Real-time site visitors
   const { onlineCount, visitorCount, adminUsers } = useVisitorPresence(false);
 
@@ -261,7 +261,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
       {/* Event Preparations and System Limits Warning */}
       <div className="bg-white rounded-lg shadow mt-6 overflow-hidden">
-        
         {/* Header / Live Visitors */}
         <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
@@ -274,33 +273,41 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             </h2>
             <p className="text-sm text-slate-600">{t('dashboard.liveOverviewDesc')}</p>
           </div>
-          
+
           <div className="flex items-center gap-4 flex-wrap">
             <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex items-center gap-3">
               <Icon path={mdiEarth} size={1.2} className="text-blue-500" />
               <div>
                 <div className="text-xl font-bold text-slate-800">{visitorCount}</div>
-                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeVisitors', 'Visitors')}</div>
+                <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                  {t('dashboard.activeVisitors', 'Visitors')}
+                </div>
               </div>
             </div>
-            
+
             <div className="bg-white px-4 py-2 rounded-lg border shadow-sm flex flex-col justify-center min-w-[140px] relative group">
               <div className="flex items-center gap-3">
                 <Icon path={mdiAccountTie} size={1.2} className="text-purple-500" />
                 <div>
                   <div className="text-xl font-bold text-slate-800">{adminUsers.length}</div>
-                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{t('dashboard.activeAdmins', 'Admins')}</div>
+                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
+                    {t('dashboard.activeAdmins', 'Admins')}
+                  </div>
                 </div>
               </div>
               {/* Tooltip to show admin emails */}
               {adminUsers.length > 0 && (
                 <div className="absolute top-full left-0 mt-2 w-max min-w-[200px] max-w-[300px] bg-slate-800 text-white text-xs rounded shadow-lg p-2 z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                  <div className="font-semibold border-b border-slate-600 pb-1 mb-1">Online Admins:</div>
+                  <div className="font-semibold border-b border-slate-600 pb-1 mb-1">
+                    Online Admins:
+                  </div>
                   <ul className="space-y-1">
                     {adminUsers.map((admin, idx) => (
                       <li key={idx} className="flex items-center gap-2">
                         <span className="h-1.5 w-1.5 rounded-full bg-green-400 flex-shrink-0"></span>
-                        <span className="truncate" title={admin.email}>{admin.email}</span>
+                        <span className="truncate" title={admin.email}>
+                          {admin.email}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -317,35 +324,48 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="leading-snug">
               <span className="font-bold mr-1">{t('dashboard.checklist.title')}:</span>
               <span className="opacity-90">
-                {t('dashboard.checklist.warning')} {t('dashboard.checklist.warningDesc')} {t('dashboard.checklist.crashWarning')}
+                {t('dashboard.checklist.warning')} {t('dashboard.checklist.warningDesc')}{' '}
+                {t('dashboard.checklist.crashWarning')}
               </span>
             </div>
           </div>
-          
+
           <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
             <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
-              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <input
+                type="checkbox"
+                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+              />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.upgradeTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.upgradeDesc')}</span>
               </div>
             </label>
             <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
-              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <input
+                type="checkbox"
+                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+              />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.lockMapTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.lockMapDesc')}</span>
               </div>
             </label>
             <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
-              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <input
+                type="checkbox"
+                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+              />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.verifyBackupsTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.verifyBackupsDesc')}</span>
               </div>
             </label>
             <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
-              <input type="checkbox" className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent" />
+              <input
+                type="checkbox"
+                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+              />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.checkPerfTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.checkPerfDesc')}</span>

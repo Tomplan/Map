@@ -48,12 +48,16 @@ export default function UserManagement() {
       let usersError;
 
       const result = await supabase.rpc('get_user_roles_with_email');
-      
+
       // rpc does not throw an exception on Postgres missing function, it returns an error object
       if (!result.error && result.data) {
         usersData = result.data;
       } else {
-        console.warn('get_user_roles_with_email not available or failed:', result.error?.message, 'using fallback');
+        console.warn(
+          'get_user_roles_with_email not available or failed:',
+          result.error?.message,
+          'using fallback',
+        );
         const fallbackResult = await supabase
           .from('user_roles')
           .select('user_id, role, created_at, updated_at')
@@ -183,13 +187,11 @@ export default function UserManagement() {
       setError(null);
 
       // Update or Insert role in user_roles table
-      const { error: updateError } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: userId,
-          role: newRole,
-          updated_at: new Date().toISOString(),
-        });
+      const { error: updateError } = await supabase.from('user_roles').upsert({
+        user_id: userId,
+        role: newRole,
+        updated_at: new Date().toISOString(),
+      });
 
       if (updateError) {
         throw updateError;
@@ -226,7 +228,12 @@ export default function UserManagement() {
       console.error('Password reset email failed:', err);
       // Let's show the actual error message from Supabase if available
       const errorMessage = err.message || 'Failed to send reset email.';
-      setError(t('settings.userManagement.errors.resetFailed', 'Failed to send reset email.') + ' (' + errorMessage + ')');
+      setError(
+        t('settings.userManagement.errors.resetFailed', 'Failed to send reset email.') +
+          ' (' +
+          errorMessage +
+          ')',
+      );
     } finally {
       setResetLoading(false);
     }
@@ -255,12 +262,17 @@ export default function UserManagement() {
       setError(null);
 
       // Attempt to delete from auth.users via RPC which will cascade to user_roles
-      const { error: rpcError } = await supabase.rpc('delete_auth_user', { target_user_id: userId });
+      const { error: rpcError } = await supabase.rpc('delete_auth_user', {
+        target_user_id: userId,
+      });
 
       if (rpcError) {
         // Fallback: If RPC doesn't exist yet, at least delete from user_roles
-        console.warn('delete_auth_user RPC failed or unavailable, falling back to deleting from user_roles. Error:', rpcError.message);
-        
+        console.warn(
+          'delete_auth_user RPC failed or unavailable, falling back to deleting from user_roles. Error:',
+          rpcError.message,
+        );
+
         const { error: deleteError } = await supabase
           .from('user_roles')
           .delete()
@@ -428,7 +440,12 @@ export default function UserManagement() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  handleDeleteUser(user.id, user.email, user.role, user.isCurrentUser)
+                                  handleDeleteUser(
+                                    user.id,
+                                    user.email,
+                                    user.role,
+                                    user.isCurrentUser,
+                                  )
                                 }
                                 className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
                                 title={t('settings.userManagement.deleteUser')}
@@ -550,7 +567,11 @@ export default function UserManagement() {
                   className="input-base"
                   disabled={editingUser.isCurrentUser || !isSuperAdmin}
                 >
-                  {editingUser.role === 'none' && <option value="none" disabled>{roleLabels.none}</option>}
+                  {editingUser.role === 'none' && (
+                    <option value="none" disabled>
+                      {roleLabels.none}
+                    </option>
+                  )}
                   <option value="event_manager">{roleLabels.event_manager}</option>
                   <option value="system_manager">{roleLabels.system_manager}</option>
                   {isSuperAdmin && <option value="super_admin">{roleLabels.super_admin}</option>}

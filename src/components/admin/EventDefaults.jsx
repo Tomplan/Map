@@ -10,7 +10,7 @@ import {
   mdiCurrencyUsd,
   mdiFilterMinus,
   mdiPlus,
-  mdiClose
+  mdiClose,
 } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
@@ -511,7 +511,10 @@ export default function EventDefaults() {
             </h3>
           </div>
           <p className="text-sm text-gray-600 mb-6">
-            {t('settings.eventDefaults.invoiceProcessing.description', 'Manage text strings that will cause a line item to be ignored during PDF invoice import.')}
+            {t(
+              'settings.eventDefaults.invoiceProcessing.description',
+              'Manage text strings that will cause a line item to be ignored during PDF invoice import.',
+            )}
           </p>
 
           <div className="space-y-4">
@@ -526,7 +529,10 @@ export default function EventDefaults() {
                   value={newIgnoredItem}
                   onChange={(e) => setNewIgnoredItem(e.target.value)}
                   onKeyDown={handleIgnoredItemKeyDown}
-                  placeholder={t('settings.eventDefaults.invoiceProcessing.placeholder', 'e.g. Test, Verzendkosten')}
+                  placeholder={t(
+                    'settings.eventDefaults.invoiceProcessing.placeholder',
+                    'e.g. Test, Verzendkosten',
+                  )}
                   className="input-base flex-1"
                 />
                 <button
@@ -543,12 +549,18 @@ export default function EventDefaults() {
 
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-700 mb-2">
-                {t('settings.eventDefaults.invoiceProcessing.currentList', 'Currently Ignored Strings:')}
+                {t(
+                  'settings.eventDefaults.invoiceProcessing.currentList',
+                  'Currently Ignored Strings:',
+                )}
               </h4>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 min-h-[100px] flex flex-wrap gap-2 content-start">
                 {invoiceIgnoredItems.length === 0 ? (
                   <span className="text-gray-400 text-sm italic w-full text-center mt-6">
-                    {t('settings.eventDefaults.invoiceProcessing.emptyList', 'No items ignored. All line items will be processed.')}
+                    {t(
+                      'settings.eventDefaults.invoiceProcessing.emptyList',
+                      'No items ignored. All line items will be processed.',
+                    )}
                   </span>
                 ) : (
                   invoiceIgnoredItems.map((item, index) => (
