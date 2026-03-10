@@ -10,7 +10,7 @@
     "dev:strict": "CI=true npx vite --port 5173 --strictPort",
     "build": "npx vite build",
     "preview": "npx vite preview",
-    "test": "jest --config jest.config.cjs --runInBand","
+    "test": "jest --config jest.config.cjs --runInBand",
     "test:unit": "jest --config jest.config.cjs --testPathPatterns=src --runInBand",
     "test:e2e": "jest --config jest.config.cjs --testPathPatterns=tests/e2e --runInBand",
     "test:e2e:tour-admin": "node scripts/e2e/tour-admin-e2e.cjs",
