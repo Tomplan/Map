@@ -129,7 +129,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
     },
     {
       path: '/admin/invoices',
-      label: t('adminNav.invoiceSync', 'Invoice Sync'),
+      label: t('adminNav.invoices', 'Invoices'),
       icon: mdiFileInvoice,
       roles: ['super_admin', 'system_manager', 'event_manager'],
     },

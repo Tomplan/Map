@@ -40,7 +40,7 @@
     "dashboard": "Dashboard",
     "mapManagement": "Kaartbeheer",
     "companiesNav": "Bedrijven",
-    "invoiceSync": "Facturatiesync",
+    "invoices": "Facturen",
     "eventSubscriptions": "Inschrijvingen",
     "programManagement": "Programmabeheer",
     "assignments": "Toewijzingen",
@@ -56,7 +56,7 @@
       "event_manager": "Evenementbeheerder",
       "content_editor": "Contentbeheerder"
     },
-    "invoiceSync": "Factuur Sync"
+    "invoices": "Facturen"
   },
   "languages": {
     "english": "Engels",

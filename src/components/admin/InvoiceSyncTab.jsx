@@ -487,7 +487,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
-          {t('adminNav.invoiceSync', 'Invoice Sync')}
+          {t('adminNav.invoices', 'Invoices')}
         </h1>
         <div className="flex-1 max-w-md mx-6 relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
