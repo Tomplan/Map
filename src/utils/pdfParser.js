@@ -99,6 +99,7 @@ function parseSpatialInvoice(items, allowedItems) {
     city: null,
     country: null,
     vat_number: null,
+    kvk_number: null,
   };
 
   const lines = [];
@@ -459,6 +460,12 @@ function parseSpatialInvoice(items, allowedItems) {
     if (!parsed.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
       parsed.vat_number = l.replace(/^BTW[:\s-]*/i, '').trim();
       return;
+    }
+
+    // Dutch KvK (Chamber of Commerce): explicit label or exactly 8 consecutive digits
+    if (!parsed.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) {
+      const m = l.match(/\d{8}/);
+      if (m) { parsed.kvk_number = m[0]; return; }
     }
 
     // Dutch postal code: 4 digits + 2 letters, often followed by city name

@@ -25,13 +25,14 @@ import { useDialog } from '../../contexts/DialogContext';
 function extractFieldsFromBlock(lines = []) {
   const r = { contact_name: null, contact_email: null, contact_phone: null,
                address_line1: null, address_line2: null, postal_code: null,
-               city: null, country: null, vat_number: null };
+               city: null, country: null, vat_number: null, kvk_number: null };
   // skip index 0 (company name)
   lines.slice(1).forEach((line) => {
     const l = (line || '').trim();
     if (!l) return;
     if (!r.contact_email && /@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) { r.contact_email = l; return; }
     if (!r.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) { r.vat_number = l.replace(/^BTW[:\s-]*/i,'').trim(); return; }
+    if (!r.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) { const m = l.match(/\d{8}/); if (m) { r.kvk_number = m[0]; return; } }
     if (!r.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
       const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
       if (m) { r.postal_code = m[1]+m[2].toUpperCase(); r.city = m[3].trim(); }
@@ -63,13 +64,16 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 
   const fields = [
     { label: 'Company name', inv: invoice.company_name, cmp: company.name },
-    { label: 'Contact',      inv: inv.contact_name,     cmp: company.contact_name },
-    { label: 'Email',        inv: inv.contact_email,    cmp: company.contact_email || company.email },
-    { label: 'Phone',        inv: inv.contact_phone,    cmp: company.contact_phone || company.phone },
-    { label: 'Address',      inv: [inv.address_line1, inv.address_line2].filter(Boolean).join(', '), cmp: [company.address_line1, company.address_line2].filter(Boolean).join(', ') },
-    { label: 'Postal / City',inv: [inv.postal_code, inv.city].filter(Boolean).join('  '), cmp: [company.postal_code, company.city].filter(Boolean).join('  ') },
-    { label: 'Country',      inv: inv.country,          cmp: company.country },
-    { label: 'VAT',          inv: inv.vat_number,       cmp: company.vat_number },
+    { label: 'Contact',      inv: inv.contact_name,   cmp: company.contact_name },
+    { label: 'Email',        inv: inv.contact_email,  cmp: company.contact_email || company.email },
+    { label: 'Phone',        inv: inv.contact_phone,  cmp: company.contact_phone || company.phone },
+    { label: 'Street',       inv: inv.address_line1,  cmp: company.address_line1 },
+    { label: 'Street 2',     inv: inv.address_line2,  cmp: company.address_line2 },
+    { label: 'Postal code',  inv: inv.postal_code,    cmp: company.postal_code },
+    { label: 'City',         inv: inv.city,           cmp: company.city },
+    { label: 'Country',      inv: inv.country,        cmp: company.country },
+    { label: 'VAT',          inv: inv.vat_number,     cmp: company.vat_number },
+    { label: 'KvK',          inv: inv.kvk_number,     cmp: company.kvk_number },
   ];
 
   // Check if any invoice field would fill an empty company field
@@ -319,6 +323,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               city: parsedData.city || null,
               country: parsedData.country || null,
               vat_number: parsedData.vat_number || null,
+              kvk_number: parsedData.kvk_number || null,
             }),
           };
 
@@ -519,6 +524,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         fill('city',          inv.city);
         fill('country',       inv.country);
         fill('vat_number',    inv.vat_number);
+        fill('kvk_number',    inv.kvk_number);
         if (Object.keys(patch).length > 0) {
           await supabase.from('companies').update(patch).eq('id', company.id);
         }
