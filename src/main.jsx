@@ -80,6 +80,7 @@ if ('serviceWorker' in navigator) {
       // cached file; this avoids the "went back a few steps" problem when the
       // SW itself is cached by GH Pages.
       const swUrl = `${getBaseUrl()}service-worker.js?v=${__APP_VERSION__}`;
+      navigator.serviceWorker
         .register(swUrl, { scope: getBaseUrl() })
         .then((registration) => {
           // console.log('SW register success:', registration);
