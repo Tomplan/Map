@@ -218,11 +218,19 @@ function parseSpatialInvoice(items, allowedItems) {
         // ignore the header row that lists both column names like
       // "Betaalmethode  Opmerking"; the real notes start on the next line.
       if (lowerText.includes('betaalmethode')) {
-        // record boundary for the notes column based on position of "Opmerking"
+        // Record the left boundary of the notes column.
+        // The "Opmerking" header label is centred over its column, so its X is
+        // further right than where the actual wrapped text starts.  Use the
+        // midpoint between the left-column header ("Betaalmethode") and the
+        // right-column header ("Opmerking") so that note content (which is
+        // left-aligned within the right column) passes the filter.
+        const betaalItem = lineItems.find((i) => /betaalmethode/i.test(i.str));
         const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
         if (opItem) {
-          noteColumnX = opItem.x;
-          console.debug('HEADER SKIP: recorded noteColumnX', noteColumnX);
+          noteColumnX = betaalItem
+            ? (betaalItem.x + opItem.x) / 2
+            : opItem.x / 2;
+          console.debug('HEADER SKIP: recorded noteColumnX (midpoint)', noteColumnX);
         }
         console.debug('HEADER SKIP: setting notesStarted, ignoring line', textChunk);
         notesStarted = true;
