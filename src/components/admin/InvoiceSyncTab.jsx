@@ -203,7 +203,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
             </button>
             <button onClick={() => onConfirm(invoice, company, shouldPatch)}
               className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
-              ✓ Confirm match &amp; sync
+              ✓ Confirm match
             </button>
           </div>
         </div>
@@ -589,9 +589,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
         }
       }
 
-      await doSync(invoice, company.id);
+      toastSuccess('Match confirmed — use the approve button to sync.');
     } catch (err) {
-      toastError('Sync failed: ' + (err?.message || String(err)));
+      toastError('Failed to confirm match: ' + (err?.message || String(err)));
     }
   };
 
