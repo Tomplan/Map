@@ -18,7 +18,7 @@ let isJoined = false;
 
 // We need a registry of who is actively asking to be tracked among all Hook instances.
 // Usually only App.jsx tracks. We just store the single tracked payload here.
-let activeTrackingPayload = null; 
+let activeTrackingPayload = null;
 
 const notifyListeners = () => {
   for (const listener of listeners) {
@@ -43,14 +43,14 @@ const syncPresenceState = () => {
     }
   });
 
-  // Deduplicate admins by email so if the same admin is logged in 
+  // Deduplicate admins by email so if the same admin is logged in
   // on multiple devices/browser tabs, they gracefully count as 1 Admin.
-  const uniqueAdminsByEmail = Array.from(new Map(admins.map(a => [a.email, a])).values());
+  const uniqueAdminsByEmail = Array.from(new Map(admins.map((a) => [a.email, a])).values());
 
   globalState = {
     onlineCount: Object.keys(state).length,
     visitorCount: visitors,
-    adminUsers: uniqueAdminsByEmail
+    adminUsers: uniqueAdminsByEmail,
   };
   notifyListeners();
 };
@@ -87,7 +87,7 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
 
     return () => {
       listeners.delete(setLocalState);
-      
+
       // If no components are listening anymore across the whole app, cleanly shut down
       if (listeners.size === 0 && globalChannel) {
         supabase.removeChannel(globalChannel);
@@ -103,15 +103,15 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
   useEffect(() => {
     // If this Hook instance isn't trying to broadcast presence (shouldTrack = false)
     // do absolutely nothing. Do not interfere with global tracking!
-    if (!shouldTrack) return; 
+    if (!shouldTrack) return;
 
     // Capture newest available trackable state for this user/admin
     const newState = {
       is_admin: !!user,
       email: user?.email,
-      online_at: new Date().toISOString()
+      online_at: new Date().toISOString(),
     };
-    
+
     // Store in global memory in case the socket is still handshaking
     activeTrackingPayload = newState;
 
@@ -124,8 +124,8 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
     // (e.g. App.jsx unmounting... which rarely ever happens).
     return () => {
       if (isJoined && globalChannel) {
-         activeTrackingPayload = null;
-         globalChannel.untrack().catch(console.error);
+        activeTrackingPayload = null;
+        globalChannel.untrack().catch(console.error);
       }
     };
   }, [shouldTrack, user]);

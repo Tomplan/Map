@@ -8,19 +8,10 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock the organization settings hook (used by EventDefaults)
+// for this unit test we don't care about meal defaults, so return null settings to
+// prevent the component's useEffect from ever firing and causing render noise.
 jest.mock('../../../hooks/useOrganizationSettings', () => () => ({
-  settings: {
-    default_breakfast_sat: 10,
-    default_lunch_sat: 20,
-    default_bbq_sat: 5,
-    default_breakfast_sun: 6,
-    default_lunch_sun: 8,
-    notification_settings: {
-      emailNotifications: true,
-      newSubscriptionNotify: true,
-      assignmentChangeNotify: true,
-    },
-  },
+  settings: null,
   loading: false,
   error: null,
   updateSettings: jest.fn().mockResolvedValue(true),

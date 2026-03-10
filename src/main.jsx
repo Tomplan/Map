@@ -58,6 +58,7 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
+<<<<<<< HEAD
 // Service worker handling ------------------------------------------------
 if ('serviceWorker' in navigator) {
   if (import.meta.env.DEV) {
@@ -65,6 +66,15 @@ if ('serviceWorker' in navigator) {
     // keep serving stale assets and makes the UI appear frozen.  Unregister any
     // that may have been installed by a previous production build and clear the
     // caches so HMR works reliably.
+=======
+// Service worker handling ------------------------------------------------
+const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
+
+if ('serviceWorker' in navigator) {
+  if (isDev) {
+    // In development we clear any existing workers/caches immediately so that
+    // the production bundle can never be served by a stale SW.  The helper in
+    // index.html also runs before this code executes.
     navigator.serviceWorker
       .getRegistrations()
       .then((regs) => regs.forEach((r) => r.unregister()))
@@ -74,7 +84,7 @@ if ('serviceWorker' in navigator) {
     }
   }
 
-  if (import.meta.env.PROD) {
+  if (!isDev && import.meta.env.PROD) {
     window.addEventListener('load', () => {
       // When deploying to a subdirectory (like /Map/dev/), the service worker
       // needs to be registered with the correct scope.

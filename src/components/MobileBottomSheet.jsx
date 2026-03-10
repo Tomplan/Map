@@ -90,7 +90,11 @@ const BottomSheet = ({ marker, onClose }) => {
               />
             )}
           </div>
-            {marker.glyph && <div className="text-sm text-gray-700 mb-1">{t('map.booth', 'Booth')} {marker.glyph}</div>}
+          {marker.glyph && (
+            <div className="text-sm text-gray-700 mb-1">
+              {t('map.booth', 'Booth')} {marker.glyph}
+            </div>
+          )}
 
           {/* Category Badges */}
           {categories && categories.length > 0 && (

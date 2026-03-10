@@ -75,7 +75,7 @@ export default function AdminLogin({ onLogin, branding }) {
     setResetLoading(true);
     setError(null);
 
-    // Build absolute redirect URL using our robust utility that correctly handles 
+    // Build absolute redirect URL using our robust utility that correctly handles
     // root deployments, GitHub Pages subdirectories, HashRouter usage, etc.
     const redirectUrl = getAbsoluteUrl('#/reset-password');
 
@@ -87,7 +87,9 @@ export default function AdminLogin({ onLogin, branding }) {
 
     if (resetError) {
       console.error('Password reset email failed:', resetError);
-      setError(t('adminLogin.errors.resetFailed') + (resetError.message ? ` (${resetError.message})` : ''));
+      setError(
+        t('adminLogin.errors.resetFailed') + (resetError.message ? ` (${resetError.message})` : ''),
+      );
     } else {
       setResetSuccess(true);
       setTimeout(() => {

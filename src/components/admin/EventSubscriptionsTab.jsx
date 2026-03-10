@@ -207,7 +207,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     const confirmed = await confirm({
       title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
-      message: t('helpPanel.subscriptions.unsubscribeMessage', 'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}.', { companyName, year: selectedYear, assignmentInfo }),
+      message: t(
+        'helpPanel.subscriptions.unsubscribeMessage',
+        'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}.',
+        { companyName, year: selectedYear, assignmentInfo },
+      ),
       confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
       variant: 'danger',
     });
@@ -387,7 +391,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       {/* Add new subscription form */}
       {isAdding && (
         <div className="mb-4 p-4 border rounded-lg bg-blue-50 flex-shrink-0">
-          <h3 className="font-bold mb-3">{t('helpPanel.subscriptions.subscribeCompanyTo', 'Subscribe Company to {{year}}', { year: selectedYear })}</h3>
+          <h3 className="font-bold mb-3">
+            {t('helpPanel.subscriptions.subscribeCompanyTo', 'Subscribe Company to {{year}}', {
+              year: selectedYear,
+            })}
+          </h3>
           <div className="flex items-center gap-3">
             <select
               value={selectedCompanyId}
@@ -702,7 +710,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <div className="text-center py-8 text-gray-500">
             {searchTerm
               ? t('admin.noSearchResults', 'No subscriptions found matching your search')
-              : t('helpPanel.subscriptions.noCompaniesSubscribed', 'No companies subscribed to {{year}} yet. Click "Subscribe Company" to add one.', { year: selectedYear })}
+              : t(
+                  'helpPanel.subscriptions.noCompaniesSubscribed',
+                  'No companies subscribed to {{year}} yet. Click "Subscribe Company" to add one.',
+                  { year: selectedYear },
+                )}
           </div>
         )}
       </div>

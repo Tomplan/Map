@@ -1,4 +1,15 @@
 // Simple service worker for offline map tile caching
+// and include a self‑destruct mechanism when running on localhost dev server.
+// This prevents an old production build from remaining active during local
+// development.  The SW will unregister itself immediately after activation
+// on port 5173.
+
+// Determine if we're running on the built‑in dev server
+const IS_LOCAL_DEV =
+  typeof self.location !== 'undefined' &&
+  self.location.hostname === 'localhost' &&
+  (self.location.port === '5173' || self.location.port === '5174');
+
 const PRECACHE_NAME = 'static-assets-v4';
 
 // We can't know the base path at build time, so compute it dynamically from the
@@ -31,10 +42,32 @@ const PRECACHE_ASSETS = [
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
+
+  if (IS_LOCAL_DEV) {
+    // immediately activate then unregister ourselves
+    return;
+  }
+
   // Pre-cache essential icons and logo assets for offline/stable loading
   event.waitUntil(
     caches.open(PRECACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {})),
   );
+});
+
+// During activation in dev we immediately unregister and clear caches.
+self.addEventListener('activate', (event) => {
+  if (IS_LOCAL_DEV) {
+    event.waitUntil(
+      self.registration
+        .unregister()
+        .then(() => caches.keys())
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => {})
+        .catch(() => {}),
+    );
+    return; // skip normal logic below
+  }
+  self.clients.claim();
 });
 self.addEventListener('activate', () => {
   self.clients.claim();

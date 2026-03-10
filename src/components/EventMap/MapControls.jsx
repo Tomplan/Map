@@ -56,11 +56,14 @@ export default function MapControls({
       if (mapInstance) {
         const center = mapInstance.getCenter();
         const zoom = mapInstance.getZoom();
-        localStorage.setItem(`adminHomePrefs_${selectedYear}`, JSON.stringify({
-          lat: center.lat,
-          lng: center.lng,
-          zoom: zoom
-        }));
+        localStorage.setItem(
+          `adminHomePrefs_${selectedYear}`,
+          JSON.stringify({
+            lat: center.lat,
+            lng: center.lng,
+            zoom: zoom,
+          }),
+        );
         setShowHomeSaved(true);
         setTimeout(() => setShowHomeSaved(false), 2000);
       }
@@ -106,7 +109,7 @@ export default function MapControls({
           else e.preventDefault();
         }}
         aria-label="Home"
-        title={isAdminView ? "Click to go Home, Long-press to set current view as Home" : "Home"}
+        title={isAdminView ? 'Click to go Home, Long-press to set current view as Home' : 'Home'}
         className={`bg-white rounded-full shadow p-2 flex items-center justify-center relative transition-colors duration-300 ${showHomeSaved ? 'bg-green-50' : 'hover:bg-gray-50'}`}
         style={{ width: 44, height: 44, backgroundColor: showHomeSaved ? '#e8f5e9' : 'white' }}
       >

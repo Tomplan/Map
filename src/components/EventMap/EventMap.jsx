@@ -70,7 +70,7 @@ function EventMap({
           return { center: [parsed.lat, parsed.lng], zoom: parsed.zoom };
         }
       }
-    } catch(e) {}
+    } catch (e) {}
     return null;
   }, [isAdminView, selectedYear]);
 
@@ -84,18 +84,23 @@ function EventMap({
           return { center: [parsed.lat, parsed.lng], zoom: parsed.zoom };
         }
       }
-    } catch(e) {
-      console.warn("Failed to parse admin map prefs", e);
+    } catch (e) {
+      console.warn('Failed to parse admin map prefs', e);
     }
     return null;
   }, [isAdminView, selectedYear]);
 
-  const homeCenter = isAdminView ? (adminHomeConfig?.center || MAP_CONFIG.ADMIN_DEFAULT_POSITION) : MAP_CONFIG.DEFAULT_POSITION;
-  const homeZoom = isAdminView ? (adminHomeConfig?.zoom || MAP_CONFIG.ADMIN_DEFAULT_ZOOM) : MAP_CONFIG.DEFAULT_ZOOM;
+  const homeCenter = isAdminView
+    ? adminHomeConfig?.center || MAP_CONFIG.ADMIN_DEFAULT_POSITION
+    : MAP_CONFIG.DEFAULT_POSITION;
+  const homeZoom = isAdminView
+    ? adminHomeConfig?.zoom || MAP_CONFIG.ADMIN_DEFAULT_ZOOM
+    : MAP_CONFIG.DEFAULT_ZOOM;
 
-  const mapCenter = isAdminView ? (initialAdminConfig?.center || homeCenter) : MAP_CONFIG.DEFAULT_POSITION;
-  const mapZoom = isAdminView ? (initialAdminConfig?.zoom || homeZoom) : MAP_CONFIG.DEFAULT_ZOOM;
-
+  const mapCenter = isAdminView
+    ? initialAdminConfig?.center || homeCenter
+    : MAP_CONFIG.DEFAULT_POSITION;
+  const mapZoom = isAdminView ? initialAdminConfig?.zoom || homeZoom : MAP_CONFIG.DEFAULT_ZOOM;
 
   const [infoButtonToggled, setInfoButtonToggled] = useState({});
   const [showLayersMenu, setShowLayersMenu] = useState(false);
@@ -330,7 +335,7 @@ function EventMap({
       if (process.env.NODE_ENV !== 'production') {
         console.debug(`[EventMap] zoomstart fired at ${performance.now()}`);
       }
-      
+
       // Force immediate visual update to hide artifacts
       // Uses requestAnimationFrame to optimize for start of frame
       requestAnimationFrame(() => updateZoomingClass(true));
@@ -375,13 +380,13 @@ function EventMap({
     // Add native listeners for early pinch detection
     // Leaflet's zoomstart fires too late for smooth pinch-to-zoom hiding
     const container = mapInstance.getContainer();
-    
+
     const handleTouchStart = (e) => {
       // 2 fingers indicates a potential pinch-zoom or two-finger pan
       // Hide markers immediately to catch the start of the transformation
       if (e.touches.length >= 2) {
         requestAnimationFrame(() => updateZoomingClass(true));
-        
+
         if (process.env.NODE_ENV !== 'production') {
           console.debug(`[EventMap] touchstart(2+ fingers) - hiding UI at ${performance.now()}`);
         }
@@ -391,9 +396,9 @@ function EventMap({
     // Safari-specific gesture event for even earlier detection on iOS
     const handleGestureStart = () => {
       requestAnimationFrame(() => updateZoomingClass(true));
-      
+
       if (process.env.NODE_ENV !== 'production') {
-         console.debug(`[EventMap] gesturestart - hiding UI at ${performance.now()}`);
+        console.debug(`[EventMap] gesturestart - hiding UI at ${performance.now()}`);
       }
     };
 
@@ -576,7 +581,14 @@ function EventMap({
         setSearchParams({}, { replace: true });
       }
     }
-  }, [mapInstance, safeMarkers, searchLayer, searchParams, setSearchParams, MAP_CONFIG.SEARCH_ZOOM]);
+  }, [
+    mapInstance,
+    safeMarkers,
+    searchLayer,
+    searchParams,
+    setSearchParams,
+    MAP_CONFIG.SEARCH_ZOOM,
+  ]);
 
   const handleMapCreated = async (mapOrEvent) => {
     const map = mapOrEvent?.target || mapOrEvent;

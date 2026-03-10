@@ -117,10 +117,15 @@ const supabase = {
   },
   channel() {
     return {
-      on() { return this; },
-      subscribe(cb) { if (cb) cb('SUBSCRIBED'); return this; },
+      on() {
+        return this;
+      },
+      subscribe(cb) {
+        if (cb) cb('SUBSCRIBED');
+        return this;
+      },
       unsubscribe() {},
-      send() {}
+      send() {},
     };
   },
   removeChannel() {
