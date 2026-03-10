@@ -600,53 +600,51 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
   };
 
-  const handleApproveAndSync = async (invoice) => {
-    // Already verified — company_id was confirmed in the modal. Just confirm & sync.
+  // Badge button: always opens the verification modal so the user can review/re-review.
+  const handleOpenVerifyModal = async (invoice) => {
+    // If already linked to a company, open modal showing that company.
     if (invoice.company_id) {
       const company = companies.find((c) => c.id === invoice.company_id);
-      const yes = await confirm({
-        title: 'Sync to subscription',
-        message:
-          'Confirmed match: "' +
-          invoice.company_name +
-          '" → "' +
-          (company?.name || 'company #' + invoice.company_id) +
-          '". Create subscription now?',
-      });
-      if (!yes) return;
-      try { await doSync(invoice, invoice.company_id); }
-      catch (err) { toastError('Sync failed: ' + (err?.message || String(err))); }
-      return;
+      if (company) { setVerifyModal({ invoice, company }); return; }
     }
 
-    // Not yet verified — open the verification flow.
+    // Not yet linked — find best candidate.
     const matchResult = findBestCompanyMatch(invoice, companies);
-    const matchedCompany = matchResult?.company || null;
-
-    if (!matchedCompany) {
-      // No company record at all — prompt to create one.
-      const yes = await confirm({
-        title: 'Company Not Found',
-        message: 'No company named "' + invoice.company_name + '" found. Create it automatically?',
-      });
-      if (!yes) return;
-
-      try {
-        const { data: newCompany, error: createError } = await supabase
-          .from('companies')
-          .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
-          .select()
-          .single();
-        if (createError) throw createError;
-        await doSync(invoice, newCompany.id);
-      } catch (err) {
-        toastError('Failed to create company: ' + (err?.message || String(err)));
-      }
+    if (matchResult?.company) {
+      setVerifyModal({ invoice, company: matchResult.company });
       return;
     }
 
-    // Match found — open side-by-side verification modal.
-    setVerifyModal({ invoice, company: matchedCompany });
+    // No candidate found — prompt to create a new company record (no sync yet).
+    const yes = await confirm({
+      title: 'No company found',
+      message: 'No matching company found for "' + invoice.company_name + '". Create a new company record now?',
+    });
+    if (!yes) return;
+    try {
+      const { data: newCompany, error: ce } = await supabase
+        .from('companies')
+        .insert([{ name: invoice.company_name, phone: invoice.phone || '', email: invoice.email || '' }])
+        .select().single();
+      if (ce) throw ce;
+      await supabase.from('staged_invoices').update({ company_id: newCompany.id }).eq('id', invoice.id);
+      setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCompany.id } : i)));
+      toastSuccess('Company created and linked — use the approve button to sync.');
+    } catch (err) {
+      toastError('Failed to create company: ' + (err?.message || String(err)));
+    }
+  };
+
+  const handleApproveAndSync = async (invoice) => {
+    // Approve button is only enabled when company_id is set.
+    const company = companies.find((c) => c.id === invoice.company_id);
+    const yes = await confirm({
+      title: 'Sync to subscription',
+      message: 'Create subscription for "' + (company?.name || invoice.company_name) + '"?',
+    });
+    if (!yes) return;
+    try { await doSync(invoice, invoice.company_id); }
+    catch (err) { toastError('Sync failed: ' + (err?.message || String(err))); }
   };
 
   const getSortIcon = (key) => {
@@ -761,7 +759,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             setVerifyModal(null);
             const yes = await confirm({
               title: 'Create New Company',
-              message: `Create a new company record for "${invoice.company_name}" and sync?`,
+              message: `Create a new company record for "${invoice.company_name}"?`,
             });
             if (!yes) return;
             try {
@@ -771,7 +769,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 .select()
                 .single();
               if (ce) throw ce;
-              await doSync(invoice, newCo.id);
+              await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', invoice.id);
+              setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: newCo.id } : i)));
+              toastSuccess('Company created and linked — use the approve button to sync.');
             } catch (err) {
               toastError('Failed to create company: ' + (err?.message || String(err)));
             }
@@ -1118,12 +1118,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           {inv.status !== 'approved' && (
                             matchCompany ? (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleApproveAndSync(inv); }}
+                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
                                 className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
                                 style={inv.company_id
                                   ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
                                   : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
-                                title={inv.company_id ? 'Verified — click to re-check' : 'Click to verify match'}
+                                title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
                               >
                                 <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
                                 {!inv.company_id && matchReasons.length > 0 && (
@@ -1132,7 +1132,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               </button>
                             ) : (
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleApproveAndSync(inv); }}
+                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
                                 className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
                                 title="Click to verify or create company"
                               >
