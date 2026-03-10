@@ -6,7 +6,7 @@ import Icon from '@mdi/react';
 import {
   mdiRefresh,
   mdiAlertCircleOutline,
-  mdiSync,
+  mdiCheck,
   mdiCancel,
   mdiUpload,
   mdiMagnify,
@@ -874,7 +874,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               className="p-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
                               title="Subscribe"
                             >
-                              <Icon path={mdiSync} size={0.8} />
+                              <Icon path={mdiCheck} size={0.8} />
                             </button>
                             <button
                               onClick={(e) => {
