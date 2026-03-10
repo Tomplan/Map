@@ -12,7 +12,7 @@ import {
   mdiMagnify,
   mdiChevronUp,
   mdiChevronDown,
-  mdiDeleteOutline,
+  mdiDelete,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -549,7 +549,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   disabled={loading || invoices.length === 0}
                   className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
                 >
-                  <Icon path={mdiDeleteOutline} size={0.8} />
+                  <Icon path={mdiDelete} size={0.8} />
                   Clear Staging Area
                 </button>
               </div>
@@ -895,7 +895,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               className="p-2 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
                               title="Delete Invoice"
                             >
-                              <Icon path={mdiDeleteOutline} size={0.8} />
+                              <Icon path={mdiDelete} size={0.8} />
                             </button>
                           </div>
                         </td>
