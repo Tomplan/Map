@@ -519,33 +519,74 @@ export default function InvoiceSyncTab({ selectedYear }) {
     if (!inv) return;
 
     if (inv.status === 'approved' && newStatus === 'pending') {
-      const yes = await confirm({
-        title: 'Undo Subscription',
-        message:
-          'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
-          (companyName || inv.company_name) +
-          '"?',
-      });
+      // Prefer the persisted FK; fall back to best-match.
+      const undoCompanyId = inv.company_id ||
+        findBestCompanyMatch(inv, companies)?.company?.id || null;
 
-      if (yes) {
-        // Prefer the persisted FK; fall back to multi-field best-match.
-        const undoCompanyId = inv.company_id ||
-          findBestCompanyMatch(inv, companies)?.company?.id || null;
-        if (undoCompanyId && unsubscribeCompany) {
+      // Find other approved invoices for the same company this year
+      const siblingsApproved = undoCompanyId
+        ? invoices.filter(
+            (i) => i.id !== id && i.status === 'approved' && i.company_id === undoCompanyId,
+          )
+        : [];
+
+      const tempSub = undoCompanyId
+        ? subscriptions.find((s) => s.company_id === undoCompanyId)
+        : null;
+
+      if (siblingsApproved.length > 0 && tempSub) {
+        // Merged subscription — subtract this invoice's contribution rather than deleting
+        const yes = await confirm({
+          title: 'Undo Invoice Contribution',
+          message:
+            siblingsApproved.length +
+            ' other approved invoice(s) also contribute to the subscription for "' +
+            (companyName || inv.company_name) +
+            '". This invoice\'s values will be subtracted from the subscription (not deleted).',
+        });
+        if (!yes) return;
+
+        const breakfastVal = inv.breakfast_sat ?? 0;
+        const bbqVal = inv.bbq_sat ?? 0;
+        const lunchTotal = inv.lunch_sat ?? inv.meals_count ?? 0;
+        const lunchSatVal = Math.ceil(lunchTotal / 2);
+        const lunchSunVal = Math.floor(lunchTotal / 2);
+
+        try {
+          const { error } = await updateSubscription(tempSub.id, {
+            booth_count: Math.max(0, (tempSub.booth_count || 0) - (inv.stands_count || 1)),
+            breakfast_sat: Math.max(0, (tempSub.breakfast_sat || 0) - breakfastVal),
+            lunch_sat: Math.max(0, (tempSub.lunch_sat || 0) - lunchSatVal),
+            bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
+            lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
+            notes: (tempSub.notes ? tempSub.notes + '\n' : '') +
+              '[Removed: Invoice ' + inv.invoice_number + ']',
+          });
+          if (error) throw new Error(error);
+          toastSuccess('Invoice contribution removed from subscription.');
+        } catch (e) {
+          toastError('Failed to update subscription: ' + (e?.message || String(e)));
+          return;
+        }
+      } else {
+        // Sole invoice — offer to delete the whole subscription
+        const yes = await confirm({
+          title: 'Undo Subscription',
+          message:
+            'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
+            (companyName || inv.company_name) +
+            '"?',
+        });
+        if (!yes) return;
+
+        if (undoCompanyId && tempSub) {
           try {
-            const tempSub = subscriptions.find((s) => s.company_id === undoCompanyId);
-            if (tempSub) {
-              await unsubscribeCompany(tempSub.id);
-              toastSuccess('Subscription removed.');
-            } else {
-              console.warn('Could not find active subscription to remove for Company ID:', undoCompanyId);
-            }
+            await unsubscribeCompany(tempSub.id);
+            toastSuccess('Subscription removed.');
           } catch (e) {
             console.error(e);
           }
         }
-      } else {
-        return; // aborted
       }
     }
 
