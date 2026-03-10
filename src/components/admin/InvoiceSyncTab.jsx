@@ -459,6 +459,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
         .update({ company_id: company.id })
         .eq('id', invoice.id);
 
+      // Update local state so approve button becomes active immediately.
+      setInvoices((prev) =>
+        prev.map((i) => (i.id === invoice.id ? { ...i, company_id: company.id } : i)),
+      );
       // Optionally patch empty company fields from the extracted invoice data.
       if (shouldPatch) {
         let inv = {};
@@ -486,6 +490,25 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   const handleApproveAndSync = async (invoice) => {
+    // Already verified — company_id was confirmed in the modal. Just confirm & sync.
+    if (invoice.company_id) {
+      const company = companies.find((c) => c.id === invoice.company_id);
+      const yes = await confirm({
+        title: 'Sync to subscription',
+        message:
+          'Confirmed match: "' +
+          invoice.company_name +
+          '" → "' +
+          (company?.name || 'company #' + invoice.company_id) +
+          '". Create subscription now?',
+      });
+      if (!yes) return;
+      try { await doSync(invoice, invoice.company_id); }
+      catch (err) { toastError('Sync failed: ' + (err?.message || String(err))); }
+      return;
+    }
+
+    // Not yet verified — open the verification flow.
     const matchedCompany = companies.find(
       (c) => c.name.toLowerCase() === (invoice.company_name || '').toLowerCase(),
     );
@@ -977,14 +1000,27 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top w-[150px] overflow-hidden truncate">
                           <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
-                          {matchName ? (
-                            <span className="text-xs text-green-700 font-semibold bg-green-100 px-1.5 py-0.5 rounded border border-green-200 mt-1 inline-block">
-                              {t('invoiceSync.matchLabel', 'Match:')} {matchName.name}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-200 mt-1 inline-block">
-                              {t('invoiceSync.createCompany', 'No Match: create new company!')}
-                            </span>
+                          {inv.status !== 'approved' && (
+                            matchName ? (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleApproveAndSync(inv); }}
+                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-block transition-colors cursor-pointer"
+                                style={inv.company_id
+                                  ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+                                  : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
+                                title={inv.company_id ? 'Verified — click to re-check' : 'Click to verify match'}
+                              >
+                                {inv.company_id ? '✓ Verified: ' : '? Match: '}{matchName.name}
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleApproveAndSync(inv); }}
+                                className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
+                                title="Click to verify or create company"
+                              >
+                                ⚠ No match — verify
+                              </button>
+                            )
                           )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top w-[120px]">
@@ -1025,9 +1061,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 e.stopPropagation();
                                 handleApproveAndSync(inv);
                               }}
-                              disabled={inv.status !== 'pending'}
-                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                              title="Approve"
+                              disabled={inv.status !== 'pending' || !inv.company_id}
+                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                              title={inv.status !== 'pending' ? 'Already synced' : !inv.company_id ? 'Verify company first (click the badge above)' : 'Sync to subscription'}
                             >
                               <Icon path={mdiCheck} size={0.8} />
                             </button>
