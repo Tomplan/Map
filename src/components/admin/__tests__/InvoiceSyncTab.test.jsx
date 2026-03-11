@@ -88,9 +88,12 @@ test('creating a company from an invoice seeds additional fields', async () => {
   const verifyButton = await screen.findByRole('button', { name: /No match/i });
   userEvent.click(verifyButton);
 
-  // in main row itself we should now see per-item action icons
+  // in main row itself we should now see per-item action icons and quantities
   const approveIcons = await screen.findAllByTitle('Mark approved');
   expect(approveIcons.length).toBeGreaterThanOrEqual(2);
+  // quantities displayed as x<number>
+  expect(screen.getByText('x1')).toBeInTheDocument();
+  expect(screen.getByText('x5')).toBeInTheDocument();
 
   // we can still expand, but it's no longer necessary to reach the buttons
   // (expansion testing kept if desired)

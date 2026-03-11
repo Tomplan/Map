@@ -1497,8 +1497,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   key={idx}
                                   className="flex items-center justify-between text-sm text-indigo-700 font-medium"
                                 >
-                                  <span className="truncate">
-                                    {item.item || item.description}
+                                  <span className="truncate flex items-center gap-2">
+                                    <span>{item.item || item.description}</span>
+                                    <span className="text-xs text-gray-500">x{item.quantity}</span>
                                   </span>
                                   <div className="flex items-center space-x-1">
                                     <button
