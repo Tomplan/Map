@@ -1427,7 +1427,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   // helper that derives subscription counts from a single line item
                   const getCountsForItem = (item) => {
-                    const qty = item.quantity || 1;
+                    // normalize quantity to a number; fall back to 1 on invalid values
+                    let qty = Number(item.quantity);
+                    if (Number.isNaN(qty) || qty <= 0) qty = 1;
                     const desc = ((item.item || item.description) || '').toLowerCase();
                     let stands = 0;
                     let breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
@@ -1436,7 +1438,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     // descriptions like "BBQ stand" which otherwise would count as a
                     // booth). we guard against that by excluding keywords.
                     const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
-                                   !desc.includes('bbq') && !desc.includes('lunch') && !desc.includes('meal');
+                                   !desc.includes('bbq') && !desc.includes('barbecue') &&
+                                   !desc.includes('lunch') && !desc.includes('meal');
                     if (isBooth) {
                       if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
                         stands += 2 * qty;
@@ -1508,7 +1511,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const newNotes = { ...parsedData, line_items: items };
                     const ok = await saveNotes(newNotes);
                     if (ok) {
-                      toastSuccess(`Line item ${action}d`);
+                      let msg;
+                      if (action === 'approved') msg = 'Line item approved';
+                      else if (action === 'rejected') msg = 'Line item rejected';
+                      else if (action === 'delete') msg = 'Line item deleted';
+                      else msg = 'Line item updated';
+                      toastSuccess(msg);
                     }
                   };
 

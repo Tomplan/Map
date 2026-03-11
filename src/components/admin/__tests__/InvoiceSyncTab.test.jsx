@@ -170,6 +170,19 @@ test('creating a company from an invoice seeds additional fields', async () => {
   // count should be zero because bbq is not a booth
   expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 0 }));
 
+  // also verify that an item whose description contains "barbecue stand" is ignored
+  const bbqStand = JSON.parse(JSON.stringify(fakeInvoice));
+  bbqStand.notes = JSON.stringify({
+    ...JSON.parse(bbqStand.notes),
+    line_items: [{ item: 'Barbecue stand x1', quantity: 2 }],
+  });
+  mockOrder.mockResolvedValue({ data: [bbqStand], error: null });
+  render(<InvoiceSyncTab selectedYear={2026} />);
+  const bbqStandApprove = await screen.findByTitle('Mark approved');
+  userEvent.click(bbqStandApprove);
+  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
+  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 0 }));
+
   // there should be no global sync/reject/delete buttons left in main row
   expect(screen.queryByTitle('Sync to subscription')).not.toBeInTheDocument();
   expect(screen.queryByTitle('Reject')).not.toBeInTheDocument();
