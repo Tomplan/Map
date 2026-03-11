@@ -89,7 +89,14 @@ export function useCompanyMutations({
         vat_number,
       });
     } else {
-      await updateCompany(id, editForm);
+      // Deduplicate: clear secondary contact fields if they match the primary.
+      const norm = (v) => (v || '').toLowerCase().trim();
+      const normPhone = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
+      const data = { ...editForm };
+      if (norm(data.contact_email_2) && norm(data.contact_email_2) === norm(data.contact_email || data.email)) data.contact_email_2 = null;
+      if (normPhone(data.contact_phone_2) && normPhone(data.contact_phone_2) === normPhone(data.contact_phone || data.phone)) data.contact_phone_2 = null;
+      if (norm(data.contact_name_2) && norm(data.contact_name_2) === norm(data.contact_name || data.contact)) data.contact_name_2 = null;
+      await updateCompany(id, data);
     }
     setEditingId(null);
     setEditForm({});

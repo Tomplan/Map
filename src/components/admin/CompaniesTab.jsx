@@ -114,6 +114,23 @@ function InfoFieldWithTranslations({ companyId, editingLanguage, onLanguageChang
   );
 }
 
+// Stable module-level constants — must NOT be defined inside render or an IIFE.
+// Defining components inside render creates a new function reference every render,
+// causing React to unmount/remount them and all their children (inputs lose focus).
+const inputCls =
+  'w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
+
+function EditRow({ label, children }) {
+  return (
+    <div className="flex items-start gap-4 py-3 border-b border-gray-100 last:border-0">
+      <span className="w-28 flex-shrink-0 pt-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 leading-tight">
+        {label}
+      </span>
+      <div className="flex-1 text-left">{children}</div>
+    </div>
+  );
+}
+
 /**
  * InfoFieldDisplay - Shows translated content with language indicator
  */
@@ -483,17 +500,9 @@ export default function CompaniesTab() {
         {/* RIGHT — detail panel */}
         {(() => {
           // ── Shared inline-form helpers ────────────────────────────
-          const inputCls =
-            'w-full px-3 py-2 rounded-md border border-gray-200 bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition';
-
-          const EditRow = ({ label, children }) => (
-            <div className="flex items-start gap-4 py-3 border-b border-gray-100 last:border-0">
-              <span className="w-28 flex-shrink-0 pt-2 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 leading-tight">
-                {label}
-              </span>
-              <div className="flex-1 text-left">{children}</div>
-            </div>
-          );
+          // inputCls and EditRow are defined at module level to keep stable
+          // component references — defining them here would cause React to
+          // unmount/remount every input on each keystroke (focus loss).
 
           const renderForm = (form, set, isNew, targetId) => (
             <div className="flex-1 overflow-y-auto">

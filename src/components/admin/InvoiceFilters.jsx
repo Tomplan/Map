@@ -16,6 +16,22 @@ import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useDialog } from '../../contexts/DialogContext';
 import * as XLSX from 'xlsx';
 
+const COLUMN_OPTIONS = [
+  { value: '', label: '— column —' },
+  { value: 'booth_count', label: 'Booth (×1)' },
+  { value: 'booth_count_double', label: 'Booth (×2 / double)' },
+  { value: 'breakfast_sat', label: 'Breakfast Sat' },
+  { value: 'breakfast_sun', label: 'Breakfast Sun' },
+  { value: 'lunch_sat', label: 'Lunch Sat' },
+  { value: 'lunch_sun', label: 'Lunch Sun' },
+  { value: 'bbq_sat', label: 'BBQ Sat' },
+  { value: 'ignore', label: 'Ignore' },
+];
+
+// Normalize stored data: old plain-string items become {label, column:''}.
+const normalizeItems = (raw) =>
+  (raw || []).map((i) => (typeof i === 'string' ? { label: i, column: '' } : i));
+
 export default function InvoiceFilters() {
   const { t } = useTranslation();
   const { settings, loading, updateSetting } = useOrganizationSettings();
@@ -23,6 +39,7 @@ export default function InvoiceFilters() {
 
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState('');
+  const [newItemColumn, setNewItemColumn] = useState('');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -37,7 +54,7 @@ export default function InvoiceFilters() {
 
   useEffect(() => {
     if (settings) {
-      setItems(settings.invoice_allowed_items || []);
+      setItems(normalizeItems(settings.invoice_allowed_items));
     }
   }, [settings]);
 
@@ -65,14 +82,23 @@ export default function InvoiceFilters() {
     e.preventDefault();
     if (!newItem.trim()) return;
 
-    if (items.some((i) => i.toLowerCase() === newItem.trim().toLowerCase())) {
+    if (items.some((i) => (i.label || '').toLowerCase() === newItem.trim().toLowerCase())) {
       setNewItem('');
       return;
     }
 
-    const updatedItems = [...items, newItem.trim()];
+    const updatedItems = [...items, { label: newItem.trim(), column: newItemColumn }];
     setItems(updatedItems);
     setNewItem('');
+    setNewItemColumn('');
+    handleSave(updatedItems);
+  };
+
+  const handleUpdateColumn = (index, column) => {
+    const updatedItems = items.map((item, i) =>
+      i === index ? { ...item, column } : item,
+    );
+    setItems(updatedItems);
     handleSave(updatedItems);
   };
 
@@ -214,13 +240,13 @@ export default function InvoiceFilters() {
   };
 
   const toggleImportedItem = (itemName) => {
-    const isIgnored = items.some((i) => i.toLowerCase() === itemName.toLowerCase());
+    const isIgnored = items.some((i) => (i.label || '').toLowerCase() === itemName.toLowerCase());
     let updatedItems;
 
     if (isIgnored) {
-      updatedItems = items.filter((i) => i.toLowerCase() !== itemName.toLowerCase());
+      updatedItems = items.filter((i) => (i.label || '').toLowerCase() !== itemName.toLowerCase());
     } else {
-      updatedItems = [...items, itemName];
+      updatedItems = [...items, { label: itemName, column: '' }];
     }
 
     setItems(updatedItems);
@@ -228,10 +254,9 @@ export default function InvoiceFilters() {
   };
 
   const addAllExtracted = () => {
-    // Add all extracted item NAMES that aren't already allowed
     const newAdditions = extractedItems
-      .map((ext) => ext.name)
-      .filter((name) => !items.some((i) => i.toLowerCase() === name.toLowerCase()));
+      .filter((ext) => !items.some((i) => (i.label || '').toLowerCase() === ext.name.toLowerCase()))
+      .map((ext) => ({ label: ext.name, column: '' }));
 
     if (newAdditions.length > 0) {
       const updatedItems = [...items, ...newAdditions];
@@ -241,9 +266,8 @@ export default function InvoiceFilters() {
   };
 
   const removeAllExtracted = () => {
-    // Remove all extracted item NAMES from the allowed list
     const updatedItems = items.filter(
-      (i) => !extractedItems.some((ext) => ext.name.toLowerCase() === i.toLowerCase()),
+      (i) => !extractedItems.some((ext) => ext.name.toLowerCase() === (i.label || '').toLowerCase()),
     );
     setItems(updatedItems);
     handleSave(updatedItems);
@@ -266,10 +290,9 @@ export default function InvoiceFilters() {
   const importSelectedRows = () => {
     if (selectedRows.length === 0) return;
 
-    // Add selected items to the allowed list if they are not already there
-    const newAdditions = selectedRows.filter(
-      (selectedName) => !items.some((i) => i.toLowerCase() === selectedName.toLowerCase()),
-    );
+    const newAdditions = selectedRows
+      .filter((selectedName) => !items.some((i) => (i.label || '').toLowerCase() === selectedName.toLowerCase()))
+      .map((name) => ({ label: name, column: '' }));
 
     if (newAdditions.length > 0) {
       const updatedItems = [...items, ...newAdditions];
@@ -347,22 +370,34 @@ export default function InvoiceFilters() {
             </span>
           </h3>
 
-          <form onSubmit={handleAddItem} className="flex gap-2 mb-6">
-            <input
-              type="text"
-              placeholder="Add manual item..."
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-              className="input-base flex-grow"
+          <form onSubmit={handleAddItem} className="flex flex-col gap-2 mb-6">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add manual item..."
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                className="input-base flex-grow"
+                disabled={saving}
+              />
+              <button
+                type="submit"
+                disabled={saving || !newItem.trim()}
+                className="btn-primary whitespace-nowrap"
+              >
+                <Icon path={mdiPlus} size={0.8} /> Add
+              </button>
+            </div>
+            <select
+              value={newItemColumn}
+              onChange={(e) => setNewItemColumn(e.target.value)}
+              className="input-base text-sm h-auto py-1.5"
               disabled={saving}
-            />
-            <button
-              type="submit"
-              disabled={saving || !newItem.trim()}
-              className="btn-primary whitespace-nowrap"
             >
-              <Icon path={mdiPlus} size={0.8} /> Add
-            </button>
+              {COLUMN_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
           </form>
 
           <div className="flex-grow overflow-y-auto max-h-[500px] border border-gray-200 rounded-lg p-3 bg-gray-50">
@@ -371,25 +406,42 @@ export default function InvoiceFilters() {
             ) : (
               <ul className="space-y-2">
                 {[...items]
-                  .sort((a, b) => a.localeCompare(b))
-                  .map((item, index) => (
-                    <li
-                      key={index}
-                      className="flex items-center justify-between bg-white border border-gray-200 rounded p-2 text-sm shadow-sm group"
-                    >
-                      <span className="text-gray-800 truncate" title={item}>
-                        {item}
-                      </span>
-                      <button
-                        onClick={() => handleRemoveItem(items.indexOf(item))}
-                        disabled={saving}
-                        className="text-gray-300 hover:text-red-500 p-1 rounded transition-colors opacity-0 group-hover:opacity-100"
-                        title="Remove"
+                  .sort((a, b) => (a.label || '').localeCompare(b.label || ''))
+                  .map((item) => {
+                    const realIdx = items.findIndex((i) => i === item);
+                    return (
+                      <li
+                        key={realIdx}
+                        className="flex items-center gap-2 bg-white border border-gray-200 rounded p-2 text-sm shadow-sm group"
                       >
-                        <Icon path={mdiClose} size={0.7} />
-                      </button>
-                    </li>
-                  ))}
+                        <span className="text-gray-800 truncate flex-1 min-w-0" title={item.label}>
+                          {item.label}
+                        </span>
+                        <select
+                          value={item.column || ''}
+                          onChange={(e) => handleUpdateColumn(realIdx, e.target.value)}
+                          disabled={saving}
+                          className={`shrink-0 text-xs rounded border px-1 py-0.5 h-auto ${
+                            item.column
+                              ? 'border-green-300 bg-green-50 text-green-800'
+                              : 'border-yellow-300 bg-yellow-50 text-yellow-700'
+                          }`}
+                        >
+                          {COLUMN_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleRemoveItem(realIdx)}
+                          disabled={saving}
+                          className="text-gray-300 hover:text-red-500 p-1 rounded transition-colors opacity-0 group-hover:opacity-100 shrink-0"
+                          title="Remove"
+                        >
+                          <Icon path={mdiClose} size={0.7} />
+                        </button>
+                      </li>
+                    );
+                  })}
               </ul>
             )}
           </div>
@@ -520,7 +572,7 @@ export default function InvoiceFilters() {
                   <tbody className="bg-white divide-y divide-gray-100">
                     {extractedItems.map((item, idx) => {
                       const isIgnored = items.some(
-                        (i) => i.toLowerCase() === item.name.toLowerCase(),
+                        (i) => (i.label || '').toLowerCase() === item.name.toLowerCase(),
                       );
                       const isSelected = selectedRows.includes(item.name);
                       return (

@@ -136,3 +136,53 @@ test('creating a company from an invoice seeds additional fields', async () => {
 // -----------------------------------------------------------------------------
 // Additional test for undo functionality
 // -----------------------------------------------------------------------------
+
+test('approved line item shows undo and reverses subscription counts', async () => {
+  // simple invoice with a single line item and already-linked company
+  const undoInvoice = {
+    ...fakeInvoice,
+    company_id: 42,
+    notes: JSON.stringify({
+      ...JSON.parse(fakeInvoice.notes),
+      line_items: [{ item: 'Stand 6x6', quantity: 1 }],
+    }),
+  };
+
+  mockOrder.mockResolvedValue({ data: [undoInvoice], error: null });
+
+  const subsMock = {
+    subscriptions: [{ id: 500, company_id: 42, booth_count: 2 }],
+    subscribeCompany: jest.fn(),
+    updateSubscription: jest.fn().mockResolvedValue({ data: {}, error: null }),
+    unsubscribeCompany: jest.fn(),
+  };
+  const subsHook = require('../../../hooks/useEventSubscriptions');
+  subsHook.mockReturnValue(subsMock);
+
+  render(<InvoiceSyncTab selectedYear={2026} />);
+
+  // wait for the invoice row to appear
+  await waitFor(() => expect(screen.getByText('TestCo')).toBeInTheDocument());
+
+  // approve the line item (company_id is already set so approve button is enabled)
+  const approve = await screen.findByTitle('Mark approved');
+  await act(async () => {
+    userEvent.click(approve);
+  });
+
+  // first updateSubscription call should increment booth count from 2 to 3
+  await waitFor(() => expect(subsMock.updateSubscription).toHaveBeenCalledTimes(1));
+  const firstBoothCount = subsMock.updateSubscription.mock.calls[0][1].booth_count;
+  expect(firstBoothCount).toBe(3);
+
+  // undo button appears now that the item has a non-pending status
+  const undoBtn = await screen.findByTitle('Undo change');
+  await act(async () => {
+    userEvent.click(undoBtn);
+  });
+
+  // second updateSubscription call should subtract the booth count back
+  await waitFor(() => expect(subsMock.updateSubscription).toHaveBeenCalledTimes(2));
+  const secondBoothCount = subsMock.updateSubscription.mock.calls[1][1].booth_count;
+  expect(secondBoothCount).toBeLessThan(firstBoothCount);
+});

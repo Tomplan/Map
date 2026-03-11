@@ -54,11 +54,11 @@ function findBestCompanyMatch(invoice, companies) {
     else if (invName && cName && (cName.includes(invName) || invName.includes(cName))) { score += 40; reasons.push('~name'); }
 
     if (invEmail) {
-      const emails = [c.email, c.contact_email].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
+      const emails = [c.email, c.contact_email, c.contact_email_2].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
       if (emails.includes(invEmail))                          { score += 80; reasons.push('email'); }
     }
     if (invPhone) {
-      const phones = [c.phone, c.contact_phone].map(p => normalizePhone(p || '')).filter(Boolean);
+      const phones = [c.phone, c.contact_phone, c.contact_phone_2].map(p => normalizePhone(p || '')).filter(Boolean);
       if (phones.some(p => p && p === invPhone))              { score += 70; reasons.push('phone'); }
     }
     if (invKvk && invKvk.length >= 8) {
@@ -154,13 +154,25 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
     }
   }
 
+  // Pre-compute whether the invoice value is already stored in any company field
+  // (primary or secondary). If so, don't show a conflict even if primaries differ.
+  const emailNorm  = (v) => (v || '').toLowerCase().trim();
+  const phoneNorm  = (v) => normalizePhone(v || '');
+  const nameNorm   = (v) => (v || '').toLowerCase().trim();
+  const invEmailVal  = emailNorm(inv.contact_email);
+  const invPhoneVal  = phoneNorm(inv.contact_phone);
+  const invNameVal   = nameNorm(inv.contact_name);
+  const emailAlreadyStored = invEmailVal  && [company.email, company.contact_email, company.contact_email_2].some(e => emailNorm(e) === invEmailVal);
+  const phoneAlreadyStored = invPhoneVal  && [company.phone, company.contact_phone, company.contact_phone_2].some(p => phoneNorm(p) === invPhoneVal);
+  const nameAlreadyStored  = invNameVal   && [company.contact, company.contact_name, company.contact_name_2].some(n => nameNorm(n) === invNameVal);
+
   const fields = [
     { label: 'Company name',  dbField: null,            inv: invoice.company_name,  cmp: company.name },
-    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true },
+    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true, alreadyStored: nameAlreadyStored },
     ...(inv.contact_name_2 ? [{ label: 'Contact 2', dbField: null, inv: inv.contact_name_2, cmp: null }] : []),
-    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true },
+    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true, alreadyStored: emailAlreadyStored },
     ...(inv.contact_email_2 ? [{ label: 'Email 2',   dbField: null, inv: inv.contact_email_2,  cmp: null }] : []),
-    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true },
+    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true, alreadyStored: phoneAlreadyStored },
     ...(inv.contact_phone_2 ? [{ label: 'Phone 2',   dbField: null, inv: inv.contact_phone_2,  cmp: null }] : []),
     { label: 'Street',        dbField: 'address_line1', inv: inv.address_line1,      cmp: company.address_line1 },
     { label: 'Street 2',      dbField: 'address_line2', inv: inv.address_line2,      cmp: company.address_line2 },
@@ -198,7 +210,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
           </div>
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {fields.map((f, i) => {
-              const differs = f.inv && f.cmp && f.inv !== f.cmp;
+              const differs = f.inv && f.cmp && f.inv !== f.cmp && !f.alreadyStored;
               const missing = f.inv && !f.cmp;
               const choice = fieldChoices[f.dbField] || 'cmp';
               return (
@@ -209,6 +221,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                     <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
                       {f.cmp || <span className="text-gray-300">—</span>}
                       {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                      {f.alreadyStored && f.inv && f.cmp && f.inv !== f.cmp && <span className="ml-1 text-xs text-green-600">✓ stored in secondary</span>}
                     </div>
                   </div>
                   {/* Per-row conflict resolution — only shown when both sides have different values */}
@@ -428,6 +441,56 @@ export default function InvoiceSyncTab({ selectedYear }) {
   }, [searchTerm, sortConfig]);
   const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
   const [companySearchModal, setCompanySearchModal] = useState(null); // invoice | null
+  const [subHistoryModal, setSubHistoryModal] = useState(null); // { sub, invoice, companyName, additionLines, onConfirm } | null
+  const [subHistorySelection, setSubHistorySelection] = useState([]);
+
+  // Derive per-item subscription counts from a description+qty and the configured allowed-items list.
+  // Mirrors getCountsForItem (defined inside the render loop) but usable at component scope.
+  const computeItemCounts = (desc, qty, allowedItems) => {
+    const d = desc.toLowerCase();
+    let stands = 0, breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
+    let mappedColumn = null;
+    for (const ai of (allowedItems || [])) {
+      const label = (typeof ai === 'string' ? ai : (ai?.label || '')).trim().toLowerCase();
+      if (label.length > 0 && d.includes(label)) {
+        mappedColumn = typeof ai === 'string' ? null : (ai.column || null);
+        break;
+      }
+    }
+    if (mappedColumn) {
+      switch (mappedColumn) {
+        case 'booth_count':        stands += qty; break;
+        case 'booth_count_double': stands += 2 * qty; break;
+        case 'breakfast_sat':      breakfast_sat += qty; break;
+        case 'breakfast_sun':      breakfast_sun += qty; break;
+        case 'lunch_sat':          lunch_sat += qty; break;
+        case 'lunch_sun':          lunch_sun += qty; break;
+        case 'bbq_sat':            bbq_sat += qty; break;
+      }
+    } else {
+      const isBooth = (d.includes('stand') || d.includes('kraam')) &&
+        !d.includes('bbq') && !d.includes('barbecue') && !d.includes('lunch') &&
+        !d.includes('meal') && !d.includes('maaltijd') && !d.includes('ontbijt');
+      if (isBooth) stands += (d.includes('6x12') || d.includes('6 x 12') || d.includes('dubbele')) ? 2 * qty : qty;
+      if (d.includes('bbq') || d.includes('barbecue')) bbq_sat += qty;
+      if (d.includes('lunch') || d.includes('meal') || d.includes('maaltijd')) lunch_sat += qty;
+      if (d.includes('breakfast') || d.includes('ontbijt')) breakfast_sat += qty;
+    }
+    return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
+  };
+
+  // Parse a history addition line into the subscription counts it contributed.
+  const parseHistoryLineCounts = (line) => {
+    // Per-item format: 'Invoice X : ITEM_NAME xQTY'
+    const m = line.match(/:\s*(.+?)\s+x(\d+)\s*$/i);
+    if (m) {
+      return computeItemCounts(m[1], parseInt(m[2], 10), settings?.invoice_allowed_items);
+    }
+    // Invoice-level format: 'Invoice X: N booth(s)'
+    const b = line.match(/(\d+)\s*booth/i);
+    if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
+    return null;
+  };
   const fileInputRef = useRef(null);
 
   const handleSort = (key) => {
@@ -623,11 +686,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
   };
 
-  const handleStatusChange = async (id, newStatus, companyName = null) => {
+  const handleStatusChange = async (id, newStatus, companyName = null, { skipNotesReset = false, skipSubscriptionUndo = false } = {}) => {
     const inv = invoices.find((i) => i.id === id);
     if (!inv) return;
 
-    if (inv.status === 'approved' && newStatus === 'pending') {
+    if (inv.status === 'approved' && newStatus === 'pending' && !skipSubscriptionUndo) {
       // Prefer the persisted FK; fall back to best-match.
       const undoCompanyId = inv.company_id ||
         findBestCompanyMatch(inv, companies)?.company?.id || null;
@@ -662,6 +725,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
         const lunchSunVal = Math.floor(lunchTotal / 2);
 
         try {
+          const now = new Date();
+          const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+          const removedParts = [
+            (inv.stands_count || 1) + ' booth(s)',
+            breakfastVal > 0 ? breakfastVal + ' breakfast sat' : '',
+            lunchSatVal > 0 ? lunchSatVal + ' lunch sat' : '',
+            bbqVal > 0 ? bbqVal + ' BBQ sat' : '',
+            lunchSunVal > 0 ? lunchSunVal + ' lunch sun' : '',
+          ].filter(Boolean).join(', ');
           const { error } = await updateSubscription(tempSub.id, {
             booth_count: Math.max(0, (tempSub.booth_count || 0) - (inv.stands_count || 1)),
             breakfast_sat: Math.max(0, (tempSub.breakfast_sat || 0) - breakfastVal),
@@ -669,48 +741,147 @@ export default function InvoiceSyncTab({ selectedYear }) {
             bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
             lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
             history: (tempSub.history ? tempSub.history + '\n' : '') +
-              '[Removed: Invoice ' + inv.invoice_number + ']',
+              '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' - ' + removedParts + ']',
           });
           if (error) throw new Error(error);
-          toastSuccess('Invoice contribution removed from subscription.');
         } catch (e) {
           toastError('Failed to update subscription: ' + (e?.message || String(e)));
           return;
         }
       } else {
-        // Sole invoice — offer to delete the whole subscription
-        const yes = await confirm({
-          title: 'Undo Subscription',
-          message:
-            'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
-            (companyName || inv.company_name) +
-            '"?',
-        });
-        if (!yes) return;
-
+        // Sole invoice — check history for multiple additions
         if (undoCompanyId && tempSub) {
+          const additionLines = (tempSub.history || '')
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0 && !l.startsWith('['));
+
+          if (additionLines.length > 1) {
+            // Multiple contributions in history — let user select which to remove
+            await new Promise((resolve) => {
+              setSubHistorySelection(additionLines); // start with all selected
+              setSubHistoryModal({
+                sub: tempSub,
+                invoice: inv,
+                companyName: companyName || inv.company_name,
+                additionLines,
+                onConfirm: async (selected) => {
+                  setSubHistoryModal(null);
+                  const removeAll = selected.length === additionLines.length;
+                  try {
+                    if (removeAll) {
+                      await unsubscribeCompany(tempSub.id);
+                    } else {
+                      // Subtract counts for each selected line
+                      let deltaStands = 0, deltaBreakfastSat = 0, deltaLunchSat = 0,
+                          deltaBbqSat = 0, deltaBreakfastSun = 0, deltaLunchSun = 0;
+                      for (const line of selected) {
+                        const c = parseHistoryLineCounts(line);
+                        if (c) {
+                          deltaStands      += c.stands;
+                          deltaBreakfastSat += c.breakfast_sat;
+                          deltaLunchSat    += c.lunch_sat;
+                          deltaBbqSat      += c.bbq_sat;
+                          deltaBreakfastSun += c.breakfast_sun;
+                          deltaLunchSun    += c.lunch_sun;
+                        }
+                      }
+                      const now = new Date();
+                      const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                      // Preserve full history — mark removed entries in-place so nothing is lost
+                      const newHistory = (tempSub.history || '')
+                        .split('\n')
+                        .map((l) => {
+                          const trimmed = l.trim();
+                          if (!trimmed) return null;
+                          return selected.includes(trimmed)
+                            ? '[Removed on ' + nowStr + ': ' + trimmed + ']'
+                            : l;
+                        })
+                        .filter(Boolean)
+                        .join('\n');
+                      await updateSubscription(tempSub.id, {
+                        booth_count:    Math.max(0, (tempSub.booth_count    || 0) - deltaStands),
+                        breakfast_sat:  Math.max(0, (tempSub.breakfast_sat  || 0) - deltaBreakfastSat),
+                        lunch_sat:      Math.max(0, (tempSub.lunch_sat      || 0) - deltaLunchSat),
+                        bbq_sat:        Math.max(0, (tempSub.bbq_sat        || 0) - deltaBbqSat),
+                        breakfast_sun:  Math.max(0, (tempSub.breakfast_sun  || 0) - deltaBreakfastSun),
+                        lunch_sun:      Math.max(0, (tempSub.lunch_sun      || 0) - deltaLunchSun),
+                        history: newHistory,
+                      });
+                    }
+                  } catch (e) {
+                    toastError('Failed to update subscription: ' + (e?.message || String(e)));
+                    resolve();
+                    return;
+                  }
+                  resolve();
+                },
+                onCancel: () => {
+                  setSubHistoryModal(null);
+                  resolve();
+                },
+              });
+            });
+            return; // the modal's onConfirm path already resolved; skip default status change
+          }
+
+          // Single addition — existing simple confirm
+          const yes = await confirm({
+            title: 'Undo Subscription',
+            message:
+              'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
+              (companyName || inv.company_name) + '"?',
+          });
+          if (!yes) return;
           try {
             await unsubscribeCompany(tempSub.id);
             toastSuccess('Subscription removed.');
           } catch (e) {
             console.error(e);
           }
+        } else {
+          // No subscription found — just revert invoice status
+          const yes = await confirm({
+            title: 'Undo Invoice',
+            message: 'Revert this invoice to pending?',
+          });
+          if (!yes) return;
         }
       }
     }
 
     try {
+      // Only reset line item statuses when reverting to pending (not when called from handleItemAction
+      // which already saved the correct per-item notes before calling us)
+      let resetNotes = null;
+      if (newStatus === 'pending' && !skipNotesReset) {
+        let notes = {};
+        try { notes = JSON.parse(inv.notes || '{}'); } catch (_) {}
+        if (notes.line_items) {
+          notes.line_items = notes.line_items.map((item) => ({ ...item, status: 'pending' }));
+          resetNotes = JSON.stringify(notes);
+        }
+      }
+
+      const updatePayload = { status: newStatus, updated_at: new Date().toISOString() };
+      if (resetNotes !== null) updatePayload.notes = resetNotes;
+
       const { error } = await supabase
         .from('staged_invoices')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update(updatePayload)
         .eq('id', id);
 
       if (error) throw error;
 
       setInvoices((prev) =>
-        prev.map((invItem) => (invItem.id === id ? { ...invItem, status: newStatus } : invItem)),
+        prev.map((invItem) => {
+          if (invItem.id !== id) return invItem;
+          const next = { ...invItem, status: newStatus };
+          if (resetNotes !== null) next.notes = resetNotes;
+          return next;
+        }),
       );
-      toastSuccess('Invoice status updated');
     } catch (err) {
       console.error('Error updating status:', err);
       toastError(err?.message || 'Unknown error occurred');
@@ -718,7 +889,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   const handleDeleteInvoice = async (invoice) => {
-    if (invoice.status === 'approved') {
+    if (invoice.status === 'approved' || invoice.status === 'partially_approved') {
       toastError('Cannot delete an invoice that is already subscribed.');
       return;
     }
@@ -731,7 +902,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
       const { error } = await supabase.from('staged_invoices').delete().eq('id', invoice.id);
       if (error) throw error;
       setInvoices((prev) => prev.filter((inv) => inv.id !== invoice.id));
-      toastSuccess('Invoice deleted successfully.');
     } catch (err) {
       console.error('Error deleting invoice:', err);
       toastError(err?.message || 'Failed to delete invoice.');
@@ -753,8 +923,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
     try { parsedInvNotes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
     const customerNote = parsedInvNotes.notes || '';
     const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
+    const invNow = new Date();
     const invoiceNote =
-      'Invoice ' + invoice.invoice_number +
+      'Invoice ' + invoice.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
       ': ' + (invoice.stands_count || 1) + ' booth(s)' +
       (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '');
 
@@ -892,7 +1063,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
 
       if (Object.keys(patch).length > 0) {
-        await supabase.from('companies').update(patch).eq('id', company.id);
+        // Deduplicate: if a _2 field ends up identical to its primary, clear the secondary.
+        const deduped = { ...patch };
+        const norm = (v) => (v || '').toLowerCase().trim();
+        const effectiveEmail  = norm(deduped.contact_email  ?? company.contact_email  ?? company.email);
+        const effectivePhone  = (deduped.contact_phone  ?? company.contact_phone  ?? company.phone  ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
+        const effectiveName   = norm(deduped.contact_name   ?? company.contact_name);
+        if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
+        if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
+        if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
+        await supabase.from('companies').update(deduped).eq('id', company.id);
       }
 
       toastSuccess('Match confirmed — use the approve button to sync.');
@@ -1091,6 +1271,74 @@ export default function InvoiceSyncTab({ selectedYear }) {
           }}
           onCancel={() => setCompanySearchModal(null)}
         />
+      )}
+
+      {/* Subscription History Selection Modal */}
+      {subHistoryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Remove Subscription Contributions</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Select which additions to remove for <strong>{subHistoryModal.companyName}</strong>.
+                Removing all entries will delete the subscription.
+              </p>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+              {/* Select / deselect all */}
+              <label className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer border border-gray-200 bg-gray-50">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  checked={subHistorySelection.length === subHistoryModal.additionLines.length}
+                  onChange={(e) =>
+                    setSubHistorySelection(
+                      e.target.checked ? [...subHistoryModal.additionLines] : [],
+                    )
+                  }
+                />
+                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.additionLines.length})</span>
+              </label>
+              {subHistoryModal.additionLines.map((line, idx) => (
+                <label key={idx} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                    checked={subHistorySelection.includes(line)}
+                    onChange={(e) =>
+                      setSubHistorySelection((prev) =>
+                        e.target.checked ? [...prev, line] : prev.filter((l) => l !== line),
+                      )
+                    }
+                  />
+                  <span className="text-sm text-gray-800">{line}</span>
+                </label>
+              ))}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={subHistoryModal.onCancel}
+                className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={subHistorySelection.length === 0}
+                onClick={() => subHistoryModal.onConfirm(subHistorySelection)}
+                className={
+                  'px-4 py-2 rounded font-medium text-sm ' +
+                  (subHistorySelection.length === subHistoryModal.additionLines.length
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-amber-500 hover:bg-amber-600 text-white')
+                }
+              >
+                {subHistorySelection.length === subHistoryModal.additionLines.length
+                  ? 'Delete subscription'
+                  : `Remove ${subHistorySelection.length} selected`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Match Verification Modal */}
@@ -1347,7 +1595,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           setInvoices((prev) =>
                             prev.map((inv) => (inv.id === editingInvoice.id ? editingInvoice : inv)),
                           );
-                          toastSuccess('Invoice updated');
                           setEditingInvoice(null);
                         } catch (err) {
                           toastError(err.message);
@@ -1433,30 +1680,99 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const desc = ((item.item || item.description) || '').toLowerCase();
                     let stands = 0;
                     let breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
-                    // only count booths if the description clearly refers to a stand or kraam
-                    // and does *not* appear to be a meal or BBQ line (some invoices have
-                    // descriptions like "BBQ stand" which otherwise would count as a
-                    // booth). we guard against that by excluding keywords.
-                    const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
-                                   !desc.includes('bbq') && !desc.includes('barbecue') &&
-                                   !desc.includes('lunch') && !desc.includes('meal');
-                    if (isBooth) {
-                      if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
-                        stands += 2 * qty;
-                      } else {
-                        stands += 1 * qty;
+
+                    // Resolve the column from the configured allowed-items list in settings.
+                    // Each entry is {label: string, column: string}; old plain-string entries
+                    // have no column and fall through to keyword detection below.
+                    const allowedItems = settings?.invoice_allowed_items || [];
+                    let mappedColumn = null;
+                    for (const ai of allowedItems) {
+                      const label = (typeof ai === 'string' ? ai : (ai?.label || '')).trim().toLowerCase();
+                      if (label.length > 0 && desc.includes(label)) {
+                        mappedColumn = typeof ai === 'string' ? null : (ai.column || null);
+                        break;
                       }
                     }
-                    if (desc.includes('bbq')) bbq_sat += qty;
-                    if (desc.includes('lunch') || desc.includes('meal')) lunch_sat += qty;
-                    if (desc.includes('breakfast')) breakfast_sat += qty;
+
+                    if (mappedColumn) {
+                      switch (mappedColumn) {
+                        case 'booth_count':        stands += qty; break;
+                        case 'booth_count_double': stands += 2 * qty; break;
+                        case 'breakfast_sat':      breakfast_sat += qty; break;
+                        case 'breakfast_sun':      breakfast_sun += qty; break;
+                        case 'lunch_sat':          lunch_sat += qty; break;
+                        case 'lunch_sun':          lunch_sun += qty; break;
+                        case 'bbq_sat':            bbq_sat += qty; break;
+                        // 'ignore': nothing to increment
+                      }
+                    } else {
+                      // Fallback: keyword-based detection for plain-string or unclassified items
+                      const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
+                                     !desc.includes('bbq') && !desc.includes('barbecue') &&
+                                     !desc.includes('lunch') && !desc.includes('meal') &&
+                                     !desc.includes('maaltijd') && !desc.includes('ontbijt');
+                      if (isBooth) {
+                        if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
+                          stands += 2 * qty;
+                        } else {
+                          stands += 1 * qty;
+                        }
+                      }
+                      if (desc.includes('bbq') || desc.includes('barbecue')) bbq_sat += qty;
+                      if (desc.includes('lunch') || desc.includes('meal') || desc.includes('maaltijd')) lunch_sat += qty;
+                      if (desc.includes('breakfast') || desc.includes('ontbijt')) breakfast_sat += qty;
+                    }
                     // sunday meals currently unused; could add logic if needed
                     return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
                   };
 
                   // actions for individual line items
                   const handleItemAction = async (idx, action) => {
-                    const items = parsedData.line_items || [];
+                    // Deep copy so mutations don't corrupt the shared parsedData reference
+                    const items = JSON.parse(JSON.stringify(parsedData.line_items || []));
+                    const oldStatus = items[idx]?.status || 'pending';
+
+                    // Helper: subtract a line item's counts from the existing subscription
+                    const subtractItemFromSubscription = async (item) => {
+                      if (!inv.company_id) return;
+                      const counts = getCountsForItem(item);
+                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      if (!existing) return;
+                      try {
+                        const now = new Date();
+                        const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const removedCounts = [
+                          counts.stands > 0 ? counts.stands + ' booth(s)' : '',
+                          counts.breakfast_sat > 0 ? counts.breakfast_sat + ' breakfast sat' : '',
+                          counts.lunch_sat > 0 ? counts.lunch_sat + ' lunch sat' : '',
+                          counts.bbq_sat > 0 ? counts.bbq_sat + ' BBQ sat' : '',
+                          counts.breakfast_sun > 0 ? counts.breakfast_sun + ' breakfast sun' : '',
+                          counts.lunch_sun > 0 ? counts.lunch_sun + ' lunch sun' : '',
+                        ].filter(Boolean).join(', ');
+                        await updateSubscription(existing.id, {
+                          booth_count: Math.max(0, (existing.booth_count || 0) - counts.stands),
+                          breakfast_sat: Math.max(0, (existing.breakfast_sat || 0) - counts.breakfast_sat),
+                          lunch_sat: Math.max(0, (existing.lunch_sat || 0) - counts.lunch_sat),
+                          bbq_sat: Math.max(0, (existing.bbq_sat || 0) - counts.bbq_sat),
+                          breakfast_sun: Math.max(0, (existing.breakfast_sun || 0) - counts.breakfast_sun),
+                          lunch_sun: Math.max(0, (existing.lunch_sun || 0) - counts.lunch_sun),
+                          history: (existing.history ? existing.history + '\n' : '') +
+                            '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' line item ' + (item.item || item.description) + (removedCounts ? ' - ' + removedCounts : '') + ']',
+                        });
+                      } catch (e) {
+                        toastError('Failed to revert subscription: ' + (e?.message || e));
+                      }
+                    };
+
+                    // undoing a previous approval/rejection
+                    if (action === 'pending' && oldStatus === 'approved' && inv.company_id) {
+                      await subtractItemFromSubscription(items[idx]);
+                    }
+
+                    // deleting a previously-approved item — same as undo for the subscription
+                    if (action === 'delete' && oldStatus === 'approved' && inv.company_id) {
+                      await subtractItemFromSubscription(items[idx]);
+                    }
 
                     // subscription update when approving
                     if (action === 'approved' && inv.company_id) {
@@ -1464,28 +1780,54 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const counts = getCountsForItem(item);
                       const invoiceArea = item.area || '';
                       const customerNote = parsedData.notes || '';
+                      const invNow = new Date();
                       const invoiceNote =
-                        'Invoice ' + inv.invoice_number + ' : ' + (item.item || item.description) +
+                        'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+                        ': ' + (item.item || item.description) +
                         (item.quantity ? ' x' + item.quantity : '');
 
                       const existing = subscriptions.find((s) => s.company_id === inv.company_id);
                       if (existing) {
-                        const mergedArea = existing.area || invoiceArea;
-                        const mergedHistory = existing.history
-                          ? existing.history + '\n' + invoiceNote
-                          : invoiceNote;
-
-                        await updateSubscription(existing.id, {
-                          booth_count: (existing.booth_count || 0) + counts.stands,
-                          area: mergedArea,
-                          notes: existing.notes || customerNote,
-                          history: mergedHistory,
-                          breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
-                          lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
-                          bbq_sat: (existing.bbq_sat || 0) + counts.bbq_sat,
-                          breakfast_sun: (existing.breakfast_sun || 0) + counts.breakfast_sun,
-                          lunch_sun: (existing.lunch_sun || 0) + counts.lunch_sun,
+                        const doMerge = await confirm({
+                          title: 'Subscription already exists',
+                          message:
+                            'A subscription already exists for ' + selectedYear +
+                            ' (booths: ' + existing.booth_count + ').\n\n' +
+                            'Merge will add this item\'s counts to the existing subscription.\n' +
+                            'Replace will overwrite it completely with this item.',
+                          confirmText: 'Merge',
+                          cancelText: 'Replace',
                         });
+
+                        if (doMerge) {
+                          const mergedArea = existing.area || invoiceArea;
+                          const mergedHistory = existing.history
+                            ? existing.history + '\n' + invoiceNote
+                            : invoiceNote;
+                          await updateSubscription(existing.id, {
+                            booth_count: (existing.booth_count || 0) + counts.stands,
+                            area: mergedArea,
+                            notes: existing.notes || customerNote,
+                            history: mergedHistory,
+                            breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
+                            lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
+                            bbq_sat: (existing.bbq_sat || 0) + counts.bbq_sat,
+                            breakfast_sun: (existing.breakfast_sun || 0) + counts.breakfast_sun,
+                            lunch_sun: (existing.lunch_sun || 0) + counts.lunch_sun,
+                          });
+                        } else {
+                          await updateSubscription(existing.id, {
+                            booth_count: counts.stands,
+                            area: invoiceArea,
+                            notes: customerNote,
+                            history: invoiceNote,
+                            breakfast_sat: counts.breakfast_sat,
+                            lunch_sat: counts.lunch_sat,
+                            bbq_sat: counts.bbq_sat,
+                            breakfast_sun: counts.breakfast_sun,
+                            lunch_sun: counts.lunch_sun,
+                          });
+                        }
                       } else {
                         await subscribeCompany(inv.company_id, {
                           booth_count: counts.stands,
@@ -1511,12 +1853,44 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const newNotes = { ...parsedData, line_items: items };
                     const ok = await saveNotes(newNotes);
                     if (ok) {
-                      let msg;
-                      if (action === 'approved') msg = 'Line item approved';
-                      else if (action === 'rejected') msg = 'Line item rejected';
-                      else if (action === 'delete') msg = 'Line item deleted';
-                      else msg = 'Line item updated';
-                      toastSuccess(msg);
+
+                      // Compute the correct invoice-level status from the updated item list.
+                      // This ONLY updates the status column — notes and subscription are already
+                      // handled above by saveNotes / subtractItemFromSubscription.
+                      const setInvoiceStatusOnly = async (newStatus) => {
+                        try {
+                          await supabase
+                            .from('staged_invoices')
+                            .update({ status: newStatus, updated_at: new Date().toISOString() })
+                            .eq('id', inv.id);
+                          // use functional updater so notes from the saveNotes call above are preserved
+                          setInvoices((prev) =>
+                            prev.map((i) =>
+                              i.id === inv.id ? { ...i, status: newStatus } : i,
+                            ),
+                          );
+                        } catch (e) {
+                          console.error('Failed to update invoice status:', e);
+                        }
+                      };
+
+                      const allResolved =
+                        items.length > 0 &&
+                        items.every((it) => it.status === 'approved' || it.status === 'rejected');
+                      const allApproved = allResolved && items.every((it) => it.status === 'approved');
+
+                      if (allResolved) {
+                        const targetStatus = allApproved ? 'approved' : 'partially_approved';
+                        if (inv.status !== targetStatus) {
+                          await setInvoiceStatusOnly(targetStatus);
+                        }
+                      } else if (
+                        inv.status === 'approved' ||
+                        inv.status === 'partially_approved'
+                      ) {
+                        // Some items are no longer resolved — drop back to pending
+                        await setInvoiceStatusOnly('pending');
+                      }
                     }
                   };
 
@@ -1594,13 +1968,22 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               {lineItems.map((item, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-center justify-between text-sm text-indigo-700 font-medium"
+                                  className={
+                                    'flex items-center justify-between text-sm font-medium rounded px-1 ' +
+                                    (item.status === 'approved'
+                                      ? 'bg-green-50 text-green-700'
+                                      : item.status === 'rejected'
+                                        ? 'bg-red-50 text-gray-400'
+                                        : 'text-indigo-700')
+                                  }
                                 >
-                                  <span className="truncate flex items-center gap-2">
-                                    <span>{item.item || item.description}</span>
-                                    <span className="text-xs text-gray-500">x{item.quantity}</span>
+                                  <span className="truncate flex items-center gap-2 mr-3">
+                                    <span className={item.status === 'rejected' ? 'line-through' : ''}>
+                                      {item.item || item.description}
+                                    </span>
+                                    <span className="text-xs text-gray-400">x{item.quantity}</span>
                                   </span>
-                                  <div className="flex items-center space-x-1">
+                                  <div className="flex items-center space-x-1 shrink-0">
                                     {['approved','rejected','delete'].map((act, aidx) => {
                                       const icons = { approved: mdiCheck, rejected: mdiCancel, delete: mdiDelete };
                                       const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
@@ -1610,6 +1993,23 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                                        rejected: 'Reject item',
                                                        delete: 'Delete item' };
                                       const disabled = !inv.company_id;
+                                      // Replace the matching action button with undo when that status is active
+                                      if (item.status === act && act !== 'delete') {
+                                        return (
+                                          <button
+                                            key={aidx}
+                                            onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'pending'); }}
+                                            className={
+                                              act === 'approved'
+                                                ? 'p-1 rounded bg-green-600 text-white hover:bg-amber-500'
+                                                : 'p-1 rounded bg-red-500 text-white hover:bg-amber-500'
+                                            }
+                                            title="Undo change"
+                                          >
+                                            <Icon path={mdiArrowULeftTop} size={0.6} />
+                                          </button>
+                                        );
+                                      }
                                       return (
                                         <button
                                           key={aidx}
@@ -1658,16 +2058,20 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               'px-2 py-1 rounded text-xs font-semibold ' +
                               (inv.status === 'approved'
                                 ? 'bg-green-100 text-green-700 border border-green-200'
-                                : inv.status === 'rejected'
-                                  ? 'bg-red-100 text-red-700 border border-red-200'
-                                  : 'bg-yellow-100 text-yellow-700 border border-yellow-300')
+                                : inv.status === 'partially_approved'
+                                  ? 'bg-teal-100 text-teal-700 border border-teal-200'
+                                  : inv.status === 'rejected'
+                                    ? 'bg-red-100 text-red-700 border border-red-200'
+                                    : 'bg-yellow-100 text-yellow-700 border border-yellow-300')
                             }
                           >
                             {inv.status === 'approved'
                               ? 'SUBSCRIBED'
-                              : inv.status
-                                ? inv.status.toUpperCase()
-                                : 'PENDING'}
+                              : inv.status === 'partially_approved'
+                                ? 'PARTIAL'
+                                : inv.status
+                                  ? inv.status.toUpperCase()
+                                  : 'PENDING'}
                           </span>
                         </td>
                       </tr>
