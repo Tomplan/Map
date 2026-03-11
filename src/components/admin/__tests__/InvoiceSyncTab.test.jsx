@@ -118,7 +118,7 @@ test('creating a company from an invoice seeds additional fields', async () => {
   approveIcons = await screen.findAllByTitle('Mark approved');
   expect(approveIcons.length).toBeGreaterThanOrEqual(2);
 
-  // click first item's approve button
+  // click first item's approve button (first item has numerical quantity)
   userEvent.click(approveIcons[0]);
   await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
 
@@ -136,11 +136,39 @@ test('creating a company from an invoice seeds additional fields', async () => {
   const lastArg = updateSpy.mock.calls[updateSpy.mock.calls.length - 1][1];
   expect(lastArg.booth_count).toBe(1);
 
+  // simulate approval of a line with a malformed quantity string
+  const brokenInvoice = JSON.parse(JSON.stringify(fakeInvoice));
+  brokenInvoice.notes = JSON.stringify({
+    ...JSON.parse(brokenInvoice.notes),
+    line_items: [{ item: 'Test stand', quantity: '1 d to many' }],
+  });
+  mockOrder.mockResolvedValue({ data: [brokenInvoice], error: null });
+  render(<InvoiceSyncTab selectedYear={2026} />);
+  const brokenApprove = await screen.findByTitle('Mark approved');
+  userEvent.click(brokenApprove);
+  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
+  // verify booth_count uses default 1 rather than NaN or huge value
+  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 1 }));
+
   // expanding and other expectations remain unchanged
   const invoiceRow = screen.getByText(/TestCo/).closest('tr');
   userEvent.click(invoiceRow);
   const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
   expect(approveIconsExpanded.length).toEqual(approveIcons.length);
+
+  // **new scenario**: invoice containing only a BBQ item
+  const bbqOnly = JSON.parse(JSON.stringify(fakeInvoice));
+  bbqOnly.notes = JSON.stringify({
+    ...JSON.parse(bbqOnly.notes),
+    line_items: [{ item: 'BBQ', quantity: 3 }],
+  });
+  mockOrder.mockResolvedValue({ data: [bbqOnly], error: null });
+  render(<InvoiceSyncTab selectedYear={2026} />);
+  const bbqApprove = await screen.findByTitle('Mark approved');
+  userEvent.click(bbqApprove);
+  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
+  // count should be zero because bbq is not a booth
+  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 0 }));
 
   // there should be no global sync/reject/delete buttons left in main row
   expect(screen.queryByTitle('Sync to subscription')).not.toBeInTheDocument();
