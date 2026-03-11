@@ -983,6 +983,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   // ─── Sync helpers ─────────────────────────────────────────────────────────────
 
+  // Fetch the freshest subscription for a company+year directly from Supabase.
+  // Always use this instead of reading from the `subscriptions` React state before
+  // a mutation — the cached state can lag behind reality when multiple items are
+  // approved/undone in quick succession.
+  const fetchFreshSubscription = async (companyId) => {
+    const { data, error } = await supabase
+      .from('event_subscriptions')
+      .select('*')
+      .eq('company_id', companyId)
+      .eq('event_year', selectedYear)
+      .maybeSingle();
+    if (error) throw error;
+    return data || null;
+  };
+
   // Core subscription creation — called both from modal confirm and direct create path.
   const doSync = async (invoice, companyId) => {
     const breakfastVal = invoice.breakfast_sat ?? invoice.breakfast ?? 0;
@@ -1817,7 +1832,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const subtractItemFromSubscription = async (item) => {
                       if (!inv.company_id) return;
                       const counts = getCountsForItem(item);
-                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      // Always fetch fresh from DB — React state may be stale when items
+                      // are approved/undone rapidly one after another.
+                      const existing = await fetchFreshSubscription(inv.company_id);
                       if (!existing) return;
                       try {
                         const now = new Date();
@@ -1893,7 +1910,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         ': ' + (item.item || item.description) +
                         (item.quantity ? ' x' + item.quantity : '');
 
-                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      // Always fetch fresh from DB to avoid stale-read multiplication
+                      // when multiple items are approved in rapid succession.
+                      const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
                         const doMerge = await confirm({
                           title: 'Subscription already exists',
