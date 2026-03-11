@@ -104,6 +104,8 @@ test('creating a company from an invoice seeds additional fields', async () => {
   // there should be no global sync/reject/delete buttons left in main row
   expect(screen.queryByTitle('Sync to subscription')).not.toBeInTheDocument();
   expect(screen.queryByTitle('Reject')).not.toBeInTheDocument();
+  // header cell 'Actions' is gone
+  expect(screen.queryByText('Actions')).not.toBeInTheDocument();
 
   // CompanySearchModal should appear with create new button
   const createBtn = await screen.findByRole('button', { name: /Create new company/i });

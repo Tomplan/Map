@@ -1374,7 +1374,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Status {getSortIcon('status')}
                   </th>
-                  <th className="px-4 py-3 text-right border-b border-gray-200 w-[110px] whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
