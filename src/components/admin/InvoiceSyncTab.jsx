@@ -1388,6 +1388,39 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     parsedData = JSON.parse(inv.notes || '{}');
                   } catch (e) {}
 
+                  // helper to persist notes changes and update local cache
+                  const saveNotes = async (newNotes) => {
+                    try {
+                      const { error } = await supabase
+                        .from('staged_invoices')
+                        .update({ notes: JSON.stringify(newNotes) })
+                        .eq('id', inv.id);
+                      if (error) throw error;
+                      setInvoices((prev) =>
+                        prev.map((i) => (i.id === inv.id ? { ...i, notes: JSON.stringify(newNotes) } : i)),
+                      );
+                      return true;
+                    } catch (err) {
+                      toastError('Failed to update invoice: ' + (err.message || err));
+                      return false;
+                    }
+                  };
+
+                  // actions for individual line items
+                  const handleItemAction = async (idx, action) => {
+                    const items = parsedData.line_items || [];
+                    if (action === 'delete') {
+                      items.splice(idx, 1);
+                    } else {
+                      items[idx] = { ...items[idx], status: action };
+                    }
+                    const newNotes = { ...parsedData, line_items: items };
+                    const ok = await saveNotes(newNotes);
+                    if (ok) {
+                      toastSuccess(`Line item ${action}d`);
+                    }
+                  };
+
                   // Support old format strings vs new JSON payload fallback
                   const rawNotesFallback =
                     typeof inv.notes === 'string' && !inv.notes.startsWith('{') ? inv.notes : '';
@@ -1456,14 +1489,53 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           {parsedData.date || 'N/A'}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top">
-                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap block">
-                            {firstItem}{' '}
-                            {hasMore && (
-                              <span className="text-xs text-gray-500 font-normal">
-                                (+{lineItems.length - 1} more)
-                              </span>
-                            )}
-                          </span>
+                          {/* show every item inline with tiny controls so users can act without expanding */}
+                          {lineItems && lineItems.length > 0 ? (
+                            <div className="flex flex-col space-y-1">
+                              {lineItems.map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between text-sm text-indigo-700 font-medium"
+                                >
+                                  <span className="truncate">
+                                    {item.item || item.description}
+                                  </span>
+                                  <div className="flex items-center space-x-1">
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'approved'); }}
+                                      className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
+                                      title="Mark approved"
+                                    >
+                                      <Icon path={mdiCheck} size={0.6} />
+                                    </button>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'rejected'); }}
+                                      className="p-1 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50"
+                                      title="Reject item"
+                                    >
+                                      <Icon path={mdiCancel} size={0.6} />
+                                    </button>
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'delete'); }}
+                                      className="p-1 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
+                                      title="Delete item"
+                                    >
+                                      <Icon path={mdiDelete} size={0.6} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-indigo-700 font-medium whitespace-nowrap block">
+                              {firstItem}{' '}
+                              {hasMore && (
+                                <span className="text-xs text-gray-500 font-normal">
+                                  (+{lineItems.length - 1} more)
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top min-w-[120px]">
                           {(areaString || inv.area_preference) ? (
@@ -1592,6 +1664,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                           <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider text-right border-l border-gray-100">
                                             Quantity
                                           </th>
+                                          <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider text-center border-l border-gray-100">
+                                            Actions
+                                          </th>
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-100">
@@ -1605,6 +1680,31 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                             </td>
                                             <td className="py-2.5 px-3 text-right font-bold text-indigo-700 border-l border-gray-50 bg-indigo-50/20">
                                               {item.quantity}
+                                            </td>
+                                            <td className="py-2.5 px-3 text-center border-l border-gray-50">
+                                              <div className="flex items-center justify-center space-x-1">
+                                                <button
+                                                  onClick={() => handleItemAction(idx, 'approved')}
+                                                  className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
+                                                  title="Mark approved"
+                                                >
+                                                  <Icon path={mdiCheck} size={0.6} />
+                                                </button>
+                                                <button
+                                                  onClick={() => handleItemAction(idx, 'rejected')}
+                                                  className="p-1 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50"
+                                                  title="Reject item"
+                                                >
+                                                  <Icon path={mdiCancel} size={0.6} />
+                                                </button>
+                                                <button
+                                                  onClick={() => handleItemAction(idx, 'delete')}
+                                                  className="p-1 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
+                                                  title="Delete item"
+                                                >
+                                                  <Icon path={mdiDelete} size={0.6} />
+                                                </button>
+                                              </div>
                                             </td>
                                           </tr>
                                         ))}

@@ -28,6 +28,10 @@ const fakeInvoice = {
     country: 'NL',
     vat_number: 'NL123',
     kvk_number: '98765432',
+    line_items: [
+      { item: 'Stand 6x6', quantity: 1 },
+      { description: 'Lunch tickets', quantity: 5 },
+    ],
   }),
 };
 
@@ -83,6 +87,17 @@ test('creating a company from an invoice seeds additional fields', async () => {
   // wait for invoice row to appear and then click the "No match" button
   const verifyButton = await screen.findByRole('button', { name: /No match/i });
   userEvent.click(verifyButton);
+
+  // in main row itself we should now see per-item action icons
+  const approveIcons = await screen.findAllByTitle('Mark approved');
+  expect(approveIcons.length).toBeGreaterThanOrEqual(2);
+
+  // we can still expand, but it's no longer necessary to reach the buttons
+  // (expansion testing kept if desired)
+  const invoiceRow = screen.getByText(/TestCo/).closest('tr');
+  userEvent.click(invoiceRow);
+  const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
+  expect(approveIconsExpanded.length).toBeGreaterThanOrEqual(2);
 
   // CompanySearchModal should appear with create new button
   const createBtn = await screen.findByRole('button', { name: /Create new company/i });
