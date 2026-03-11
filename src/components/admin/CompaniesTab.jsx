@@ -295,9 +295,21 @@ export default function CompaniesTab() {
     }
     allItems.push(...companies);
 
-    const filtered = searchTerm
+    let filtered = searchTerm
       ? allItems.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()))
       : allItems;
+
+    // make sure the item we're currently editing stays visible even if the
+    // user has typed a search term that would exclude it. without this the
+    // detail pane disappears in the middle of editing when the name no longer
+    // matches the filter, which causes the cursor to vanish.
+    if (editingId) {
+      const stillThere = filtered.some((i) => i.id === editingId);
+      if (!stillThere) {
+        const editItem = allItems.find((i) => i.id === editingId);
+        if (editItem) filtered = [...filtered, editItem];
+      }
+    }
 
     return [...filtered].sort((a, b) => {
       if (a.isOrganization) return -1;
@@ -305,7 +317,7 @@ export default function CompaniesTab() {
       const cmp = (a.name || '').localeCompare(b.name || '');
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [organizationProfile, companies, searchTerm, sortDir]);
+  }, [organizationProfile, companies, searchTerm, sortDir, editingId]);
 
   // debug: trace when companies or filtered items change
 
@@ -796,42 +808,79 @@ export default function CompaniesTab() {
                     ? <a href={`mailto:${item.email}`} className="text-blue-600 hover:underline break-all">{item.email}</a>
                     : dash}
                 </Row>
-                {(item.contact_name || item.contact_email || item.contact_phone) && (
-                  <div className="flex items-center gap-2 pt-3 pb-1">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
-                  </div>
-                )}
-                <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name}>
-                  {item.contact_name}
-                </Row>
-                <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email}>
-                  {item.contact_email
-                    ? <a href={`mailto:${item.contact_email}`} className="text-blue-600 hover:underline break-all">{item.contact_email}</a>
-                    : dash}
-                </Row>
-                <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone}>
-                  {item.contact_phone
-                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
-                    : dash}
-                </Row>
-                {(item.contact_name_2 || item.contact_email_2 || item.contact_phone_2) && (
-                  <div className="flex items-center gap-2 pt-3 pb-1">
-                    <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
-                  </div>
-                )}
-                <Row lbl="Contact 2" hidden={!item.contact_name_2}>
-                  {item.contact_name_2}
-                </Row>
-                <Row lbl="Email 2" hidden={!item.contact_email_2}>
-                  {item.contact_email_2
-                    ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
-                    : dash}
-                </Row>
-                <Row lbl="Phone 2" hidden={!item.contact_phone_2}>
-                  {item.contact_phone_2
-                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
-                    : dash}
-                </Row>
+                {(() => {
+                  // Only show the billing contact block if there is at least one
+                  // billing field *and* it isn't just a copy of the main contact
+                  const hasBilling = item.contact_name || item.contact_email || item.contact_phone;
+                  const isDuplicateBilling =
+                    (!item.contact_name || item.contact_name === item.contact) &&
+                    (!item.contact_email || item.contact_email === item.email) &&
+                    (!item.contact_phone || item.contact_phone === item.phone);
+                  return hasBilling && !isDuplicateBilling ? (
+                    <div className="flex items-center gap-2 pt-3 pb-1">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                    </div>
+                  ) : null;
+                })()}
+                {(() => {
+                  // determine whether billing block should be shown (same logic as
+                  // heading above)
+                  const hasBilling = item.contact_name || item.contact_email || item.contact_phone;
+                  const isDuplicateBilling =
+                    (!item.contact_name || item.contact_name === item.contact) &&
+                    (!item.contact_email || item.contact_email === item.email) &&
+                    (!item.contact_phone || item.contact_phone === item.phone);
+                  const showBilling = hasBilling && !isDuplicateBilling;
+
+                  if (!showBilling) return null;
+                  return (
+                    <>
+                      <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name}>
+                        {item.contact_name}
+                      </Row>
+                      <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email}>
+                        {item.contact_email
+                          ? <a href={`mailto:${item.contact_email}`} className="text-blue-600 hover:underline break-all">{item.contact_email}</a>
+                          : dash}
+                      </Row>
+                      <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone}>
+                        {item.contact_phone
+                          ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
+                          : dash}
+                      </Row>
+                    </>
+                  );
+                })()}
+                {(() => {
+                  // for billing 2 we only show if there's data and it's not an exact
+                  // duplicate of the first billing contact block
+                  const hasB2 = item.contact_name_2 || item.contact_email_2 || item.contact_phone_2;
+                  const isDup2 =
+                    (!item.contact_name_2 || item.contact_name_2 === item.contact_name) &&
+                    (!item.contact_email_2 || item.contact_email_2 === item.contact_email) &&
+                    (!item.contact_phone_2 || item.contact_phone_2 === item.contact_phone);
+                  if (!hasB2 || isDup2) return null;
+                  return (
+                    <>
+                      <div className="flex items-center gap-2 pt-3 pb-1">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                      </div>
+                      <Row lbl="Contact 2" hidden={!item.contact_name_2}>
+                        {item.contact_name_2}
+                      </Row>
+                      <Row lbl="Email 2" hidden={!item.contact_email_2}>
+                        {item.contact_email_2
+                          ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
+                          : dash}
+                      </Row>
+                      <Row lbl="Phone 2" hidden={!item.contact_phone_2}>
+                        {item.contact_phone_2
+                          ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
+                          : dash}
+                      </Row>
+                    </>
+                  );
+                })()}
                 <Row lbl={translateSafe('companies.table.vatNumber')}>{item.vat_number || dash}</Row>
                 <Row lbl={translateSafe('companies.table.kvkNumber')}>{item.kvk_number || dash}</Row>
                 <Row lbl={translateSafe('companies.table.address')}>

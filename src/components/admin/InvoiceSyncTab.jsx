@@ -406,6 +406,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
+  const STATE_KEY = 'invoiceSyncState';
+
+  // restore previous state from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STATE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.searchTerm) setSearchTerm(parsed.searchTerm);
+        if (parsed.sortConfig) setSortConfig(parsed.sortConfig);
+      }
+    } catch (_) {}
+  }, []);
+
+  // persist state changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ searchTerm, sortConfig }));
+    } catch (_) {}
+  }, [searchTerm, sortConfig]);
   const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
   const [companySearchModal, setCompanySearchModal] = useState(null); // invoice | null
   const fileInputRef = useRef(null);
@@ -1023,10 +1043,44 @@ export default function InvoiceSyncTab({ selectedYear }) {
             setVerifyModal({ invoice: inv, company });
           }}
           onCreateNew={async () => {
+            // When the user opts to create a new company from an invoice we try to
+            // seed as many fields as possible from the parsed invoice data. This
+            // mirrors the "fill empty fields" behaviour used when matching an
+            // existing company so the newly created record isn't just a name/phone
+            // stub.
             const inv = companySearchModal;
             setCompanySearchModal(null);
             try {
-              const { data: newCo, error: ce } = await createCompany({ name: inv.company_name, phone: inv.phone || '', email: inv.email || '' });
+              // parse the JSON blob stored on the invoice and backfill from the
+              // legacy client_block if needed (same logic as in handleConfirmMatch).
+              let parsed = {};
+              try { parsed = JSON.parse(inv.notes || '{}'); } catch (_) {}
+              const hasStoredFields = parsed.contact_name || parsed.contact_email || parsed.contact_phone ||
+                                      parsed.address_line1 || parsed.postal_code || parsed.vat_number;
+              if (!hasStoredFields && Array.isArray(parsed.client_block) && parsed.client_block.length > 1) {
+                Object.assign(parsed, extractFieldsFromBlock(parsed.client_block));
+              }
+
+              const payload = {
+                name: inv.company_name,
+                phone: inv.phone || '',
+                email: inv.email || '',
+                // invoice-derived extras (will be undefined if missing, which
+                // supabase ignores)
+                contact_name: parsed.contact_name,
+                contact: parsed.contact_name,
+                contact_email: parsed.contact_email,
+                contact_phone: parsed.contact_phone,
+                address_line1: parsed.address_line1,
+                address_line2: parsed.address_line2,
+                postal_code: parsed.postal_code,
+                city: parsed.city,
+                country: parsed.country,
+                vat_number: parsed.vat_number,
+                kvk_number: parsed.kvk_number,
+              };
+
+              const { data: newCo, error: ce } = await createCompany(payload);
               if (ce) throw new Error(ce);
               await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', inv.id);
               setInvoices((prev) => prev.map((i) => (i.id === inv.id ? { ...i, company_id: newCo.id } : i)));
@@ -1340,7 +1394,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Status {getSortIcon('status')}
                   </th>
-                  <th className="px-4 py-3 text-right border-b border-gray-200 w-[110px] whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
@@ -1353,6 +1406,119 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   try {
                     parsedData = JSON.parse(inv.notes || '{}');
                   } catch (e) {}
+
+                  // helper to persist notes changes and update local cache
+                  const saveNotes = async (newNotes) => {
+                    try {
+                      const { error } = await supabase
+                        .from('staged_invoices')
+                        .update({ notes: JSON.stringify(newNotes) })
+                        .eq('id', inv.id);
+                      if (error) throw error;
+                      setInvoices((prev) =>
+                        prev.map((i) => (i.id === inv.id ? { ...i, notes: JSON.stringify(newNotes) } : i)),
+                      );
+                      return true;
+                    } catch (err) {
+                      toastError('Failed to update invoice: ' + (err.message || err));
+                      return false;
+                    }
+                  };
+
+                  // helper that derives subscription counts from a single line item
+                  const getCountsForItem = (item) => {
+                    // normalize quantity to a number; fall back to 1 on invalid values
+                    let qty = Number(item.quantity);
+                    if (Number.isNaN(qty) || qty <= 0) qty = 1;
+                    const desc = ((item.item || item.description) || '').toLowerCase();
+                    let stands = 0;
+                    let breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
+                    // only count booths if the description clearly refers to a stand or kraam
+                    // and does *not* appear to be a meal or BBQ line (some invoices have
+                    // descriptions like "BBQ stand" which otherwise would count as a
+                    // booth). we guard against that by excluding keywords.
+                    const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
+                                   !desc.includes('bbq') && !desc.includes('barbecue') &&
+                                   !desc.includes('lunch') && !desc.includes('meal');
+                    if (isBooth) {
+                      if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
+                        stands += 2 * qty;
+                      } else {
+                        stands += 1 * qty;
+                      }
+                    }
+                    if (desc.includes('bbq')) bbq_sat += qty;
+                    if (desc.includes('lunch') || desc.includes('meal')) lunch_sat += qty;
+                    if (desc.includes('breakfast')) breakfast_sat += qty;
+                    // sunday meals currently unused; could add logic if needed
+                    return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
+                  };
+
+                  // actions for individual line items
+                  const handleItemAction = async (idx, action) => {
+                    const items = parsedData.line_items || [];
+
+                    // subscription update when approving
+                    if (action === 'approved' && inv.company_id) {
+                      const item = items[idx];
+                      const counts = getCountsForItem(item);
+                      const invoiceArea = item.area || '';
+                      const customerNote = parsedData.notes || '';
+                      const invoiceNote =
+                        'Invoice ' + inv.invoice_number + ' : ' + (item.item || item.description) +
+                        (item.quantity ? ' x' + item.quantity : '');
+
+                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      if (existing) {
+                        const mergedArea = existing.area || invoiceArea;
+                        const mergedHistory = existing.history
+                          ? existing.history + '\n' + invoiceNote
+                          : invoiceNote;
+
+                        await updateSubscription(existing.id, {
+                          booth_count: (existing.booth_count || 0) + counts.stands,
+                          area: mergedArea,
+                          notes: existing.notes || customerNote,
+                          history: mergedHistory,
+                          breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
+                          lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
+                          bbq_sat: (existing.bbq_sat || 0) + counts.bbq_sat,
+                          breakfast_sun: (existing.breakfast_sun || 0) + counts.breakfast_sun,
+                          lunch_sun: (existing.lunch_sun || 0) + counts.lunch_sun,
+                        });
+                      } else {
+                        await subscribeCompany(inv.company_id, {
+                          booth_count: counts.stands,
+                          area: invoiceArea,
+                          notes: customerNote,
+                          history: invoiceNote,
+                          phone: inv.phone,
+                          email: inv.email,
+                          breakfast_sat: counts.breakfast_sat,
+                          lunch_sat: counts.lunch_sat,
+                          bbq_sat: counts.bbq_sat,
+                          breakfast_sun: counts.breakfast_sun,
+                          lunch_sun: counts.lunch_sun,
+                        });
+                      }
+                    }
+
+                    if (action === 'delete') {
+                      items.splice(idx, 1);
+                    } else {
+                      items[idx] = { ...items[idx], status: action };
+                    }
+                    const newNotes = { ...parsedData, line_items: items };
+                    const ok = await saveNotes(newNotes);
+                    if (ok) {
+                      let msg;
+                      if (action === 'approved') msg = 'Line item approved';
+                      else if (action === 'rejected') msg = 'Line item rejected';
+                      else if (action === 'delete') msg = 'Line item deleted';
+                      else msg = 'Line item updated';
+                      toastSuccess(msg);
+                    }
+                  };
 
                   // Support old format strings vs new JSON payload fallback
                   const rawNotesFallback =
@@ -1422,14 +1588,57 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           {parsedData.date || 'N/A'}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top">
-                          <span className="text-sm text-indigo-700 font-medium whitespace-nowrap block">
-                            {firstItem}{' '}
-                            {hasMore && (
-                              <span className="text-xs text-gray-500 font-normal">
-                                (+{lineItems.length - 1} more)
-                              </span>
-                            )}
-                          </span>
+                          {/* show every item inline with tiny controls so users can act without expanding */}
+                          {lineItems && lineItems.length > 0 ? (
+                            <div className="flex flex-col space-y-1">
+                              {lineItems.map((item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between text-sm text-indigo-700 font-medium"
+                                >
+                                  <span className="truncate flex items-center gap-2">
+                                    <span>{item.item || item.description}</span>
+                                    <span className="text-xs text-gray-500">x{item.quantity}</span>
+                                  </span>
+                                  <div className="flex items-center space-x-1">
+                                    {['approved','rejected','delete'].map((act, aidx) => {
+                                      const icons = { approved: mdiCheck, rejected: mdiCancel, delete: mdiDelete };
+                                      const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
+                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50',
+                                                       delete: 'bg-white border border-gray-300 text-red-500 hover:bg-red-50' };
+                                      const titles = { approved: 'Mark approved',
+                                                       rejected: 'Reject item',
+                                                       delete: 'Delete item' };
+                                      const disabled = !inv.company_id;
+                                      return (
+                                        <button
+                                          key={aidx}
+                                          onClick={(e) => { e.stopPropagation(); if (!disabled) handleItemAction(idx, act); }}
+                                          disabled={disabled}
+                                          className={
+                                            `p-1 rounded ${colors[act]} ` +
+                                            (disabled ? 'opacity-40 cursor-not-allowed' : '')
+                                          }
+                                          title={disabled ? 'Verify company first' : titles[act]}
+                                        >
+                                          <Icon path={icons[act]} size={0.6} />
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-sm text-indigo-700 font-medium whitespace-nowrap block">
+                              {firstItem}{' '}
+                              {hasMore && (
+                                <span className="text-xs text-gray-500 font-normal">
+                                  (+{lineItems.length - 1} more)
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top min-w-[120px]">
                           {(areaString || inv.area_preference) ? (
@@ -1460,54 +1669,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 ? inv.status.toUpperCase()
                                 : 'PENDING'}
                           </span>
-                        </td>
-                        <td className="px-2 py-2 text-right w-[120px] align-top">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleApproveAndSync(inv);
-                              }}
-                              disabled={inv.status !== 'pending' || !inv.company_id}
-                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                              title={inv.status !== 'pending' ? 'Already synced' : !inv.company_id ? 'Verify company first (click the badge above)' : 'Sync to subscription'}
-                            >
-                              <Icon path={mdiCheck} size={0.8} />
-                            </button>
-                            {inv.status === 'approved' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(inv.id, 'pending');
-                                }}
-                                className="p-2 bg-white border border-orange-300 text-orange-600 rounded hover:bg-orange-50"
-                                title="Undo subscription — revert to pending"
-                              >
-                                <Icon path={mdiArrowULeftTop} size={0.8} />
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(inv.id, 'rejected');
-                              }}
-                              disabled={inv.status === 'approved' || inv.status === 'rejected'}
-                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={inv.status === 'approved' ? 'Use the undo button to revert a subscription' : 'Reject'}
-                            >
-                              <Icon path={mdiCancel} size={0.8} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteInvoice(inv);
-                              }}
-                              className="p-2 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
-                              title="Delete Invoice"
-                            >
-                              <Icon path={mdiDelete} size={0.8} className="text-red-500" />
-                            </button>
-                          </div>
                         </td>
                       </tr>
                       {/* Expandable Subrow */}

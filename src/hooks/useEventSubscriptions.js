@@ -2,6 +2,86 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import normalizePhone from '../utils/phone';
 
+// internal helper that performs the upsert logic for subscriptions
+// accepts explicit eventYear so it can be used in isolation (tests, utils)
+// returns { data, error }
+export const _subscribeCompany_internal = async (eventYear, companyId, subscriptionData = {}) => {
+  try {
+    // Get current user for created_by
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const created_by = user?.email || 'unknown';
+
+    // Fetch company defaults for contact info
+    const { data: company } = await supabase
+      .from('companies')
+      .select('contact, phone, email, address_line1, address_line2, city, postal_code, country, vat_number')
+      .eq('id', companyId)
+      .single();
+
+    // Fetch organization defaults for meal counts (separate Saturday/Sunday)
+    const { data: orgProfile } = await supabase
+      .from('organization_profile')
+      .select(
+        'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun',
+      )
+      .eq('id', 1)
+      .single();
+
+    const defaultBreakfastSat = orgProfile?.default_breakfast_sat || 0;
+    const defaultLunchSat = orgProfile?.default_lunch_sat || 0;
+    const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
+    const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
+    const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
+    const defaultCoins =
+      typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
+
+    // Normalize phone before inserting
+    const phoneToInsert = subscriptionData.phone
+      ? normalizePhone(subscriptionData.phone)
+      : company?.phone
+        ? normalizePhone(company.phone)
+        : '';
+    // Normalize email to lowercase
+    const emailToInsert = (subscriptionData.email || company?.email || '').toLowerCase().trim();
+
+    const { data, error: insertError } = await supabase
+      .from('event_subscriptions')
+      .upsert(
+        {
+          company_id: companyId,
+          event_year: eventYear,
+          contact: subscriptionData.contact || company?.contact || '',
+          phone: phoneToInsert,
+          email: emailToInsert,
+          booth_count: typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1,
+          area: subscriptionData.area || '',
+          breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
+          lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
+          bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
+          breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
+          lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
+          coins: subscriptionData.coins ?? defaultCoins,
+          notes: subscriptionData.notes || '',
+          history: subscriptionData.history || '',
+          created_by,
+        },
+        { onConflict: 'company_id, event_year' },
+      )
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // helper does not know about cache; we rely on caller to reload if necessary
+    return { data, error: null };
+  } catch (err) {
+    console.error('Error subscribing company (helper):', err);
+    return { data: null, error: err.message };
+  }
+};
+
 /**
  * Hook for managing event subscriptions (year-specific company participation)
  * @param {number} eventYear - The year to load subscriptions for
@@ -89,83 +169,22 @@ export default function useEventSubscriptions(eventYear) {
     [eventYear, entry],
   );
 
-  // Subscribe a company to the event year
-  const subscribeCompany = async (companyId, subscriptionData = {}) => {
-    try {
-      // Get current user for created_by
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      const created_by = user?.email || 'unknown';
 
-      // Fetch company defaults for contact info
-      const { data: company } = await supabase
-        .from('companies')
-        .select('contact, phone, email, address_line1, address_line2, city, postal_code, country, vat_number')
-        .eq('id', companyId)
-        .single();
-
-      // Fetch organization defaults for meal counts (separate Saturday/Sunday)
-      const { data: orgProfile } = await supabase
-        .from('organization_profile')
-        .select(
-          'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun',
-        )
-        .eq('id', 1)
-        .single();
-
-      const defaultBreakfastSat = orgProfile?.default_breakfast_sat || 0;
-      const defaultLunchSat = orgProfile?.default_lunch_sat || 0;
-      const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
-      const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
-      const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
-      const defaultCoins =
-        typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
-
-      // Normalize phone before inserting
-      const phoneToInsert = subscriptionData.phone
-        ? normalizePhone(subscriptionData.phone)
-        : company?.phone
-          ? normalizePhone(company.phone)
-          : '';
-      // Normalize email to lowercase
-      const emailToInsert = (subscriptionData.email || company?.email || '').toLowerCase().trim();
-
-      const { data, error: insertError } = await supabase
-        .from('event_subscriptions')
-        .upsert(
-          {
-            company_id: companyId,
-            event_year: eventYear,
-            contact: subscriptionData.contact || company?.contact || '',
-            phone: phoneToInsert,
-            email: emailToInsert,
-            booth_count: subscriptionData.booth_count || 1,
-            area: subscriptionData.area || '',
-            breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
-            lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
-            bbq_sat: subscriptionData.bbq_sat ?? defaultBbqSat,
-            breakfast_sun: subscriptionData.breakfast_sun ?? defaultBreakfastSun,
-            lunch_sun: subscriptionData.lunch_sun ?? defaultLunchSun,
-            coins: subscriptionData.coins ?? defaultCoins,
-            notes: subscriptionData.notes || '',
-            history: subscriptionData.history || '',
-            created_by,
-          },
-          { onConflict: 'company_id, event_year' },
-        )
-        .select()
-        .single();
-
-      if (insertError) throw insertError;
-
+  // expose public hook API
+  // wrap internal helper so callers don't need to supply year
+  const subscribeCompany = async (companyId, subscriptionData) => {
+    const result = await _subscribeCompany_internal(eventYear, companyId, subscriptionData);
+    // refresh cache if upsert succeeded
+    if (!result.error) {
       await loadSubscriptions(true);
-      return { data, error: null };
-    } catch (err) {
-      console.error('Error subscribing company:', err);
-      return { data: null, error: err.message };
     }
+    return result;
   };
+
+  // and also export the internal helper independently so tests can call it
+  // without mounting the hook (avoids triggering live subscription logic)
+  // (we export it below after the function definition)
+
 
   // Update a subscription
   const updateSubscription = async (subscriptionId, updates) => {
@@ -437,3 +456,4 @@ export default function useEventSubscriptions(eventYear) {
     reload: loadSubscriptions,
   };
 }
+
