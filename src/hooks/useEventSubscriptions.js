@@ -205,9 +205,10 @@ export default function useEventSubscriptions(eventYear) {
 
         `,
         )
-        .single();
+        .maybeSingle();
 
       if (updateError) throw updateError;
+      if (!data) throw new Error('Subscription ' + subscriptionId + ' not found or not accessible');
 
       await loadSubscriptions(true);
       return { data, error: null };
