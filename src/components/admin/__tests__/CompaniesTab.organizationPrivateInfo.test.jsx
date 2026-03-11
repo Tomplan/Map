@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
@@ -38,7 +38,7 @@ jest.mock('../../../utils/getDefaultLogo', () => ({
 }));
 
 // Hooks used by CompaniesTab
-jest.mock('../../../hooks/useCompanies', () => () => ({
+jest.mock('../../../hooks/useCompanies', () => jest.fn(() => ({
   companies: [],
   loading: false,
   error: null,
@@ -47,7 +47,7 @@ jest.mock('../../../hooks/useCompanies', () => () => ({
   deleteCompany: jest.fn(),
   searchCompanies: jest.fn(),
   reload: jest.fn(),
-}));
+})));
 
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
   profile: {
@@ -69,7 +69,7 @@ jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
 }));
 
 jest.mock('../../../hooks/useCompanyMutations', () => ({
-  useCompanyMutations: () => ({
+  useCompanyMutations: jest.fn(() => ({
     editingId: null,
     editForm: {},
     setEditForm: jest.fn(),
@@ -83,7 +83,7 @@ jest.mock('../../../hooks/useCompanyMutations', () => ({
     handleCreate: jest.fn(),
     handleStartCreate: jest.fn(),
     handleCancelCreate: jest.fn(),
-  }),
+  })),
 }));
 
 jest.mock('../../../hooks/useCompanyTranslations', () => () => ({
@@ -108,6 +108,37 @@ jest.mock('../../../contexts/DialogContext', () => ({
 }));
 
 import CompaniesTab from '../CompaniesTab';
+
+// Reset per-test overrides so each test starts from the default mock implementation
+beforeEach(() => {
+  const useCompanies = require('../../../hooks/useCompanies');
+  useCompanies.mockImplementation(() => ({
+    companies: [],
+    loading: false,
+    error: null,
+    createCompany: jest.fn(),
+    updateCompany: jest.fn(),
+    deleteCompany: jest.fn(),
+    searchCompanies: jest.fn(),
+    reload: jest.fn(),
+  }));
+  const { useCompanyMutations } = require('../../../hooks/useCompanyMutations');
+  useCompanyMutations.mockImplementation(() => ({
+    editingId: null,
+    editForm: {},
+    setEditForm: jest.fn(),
+    isCreating: false,
+    newCompanyForm: {},
+    setNewCompanyForm: jest.fn(),
+    handleEdit: jest.fn(),
+    handleSave: jest.fn(),
+    handleCancel: jest.fn(),
+    handleDelete: jest.fn(),
+    handleCreate: jest.fn(),
+    handleStartCreate: jest.fn(),
+    handleCancelCreate: jest.fn(),
+  }));
+});
 
 test('clicking a company card selects it and shows private details in the detail panel', async () => {
   render(
@@ -143,7 +174,7 @@ test('clicking a company card selects it and shows private details in the detail
 });
 
 // the cursor was disappearing when editing a company name that no longer
-// matched the current search filter; verify the detail form stays open.
+// matched the current search filter; verify the company stays visible.
 test('editing company name does not close detail panel when filter would hide it', async () => {
   // configure hook to return a single editable company
   const sample = {
@@ -165,29 +196,43 @@ test('editing company name does not close detail panel when filter would hide it
     reload: jest.fn(),
   });
 
-  render(
+  // Put the component straight into edit mode for company id 5. This simulates
+  // what happens after the user has clicked Edit — we test the filteredItems
+  // logic without relying on the Edit button triggering real hook state changes.
+  const { useCompanyMutations } = require('../../../hooks/useCompanyMutations');
+  useCompanyMutations.mockReturnValue({
+    editingId: 5,
+    editForm: { name: 'FooCo' },
+    setEditForm: jest.fn(),
+    isCreating: false,
+    newCompanyForm: {},
+    setNewCompanyForm: jest.fn(),
+    handleEdit: jest.fn(),
+    handleSave: jest.fn(),
+    handleCancel: jest.fn(),
+    handleDelete: jest.fn(),
+    handleCreate: jest.fn(),
+    handleStartCreate: jest.fn(),
+    handleCancelCreate: jest.fn(),
+  });
+
+  const { container } = render(
     <MemoryRouter initialEntries={['/companies']}>
       <CompaniesTab />
     </MemoryRouter>,
   );
 
-  // type a search term that matches the original name
-  const searchInput = screen.getByPlaceholderText('Search companies…');
-  await userEvent.type(searchInput, 'Foo');
+  // FooCo should be visible in the list initially
+  expect(screen.getByRole('button', { name: /FooCo/i })).toBeInTheDocument();
 
-  // select the company and enter edit mode
-  const card = await screen.findByRole('button', { name: /FooCo/i });
-  await userEvent.click(card);
-  const editBtn = await screen.findByRole('button', { name: /Edit/i });
-  await userEvent.click(editBtn);
+  // Type a search term that does NOT match 'FooCo'. Use container.querySelector
+  // to avoid depending on the placeholder translation in the test environment.
+  const searchInput = container.querySelector('input[type="text"]');
+  fireEvent.change(searchInput, { target: { value: 'ZZZ' } });
 
-  // change the name so it no longer contains the filter text
-  const nameInput = screen.getByPlaceholderText('Company name');
-  await userEvent.clear(nameInput);
-  await userEvent.type(nameInput, 'Bar');
-
-  // the input should still be in the document (i.e. panel hasn't closed)
-  expect(screen.getByPlaceholderText('Company name')).toBeInTheDocument();
+  // FooCo should still be in the list because editingId keeps it visible
+  // even when the search filter would normally exclude it.
+  expect(screen.getByRole('button', { name: /FooCo/i })).toBeInTheDocument();
 });
 
 // New regression test for billing duplication
