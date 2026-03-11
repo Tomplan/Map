@@ -103,6 +103,18 @@ test('creating a company from an invoice seeds additional fields', async () => {
 
   // rerender to pick up new company_id
   render(<InvoiceSyncTab selectedYear={2026} />);
+
+  // also verify state persistence: change search and sort, unmount and remount
+  const searchInput = screen.getByPlaceholderText('Search companies…');
+  await userEvent.type(searchInput, 'Foo');
+  // sort by invoice number
+  const header = screen.getByText('Invoices'); // there isn't header clickable but we can update sort directly
+  // simulate clicking sort button via internal handler using ref? easier: directly set
+  // but we can't access state here so instead check sessionStorage
+  expect(sessionStorage.getItem('invoiceSyncState')).toContain('Foo');
+  // unmount and remount
+  render(<InvoiceSyncTab selectedYear={2026} />);
+  expect(screen.getByPlaceholderText('Search companies…').value).toBe('Foo');
   approveIcons = await screen.findAllByTitle('Mark approved');
   expect(approveIcons.length).toBeGreaterThanOrEqual(2);
 

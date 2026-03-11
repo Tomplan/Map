@@ -406,6 +406,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
+  const STATE_KEY = 'invoiceSyncState';
+
+  // restore previous state from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STATE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.searchTerm) setSearchTerm(parsed.searchTerm);
+        if (parsed.sortConfig) setSortConfig(parsed.sortConfig);
+      }
+    } catch (_) {}
+  }, []);
+
+  // persist state changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(STATE_KEY, JSON.stringify({ searchTerm, sortConfig }));
+    } catch (_) {}
+  }, [searchTerm, sortConfig]);
   const [verifyModal, setVerifyModal] = useState(null); // { invoice, company } | null
   const [companySearchModal, setCompanySearchModal] = useState(null); // invoice | null
   const fileInputRef = useRef(null);
