@@ -515,6 +515,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   const fileInputRef = useRef(null);
+  // Tracks invoice IDs whose status is currently being written to DB.
+  // Prevents a concurrent real-time fetchInvoices() from overwriting an
+  // in-flight optimistic status update with stale DB data.
+  const pendingStatusRef = useRef(new Map());
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -541,7 +545,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
         return new Date(b.created_at) - new Date(a.created_at);
       });
 
-      setInvoices(sorted);
+      // Protect any in-flight status writes from being overwritten by stale DB reads:
+      // if another async operation has already set a status locally but its DB write
+      // hasn't been seen by this fetch yet, keep the locally-set value.
+      setInvoices(sorted.map(inv => {
+        const pendingStatus = pendingStatusRef.current.get(inv.id);
+        return pendingStatus !== undefined ? { ...inv, status: pendingStatus } : inv;
+      }));
     } catch (err) {
       console.error('Error fetching invoices:', err);
       setError(err?.message || 'Unknown error occurred');
@@ -909,6 +919,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
     }
 
+    // Lock this invoice's status before the DB write so that any concurrent
+    // real-time-triggered fetchInvoices() preserves the new value.
+    pendingStatusRef.current.set(id, newStatus);
     try {
       // Only reset line item statuses when reverting to pending (not when called from handleItemAction
       // which already saved the correct per-item notes before calling us)
@@ -943,6 +956,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     } catch (err) {
       console.error('Error updating status:', err);
       toastError(err?.message || 'Unknown error occurred');
+    } finally {
+      pendingStatusRef.current.delete(id);
     }
   };
 
@@ -1950,6 +1965,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       // This ONLY updates the status column — notes and subscription are already
                       // handled above by saveNotes / subtractItemFromSubscription.
                       const setInvoiceStatusOnly = async (newStatus) => {
+                        // Lock before the DB write so concurrent fetchInvoices() calls
+                        // triggered by other real-time events don't overwrite this status.
+                        pendingStatusRef.current.set(inv.id, newStatus);
                         try {
                           await supabase
                             .from('staged_invoices')
@@ -1963,6 +1981,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           );
                         } catch (e) {
                           console.error('Failed to update invoice status:', e);
+                        } finally {
+                          pendingStatusRef.current.delete(inv.id);
                         }
                       };
 
