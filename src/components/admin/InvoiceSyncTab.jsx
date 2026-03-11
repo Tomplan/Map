@@ -393,7 +393,7 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
   const { t } = useTranslation();
-  const { companies, createCompany } = useCompanies();
+  const { companies, createCompany, updateCompany } = useCompanies();
   const { settings } = useOrganizationSettings();
   const { subscriptions, subscribeCompany, updateSubscription, unsubscribeCompany } =
     useEventSubscriptions(selectedYear);
@@ -417,21 +417,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [isActionsOpen, setIsActionsOpen] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const STATE_KEY = 'invoiceSyncState';
-
-  // restore previous state from sessionStorage on mount
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STATE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.searchTerm) setSearchTerm(parsed.searchTerm);
-        if (parsed.sortConfig) setSortConfig(parsed.sortConfig);
-      }
-    } catch (_) {}
-  }, []);
+  // Lazy initialisers read sessionStorage once on first render — no effect-based
+  // race where the persist effect fires with defaults before the restore effect
+  // can update state, overwriting the saved values.
+  const [searchTerm, setSearchTerm] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || '{}').searchTerm || ''; } catch (_) { return ''; }
+  });
+  const [sortConfig, setSortConfig] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || '{}').sortConfig || { key: 'created_at', direction: 'desc' }; } catch (_) { return { key: 'created_at', direction: 'desc' }; }
+  });
 
   // persist state changes
   useEffect(() => {
@@ -481,17 +476,60 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   // Parse a history addition line into the subscription counts it contributed.
   const parseHistoryLineCounts = (line) => {
-    // Per-item format: 'Invoice X : ITEM_NAME xQTY'
-    const m = line.match(/:\s*(.+?)\s+x(\d+)\s*$/i);
-    if (m) {
-      return computeItemCounts(m[1], parseInt(m[2], 10), settings?.invoice_allowed_items);
+    // Strip off markers like | area: ... or prefix [Removed on...: ]
+    let baseLine = line.replace(/^\[Removed on.*?:/i, '');
+    baseLine = baseLine.split('|')[0].replace(/\]$/, '').trim();
+
+    // Per-item format: 'Invoice X on Date Time: ITEM_NAME xQTY'
+    const qtyMatch = baseLine.match(/\sx(\d+)\s*$/i);
+    if (qtyMatch) {
+       let itemName = baseLine;
+       const lastColonIdx = baseLine.lastIndexOf(':');
+       if (lastColonIdx !== -1) {
+          itemName = baseLine.substring(lastColonIdx + 1).trim();
+       }
+       itemName = itemName.replace(/\sx\d+\s*$/i, '').trim();
+
+       return computeItemCounts(itemName, parseInt(qtyMatch[1], 10), settings?.invoice_allowed_items);
     }
     // Invoice-level format: 'Invoice X: N booth(s)'
-    const b = line.match(/(\d+)\s*booth/i);
+    const b = baseLine.match(/(\d+)\s*booth/i);
     if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
     return null;
   };
+
+  // Extract area and notes markers from a single history line.
+  // Returns { area: string|null, notes: string|null } — null means the line doesn't carry that marker.
+  const parseHistoryLineAreaNotes = (line) => {
+    const areaMatch  = line.match(/\|\s*area:\s*(.+?)(\s*\||\s*$)/i);
+    const notesMatch = line.match(/\|\s*notes:\s*(.+?)(\s*\||\s*$)/i);
+    return {
+      area:  areaMatch  ? areaMatch[1].trim()  : null,
+      notes: notesMatch ? notesMatch[1].trim() : null,
+    };
+  };
+
+  // Derive area and notes from remaining (non-removed, non-bracket) history lines.
+  // Collects ALL area/notes markers from remaining lines, deduplicates, and joins them.
+  // hadXMarker = true means a removed line carried that marker, so we must update the field.
+  const deriveAreaNotesFromHistory = (remainingLines, removedLines) => {
+    const areas  = remainingLines.map(l => parseHistoryLineAreaNotes(l).area).filter(Boolean);
+    const notes  = remainingLines.map(l => parseHistoryLineAreaNotes(l).notes).filter(Boolean);
+    const hadAreaMarker  = removedLines.some(l => parseHistoryLineAreaNotes(l).area  !== null);
+    const hadNotesMarker = removedLines.some(l => parseHistoryLineAreaNotes(l).notes !== null);
+    return {
+      area:  [...new Set(areas)].join('; '),
+      notes: [...new Set(notes)].join('\n'),
+      hadAreaMarker,
+      hadNotesMarker,
+    };
+  };
+
   const fileInputRef = useRef(null);
+  // Tracks invoice IDs whose status is currently being written to DB.
+  // Prevents a concurrent real-time fetchInvoices() from overwriting an
+  // in-flight optimistic status update with stale DB data.
+  const pendingStatusRef = useRef(new Map());
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -518,7 +556,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
         return new Date(b.created_at) - new Date(a.created_at);
       });
 
-      setInvoices(sorted);
+      // Protect any in-flight status writes from being overwritten by stale DB reads:
+      // if another async operation has already set a status locally but its DB write
+      // hasn't been seen by this fetch yet, keep the locally-set value.
+      setInvoices(sorted.map(inv => {
+        const pendingStatus = pendingStatusRef.current.get(inv.id);
+        return pendingStatus !== undefined ? { ...inv, status: pendingStatus } : inv;
+      }));
     } catch (err) {
       console.error('Error fetching invoices:', err);
       setError(err?.message || 'Unknown error occurred');
@@ -726,7 +770,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
         try {
           const now = new Date();
-          const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+          const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
           const removedParts = [
             (inv.stands_count || 1) + ' booth(s)',
             breakfastVal > 0 ? breakfastVal + ' breakfast sat' : '',
@@ -734,15 +778,33 @@ export default function InvoiceSyncTab({ selectedYear }) {
             bbqVal > 0 ? bbqVal + ' BBQ sat' : '',
             lunchSunVal > 0 ? lunchSunVal + ' lunch sun' : '',
           ].filter(Boolean).join(', ');
-          const { error } = await updateSubscription(tempSub.id, {
-            booth_count: Math.max(0, (tempSub.booth_count || 0) - (inv.stands_count || 1)),
-            breakfast_sat: Math.max(0, (tempSub.breakfast_sat || 0) - breakfastVal),
-            lunch_sat: Math.max(0, (tempSub.lunch_sat || 0) - lunchSatVal),
-            bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
-            lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
-            history: (tempSub.history ? tempSub.history + '\n' : '') +
-              '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' - ' + removedParts + ']',
-          });
+          const newBoothCountMerged   = Math.max(0, (tempSub.booth_count    || 0) - (inv.stands_count || 1));
+          const newBreakfastSatMerged = Math.max(0, (tempSub.breakfast_sat  || 0) - breakfastVal);
+          const newLunchSatMerged     = Math.max(0, (tempSub.lunch_sat      || 0) - lunchSatVal);
+          const newBbqSatMerged       = Math.max(0, (tempSub.bbq_sat        || 0) - bbqVal);
+          const newLunchSunMerged     = Math.max(0, (tempSub.lunch_sun      || 0) - lunchSunVal);
+          const allZeroMerged = newBoothCountMerged + newBreakfastSatMerged + newLunchSatMerged + newBbqSatMerged + newLunchSunMerged === 0;
+          const removedHistoryLinesMerged = ['Invoice ' + inv.invoice_number];
+          const remainingHistoryLinesMerged = (tempSub.history || '').split('\n')
+            .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !l.startsWith('Invoice ' + inv.invoice_number));
+          const { area: derivedAreaMerged, notes: derivedNotesMerged, hadAreaMarker: hadAreaM, hadNotesMarker: hadNotesM } =
+            deriveAreaNotesFromHistory(remainingHistoryLinesMerged, removedHistoryLinesMerged);
+          let error;
+          if (allZeroMerged) {
+            ({ error } = await unsubscribeCompany(tempSub.id));
+          } else {
+            ({ error } = await updateSubscription(tempSub.id, {
+              booth_count:   newBoothCountMerged,
+              ...(hadAreaM  ? { area:  derivedAreaMerged  } : {}),
+              ...(hadNotesM ? { notes: derivedNotesMerged } : {}),
+              breakfast_sat: newBreakfastSatMerged,
+              lunch_sat:     newLunchSatMerged,
+              bbq_sat:       newBbqSatMerged,
+              lunch_sun:     newLunchSunMerged,
+              history: (tempSub.history ? tempSub.history + '\n' : '') +
+                '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' - ' + removedParts + ']',
+            }));
+          }
           if (error) throw new Error(error);
         } catch (e) {
           toastError('Failed to update subscription: ' + (e?.message || String(e)));
@@ -787,7 +849,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         }
                       }
                       const now = new Date();
-                      const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                      const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                       // Preserve full history — mark removed entries in-place so nothing is lost
                       const newHistory = (tempSub.history || '')
                         .split('\n')
@@ -800,15 +862,32 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         })
                         .filter(Boolean)
                         .join('\n');
-                      await updateSubscription(tempSub.id, {
-                        booth_count:    Math.max(0, (tempSub.booth_count    || 0) - deltaStands),
-                        breakfast_sat:  Math.max(0, (tempSub.breakfast_sat  || 0) - deltaBreakfastSat),
-                        lunch_sat:      Math.max(0, (tempSub.lunch_sat      || 0) - deltaLunchSat),
-                        bbq_sat:        Math.max(0, (tempSub.bbq_sat        || 0) - deltaBbqSat),
-                        breakfast_sun:  Math.max(0, (tempSub.breakfast_sun  || 0) - deltaBreakfastSun),
-                        lunch_sun:      Math.max(0, (tempSub.lunch_sun      || 0) - deltaLunchSun),
-                        history: newHistory,
-                      });
+                      const newBoothCountPartial   = Math.max(0, (tempSub.booth_count    || 0) - deltaStands);
+                      const newBreakfastSatPartial = Math.max(0, (tempSub.breakfast_sat  || 0) - deltaBreakfastSat);
+                      const newLunchSatPartial     = Math.max(0, (tempSub.lunch_sat      || 0) - deltaLunchSat);
+                      const newBbqSatPartial       = Math.max(0, (tempSub.bbq_sat        || 0) - deltaBbqSat);
+                      const newBreakfastSunPartial = Math.max(0, (tempSub.breakfast_sun  || 0) - deltaBreakfastSun);
+                      const newLunchSunPartial     = Math.max(0, (tempSub.lunch_sun      || 0) - deltaLunchSun);
+                      const allZeroPartial = newBoothCountPartial + newBreakfastSatPartial + newLunchSatPartial + newBbqSatPartial + newBreakfastSunPartial + newLunchSunPartial === 0;
+                      const remainingLinesPartial = (tempSub.history || '').split('\n')
+                        .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !selected.includes(l));
+                      const { area: derivedAreaP, notes: derivedNotesP, hadAreaMarker: hadAreaP, hadNotesMarker: hadNotesP } =
+                        deriveAreaNotesFromHistory(remainingLinesPartial, selected);
+                      if (allZeroPartial) {
+                        await unsubscribeCompany(tempSub.id);
+                      } else {
+                        await updateSubscription(tempSub.id, {
+                          booth_count:    newBoothCountPartial,
+                          ...(hadAreaP  ? { area:  derivedAreaP  } : {}),
+                          ...(hadNotesP ? { notes: derivedNotesP } : {}),
+                          breakfast_sat:  newBreakfastSatPartial,
+                          lunch_sat:      newLunchSatPartial,
+                          bbq_sat:        newBbqSatPartial,
+                          breakfast_sun:  newBreakfastSunPartial,
+                          lunch_sun:      newLunchSunPartial,
+                          history: newHistory,
+                        });
+                      }
                     }
                   } catch (e) {
                     toastError('Failed to update subscription: ' + (e?.message || String(e)));
@@ -851,6 +930,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
     }
 
+    // Lock this invoice's status before the DB write so that any concurrent
+    // real-time-triggered fetchInvoices() preserves the new value.
+    pendingStatusRef.current.set(id, newStatus);
     try {
       // Only reset line item statuses when reverting to pending (not when called from handleItemAction
       // which already saved the correct per-item notes before calling us)
@@ -885,6 +967,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
     } catch (err) {
       console.error('Error updating status:', err);
       toastError(err?.message || 'Unknown error occurred');
+    } finally {
+      pendingStatusRef.current.delete(id);
     }
   };
 
@@ -910,6 +994,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   // ─── Sync helpers ─────────────────────────────────────────────────────────────
 
+  // Fetch the freshest subscription for a company+year directly from Supabase.
+  // Always use this instead of reading from the `subscriptions` React state before
+  // a mutation — the cached state can lag behind reality when multiple items are
+  // approved/undone in quick succession.
+  const fetchFreshSubscription = async (companyId) => {
+    const { data, error } = await supabase
+      .from('event_subscriptions')
+      .select('*')
+      .eq('company_id', companyId)
+      .eq('event_year', selectedYear)
+      .maybeSingle();
+    if (error) throw error;
+    return data || null;
+  };
+
   // Core subscription creation — called both from modal confirm and direct create path.
   const doSync = async (invoice, companyId) => {
     const breakfastVal = invoice.breakfast_sat ?? invoice.breakfast ?? 0;
@@ -925,7 +1024,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
     const invNow = new Date();
     const invoiceNote =
-      'Invoice ' + invoice.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+      'Invoice ' + invoice.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) +
       ': ' + (invoice.stands_count || 1) + ' booth(s)' +
       (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '');
 
@@ -945,16 +1044,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (merge) {
-        // Additive merge: add booth_count and meal counts; fill area if empty; append to history
-        const mergedArea = existing.area || invoiceArea;
-        const mergedHistory = existing.history
-          ? existing.history + '\n' + invoiceNote
-          : invoiceNote;
+        // Additive merge: add booth_count and meal counts; accumulate area/notes (deduplicated); append to history
+        const existingAreas  = existing.area  ? existing.area.split('; ').map(s => s.trim()).filter(Boolean)  : [];
+        const existingNotes  = existing.notes ? existing.notes.split('\n').map(s => s.trim()).filter(Boolean) : [];
+        const mergedArea  = invoiceArea   && !existingAreas.includes(invoiceArea)   ? [...existingAreas, invoiceArea].join('; ')   : existing.area  || invoiceArea;
+        const mergedNotes = customerNote  && !existingNotes.includes(customerNote)  ? [...existingNotes, customerNote].join('\n')  : existing.notes || customerNote;
+        // Always embed markers for THIS invoice's contributions so removal can re-derive correctly
+        const areaContribution  = invoiceArea   ? ' | area: '  + invoiceArea   : '';
+        const notesContribution = customerNote  ? ' | notes: ' + customerNote  : '';
+        const mergedHistory = (existing.history ? existing.history + '\n' : '') +
+          invoiceNote + areaContribution + notesContribution;
 
         const { error } = await updateSubscription(existing.id, {
           booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
           area: mergedArea,
-          notes: existing.notes || customerNote,
+          notes: mergedNotes,
           history: mergedHistory,
           breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
           lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
@@ -974,7 +1078,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       booth_count: invoice.stands_count || 1,
       area: invoiceArea,
       notes: customerNote,
-      history: invoiceNote,
+      history: invoiceNote +
+        (invoiceArea  ? ' | area: '  + invoiceArea   : '') +
+        (customerNote ? ' | notes: ' + customerNote  : ''),
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
@@ -1072,7 +1178,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
         if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
         if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
-        await supabase.from('companies').update(deduped).eq('id', company.id);
+        const { error: patchError } = await updateCompany(company.id, deduped);
+        if (patchError) throw new Error(patchError);
       }
 
       toastSuccess('Match confirmed — use the approve button to sync.');
@@ -1736,11 +1843,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const subtractItemFromSubscription = async (item) => {
                       if (!inv.company_id) return;
                       const counts = getCountsForItem(item);
-                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      // Always fetch fresh from DB — React state may be stale when items
+                      // are approved/undone rapidly one after another.
+                      const existing = await fetchFreshSubscription(inv.company_id);
                       if (!existing) return;
                       try {
                         const now = new Date();
-                        const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                         const removedCounts = [
                           counts.stands > 0 ? counts.stands + ' booth(s)' : '',
                           counts.breakfast_sat > 0 ? counts.breakfast_sat + ' breakfast sat' : '',
@@ -1749,16 +1858,36 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           counts.breakfast_sun > 0 ? counts.breakfast_sun + ' breakfast sun' : '',
                           counts.lunch_sun > 0 ? counts.lunch_sun + ' lunch sun' : '',
                         ].filter(Boolean).join(', ');
-                        await updateSubscription(existing.id, {
-                          booth_count: Math.max(0, (existing.booth_count || 0) - counts.stands),
-                          breakfast_sat: Math.max(0, (existing.breakfast_sat || 0) - counts.breakfast_sat),
-                          lunch_sat: Math.max(0, (existing.lunch_sat || 0) - counts.lunch_sat),
-                          bbq_sat: Math.max(0, (existing.bbq_sat || 0) - counts.bbq_sat),
-                          breakfast_sun: Math.max(0, (existing.breakfast_sun || 0) - counts.breakfast_sun),
-                          lunch_sun: Math.max(0, (existing.lunch_sun || 0) - counts.lunch_sun),
-                          history: (existing.history ? existing.history + '\n' : '') +
-                            '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' line item ' + (item.item || item.description) + (removedCounts ? ' - ' + removedCounts : '') + ']',
-                        });
+                        const newBoothCount    = Math.max(0, (existing.booth_count    || 0) - counts.stands);
+                        const newBreakfastSat  = Math.max(0, (existing.breakfast_sat  || 0) - counts.breakfast_sat);
+                        const newLunchSat      = Math.max(0, (existing.lunch_sat      || 0) - counts.lunch_sat);
+                        const newBbqSat        = Math.max(0, (existing.bbq_sat        || 0) - counts.bbq_sat);
+                        const newBreakfastSun  = Math.max(0, (existing.breakfast_sun  || 0) - counts.breakfast_sun);
+                        const newLunchSun      = Math.max(0, (existing.lunch_sun      || 0) - counts.lunch_sun);
+                        const allCountsZero    = newBoothCount + newBreakfastSat + newLunchSat + newBbqSat + newBreakfastSun + newLunchSun === 0;
+                        const removedItemLine = 'Invoice ' + inv.invoice_number;
+                        const remainingItemLines = (existing.history || '').split('\n')
+                          .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !l.startsWith(removedItemLine + ' ') && !l.startsWith(removedItemLine + ':'));
+                        const removedItemLines = (existing.history || '').split('\n')
+                          .map(l => l.trim()).filter(l => l && !l.startsWith('[') && (l.startsWith(removedItemLine + ' ') || l.startsWith(removedItemLine + ':')));
+                        const { area: derivedAreaI, notes: derivedNotesI, hadAreaMarker: hadAreaI, hadNotesMarker: hadNotesI } =
+                          deriveAreaNotesFromHistory(remainingItemLines, removedItemLines);
+                        if (allCountsZero) {
+                          await unsubscribeCompany(existing.id);
+                        } else {
+                          await updateSubscription(existing.id, {
+                            booth_count:   newBoothCount,
+                            ...(hadAreaI  ? { area:  derivedAreaI  } : {}),
+                            ...(hadNotesI ? { notes: derivedNotesI } : {}),
+                            breakfast_sat: newBreakfastSat,
+                            lunch_sat:     newLunchSat,
+                            bbq_sat:       newBbqSat,
+                            breakfast_sun: newBreakfastSun,
+                            lunch_sun:     newLunchSun,
+                            history: (existing.history ? existing.history + '\n' : '') +
+                              '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' line item ' + (item.item || item.description) + (removedCounts ? ' - ' + removedCounts : '') + ']',
+                          });
+                        }
                       } catch (e) {
                         toastError('Failed to revert subscription: ' + (e?.message || e));
                       }
@@ -1780,13 +1909,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const counts = getCountsForItem(item);
                       const invoiceArea = item.area || '';
                       const customerNote = parsedData.notes || '';
+                      // Notes belong to the booth item. Only attach them to a meal item
+                      // when the invoice has no booth line items at all.
+                      const invoiceHasBoothItems = items.some((i) => getCountsForItem(i).stands > 0);
+                      const isBoothItem = counts.stands > 0;
+                      const attachNotes = isBoothItem || !invoiceHasBoothItems;
+                      const effectiveNote = attachNotes ? customerNote : '';
                       const invNow = new Date();
                       const invoiceNote =
-                        'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+                        'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) +
                         ': ' + (item.item || item.description) +
                         (item.quantity ? ' x' + item.quantity : '');
 
-                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      // Always fetch fresh from DB to avoid stale-read multiplication
+                      // when multiple items are approved in rapid succession.
+                      const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
                         const doMerge = await confirm({
                           title: 'Subscription already exists',
@@ -1799,15 +1936,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           cancelText: 'Replace',
                         });
 
+                        const itemNoteWithMarkers = invoiceNote +
+                          (invoiceArea     ? ' | area: '  + invoiceArea     : '') +
+                          (effectiveNote   ? ' | notes: ' + effectiveNote   : '');
                         if (doMerge) {
-                          const mergedArea = existing.area || invoiceArea;
-                          const mergedHistory = existing.history
-                            ? existing.history + '\n' + invoiceNote
-                            : invoiceNote;
+                          const existingItemAreas  = existing.area  ? existing.area.split('; ').map(s => s.trim()).filter(Boolean)  : [];
+                          const existingItemNotes  = existing.notes ? existing.notes.split('\n').map(s => s.trim()).filter(Boolean) : [];
+                          const mergedItemArea  = invoiceArea    && !existingItemAreas.includes(invoiceArea)    ? [...existingItemAreas, invoiceArea].join('; ')    : existing.area  || invoiceArea;
+                          const mergedItemNotes = effectiveNote  && !existingItemNotes.includes(effectiveNote)  ? [...existingItemNotes, effectiveNote].join('\n')  : existing.notes || effectiveNote;
+                          const mergedHistory = (existing.history ? existing.history + '\n' : '') + itemNoteWithMarkers;
                           await updateSubscription(existing.id, {
                             booth_count: (existing.booth_count || 0) + counts.stands,
-                            area: mergedArea,
-                            notes: existing.notes || customerNote,
+                            area: mergedItemArea,
+                            notes: mergedItemNotes,
                             history: mergedHistory,
                             breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
                             lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
@@ -1819,8 +1960,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           await updateSubscription(existing.id, {
                             booth_count: counts.stands,
                             area: invoiceArea,
-                            notes: customerNote,
-                            history: invoiceNote,
+                            notes: effectiveNote,
+                            history: itemNoteWithMarkers,
                             breakfast_sat: counts.breakfast_sat,
                             lunch_sat: counts.lunch_sat,
                             bbq_sat: counts.bbq_sat,
@@ -1832,8 +1973,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         await subscribeCompany(inv.company_id, {
                           booth_count: counts.stands,
                           area: invoiceArea,
-                          notes: customerNote,
-                          history: invoiceNote,
+                          notes: effectiveNote,
+                          history: invoiceNote +
+                            (invoiceArea    ? ' | area: '  + invoiceArea    : '') +
+                            (effectiveNote  ? ' | notes: ' + effectiveNote  : ''),
                           phone: inv.phone,
                           email: inv.email,
                           breakfast_sat: counts.breakfast_sat,
@@ -1858,6 +2001,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       // This ONLY updates the status column — notes and subscription are already
                       // handled above by saveNotes / subtractItemFromSubscription.
                       const setInvoiceStatusOnly = async (newStatus) => {
+                        // Lock before the DB write so concurrent fetchInvoices() calls
+                        // triggered by other real-time events don't overwrite this status.
+                        pendingStatusRef.current.set(inv.id, newStatus);
                         try {
                           await supabase
                             .from('staged_invoices')
@@ -1871,6 +2017,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           );
                         } catch (e) {
                           console.error('Failed to update invoice status:', e);
+                        } finally {
+                          pendingStatusRef.current.delete(inv.id);
                         }
                       };
 
