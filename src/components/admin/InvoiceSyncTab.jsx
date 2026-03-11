@@ -393,7 +393,7 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
 export default function InvoiceSyncTab({ selectedYear }) {
   const baseUrl = getBaseUrl();
   const { t } = useTranslation();
-  const { companies, createCompany } = useCompanies();
+  const { companies, createCompany, updateCompany } = useCompanies();
   const { settings } = useOrganizationSettings();
   const { subscriptions, subscribeCompany, updateSubscription, unsubscribeCompany } =
     useEventSubscriptions(selectedYear);
@@ -417,21 +417,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const [isActionsOpen, setIsActionsOpen] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' });
   const STATE_KEY = 'invoiceSyncState';
-
-  // restore previous state from sessionStorage on mount
-  useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(STATE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.searchTerm) setSearchTerm(parsed.searchTerm);
-        if (parsed.sortConfig) setSortConfig(parsed.sortConfig);
-      }
-    } catch (_) {}
-  }, []);
+  // Lazy initialisers read sessionStorage once on first render — no effect-based
+  // race where the persist effect fires with defaults before the restore effect
+  // can update state, overwriting the saved values.
+  const [searchTerm, setSearchTerm] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || '{}').searchTerm || ''; } catch (_) { return ''; }
+  });
+  const [sortConfig, setSortConfig] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem(STATE_KEY) || '{}').sortConfig || { key: 'created_at', direction: 'desc' }; } catch (_) { return { key: 'created_at', direction: 'desc' }; }
+  });
 
   // persist state changes
   useEffect(() => {
@@ -491,6 +486,34 @@ export default function InvoiceSyncTab({ selectedYear }) {
     if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
     return null;
   };
+
+  // Extract area and notes markers from a single history line.
+  // Returns { area: string|null, notes: string|null } — null means the line doesn't carry that marker.
+  const parseHistoryLineAreaNotes = (line) => {
+    const areaMatch  = line.match(/\|\s*area:\s*(.+?)(\s*\||\s*$)/i);
+    const notesMatch = line.match(/\|\s*notes:\s*(.+?)(\s*\||\s*$)/i);
+    return {
+      area:  areaMatch  ? areaMatch[1].trim()  : null,
+      notes: notesMatch ? notesMatch[1].trim() : null,
+    };
+  };
+
+  // Derive area and notes from remaining (non-removed, non-bracket) history lines.
+  // Collects ALL area/notes markers from remaining lines, deduplicates, and joins them.
+  // hadXMarker = true means a removed line carried that marker, so we must update the field.
+  const deriveAreaNotesFromHistory = (remainingLines, removedLines) => {
+    const areas  = remainingLines.map(l => parseHistoryLineAreaNotes(l).area).filter(Boolean);
+    const notes  = remainingLines.map(l => parseHistoryLineAreaNotes(l).notes).filter(Boolean);
+    const hadAreaMarker  = removedLines.some(l => parseHistoryLineAreaNotes(l).area  !== null);
+    const hadNotesMarker = removedLines.some(l => parseHistoryLineAreaNotes(l).notes !== null);
+    return {
+      area:  [...new Set(areas)].join('; '),
+      notes: [...new Set(notes)].join('\n'),
+      hadAreaMarker,
+      hadNotesMarker,
+    };
+  };
+
   const fileInputRef = useRef(null);
 
   const handleSort = (key) => {
@@ -726,7 +749,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
         try {
           const now = new Date();
-          const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+          const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
           const removedParts = [
             (inv.stands_count || 1) + ' booth(s)',
             breakfastVal > 0 ? breakfastVal + ' breakfast sat' : '',
@@ -734,15 +757,33 @@ export default function InvoiceSyncTab({ selectedYear }) {
             bbqVal > 0 ? bbqVal + ' BBQ sat' : '',
             lunchSunVal > 0 ? lunchSunVal + ' lunch sun' : '',
           ].filter(Boolean).join(', ');
-          const { error } = await updateSubscription(tempSub.id, {
-            booth_count: Math.max(0, (tempSub.booth_count || 0) - (inv.stands_count || 1)),
-            breakfast_sat: Math.max(0, (tempSub.breakfast_sat || 0) - breakfastVal),
-            lunch_sat: Math.max(0, (tempSub.lunch_sat || 0) - lunchSatVal),
-            bbq_sat: Math.max(0, (tempSub.bbq_sat || 0) - bbqVal),
-            lunch_sun: Math.max(0, (tempSub.lunch_sun || 0) - lunchSunVal),
-            history: (tempSub.history ? tempSub.history + '\n' : '') +
-              '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' - ' + removedParts + ']',
-          });
+          const newBoothCountMerged   = Math.max(0, (tempSub.booth_count    || 0) - (inv.stands_count || 1));
+          const newBreakfastSatMerged = Math.max(0, (tempSub.breakfast_sat  || 0) - breakfastVal);
+          const newLunchSatMerged     = Math.max(0, (tempSub.lunch_sat      || 0) - lunchSatVal);
+          const newBbqSatMerged       = Math.max(0, (tempSub.bbq_sat        || 0) - bbqVal);
+          const newLunchSunMerged     = Math.max(0, (tempSub.lunch_sun      || 0) - lunchSunVal);
+          const allZeroMerged = newBoothCountMerged + newBreakfastSatMerged + newLunchSatMerged + newBbqSatMerged + newLunchSunMerged === 0;
+          const removedHistoryLinesMerged = ['Invoice ' + inv.invoice_number];
+          const remainingHistoryLinesMerged = (tempSub.history || '').split('\n')
+            .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !l.startsWith('Invoice ' + inv.invoice_number));
+          const { area: derivedAreaMerged, notes: derivedNotesMerged, hadAreaMarker: hadAreaM, hadNotesMarker: hadNotesM } =
+            deriveAreaNotesFromHistory(remainingHistoryLinesMerged, removedHistoryLinesMerged);
+          let error;
+          if (allZeroMerged) {
+            ({ error } = await unsubscribeCompany(tempSub.id));
+          } else {
+            ({ error } = await updateSubscription(tempSub.id, {
+              booth_count:   newBoothCountMerged,
+              ...(hadAreaM  ? { area:  derivedAreaMerged  } : {}),
+              ...(hadNotesM ? { notes: derivedNotesMerged } : {}),
+              breakfast_sat: newBreakfastSatMerged,
+              lunch_sat:     newLunchSatMerged,
+              bbq_sat:       newBbqSatMerged,
+              lunch_sun:     newLunchSunMerged,
+              history: (tempSub.history ? tempSub.history + '\n' : '') +
+                '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' - ' + removedParts + ']',
+            }));
+          }
           if (error) throw new Error(error);
         } catch (e) {
           toastError('Failed to update subscription: ' + (e?.message || String(e)));
@@ -787,7 +828,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         }
                       }
                       const now = new Date();
-                      const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                      const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                       // Preserve full history — mark removed entries in-place so nothing is lost
                       const newHistory = (tempSub.history || '')
                         .split('\n')
@@ -800,15 +841,32 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         })
                         .filter(Boolean)
                         .join('\n');
-                      await updateSubscription(tempSub.id, {
-                        booth_count:    Math.max(0, (tempSub.booth_count    || 0) - deltaStands),
-                        breakfast_sat:  Math.max(0, (tempSub.breakfast_sat  || 0) - deltaBreakfastSat),
-                        lunch_sat:      Math.max(0, (tempSub.lunch_sat      || 0) - deltaLunchSat),
-                        bbq_sat:        Math.max(0, (tempSub.bbq_sat        || 0) - deltaBbqSat),
-                        breakfast_sun:  Math.max(0, (tempSub.breakfast_sun  || 0) - deltaBreakfastSun),
-                        lunch_sun:      Math.max(0, (tempSub.lunch_sun      || 0) - deltaLunchSun),
-                        history: newHistory,
-                      });
+                      const newBoothCountPartial   = Math.max(0, (tempSub.booth_count    || 0) - deltaStands);
+                      const newBreakfastSatPartial = Math.max(0, (tempSub.breakfast_sat  || 0) - deltaBreakfastSat);
+                      const newLunchSatPartial     = Math.max(0, (tempSub.lunch_sat      || 0) - deltaLunchSat);
+                      const newBbqSatPartial       = Math.max(0, (tempSub.bbq_sat        || 0) - deltaBbqSat);
+                      const newBreakfastSunPartial = Math.max(0, (tempSub.breakfast_sun  || 0) - deltaBreakfastSun);
+                      const newLunchSunPartial     = Math.max(0, (tempSub.lunch_sun      || 0) - deltaLunchSun);
+                      const allZeroPartial = newBoothCountPartial + newBreakfastSatPartial + newLunchSatPartial + newBbqSatPartial + newBreakfastSunPartial + newLunchSunPartial === 0;
+                      const remainingLinesPartial = (tempSub.history || '').split('\n')
+                        .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !selected.includes(l));
+                      const { area: derivedAreaP, notes: derivedNotesP, hadAreaMarker: hadAreaP, hadNotesMarker: hadNotesP } =
+                        deriveAreaNotesFromHistory(remainingLinesPartial, selected);
+                      if (allZeroPartial) {
+                        await unsubscribeCompany(tempSub.id);
+                      } else {
+                        await updateSubscription(tempSub.id, {
+                          booth_count:    newBoothCountPartial,
+                          ...(hadAreaP  ? { area:  derivedAreaP  } : {}),
+                          ...(hadNotesP ? { notes: derivedNotesP } : {}),
+                          breakfast_sat:  newBreakfastSatPartial,
+                          lunch_sat:      newLunchSatPartial,
+                          bbq_sat:        newBbqSatPartial,
+                          breakfast_sun:  newBreakfastSunPartial,
+                          lunch_sun:      newLunchSunPartial,
+                          history: newHistory,
+                        });
+                      }
                     }
                   } catch (e) {
                     toastError('Failed to update subscription: ' + (e?.message || String(e)));
@@ -925,7 +983,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
     const invNow = new Date();
     const invoiceNote =
-      'Invoice ' + invoice.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+      'Invoice ' + invoice.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) +
       ': ' + (invoice.stands_count || 1) + ' booth(s)' +
       (invoice.meals_count ? ', ' + invoice.meals_count + ' meal(s)' : '');
 
@@ -945,16 +1003,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
       });
 
       if (merge) {
-        // Additive merge: add booth_count and meal counts; fill area if empty; append to history
-        const mergedArea = existing.area || invoiceArea;
-        const mergedHistory = existing.history
-          ? existing.history + '\n' + invoiceNote
-          : invoiceNote;
+        // Additive merge: add booth_count and meal counts; accumulate area/notes (deduplicated); append to history
+        const existingAreas  = existing.area  ? existing.area.split('; ').map(s => s.trim()).filter(Boolean)  : [];
+        const existingNotes  = existing.notes ? existing.notes.split('\n').map(s => s.trim()).filter(Boolean) : [];
+        const mergedArea  = invoiceArea   && !existingAreas.includes(invoiceArea)   ? [...existingAreas, invoiceArea].join('; ')   : existing.area  || invoiceArea;
+        const mergedNotes = customerNote  && !existingNotes.includes(customerNote)  ? [...existingNotes, customerNote].join('\n')  : existing.notes || customerNote;
+        // Always embed markers for THIS invoice's contributions so removal can re-derive correctly
+        const areaContribution  = invoiceArea   ? ' | area: '  + invoiceArea   : '';
+        const notesContribution = customerNote  ? ' | notes: ' + customerNote  : '';
+        const mergedHistory = (existing.history ? existing.history + '\n' : '') +
+          invoiceNote + areaContribution + notesContribution;
 
         const { error } = await updateSubscription(existing.id, {
           booth_count: (existing.booth_count || 0) + (invoice.stands_count || 1),
           area: mergedArea,
-          notes: existing.notes || customerNote,
+          notes: mergedNotes,
           history: mergedHistory,
           breakfast_sat: (existing.breakfast_sat || 0) + breakfastVal,
           lunch_sat: (existing.lunch_sat || 0) + lunchSatVal,
@@ -974,7 +1037,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       booth_count: invoice.stands_count || 1,
       area: invoiceArea,
       notes: customerNote,
-      history: invoiceNote,
+      history: invoiceNote +
+        (invoiceArea  ? ' | area: '  + invoiceArea   : '') +
+        (customerNote ? ' | notes: ' + customerNote  : ''),
       phone: invoice.phone,
       email: invoice.email,
       breakfast_sat: breakfastVal,
@@ -1072,7 +1137,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
         if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
         if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
-        await supabase.from('companies').update(deduped).eq('id', company.id);
+        const { error: patchError } = await updateCompany(company.id, deduped);
+        if (patchError) throw new Error(patchError);
       }
 
       toastSuccess('Match confirmed — use the approve button to sync.');
@@ -1740,7 +1806,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       if (!existing) return;
                       try {
                         const now = new Date();
-                        const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                        const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                         const removedCounts = [
                           counts.stands > 0 ? counts.stands + ' booth(s)' : '',
                           counts.breakfast_sat > 0 ? counts.breakfast_sat + ' breakfast sat' : '',
@@ -1749,16 +1815,36 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           counts.breakfast_sun > 0 ? counts.breakfast_sun + ' breakfast sun' : '',
                           counts.lunch_sun > 0 ? counts.lunch_sun + ' lunch sun' : '',
                         ].filter(Boolean).join(', ');
-                        await updateSubscription(existing.id, {
-                          booth_count: Math.max(0, (existing.booth_count || 0) - counts.stands),
-                          breakfast_sat: Math.max(0, (existing.breakfast_sat || 0) - counts.breakfast_sat),
-                          lunch_sat: Math.max(0, (existing.lunch_sat || 0) - counts.lunch_sat),
-                          bbq_sat: Math.max(0, (existing.bbq_sat || 0) - counts.bbq_sat),
-                          breakfast_sun: Math.max(0, (existing.breakfast_sun || 0) - counts.breakfast_sun),
-                          lunch_sun: Math.max(0, (existing.lunch_sun || 0) - counts.lunch_sun),
-                          history: (existing.history ? existing.history + '\n' : '') +
-                            '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' line item ' + (item.item || item.description) + (removedCounts ? ' - ' + removedCounts : '') + ']',
-                        });
+                        const newBoothCount    = Math.max(0, (existing.booth_count    || 0) - counts.stands);
+                        const newBreakfastSat  = Math.max(0, (existing.breakfast_sat  || 0) - counts.breakfast_sat);
+                        const newLunchSat      = Math.max(0, (existing.lunch_sat      || 0) - counts.lunch_sat);
+                        const newBbqSat        = Math.max(0, (existing.bbq_sat        || 0) - counts.bbq_sat);
+                        const newBreakfastSun  = Math.max(0, (existing.breakfast_sun  || 0) - counts.breakfast_sun);
+                        const newLunchSun      = Math.max(0, (existing.lunch_sun      || 0) - counts.lunch_sun);
+                        const allCountsZero    = newBoothCount + newBreakfastSat + newLunchSat + newBbqSat + newBreakfastSun + newLunchSun === 0;
+                        const removedItemLine = 'Invoice ' + inv.invoice_number;
+                        const remainingItemLines = (existing.history || '').split('\n')
+                          .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !l.startsWith(removedItemLine + ' ') && !l.startsWith(removedItemLine + ':'));
+                        const removedItemLines = (existing.history || '').split('\n')
+                          .map(l => l.trim()).filter(l => l && !l.startsWith('[') && (l.startsWith(removedItemLine + ' ') || l.startsWith(removedItemLine + ':')));
+                        const { area: derivedAreaI, notes: derivedNotesI, hadAreaMarker: hadAreaI, hadNotesMarker: hadNotesI } =
+                          deriveAreaNotesFromHistory(remainingItemLines, removedItemLines);
+                        if (allCountsZero) {
+                          await unsubscribeCompany(existing.id);
+                        } else {
+                          await updateSubscription(existing.id, {
+                            booth_count:   newBoothCount,
+                            ...(hadAreaI  ? { area:  derivedAreaI  } : {}),
+                            ...(hadNotesI ? { notes: derivedNotesI } : {}),
+                            breakfast_sat: newBreakfastSat,
+                            lunch_sat:     newLunchSat,
+                            bbq_sat:       newBbqSat,
+                            breakfast_sun: newBreakfastSun,
+                            lunch_sun:     newLunchSun,
+                            history: (existing.history ? existing.history + '\n' : '') +
+                              '[Removed on ' + nowStr + ': Invoice ' + inv.invoice_number + ' line item ' + (item.item || item.description) + (removedCounts ? ' - ' + removedCounts : '') + ']',
+                          });
+                        }
                       } catch (e) {
                         toastError('Failed to revert subscription: ' + (e?.message || e));
                       }
@@ -1782,7 +1868,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const customerNote = parsedData.notes || '';
                       const invNow = new Date();
                       const invoiceNote =
-                        'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+                        'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) +
                         ': ' + (item.item || item.description) +
                         (item.quantity ? ' x' + item.quantity : '');
 
@@ -1799,15 +1885,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           cancelText: 'Replace',
                         });
 
+                        const itemNoteWithMarkers = invoiceNote +
+                          (invoiceArea   ? ' | area: '  + invoiceArea   : '') +
+                          (customerNote  ? ' | notes: ' + customerNote  : '');
                         if (doMerge) {
-                          const mergedArea = existing.area || invoiceArea;
-                          const mergedHistory = existing.history
-                            ? existing.history + '\n' + invoiceNote
-                            : invoiceNote;
+                          const existingItemAreas  = existing.area  ? existing.area.split('; ').map(s => s.trim()).filter(Boolean)  : [];
+                          const existingItemNotes  = existing.notes ? existing.notes.split('\n').map(s => s.trim()).filter(Boolean) : [];
+                          const mergedItemArea  = invoiceArea  && !existingItemAreas.includes(invoiceArea)  ? [...existingItemAreas, invoiceArea].join('; ')  : existing.area  || invoiceArea;
+                          const mergedItemNotes = customerNote && !existingItemNotes.includes(customerNote) ? [...existingItemNotes, customerNote].join('\n') : existing.notes || customerNote;
+                          const mergedHistory = (existing.history ? existing.history + '\n' : '') + itemNoteWithMarkers;
                           await updateSubscription(existing.id, {
                             booth_count: (existing.booth_count || 0) + counts.stands,
-                            area: mergedArea,
-                            notes: existing.notes || customerNote,
+                            area: mergedItemArea,
+                            notes: mergedItemNotes,
                             history: mergedHistory,
                             breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
                             lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
@@ -1820,7 +1910,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             booth_count: counts.stands,
                             area: invoiceArea,
                             notes: customerNote,
-                            history: invoiceNote,
+                            history: itemNoteWithMarkers,
                             breakfast_sat: counts.breakfast_sat,
                             lunch_sat: counts.lunch_sat,
                             bbq_sat: counts.bbq_sat,
@@ -1833,7 +1923,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           booth_count: counts.stands,
                           area: invoiceArea,
                           notes: customerNote,
-                          history: invoiceNote,
+                          history: invoiceNote +
+                            (invoiceArea  ? ' | area: '  + invoiceArea   : '') +
+                            (customerNote ? ' | notes: ' + customerNote  : ''),
                           phone: inv.phone,
                           email: inv.email,
                           breakfast_sat: counts.breakfast_sat,

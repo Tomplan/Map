@@ -100,6 +100,31 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     return null;
   };
 
+  // Extract area and notes markers from a single history line.
+  const parseHistoryLineAreaNotes = (line) => {
+    const areaMatch  = line.match(/\|\s*area:\s*(.+?)(\s*\||\s*$)/i);
+    const notesMatch = line.match(/\|\s*notes:\s*(.+?)(\s*\||\s*$)/i);
+    return {
+      area:  areaMatch  ? areaMatch[1].trim()  : null,
+      notes: notesMatch ? notesMatch[1].trim() : null,
+    };
+  };
+
+  // Derive area and notes from remaining history lines and detect if removed lines had markers.
+  // Collects ALL area/notes markers from remaining lines, deduplicates, and joins them.
+  const deriveAreaNotesFromHistory = (remainingLines, removedLines) => {
+    const areas  = remainingLines.map(l => parseHistoryLineAreaNotes(l).area).filter(Boolean);
+    const notes  = remainingLines.map(l => parseHistoryLineAreaNotes(l).notes).filter(Boolean);
+    const hadAreaMarker  = removedLines.some(l => parseHistoryLineAreaNotes(l).area  !== null);
+    const hadNotesMarker = removedLines.some(l => parseHistoryLineAreaNotes(l).notes !== null);
+    return {
+      area:  [...new Set(areas)].join('; '),
+      notes: [...new Set(notes)].join('\n'),
+      hadAreaMarker,
+      hadNotesMarker,
+    };
+  };
+
   // Dialog context
   const { confirm, toastError, toastSuccess, toastWarning } = useDialog();
 
@@ -246,7 +271,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     const updatesWithHistory = { ...updates };
     if (changes.length > 0) {
       const now = new Date();
-      const historyLine = `Edited on ${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}: ${changes.join(', ')}`;
+      const historyLine = `Edited on ${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}: ${changes.join(', ')}`;
       updatesWithHistory.history = (sub.history ? sub.history + '\n' : '') + historyLine;
     }
 
@@ -420,7 +445,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   }
                 }
                 const now = new Date();
-                const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+                const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
                 // Preserve full history — mark removed entries in-place so nothing is lost
                 const newHistory = (subscription.history || '')
                   .split('\n')
@@ -433,16 +458,36 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   })
                   .filter(Boolean)
                   .join('\n');
-                const { error } = await updateSubscription(subscription.id, {
-                  booth_count:   Math.max(0, (subscription.booth_count   || 0) - deltaStands),
-                  breakfast_sat: Math.max(0, (subscription.breakfast_sat || 0) - deltaBreakfastSat),
-                  lunch_sat:     Math.max(0, (subscription.lunch_sat     || 0) - deltaLunchSat),
-                  bbq_sat:       Math.max(0, (subscription.bbq_sat       || 0) - deltaBbqSat),
-                  breakfast_sun: Math.max(0, (subscription.breakfast_sun || 0) - deltaBreakfastSun),
-                  lunch_sun:     Math.max(0, (subscription.lunch_sun     || 0) - deltaLunchSun),
-                  history: newHistory,
-                });
-                if (error) throw new Error(error);
+                const newBoothCount   = Math.max(0, (subscription.booth_count   || 0) - deltaStands);
+                const newBreakfastSat = Math.max(0, (subscription.breakfast_sat || 0) - deltaBreakfastSat);
+                const newLunchSat     = Math.max(0, (subscription.lunch_sat     || 0) - deltaLunchSat);
+                const newBbqSat       = Math.max(0, (subscription.bbq_sat       || 0) - deltaBbqSat);
+                const newBreakfastSun = Math.max(0, (subscription.breakfast_sun || 0) - deltaBreakfastSun);
+                const newLunchSun     = Math.max(0, (subscription.lunch_sun     || 0) - deltaLunchSun);
+                const allZero = newBoothCount + newBreakfastSat + newLunchSat + newBbqSat + newBreakfastSun + newLunchSun === 0;
+                const remainingLinesEST = (subscription.history || '').split('\n')
+                  .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !selected.includes(l));
+                const { area: derivedAreaEST, notes: derivedNotesEST, hadAreaMarker: hadAreaEST, hadNotesMarker: hadNotesEST } =
+                  deriveAreaNotesFromHistory(remainingLinesEST, selected);
+                let error;
+                if (allZero) {
+                  ({ error } = await unsubscribeCompany(subscription.id));
+                  if (error) throw new Error(error);
+                  toastSuccess('Subscription deleted.');
+                } else {
+                  ({ error } = await updateSubscription(subscription.id, {
+                    booth_count:   newBoothCount,
+                    ...(hadAreaEST  ? { area:  derivedAreaEST  } : {}),
+                    ...(hadNotesEST ? { notes: derivedNotesEST } : {}),
+                    breakfast_sat: newBreakfastSat,
+                    lunch_sat:     newLunchSat,
+                    bbq_sat:       newBbqSat,
+                    breakfast_sun: newBreakfastSun,
+                    lunch_sun:     newLunchSun,
+                    history: newHistory,
+                  }));
+                  if (error) throw new Error(error);
+                }
                 await revertSelectedLineItems(subscription.company_id, selected);
               }
             } catch (e) {
