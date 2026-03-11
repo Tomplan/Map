@@ -69,6 +69,6 @@ describe('useCountViews dedupe/cache', () => {
 
     // realtime channel should also be created only once for that table/year
     expect(supabase.channel).toHaveBeenCalledTimes(1);
-    expect(String(supabase.channel.mock.calls[0][0])).toMatch(/subscription_counts/);
+    expect(String(supabase.channel.mock.calls[0][0])).toMatch(/event_subscriptions-count/);
   });
 });
