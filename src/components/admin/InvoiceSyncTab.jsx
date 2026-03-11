@@ -1568,54 +1568,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 : 'PENDING'}
                           </span>
                         </td>
-                        <td className="px-2 py-2 text-right w-[120px] align-top">
-                          <div className="flex items-center justify-end space-x-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleApproveAndSync(inv);
-                              }}
-                              disabled={inv.status !== 'pending' || !inv.company_id}
-                              className="p-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                              title={inv.status !== 'pending' ? 'Already synced' : !inv.company_id ? 'Verify company first (click the badge above)' : 'Sync to subscription'}
-                            >
-                              <Icon path={mdiCheck} size={0.8} />
-                            </button>
-                            {inv.status === 'approved' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleStatusChange(inv.id, 'pending');
-                                }}
-                                className="p-2 bg-white border border-orange-300 text-orange-600 rounded hover:bg-orange-50"
-                                title="Undo subscription — revert to pending"
-                              >
-                                <Icon path={mdiArrowULeftTop} size={0.8} />
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(inv.id, 'rejected');
-                              }}
-                              disabled={inv.status === 'approved' || inv.status === 'rejected'}
-                              className="p-2 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={inv.status === 'approved' ? 'Use the undo button to revert a subscription' : 'Reject'}
-                            >
-                              <Icon path={mdiCancel} size={0.8} />
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteInvoice(inv);
-                              }}
-                              className="p-2 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
-                              title="Delete Invoice"
-                            >
-                              <Icon path={mdiDelete} size={0.8} className="text-red-500" />
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                       {/* Expandable Subrow */}
                       {isExpanded && (
