@@ -137,8 +137,26 @@ class SupabaseBackup {
       // Sort by modification time (newest first)
       filesWithStats.sort((a, b) => b.mtime - a.mtime);
 
-      // Keep only the latest 7 backups
-      const toDelete = filesWithStats.slice(this.config.backup.retention.daily);
+      // Identify the first backup of each month to keep forever
+      const monthsKept = new Set();
+      const chronoSorted = [...filesWithStats].sort((a, b) => a.mtime - b.mtime);
+      const firstOfMonthFiles = new Set();
+      for (const file of chronoSorted) {
+        const monthMatch = file.name.match(/\d{4}-\d{2}/);
+        if (monthMatch) {
+          const month = monthMatch[0];
+          if (!monthsKept.has(month)) {
+            monthsKept.add(month);
+            firstOfMonthFiles.add(file.name);
+          }
+        }
+      }
+
+      // Filter out files that are the first of the month
+      const removableFiles = filesWithStats.filter(f => !firstOfMonthFiles.has(f.name));
+
+      // Keep only the latest N backups from the removable ones
+      const toDelete = removableFiles.slice(this.config.backup.retention.daily);
 
       for (const file of toDelete) {
         await fs.rm(file.path, { recursive: true, force: true });
@@ -146,7 +164,7 @@ class SupabaseBackup {
       }
 
       this.logger.info(
-        `Cleanup completed. Kept ${this.config.backup.retention.daily} latest backups`,
+        `Cleanup completed. Kept ${this.config.backup.retention.daily} latest backups (plus 1 per month forever)`,
       );
     } catch (error) {
       this.logger.warn(`Cleanup failed: ${error.message}`);
