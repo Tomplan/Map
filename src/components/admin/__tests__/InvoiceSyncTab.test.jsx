@@ -89,16 +89,18 @@ test('creating a company from an invoice seeds additional fields', async () => {
   userEvent.click(verifyButton);
 
   // in main row itself we should now see per-item action icons and quantities
-  const approveIcons = await screen.findAllByTitle('Mark approved');
+  // since invoice is unverified, the action icons should be disabled and
+  // carry the greyed-out style
+  const approveIcons = await screen.findAllByTitle('Verify company first');
   expect(approveIcons.length).toBeGreaterThanOrEqual(2);
   // quantities displayed as x<number>
   expect(screen.getByText('x1')).toBeInTheDocument();
   expect(screen.getByText('x5')).toBeInTheDocument();
 
-  // expand and verify no extra icons appear (counts match)
+  // expanding should not change count of icons
   const invoiceRow = screen.getByText(/TestCo/).closest('tr');
   userEvent.click(invoiceRow);
-  const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
+  const approveIconsExpanded = await screen.findAllByTitle('Verify company first');
   expect(approveIconsExpanded.length).toEqual(approveIcons.length);
 
   // there should be no global sync/reject/delete buttons left in main row

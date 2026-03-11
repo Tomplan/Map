@@ -1501,27 +1501,30 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                     <span className="text-xs text-gray-500">x{item.quantity}</span>
                                   </span>
                                   <div className="flex items-center space-x-1">
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'approved'); }}
-                                      className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
-                                      title="Mark approved"
-                                    >
-                                      <Icon path={mdiCheck} size={0.6} />
-                                    </button>
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'rejected'); }}
-                                      className="p-1 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50"
-                                      title="Reject item"
-                                    >
-                                      <Icon path={mdiCancel} size={0.6} />
-                                    </button>
-                                    <button
-                                      onClick={(e) => { e.stopPropagation(); handleItemAction(idx, 'delete'); }}
-                                      className="p-1 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
-                                      title="Delete item"
-                                    >
-                                      <Icon path={mdiDelete} size={0.6} />
-                                    </button>
+                                    {['approved','rejected','delete'].map((act, aidx) => {
+                                      const icons = { approved: mdiCheck, rejected: mdiCancel, delete: mdiDelete };
+                                      const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
+                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50',
+                                                       delete: 'bg-white border border-gray-300 text-red-500 hover:bg-red-50' };
+                                      const titles = { approved: 'Mark approved',
+                                                       rejected: 'Reject item',
+                                                       delete: 'Delete item' };
+                                      const disabled = !inv.company_id;
+                                      return (
+                                        <button
+                                          key={aidx}
+                                          onClick={(e) => { e.stopPropagation(); if (!disabled) handleItemAction(idx, act); }}
+                                          disabled={disabled}
+                                          className={
+                                            `p-1 rounded ${colors[act]} ` +
+                                            (disabled ? 'opacity-40 cursor-not-allowed' : '')
+                                          }
+                                          title={disabled ? 'Verify company first' : titles[act]}
+                                        >
+                                          <Icon path={icons[act]} size={0.6} />
+                                        </button>
+                                      );
+                                    })}
                                   </div>
                                 </div>
                               ))}
