@@ -141,3 +141,45 @@ test('clicking a company card selects it and shows private details in the detail
   // Address should be visible in the detail panel
   expect(screen.getByText(/Main St/)).toBeInTheDocument();
 });
+
+// New regression test for billing duplication
+test('billing contact section is hidden when it duplicates main contact info', async () => {
+  // override companies hook for this scenario
+  const dupCo = {
+    id: 2,
+    name: 'DupCo',
+    contact: 'Same Person',
+    phone: '+311234567',
+    email: 'same@example.com',
+    contact_name: 'Same Person',
+    contact_email: 'same@example.com',
+    contact_phone: '+311234567',
+  };
+  const useCompanies = require('../../../hooks/useCompanies');
+  useCompanies.mockReturnValue({
+    companies: [dupCo],
+    loading: false,
+    error: null,
+    createCompany: jest.fn(),
+    updateCompany: jest.fn(),
+    deleteCompany: jest.fn(),
+    searchCompanies: jest.fn(),
+    reload: jest.fn(),
+  });
+
+  render(
+    <MemoryRouter initialEntries={['/companies']}>
+      <CompaniesTab />
+    </MemoryRouter>,
+  );
+
+  const card = await screen.findByRole('button', { name: /DupCo/i });
+  await userEvent.click(card);
+
+  // basic fields should still render
+  expect(screen.getByText('Same Person')).toBeInTheDocument();
+  expect(screen.getByText('same@example.com')).toBeInTheDocument();
+
+  // billing contact heading should NOT appear because values duplicate
+  expect(screen.queryByText('Billing Contact')).not.toBeInTheDocument();
+});

@@ -1023,10 +1023,44 @@ export default function InvoiceSyncTab({ selectedYear }) {
             setVerifyModal({ invoice: inv, company });
           }}
           onCreateNew={async () => {
+            // When the user opts to create a new company from an invoice we try to
+            // seed as many fields as possible from the parsed invoice data. This
+            // mirrors the "fill empty fields" behaviour used when matching an
+            // existing company so the newly created record isn't just a name/phone
+            // stub.
             const inv = companySearchModal;
             setCompanySearchModal(null);
             try {
-              const { data: newCo, error: ce } = await createCompany({ name: inv.company_name, phone: inv.phone || '', email: inv.email || '' });
+              // parse the JSON blob stored on the invoice and backfill from the
+              // legacy client_block if needed (same logic as in handleConfirmMatch).
+              let parsed = {};
+              try { parsed = JSON.parse(inv.notes || '{}'); } catch (_) {}
+              const hasStoredFields = parsed.contact_name || parsed.contact_email || parsed.contact_phone ||
+                                      parsed.address_line1 || parsed.postal_code || parsed.vat_number;
+              if (!hasStoredFields && Array.isArray(parsed.client_block) && parsed.client_block.length > 1) {
+                Object.assign(parsed, extractFieldsFromBlock(parsed.client_block));
+              }
+
+              const payload = {
+                name: inv.company_name,
+                phone: inv.phone || '',
+                email: inv.email || '',
+                // invoice-derived extras (will be undefined if missing, which
+                // supabase ignores)
+                contact_name: parsed.contact_name,
+                contact: parsed.contact_name,
+                contact_email: parsed.contact_email,
+                contact_phone: parsed.contact_phone,
+                address_line1: parsed.address_line1,
+                address_line2: parsed.address_line2,
+                postal_code: parsed.postal_code,
+                city: parsed.city,
+                country: parsed.country,
+                vat_number: parsed.vat_number,
+                kvk_number: parsed.kvk_number,
+              };
+
+              const { data: newCo, error: ce } = await createCompany(payload);
               if (ce) throw new Error(ce);
               await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', inv.id);
               setInvoices((prev) => prev.map((i) => (i.id === inv.id ? { ...i, company_id: newCo.id } : i)));
