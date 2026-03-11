@@ -1665,9 +1665,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                           <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider text-right border-l border-gray-100">
                                             Quantity
                                           </th>
-                                          <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider text-center border-l border-gray-100">
-                                            Actions
-                                          </th>
                                         </tr>
                                       </thead>
                                       <tbody className="divide-y divide-gray-100">
@@ -1681,31 +1678,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                             </td>
                                             <td className="py-2.5 px-3 text-right font-bold text-indigo-700 border-l border-gray-50 bg-indigo-50/20">
                                               {item.quantity}
-                                            </td>
-                                            <td className="py-2.5 px-3 text-center border-l border-gray-50">
-                                              <div className="flex items-center justify-center space-x-1">
-                                                <button
-                                                  onClick={() => handleItemAction(idx, 'approved')}
-                                                  className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
-                                                  title="Mark approved"
-                                                >
-                                                  <Icon path={mdiCheck} size={0.6} />
-                                                </button>
-                                                <button
-                                                  onClick={() => handleItemAction(idx, 'rejected')}
-                                                  className="p-1 bg-white border border-gray-300 text-red-600 rounded hover:bg-red-50"
-                                                  title="Reject item"
-                                                >
-                                                  <Icon path={mdiCancel} size={0.6} />
-                                                </button>
-                                                <button
-                                                  onClick={() => handleItemAction(idx, 'delete')}
-                                                  className="p-1 bg-white border border-gray-300 text-red-500 rounded hover:bg-red-50"
-                                                  title="Delete item"
-                                                >
-                                                  <Icon path={mdiDelete} size={0.6} />
-                                                </button>
-                                              </div>
                                             </td>
                                           </tr>
                                         ))}

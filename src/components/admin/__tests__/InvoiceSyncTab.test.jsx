@@ -95,12 +95,11 @@ test('creating a company from an invoice seeds additional fields', async () => {
   expect(screen.getByText('x1')).toBeInTheDocument();
   expect(screen.getByText('x5')).toBeInTheDocument();
 
-  // we can still expand, but it's no longer necessary to reach the buttons
-  // (expansion testing kept if desired)
+  // expand and verify no extra icons appear (counts match)
   const invoiceRow = screen.getByText(/TestCo/).closest('tr');
   userEvent.click(invoiceRow);
   const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
-  expect(approveIconsExpanded.length).toBeGreaterThanOrEqual(2);
+  expect(approveIconsExpanded.length).toEqual(approveIcons.length);
 
   // CompanySearchModal should appear with create new button
   const createBtn = await screen.findByRole('button', { name: /Create new company/i });
