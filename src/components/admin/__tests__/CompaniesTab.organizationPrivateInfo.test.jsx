@@ -142,6 +142,54 @@ test('clicking a company card selects it and shows private details in the detail
   expect(screen.getByText(/Main St/)).toBeInTheDocument();
 });
 
+// the cursor was disappearing when editing a company name that no longer
+// matched the current search filter; verify the detail form stays open.
+test('editing company name does not close detail panel when filter would hide it', async () => {
+  // configure hook to return a single editable company
+  const sample = {
+    id: 5,
+    name: 'FooCo',
+    contact: 'Someone',
+    phone: '+310000000',
+    email: 'foo@bar.com',
+  };
+  const useCompanies = require('../../../hooks/useCompanies');
+  useCompanies.mockReturnValue({
+    companies: [sample],
+    loading: false,
+    error: null,
+    createCompany: jest.fn(),
+    updateCompany: jest.fn(),
+    deleteCompany: jest.fn(),
+    searchCompanies: jest.fn(),
+    reload: jest.fn(),
+  });
+
+  render(
+    <MemoryRouter initialEntries={['/companies']}>
+      <CompaniesTab />
+    </MemoryRouter>,
+  );
+
+  // type a search term that matches the original name
+  const searchInput = screen.getByPlaceholderText('Search companies…');
+  await userEvent.type(searchInput, 'Foo');
+
+  // select the company and enter edit mode
+  const card = await screen.findByRole('button', { name: /FooCo/i });
+  await userEvent.click(card);
+  const editBtn = await screen.findByRole('button', { name: /Edit/i });
+  await userEvent.click(editBtn);
+
+  // change the name so it no longer contains the filter text
+  const nameInput = screen.getByPlaceholderText('Company name');
+  await userEvent.clear(nameInput);
+  await userEvent.type(nameInput, 'Bar');
+
+  // the input should still be in the document (i.e. panel hasn't closed)
+  expect(screen.getByPlaceholderText('Company name')).toBeInTheDocument();
+});
+
 // New regression test for billing duplication
 test('billing contact section is hidden when it duplicates main contact info', async () => {
   // override companies hook for this scenario

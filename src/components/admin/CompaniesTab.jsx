@@ -295,9 +295,21 @@ export default function CompaniesTab() {
     }
     allItems.push(...companies);
 
-    const filtered = searchTerm
+    let filtered = searchTerm
       ? allItems.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()))
       : allItems;
+
+    // make sure the item we're currently editing stays visible even if the
+    // user has typed a search term that would exclude it. without this the
+    // detail pane disappears in the middle of editing when the name no longer
+    // matches the filter, which causes the cursor to vanish.
+    if (editingId) {
+      const stillThere = filtered.some((i) => i.id === editingId);
+      if (!stillThere) {
+        const editItem = allItems.find((i) => i.id === editingId);
+        if (editItem) filtered = [...filtered, editItem];
+      }
+    }
 
     return [...filtered].sort((a, b) => {
       if (a.isOrganization) return -1;
@@ -305,7 +317,7 @@ export default function CompaniesTab() {
       const cmp = (a.name || '').localeCompare(b.name || '');
       return sortDir === 'asc' ? cmp : -cmp;
     });
-  }, [organizationProfile, companies, searchTerm, sortDir]);
+  }, [organizationProfile, companies, searchTerm, sortDir, editingId]);
 
   // debug: trace when companies or filtered items change
 
