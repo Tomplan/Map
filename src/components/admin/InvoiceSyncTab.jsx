@@ -54,11 +54,11 @@ function findBestCompanyMatch(invoice, companies) {
     else if (invName && cName && (cName.includes(invName) || invName.includes(cName))) { score += 40; reasons.push('~name'); }
 
     if (invEmail) {
-      const emails = [c.email, c.contact_email].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
+      const emails = [c.email, c.contact_email, c.contact_email_2].map(e => (e || '').toLowerCase().trim()).filter(Boolean);
       if (emails.includes(invEmail))                          { score += 80; reasons.push('email'); }
     }
     if (invPhone) {
-      const phones = [c.phone, c.contact_phone].map(p => normalizePhone(p || '')).filter(Boolean);
+      const phones = [c.phone, c.contact_phone, c.contact_phone_2].map(p => normalizePhone(p || '')).filter(Boolean);
       if (phones.some(p => p && p === invPhone))              { score += 70; reasons.push('phone'); }
     }
     if (invKvk && invKvk.length >= 8) {
@@ -154,13 +154,25 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
     }
   }
 
+  // Pre-compute whether the invoice value is already stored in any company field
+  // (primary or secondary). If so, don't show a conflict even if primaries differ.
+  const emailNorm  = (v) => (v || '').toLowerCase().trim();
+  const phoneNorm  = (v) => normalizePhone(v || '');
+  const nameNorm   = (v) => (v || '').toLowerCase().trim();
+  const invEmailVal  = emailNorm(inv.contact_email);
+  const invPhoneVal  = phoneNorm(inv.contact_phone);
+  const invNameVal   = nameNorm(inv.contact_name);
+  const emailAlreadyStored = invEmailVal  && [company.email, company.contact_email, company.contact_email_2].some(e => emailNorm(e) === invEmailVal);
+  const phoneAlreadyStored = invPhoneVal  && [company.phone, company.contact_phone, company.contact_phone_2].some(p => phoneNorm(p) === invPhoneVal);
+  const nameAlreadyStored  = invNameVal   && [company.contact, company.contact_name, company.contact_name_2].some(n => nameNorm(n) === invNameVal);
+
   const fields = [
     { label: 'Company name',  dbField: null,            inv: invoice.company_name,  cmp: company.name },
-    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true },
+    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true, alreadyStored: nameAlreadyStored },
     ...(inv.contact_name_2 ? [{ label: 'Contact 2', dbField: null, inv: inv.contact_name_2, cmp: null }] : []),
-    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true },
+    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true, alreadyStored: emailAlreadyStored },
     ...(inv.contact_email_2 ? [{ label: 'Email 2',   dbField: null, inv: inv.contact_email_2,  cmp: null }] : []),
-    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true },
+    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true, alreadyStored: phoneAlreadyStored },
     ...(inv.contact_phone_2 ? [{ label: 'Phone 2',   dbField: null, inv: inv.contact_phone_2,  cmp: null }] : []),
     { label: 'Street',        dbField: 'address_line1', inv: inv.address_line1,      cmp: company.address_line1 },
     { label: 'Street 2',      dbField: 'address_line2', inv: inv.address_line2,      cmp: company.address_line2 },
@@ -198,7 +210,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
           </div>
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {fields.map((f, i) => {
-              const differs = f.inv && f.cmp && f.inv !== f.cmp;
+              const differs = f.inv && f.cmp && f.inv !== f.cmp && !f.alreadyStored;
               const missing = f.inv && !f.cmp;
               const choice = fieldChoices[f.dbField] || 'cmp';
               return (
@@ -209,6 +221,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                     <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
                       {f.cmp || <span className="text-gray-300">—</span>}
                       {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
+                      {f.alreadyStored && f.inv && f.cmp && f.inv !== f.cmp && <span className="ml-1 text-xs text-green-600">✓ stored in secondary</span>}
                     </div>
                   </div>
                   {/* Per-row conflict resolution — only shown when both sides have different values */}
@@ -1050,7 +1063,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
 
       if (Object.keys(patch).length > 0) {
-        await supabase.from('companies').update(patch).eq('id', company.id);
+        // Deduplicate: if a _2 field ends up identical to its primary, clear the secondary.
+        const deduped = { ...patch };
+        const norm = (v) => (v || '').toLowerCase().trim();
+        const effectiveEmail  = norm(deduped.contact_email  ?? company.contact_email  ?? company.email);
+        const effectivePhone  = (deduped.contact_phone  ?? company.contact_phone  ?? company.phone  ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
+        const effectiveName   = norm(deduped.contact_name   ?? company.contact_name);
+        if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
+        if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
+        if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
+        await supabase.from('companies').update(deduped).eq('id', company.id);
       }
 
       toastSuccess('Match confirmed — use the approve button to sync.');
