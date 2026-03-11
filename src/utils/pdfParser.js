@@ -238,14 +238,12 @@ function parseSpatialInvoice(items, allowedItems) {
       }
       // Also handle a standalone "Opmerking(en)" header line (no Betaalmethode column).
       // When the entire text chunk is just the header keyword (nothing after it), treat
-      // this as a header-skip too: record the column X and wait for the next line.
+      // this as a header-skip too: leave noteColumnX as null (no column filter needed —
+      // the notes fill the whole row) and wait for the next line.
       const kwMatchHeader = textChunk.match(/^(opmerking(?:en)?)\s*$/i);
       if (kwMatchHeader) {
-        const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
-        if (opItem) {
-          noteColumnX = opItem.x;
-          console.debug('HEADER SKIP (no betaalmethode): recorded noteColumnX', noteColumnX);
-        }
+        // Do NOT set noteColumnX here — when there is no Betaalmethode column the note
+        // text is left-aligned across the full width, so we must not filter by X.
         console.debug('HEADER SKIP (no betaalmethode): ignoring standalone header', textChunk);
         notesStarted = true;
         return; // skip to next line in the forEach
