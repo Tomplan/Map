@@ -41,14 +41,34 @@ jest.mock('../../../supabaseClient', () => {
     subscribe: jest.fn(),
   }));
   // helper to create from-chains used by the component
-  const fromMock = jest.fn(() => ({
-    select: jest.fn(() => ({
-      order: mockOrder,
-    })),
-    update: jest.fn(() => ({
-      eq: jest.fn(() => Promise.resolve({ error: null })),
-    })),
-  }));
+  const fromMock = jest.fn((table) => {
+    if (table === 'event_subscriptions') {
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn().mockReturnThis(),
+          maybeSingle: jest.fn().mockResolvedValue({ 
+            data: { id: 500, company_id: 42, booth_count: 2 }, 
+            error: null 
+          }),
+        })),
+        update: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null })),
+        })),
+      };
+    }
+    return {
+      select: jest.fn(() => ({
+        order: mockOrder,
+      })),
+      update: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null })),
+      })),
+      delete: jest.fn(() => ({
+        eq: jest.fn(() => Promise.resolve({ error: null })),
+        not: jest.fn(() => Promise.resolve({ error: null })),
+      })),
+    };
+  });
   return {
     supabase: {
       from: fromMock,
