@@ -476,13 +476,24 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   // Parse a history addition line into the subscription counts it contributed.
   const parseHistoryLineCounts = (line) => {
-    // Per-item format: 'Invoice X : ITEM_NAME xQTY'
-    const m = line.match(/:\s*(.+?)\s+x(\d+)\s*$/i);
-    if (m) {
-      return computeItemCounts(m[1], parseInt(m[2], 10), settings?.invoice_allowed_items);
+    // Strip off markers like | area: ... or prefix [Removed on...: ]
+    let baseLine = line.replace(/^\[Removed on.*?:/i, '');
+    baseLine = baseLine.split('|')[0].replace(/\]$/, '').trim();
+
+    // Per-item format: 'Invoice X on Date Time: ITEM_NAME xQTY'
+    const qtyMatch = baseLine.match(/\sx(\d+)\s*$/i);
+    if (qtyMatch) {
+       let itemName = baseLine;
+       const lastColonIdx = baseLine.lastIndexOf(':');
+       if (lastColonIdx !== -1) {
+          itemName = baseLine.substring(lastColonIdx + 1).trim();
+       }
+       itemName = itemName.replace(/\sx\d+\s*$/i, '').trim();
+
+       return computeItemCounts(itemName, parseInt(qtyMatch[1], 10), settings?.invoice_allowed_items);
     }
     // Invoice-level format: 'Invoice X: N booth(s)'
-    const b = line.match(/(\d+)\s*booth/i);
+    const b = baseLine.match(/(\d+)\s*booth/i);
     if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
     return null;
   };
