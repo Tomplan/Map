@@ -387,7 +387,10 @@ function parseSpatialInvoice(items, allowedItems) {
       const descLower = li.item.toLowerCase();
       // Only Keep items if they partially match one of the explicit allowed list strings
       return allowedItems.some((allowedStr) => {
-        const check = allowedStr.trim().toLowerCase();
+        const check = (typeof allowedStr === 'string'
+          ? allowedStr
+          : (allowedStr?.label || '')
+        ).trim().toLowerCase();
         return check.length > 0 && descLower.includes(check);
       });
     });

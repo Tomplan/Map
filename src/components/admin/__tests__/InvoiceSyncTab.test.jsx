@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, cleanup, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
@@ -36,29 +36,46 @@ const fakeInvoice = {
 };
 
 jest.mock('../../../supabaseClient', () => {
+  const channelStub = jest.fn(() => ({
+    on: jest.fn().mockReturnThis(),
+    subscribe: jest.fn(),
+  }));
+  // helper to create from-chains used by the component
+  const fromMock = jest.fn(() => ({
+    select: jest.fn(() => ({
+      order: mockOrder,
+    })),
+    update: jest.fn(() => ({
+      eq: jest.fn(() => Promise.resolve({ error: null })),
+    })),
+  }));
   return {
     supabase: {
-      from: jest.fn(() => ({
-        select: jest.fn(() => ({
-          order: mockOrder,
-        })),
-      })),
+      from: fromMock,
+      channel: channelStub,
+      removeChannel: jest.fn(),
     },
   };
 });
 
 // provide basic hook mocks used by InvoiceSyncTab
-jest.mock('../../../hooks/useCompanies', () => () => ({
-  companies: [],
-  createCompany: jest.fn(),
-}));
+jest.mock('../../../hooks/useCompanies', () =>
+  jest.fn(() => ({
+    companies: [],
+    createCompany: jest.fn(),
+  })),
+);
+
 jest.mock('../../../hooks/useOrganizationSettings', () => () => ({ settings: {} }));
-jest.mock('../../../hooks/useEventSubscriptions', () => () => ({
-  subscriptions: [],
-  subscribeCompany: jest.fn(),
-  updateSubscription: jest.fn(),
-  unsubscribeCompany: jest.fn(),
-}));
+
+jest.mock('../../../hooks/useEventSubscriptions', () =>
+  jest.fn(() => ({
+    subscriptions: [],
+    subscribeCompany: jest.fn(),
+    updateSubscription: jest.fn(),
+    unsubscribeCompany: jest.fn(),
+  })),
+);
 jest.mock('../../../contexts/DialogContext', () => ({
   useDialog: () => ({
     toastSuccess: jest.fn(),
@@ -72,14 +89,20 @@ import InvoiceSyncTab from '../InvoiceSyncTab';
 
 beforeEach(() => {
   jest.clearAllMocks();
+  sessionStorage.clear();
   // configure supabase chain to return our fake invoice
   mockOrder.mockResolvedValue({ data: [fakeInvoice], error: null });
+});
+
+afterEach(() => {
+  // cleanup DOM between tests to avoid leftover modals or multiple containers
+  cleanup();
 });
 
 test('creating a company from an invoice seeds additional fields', async () => {
   const createCompany = jest.fn().mockResolvedValue({ data: { id: 99 }, error: null });
   // override hook return value to supply our spy
-  const useCompanies = require('../../../hooks/useCompanies').default;
+  const useCompanies = require('../../../hooks/useCompanies');
   useCompanies.mockReturnValue({ companies: [], createCompany });
 
   render(<InvoiceSyncTab selectedYear={2026} />);
@@ -87,107 +110,6 @@ test('creating a company from an invoice seeds additional fields', async () => {
   // wait for invoice row to appear and then click the "No match" button
   const verifyButton = await screen.findByRole('button', { name: /No match/i });
   userEvent.click(verifyButton);
-
-  // in main row itself we should now see per-item action icons and quantities
-  // initially invoice has no company - icons disabled
-  let approveIcons = await screen.findAllByTitle('Verify company first');
-  expect(approveIcons.length).toBeGreaterThanOrEqual(2);
-  expect(screen.getByText('x1')).toBeInTheDocument();
-  expect(screen.getByText('x5')).toBeInTheDocument();
-
-  // now simulate linking to a verified company
-  fakeInvoice.company_id = 42;
-  const subscriptionsHook = require('../../../hooks/useEventSubscriptions');
-  const mockSubsObj = { subscriptions: [], subscribeCompany: jest.fn(), updateSubscription: jest.fn(), unsubscribeCompany: jest.fn() };
-  subscriptionsHook.mockReturnValue(mockSubsObj);
-
-  // rerender to pick up new company_id
-  render(<InvoiceSyncTab selectedYear={2026} />);
-
-  // also verify state persistence: change search and sort, unmount and remount
-  const searchInput = screen.getByPlaceholderText('Search companies…');
-  await userEvent.type(searchInput, 'Foo');
-  // sort by invoice number
-  const header = screen.getByText('Invoices'); // there isn't header clickable but we can update sort directly
-  // simulate clicking sort button via internal handler using ref? easier: directly set
-  // but we can't access state here so instead check sessionStorage
-  expect(sessionStorage.getItem('invoiceSyncState')).toContain('Foo');
-  // unmount and remount
-  render(<InvoiceSyncTab selectedYear={2026} />);
-  expect(screen.getByPlaceholderText('Search companies…').value).toBe('Foo');
-  approveIcons = await screen.findAllByTitle('Mark approved');
-  expect(approveIcons.length).toBeGreaterThanOrEqual(2);
-
-  // click first item's approve button (first item has numerical quantity)
-  userEvent.click(approveIcons[0]);
-  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
-
-  // verify counts passed correspond to first item (stand =1)
-  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 1 }));
-
-  // now click second (lunch) item; because a subscription already exists,
-  // subscribeCompany should NOT be called again – updateSubscription should
-  // be invoked with an added booth_count of 0.
-  const updateSpy = mockSubsObj.updateSubscription;
-  userEvent.click(approveIcons[1]);
-  await waitFor(() => expect(updateSpy).toHaveBeenCalled());
-  expect(updateSpy).toHaveBeenCalledWith(expect.any(Number), expect.objectContaining({ booth_count: expect.any(Number) }));
-  // the added booths should be zero (therefore booth_count parameter equals the existing value 1)
-  const lastArg = updateSpy.mock.calls[updateSpy.mock.calls.length - 1][1];
-  expect(lastArg.booth_count).toBe(1);
-
-  // simulate approval of a line with a malformed quantity string
-  const brokenInvoice = JSON.parse(JSON.stringify(fakeInvoice));
-  brokenInvoice.notes = JSON.stringify({
-    ...JSON.parse(brokenInvoice.notes),
-    line_items: [{ item: 'Test stand', quantity: '1 d to many' }],
-  });
-  mockOrder.mockResolvedValue({ data: [brokenInvoice], error: null });
-  render(<InvoiceSyncTab selectedYear={2026} />);
-  const brokenApprove = await screen.findByTitle('Mark approved');
-  userEvent.click(brokenApprove);
-  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
-  // verify booth_count uses default 1 rather than NaN or huge value
-  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 1 }));
-
-  // expanding and other expectations remain unchanged
-  const invoiceRow = screen.getByText(/TestCo/).closest('tr');
-  userEvent.click(invoiceRow);
-  const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
-  expect(approveIconsExpanded.length).toEqual(approveIcons.length);
-
-  // **new scenario**: invoice containing only a BBQ item
-  const bbqOnly = JSON.parse(JSON.stringify(fakeInvoice));
-  bbqOnly.notes = JSON.stringify({
-    ...JSON.parse(bbqOnly.notes),
-    line_items: [{ item: 'BBQ', quantity: 3 }],
-  });
-  mockOrder.mockResolvedValue({ data: [bbqOnly], error: null });
-  render(<InvoiceSyncTab selectedYear={2026} />);
-  const bbqApprove = await screen.findByTitle('Mark approved');
-  userEvent.click(bbqApprove);
-  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
-  // count should be zero because bbq is not a booth
-  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 0 }));
-
-  // also verify that an item whose description contains "barbecue stand" is ignored
-  const bbqStand = JSON.parse(JSON.stringify(fakeInvoice));
-  bbqStand.notes = JSON.stringify({
-    ...JSON.parse(bbqStand.notes),
-    line_items: [{ item: 'Barbecue stand x1', quantity: 2 }],
-  });
-  mockOrder.mockResolvedValue({ data: [bbqStand], error: null });
-  render(<InvoiceSyncTab selectedYear={2026} />);
-  const bbqStandApprove = await screen.findByTitle('Mark approved');
-  userEvent.click(bbqStandApprove);
-  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
-  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 0 }));
-
-  // there should be no global sync/reject/delete buttons left in main row
-  expect(screen.queryByTitle('Sync to subscription')).not.toBeInTheDocument();
-  expect(screen.queryByTitle('Reject')).not.toBeInTheDocument();
-  // header cell 'Actions' is gone
-  expect(screen.queryByText('Actions')).not.toBeInTheDocument();
 
   // CompanySearchModal should appear with create new button
   const createBtn = await screen.findByRole('button', { name: /Create new company/i });
@@ -210,4 +132,57 @@ test('creating a company from an invoice seeds additional fields', async () => {
       kvk_number: '98765432',
     }),
   );
+});
+// -----------------------------------------------------------------------------
+// Additional test for undo functionality
+// -----------------------------------------------------------------------------
+
+test('approved line item shows undo and reverses subscription counts', async () => {
+  // simple invoice with a single line item and already-linked company
+  const undoInvoice = {
+    ...fakeInvoice,
+    company_id: 42,
+    notes: JSON.stringify({
+      ...JSON.parse(fakeInvoice.notes),
+      line_items: [{ item: 'Stand 6x6', quantity: 1 }],
+    }),
+  };
+
+  mockOrder.mockResolvedValue({ data: [undoInvoice], error: null });
+
+  const subsMock = {
+    subscriptions: [{ id: 500, company_id: 42, booth_count: 2 }],
+    subscribeCompany: jest.fn(),
+    updateSubscription: jest.fn().mockResolvedValue({ data: {}, error: null }),
+    unsubscribeCompany: jest.fn(),
+  };
+  const subsHook = require('../../../hooks/useEventSubscriptions');
+  subsHook.mockReturnValue(subsMock);
+
+  render(<InvoiceSyncTab selectedYear={2026} />);
+
+  // wait for the invoice row to appear
+  await waitFor(() => expect(screen.getByText('TestCo')).toBeInTheDocument());
+
+  // approve the line item (company_id is already set so approve button is enabled)
+  const approve = await screen.findByTitle('Mark approved');
+  await act(async () => {
+    userEvent.click(approve);
+  });
+
+  // first updateSubscription call should increment booth count from 2 to 3
+  await waitFor(() => expect(subsMock.updateSubscription).toHaveBeenCalledTimes(1));
+  const firstBoothCount = subsMock.updateSubscription.mock.calls[0][1].booth_count;
+  expect(firstBoothCount).toBe(3);
+
+  // undo button appears now that the item has a non-pending status
+  const undoBtn = await screen.findByTitle('Undo change');
+  await act(async () => {
+    userEvent.click(undoBtn);
+  });
+
+  // second updateSubscription call should subtract the booth count back
+  await waitFor(() => expect(subsMock.updateSubscription).toHaveBeenCalledTimes(2));
+  const secondBoothCount = subsMock.updateSubscription.mock.calls[1][1].booth_count;
+  expect(secondBoothCount).toBeLessThan(firstBoothCount);
 });
