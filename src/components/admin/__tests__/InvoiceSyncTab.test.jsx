@@ -113,6 +113,17 @@ test('creating a company from an invoice seeds additional fields', async () => {
   // verify counts passed correspond to first item (stand =1)
   expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 1 }));
 
+  // now click second (lunch) item; because a subscription already exists,
+  // subscribeCompany should NOT be called again – updateSubscription should
+  // be invoked with an added booth_count of 0.
+  const updateSpy = mockSubsObj.updateSubscription;
+  userEvent.click(approveIcons[1]);
+  await waitFor(() => expect(updateSpy).toHaveBeenCalled());
+  expect(updateSpy).toHaveBeenCalledWith(expect.any(Number), expect.objectContaining({ booth_count: expect.any(Number) }));
+  // the added booths should be zero (therefore booth_count parameter equals the existing value 1)
+  const lastArg = updateSpy.mock.calls[updateSpy.mock.calls.length - 1][1];
+  expect(lastArg.booth_count).toBe(1);
+
   // expanding and other expectations remain unchanged
   const invoiceRow = screen.getByText(/TestCo/).closest('tr');
   userEvent.click(invoiceRow);

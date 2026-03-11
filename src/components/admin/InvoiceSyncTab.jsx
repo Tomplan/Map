@@ -1411,7 +1411,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     const desc = ((item.item || item.description) || '').toLowerCase();
                     let stands = 0;
                     let breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
-                    if (desc.includes('stand') || desc.includes('kraam')) {
+                    // only count booths if the description clearly refers to a stand or kraam
+                    // and does *not* appear to be a meal or BBQ line (some invoices have
+                    // descriptions like "BBQ stand" which otherwise would count as a
+                    // booth). we guard against that by excluding keywords.
+                    const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
+                                   !desc.includes('bbq') && !desc.includes('lunch') && !desc.includes('meal');
+                    if (isBooth) {
                       if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
                         stands += 2 * qty;
                       } else {
@@ -1419,7 +1425,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       }
                     }
                     if (desc.includes('bbq')) bbq_sat += qty;
-                    if (desc.includes('lunch')) lunch_sat += qty;
+                    if (desc.includes('lunch') || desc.includes('meal')) lunch_sat += qty;
                     if (desc.includes('breakfast')) breakfast_sat += qty;
                     // sunday meals currently unused; could add logic if needed
                     return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
