@@ -1881,6 +1881,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const counts = getCountsForItem(item);
                       const invoiceArea = item.area || '';
                       const customerNote = parsedData.notes || '';
+                      // Notes belong to the booth item. Only attach them to a meal item
+                      // when the invoice has no booth line items at all.
+                      const invoiceHasBoothItems = items.some((i) => getCountsForItem(i).stands > 0);
+                      const isBoothItem = counts.stands > 0;
+                      const attachNotes = isBoothItem || !invoiceHasBoothItems;
+                      const effectiveNote = attachNotes ? customerNote : '';
                       const invNow = new Date();
                       const invoiceNote =
                         'Invoice ' + inv.invoice_number + ' on ' + invNow.toLocaleDateString('en-GB') + ' ' + invNow.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) +
@@ -1901,13 +1907,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         });
 
                         const itemNoteWithMarkers = invoiceNote +
-                          (invoiceArea   ? ' | area: '  + invoiceArea   : '') +
-                          (customerNote  ? ' | notes: ' + customerNote  : '');
+                          (invoiceArea     ? ' | area: '  + invoiceArea     : '') +
+                          (effectiveNote   ? ' | notes: ' + effectiveNote   : '');
                         if (doMerge) {
                           const existingItemAreas  = existing.area  ? existing.area.split('; ').map(s => s.trim()).filter(Boolean)  : [];
                           const existingItemNotes  = existing.notes ? existing.notes.split('\n').map(s => s.trim()).filter(Boolean) : [];
-                          const mergedItemArea  = invoiceArea  && !existingItemAreas.includes(invoiceArea)  ? [...existingItemAreas, invoiceArea].join('; ')  : existing.area  || invoiceArea;
-                          const mergedItemNotes = customerNote && !existingItemNotes.includes(customerNote) ? [...existingItemNotes, customerNote].join('\n') : existing.notes || customerNote;
+                          const mergedItemArea  = invoiceArea    && !existingItemAreas.includes(invoiceArea)    ? [...existingItemAreas, invoiceArea].join('; ')    : existing.area  || invoiceArea;
+                          const mergedItemNotes = effectiveNote  && !existingItemNotes.includes(effectiveNote)  ? [...existingItemNotes, effectiveNote].join('\n')  : existing.notes || effectiveNote;
                           const mergedHistory = (existing.history ? existing.history + '\n' : '') + itemNoteWithMarkers;
                           await updateSubscription(existing.id, {
                             booth_count: (existing.booth_count || 0) + counts.stands,
@@ -1924,7 +1930,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           await updateSubscription(existing.id, {
                             booth_count: counts.stands,
                             area: invoiceArea,
-                            notes: customerNote,
+                            notes: effectiveNote,
                             history: itemNoteWithMarkers,
                             breakfast_sat: counts.breakfast_sat,
                             lunch_sat: counts.lunch_sat,
@@ -1937,10 +1943,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         await subscribeCompany(inv.company_id, {
                           booth_count: counts.stands,
                           area: invoiceArea,
-                          notes: customerNote,
+                          notes: effectiveNote,
                           history: invoiceNote +
-                            (invoiceArea  ? ' | area: '  + invoiceArea   : '') +
-                            (customerNote ? ' | notes: ' + customerNote  : ''),
+                            (invoiceArea    ? ' | area: '  + invoiceArea    : '') +
+                            (effectiveNote  ? ' | notes: ' + effectiveNote  : ''),
                           phone: inv.phone,
                           email: inv.email,
                           breakfast_sat: counts.breakfast_sat,
