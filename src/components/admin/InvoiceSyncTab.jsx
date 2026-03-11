@@ -1405,9 +1405,75 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     }
                   };
 
+                  // helper that derives subscription counts from a single line item
+                  const getCountsForItem = (item) => {
+                    const qty = item.quantity || 1;
+                    const desc = ((item.item || item.description) || '').toLowerCase();
+                    let stands = 0;
+                    let breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
+                    if (desc.includes('stand') || desc.includes('kraam')) {
+                      if (desc.includes('6x12') || desc.includes('6 x 12') || desc.includes('dubbele')) {
+                        stands += 2 * qty;
+                      } else {
+                        stands += 1 * qty;
+                      }
+                    }
+                    if (desc.includes('bbq')) bbq_sat += qty;
+                    if (desc.includes('lunch')) lunch_sat += qty;
+                    if (desc.includes('breakfast')) breakfast_sat += qty;
+                    // sunday meals currently unused; could add logic if needed
+                    return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
+                  };
+
                   // actions for individual line items
                   const handleItemAction = async (idx, action) => {
                     const items = parsedData.line_items || [];
+
+                    // subscription update when approving
+                    if (action === 'approved' && inv.company_id) {
+                      const item = items[idx];
+                      const counts = getCountsForItem(item);
+                      const invoiceArea = item.area || '';
+                      const customerNote = parsedData.notes || '';
+                      const invoiceNote =
+                        'Invoice ' + inv.invoice_number + ' : ' + (item.item || item.description) +
+                        (item.quantity ? ' x' + item.quantity : '');
+
+                      const existing = subscriptions.find((s) => s.company_id === inv.company_id);
+                      if (existing) {
+                        const mergedArea = existing.area || invoiceArea;
+                        const mergedHistory = existing.history
+                          ? existing.history + '\n' + invoiceNote
+                          : invoiceNote;
+
+                        await updateSubscription(existing.id, {
+                          booth_count: (existing.booth_count || 0) + counts.stands,
+                          area: mergedArea,
+                          notes: existing.notes || customerNote,
+                          history: mergedHistory,
+                          breakfast_sat: (existing.breakfast_sat || 0) + counts.breakfast_sat,
+                          lunch_sat: (existing.lunch_sat || 0) + counts.lunch_sat,
+                          bbq_sat: (existing.bbq_sat || 0) + counts.bbq_sat,
+                          breakfast_sun: (existing.breakfast_sun || 0) + counts.breakfast_sun,
+                          lunch_sun: (existing.lunch_sun || 0) + counts.lunch_sun,
+                        });
+                      } else {
+                        await subscribeCompany(inv.company_id, {
+                          booth_count: counts.stands,
+                          area: invoiceArea,
+                          notes: customerNote,
+                          history: invoiceNote,
+                          phone: inv.phone,
+                          email: inv.email,
+                          breakfast_sat: counts.breakfast_sat,
+                          lunch_sat: counts.lunch_sat,
+                          bbq_sat: counts.bbq_sat,
+                          breakfast_sun: counts.breakfast_sun,
+                          lunch_sun: counts.lunch_sun,
+                        });
+                      }
+                    }
+
                     if (action === 'delete') {
                       items.splice(idx, 1);
                     } else {

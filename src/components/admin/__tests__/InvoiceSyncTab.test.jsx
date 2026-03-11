@@ -89,18 +89,34 @@ test('creating a company from an invoice seeds additional fields', async () => {
   userEvent.click(verifyButton);
 
   // in main row itself we should now see per-item action icons and quantities
-  // since invoice is unverified, the action icons should be disabled and
-  // carry the greyed-out style
-  const approveIcons = await screen.findAllByTitle('Verify company first');
+  // initially invoice has no company - icons disabled
+  let approveIcons = await screen.findAllByTitle('Verify company first');
   expect(approveIcons.length).toBeGreaterThanOrEqual(2);
-  // quantities displayed as x<number>
   expect(screen.getByText('x1')).toBeInTheDocument();
   expect(screen.getByText('x5')).toBeInTheDocument();
 
-  // expanding should not change count of icons
+  // now simulate linking to a verified company
+  fakeInvoice.company_id = 42;
+  const subscriptionsHook = require('../../../hooks/useEventSubscriptions');
+  const mockSubsObj = { subscriptions: [], subscribeCompany: jest.fn(), updateSubscription: jest.fn(), unsubscribeCompany: jest.fn() };
+  subscriptionsHook.mockReturnValue(mockSubsObj);
+
+  // rerender to pick up new company_id
+  render(<InvoiceSyncTab selectedYear={2026} />);
+  approveIcons = await screen.findAllByTitle('Mark approved');
+  expect(approveIcons.length).toBeGreaterThanOrEqual(2);
+
+  // click first item's approve button
+  userEvent.click(approveIcons[0]);
+  await waitFor(() => expect(mockSubsObj.subscribeCompany).toHaveBeenCalled());
+
+  // verify counts passed correspond to first item (stand =1)
+  expect(mockSubsObj.subscribeCompany).toHaveBeenCalledWith(42, expect.objectContaining({ booth_count: 1 }));
+
+  // expanding and other expectations remain unchanged
   const invoiceRow = screen.getByText(/TestCo/).closest('tr');
   userEvent.click(invoiceRow);
-  const approveIconsExpanded = await screen.findAllByTitle('Verify company first');
+  const approveIconsExpanded = await screen.findAllByTitle('Mark approved');
   expect(approveIconsExpanded.length).toEqual(approveIcons.length);
 
   // there should be no global sync/reject/delete buttons left in main row
