@@ -236,6 +236,20 @@ function parseSpatialInvoice(items, allowedItems) {
         notesStarted = true;
         return; // skip to next line in the forEach
       }
+      // Also handle a standalone "Opmerking(en)" header line (no Betaalmethode column).
+      // When the entire text chunk is just the header keyword (nothing after it), treat
+      // this as a header-skip too: record the column X and wait for the next line.
+      const kwMatchHeader = textChunk.match(/^(opmerking(?:en)?)\s*$/i);
+      if (kwMatchHeader) {
+        const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
+        if (opItem) {
+          noteColumnX = opItem.x;
+          console.debug('HEADER SKIP (no betaalmethode): recorded noteColumnX', noteColumnX);
+        }
+        console.debug('HEADER SKIP (no betaalmethode): ignoring standalone header', textChunk);
+        notesStarted = true;
+        return; // skip to next line in the forEach
+      }
       notesStarted = true;
       // determine keyword match so we can slice after it
       const kwMatch = textChunk.match(/(opmerking(?:en)?|betreft)/i);
@@ -247,8 +261,9 @@ function parseSpatialInvoice(items, allowedItems) {
         noteStart = noteStart.replace(/^[:\s]+/, '').trim();
       }
       if (!noteStart) {
-        // fallback: take the entire line if we couldn't slice properly
-        noteStart = textChunk.trim();
+        // The line has content beyond the keyword but we couldn't slice it — skip
+        // rather than storing the bare keyword word itself as the note.
+        return;
       }
       console.debug('NOTE start:', noteStart);
       parsed.notes = noteStart;
