@@ -910,6 +910,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     <tr className="bg-gray-50 border-b">
                       <td colSpan={colSpan} className="px-8 py-3 text-left">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
+                        {(subscription.area || subscription.notes) && (
+                          <div className="mb-2 space-y-1">
+                            {subscription.area && <p className="text-xs text-blue-600">Area: {subscription.area}</p>}
+                            {subscription.notes && <p className="text-xs text-green-700">Notes: {subscription.notes}</p>}
+                          </div>
+                        )}
                         {historyLines.length === 0 ? (
                           <p className="text-xs text-gray-400 text-left">No history recorded.</p>
                         ) : (
