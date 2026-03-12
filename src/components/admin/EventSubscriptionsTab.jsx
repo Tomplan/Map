@@ -233,7 +233,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     try {
       // Append history line
-      await appendHistory(sub.id, 'Edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
+      await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
 
       // Create edit line item with count deltas (if any count changed)
       const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins'];
@@ -259,7 +259,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           counts: countDeltas,
           area: areaChanged ? updates.area : undefined,
           notes: notesChanged ? updates.notes : undefined,
-          description: 'Manual edit: ' + changes.join(', '),
+          description: 'Manually edited: ' + changes.join(', '),
         });
       }
 
@@ -908,10 +908,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   {/* Expandable history row */}
                   {isExpanded && (
                     <tr className="bg-gray-50 border-b">
-                      <td colSpan={colSpan} className="px-8 py-3">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">History</p>
+                      <td colSpan={colSpan} className="px-8 py-3 text-left">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
                         {historyLines.length === 0 ? (
-                          <p className="text-xs text-gray-400">No history recorded.</p>
+                          <p className="text-xs text-gray-400 text-left">No history recorded.</p>
                         ) : (
                           <ul className="space-y-1">
                             {historyLines.map((line, i) => (
@@ -955,9 +955,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Add to Existing Subscription</h2>
+              <h2 className="text-lg font-bold text-gray-900">Add to {mergeModal.subscription.company?.name || 'Existing Subscription'}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed.
+                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed for <strong>{mergeModal.subscription.event_year}</strong>.
                 Enter the amounts to add to their current subscription.
               </p>
             </div>
