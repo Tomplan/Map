@@ -869,7 +869,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     if (existing) {
       const merge = await confirm({
-        title: t('subscriptionAlreadyExists', 'Subscription already exists'),
+        title: t('subscriptionAlreadyExists', { companyName: existing.company?.name || '' }),
         message: t('subscriptionAlreadyExistsForCompany', {
           companyName: existing.company?.name || '',
           year: selectedYear,
@@ -1768,8 +1768,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
                         const doMerge = await confirm({
-                          title: t('subscriptionAlreadyExists', 'Subscription already exists'),
+                          title: t('subscriptionAlreadyExists', { companyName: inv.company_name || '' }),
                           message: t('subscriptionAlreadyExistsForYear', {
+                            companyName: inv.company_name || '',
                             year: selectedYear,
                             booths: existing.booth_count,
                             defaultValue: 'A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item\'s counts to the existing subscription.\nReplace will overwrite it completely with this item.'
