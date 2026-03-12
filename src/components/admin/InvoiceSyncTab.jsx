@@ -2008,17 +2008,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                     <span className="text-xs text-gray-400">x{item.quantity}</span>
                                   </span>
                                   <div className="flex items-center space-x-1 shrink-0">
-                                    {['approved','rejected','delete'].map((act, aidx) => {
-                                      const icons = { approved: mdiCheck, rejected: mdiCancel, delete: mdiDelete };
+                                    {['approved','rejected'].map((act, aidx) => {
+                                      const icons = { approved: mdiCheck, rejected: mdiCancel };
                                       const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
-                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50',
-                                                       delete: 'bg-white border border-gray-300 text-red-500 hover:bg-red-50' };
+                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50' };
                                       const titles = { approved: 'Mark approved',
-                                                       rejected: 'Reject item',
-                                                       delete: 'Delete item' };
+                                                       rejected: 'Reject item' };
                                       const disabled = !inv.company_id;
                                       // Replace the matching action button with undo when that status is active
-                                      if (item.status === act && act !== 'delete') {
+                                      if (item.status === act) {
                                         return (
                                           <button
                                             key={aidx}
