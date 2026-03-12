@@ -135,7 +135,7 @@ function extractFieldsFromBlock(lines = []) {
 }
 
 // ── Verification Modal ──────────────────────────────────────────────────
-function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
+function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew, onUnmatch }) {
   const [shouldPatch, setShouldPatch] = React.useState(false);
   // Per-field override for rows where invoice and DB values differ.
   // key = dbField, value = 'inv' (use invoice) or 'cmp' (keep DB, default)
@@ -290,10 +290,18 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 
         {/* Actions */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-          <button onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-            Cancel
-          </button>
+          <div className="flex gap-3">
+            <button onClick={onCancel}
+              className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+              Cancel
+            </button>
+            {invoice.company_id && onUnmatch && (
+              <button onClick={() => onUnmatch(invoice)}
+                className="px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition">
+                ✕ Unmatch
+              </button>
+            )}
+          </div>
           <div className="flex gap-3">
             <button onClick={onCreateNew}
               className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
@@ -790,8 +798,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   const handleDeleteInvoice = async (invoice) => {
-    if (invoice.status === 'approved' || invoice.status === 'partially_approved') {
-      toastError('Cannot delete an invoice that is already subscribed.');
+    // Check line item statuses — block deletion when any item is approved or rejected
+    let items = [];
+    try { items = JSON.parse(invoice.notes || '{}').line_items || []; } catch (e) {}
+    const hasResolvedItems = items.some(li => li.status === 'approved' || li.status === 'rejected');
+    if (hasResolvedItems) {
+      toastError('Cannot delete — undo all approved/rejected items first.');
       return;
     }
     const yes = await confirm({
@@ -1315,6 +1327,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
           company={verifyModal.company}
           onConfirm={handleConfirmMatch}
           onCancel={() => setVerifyModal(null)}
+          onUnmatch={async (invoice) => {
+            setVerifyModal(null);
+            try {
+              await supabase.from('staged_invoices').update({ company_id: null }).eq('id', invoice.id);
+              setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: null } : i)));
+            } catch (err) {
+              toastError('Failed to unmatch: ' + (err.message || err));
+            }
+          }}
           onCreateNew={() => {
             const { invoice } = verifyModal;
             setVerifyModal(null);
@@ -1608,6 +1629,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Status {getSortIcon('status')}
                   </th>
+                  <th className="px-2 py-2 border-b border-gray-200 w-[40px]"></th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
@@ -2003,17 +2025,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                     <span className="text-xs text-gray-400">x{item.quantity}</span>
                                   </span>
                                   <div className="flex items-center space-x-1 shrink-0">
-                                    {['approved','rejected','delete'].map((act, aidx) => {
-                                      const icons = { approved: mdiCheck, rejected: mdiCancel, delete: mdiDelete };
+                                    {['approved','rejected'].map((act, aidx) => {
+                                      const icons = { approved: mdiCheck, rejected: mdiCancel };
                                       const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
-                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50',
-                                                       delete: 'bg-white border border-gray-300 text-red-500 hover:bg-red-50' };
+                                                       rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50' };
                                       const titles = { approved: 'Mark approved',
-                                                       rejected: 'Reject item',
-                                                       delete: 'Delete item' };
+                                                       rejected: 'Reject item' };
                                       const disabled = !inv.company_id;
                                       // Replace the matching action button with undo when that status is active
-                                      if (item.status === act && act !== 'delete') {
+                                      if (item.status === act) {
                                         return (
                                           <button
                                             key={aidx}
@@ -2093,11 +2113,31 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   : 'PENDING'}
                           </span>
                         </td>
+                        <td className="px-1 py-2 align-top">
+                          {(() => {
+                            const hasResolved = lineItems.some(li => li.status === 'approved' || li.status === 'rejected');
+                            return (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(inv); }}
+                                disabled={hasResolved}
+                                className={
+                                  'p-1 rounded transition-colors ' +
+                                  (hasResolved
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer')
+                                }
+                                title={hasResolved ? 'Undo all approved/rejected items first' : 'Delete invoice'}
+                              >
+                                <Icon path={mdiDelete} size={0.7} />
+                              </button>
+                            );
+                          })()}
+                        </td>
                       </tr>
                       {/* Expandable Subrow */}
                       {isExpanded && (
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <td colSpan="8" className="p-4 bg-slate-50 border-x border-gray-200">
+                          <td colSpan="9" className="p-4 bg-slate-50 border-x border-gray-200">
                             {/* compact summary row with counts */}
                             <div className="mb-3 text-sm text-gray-700">
                               <strong>Stands:</strong> {inv.stands_count} &nbsp;|
