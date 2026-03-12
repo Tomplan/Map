@@ -135,7 +135,7 @@ function extractFieldsFromBlock(lines = []) {
 }
 
 // ── Verification Modal ──────────────────────────────────────────────────
-function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew }) {
+function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew, onUnmatch }) {
   const [shouldPatch, setShouldPatch] = React.useState(false);
   // Per-field override for rows where invoice and DB values differ.
   // key = dbField, value = 'inv' (use invoice) or 'cmp' (keep DB, default)
@@ -290,10 +290,18 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 
         {/* Actions */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-          <button onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-            Cancel
-          </button>
+          <div className="flex gap-3">
+            <button onClick={onCancel}
+              className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+              Cancel
+            </button>
+            {invoice.company_id && onUnmatch && (
+              <button onClick={() => onUnmatch(invoice)}
+                className="px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition">
+                ✕ Unmatch
+              </button>
+            )}
+          </div>
           <div className="flex gap-3">
             <button onClick={onCreateNew}
               className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
@@ -1319,6 +1327,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
           company={verifyModal.company}
           onConfirm={handleConfirmMatch}
           onCancel={() => setVerifyModal(null)}
+          onUnmatch={async (invoice) => {
+            setVerifyModal(null);
+            try {
+              await supabase.from('staged_invoices').update({ company_id: null }).eq('id', invoice.id);
+              setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: null } : i)));
+            } catch (err) {
+              toastError('Failed to unmatch: ' + (err.message || err));
+            }
+          }}
           onCreateNew={() => {
             const { invoice } = verifyModal;
             setVerifyModal(null);
