@@ -1130,7 +1130,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       result = result.filter(
         (inv) =>
           (inv.company_name || '').toLowerCase().includes(lower) ||
-          (inv.invoice_number || '').toLowerCase().includes(lower),
+          (inv.invoice_number || '').toLowerCase().includes(lower) ||
+          (inv.matchCompany?.name || '').toLowerCase().includes(lower),
       );
     }
 

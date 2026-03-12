@@ -232,13 +232,18 @@ export default function useEventSubscriptions(eventYear) {
       if (!subscription) throw new Error('Subscription not found');
 
       // Delete all booth assignments for this company in this year
-      const { error: assignmentsError } = await supabase
+      // Use count:'exact' so we detect silent RLS blocks (Supabase returns
+      // 0 deleted rows instead of an error when RLS filters everything out).
+      const { error: assignmentsError, count: assignmentsDeleted } = await supabase
         .from('assignments')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('company_id', subscription.company_id)
         .eq('event_year', subscription.event_year);
 
       if (assignmentsError) throw assignmentsError;
+      if (assignmentsDeleted !== undefined) {
+        console.log(`Deleted ${assignmentsDeleted} assignment(s) for company ${subscription.company_id}, year ${subscription.event_year}`);
+      }
 
       // Delete the subscription
       const { error: deleteError, count } = await supabase
