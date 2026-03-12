@@ -861,8 +861,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
       counts.breakfast_sun > 0 ? counts.breakfast_sun + ' breakfast sun' : '',
       counts.lunch_sun > 0 ? counts.lunch_sun + ' lunch sun' : '',
     ].filter(Boolean).join(', ');
-    const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts;
-    const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts;
+    const extraParts = [
+      invoiceArea ? 'Area: ' + invoiceArea : '',
+      customerNote ? 'Notes: ' + customerNote : '',
+    ].filter(Boolean).join(', ');
+    const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
+    const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
     // Check if a subscription already exists for this company + year
     const existing = subscriptions.find((s) => s.company_id === companyId);
@@ -1762,8 +1766,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         counts.lunch_sun > 0 ? counts.lunch_sun + ' lunch sun' : '',
                       ].filter(Boolean).join(', ');
                       const itemLabel = (item.item || item.description) + (item.quantity ? ' x' + item.quantity : '');
-                      const description = 'Invoice ' + inv.invoice_number + ': ' + itemLabel;
-                      const historyLine = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel;
+                      const itemExtraParts = [
+                        invoiceArea ? 'Area: ' + invoiceArea : '',
+                        effectiveNote ? 'Notes: ' + effectiveNote : '',
+                      ].filter(Boolean).join(', ');
+                      const description = 'Invoice ' + inv.invoice_number + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
+                      const historyLine = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
 
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
