@@ -241,10 +241,12 @@ export default function useEventSubscriptions(eventYear) {
       if (assignmentsError) throw assignmentsError;
 
       // Delete the subscription
-      const { error: deleteError } = await supabase
+      const { error: deleteError, count } = await supabase
         .from('event_subscriptions')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('id', subscriptionId);
+
+      if (count !== undefined && count === 0) throw new Error('Failed to delete - row not found or blocked by RLS');
 
       if (deleteError) throw deleteError;
 

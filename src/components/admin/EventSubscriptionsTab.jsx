@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
+import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
 import {
@@ -30,7 +31,39 @@ import SubscriptionEditModal from './SubscriptionEditModal';
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
  * Shows subscribed companies for the selected year with contact info, booth requirements, and meal counts
  */
+const computeItemCounts = (desc, qty, allowedItems) => {
+  const d = (desc || '').toLowerCase();
+  let stands = 0, breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
+  let mappedColumn = null;
+  for (const ai of (allowedItems || [])) {
+    const label = (typeof ai === 'string' ? ai : (ai?.label || '')).trim().toLowerCase();
+    if (label.length > 0 && d.includes(label)) {
+      mappedColumn = typeof ai === 'string' ? null : (ai.column || null);
+      break;
+    }
+  }
+  if (mappedColumn) {
+    switch (mappedColumn) {
+      case 'booth_count':        stands += qty; break;
+      case 'booth_count_double': stands += 2 * qty; break;
+      case 'breakfast_sat':      breakfast_sat += qty; break;
+      case 'breakfast_sun':      breakfast_sun += qty; break;
+      case 'lunch_sat':          lunch_sat += qty; break;
+      case 'lunch_sun':          lunch_sun += qty; break;
+      case 'bbq_sat':            bbq_sat += qty; break;
+    }
+  } else {
+    const isBooth = (d.includes('stand') || d.includes('kraam')) && !d.includes('bbq') && !d.includes('barbecue') && !d.includes('lunch') && !d.includes('meal') && !d.includes('maaltijd') && !d.includes('ontbijt');
+    if (isBooth) stands += (d.includes('6x12') || d.includes('6 x 12') || d.includes('dubbele')) ? 2 * qty : qty;
+    if (d.includes('bbq') || d.includes('barbecue')) bbq_sat += qty;
+    if (d.includes('lunch') || d.includes('meal') || d.includes('maaltijd')) lunch_sat += qty;
+    if (d.includes('breakfast') || d.includes('ontbijt')) breakfast_sat += qty;
+  }
+  return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
+};
+
 export default function EventSubscriptionsTab({ selectedYear }) {
+  const { settings } = useOrganizationSettings();
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
   const {
@@ -79,10 +112,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Parse a history addition line back into subscription counts (keyword-based).
   const parseHistoryLineCounts = (line) => {
-    const m = line.match(/:\s*(.+?)\s+x(\d+)\s*$/i);
-    if (m) {
-      const desc = m[1].toLowerCase();
-      const qty = parseInt(m[2], 10);
+    // Strip off markers like | area: ... or prefix [Removed on...: ]
+    let baseLine = line.replace(/^\[Removed on.*?:/i, '');
+    baseLine = baseLine.split('|')[0].replace(/\]$/, '').trim();
+
+    const qtyMatch = baseLine.match(/\sx(\d+)\s*$/i);
+    if (qtyMatch) {
+      let itemName = baseLine;
+      const lastColonIdx = baseLine.lastIndexOf(':');
+      if (lastColonIdx !== -1) {
+        itemName = baseLine.substring(lastColonIdx + 1).trim();
+      }
+      itemName = itemName.replace(/\sx\d+\s*$/i, '').trim();
+
+      const desc = itemName.toLowerCase();
+      const qty = parseInt(qtyMatch[1], 10);
       const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
         !desc.includes('bbq') && !desc.includes('barbecue') && !desc.includes('lunch') &&
         !desc.includes('meal') && !desc.includes('maaltijd') && !desc.includes('ontbijt');
@@ -95,7 +139,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         lunch_sun:     0,
       };
     }
-    const b = line.match(/(\d+)\s*booth/i);
+    const b = baseLine.match(/(\d+)\s*booth/i);
     if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
     return null;
   };
@@ -330,17 +374,17 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     // History line format: "Invoice INV_NUM on DD/MM/YYYY HH:MM: ITEM_DESC xQTY"
     // Used for partial subscription deletes so unselected items stay approved.
     const revertSelectedLineItems = async (companyId, selectedLines) => {
+      const runDelta = { stands: 0, breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
       try {
         // Parse invoice_number + item description from each selected history line
         const parsed = selectedLines.map((line) => {
-          const m = line.match(/^Invoice\s+(\S+)(?:\s+on\s+[\d/]+\s+[\d:]+)?:\s+(.+?)(?:\s+x\d+)?$/i);
+          const m = line.match(/^Invoice\s+(\S+)(?:\s+on\s+[\d/]+\s+[\d:]+)?:\s+(.+?)(?:\s+x\d+)?(?:.*?)$/i);
           return m ? { invoiceNumber: String(m[1]), itemDesc: m[2].trim().toLowerCase() } : null;
         }).filter(Boolean);
 
         if (parsed.length === 0) {
-          // History lines don't match the expected format — fall back to full reset
-          await revertInvoicesForCompany(companyId);
-          return;
+          // History lines don't match the expected format — do NOT fall back to full reset! Just skip.
+          return runDelta;
         }
 
         // Group item descriptions by invoice number
@@ -369,6 +413,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               const matches = itemDescs.some((d) => desc.includes(d) || d.includes(desc));
               if (matches && item.status !== 'pending') {
                 changed = true;
+                const qty = Number(item.quantity) || 1;
+                const c = computeItemCounts(desc, qty, settings?.invoice_allowed_items);
+                runDelta.stands += c.stands;
+                runDelta.breakfast_sat += c.breakfast_sat;
+                runDelta.lunch_sat += c.lunch_sat;
+                runDelta.bbq_sat += c.bbq_sat;
+                runDelta.breakfast_sun += c.breakfast_sun;
+                runDelta.lunch_sun += c.lunch_sun;
                 return { ...item, status: 'pending' };
               }
               return item;
@@ -405,6 +457,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           }
         }
       } catch (_) {}
+      return runDelta;
     };
 
     // Parse history for multiple addition lines
@@ -431,17 +484,44 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 await revertInvoicesForCompany(subscription.company_id);
                 toastSuccess('Subscription deleted.');
               } else {
-                let deltaStands = 0, deltaBreakfastSat = 0, deltaLunchSat = 0,
-                    deltaBbqSat = 0, deltaBreakfastSun = 0, deltaLunchSun = 0;
+                const dbDeltas = await revertSelectedLineItems(subscription.company_id, selected);
+                let deltaStands = dbDeltas.stands || 0;
+                let deltaBreakfastSat = dbDeltas.breakfast_sat || 0;
+                let deltaLunchSat = dbDeltas.lunch_sat || 0;
+                let deltaBbqSat = dbDeltas.bbq_sat || 0;
+                let deltaBreakfastSun = dbDeltas.breakfast_sun || 0;
+                let deltaLunchSun = dbDeltas.lunch_sun || 0;
+
                 for (const line of selected) {
-                  const c = parseHistoryLineCounts(line);
-                  if (c) {
-                    deltaStands       += c.stands;
-                    deltaBreakfastSat += c.breakfast_sat;
-                    deltaLunchSat     += c.lunch_sat;
-                    deltaBbqSat       += c.bbq_sat;
-                    deltaBreakfastSun += c.breakfast_sun;
-                    deltaLunchSun     += c.lunch_sun;
+                  if (line.includes('Manually added') || line.includes('Edited')) {
+                    const manualMatch = line.match(/:\s*(.*)$/);
+                    if (manualMatch) {
+                       const parts = manualMatch[1].split(',').map(s=>s.trim());
+                       for (const p of parts) {
+                         const match = p.match(/(.*?)\s+([+-]\d+)/);
+                         if (match) {
+                            const lbl = match[1].trim();
+                            const val = parseInt(match[2], 10);
+                            if (lbl === 'Booths') deltaStands += val;
+                            else if (lbl === 'Breakfast (Sat)') deltaBreakfastSat += val;
+                            else if (lbl === 'Lunch (Sat)') deltaLunchSat += val;
+                            else if (lbl === 'BBQ (Sat)') deltaBbqSat += val;
+                            else if (lbl === 'Breakfast (Sun)') deltaBreakfastSun += val;
+                            else if (lbl === 'Lunch (Sun)') deltaLunchSun += val;
+                         }
+                       }
+                    }
+                  } else if (!line.match(/^Invoice\s+\S+/i)) {
+                    // Fallback for non-invoice strings (legacy regex)
+                    const c = parseHistoryLineCounts(line);
+                    if (c) {
+                      deltaStands       += c.stands;
+                      deltaBreakfastSat += c.breakfast_sat;
+                      deltaLunchSat     += c.lunch_sat;
+                      deltaBbqSat       += c.bbq_sat;
+                      deltaBreakfastSun += c.breakfast_sun;
+                      deltaLunchSun     += c.lunch_sun;
+                    }
                   }
                 }
                 const now = new Date();
@@ -488,7 +568,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   }));
                   if (error) throw new Error(error);
                 }
-                await revertSelectedLineItems(subscription.company_id, selected);
               }
             } catch (e) {
               toastError('Failed to update subscription: ' + (e?.message || String(e)));

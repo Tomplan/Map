@@ -1033,14 +1033,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     if (existing) {
       const merge = await confirm({
-        title: 'Subscription already exists',
-        message:
-          'A subscription for "' + (existing.company?.name || '') + '" already exists for ' +
-          selectedYear + ' (booths: ' + existing.booth_count + ').\n\n' +
-          'Merge will add counts from this invoice to the existing subscription.\n' +
-          'Replace will overwrite it completely.',
-        confirmText: 'Merge',
-        cancelText: 'Replace',
+        title: t('subscriptionAlreadyExists', 'Subscription already exists'),
+        message: t('subscriptionAlreadyExistsForCompany', {
+          companyName: existing.company?.name || '',
+          year: selectedYear,
+          booths: existing.booth_count,
+          defaultValue: 'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.'
+        }),
+        confirmText: t('mergeAction', 'Merge'),
+        cancelText: t('replaceAction', 'Replace'),
       });
 
       if (merge) {
@@ -1926,14 +1927,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
                         const doMerge = await confirm({
-                          title: 'Subscription already exists',
-                          message:
-                            'A subscription already exists for ' + selectedYear +
-                            ' (booths: ' + existing.booth_count + ').\n\n' +
-                            'Merge will add this item\'s counts to the existing subscription.\n' +
-                            'Replace will overwrite it completely with this item.',
-                          confirmText: 'Merge',
-                          cancelText: 'Replace',
+                          title: t('subscriptionAlreadyExists', 'Subscription already exists'),
+                          message: t('subscriptionAlreadyExistsForYear', {
+                            year: selectedYear,
+                            booths: existing.booth_count,
+                            defaultValue: 'A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item\'s counts to the existing subscription.\nReplace will overwrite it completely with this item.'
+                          }),
+                          confirmText: t('mergeAction', 'Merge'),
+                          cancelText: t('replaceAction', 'Replace'),
                         });
 
                         const itemNoteWithMarkers = invoiceNote +
