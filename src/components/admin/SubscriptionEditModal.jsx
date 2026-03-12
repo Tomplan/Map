@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
-import PhoneInput from '../common/PhoneInput';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useAssignments from '../../hooks/useAssignments';
@@ -50,9 +49,6 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
   useEffect(() => {
     if (subscription) {
       setEditForm({
-        contact: subscription.contact || '',
-        phone: subscription.phone || '',
-        email: subscription.email || '',
         booth_count: subscription.booth_count || 1,
         area: subscription.area || '',
         breakfast_sat: subscription.breakfast_sat || 0,
@@ -104,49 +100,6 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
                   <span className="text-blue-600 font-medium">{boothLabels}</span>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-
-        {/* Contact Information Section */}
-        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 className="font-semibold text-sm mb-3 text-green-800">
-            {t('helpPanel.subscriptions.contactInformation')}
-          </h4>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('helpPanel.subscriptions.contact')}
-              </label>
-              <input
-                type="text"
-                value={editForm.contact || ''}
-                onChange={(e) => setEditForm({ ...editForm, contact: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="Contact person name"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('helpPanel.subscriptions.phone')}
-              </label>
-              <PhoneInput
-                value={editForm.phone || ''}
-                onChange={(value) => setEditForm({ ...editForm, phone: value })}
-                placeholder="+31612345678"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('helpPanel.subscriptions.email')}
-              </label>
-              <input
-                type="email"
-                value={editForm.email || ''}
-                onChange={(e) => setEditForm({ ...editForm, email: e.target.value.toLowerCase() })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                placeholder="email@example.com"
-              />
             </div>
           </div>
         </div>

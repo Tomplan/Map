@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
 import useAssignments from '../../hooks/useAssignments';
-import useOrganizationSettings from '../../hooks/useOrganizationSettings';
 import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
 import Icon from '@mdi/react';
 import {
@@ -26,44 +25,20 @@ import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
 import SubscriptionEditModal from './SubscriptionEditModal';
+import {
+  addLineItem,
+  deactivateLineItem,
+  getActiveLineItems,
+  appendHistory,
+  formatHistoryTimestamp,
+} from '../../utils/subscriptionLineItems';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
  * Shows subscribed companies for the selected year with contact info, booth requirements, and meal counts
  */
-const computeItemCounts = (desc, qty, allowedItems) => {
-  const d = (desc || '').toLowerCase();
-  let stands = 0, breakfast_sat = 0, lunch_sat = 0, bbq_sat = 0, breakfast_sun = 0, lunch_sun = 0;
-  let mappedColumn = null;
-  for (const ai of (allowedItems || [])) {
-    const label = (typeof ai === 'string' ? ai : (ai?.label || '')).trim().toLowerCase();
-    if (label.length > 0 && d.includes(label)) {
-      mappedColumn = typeof ai === 'string' ? null : (ai.column || null);
-      break;
-    }
-  }
-  if (mappedColumn) {
-    switch (mappedColumn) {
-      case 'booth_count':        stands += qty; break;
-      case 'booth_count_double': stands += 2 * qty; break;
-      case 'breakfast_sat':      breakfast_sat += qty; break;
-      case 'breakfast_sun':      breakfast_sun += qty; break;
-      case 'lunch_sat':          lunch_sat += qty; break;
-      case 'lunch_sun':          lunch_sun += qty; break;
-      case 'bbq_sat':            bbq_sat += qty; break;
-    }
-  } else {
-    const isBooth = (d.includes('stand') || d.includes('kraam')) && !d.includes('bbq') && !d.includes('barbecue') && !d.includes('lunch') && !d.includes('meal') && !d.includes('maaltijd') && !d.includes('ontbijt');
-    if (isBooth) stands += (d.includes('6x12') || d.includes('6 x 12') || d.includes('dubbele')) ? 2 * qty : qty;
-    if (d.includes('bbq') || d.includes('barbecue')) bbq_sat += qty;
-    if (d.includes('lunch') || d.includes('meal') || d.includes('maaltijd')) lunch_sat += qty;
-    if (d.includes('breakfast') || d.includes('ontbijt')) breakfast_sat += qty;
-  }
-  return { stands, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun };
-};
 
 export default function EventSubscriptionsTab({ selectedYear }) {
-  const { settings } = useOrganizationSettings();
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
   const {
@@ -109,65 +84,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   ];
   const [mergeModal, setMergeModal] = useState(null); // { subscription } | null
   const [mergeValues, setMergeValues] = useState({});
-
-  // Parse a history addition line back into subscription counts (keyword-based).
-  const parseHistoryLineCounts = (line) => {
-    // Strip off markers like | area: ... or prefix [Removed on...: ]
-    let baseLine = line.replace(/^\[Removed on.*?:/i, '');
-    baseLine = baseLine.split('|')[0].replace(/\]$/, '').trim();
-
-    const qtyMatch = baseLine.match(/\sx(\d+)\s*$/i);
-    if (qtyMatch) {
-      let itemName = baseLine;
-      const lastColonIdx = baseLine.lastIndexOf(':');
-      if (lastColonIdx !== -1) {
-        itemName = baseLine.substring(lastColonIdx + 1).trim();
-      }
-      itemName = itemName.replace(/\sx\d+\s*$/i, '').trim();
-
-      const desc = itemName.toLowerCase();
-      const qty = parseInt(qtyMatch[1], 10);
-      const isBooth = (desc.includes('stand') || desc.includes('kraam')) &&
-        !desc.includes('bbq') && !desc.includes('barbecue') && !desc.includes('lunch') &&
-        !desc.includes('meal') && !desc.includes('maaltijd') && !desc.includes('ontbijt');
-      return {
-        stands:        isBooth ? ((desc.includes('6x12') || desc.includes('dubbele')) ? 2 * qty : qty) : 0,
-        breakfast_sat: (desc.includes('breakfast') || desc.includes('ontbijt')) ? qty : 0,
-        lunch_sat:     (desc.includes('lunch') || desc.includes('meal') || desc.includes('maaltijd')) ? qty : 0,
-        bbq_sat:       (desc.includes('bbq') || desc.includes('barbecue')) ? qty : 0,
-        breakfast_sun: 0,
-        lunch_sun:     0,
-      };
-    }
-    const b = baseLine.match(/(\d+)\s*booth/i);
-    if (b) return { stands: parseInt(b[1], 10), breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
-    return null;
-  };
-
-  // Extract area and notes markers from a single history line.
-  const parseHistoryLineAreaNotes = (line) => {
-    const areaMatch  = line.match(/\|\s*area:\s*(.+?)(\s*\||\s*$)/i);
-    const notesMatch = line.match(/\|\s*notes:\s*(.+?)(\s*\||\s*$)/i);
-    return {
-      area:  areaMatch  ? areaMatch[1].trim()  : null,
-      notes: notesMatch ? notesMatch[1].trim() : null,
-    };
-  };
-
-  // Derive area and notes from remaining history lines and detect if removed lines had markers.
-  // Collects ALL area/notes markers from remaining lines, deduplicates, and joins them.
-  const deriveAreaNotesFromHistory = (remainingLines, removedLines) => {
-    const areas  = remainingLines.map(l => parseHistoryLineAreaNotes(l).area).filter(Boolean);
-    const notes  = remainingLines.map(l => parseHistoryLineAreaNotes(l).notes).filter(Boolean);
-    const hadAreaMarker  = removedLines.some(l => parseHistoryLineAreaNotes(l).area  !== null);
-    const hadNotesMarker = removedLines.some(l => parseHistoryLineAreaNotes(l).notes !== null);
-    return {
-      area:  [...new Set(areas)].join('; '),
-      notes: [...new Set(notes)].join('\n'),
-      hadAreaMarker,
-      hadNotesMarker,
-    };
-  };
 
   // Dialog context
   const { confirm, toastError, toastSuccess, toastWarning } = useDialog();
@@ -295,9 +211,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     // Build a human-readable summary of what changed
     const FIELD_LABELS = {
-      contact: 'Contact',
-      phone: 'Phone',
-      email: 'Email',
       booth_count: 'Booths',
       area: 'Area',
       breakfast_sat: 'Breakfast (Sat)',
@@ -312,20 +225,49 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       .filter(([key]) => key in updates && String(updates[key] ?? '') !== String(sub[key] ?? ''))
       .map(([key, label]) => `${label}: ${sub[key] ?? ''} → ${updates[key] ?? ''}`);
 
-    const updatesWithHistory = { ...updates };
-    if (changes.length > 0) {
-      const now = new Date();
-      const historyLine = `Edited on ${now.toLocaleDateString('en-GB')} ${now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}: ${changes.join(', ')}`;
-      updatesWithHistory.history = (sub.history ? sub.history + '\n' : '') + historyLine;
+    if (changes.length === 0) {
+      setIsEditModalOpen(false);
+      setEditingSubscription(null);
+      return;
     }
 
-    const { error } = await updateSubscription(sub.id, updatesWithHistory);
-    if (!error) {
+    try {
+      // Append history line
+      await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
+
+      // Create edit line item with count deltas (if any count changed)
+      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins'];
+      const countDeltas = {};
+      let hasCountChange = false;
+      for (const field of COUNT_FIELDS) {
+        if (field in updates) {
+          const delta = (updates[field] || 0) - (sub[field] || 0);
+          if (delta !== 0) {
+            countDeltas[field] = delta;
+            hasCountChange = true;
+          }
+        }
+      }
+
+      // Detect area/notes changes
+      const areaChanged = 'area' in updates && updates.area !== sub.area;
+      const notesChanged = 'notes' in updates && updates.notes !== sub.notes;
+
+      if (hasCountChange || areaChanged || notesChanged) {
+        await addLineItem(sub.id, {
+          source: 'edit',
+          counts: countDeltas,
+          area: areaChanged ? updates.area : undefined,
+          notes: notesChanged ? updates.notes : undefined,
+          description: 'Manually edited: ' + changes.join(', '),
+        });
+      }
+
       setIsEditModalOpen(false);
       setEditingSubscription(null);
       toastSuccess('Subscription updated successfully');
-    } else {
-      toastError(`Error updating subscription: ${error}`);
+    } catch (e) {
+      toastError('Error updating subscription: ' + (e?.message || String(e)));
     }
   };
 
@@ -343,7 +285,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     // Helper: revert all invoices for a company — resets approved/rejected line items back to
     // pending in notes, and resets the invoice-level status if it was approved/partially_approved.
-    // Used for full subscription deletes only.
     const revertInvoicesForCompany = async (companyId) => {
       try {
         const { data: allInvoices } = await supabase
@@ -370,113 +311,67 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       } catch (_) {}
     };
 
-    // Helper: revert ONLY the specific line items that match the selected history lines.
-    // History line format: "Invoice INV_NUM on DD/MM/YYYY HH:MM: ITEM_DESC xQTY"
-    // Used for partial subscription deletes so unselected items stay approved.
-    const revertSelectedLineItems = async (companyId, selectedLines) => {
-      const runDelta = { stands: 0, breakfast_sat: 0, lunch_sat: 0, bbq_sat: 0, breakfast_sun: 0, lunch_sun: 0 };
-      try {
-        // Parse invoice_number + item description from each selected history line
-        const parsed = selectedLines.map((line) => {
-          const m = line.match(/^Invoice\s+(\S+)(?:\s+on\s+[\d/]+\s+[\d:]+)?:\s+(.+?)(?:\s+x\d+)?(?:.*?)$/i);
-          return m ? { invoiceNumber: String(m[1]), itemDesc: m[2].trim().toLowerCase() } : null;
-        }).filter(Boolean);
-
-        if (parsed.length === 0) {
-          // History lines don't match the expected format — do NOT fall back to full reset! Just skip.
-          return runDelta;
-        }
-
-        // Group item descriptions by invoice number
-        const byInvoice = {};
-        for (const p of parsed) {
-          if (!byInvoice[p.invoiceNumber]) byInvoice[p.invoiceNumber] = [];
-          byInvoice[p.invoiceNumber].push(p.itemDesc);
-        }
-
-        for (const [invoiceNumber, itemDescs] of Object.entries(byInvoice)) {
+    // Helper: revert invoice line items matching specific subscription line item records
+    const revertLineItemInvoices = async (companyId, lineItems) => {
+      const invoiceItems = lineItems.filter(li => li.source === 'invoice' && li.source_ref);
+      const byInvoice = {};
+      for (const li of invoiceItems) {
+        if (!byInvoice[li.source_ref]) byInvoice[li.source_ref] = [];
+        byInvoice[li.source_ref].push(li);
+      }
+      for (const [invoiceNumber, items] of Object.entries(byInvoice)) {
+        try {
           const { data: invRows } = await supabase
             .from('staged_invoices')
             .select('id, status, notes')
             .eq('invoice_number', invoiceNumber)
             .eq('company_id', companyId);
           if (!invRows || invRows.length === 0) continue;
-
           for (const inv of invRows) {
             let notes = {};
             try { notes = JSON.parse(inv.notes || '{}'); } catch (_) {}
             if (!notes.line_items) continue;
-
             let changed = false;
+            const itemDescs = items.map(li => (li.description || '').toLowerCase());
             notes.line_items = notes.line_items.map((item) => {
               const desc = (item.item || item.description || '').toLowerCase();
-              const matches = itemDescs.some((d) => desc.includes(d) || d.includes(desc));
+              const matches = itemDescs.some(d => desc.includes(d) || d.includes(desc));
               if (matches && item.status !== 'pending') {
                 changed = true;
-                const qty = Number(item.quantity) || 1;
-                const c = computeItemCounts(desc, qty, settings?.invoice_allowed_items);
-                runDelta.stands += c.stands;
-                runDelta.breakfast_sat += c.breakfast_sat;
-                runDelta.lunch_sat += c.lunch_sat;
-                runDelta.bbq_sat += c.bbq_sat;
-                runDelta.breakfast_sun += c.breakfast_sun;
-                runDelta.lunch_sun += c.lunch_sun;
                 return { ...item, status: 'pending' };
               }
               return item;
             });
-
             if (!changed) continue;
-
-            // Recalculate the invoice-level status based on remaining item statuses
-            const stillApproved = notes.line_items.some((i) => i.status === 'approved');
-            const anyResolved = notes.line_items.some(
-              (i) => i.status === 'approved' || i.status === 'rejected',
-            );
-            const allResolved =
-              notes.line_items.length > 0 &&
-              notes.line_items.every((i) => i.status === 'approved' || i.status === 'rejected');
-            const allApproved =
-              allResolved && notes.line_items.every((i) => i.status === 'approved');
-
+            const allResolved = notes.line_items.length > 0 &&
+              notes.line_items.every(i => i.status === 'approved' || i.status === 'rejected');
+            const allApproved = allResolved && notes.line_items.every(i => i.status === 'approved');
             let newStatus = inv.status;
             if (inv.status === 'approved' || inv.status === 'partially_approved') {
-              if (allResolved) {
-                newStatus = allApproved ? 'approved' : 'partially_approved';
-              } else {
-                newStatus = 'pending';
-              }
+              newStatus = allResolved ? (allApproved ? 'approved' : 'partially_approved') : 'pending';
             }
-
-            const updatePayload = {
-              notes: JSON.stringify(notes),
-              updated_at: new Date().toISOString(),
-            };
+            const updatePayload = { notes: JSON.stringify(notes), updated_at: new Date().toISOString() };
             if (newStatus !== inv.status) updatePayload.status = newStatus;
             await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
           }
-        }
-      } catch (_) {}
-      return runDelta;
+        } catch (_) {}
+      }
     };
 
-    // Parse history for multiple addition lines
-    const additionLines = (subscription.history || '')
-      .split('\n')
-      .map((l) => l.trim())
-      .filter((l) => l.length > 0 && !l.startsWith('['));
+    // Fetch active line items for this subscription
+    const activeItems = await getActiveLineItems(subscription.id);
 
-    if (additionLines.length > 1) {
-      // Multiple contributions — let user choose which to remove
+    if (activeItems.length > 1) {
+      // Multiple line items — let user choose which to remove
       await new Promise((resolve) => {
-        setSubHistorySelection([...additionLines]);
+        setSubHistorySelection(activeItems.map(li => li.id));
         setSubHistoryModal({
           sub: subscription,
           companyName,
-          additionLines,
-          onConfirm: async (selected) => {
+          lineItems: activeItems,
+          onConfirm: async (selectedIds) => {
             setSubHistoryModal(null);
-            const removeAll = selected.length === additionLines.length;
+            const removeAll = selectedIds.length === activeItems.length;
             try {
               if (removeAll) {
                 const { error } = await unsubscribeCompany(subscription.id);
@@ -484,89 +379,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 await revertInvoicesForCompany(subscription.company_id);
                 toastSuccess('Subscription deleted.');
               } else {
-                const dbDeltas = await revertSelectedLineItems(subscription.company_id, selected);
-                let deltaStands = dbDeltas.stands || 0;
-                let deltaBreakfastSat = dbDeltas.breakfast_sat || 0;
-                let deltaLunchSat = dbDeltas.lunch_sat || 0;
-                let deltaBbqSat = dbDeltas.bbq_sat || 0;
-                let deltaBreakfastSun = dbDeltas.breakfast_sun || 0;
-                let deltaLunchSun = dbDeltas.lunch_sun || 0;
-
-                for (const line of selected) {
-                  if (line.includes('Manually added') || line.includes('Edited')) {
-                    const manualMatch = line.match(/:\s*(.*)$/);
-                    if (manualMatch) {
-                       const parts = manualMatch[1].split(',').map(s=>s.trim());
-                       for (const p of parts) {
-                         const match = p.match(/(.*?)\s+([+-]\d+)/);
-                         if (match) {
-                            const lbl = match[1].trim();
-                            const val = parseInt(match[2], 10);
-                            if (lbl === 'Booths') deltaStands += val;
-                            else if (lbl === 'Breakfast (Sat)') deltaBreakfastSat += val;
-                            else if (lbl === 'Lunch (Sat)') deltaLunchSat += val;
-                            else if (lbl === 'BBQ (Sat)') deltaBbqSat += val;
-                            else if (lbl === 'Breakfast (Sun)') deltaBreakfastSun += val;
-                            else if (lbl === 'Lunch (Sun)') deltaLunchSun += val;
-                         }
-                       }
-                    }
-                  } else if (!line.match(/^Invoice\s+\S+/i)) {
-                    // Fallback for non-invoice strings (legacy regex)
-                    const c = parseHistoryLineCounts(line);
-                    if (c) {
-                      deltaStands       += c.stands;
-                      deltaBreakfastSat += c.breakfast_sat;
-                      deltaLunchSat     += c.lunch_sat;
-                      deltaBbqSat       += c.bbq_sat;
-                      deltaBreakfastSun += c.breakfast_sun;
-                      deltaLunchSun     += c.lunch_sun;
-                    }
-                  }
+                const selectedItems = activeItems.filter(li => selectedIds.includes(li.id));
+                for (const li of selectedItems) {
+                  await deactivateLineItem(li.id);
                 }
-                const now = new Date();
-                const nowStr = now.toLocaleDateString('en-GB') + ' ' + now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-                // Preserve full history — mark removed entries in-place so nothing is lost
-                const newHistory = (subscription.history || '')
-                  .split('\n')
-                  .map((l) => {
-                    const trimmed = l.trim();
-                    if (!trimmed) return null;
-                    return selected.includes(trimmed)
-                      ? '[Removed on ' + nowStr + ': ' + trimmed + ']'
-                      : l;
-                  })
-                  .filter(Boolean)
-                  .join('\n');
-                const newBoothCount   = Math.max(0, (subscription.booth_count   || 0) - deltaStands);
-                const newBreakfastSat = Math.max(0, (subscription.breakfast_sat || 0) - deltaBreakfastSat);
-                const newLunchSat     = Math.max(0, (subscription.lunch_sat     || 0) - deltaLunchSat);
-                const newBbqSat       = Math.max(0, (subscription.bbq_sat       || 0) - deltaBbqSat);
-                const newBreakfastSun = Math.max(0, (subscription.breakfast_sun || 0) - deltaBreakfastSun);
-                const newLunchSun     = Math.max(0, (subscription.lunch_sun     || 0) - deltaLunchSun);
-                const allZero = newBoothCount + newBreakfastSat + newLunchSat + newBbqSat + newBreakfastSun + newLunchSun === 0;
-                const remainingLinesEST = (subscription.history || '').split('\n')
-                  .map(l => l.trim()).filter(l => l && !l.startsWith('[') && !selected.includes(l));
-                const { area: derivedAreaEST, notes: derivedNotesEST, hadAreaMarker: hadAreaEST, hadNotesMarker: hadNotesEST } =
-                  deriveAreaNotesFromHistory(remainingLinesEST, selected);
-                let error;
-                if (allZero) {
-                  ({ error } = await unsubscribeCompany(subscription.id));
-                  if (error) throw new Error(error);
+                await revertLineItemInvoices(subscription.company_id, selectedItems);
+                for (const li of selectedItems) {
+                  await appendHistory(subscription.id,
+                    'Removed on ' + formatHistoryTimestamp() + ': ' + (li.description || 'Line item #' + li.id));
+                }
+                const remaining = await getActiveLineItems(subscription.id);
+                if (remaining.length === 0) {
+                  await unsubscribeCompany(subscription.id);
                   toastSuccess('Subscription deleted.');
                 } else {
-                  ({ error } = await updateSubscription(subscription.id, {
-                    booth_count:   newBoothCount,
-                    ...(hadAreaEST  ? { area:  derivedAreaEST  } : {}),
-                    ...(hadNotesEST ? { notes: derivedNotesEST } : {}),
-                    breakfast_sat: newBreakfastSat,
-                    lunch_sat:     newLunchSat,
-                    bbq_sat:       newBbqSat,
-                    breakfast_sun: newBreakfastSun,
-                    lunch_sun:     newLunchSun,
-                    history: newHistory,
-                  }));
-                  if (error) throw new Error(error);
+                  toastSuccess('Selected items removed.');
                 }
               }
             } catch (e) {
@@ -583,7 +410,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       return;
     }
 
-    // Single or no history entry — simple confirm
+    // Single or no line items — simple confirm
     const confirmed = await confirm({
       title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
       message: t(
@@ -595,6 +422,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       variant: 'danger',
     });
     if (!confirmed) return;
+    if (activeItems.length === 1) {
+      await deactivateLineItem(activeItems[0].id);
+    }
     const { error } = await unsubscribeCompany(subscription.id);
     if (error) {
       toastError(`Error unsubscribing company: ${error}`);
@@ -645,20 +475,28 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       .filter((f) => (mergeValues[f.key] || 0) > 0)
       .map((f) => f.label + ' +' + mergeValues[f.key])
       .join(', ');
-    const historyLine = 'Manually added on ' + new Date().toLocaleDateString('en-GB') + ': ' + addedParts;
-    const updates = {};
-    MERGE_FIELDS.forEach((f) => {
-      updates[f.key] = (subscription[f.key] || 0) + (mergeValues[f.key] || 0);
-    });
-    updates.history = (subscription.history ? subscription.history + '\n' : '') + historyLine;
-    const { error } = await updateSubscription(subscription.id, updates);
-    if (error) {
-      toastError('Failed to update subscription: ' + error);
-    } else {
+    try {
+      await addLineItem(subscription.id, {
+        source: 'manual',
+        counts: {
+          booth_count: mergeValues.booth_count || 0,
+          breakfast_sat: mergeValues.breakfast_sat || 0,
+          lunch_sat: mergeValues.lunch_sat || 0,
+          bbq_sat: mergeValues.bbq_sat || 0,
+          breakfast_sun: mergeValues.breakfast_sun || 0,
+          lunch_sun: mergeValues.lunch_sun || 0,
+        },
+        description: 'Manually added: ' + addedParts,
+      });
+      await appendHistory(subscription.id,
+        'Manually added on ' + formatHistoryTimestamp() + ': ' + addedParts);
       toastSuccess('Subscription updated.');
       setMergeModal(null);
       setIsAdding(false);
       setSelectedCompanyId('');
+      await reload?.();
+    } catch (e) {
+      toastError('Failed to update subscription: ' + (e?.message || String(e)));
     }
   };
 
@@ -1070,10 +908,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   {/* Expandable history row */}
                   {isExpanded && (
                     <tr className="bg-gray-50 border-b">
-                      <td colSpan={colSpan} className="px-8 py-3">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">History</p>
+                      <td colSpan={colSpan} className="px-8 py-3 text-left">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
                         {historyLines.length === 0 ? (
-                          <p className="text-xs text-gray-400">No history recorded.</p>
+                          <p className="text-xs text-gray-400 text-left">No history recorded.</p>
                         ) : (
                           <ul className="space-y-1">
                             {historyLines.map((line, i) => (
@@ -1117,9 +955,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Add to Existing Subscription</h2>
+              <h2 className="text-lg font-bold text-gray-900">Add to {mergeModal.subscription.company?.name || 'Existing Subscription'}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed.
+                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed for <strong>{mergeModal.subscription.event_year}</strong>.
                 Enter the amounts to add to their current subscription.
               </p>
             </div>
@@ -1166,15 +1004,15 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         </div>
       )}
 
-      {/* Subscription History Selection Modal */}
+      {/* Subscription Line Item Selection Modal */}
       {subHistoryModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-bold text-gray-900">Remove Subscription Contributions</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Select which additions to remove for <strong>{subHistoryModal.companyName}</strong>.
-                Removing all entries will delete the subscription.
+                Select which items to remove for <strong>{subHistoryModal.companyName}</strong>.
+                Removing all items will delete the subscription.
               </p>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
@@ -1182,30 +1020,46 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <input
                   type="checkbox"
                   className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                  checked={subHistorySelection.length === subHistoryModal.additionLines.length}
+                  checked={subHistorySelection.length === subHistoryModal.lineItems.length}
                   onChange={(e) =>
                     setSubHistorySelection(
-                      e.target.checked ? [...subHistoryModal.additionLines] : [],
+                      e.target.checked ? subHistoryModal.lineItems.map(li => li.id) : [],
                     )
                   }
                 />
-                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.additionLines.length})</span>
+                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.lineItems.length})</span>
               </label>
-              {subHistoryModal.additionLines.map((line, idx) => (
-                <label key={idx} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                    checked={subHistorySelection.includes(line)}
-                    onChange={(e) =>
-                      setSubHistorySelection((prev) =>
-                        e.target.checked ? [...prev, line] : prev.filter((l) => l !== line),
-                      )
-                    }
-                  />
-                  <span className="text-sm text-gray-800">{line}</span>
-                </label>
-              ))}
+              {subHistoryModal.lineItems.map((li) => {
+                const countParts = [
+                  li.booth_count > 0 && li.booth_count + ' booth(s)',
+                  li.breakfast_sat > 0 && li.breakfast_sat + ' breakfast sat',
+                  li.lunch_sat > 0 && li.lunch_sat + ' lunch sat',
+                  li.bbq_sat > 0 && li.bbq_sat + ' BBQ sat',
+                  li.breakfast_sun > 0 && li.breakfast_sun + ' breakfast sun',
+                  li.lunch_sun > 0 && li.lunch_sun + ' lunch sun',
+                  li.coins > 0 && li.coins + ' coins',
+                ].filter(Boolean).join(', ');
+                return (
+                  <label key={li.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-red-600 focus:ring-red-500 mt-0.5"
+                      checked={subHistorySelection.includes(li.id)}
+                      onChange={(e) =>
+                        setSubHistorySelection((prev) =>
+                          e.target.checked ? [...prev, li.id] : prev.filter((id) => id !== li.id),
+                        )
+                      }
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-gray-800 block">{li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}</span>
+                      {countParts && <span className="text-xs text-gray-500 block">{countParts}</span>}
+                      {li.area && <span className="text-xs text-blue-600 block">Area: {li.area}</span>}
+                      {li.notes && <span className="text-xs text-green-700 block">Notes: {li.notes}</span>}
+                    </div>
+                  </label>
+                );
+              })}
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button onClick={subHistoryModal.onCancel} className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
@@ -1214,12 +1068,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 onClick={() => subHistoryModal.onConfirm(subHistorySelection)}
                 className={
                   'px-4 py-2 rounded font-medium text-sm ' +
-                  (subHistorySelection.length === subHistoryModal.additionLines.length
+                  (subHistorySelection.length === subHistoryModal.lineItems.length
                     ? 'bg-red-600 hover:bg-red-700 text-white'
                     : 'bg-amber-500 hover:bg-amber-600 text-white')
                 }
               >
-                {subHistorySelection.length === subHistoryModal.additionLines.length
+                {subHistorySelection.length === subHistoryModal.lineItems.length
                   ? 'Delete subscription'
                   : `Remove ${subHistorySelection.length} selected`}
               </button>
