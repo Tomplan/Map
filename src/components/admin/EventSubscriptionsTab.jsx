@@ -1040,21 +1040,37 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 />
                 <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.lineItems.length})</span>
               </label>
-              {subHistoryModal.lineItems.map((li) => (
-                <label key={li.id} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-                    checked={subHistorySelection.includes(li.id)}
-                    onChange={(e) =>
-                      setSubHistorySelection((prev) =>
-                        e.target.checked ? [...prev, li.id] : prev.filter((id) => id !== li.id),
-                      )
-                    }
-                  />
-                  <span className="text-sm text-gray-800">{li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}</span>
-                </label>
-              ))}
+              {subHistoryModal.lineItems.map((li) => {
+                const countParts = [
+                  li.booth_count > 0 && li.booth_count + ' booth(s)',
+                  li.breakfast_sat > 0 && li.breakfast_sat + ' breakfast sat',
+                  li.lunch_sat > 0 && li.lunch_sat + ' lunch sat',
+                  li.bbq_sat > 0 && li.bbq_sat + ' BBQ sat',
+                  li.breakfast_sun > 0 && li.breakfast_sun + ' breakfast sun',
+                  li.lunch_sun > 0 && li.lunch_sun + ' lunch sun',
+                  li.coins > 0 && li.coins + ' coins',
+                ].filter(Boolean).join(', ');
+                return (
+                  <label key={li.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-red-600 focus:ring-red-500 mt-0.5"
+                      checked={subHistorySelection.includes(li.id)}
+                      onChange={(e) =>
+                        setSubHistorySelection((prev) =>
+                          e.target.checked ? [...prev, li.id] : prev.filter((id) => id !== li.id),
+                        )
+                      }
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-gray-800 block">{li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}</span>
+                      {countParts && <span className="text-xs text-gray-500 block">{countParts}</span>}
+                      {li.area && <span className="text-xs text-blue-600 block">Area: {li.area}</span>}
+                      {li.notes && <span className="text-xs text-green-700 block">Notes: {li.notes}</span>}
+                    </div>
+                  </label>
+                );
+              })}
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button onClick={subHistoryModal.onCancel} className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
