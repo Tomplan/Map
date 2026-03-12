@@ -758,4 +758,10 @@
     "english": "Englisch",
     "dutch": "Niederländisch"
   }
+,
+  "subscriptionAlreadyExists": "Abonnement existiert bereits",
+  "subscriptionAlreadyExistsForYear": "Ein Abonnement existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt die Anzahlen dieses Artikels zum bestehenden Abonnement hinzu.\nErsetzen überschreibt es vollständig mit diesem Artikel.",
+  "subscriptionAlreadyExistsForCompany": "Ein Abonnement für \"{{companyName}}\" existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt Anzahlen von dieser Rechnung zum bestehenden Abonnement hinzu.\nErsetzen überschreibt es vollständig.",
+  "mergeAction": "Zusammenführen",
+  "replaceAction": "Ersetzen"
 }

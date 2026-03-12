@@ -926,4 +926,10 @@
     "startFailed": "Kon de rondleiding niet starten — vereiste elementen op de pagina ontbreken of laden nog. Probeer het later of controleer of je op de juiste pagina bent.",
     "duration": "Duur: ~{{minutes}} min"
   }
+,
+  "subscriptionAlreadyExists": "Inschrijving bestaat al",
+  "subscriptionAlreadyExistsForYear": "Er bestaat al een inschrijving voor {{year}} (stands: {{booths}}).\n\nSamenvoegen ('Merge') voegt de aantallen van dit item toe aan de bestaande inschrijving.\nVervangen ('Replace') overschrijft deze volledig met dit item.",
+  "subscriptionAlreadyExistsForCompany": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen ('Merge') voegt de aantallen van deze factuur toe aan de bestaande inschrijving.\nVervangen ('Replace') overschrijft deze volledig.",
+  "mergeAction": "Samenvoegen",
+  "replaceAction": "Vervangen"
 }

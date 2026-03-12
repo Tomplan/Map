@@ -927,4 +927,10 @@
     "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
   }
+,
+  "subscriptionAlreadyExists": "Subscription already exists",
+  "subscriptionAlreadyExistsForYear": "A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.\nReplace will overwrite it completely with this item.",
+  "subscriptionAlreadyExistsForCompany": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.",
+  "mergeAction": "Merge",
+  "replaceAction": "Replace"
 }
