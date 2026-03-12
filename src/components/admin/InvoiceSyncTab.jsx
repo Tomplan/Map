@@ -790,8 +790,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
   };
 
   const handleDeleteInvoice = async (invoice) => {
-    if (invoice.status === 'approved' || invoice.status === 'partially_approved') {
-      toastError('Cannot delete an invoice that is already subscribed.');
+    // Check line item statuses — block deletion when any item is approved or rejected
+    let items = [];
+    try { items = JSON.parse(invoice.notes || '{}').line_items || []; } catch (e) {}
+    const hasResolvedItems = items.some(li => li.status === 'approved' || li.status === 'rejected');
+    if (hasResolvedItems) {
+      toastError('Cannot delete — undo all approved/rejected items first.');
       return;
     }
     const yes = await confirm({
@@ -1608,6 +1612,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   >
                     Status {getSortIcon('status')}
                   </th>
+                  <th className="px-2 py-2 border-b border-gray-200 w-[40px]"></th>
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
@@ -2093,11 +2098,31 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   : 'PENDING'}
                           </span>
                         </td>
+                        <td className="px-1 py-2 align-top">
+                          {(() => {
+                            const hasResolved = lineItems.some(li => li.status === 'approved' || li.status === 'rejected');
+                            return (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(inv); }}
+                                disabled={hasResolved}
+                                className={
+                                  'p-1 rounded transition-colors ' +
+                                  (hasResolved
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer')
+                                }
+                                title={hasResolved ? 'Undo all approved/rejected items first' : 'Delete invoice'}
+                              >
+                                <Icon path={mdiDelete} size={0.7} />
+                              </button>
+                            );
+                          })()}
+                        </td>
                       </tr>
                       {/* Expandable Subrow */}
                       {isExpanded && (
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <td colSpan="8" className="p-4 bg-slate-50 border-x border-gray-200">
+                          <td colSpan="9" className="p-4 bg-slate-50 border-x border-gray-200">
                             {/* compact summary row with counts */}
                             <div className="mb-3 text-sm text-gray-700">
                               <strong>Stands:</strong> {inv.stands_count} &nbsp;|
