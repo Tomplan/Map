@@ -211,9 +211,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     // Build a human-readable summary of what changed
     const FIELD_LABELS = {
-      contact: 'Contact',
-      phone: 'Phone',
-      email: 'Email',
       booth_count: 'Booths',
       area: 'Area',
       breakfast_sat: 'Breakfast (Sat)',
@@ -252,26 +249,18 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         }
       }
 
-      if (hasCountChange) {
+      // Detect area/notes changes
+      const areaChanged = 'area' in updates && updates.area !== sub.area;
+      const notesChanged = 'notes' in updates && updates.notes !== sub.notes;
+
+      if (hasCountChange || areaChanged || notesChanged) {
         await addLineItem(sub.id, {
           source: 'edit',
           counts: countDeltas,
+          area: areaChanged ? updates.area : undefined,
+          notes: notesChanged ? updates.notes : undefined,
           description: 'Manual edit: ' + changes.join(', '),
         });
-      }
-
-      // Direct update for non-count fields (contact, phone, email)
-      // and area/notes if they changed (override recalculateTotals deduction)
-      const directUpdates = {};
-      for (const key of ['contact', 'phone', 'email']) {
-        if (key in updates && String(updates[key] ?? '') !== String(sub[key] ?? '')) {
-          directUpdates[key] = updates[key];
-        }
-      }
-      if ('area' in updates && updates.area !== sub.area) directUpdates.area = updates.area;
-      if ('notes' in updates && updates.notes !== sub.notes) directUpdates.notes = updates.notes;
-      if (Object.keys(directUpdates).length > 0) {
-        await updateSubscription(sub.id, directUpdates);
       }
 
       setIsEditModalOpen(false);
