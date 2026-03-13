@@ -480,62 +480,111 @@ function EventClusterMarkers({
     [deleteMarker, confirm],
   );
 
-  // Memoize event handlers by marker ID to prevent recreation
+  // Refs to latest handler functions — event handler closures read from these
+  // so they never go stale and the handler cache never needs clearing.
+  const handleDragEndRef = useRef(handleDragEnd);
+  handleDragEndRef.current = handleDragEnd;
+  const handleContextMenuRef = useRef(handleContextMenu);
+  handleContextMenuRef.current = handleContextMenu;
+  const isMarkerDraggableRef = useRef(isMarkerDraggable);
+  isMarkerDraggableRef.current = isMarkerDraggable;
+
+  // Memoize event handlers by marker ID to prevent recreation.
+  // Handlers close over refs, so they always call the latest function
+  // without needing cache invalidation.
   const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
     (marker) => {
-      const draggable = isMarkerDraggable(marker);
-      const key = `${marker.id}-${draggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
+      const key = `${marker.id}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
 
       if (!eventHandlersByMarker.current[key]) {
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
         };
 
-        // Only add handlers if they are defined
-        if (draggable) {
-          handlers.dragend = handleDragEnd(marker.id);
-        }
+        // dragend handler uses ref so it never goes stale
+        handlers.dragend = (e) => {
+          if (isMarkerDraggableRef.current(marker)) {
+            handleDragEndRef.current(marker.id)(e);
+          }
+        };
+
         if (isAdminView) {
-          handlers.contextmenu = handleContextMenu(marker);
+          handlers.contextmenu = (e) => {
+            handleContextMenuRef.current(marker)(e);
+          };
         }
 
         eventHandlersByMarker.current[key] = handlers;
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu, selectedYear],
+    [isAdminView, selectedYear],
   );
 
-  // Clear event handler cache when crucial props change to avoid stale closures
-  useEffect(() => {
-    eventHandlersByMarker.current = {};
-  }, [onMarkerDrag, updateMarker, isMarkerDraggable]);
-
-  // Memoize icons by marker visual properties to prevent recreation
+  // Memoize icons by marker visual identity to prevent recreation.
+  // Cache key does NOT include zoomBucket — on zoom change, we update the
+  // cached icon's options in-place (size, anchor, glyph sizing).  Because the
+  // Glyph plugin reuses the same DOM element, Leaflet applies the new styles
+  // without removing/inserting DOM → zero blink.
   const iconsByMarker = useRef({});
   const getIcon = useCallback(
     (marker, isSelected) => {
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
-      const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
+      const assignmentCount = marker.assignments?.length || 0;
 
-      // Use JSON.stringify for default markers to capture all style changes (glyphSize, fontWeight, etc.)
-      const defaultsKey = `${JSON.stringify(defaultMarkers.assigned || {})}-${JSON.stringify(defaultMarkers.unassigned || {})}`;
+      // Stable defaults key — only changes when admin edits default appearance
+      const defaultsKey = `${defaultMarkers.assigned?.id || 0}-${defaultMarkers.unassigned?.id || 0}-${defaultMarkers.assigned?.glyphColor || ''}-${defaultMarkers.unassigned?.glyphColor || ''}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}`;
 
-      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultsKey}-${marker.assignments?.length || 0}`;
-      if (!iconsByMarker.current[key]) {
-        iconsByMarker.current[key] = createIcon(
-          marker,
-          isSelected,
-          markerIsFavorited,
-          currentZoom,
-          effectiveAdminSizing,
-          defaultMarkers.assigned,
-          defaultMarkers.unassigned,
-        );
+      // Visual identity key — excludes zoom so zoom change reuses same icon
+      const identityKey = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}`;
+
+      // Zoom-dependent key — if both identity AND zoom match, icon is fully up-to-date
+      const zoomBucket = getZoomBucket(currentZoom);
+      const fullKey = `${identityKey}-${zoomBucket}`;
+
+      if (!iconsByMarker.current[fullKey]) {
+        // Check if we already have this icon from a different zoom
+        const existingEntry = iconsByMarker.current[`__identity__${identityKey}`];
+        if (existingEntry) {
+          // Reuse same icon object — update its options for new zoom.
+          // createIcon returns a new L.icon.glyph, but we want to keep the
+          // cached object and just refresh options so react-leaflet calls
+          // setIcon() with the SAME icon reference (triggering in-place DOM reuse).
+          const freshIcon = createIcon(
+            marker,
+            isSelected,
+            markerIsFavorited,
+            currentZoom,
+            effectiveAdminSizing,
+            defaultMarkers.assigned,
+            defaultMarkers.unassigned,
+          );
+          // Copy the zoom-dependent options onto the existing icon
+          existingEntry.options.iconSize = freshIcon.options.iconSize;
+          existingEntry.options.iconAnchor = freshIcon.options.iconAnchor;
+          existingEntry.options.shadowSize = freshIcon.options.shadowSize;
+          existingEntry.options.shadowAnchor = freshIcon.options.shadowAnchor;
+          existingEntry.options.glyphSize = freshIcon.options.glyphSize;
+          existingEntry.options.glyphAnchor = freshIcon.options.glyphAnchor;
+          iconsByMarker.current[fullKey] = existingEntry;
+        } else {
+          // First time seeing this identity — create new icon
+          const newIcon = createIcon(
+            marker,
+            isSelected,
+            markerIsFavorited,
+            currentZoom,
+            effectiveAdminSizing,
+            defaultMarkers.assigned,
+            defaultMarkers.unassigned,
+          );
+          iconsByMarker.current[fullKey] = newIcon;
+          iconsByMarker.current[`__identity__${identityKey}`] = newIcon;
+        }
       }
-      return iconsByMarker.current[key];
+      return iconsByMarker.current[fullKey];
     },
     [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers],
   );
@@ -554,9 +603,18 @@ function EventClusterMarkers({
 
     // Clean up icons cache
     Object.keys(iconsByMarker.current).forEach((key) => {
-      const markerId = parseInt(key.split('-')[0], 10);
-      if (!currentMarkerIds.has(markerId)) {
-        delete iconsByMarker.current[key];
+      if (key.startsWith('__identity__')) {
+        // Identity keys — extract marker ID after the prefix
+        const afterPrefix = key.slice('__identity__'.length);
+        const markerId = parseInt(afterPrefix.split('-')[0], 10);
+        if (!currentMarkerIds.has(markerId)) {
+          delete iconsByMarker.current[key];
+        }
+      } else {
+        const markerId = parseInt(key.split('-')[0], 10);
+        if (!currentMarkerIds.has(markerId)) {
+          delete iconsByMarker.current[key];
+        }
       }
     });
   }, [filteredMarkers]);
@@ -608,8 +666,9 @@ function EventClusterMarkers({
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
 
-          // Force remount when draggable state changes to ensure marker behavior updates
-          const markerKey = `${getMarkerKey(marker)}-${isDraggable ? 'drag' : 'static'}`;
+          // No isDraggable in key — react-leaflet handles draggable changes
+          // in-place via marker.dragging.enable()/disable(), no remount needed.
+          const markerKey = getMarkerKey(marker);
 
           return (
             <MemoizedMarker
