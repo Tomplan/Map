@@ -132,8 +132,6 @@ h1 {
 }
 
 /* Active marker highlight (e.g. from subscription selection) */
-
-/* Active marker highlight (e.g. from subscription selection) */
 /* Apply filter only, avoid transform which breaks Leaflet positioning */
 .leaflet-marker-icon.marker-active {
   filter: drop-shadow(0 0 8px #ef4444) brightness(1.2) !important;
@@ -141,8 +139,9 @@ h1 {
   /* Do not use transform: scale() here as it overrides Leaflet positioning */
 }
 
-/* Smooth fade-in for markers to prevent flash of unstyled icons */
-.leaflet-marker-icon.marker-icon {
+/* Smooth fade-in for markers and their shadows so they appear together */
+.leaflet-marker-icon.marker-icon,
+.leaflet-marker-shadow {
   animation: markerFadeIn 0.3s ease-in;
 }
 @keyframes markerFadeIn {
