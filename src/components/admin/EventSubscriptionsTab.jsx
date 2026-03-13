@@ -236,7 +236,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
 
       // Create edit line item with count deltas (if any count changed)
-      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins'];
+      // Coins is intentionally excluded — it bypasses line items and is updated directly.
+      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun'];
       const countDeltas = {};
       let hasCountChange = false;
       for (const field of COUNT_FIELDS) {
@@ -263,9 +264,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         });
       }
 
-      // Coins is excluded from the line-item recalculation system, so update it directly
-      if ('coins' in countDeltas) {
-        await updateSubscription(sub.id, { coins: updates.coins });
+      // Coins bypasses the line-item system — update directly on the subscription
+      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
+      if (coinsChanged) {
+        await updateSubscription(sub.id, { coins: Number(updates.coins) || 0 });
       }
 
       setIsEditModalOpen(false);
