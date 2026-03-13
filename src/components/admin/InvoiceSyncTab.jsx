@@ -462,6 +462,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
   // Prevents a concurrent real-time fetchInvoices() from overwriting an
   // in-flight optimistic status update with stale DB data.
   const pendingStatusRef = useRef(new Map());
+  // Serializes handleItemAction per invoice — prevents concurrent handlers from
+  // clobbering each other's notes saves or fighting over the confirm modal.
+  const itemActionQueueRef = useRef(new Map());
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -1723,6 +1726,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   // actions for individual line items
                   const handleItemAction = async (idx, action) => {
+                    // Serialize per invoice — queue behind any in-flight action
+                    // so concurrent clicks don't race on notes saves or the confirm modal.
+                    const queue = itemActionQueueRef.current;
+                    const prev = queue.get(inv.id) || Promise.resolve();
+                    const run = prev.then(() => _doItemAction(idx, action)).catch(() => {});
+                    queue.set(inv.id, run);
+                  };
+
+                  const _doItemAction = async (idx, action) => {
                     // Read fresh notes from DB — the parsedData closure is stale when
                     // multiple items are approved in quick succession.
                     const { data: _freshRow } = await supabase
