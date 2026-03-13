@@ -99,6 +99,7 @@ export default function useEventSubscriptions(eventYear) {
       channel: null,
       reloadTimeout: null,
       loadPromise: null,
+      loadGeneration: 0,
     };
     useEventSubscriptions.cache.set(eventYear, entry);
   }
@@ -126,6 +127,7 @@ export default function useEventSubscriptions(eventYear) {
         return Promise.resolve();
       }
 
+      const gen = ++entry.loadGeneration;
       entry.loadPromise = (async () => {
         try {
           // Clear any pending debounced reload
@@ -153,13 +155,19 @@ export default function useEventSubscriptions(eventYear) {
 
           if (fetchError) throw fetchError;
 
+          // Discard stale results — a newer loadSubscriptions was started
+          if (gen < entry.loadGeneration) return;
+
           entry.state.subscriptions = data || [];
         } catch (err) {
+          if (gen < entry.loadGeneration) return;
           console.error('Error loading event subscriptions:', err);
           entry.state.error = err.message;
         } finally {
-          entry.state.loading = false;
-          entry.listeners.forEach((l) => l(entry.state));
+          if (gen === entry.loadGeneration) {
+            entry.state.loading = false;
+            entry.listeners.forEach((l) => l(entry.state));
+          }
           entry.loadPromise = null;
         }
       })();
@@ -371,6 +379,7 @@ export default function useEventSubscriptions(eventYear) {
         channel: null,
         reloadTimeout: null,
         loadPromise: null,
+        loadGeneration: 0,
       };
       useEventSubscriptions.cache.set(eventYear, currentEntry);
     }

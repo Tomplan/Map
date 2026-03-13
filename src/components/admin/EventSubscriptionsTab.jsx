@@ -254,6 +254,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       const areaChanged = 'area' in updates && updates.area !== sub.area;
       const notesChanged = 'notes' in updates && updates.notes !== sub.notes;
 
+      // Coins bypasses the line-item system — update directly on the subscription.
+      // Must run BEFORE addLineItem so coins is already in DB when any
+      // real-time reload fires from recalculateTotals.
+      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
+      if (coinsChanged) {
+        await updateSubscription(sub.id, { coins: Number(updates.coins) || 0 });
+      }
+
       if (hasCountChange || areaChanged || notesChanged) {
         await addLineItem(sub.id, {
           source: 'edit',
@@ -262,12 +270,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           notes: notesChanged ? updates.notes : undefined,
           description: 'Manually edited: ' + changes.join(', '),
         });
-      }
-
-      // Coins bypasses the line-item system — update directly on the subscription
-      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
-      if (coinsChanged) {
-        await updateSubscription(sub.id, { coins: Number(updates.coins) || 0 });
       }
 
       setIsEditModalOpen(false);
