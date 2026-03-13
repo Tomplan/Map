@@ -1,8 +1,8 @@
 import { supabase } from '../supabaseClient';
 
 // ── Count columns tracked by subscription_line_items ──────────────────────────
-// NOTE: coins is intentionally excluded — it is only set manually or via
-// default subscription values and must never be overwritten by recalculation.
+// NOTE: coins is excluded from line-item columns — it's computed as
+// booth_count × default_coins (from organization_settings) in recalculateTotals.
 export const COUNT_COLUMNS = [
   'booth_count',
   'breakfast_sat',
@@ -101,6 +101,17 @@ export async function recalculateTotals(subscriptionId) {
     const sum = (items || []).reduce((acc, item) => acc + (item[col] || 0), 0);
     totals[col] = Math.max(0, sum);
   }
+
+  // Apply per-booth coin default: coins = booth_count × default_coins
+  // Coins are intentionally not a line-item column — they scale with total booth count.
+  const { data: orgSettings } = await supabase
+    .from('organization_settings')
+    .select('default_coins')
+    .eq('id', 1)
+    .single();
+  const defaultCoinsPerBooth =
+    typeof orgSettings?.default_coins === 'number' ? orgSettings.default_coins : 0;
+  totals.coins = totals.booth_count * defaultCoinsPerBooth;
 
   // Derive area and notes from active line items (deduplicated)
   const areas = [...new Set((items || []).map((i) => i.area).filter(Boolean))];
