@@ -263,6 +263,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         });
       }
 
+      // Coins is excluded from the line-item recalculation system, so update it directly
+      if ('coins' in countDeltas) {
+        await updateSubscription(sub.id, { coins: updates.coins });
+      }
+
       setIsEditModalOpen(false);
       setEditingSubscription(null);
       toastSuccess('Subscription updated successfully');
