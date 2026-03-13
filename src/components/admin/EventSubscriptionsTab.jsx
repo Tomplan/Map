@@ -1094,13 +1094,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         </div>
       )}
 
-      {/* Edit Modal */}
-      <SubscriptionEditModal
-        isOpen={isEditModalOpen}
-        onClose={handleModalClose}
-        subscription={editingSubscription}
-        onSave={handleModalSave}
-      />
+      {/* Edit Modal — conditionally rendered so it remounts fresh on each open */}
+      {isEditModalOpen && editingSubscription && (
+        <SubscriptionEditModal
+          onClose={handleModalClose}
+          subscription={editingSubscription}
+          onSave={handleModalSave}
+        />
+      )}
     </div>
   );
 }

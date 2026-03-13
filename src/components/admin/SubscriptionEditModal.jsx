@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
@@ -10,10 +10,20 @@ import { useMarkerGlyphs } from '../../hooks/useMarkerGlyphs';
  * SubscriptionEditModal - Modal for editing subscription details
  * Provides a better UX than inline editing with organized form sections
  */
-export default function SubscriptionEditModal({ isOpen, onClose, subscription, onSave }) {
+export default function SubscriptionEditModal({ onClose, subscription, onSave }) {
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
-  const [editForm, setEditForm] = useState({});
+  const [editForm, setEditForm] = useState({
+    booth_count: subscription.booth_count || 1,
+    area: subscription.area || '',
+    breakfast_sat: subscription.breakfast_sat || 0,
+    lunch_sat: subscription.lunch_sat || 0,
+    bbq_sat: subscription.bbq_sat || 0,
+    breakfast_sun: subscription.breakfast_sun || 0,
+    lunch_sun: subscription.lunch_sun || 0,
+    coins: subscription.coins || 0,
+    notes: subscription.notes || '',
+  });
 
   // Get booth assignments for display context (use current year as fallback)
   const eventYear = subscription?.event_year || new Date().getFullYear();
@@ -45,26 +55,6 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
     return labels.length > 0 ? labels.join(', ') : '-';
   }, [subscription, assignments, markerGlyphMap]);
 
-  // Initialize form only when modal OPENS — not on every subscription reference change.
-  // Real-time reloads create new subscription objects which would reset the form mid-edit.
-  const prevOpen = useRef(false);
-  useEffect(() => {
-    if (isOpen && !prevOpen.current && subscription) {
-      setEditForm({
-        booth_count: subscription.booth_count || 1,
-        area: subscription.area || '',
-        breakfast_sat: subscription.breakfast_sat || 0,
-        lunch_sat: subscription.lunch_sat || 0,
-        bbq_sat: subscription.bbq_sat || 0,
-        breakfast_sun: subscription.breakfast_sun || 0,
-        lunch_sun: subscription.lunch_sun || 0,
-        coins: subscription.coins || 0,
-        notes: subscription.notes || '',
-      });
-    }
-    prevOpen.current = isOpen;
-  }, [isOpen, subscription]);
-
   // Helper: update a numeric field — allows empty string while typing
   const setNum = (field, raw) => setEditForm((f) => ({ ...f, [field]: raw === '' ? '' : (parseInt(raw) || 0) }));
 
@@ -78,11 +68,9 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
     await onSave(cleaned);
   };
 
-  if (!subscription) return null;
-
   return (
     <Modal
-      isOpen={isOpen}
+      isOpen
       onClose={onClose}
       title={`Edit Subscription: ${subscription.company?.name || ''}`}
       size="lg"
