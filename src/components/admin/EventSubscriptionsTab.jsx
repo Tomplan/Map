@@ -54,7 +54,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   } = useEventSubscriptions(selectedYear);
 
   const { companies } = useCompanies();
-  const { assignments } = useAssignments(selectedYear);
+  const { assignments, reload: reloadAssignments } = useAssignments(selectedYear);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -383,6 +383,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               if (removeAll) {
                 const { error } = await unsubscribeCompany(subscription.id);
                 if (error) throw new Error(error);
+                await reloadAssignments(true);
                 await revertInvoicesForCompany(subscription.company_id);
                 toastSuccess('Subscription deleted.');
               } else {
@@ -398,6 +399,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 const remaining = await getActiveLineItems(subscription.id);
                 if (remaining.length === 0) {
                   await unsubscribeCompany(subscription.id);
+                  await reloadAssignments(true);
                   toastSuccess('Subscription deleted.');
                 } else {
                   toastSuccess('Selected items removed.');
@@ -436,6 +438,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     if (error) {
       toastError(`Error unsubscribing company: ${error}`);
     } else {
+      await reloadAssignments(true);
       await revertInvoicesForCompany(subscription.company_id);
     }
   };
