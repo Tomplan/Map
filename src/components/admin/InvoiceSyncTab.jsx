@@ -1058,6 +1058,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
         if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
         if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
+        // SAFETY: never overwrite the company name — it must always come from the DB
+        delete deduped.name;
         const { error: patchError } = await updateCompany(company.id, deduped);
         if (patchError) throw new Error(patchError);
       }
@@ -1115,6 +1117,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
+      // When the invoice has an explicit company_id (confirmed match), look up
+      // the company by ID — this is the authoritative link and must take
+      // precedence over fuzzy name matching.
+      const linkedCompany = inv.company_id
+        ? companies.find((c) => c.id === inv.company_id) || null
+        : null;
       const matchResult = findBestCompanyMatch(inv, companies);
 
       let parsedDate = '';
@@ -1125,10 +1133,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
       return {
         ...inv,
-        hasMatch: !!matchResult,
-        matchCompany: matchResult?.company || null,
-        matchScore: matchResult?.score || 0,
-        matchReasons: matchResult?.reasons || [],
+        hasMatch: !!linkedCompany || !!matchResult,
+        matchCompany: linkedCompany || matchResult?.company || null,
+        matchScore: linkedCompany ? 100 : (matchResult?.score || 0),
+        matchReasons: linkedCompany ? ['confirmed'] : (matchResult?.reasons || []),
         date: parsedDate,
       };
     });
@@ -2006,23 +2014,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           </a>
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top overflow-hidden truncate">
-                          <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
-                          {inv.status !== 'approved' && (
-                            matchCompany ? (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
-                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
-                                style={inv.company_id
-                                  ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
-                                  : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
-                                title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
-                              >
-                                <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
-                                {!inv.company_id && matchReasons.length > 0 && (
-                                  <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
-                                )}
-                              </button>
-                            ) : (
+                          <div className="font-medium text-gray-900 truncate">
+                            {/* Always show the DB company name when linked; fall back to invoice name */}
+                            {inv.company_id && matchCompany ? matchCompany.name : inv.company_name}
+                          </div>
+                          {matchCompany ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
+                              className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
+                              style={inv.company_id
+                                ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+                                : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
+                              title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
+                            >
+                              <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
+                              {!inv.company_id && matchReasons.length > 0 && (
+                                <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
+                              )}
+                            </button>
+                          ) : (
+                            !inv.company_id && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
                                 className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
