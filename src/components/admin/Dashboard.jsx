@@ -76,7 +76,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const stats = [
     {
       label: t('dashboard.totalAssignableBooths'),
-      value: markersLoading ? '...' : markerCount.toString(),
+      value: markersLoading || loading ? '...' : `${totals.booth_count} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },
