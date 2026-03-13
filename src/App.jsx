@@ -146,6 +146,7 @@ function AppContent() {
   // Fetch marker data from Supabase filtered by effectiveYear
   const {
     markers,
+    defaultStyles,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
   } = useEventMarkers(effectiveYear);
@@ -236,6 +237,7 @@ function AppContent() {
               branding={branding}
               user={user}
               markersState={markersState}
+              defaultStyles={defaultStyles}
               updateMarker={updateMarker}
               deleteMarker={deleteMarker}
               setMarkersState={setMarkersState}

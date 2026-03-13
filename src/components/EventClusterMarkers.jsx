@@ -284,6 +284,7 @@ function EventClusterMarkers({
   applyVisitorSizing = false,
   onMarkerDrag = null,
   assignmentsState,
+  defaultStyles: defaultStylesProp,
 }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
@@ -325,51 +326,8 @@ function EventClusterMarkers({
   const finalAssignmentsState = assignmentsState || localAssignmentsState;
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
-  // Load default markers for fallback colors
-  const [defaultMarkers, setDefaultMarkers] = useState({ assigned: null, unassigned: null });
-  useEffect(() => {
-    const loadDefaults = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('markers_appearance')
-          .select('*')
-          .in('id', [-1, -2])
-          .eq('event_year', 0);
-
-        if (error) throw error;
-
-        const assigned = data.find((d) => d.id === -1) || {};
-        const unassigned = data.find((d) => d.id === -2) || {};
-
-        setDefaultMarkers({ assigned, unassigned });
-      } catch (error) {
-        console.error('Error loading default markers:', error);
-      }
-    };
-
-    loadDefaults();
-
-    // Subscribe to default marker changes
-    const subscription = supabase
-      .channel('default-markers-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: 'event_year=eq.0',
-        },
-        () => {
-          loadDefaults();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, []);
+  // Default marker styles passed from useEventMarkers (fetched together with markers)
+  const defaultMarkers = defaultStylesProp || { assigned: null, unassigned: null };
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();
@@ -626,10 +584,10 @@ function EventClusterMarkers({
     return () => clearTimeout(timeout);
   }, [focusMarkerId, filteredMarkers, onFocusHandled]);
 
-  // Don't render clusters until logo AND default marker styles are loaded.
+  // Don't render clusters until default marker styles are loaded.
   // Without this guard, markers briefly flash with hardcoded fallback colors
   // before the DB-configured assigned/unassigned defaults arrive.
-  if (logoLoading || !defaultMarkers.assigned || !defaultMarkers.unassigned) {
+  if (!defaultMarkers.assigned || !defaultMarkers.unassigned) {
     return null;
   }
 
