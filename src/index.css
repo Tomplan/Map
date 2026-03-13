@@ -139,16 +139,6 @@ h1 {
   /* Do not use transform: scale() here as it overrides Leaflet positioning */
 }
 
-/* Smooth fade-in for markers and their shadows so they appear together */
-.leaflet-marker-icon.marker-icon,
-.leaflet-marker-shadow {
-  animation: markerFadeIn 0.3s ease-in;
-}
-@keyframes markerFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* Custom positioning for Admin View MiniMap */
 .leaflet-container.admin-map-view .leaflet-control-minimap {
   margin-bottom: 2px !important;
