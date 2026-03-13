@@ -1723,8 +1723,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   // actions for individual line items
                   const handleItemAction = async (idx, action) => {
-                    // Deep copy so mutations don't corrupt the shared parsedData reference
-                    const items = JSON.parse(JSON.stringify(parsedData.line_items || []));
+                    // Read fresh notes from DB — the parsedData closure is stale when
+                    // multiple items are approved in quick succession.
+                    const { data: _freshRow } = await supabase
+                      .from('staged_invoices')
+                      .select('notes')
+                      .eq('id', inv.id)
+                      .single();
+                    const _freshParsed = JSON.parse(_freshRow?.notes || '{}');
+                    const items = JSON.parse(JSON.stringify(_freshParsed.line_items || []));
                     const oldStatus = items[idx]?.status || 'pending';
 
                     // Helper: deactivate this line item's subscription_line_item record
@@ -1779,7 +1786,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const item = items[idx];
                       const counts = getCountsForItem(item);
                       const invoiceArea = item.area || '';
-                      const customerNote = parsedData.notes || '';
+                      const customerNote = _freshParsed.notes || '';
                       const invoiceHasBoothItems = items.some((i) => getCountsForItem(i).stands > 0);
                       const isBoothItem = counts.stands > 0;
                       const attachNotes = isBoothItem || !invoiceHasBoothItems;
@@ -1893,12 +1900,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       }
                     }
 
+                    // Re-read notes from DB before saving — another concurrent
+                    // handler may have saved a different item's status in the meantime.
+                    const { data: _saveRow } = await supabase
+                      .from('staged_invoices')
+                      .select('notes')
+                      .eq('id', inv.id)
+                      .single();
+                    const _saveParsed = JSON.parse(_saveRow?.notes || '{}');
+                    const _saveItems = _saveParsed.line_items || [];
                     if (action === 'delete') {
-                      items.splice(idx, 1);
-                    } else {
-                      items[idx] = { ...items[idx], status: action };
+                      _saveItems.splice(idx, 1);
+                    } else if (_saveItems[idx]) {
+                      _saveItems[idx] = { ..._saveItems[idx], status: action };
                     }
-                    const newNotes = { ...parsedData, line_items: items };
+                    const newNotes = { ..._saveParsed, line_items: _saveItems };
                     const ok = await saveNotes(newNotes);
                     if (ok) {
 
@@ -1923,9 +1939,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       };
 
                       const allResolved =
-                        items.length > 0 &&
-                        items.every((it) => it.status === 'approved' || it.status === 'rejected');
-                      const allApproved = allResolved && items.every((it) => it.status === 'approved');
+                        _saveItems.length > 0 &&
+                        _saveItems.every((it) => it.status === 'approved' || it.status === 'rejected');
+                      const allApproved = allResolved && _saveItems.every((it) => it.status === 'approved');
 
                       if (allResolved) {
                         const targetStatus = allApproved ? 'approved' : 'partially_approved';
