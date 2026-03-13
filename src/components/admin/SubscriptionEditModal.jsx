@@ -55,8 +55,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
     return labels.length > 0 ? labels.join(', ') : '-';
   }, [subscription, assignments, markerGlyphMap]);
 
-  // Helper: update a numeric field — allows empty string while typing
-  const setNum = (field, raw) => setEditForm((f) => ({ ...f, [field]: raw === '' ? '' : (parseInt(raw) || 0) }));
+  // Helper: update a field — always uses functional updater to avoid stale closures
+  const setField = (field, value) => setEditForm((f) => ({ ...f, [field]: value }));
+  const setNum = (field, raw) => setField(field, raw === '' ? '' : (parseInt(raw) || 0));
 
   const handleSave = async () => {
     // Coerce any empty-string fields back to numbers before saving
@@ -115,8 +116,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.boothCount')}
               </label>
               <input
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.booth_count ?? ''}
                 onChange={(e) => setNum('booth_count', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -129,7 +131,7 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
               <input
                 type="text"
                 value={editForm.area || ''}
-                onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                onChange={(e) => setField('area', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder={t('helpPanel.subscriptions.areaPlaceholder')}
               />
@@ -148,8 +150,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.breakfast')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.breakfast_sat ?? ''}
                 onChange={(e) => setNum('breakfast_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -160,8 +163,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.lunch')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.lunch_sat ?? ''}
                 onChange={(e) => setNum('lunch_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -172,8 +176,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.bbq')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.bbq_sat ?? ''}
                 onChange={(e) => setNum('bbq_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -193,8 +198,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.breakfast')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.breakfast_sun ?? ''}
                 onChange={(e) => setNum('breakfast_sun', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -205,8 +211,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.lunch')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.lunch_sun ?? ''}
                 onChange={(e) => setNum('lunch_sun', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -226,8 +233,9 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
                 {t('helpPanel.subscriptions.coins')}
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={editForm.coins ?? ''}
                 onChange={(e) => setNum('coins', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -239,7 +247,7 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
               </label>
               <textarea
                 value={editForm.notes || ''}
-                onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                onChange={(e) => setField('notes', e.target.value)}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Additional notes..."
