@@ -170,6 +170,28 @@ L.Icon.Glyph = L.Icon.extend({
       div.style.width = size.x + 'px';
       div.style.height = size.y + 'px';
     }
+
+    // Update child glyph spans so that direct _setIconStyles calls (e.g. from
+    // Leaflet's setIcon path or tests) keep spans in sync with current options.
+    try {
+      const glyphSpans = div.querySelectorAll && div.querySelectorAll('span');
+      if (glyphSpans && glyphSpans.length) {
+        glyphSpans.forEach((span) => {
+          span.style.fontSize = options.glyphSize || span.style.fontSize || '';
+          span.style.color = options.glyphColor || span.style.color || '';
+          if (options.iconSize) {
+            span.style.width = options.iconSize[0] + 'px';
+            span.style.lineHeight = options.iconSize[1] + 'px';
+          }
+          if (options.glyphAnchor && options.glyphAnchor.length >= 2) {
+            span.style.left = options.glyphAnchor[0] + 'px';
+            span.style.top = options.glyphAnchor[1] + 'px';
+          }
+        });
+      }
+    } catch (err) {
+      // Fail silently to avoid breaking Leaflet rendering
+    }
   },
 });
 

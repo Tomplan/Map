@@ -91,6 +91,44 @@ jest.mock('../../../supabaseClient', () => {
         })),
       };
     }
+    if (table === 'organization_settings') {
+      return {
+        select: jest.fn(() => ({
+          eq: jest.fn(() => ({
+            single: jest.fn().mockResolvedValue({ data: { default_coins: 0 }, error: null }),
+          })),
+        })),
+      };
+    }
+    if (table === 'staged_invoices') {
+      return {
+        select: jest.fn(() => ({
+          order: mockOrder,
+          eq: jest.fn(() => ({
+            single: jest.fn(async () => {
+              // Return the current invoice data (mockOrder tracks updates from saveNotes)
+              const r = await mockOrder();
+              return { data: (r?.data || [])[0] || null, error: null };
+            }),
+          })),
+        })),
+        update: jest.fn((payload) => ({
+          eq: jest.fn(async () => {
+            // When notes are saved, update mockOrder so subsequent reads return fresh data
+            if (payload && payload.notes !== undefined) {
+              const current = await mockOrder();
+              const updated = (current?.data || []).map(item => ({ ...item, notes: payload.notes }));
+              mockOrder.mockResolvedValue({ data: updated, error: null });
+            }
+            return { error: null };
+          }),
+        })),
+        delete: jest.fn(() => ({
+          eq: jest.fn(() => Promise.resolve({ error: null })),
+          not: jest.fn(() => Promise.resolve({ error: null })),
+        })),
+      };
+    }
     return {
       select: jest.fn(() => ({
         order: mockOrder,

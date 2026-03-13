@@ -327,7 +327,9 @@ function EventClusterMarkers({
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
   // Default marker styles passed from useEventMarkers (fetched together with markers)
-  const defaultMarkers = defaultStylesProp || { assigned: null, unassigned: null };
+  const defaultMarkers = defaultStylesProp !== undefined
+    ? (defaultStylesProp || { assigned: null, unassigned: null })
+    : { assigned: null, unassigned: null };
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();
@@ -602,7 +604,8 @@ function EventClusterMarkers({
   // Don't render clusters until default marker styles are loaded.
   // Without this guard, markers briefly flash with hardcoded fallback colors
   // before the DB-configured assigned/unassigned defaults arrive.
-  if (!defaultMarkers.assigned || !defaultMarkers.unassigned) {
+  // defaultStylesProp === undefined means the parent hasn't provided defaults yet (still loading).
+  if (defaultStylesProp === undefined) {
     return null;
   }
 
