@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../common/Modal';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
@@ -45,9 +45,11 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
     return labels.length > 0 ? labels.join(', ') : '-';
   }, [subscription, assignments, markerGlyphMap]);
 
-  // Initialize form when subscription changes
+  // Initialize form only when modal OPENS — not on every subscription reference change.
+  // Real-time reloads create new subscription objects which would reset the form mid-edit.
+  const prevOpen = useRef(false);
   useEffect(() => {
-    if (subscription) {
+    if (isOpen && !prevOpen.current && subscription) {
       setEditForm({
         booth_count: subscription.booth_count || 1,
         area: subscription.area || '',
@@ -60,10 +62,20 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
         notes: subscription.notes || '',
       });
     }
-  }, [subscription]);
+    prevOpen.current = isOpen;
+  }, [isOpen, subscription]);
+
+  // Helper: update a numeric field — allows empty string while typing
+  const setNum = (field, raw) => setEditForm((f) => ({ ...f, [field]: raw === '' ? '' : (parseInt(raw) || 0) }));
 
   const handleSave = async () => {
-    await onSave(editForm);
+    // Coerce any empty-string fields back to numbers before saving
+    const cleaned = { ...editForm };
+    for (const k of ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins']) {
+      cleaned[k] = Number(cleaned[k]) || 0;
+    }
+    if (cleaned.booth_count < 1) cleaned.booth_count = 1;
+    await onSave(cleaned);
   };
 
   if (!subscription) return null;
@@ -117,10 +129,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="1"
-                value={editForm.booth_count || 1}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, booth_count: parseInt(e.target.value) || 1 })
-                }
+                value={editForm.booth_count ?? ''}
+                onChange={(e) => setNum('booth_count', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -152,10 +162,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.breakfast_sat || 0}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, breakfast_sat: parseInt(e.target.value) || 0 })
-                }
+                value={editForm.breakfast_sat ?? ''}
+                onChange={(e) => setNum('breakfast_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -166,10 +174,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.lunch_sat || 0}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, lunch_sat: parseInt(e.target.value) || 0 })
-                }
+                value={editForm.lunch_sat ?? ''}
+                onChange={(e) => setNum('lunch_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -180,10 +186,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.bbq_sat || 0}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, bbq_sat: parseInt(e.target.value) || 0 })
-                }
+                value={editForm.bbq_sat ?? ''}
+                onChange={(e) => setNum('bbq_sat', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -203,10 +207,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.breakfast_sun || 0}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, breakfast_sun: parseInt(e.target.value) || 0 })
-                }
+                value={editForm.breakfast_sun ?? ''}
+                onChange={(e) => setNum('breakfast_sun', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -217,10 +219,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.lunch_sun || 0}
-                onChange={(e) =>
-                  setEditForm({ ...editForm, lunch_sun: parseInt(e.target.value) || 0 })
-                }
+                value={editForm.lunch_sun ?? ''}
+                onChange={(e) => setNum('lunch_sun', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
@@ -240,8 +240,8 @@ export default function SubscriptionEditModal({ isOpen, onClose, subscription, o
               <input
                 type="number"
                 min="0"
-                value={editForm.coins || 0}
-                onChange={(e) => setEditForm({ ...editForm, coins: parseInt(e.target.value) || 0 })}
+                value={editForm.coins ?? ''}
+                onChange={(e) => setNum('coins', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
