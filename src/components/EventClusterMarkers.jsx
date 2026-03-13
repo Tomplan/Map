@@ -522,69 +522,35 @@ function EventClusterMarkers({
     [isAdminView, selectedYear],
   );
 
-  // Memoize icons by marker visual identity to prevent recreation.
-  // Cache key does NOT include zoomBucket — on zoom change, we update the
-  // cached icon's options in-place (size, anchor, glyph sizing).  Because the
-  // Glyph plugin reuses the same DOM element, Leaflet applies the new styles
-  // without removing/inserting DOM → zero blink.
+  // Memoize icons by marker visual properties to prevent recreation.
+  // Key includes zoomBucket so zoom changes produce new icon objects (triggering
+  // setIcon).  The Glyph plugin's DOM-reuse in createIcon() ensures setIcon()
+  // updates styles in-place without destroying/recreating the DOM element.
   const iconsByMarker = useRef({});
   const getIcon = useCallback(
     (marker, isSelected) => {
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
+      const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
       const assignmentCount = marker.assignments?.length || 0;
 
       // Stable defaults key — only changes when admin edits default appearance
       const defaultsKey = `${defaultMarkers.assigned?.id || 0}-${defaultMarkers.unassigned?.id || 0}-${defaultMarkers.assigned?.glyphColor || ''}-${defaultMarkers.unassigned?.glyphColor || ''}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}`;
 
-      // Visual identity key — excludes zoom so zoom change reuses same icon
-      const identityKey = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}`;
+      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}`;
 
-      // Zoom-dependent key — if both identity AND zoom match, icon is fully up-to-date
-      const zoomBucket = getZoomBucket(currentZoom);
-      const fullKey = `${identityKey}-${zoomBucket}`;
-
-      if (!iconsByMarker.current[fullKey]) {
-        // Check if we already have this icon from a different zoom
-        const existingEntry = iconsByMarker.current[`__identity__${identityKey}`];
-        if (existingEntry) {
-          // Reuse same icon object — update its options for new zoom.
-          // createIcon returns a new L.icon.glyph, but we want to keep the
-          // cached object and just refresh options so react-leaflet calls
-          // setIcon() with the SAME icon reference (triggering in-place DOM reuse).
-          const freshIcon = createIcon(
-            marker,
-            isSelected,
-            markerIsFavorited,
-            currentZoom,
-            effectiveAdminSizing,
-            defaultMarkers.assigned,
-            defaultMarkers.unassigned,
-          );
-          // Copy the zoom-dependent options onto the existing icon
-          existingEntry.options.iconSize = freshIcon.options.iconSize;
-          existingEntry.options.iconAnchor = freshIcon.options.iconAnchor;
-          existingEntry.options.shadowSize = freshIcon.options.shadowSize;
-          existingEntry.options.shadowAnchor = freshIcon.options.shadowAnchor;
-          existingEntry.options.glyphSize = freshIcon.options.glyphSize;
-          existingEntry.options.glyphAnchor = freshIcon.options.glyphAnchor;
-          iconsByMarker.current[fullKey] = existingEntry;
-        } else {
-          // First time seeing this identity — create new icon
-          const newIcon = createIcon(
-            marker,
-            isSelected,
-            markerIsFavorited,
-            currentZoom,
-            effectiveAdminSizing,
-            defaultMarkers.assigned,
-            defaultMarkers.unassigned,
-          );
-          iconsByMarker.current[fullKey] = newIcon;
-          iconsByMarker.current[`__identity__${identityKey}`] = newIcon;
-        }
+      if (!iconsByMarker.current[key]) {
+        iconsByMarker.current[key] = createIcon(
+          marker,
+          isSelected,
+          markerIsFavorited,
+          currentZoom,
+          effectiveAdminSizing,
+          defaultMarkers.assigned,
+          defaultMarkers.unassigned,
+        );
       }
-      return iconsByMarker.current[fullKey];
+      return iconsByMarker.current[key];
     },
     [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers],
   );
@@ -603,18 +569,9 @@ function EventClusterMarkers({
 
     // Clean up icons cache
     Object.keys(iconsByMarker.current).forEach((key) => {
-      if (key.startsWith('__identity__')) {
-        // Identity keys — extract marker ID after the prefix
-        const afterPrefix = key.slice('__identity__'.length);
-        const markerId = parseInt(afterPrefix.split('-')[0], 10);
-        if (!currentMarkerIds.has(markerId)) {
-          delete iconsByMarker.current[key];
-        }
-      } else {
-        const markerId = parseInt(key.split('-')[0], 10);
-        if (!currentMarkerIds.has(markerId)) {
-          delete iconsByMarker.current[key];
-        }
+      const markerId = parseInt(key.split('-')[0], 10);
+      if (!currentMarkerIds.has(markerId)) {
+        delete iconsByMarker.current[key];
       }
     });
   }, [filteredMarkers]);
