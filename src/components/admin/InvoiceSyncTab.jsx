@@ -2054,7 +2054,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                       const titles = { approved: 'Mark approved',
                                                        rejected: 'Reject item' };
                                       const disabled = !inv.company_id;
-                                      // Replace the matching action button with undo when that status is active
+                                      // Once resolved, only show undo for the active status —
+                                      // switching directly between approved↔rejected is not allowed;
+                                      // undo first, then choose the other action.
+                                      const resolved = item.status === 'approved' || item.status === 'rejected';
+                                      if (resolved && item.status !== act) return null;
                                       if (item.status === act) {
                                         return (
                                           <button
