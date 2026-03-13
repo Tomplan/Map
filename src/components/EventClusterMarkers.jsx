@@ -626,8 +626,10 @@ function EventClusterMarkers({
     return () => clearTimeout(timeout);
   }, [focusMarkerId, filteredMarkers, onFocusHandled]);
 
-  // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
-  if (logoLoading) {
+  // Don't render clusters until logo AND default marker styles are loaded.
+  // Without this guard, markers briefly flash with hardcoded fallback colors
+  // before the DB-configured assigned/unassigned defaults arrive.
+  if (logoLoading || !defaultMarkers.assigned || !defaultMarkers.unassigned) {
     return null;
   }
 
