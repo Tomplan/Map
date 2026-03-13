@@ -880,14 +880,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
     const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
-    // Check if a subscription already exists for this company + year
-    const existing = subscriptions.find((s) => s.company_id === companyId);
+    // Check if a subscription already exists for this company + year.
+    // Always query DB directly — the React state can be stale when multiple
+    // invoices are approved in quick succession.
+    const existing = await fetchFreshSubscription(companyId);
 
     if (existing) {
+      // fetchFreshSubscription returns raw row without company join —
+      // look up the name from the companies list or the invoice itself.
+      const companyName = companies.find((c) => c.id === companyId)?.name || invoice.company_name || '';
       const merge = await confirm({
-        title: t('subscriptionAlreadyExists', { companyName: existing.company?.name || '' }),
+        title: t('subscriptionAlreadyExists', { companyName }),
         message: t('subscriptionAlreadyExistsForCompany', {
-          companyName: existing.company?.name || '',
+          companyName,
           year: selectedYear,
           booths: existing.booth_count,
           defaultValue: 'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.'
