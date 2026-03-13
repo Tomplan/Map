@@ -20,22 +20,25 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
       .eq('id', companyId)
       .single();
 
-    // Fetch organization defaults for meal counts (separate Saturday/Sunday)
-    const { data: orgProfile } = await supabase
-      .from('organization_profile')
+    // Fetch organization defaults for meal counts and coins from organization_settings
+    // (EventDefaults saves to this table; organization_profile is legacy)
+    const { data: orgSettings } = await supabase
+      .from('organization_settings')
       .select(
-        'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun',
+        'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins',
       )
       .eq('id', 1)
       .single();
 
-    const defaultBreakfastSat = orgProfile?.default_breakfast_sat || 0;
-    const defaultLunchSat = orgProfile?.default_lunch_sat || 0;
-    const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
-    const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
-    const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
+    // Defaults are per-booth — multiply by booth_count
+    const boothCount = typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1;
+    const defaultBreakfastSat = (orgSettings?.default_breakfast_sat || 0) * boothCount;
+    const defaultLunchSat = (orgSettings?.default_lunch_sat || 0) * boothCount;
+    const defaultBbqSat = (orgSettings?.default_bbq_sat || 0) * boothCount;
+    const defaultBreakfastSun = (orgSettings?.default_breakfast_sun || 0) * boothCount;
+    const defaultLunchSun = (orgSettings?.default_lunch_sun || 0) * boothCount;
     const defaultCoins =
-      typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
+      typeof orgSettings?.default_coins === 'number' ? orgSettings.default_coins * boothCount : 0;
 
     // Normalize phone before inserting
     const phoneToInsert = subscriptionData.phone
