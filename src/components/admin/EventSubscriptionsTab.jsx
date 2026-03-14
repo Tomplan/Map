@@ -843,20 +843,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                     {/* Contact */}
                     <td className="p-2 text-left">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
                         {company?.contact_name && company.contact_name !== subscription.contact && (
-                          <span className="text-xs text-gray-400">{company.contact_name}</span>
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name}</span>
                         )}
-                        {company?.contact_name_2 && (
-                          <span className="text-xs text-gray-400">{company.contact_name_2}</span>
+                        {company?.contact_name_2 && company.contact_name_2 !== (company.contact_name || subscription.contact) && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name_2}</span>
                         )}
                       </div>
                     </td>
 
                     {/* Phone */}
                     <td className="p-2 text-left">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         {subscription.phone ? (
                           <span className="text-xs text-gray-700 flex items-center gap-1">
                             <span>{getPhoneFlag(subscription.phone)}</span>
@@ -866,13 +866,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           <span className="text-xs text-gray-400">-</span>
                         )}
                         {company?.contact_phone && company.contact_phone !== subscription.phone && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
                             <span>{getPhoneFlag(company.contact_phone)}</span>
                             <span>{formatPhoneForDisplay(company.contact_phone)}</span>
                           </span>
                         )}
-                        {company?.contact_phone_2 && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                        {company?.contact_phone_2 && company.contact_phone_2 !== (company.contact_phone || subscription.phone) && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
                             <span>{getPhoneFlag(company.contact_phone_2)}</span>
                             <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
                           </span>
@@ -882,13 +882,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                     {/* Email */}
                     <td className="p-2 text-left">
-                      <div className="flex flex-col">
+                      <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
                         {company?.contact_email && company.contact_email !== subscription.email && (
-                          <span className="text-xs text-gray-400">{company.contact_email}</span>
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email}</span>
                         )}
-                        {company?.contact_email_2 && (
-                          <span className="text-xs text-gray-400">{company.contact_email_2}</span>
+                        {company?.contact_email_2 && company.contact_email_2 !== (company.contact_email || subscription.email) && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email_2}</span>
                         )}
                       </div>
                     </td>

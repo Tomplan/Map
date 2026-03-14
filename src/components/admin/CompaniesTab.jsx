@@ -584,8 +584,8 @@ export default function CompaniesTab() {
                 </div>
 
                 {/* Contact 1 sub-heading */}
-                <div className="flex items-center gap-2 pt-2 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 1</span>
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
                 </div>
 
                 <EditRow label={translateSafe('companies.table.contact')}>
@@ -602,8 +602,8 @@ export default function CompaniesTab() {
                 </EditRow>
 
                 {/* Contact 2 sub-heading */}
-                <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 2</span>
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
                 </div>
                 <EditRow label={translateSafe('companies.table.contact')}>
                   <input type="text" placeholder={translateSafe('companies.contactNamePlaceholder')}
@@ -619,8 +619,8 @@ export default function CompaniesTab() {
                 </EditRow>
 
                 {/* Contact 3 sub-heading */}
-                <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 3</span>
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
                 </div>
                 <EditRow label={translateSafe('companies.table.contact')}>
                   <input type="text" placeholder="Contact 3"
@@ -813,8 +813,8 @@ export default function CompaniesTab() {
                 </div>
 
                 {/* Contact 1 sub-heading */}
-                <div className="flex items-center gap-2 pt-2 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 1</span>
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
                 </div>
                 <Row lbl={translateSafe('companies.table.contact')}>{item.contact || dash}</Row>
                 <Row lbl={translateSafe('companies.table.phone')}>
@@ -837,7 +837,7 @@ export default function CompaniesTab() {
                     (!item.contact_phone || item.contact_phone === item.phone);
                   return hasBilling && !isDuplicateBilling ? (
                     <div className="flex items-center gap-2 pt-3 pb-1">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 2</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
                     </div>
                   ) : null;
                 })()}
@@ -882,7 +882,7 @@ export default function CompaniesTab() {
                   return (
                     <>
                       <div className="flex items-center gap-2 pt-3 pb-1">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 3</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
                       </div>
                       <Row lbl={translateSafe('companies.table.contact')} hidden={!item.contact_name_2}>
                         {item.contact_name_2}
