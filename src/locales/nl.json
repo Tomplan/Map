@@ -877,7 +877,7 @@
       "organizationInfo": "Organisatie info",
       "modal": {
         "publicInfoHeading": "Publieke informatie (zichtbaar voor bezoekers)",
-        "managerInfoHeading": "Contact 1",
+        "managerInfoHeading": "Privé contactgegevens",
         "infoMultiLanguageLabel": "Info (Meertalige invoer)",
         "enterInfoInLanguage": "Voer info in {{lang}}...",
         "uploadLogo": "Upload logo",

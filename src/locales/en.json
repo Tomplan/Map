@@ -878,7 +878,7 @@
       "organizationInfo": "Organization info",
       "modal": {
         "publicInfoHeading": "Public Info (visible to attendees)",
-        "managerInfoHeading": "Contact 1",
+        "managerInfoHeading": "Private contact details",
         "infoMultiLanguageLabel": "Info (Multi-language)",
         "enterInfoInLanguage": "Enter info in {{lang}}...",
         "uploadLogo": "Upload Logo",

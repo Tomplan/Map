@@ -718,7 +718,7 @@
       "organizationInfo": "Organisationsinfo",
       "modal": {
         "publicInfoHeading": "Öffentliche Informationen (für Besucher sichtbar)",
-        "managerInfoHeading": "Contact 1",
+        "managerInfoHeading": "Private Kontaktdaten",
         "infoMultiLanguageLabel": "Info (mehrsprachig)",
         "enterInfoInLanguage": "Informationen eingeben in {{lang}}...",
         "uploadLogo": "Logo hochladen",

@@ -575,12 +575,17 @@ export default function CompaniesTab() {
                   </EditRow>
                 )}
 
-                {/* Contact 1 heading */}
+                {/* Private info heading */}
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    Contact 1
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
                   </span>
+                </div>
+
+                {/* Contact 1 sub-heading */}
+                <div className="flex items-center gap-2 pt-2 pb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 1</span>
                 </div>
 
                 <EditRow label={translateSafe('companies.table.contact')}>
@@ -803,8 +808,13 @@ export default function CompaniesTab() {
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
                   </span>
+                </div>
+
+                {/* Contact 1 sub-heading */}
+                <div className="flex items-center gap-2 pt-2 pb-1">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 1</span>
                 </div>
                 <Row lbl={translateSafe('companies.table.contact')}>{item.contact || dash}</Row>
                 <Row lbl={translateSafe('companies.table.phone')}>
