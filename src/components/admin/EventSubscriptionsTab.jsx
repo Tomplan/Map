@@ -16,7 +16,6 @@ import {
   mdiContentCopy,
   mdiChevronUp,
   mdiChevronDown,
-  mdiNoteTextOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -65,6 +64,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
   const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
   const [expandedIds, setExpandedIds] = useState(new Set());
+  const [notesExpandedIds, setNotesExpandedIds] = useState(new Set());
 
   // Modal state for editing
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -787,21 +787,37 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {filteredSubscriptions.map((subscription) => {
               const company = subscription.company;
               const boothLabels = getBoothLabels(subscription.company_id);
-              const isExpanded = expandedIds.has(subscription.id);
+              const isHistoryExpanded = expandedIds.has(subscription.id);
+              const isNotesExpanded = notesExpandedIds.has(subscription.id);
               const historyLines = (subscription.history || '')
                 .split('\n')
                 .map((l) => l.trim())
                 .filter((l) => l.length > 0)
                 .reverse();
-              // count visible columns for the colspan on the expanded row
+              // count visible columns for the colspan on the expanded rows
               const colSpan = 14;
+              const toggleNotes = () => {
+                setNotesExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(subscription.id)) next.delete(subscription.id);
+                  else next.add(subscription.id);
+                  return next;
+                });
+              };
 
               return (
                 <React.Fragment key={subscription.id}>
-                  <tr className="bg-white hover:bg-gray-50 border-b align-top">
-                    {/* Expand toggle */}
+                  <tr
+                    className={`hover:bg-gray-50 border-b align-top cursor-pointer ${isNotesExpanded ? 'bg-amber-50/40' : 'bg-white'}`}
+                    onClick={(e) => {
+                      if (e.target.closest('[data-history-toggle]') || e.target.closest('[data-actions]')) return;
+                      toggleNotes();
+                    }}
+                  >
+                    {/* History expand toggle */}
                     <td className="p-1 text-center">
                       <button
+                        data-history-toggle
                         onClick={() =>
                           setExpandedIds((prev) => {
                             const next = new Set(prev);
@@ -810,13 +826,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                             return next;
                           })
                         }
-                        className="text-gray-400 hover:text-gray-700 relative"
-                        title={isExpanded ? 'Hide details' : 'Show details'}
+                        className="text-gray-400 hover:text-gray-700"
+                        title={isHistoryExpanded ? 'Hide history' : 'Show history'}
                       >
-                        <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
-                        {subscription.notes && (
-                          <Icon path={mdiNoteTextOutline} size={0.35} className="text-amber-500 absolute -top-0.5 -right-1" />
-                        )}
+                        <Icon path={isHistoryExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
                       </button>
                     </td>
 
@@ -926,7 +939,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     </td>
 
                     {/* Actions */}
-                    <td className="p-2 text-center">
+                    <td className="p-2 text-center" data-actions>
                       <div className="flex gap-1 justify-center">
                         <button
                           onClick={() => handleEdit(subscription)}
@@ -946,18 +959,19 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     </td>
                   </tr>
 
-                  {/* Expandable details row (notes + history) */}
-                  {isExpanded && (
+                  {/* Expandable notes row (click row to toggle) */}
+                  {isNotesExpanded && subscription.notes && (
+                    <tr className="bg-amber-50/60 border-b">
+                      <td colSpan={colSpan} className="px-8 py-2 text-left">
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap">{subscription.notes}</p>
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* Expandable history row (arrow to toggle) */}
+                  {isHistoryExpanded && (
                     <tr className="bg-gray-50 border-b">
                       <td colSpan={colSpan} className="px-8 py-3 text-left">
-                        {/* Notes */}
-                        {subscription.notes && (
-                          <div className="mb-3">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 text-left">{t('helpPanel.subscriptions.notes')}</p>
-                            <p className="text-xs text-gray-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 whitespace-pre-wrap">{subscription.notes}</p>
-                          </div>
-                        )}
-                        {/* History */}
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
                         {historyLines.length === 0 ? (
                           <p className="text-xs text-gray-400 text-left">No history recorded.</p>
