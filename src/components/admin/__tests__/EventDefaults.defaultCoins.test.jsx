@@ -8,12 +8,16 @@ jest.mock('react-i18next', () => ({
 }));
 
 // Mock the organization settings hook (used by EventDefaults for default_coins)
-jest.mock('../../../hooks/useOrganizationSettings', () => () => ({
-  settings: { default_coins: 42 },
-  loading: false,
-  error: null,
-  updateSettings: jest.fn().mockResolvedValue(true),
-}));
+// settings object must be a stable reference to avoid infinite useEffect loop
+jest.mock('../../../hooks/useOrganizationSettings', () => {
+  const stableSettings = { default_coins: 42 };
+  return () => ({
+    settings: stableSettings,
+    loading: false,
+    error: null,
+    updateSettings: jest.fn().mockResolvedValue(true),
+  });
+});
 
 // Mock organization_profile hook (no default_coins here since it moved to organization_settings)
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
