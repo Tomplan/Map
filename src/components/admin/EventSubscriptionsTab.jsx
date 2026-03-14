@@ -321,12 +321,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       try {
         const { data: allInvoices } = await supabase
           .from('staged_invoices')
-          .select('id, status, notes')
+          .select('id, status, parsed_data')
           .eq('company_id', companyId);
         if (!allInvoices || allInvoices.length === 0) return;
         for (const inv of allInvoices) {
           let notes = {};
-          try { notes = JSON.parse(inv.notes || '{}'); } catch (_) {}
+          try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
           const hasApprovedItems = notes.line_items?.some(
             (item) => item.status === 'approved' || item.status === 'rejected',
           );
@@ -336,7 +336,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           if (notes.line_items) {
             notes.line_items = notes.line_items.map((item) => ({ ...item, status: 'pending' }));
           }
-          const updatePayload = { notes: JSON.stringify(notes), updated_at: new Date().toISOString() };
+          const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
           if (needsStatusReset) updatePayload.status = 'pending';
           await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
         }
@@ -355,13 +355,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         try {
           const { data: invRows } = await supabase
             .from('staged_invoices')
-            .select('id, status, notes')
+            .select('id, status, parsed_data')
             .eq('invoice_number', invoiceNumber)
             .eq('company_id', companyId);
           if (!invRows || invRows.length === 0) continue;
           for (const inv of invRows) {
             let notes = {};
-            try { notes = JSON.parse(inv.notes || '{}'); } catch (_) {}
+            try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
             if (!notes.line_items) continue;
             let changed = false;
             const itemDescs = items.map(li => (li.description || '').toLowerCase());
@@ -382,7 +382,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             if (inv.status === 'approved' || inv.status === 'partially_approved') {
               newStatus = allResolved ? (allApproved ? 'approved' : 'partially_approved') : 'pending';
             }
-            const updatePayload = { notes: JSON.stringify(notes), updated_at: new Date().toISOString() };
+            const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
             if (newStatus !== inv.status) updatePayload.status = newStatus;
             await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
           }

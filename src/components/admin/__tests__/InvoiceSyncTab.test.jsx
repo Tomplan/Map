@@ -18,7 +18,7 @@ const fakeInvoice = {
   company_name: 'TestCo',
   phone: '12345',
   email: 'foo@test.com',
-  notes: JSON.stringify({
+  parsed_data: JSON.stringify({
     contact_name: 'Alice',
     contact_email: 'alice@test.com',
     contact_phone: '+311234567',
@@ -115,9 +115,9 @@ jest.mock('../../../supabaseClient', () => {
         update: jest.fn((payload) => ({
           eq: jest.fn(async () => {
             // When notes are saved, update mockOrder so subsequent reads return fresh data
-            if (payload && payload.notes !== undefined) {
+            if (payload && payload.parsed_data !== undefined) {
               const current = await mockOrder();
-              const updated = (current?.data || []).map(item => ({ ...item, notes: payload.notes }));
+              const updated = (current?.data || []).map(item => ({ ...item, parsed_data: payload.parsed_data }));
               mockOrder.mockResolvedValue({ data: updated, error: null });
             }
             return { error: null };
@@ -235,8 +235,8 @@ test('approved line item shows undo and reverses subscription counts', async () 
   const undoInvoice = {
     ...fakeInvoice,
     company_id: 42,
-    notes: JSON.stringify({
-      ...JSON.parse(fakeInvoice.notes),
+    parsed_data: JSON.stringify({
+      ...JSON.parse(fakeInvoice.parsed_data),
       line_items: [{ item: 'Stand 6x6', quantity: 1 }],
     }),
   };
