@@ -29,6 +29,8 @@ import {
   recalculateTotals,
   formatHistoryTimestamp,
   appendHistory,
+  getAdminLabel,
+  prefixAdmin,
 } from '../../utils/subscriptionLineItems';
 
 // ── Phone normalizer for fuzzy matching ─────────────────────────────────
@@ -880,7 +882,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       invoiceArea ? 'Area: ' + invoiceArea : '',
       customerNote ? 'Notes: ' + customerNote : '',
     ].filter(Boolean).join(', ');
-    const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
+    const adminLabel = await getAdminLabel();
+    const historyLine = prefixAdmin(adminLabel, 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : ''));
     const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
     // Check if a subscription already exists for this company + year.
@@ -1826,7 +1829,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         effectiveNote ? 'Notes: ' + effectiveNote : '',
                       ].filter(Boolean).join(', ');
                       const description = 'Invoice ' + inv.invoice_number + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
-                      const historyLine = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
+                      const itemAdminLabel = await getAdminLabel();
+                      const historyLine = prefixAdmin(itemAdminLabel, 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : ''));
 
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
