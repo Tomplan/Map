@@ -886,7 +886,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       customerNote ? 'Notes: ' + customerNote : '',
     ].filter(Boolean).join(', ');
     const adminLabel = await getAdminLabel();
-    const historyLine = prefixAdmin(adminLabel, 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : ''));
+    const historyRaw = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
+    const historyLine = prefixAdmin(adminLabel, historyRaw);
     const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
     // Check if a subscription already exists for this company + year.
@@ -920,7 +921,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
           notes: customerNote || null,
           description,
         });
-        await appendHistory(existing.id, historyLine);
+        await appendHistory(existing.id, historyRaw);
         await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
         // Reload subscriptions so React state is up to date
         await reload?.();
@@ -1833,7 +1834,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       ].filter(Boolean).join(', ');
                       const description = 'Invoice ' + inv.invoice_number + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
                       const itemAdminLabel = await getAdminLabel();
-                      const historyLine = prefixAdmin(itemAdminLabel, 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : ''));
+                      const historyRaw = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
+                      const historyLine = prefixAdmin(itemAdminLabel, historyRaw);
 
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
@@ -1865,7 +1867,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             notes: effectiveNote || null,
                             description,
                           });
-                          await appendHistory(existing.id, historyLine);
+                          await appendHistory(existing.id, historyRaw);
                         } else {
                           // Replace: deactivate all existing, add new
                           const existingItems = await getActiveLineItems(existing.id);
