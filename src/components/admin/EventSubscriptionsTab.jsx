@@ -798,7 +798,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
               return (
                 <React.Fragment key={subscription.id}>
-                  <tr className="bg-white hover:bg-gray-50 border-b">
+                  <tr className="bg-white hover:bg-gray-50 border-b align-top">
                     {/* Expand toggle */}
                     <td className="p-1 text-center">
                       <button
@@ -845,6 +845,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     <td className="p-2 text-left">
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                        {company?.contact_name && company.contact_name !== subscription.contact && (
+                          <span className="text-xs text-gray-400">{company.contact_name}</span>
+                        )}
                         {company?.contact_name_2 && (
                           <span className="text-xs text-gray-400">{company.contact_name_2}</span>
                         )}
@@ -862,6 +865,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                         ) : (
                           <span className="text-xs text-gray-400">-</span>
                         )}
+                        {company?.contact_phone && company.contact_phone !== subscription.phone && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <span>{getPhoneFlag(company.contact_phone)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone)}</span>
+                          </span>
+                        )}
                         {company?.contact_phone_2 && (
                           <span className="text-xs text-gray-400 flex items-center gap-1">
                             <span>{getPhoneFlag(company.contact_phone_2)}</span>
@@ -875,6 +884,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     <td className="p-2 text-left">
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
+                        {company?.contact_email && company.contact_email !== subscription.email && (
+                          <span className="text-xs text-gray-400">{company.contact_email}</span>
+                        )}
                         {company?.contact_email_2 && (
                           <span className="text-xs text-gray-400">{company.contact_email_2}</span>
                         )}

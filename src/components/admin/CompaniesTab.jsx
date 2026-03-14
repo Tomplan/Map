@@ -575,11 +575,11 @@ export default function CompaniesTab() {
                   </EditRow>
                 )}
 
-                {/* Private heading */}
+                {/* Contact 1 heading */}
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                    Contact 1
                   </span>
                 </div>
 
@@ -596,38 +596,38 @@ export default function CompaniesTab() {
                     value={form.email || ''} onChange={(e) => set({ email: e.target.value.toLowerCase() })} className={inputCls} />
                 </EditRow>
 
-                {/* Billing contact sub-heading */}
+                {/* Contact 2 sub-heading */}
                 <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 2</span>
                 </div>
-                <EditRow label={translateSafe('companies.table.contactName')}>
+                <EditRow label={translateSafe('companies.table.contact')}>
                   <input type="text" placeholder={translateSafe('companies.contactNamePlaceholder')}
                     value={form.contact_name || ''} onChange={(e) => set({ contact_name: e.target.value })} className={inputCls} />
                 </EditRow>
-                <EditRow label={translateSafe('companies.table.contactEmail')}>
-                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
-                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
-                </EditRow>
-                <EditRow label={translateSafe('companies.table.contactPhone')}>
+                <EditRow label={translateSafe('companies.table.phone')}>
                   <PhoneInput value={form.contact_phone || ''} onChange={(value) => set({ contact_phone: value })}
                     placeholder={translateSafe('companies.contactPhonePlaceholder')} />
                 </EditRow>
+                <EditRow label={translateSafe('companies.table.email')}>
+                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
+                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
+                </EditRow>
 
-                {/* Billing contact 2 sub-heading */}
+                {/* Contact 3 sub-heading */}
                 <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 3</span>
                 </div>
-                <EditRow label="Contact 2">
-                  <input type="text" placeholder="Second contact name"
+                <EditRow label={translateSafe('companies.table.contact')}>
+                  <input type="text" placeholder="Contact 3"
                     value={form.contact_name_2 || ''} onChange={(e) => set({ contact_name_2: e.target.value })} className={inputCls} />
                 </EditRow>
-                <EditRow label="Email 2">
-                  <input type="email" placeholder="Second contact email"
-                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
-                </EditRow>
-                <EditRow label="Phone 2">
+                <EditRow label={translateSafe('companies.table.phone')}>
                   <PhoneInput value={form.contact_phone_2 || ''} onChange={(value) => set({ contact_phone_2: value })}
-                    placeholder="Second contact phone" />
+                    placeholder="+31 6 ..." />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.email')}>
+                  <input type="email" placeholder="contact3@company.com"
+                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.address')}>
@@ -827,7 +827,7 @@ export default function CompaniesTab() {
                     (!item.contact_phone || item.contact_phone === item.phone);
                   return hasBilling && !isDuplicateBilling ? (
                     <div className="flex items-center gap-2 pt-3 pb-1">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 2</span>
                     </div>
                   ) : null;
                 })()}
@@ -872,17 +872,17 @@ export default function CompaniesTab() {
                   return (
                     <>
                       <div className="flex items-center gap-2 pt-3 pb-1">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Contact 3</span>
                       </div>
-                      <Row lbl="Contact 2" hidden={!item.contact_name_2}>
+                      <Row lbl={translateSafe('companies.table.contact')} hidden={!item.contact_name_2}>
                         {item.contact_name_2}
                       </Row>
-                      <Row lbl="Email 2" hidden={!item.contact_email_2}>
+                      <Row lbl={translateSafe('companies.table.email')} hidden={!item.contact_email_2}>
                         {item.contact_email_2
                           ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
                           : dash}
                       </Row>
-                      <Row lbl="Phone 2" hidden={!item.contact_phone_2}>
+                      <Row lbl={translateSafe('companies.table.phone')} hidden={!item.contact_phone_2}>
                         {item.contact_phone_2
                           ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
                           : dash}

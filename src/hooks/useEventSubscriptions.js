@@ -148,6 +148,7 @@ export default function useEventSubscriptions(eventYear) {
               `
             *,
               company:companies(id, name, logo, website, info, contact, phone, email,
+                contact_name, contact_email, contact_phone,
                 contact_name_2, contact_email_2, contact_phone_2,
                 address_line1, address_line2, city, postal_code, country, vat_number
               )

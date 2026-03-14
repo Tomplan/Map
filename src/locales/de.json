@@ -698,7 +698,7 @@
       "countryPlaceholder": "Land",
       "vatNumberPlaceholder": "USt-IdNr.",
       "kvkNumberPlaceholder": "KvK-Nummer",
-      "contactNamePlaceholder": "Rechnungskontakt (Person)",
+      "contactNamePlaceholder": "Kontaktperson",
       "contactEmailPlaceholder": "rechnung@firma.de",
       "contactPhonePlaceholder": "+49 ...",
       "name": "Name",
@@ -718,7 +718,7 @@
       "organizationInfo": "Organisationsinfo",
       "modal": {
         "publicInfoHeading": "Öffentliche Informationen (für Besucher sichtbar)",
-        "managerInfoHeading": "Nur Manager (Standard-Kontaktdaten)",
+        "managerInfoHeading": "Contact 1",
         "infoMultiLanguageLabel": "Info (mehrsprachig)",
         "enterInfoInLanguage": "Informationen eingeben in {{lang}}...",
         "uploadLogo": "Logo hochladen",
@@ -741,9 +741,9 @@
         "address": "Adresse",
         "vatNumber": "USt-IdNr.",
         "kvkNumber": "KvK-Nummer",
-        "contactName": "Rechnungskontakt",
-        "contactEmail": "Rechnungs-E-Mail",
-        "contactPhone": "Rechnungstelefon",
+        "contactName": "Kontakt",
+        "contactEmail": "E-Mail",
+        "contactPhone": "Telefon",
         "actions": "Aktionen"
       },
       "create": "Erstellen"
