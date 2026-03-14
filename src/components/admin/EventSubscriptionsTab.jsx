@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
@@ -59,14 +59,33 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const { assignments, reload: reloadAssignments } = useAssignments(selectedYear);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // --- Persist UI state across tab switches via sessionStorage ---
+  const SS_KEY = `subscriptionsTab_${selectedYear}`;
+  const savedRef = useRef(null);
+  if (!savedRef.current) {
+    try { savedRef.current = JSON.parse(sessionStorage.getItem(SS_KEY)) || {}; } catch { savedRef.current = {}; }
+  }
+  const saved = savedRef.current;
+
+  const [searchTerm, setSearchTerm] = useState(saved.searchTerm || '');
   const [isAdding, setIsAdding] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [expandedIds, setExpandedIds] = useState(new Set());
-  const [notesExpandedIds, setNotesExpandedIds] = useState(new Set());
+  const [sortBy, setSortBy] = useState(saved.sortBy || 'company');
+  const [sortDirection, setSortDirection] = useState(saved.sortDirection || 'asc');
+  const [expandedIds, setExpandedIds] = useState(() => new Set(saved.expandedIds || []));
+  const [notesExpandedIds, setNotesExpandedIds] = useState(() => new Set(saved.notesExpandedIds || []));
+
+  // Save UI state on unmount
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(SS_KEY, JSON.stringify({
+        searchTerm, sortBy, sortDirection,
+        expandedIds: [...expandedIds],
+        notesExpandedIds: [...notesExpandedIds],
+      }));
+    };
+  });
 
   // Modal state for editing
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
