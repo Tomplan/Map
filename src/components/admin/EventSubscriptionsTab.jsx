@@ -16,6 +16,7 @@ import {
   mdiContentCopy,
   mdiChevronUp,
   mdiChevronDown,
+  mdiNoteTextOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -757,7 +758,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
               </th>
               <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.notes')}</th>
               <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>
                 {t('helpPanel.subscriptions.actions')}
               </th>
@@ -793,8 +793,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 .map((l) => l.trim())
                 .filter((l) => l.length > 0)
                 .reverse();
-              // count visible columns for the colspan on the history row
-              const colSpan = 15;
+              // count visible columns for the colspan on the expanded row
+              const colSpan = 14;
 
               return (
                 <React.Fragment key={subscription.id}>
@@ -810,10 +810,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                             return next;
                           })
                         }
-                        className="text-gray-400 hover:text-gray-700"
-                        title={isExpanded ? 'Hide history' : 'Show history'}
+                        className="text-gray-400 hover:text-gray-700 relative"
+                        title={isExpanded ? 'Hide details' : 'Show details'}
                       >
                         <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
+                        {subscription.notes && (
+                          <Icon path={mdiNoteTextOutline} size={0.35} className="text-amber-500 absolute -top-0.5 -right-1" />
+                        )}
                       </button>
                     </td>
 
@@ -922,11 +925,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <span className="text-xs text-gray-700">{subscription.coins}</span>
                     </td>
 
-                    {/* Notes */}
-                    <td className="p-2 text-left max-w-[160px]">
-                      <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
-                    </td>
-
                     {/* Actions */}
                     <td className="p-2 text-center">
                       <div className="flex gap-1 justify-center">
@@ -948,10 +946,18 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     </td>
                   </tr>
 
-                  {/* Expandable history row */}
+                  {/* Expandable details row (notes + history) */}
                   {isExpanded && (
                     <tr className="bg-gray-50 border-b">
                       <td colSpan={colSpan} className="px-8 py-3 text-left">
+                        {/* Notes */}
+                        {subscription.notes && (
+                          <div className="mb-3">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 text-left">{t('helpPanel.subscriptions.notes')}</p>
+                            <p className="text-xs text-gray-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 whitespace-pre-wrap">{subscription.notes}</p>
+                          </div>
+                        )}
+                        {/* History */}
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
                         {historyLines.length === 0 ? (
                           <p className="text-xs text-gray-400 text-left">No history recorded.</p>
