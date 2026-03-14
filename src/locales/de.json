@@ -523,7 +523,7 @@
     }
   },
   "dashboard": {
-    "freeTotal": "Frei / Gesamt",
+    "freeTotal": "Stände: frei / gesamt",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",
