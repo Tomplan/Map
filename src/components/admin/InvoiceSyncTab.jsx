@@ -126,9 +126,12 @@ function extractFieldsFromBlock(lines = []) {
       if (!r.contact_phone) { r.contact_phone = l; return; }
       if (!r.contact_phone_2) { r.contact_phone_2 = l; return; }
     }
-    if (/^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) {
-      if (!r.contact_name) { r.contact_name = l; return; }
-      if (!r.contact_name_2) { r.contact_name_2 = l; return; }
+    // Person name: handle Dutch prefixes (T.a.v., Dhr., Mevr., Attn) and strip them
+    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
+    const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
+    if (namePart && /^[A-Z][a-z]/.test(namePart) && !/\d/.test(namePart) && namePart.split(' ').length >= 2) {
+      if (!r.contact_name) { r.contact_name = namePart; return; }
+      if (!r.contact_name_2) { r.contact_name_2 = namePart; return; }
     }
     if (!r.address_line1 && /\d/.test(l)) { r.address_line1 = l; return; }
     if (r.address_line1 && !r.address_line2 && /\d/.test(l)) r.address_line2 = l;
