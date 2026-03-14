@@ -54,7 +54,7 @@ The dashboard displays all key metrics for the selected year, and Quick Actions 
 Het dashboard biedt een snel overzicht van je event data en statistieken voor het momenteel geselecteerde jaar.
 
 **Belangrijkste Cijfers:**
-- **Totaal Toewijsbare Stands**: Alle kaartlocaties gemarkeerd als toewijsbare stands
+- **Vrij / Totaal**: Aantal nog vrije stands ten opzichte van het totaal aantal stands
 - **Bedrijven**: Totaal geregistreerde exposanten (globaal, alle jaren)
 - **Inschrijvingen**: Bedrijven ingeschreven voor het geselecteerde jaar
 - **Toewijzingen**: Bedrijven toegewezen aan kaartlocaties voor het geselecteerde jaar

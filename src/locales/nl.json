@@ -669,7 +669,7 @@
     "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
   },
   "dashboard": {
-    "totalAssignableBooths": "Totaal Toewijsbare Stands",
+    "freeTotal": "Vrij / Totaal",
     "companies": "Bedrijven",
     "subscriptions": "Inschrijvingen",
     "assignments": "Toewijzingen",

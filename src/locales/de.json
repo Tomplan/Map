@@ -523,7 +523,7 @@
     }
   },
   "dashboard": {
-    "totalAssignableBooths": "Total Zuweisbare Stände",
+    "freeTotal": "Frei / Gesamt",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",

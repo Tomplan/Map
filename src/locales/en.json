@@ -670,7 +670,7 @@
     "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
   },
   "dashboard": {
-    "totalAssignableBooths": "Total Assignable Booths",
+    "freeTotal": "Free / Total",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",
