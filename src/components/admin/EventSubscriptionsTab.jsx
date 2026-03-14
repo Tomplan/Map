@@ -808,7 +808,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               return (
                 <React.Fragment key={subscription.id}>
                   <tr
-                    className={`hover:bg-gray-50 align-top cursor-pointer ${isNotesExpanded && subscription.notes ? 'bg-amber-50/40' : 'bg-white border-b'}`}
+                    className={`hover:bg-gray-50 align-top cursor-pointer ${isNotesExpanded ? 'bg-amber-50/40' : 'bg-white border-b'}`}
                     onClick={(e) => {
                       if (e.target.closest('[data-history-toggle]') || e.target.closest('[data-actions]')) return;
                       toggleNotes();
@@ -960,11 +960,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   </tr>
 
                   {/* Expandable notes row (click row to toggle) */}
-                  {isNotesExpanded && subscription.notes && (
+                  {isNotesExpanded && (
                     <tr className="bg-amber-50/40 border-b">
                       <td />
                       <td colSpan={colSpan - 1} className="pb-2 pt-0 text-left">
-                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap"><span className="font-semibold not-italic text-amber-700">{t('helpPanel.subscriptions.notes')}:</span> {subscription.notes}</p>
+                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap"><span className="font-semibold not-italic text-amber-700">{t('helpPanel.subscriptions.notes')}:</span> {subscription.notes || <span className="text-gray-400">{t('helpPanel.subscriptions.noNotes', 'No notes')}</span>}</p>
                       </td>
                     </tr>
                   )}
