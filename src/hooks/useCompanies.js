@@ -159,6 +159,21 @@ export default function useCompanies() {
 
         if (updateError) throw updateError;
 
+        // Sync Contact 1 fields to any existing subscriptions for this company
+        if (updates.contact || updates.phone || updates.email ||
+            updates.contact === '' || updates.phone === '' || updates.email === '') {
+          const syncFields = {};
+          if ('contact' in updates) syncFields.contact = updates.contact || '';
+          if ('phone' in updates) syncFields.phone = updates.phone || '';
+          if ('email' in updates) syncFields.email = updates.email || '';
+          if (Object.keys(syncFields).length > 0) {
+            await supabase
+              .from('event_subscriptions')
+              .update(syncFields)
+              .eq('company_id', id);
+          }
+        }
+
         const newCompanies = entry.state.companies
           .map((c) => (c.id === id ? data : c))
           .sort((a, b) => a.name.localeCompare(b.name));

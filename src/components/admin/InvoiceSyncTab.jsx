@@ -29,6 +29,8 @@ import {
   recalculateTotals,
   formatHistoryTimestamp,
   appendHistory,
+  getAdminLabel,
+  prefixAdmin,
 } from '../../utils/subscriptionLineItems';
 
 // ── Phone normalizer for fuzzy matching ─────────────────────────────────
@@ -124,9 +126,12 @@ function extractFieldsFromBlock(lines = []) {
       if (!r.contact_phone) { r.contact_phone = l; return; }
       if (!r.contact_phone_2) { r.contact_phone_2 = l; return; }
     }
-    if (/^[A-Z][a-z]/.test(l) && !/\d/.test(l) && l.split(' ').length >= 2) {
-      if (!r.contact_name) { r.contact_name = l; return; }
-      if (!r.contact_name_2) { r.contact_name_2 = l; return; }
+    // Person name: handle Dutch prefixes (T.a.v., Dhr., Mevr., Attn) and strip them
+    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
+    const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
+    if (namePart && /^[A-Z][a-z]/.test(namePart) && !/\d/.test(namePart) && namePart.split(' ').length >= 2) {
+      if (!r.contact_name) { r.contact_name = namePart; return; }
+      if (!r.contact_name_2) { r.contact_name_2 = namePart; return; }
     }
     if (!r.address_line1 && /\d/.test(l)) { r.address_line1 = l; return; }
     if (r.address_line1 && !r.address_line2 && /\d/.test(l)) r.address_line2 = l;
@@ -880,7 +885,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       invoiceArea ? 'Area: ' + invoiceArea : '',
       customerNote ? 'Notes: ' + customerNote : '',
     ].filter(Boolean).join(', ');
-    const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
+    const adminLabel = await getAdminLabel();
+    const historyRaw = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
+    const historyLine = prefixAdmin(adminLabel, historyRaw);
     const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
     // Check if a subscription already exists for this company + year.
@@ -914,7 +921,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
           notes: customerNote || null,
           description,
         });
-        await appendHistory(existing.id, historyLine);
+        await appendHistory(existing.id, historyRaw);
         await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
         // Reload subscriptions so React state is up to date
         await reload?.();
@@ -1826,7 +1833,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         effectiveNote ? 'Notes: ' + effectiveNote : '',
                       ].filter(Boolean).join(', ');
                       const description = 'Invoice ' + inv.invoice_number + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
-                      const historyLine = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
+                      const itemAdminLabel = await getAdminLabel();
+                      const historyRaw = 'Invoice ' + inv.invoice_number + ' on ' + formatHistoryTimestamp() + ': ' + itemLabel + (itemExtraParts ? ' | ' + itemExtraParts : '');
+                      const historyLine = prefixAdmin(itemAdminLabel, historyRaw);
 
                       const existing = await fetchFreshSubscription(inv.company_id);
                       if (existing) {
@@ -1858,7 +1867,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             notes: effectiveNote || null,
                             description,
                           });
-                          await appendHistory(existing.id, historyLine);
+                          await appendHistory(existing.id, historyRaw);
                         } else {
                           // Replace: deactivate all existing, add new
                           const existingItems = await getActiveLineItems(existing.id);

@@ -670,7 +670,7 @@
     "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
   },
   "dashboard": {
-    "totalAssignableBooths": "Total Assignable Booths",
+    "freeTotal": "Booths: free / total",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",
@@ -858,7 +858,7 @@
       "countryPlaceholder": "Country",
       "vatNumberPlaceholder": "VAT / Tax ID",
       "kvkNumberPlaceholder": "Chamber of Commerce (KvK) #",
-      "contactNamePlaceholder": "Billing contact person",
+      "contactNamePlaceholder": "Contact person",
       "contactEmailPlaceholder": "billing@company.com",
       "contactPhonePlaceholder": "+31 6 ...",
       "name": "Name",
@@ -878,7 +878,7 @@
       "organizationInfo": "Organization info",
       "modal": {
         "publicInfoHeading": "Public Info (visible to attendees)",
-        "managerInfoHeading": "Manager-only Info (default contact info)",
+        "managerInfoHeading": "Private contact details",
         "infoMultiLanguageLabel": "Info (Multi-language)",
         "enterInfoInLanguage": "Enter info in {{lang}}...",
         "uploadLogo": "Upload Logo",
@@ -901,9 +901,9 @@
         "address": "Address",
         "vatNumber": "VAT number",
         "kvkNumber": "KvK number",
-        "contactName": "Billing Contact",
-        "contactEmail": "Billing Email",
-        "contactPhone": "Billing Phone",
+        "contactName": "Contact",
+        "contactEmail": "Email",
+        "contactPhone": "Phone",
         "actions": "Actions"
       },
       "create": "Create"

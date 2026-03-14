@@ -523,7 +523,7 @@
     }
   },
   "dashboard": {
-    "totalAssignableBooths": "Total Zuweisbare Stände",
+    "freeTotal": "Stände: frei / gesamt",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",
@@ -651,6 +651,7 @@
       "sunday": "Sunday",
       "coins": "Coins",
       "notes": "Notes",
+      "noNotes": "Keine Notizen",
       "actions": "Actions",
       "breakfast": "Breakfast",
       "lunch": "Lunch",
@@ -698,7 +699,7 @@
       "countryPlaceholder": "Land",
       "vatNumberPlaceholder": "USt-IdNr.",
       "kvkNumberPlaceholder": "KvK-Nummer",
-      "contactNamePlaceholder": "Rechnungskontakt (Person)",
+      "contactNamePlaceholder": "Kontaktperson",
       "contactEmailPlaceholder": "rechnung@firma.de",
       "contactPhonePlaceholder": "+49 ...",
       "name": "Name",
@@ -718,7 +719,7 @@
       "organizationInfo": "Organisationsinfo",
       "modal": {
         "publicInfoHeading": "Öffentliche Informationen (für Besucher sichtbar)",
-        "managerInfoHeading": "Nur Manager (Standard-Kontaktdaten)",
+        "managerInfoHeading": "Private Kontaktdaten",
         "infoMultiLanguageLabel": "Info (mehrsprachig)",
         "enterInfoInLanguage": "Informationen eingeben in {{lang}}...",
         "uploadLogo": "Logo hochladen",
@@ -741,9 +742,9 @@
         "address": "Adresse",
         "vatNumber": "USt-IdNr.",
         "kvkNumber": "KvK-Nummer",
-        "contactName": "Rechnungskontakt",
-        "contactEmail": "Rechnungs-E-Mail",
-        "contactPhone": "Rechnungstelefon",
+        "contactName": "Kontakt",
+        "contactEmail": "E-Mail",
+        "contactPhone": "Telefon",
         "actions": "Aktionen"
       },
       "create": "Erstellen"

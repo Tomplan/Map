@@ -274,5 +274,5 @@ test('billing contact section is hidden when it duplicates main contact info', a
   expect(screen.getByText('same@example.com')).toBeInTheDocument();
 
   // billing contact heading should NOT appear because values duplicate
-  expect(screen.queryByText('Billing Contact')).not.toBeInTheDocument();
+  expect(screen.queryByText('Contact 2')).not.toBeInTheDocument();
 });

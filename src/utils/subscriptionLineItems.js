@@ -172,8 +172,26 @@ export function formatHistoryTimestamp(date = new Date()) {
   );
 }
 
+// ── Resolve the current admin's display name (or email) ──────────────────────
+export async function getAdminLabel() {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) return user.user_metadata?.full_name || user.user_metadata?.name || user.email || '';
+  } catch (_) { /* ignore */ }
+  return '';
+}
+
+// ── Prepend admin label to a history line ─────────────────────────────────────
+export function prefixAdmin(adminLabel, line) {
+  return adminLabel ? `[${adminLabel}] ${line}` : line;
+}
+
 // ── Append a line to the history text field (display only) ────────────────────
+// Automatically prepends the current admin's name (or email) to each entry.
 export async function appendHistory(subscriptionId, line) {
+  const adminLabel = await getAdminLabel();
+  const prefixedLine = prefixAdmin(adminLabel, line);
+
   const { data: sub, error: fetchError } = await supabase
     .from('event_subscriptions')
     .select('history')
@@ -182,7 +200,7 @@ export async function appendHistory(subscriptionId, line) {
 
   if (fetchError) throw fetchError;
 
-  const history = (sub.history ? sub.history + '\n' : '') + line;
+  const history = (sub.history ? sub.history + '\n' : '') + prefixedLine;
 
   const { error: updateError } = await supabase
     .from('event_subscriptions')

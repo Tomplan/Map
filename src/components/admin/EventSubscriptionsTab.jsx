@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
@@ -16,6 +16,8 @@ import {
   mdiContentCopy,
   mdiChevronUp,
   mdiChevronDown,
+  mdiTextBoxOutline,
+  mdiTextBoxRemoveOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -57,13 +59,33 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const { assignments, reload: reloadAssignments } = useAssignments(selectedYear);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // --- Persist UI state across tab switches via sessionStorage ---
+  const SS_KEY = `subscriptionsTab_${selectedYear}`;
+  const savedRef = useRef(null);
+  if (!savedRef.current) {
+    try { savedRef.current = JSON.parse(sessionStorage.getItem(SS_KEY)) || {}; } catch { savedRef.current = {}; }
+  }
+  const saved = savedRef.current;
+
+  const [searchTerm, setSearchTerm] = useState(saved.searchTerm || '');
   const [isAdding, setIsAdding] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
-  const [expandedIds, setExpandedIds] = useState(new Set());
+  const [sortBy, setSortBy] = useState(saved.sortBy || 'company');
+  const [sortDirection, setSortDirection] = useState(saved.sortDirection || 'asc');
+  const [expandedIds, setExpandedIds] = useState(() => new Set(saved.expandedIds || []));
+  const [notesExpandedIds, setNotesExpandedIds] = useState(() => new Set(saved.notesExpandedIds || []));
+
+  // Save UI state on unmount
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(SS_KEY, JSON.stringify({
+        searchTerm, sortBy, sortDirection,
+        expandedIds: [...expandedIds],
+        notesExpandedIds: [...notesExpandedIds],
+      }));
+    };
+  });
 
   // Modal state for editing
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -588,6 +610,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <span className="text-sm text-gray-600">
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
+          <button
+            onClick={() => {
+              setNotesExpandedIds((prev) => {
+                const allIds = new Set(filteredSubscriptions.map((s) => s.id));
+                const allExpanded = filteredSubscriptions.every((s) => prev.has(s.id));
+                return allExpanded ? new Set() : allIds;
+              });
+            }}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
+            title={t('helpPanel.subscriptions.toggleAllNotes', 'Toggle all notes')}
+          >
+            <Icon path={filteredSubscriptions.length > 0 && filteredSubscriptions.every((s) => notesExpandedIds.has(s.id)) ? mdiTextBoxRemoveOutline : mdiTextBoxOutline} size={0.6} />
+            {t('helpPanel.subscriptions.notes')}
+          </button>
         </div>
         <div className="flex gap-2 relative z-50">
           <button
@@ -757,7 +793,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
               </th>
               <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.notes')}</th>
               <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>
                 {t('helpPanel.subscriptions.actions')}
               </th>
@@ -787,21 +822,37 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {filteredSubscriptions.map((subscription) => {
               const company = subscription.company;
               const boothLabels = getBoothLabels(subscription.company_id);
-              const isExpanded = expandedIds.has(subscription.id);
+              const isHistoryExpanded = expandedIds.has(subscription.id);
+              const isNotesExpanded = notesExpandedIds.has(subscription.id);
               const historyLines = (subscription.history || '')
                 .split('\n')
                 .map((l) => l.trim())
                 .filter((l) => l.length > 0)
                 .reverse();
-              // count visible columns for the colspan on the history row
-              const colSpan = 15;
+              // count visible columns for the colspan on the expanded rows
+              const colSpan = 14;
+              const toggleNotes = () => {
+                setNotesExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(subscription.id)) next.delete(subscription.id);
+                  else next.add(subscription.id);
+                  return next;
+                });
+              };
 
               return (
                 <React.Fragment key={subscription.id}>
-                  <tr className="bg-white hover:bg-gray-50 border-b">
-                    {/* Expand toggle */}
+                  <tr
+                    className={`hover:bg-gray-50 align-top cursor-pointer ${isNotesExpanded ? 'bg-amber-50/40' : 'bg-white border-b'}`}
+                    onClick={(e) => {
+                      if (e.target.closest('[data-history-toggle]') || e.target.closest('[data-actions]')) return;
+                      toggleNotes();
+                    }}
+                  >
+                    {/* History expand toggle */}
                     <td className="p-1 text-center">
                       <button
+                        data-history-toggle
                         onClick={() =>
                           setExpandedIds((prev) => {
                             const next = new Set(prev);
@@ -811,9 +862,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           })
                         }
                         className="text-gray-400 hover:text-gray-700"
-                        title={isExpanded ? 'Hide history' : 'Show history'}
+                        title={isHistoryExpanded ? 'Hide history' : 'Show history'}
                       >
-                        <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
+                        <Icon path={isHistoryExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
                       </button>
                     </td>
 
@@ -843,24 +894,54 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                     {/* Contact */}
                     <td className="p-2 text-left">
-                      <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                        {company?.contact_name && company.contact_name !== subscription.contact && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name}</span>
+                        )}
+                        {company?.contact_name_2 && company.contact_name_2 !== (company.contact_name || subscription.contact) && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name_2}</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Phone */}
                     <td className="p-2 text-left">
-                      {subscription.phone ? (
-                        <span className="text-xs text-gray-700 flex items-center gap-1">
-                          <span>{getPhoneFlag(subscription.phone)}</span>
-                          <span>{formatPhoneForDisplay(subscription.phone)}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
+                      <div className="flex flex-col gap-0.5">
+                        {subscription.phone ? (
+                          <span className="text-xs text-gray-700 flex items-center gap-1">
+                            <span>{getPhoneFlag(subscription.phone)}</span>
+                            <span>{formatPhoneForDisplay(subscription.phone)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                        {company?.contact_phone && company.contact_phone !== subscription.phone && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
+                            <span>{getPhoneFlag(company.contact_phone)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone)}</span>
+                          </span>
+                        )}
+                        {company?.contact_phone_2 && company.contact_phone_2 !== (company.contact_phone || subscription.phone) && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
+                            <span>{getPhoneFlag(company.contact_phone_2)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Email */}
                     <td className="p-2 text-left">
-                      <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
+                        {company?.contact_email && company.contact_email !== subscription.email && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email}</span>
+                        )}
+                        {company?.contact_email_2 && company.contact_email_2 !== (company.contact_email || subscription.email) && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email_2}</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Booth Count */}
@@ -892,13 +973,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <span className="text-xs text-gray-700">{subscription.coins}</span>
                     </td>
 
-                    {/* Notes */}
-                    <td className="p-2 text-left max-w-[160px]">
-                      <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
-                    </td>
-
                     {/* Actions */}
-                    <td className="p-2 text-center">
+                    <td className="p-2 text-center" data-actions>
                       <div className="flex gap-1 justify-center">
                         <button
                           onClick={() => handleEdit(subscription)}
@@ -918,8 +994,18 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     </td>
                   </tr>
 
-                  {/* Expandable history row */}
-                  {isExpanded && (
+                  {/* Expandable notes row (click row to toggle) */}
+                  {isNotesExpanded && (
+                    <tr className="bg-amber-50/40 border-b">
+                      <td />
+                      <td colSpan={colSpan - 1} className="pb-2 pt-0 text-left">
+                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap"><span className="font-semibold not-italic text-amber-700">{t('helpPanel.subscriptions.notes')}:</span> {subscription.notes || <span className="text-gray-400">{t('helpPanel.subscriptions.noNotes', 'No notes')}</span>}</p>
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* Expandable history row (arrow to toggle) */}
+                  {isHistoryExpanded && (
                     <tr className="bg-gray-50 border-b">
                       <td colSpan={colSpan} className="px-8 py-3 text-left">
                         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>

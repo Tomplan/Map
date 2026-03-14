@@ -575,12 +575,17 @@ export default function CompaniesTab() {
                   </EditRow>
                 )}
 
-                {/* Private heading */}
+                {/* Private info heading */}
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
                   </span>
+                </div>
+
+                {/* Contact 1 sub-heading */}
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
                 </div>
 
                 <EditRow label={translateSafe('companies.table.contact')}>
@@ -596,38 +601,38 @@ export default function CompaniesTab() {
                     value={form.email || ''} onChange={(e) => set({ email: e.target.value.toLowerCase() })} className={inputCls} />
                 </EditRow>
 
-                {/* Billing contact sub-heading */}
-                <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                {/* Contact 2 sub-heading */}
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
                 </div>
-                <EditRow label={translateSafe('companies.table.contactName')}>
+                <EditRow label={translateSafe('companies.table.contact')}>
                   <input type="text" placeholder={translateSafe('companies.contactNamePlaceholder')}
                     value={form.contact_name || ''} onChange={(e) => set({ contact_name: e.target.value })} className={inputCls} />
                 </EditRow>
-                <EditRow label={translateSafe('companies.table.contactEmail')}>
-                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
-                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
-                </EditRow>
-                <EditRow label={translateSafe('companies.table.contactPhone')}>
+                <EditRow label={translateSafe('companies.table.phone')}>
                   <PhoneInput value={form.contact_phone || ''} onChange={(value) => set({ contact_phone: value })}
                     placeholder={translateSafe('companies.contactPhonePlaceholder')} />
                 </EditRow>
+                <EditRow label={translateSafe('companies.table.email')}>
+                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
+                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
+                </EditRow>
 
-                {/* Billing contact 2 sub-heading */}
-                <div className="flex items-center gap-2 pt-4 pb-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                {/* Contact 3 sub-heading */}
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
                 </div>
-                <EditRow label="Contact 2">
-                  <input type="text" placeholder="Second contact name"
+                <EditRow label={translateSafe('companies.table.contact')}>
+                  <input type="text" placeholder="Contact 3"
                     value={form.contact_name_2 || ''} onChange={(e) => set({ contact_name_2: e.target.value })} className={inputCls} />
                 </EditRow>
-                <EditRow label="Email 2">
-                  <input type="email" placeholder="Second contact email"
-                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
-                </EditRow>
-                <EditRow label="Phone 2">
+                <EditRow label={translateSafe('companies.table.phone')}>
                   <PhoneInput value={form.contact_phone_2 || ''} onChange={(value) => set({ contact_phone_2: value })}
-                    placeholder="Second contact phone" />
+                    placeholder="+31 6 ..." />
+                </EditRow>
+                <EditRow label={translateSafe('companies.table.email')}>
+                  <input type="email" placeholder="contact3@company.com"
+                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.address')}>
@@ -803,8 +808,13 @@ export default function CompaniesTab() {
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private details' })}
+                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
                   </span>
+                </div>
+
+                {/* Contact 1 sub-heading */}
+                <div className="flex items-center gap-2 pt-3 pb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
                 </div>
                 <Row lbl={translateSafe('companies.table.contact')}>{item.contact || dash}</Row>
                 <Row lbl={translateSafe('companies.table.phone')}>
@@ -820,39 +830,42 @@ export default function CompaniesTab() {
                 {(() => {
                   // Only show the billing contact block if there is at least one
                   // billing field *and* it isn't just a copy of the main contact
+                  const normPH = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
                   const hasBilling = item.contact_name || item.contact_email || item.contact_phone;
                   const isDuplicateBilling =
                     (!item.contact_name || item.contact_name === item.contact) &&
                     (!item.contact_email || item.contact_email === item.email) &&
-                    (!item.contact_phone || item.contact_phone === item.phone);
+                    (!item.contact_phone || normPH(item.contact_phone) === normPH(item.phone));
                   return hasBilling && !isDuplicateBilling ? (
                     <div className="flex items-center gap-2 pt-3 pb-1">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
                     </div>
                   ) : null;
                 })()}
                 {(() => {
                   // determine whether billing block should be shown (same logic as
                   // heading above)
+                  const normPH = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
                   const hasBilling = item.contact_name || item.contact_email || item.contact_phone;
                   const isDuplicateBilling =
                     (!item.contact_name || item.contact_name === item.contact) &&
                     (!item.contact_email || item.contact_email === item.email) &&
-                    (!item.contact_phone || item.contact_phone === item.phone);
+                    (!item.contact_phone || normPH(item.contact_phone) === normPH(item.phone));
                   const showBilling = hasBilling && !isDuplicateBilling;
 
                   if (!showBilling) return null;
+                  const normP = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
                   return (
                     <>
-                      <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name}>
+                      <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name || item.contact_name === item.contact}>
                         {item.contact_name}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email}>
+                      <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email || item.contact_email === item.email}>
                         {item.contact_email
                           ? <a href={`mailto:${item.contact_email}`} className="text-blue-600 hover:underline break-all">{item.contact_email}</a>
                           : dash}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone}>
+                      <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone || normP(item.contact_phone) === normP(item.phone)}>
                         {item.contact_phone
                           ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
                           : dash}
@@ -869,20 +882,21 @@ export default function CompaniesTab() {
                     (!item.contact_email_2 || item.contact_email_2 === item.contact_email) &&
                     (!item.contact_phone_2 || item.contact_phone_2 === item.contact_phone);
                   if (!hasB2 || isDup2) return null;
+                  const normP3 = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
                   return (
                     <>
                       <div className="flex items-center gap-2 pt-3 pb-1">
-                        <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">Billing Contact 2</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
                       </div>
-                      <Row lbl="Contact 2" hidden={!item.contact_name_2}>
+                      <Row lbl={translateSafe('companies.table.contact')} hidden={!item.contact_name_2 || item.contact_name_2 === (item.contact_name || item.contact)}>
                         {item.contact_name_2}
                       </Row>
-                      <Row lbl="Email 2" hidden={!item.contact_email_2}>
+                      <Row lbl={translateSafe('companies.table.email')} hidden={!item.contact_email_2 || item.contact_email_2 === (item.contact_email || item.email)}>
                         {item.contact_email_2
                           ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
                           : dash}
                       </Row>
-                      <Row lbl="Phone 2" hidden={!item.contact_phone_2}>
+                      <Row lbl={translateSafe('companies.table.phone')} hidden={!item.contact_phone_2 || normP3(item.contact_phone_2) === normP3(item.contact_phone || item.phone)}>
                         {item.contact_phone_2
                           ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
                           : dash}

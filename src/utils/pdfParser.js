@@ -533,14 +533,18 @@ function parseSpatialInvoice(items, allowedItems) {
       if (!parsed.contact_phone_2) { parsed.contact_phone_2 = l; return; }
     }
 
-    // Person name: has a capital first letter, no digits, at least two words
+    // Person name: has a capital first letter, no digits, at least two words.
+    // Also detect common Dutch prefixes (T.a.v., Dhr., Mevr., Attn) and strip them.
+    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
+    const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
     if (
-      /^[A-Z][a-z]/.test(l) &&
-      !/\d/.test(l) &&
-      l.split(' ').length >= 2
+      namePart &&
+      /^[A-Z][a-z]/.test(namePart) &&
+      !/\d/.test(namePart) &&
+      namePart.split(' ').length >= 2
     ) {
-      if (!parsed.contact_name) { parsed.contact_name = l; return; }
-      if (!parsed.contact_name_2) { parsed.contact_name_2 = l; return; }
+      if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
+      if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
     }
 
     // Address line (street + house number)
