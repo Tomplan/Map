@@ -961,12 +961,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                   {/* Expandable notes row (click row to toggle) */}
                   {isNotesExpanded && subscription.notes && (
-                    <tr className="border-b">
-                      <td colSpan={colSpan} className="p-0">
-                        <div className="flex">
-                          <div className="w-1 shrink-0 bg-amber-400 rounded-r" />
-                          <p className="text-xs text-gray-700 whitespace-pre-wrap bg-amber-50/60 py-2 px-4 flex-1">{subscription.notes}</p>
-                        </div>
+                    <tr className="bg-amber-50/60 border-b">
+                      <td colSpan={colSpan} className="px-8 py-2 text-left">
+                        <p className="text-xs text-gray-700 whitespace-pre-wrap">{subscription.notes}</p>
                       </td>
                     </tr>
                   )}
