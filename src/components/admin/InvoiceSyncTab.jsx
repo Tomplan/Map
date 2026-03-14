@@ -462,6 +462,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
   // Prevents a concurrent real-time fetchInvoices() from overwriting an
   // in-flight optimistic status update with stale DB data.
   const pendingStatusRef = useRef(new Map());
+  // Serializes handleItemAction per invoice — prevents concurrent handlers from
+  // clobbering each other's notes saves or fighting over the confirm modal.
+  const itemActionQueueRef = useRef(new Map());
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -880,14 +883,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const historyLine = 'Invoice ' + invoice.invoice_number + ' on ' + timestamp + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
     const description = 'Invoice ' + invoice.invoice_number + ': ' + countParts + (extraParts ? ' | ' + extraParts : '');
 
-    // Check if a subscription already exists for this company + year
-    const existing = subscriptions.find((s) => s.company_id === companyId);
+    // Check if a subscription already exists for this company + year.
+    // Always query DB directly — the React state can be stale when multiple
+    // invoices are approved in quick succession.
+    const existing = await fetchFreshSubscription(companyId);
 
     if (existing) {
+      // fetchFreshSubscription returns raw row without company join —
+      // look up the name from the companies list or the invoice itself.
+      const companyName = companies.find((c) => c.id === companyId)?.name || invoice.company_name || '';
       const merge = await confirm({
-        title: t('subscriptionAlreadyExists', { companyName: existing.company?.name || '' }),
+        title: t('subscriptionAlreadyExists', { companyName }),
         message: t('subscriptionAlreadyExistsForCompany', {
-          companyName: existing.company?.name || '',
+          companyName,
           year: selectedYear,
           booths: existing.booth_count,
           defaultValue: 'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.'
@@ -1050,6 +1058,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (norm(deduped.contact_email_2  ?? company.contact_email_2)  === effectiveEmail  && effectiveEmail)  deduped.contact_email_2  = null;
         if ((deduped.contact_phone_2 ?? company.contact_phone_2 ?? '').replace(/[\s\-().+]/g, '').replace(/^00/, '') === effectivePhone && effectivePhone) deduped.contact_phone_2 = null;
         if (norm(deduped.contact_name_2   ?? company.contact_name_2)   === effectiveName   && effectiveName)   deduped.contact_name_2   = null;
+        // SAFETY: never overwrite the company name — it must always come from the DB
+        delete deduped.name;
         const { error: patchError } = await updateCompany(company.id, deduped);
         if (patchError) throw new Error(patchError);
       }
@@ -1107,6 +1117,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
+      // When the invoice has an explicit company_id (confirmed match), look up
+      // the company by ID — this is the authoritative link and must take
+      // precedence over fuzzy name matching.
+      const linkedCompany = inv.company_id
+        ? companies.find((c) => c.id === inv.company_id) || null
+        : null;
       const matchResult = findBestCompanyMatch(inv, companies);
 
       let parsedDate = '';
@@ -1117,10 +1133,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
       return {
         ...inv,
-        hasMatch: !!matchResult,
-        matchCompany: matchResult?.company || null,
-        matchScore: matchResult?.score || 0,
-        matchReasons: matchResult?.reasons || [],
+        hasMatch: !!linkedCompany || !!matchResult,
+        matchCompany: linkedCompany || matchResult?.company || null,
+        matchScore: linkedCompany ? 100 : (matchResult?.score || 0),
+        matchReasons: linkedCompany ? ['confirmed'] : (matchResult?.reasons || []),
         date: parsedDate,
       };
     });
@@ -1130,7 +1146,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       result = result.filter(
         (inv) =>
           (inv.company_name || '').toLowerCase().includes(lower) ||
-          (inv.invoice_number || '').toLowerCase().includes(lower),
+          (inv.invoice_number || '').toLowerCase().includes(lower) ||
+          (inv.matchCompany?.name || '').toLowerCase().includes(lower),
       );
     }
 
@@ -1717,8 +1734,24 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   // actions for individual line items
                   const handleItemAction = async (idx, action) => {
-                    // Deep copy so mutations don't corrupt the shared parsedData reference
-                    const items = JSON.parse(JSON.stringify(parsedData.line_items || []));
+                    // Serialize per invoice — queue behind any in-flight action
+                    // so concurrent clicks don't race on notes saves or the confirm modal.
+                    const queue = itemActionQueueRef.current;
+                    const prev = queue.get(inv.id) || Promise.resolve();
+                    const run = prev.then(() => _doItemAction(idx, action)).catch(() => {});
+                    queue.set(inv.id, run);
+                  };
+
+                  const _doItemAction = async (idx, action) => {
+                    // Read fresh notes from DB — the parsedData closure is stale when
+                    // multiple items are approved in quick succession.
+                    const { data: _freshRow } = await supabase
+                      .from('staged_invoices')
+                      .select('notes')
+                      .eq('id', inv.id)
+                      .single();
+                    const _freshParsed = JSON.parse(_freshRow?.notes || '{}');
+                    const items = JSON.parse(JSON.stringify(_freshParsed.line_items || []));
                     const oldStatus = items[idx]?.status || 'pending';
 
                     // Helper: deactivate this line item's subscription_line_item record
@@ -1773,7 +1806,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       const item = items[idx];
                       const counts = getCountsForItem(item);
                       const invoiceArea = item.area || '';
-                      const customerNote = parsedData.notes || '';
+                      const customerNote = _freshParsed.notes || '';
                       const invoiceHasBoothItems = items.some((i) => getCountsForItem(i).stands > 0);
                       const isBoothItem = counts.stands > 0;
                       const attachNotes = isBoothItem || !invoiceHasBoothItems;
@@ -1887,12 +1920,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       }
                     }
 
+                    // Re-read notes from DB before saving — another concurrent
+                    // handler may have saved a different item's status in the meantime.
+                    const { data: _saveRow } = await supabase
+                      .from('staged_invoices')
+                      .select('notes')
+                      .eq('id', inv.id)
+                      .single();
+                    const _saveParsed = JSON.parse(_saveRow?.notes || '{}');
+                    const _saveItems = _saveParsed.line_items || [];
                     if (action === 'delete') {
-                      items.splice(idx, 1);
-                    } else {
-                      items[idx] = { ...items[idx], status: action };
+                      _saveItems.splice(idx, 1);
+                    } else if (_saveItems[idx]) {
+                      _saveItems[idx] = { ..._saveItems[idx], status: action };
                     }
-                    const newNotes = { ...parsedData, line_items: items };
+                    const newNotes = { ..._saveParsed, line_items: _saveItems };
                     const ok = await saveNotes(newNotes);
                     if (ok) {
 
@@ -1917,9 +1959,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       };
 
                       const allResolved =
-                        items.length > 0 &&
-                        items.every((it) => it.status === 'approved' || it.status === 'rejected');
-                      const allApproved = allResolved && items.every((it) => it.status === 'approved');
+                        _saveItems.length > 0 &&
+                        _saveItems.every((it) => it.status === 'approved' || it.status === 'rejected');
+                      const allApproved = allResolved && _saveItems.every((it) => it.status === 'approved');
 
                       if (allResolved) {
                         const targetStatus = allApproved ? 'approved' : 'partially_approved';
@@ -1972,23 +2014,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           </a>
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top overflow-hidden truncate">
-                          <div className="font-medium text-gray-900 truncate">{inv.company_name}</div>
-                          {inv.status !== 'approved' && (
-                            matchCompany ? (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
-                                className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
-                                style={inv.company_id
-                                  ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
-                                  : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
-                                title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
-                              >
-                                <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
-                                {!inv.company_id && matchReasons.length > 0 && (
-                                  <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
-                                )}
-                              </button>
-                            ) : (
+                          <div className="font-medium text-gray-900 truncate">
+                            {/* Always show the DB company name when linked; fall back to invoice name */}
+                            {inv.company_id && matchCompany ? matchCompany.name : inv.company_name}
+                          </div>
+                          {matchCompany ? (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
+                              className="text-xs font-semibold px-1.5 py-0.5 rounded border mt-1 inline-flex flex-col items-start transition-colors cursor-pointer max-w-full"
+                              style={inv.company_id
+                                ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
+                                : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
+                              title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
+                            >
+                              <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
+                              {!inv.company_id && matchReasons.length > 0 && (
+                                <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
+                              )}
+                            </button>
+                          ) : (
+                            !inv.company_id && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
                                 className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
@@ -2032,7 +2077,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                       const titles = { approved: 'Mark approved',
                                                        rejected: 'Reject item' };
                                       const disabled = !inv.company_id;
-                                      // Replace the matching action button with undo when that status is active
+                                      // Once resolved, only show undo for the active status —
+                                      // switching directly between approved↔rejected is not allowed;
+                                      // undo first, then choose the other action.
+                                      const resolved = item.status === 'approved' || item.status === 'rejected';
+                                      if (resolved && item.status !== act) return null;
                                       if (item.status === act) {
                                         return (
                                           <button

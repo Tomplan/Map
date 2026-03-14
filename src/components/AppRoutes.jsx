@@ -53,6 +53,7 @@ function AppRoutes({
   archiveMarkers,
   copyMarkers,
   assignmentsState,
+  defaultStyles,
   markerHistoryStack,
   markerRedoStack,
 }) {
@@ -150,6 +151,7 @@ function AppRoutes({
               <EventMap
                 isAdminView={false}
                 markersState={markersState}
+                defaultStyles={defaultStyles}
                 updateMarker={updateMarker}
                 setMarkersState={setMarkersState}
                 // If logged in, show the currently selected admin year.
@@ -267,6 +269,7 @@ function AppRoutes({
             <Suspense fallback={<div className="p-4">Loading map management...</div>}>
               <MapManagement
                 markersState={markersState}
+                defaultStyles={defaultStyles}
                 setMarkersState={setMarkersState}
                 updateMarker={updateMarker}
                 deleteMarker={deleteMarker}

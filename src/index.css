@@ -132,8 +132,6 @@ h1 {
 }
 
 /* Active marker highlight (e.g. from subscription selection) */
-
-/* Active marker highlight (e.g. from subscription selection) */
 /* Apply filter only, avoid transform which breaks Leaflet positioning */
 .leaflet-marker-icon.marker-active {
   filter: drop-shadow(0 0 8px #ef4444) brightness(1.2) !important;

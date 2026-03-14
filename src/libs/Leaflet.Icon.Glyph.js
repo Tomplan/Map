@@ -23,16 +23,31 @@ L.Icon.Glyph = L.Icon.extend({
     fontFamily: 'sans-serif',
   },
 
-  createIcon: function () {
-    var div = document.createElement('div'),
-      options = this.options;
+  createIcon: function (oldIcon) {
+    var options = this.options;
+    var div;
 
-    if (options.glyph) {
-      div.appendChild(this._createGlyph());
+    // If Leaflet passes the existing DOM element and it's one of ours,
+    // reuse it in-place so Leaflet skips _removeIcon() + DOM insertion.
+    if (oldIcon && oldIcon.tagName === 'DIV' && oldIcon.classList.contains('leaflet-glyph-icon')) {
+      div = oldIcon;
+      // Update or replace the glyph span
+      var existingSpan = div.querySelector('span');
+      if (existingSpan && options.glyph) {
+        this._updateGlyph(existingSpan);
+      } else if (options.glyph) {
+        div.appendChild(this._createGlyph());
+      } else if (existingSpan) {
+        div.removeChild(existingSpan);
+      }
+    } else {
+      div = document.createElement('div');
+      if (options.glyph) {
+        div.appendChild(this._createGlyph());
+      }
+      div.style.position = 'relative';
     }
 
-    // Enable absolute positioning for glyph
-    div.style.position = 'relative';
     this._setIconStyles(div, options.className);
     return div;
   },
@@ -60,6 +75,50 @@ L.Icon.Glyph = L.Icon.extend({
     }
 
     var span = L.DomUtil.create('span', options.prefix + ' ' + glyphClass);
+    this._applyGlyphStyles(span);
+
+    if (textContent) {
+      span.innerHTML = textContent;
+    }
+
+    return span;
+  },
+
+  // Update an existing glyph span in-place (reuse path)
+  _updateGlyph: function (span) {
+    var glyphClass,
+      textContent,
+      options = this.options;
+
+    if (!options.prefix) {
+      glyphClass = '';
+      textContent = options.glyph;
+    } else if (
+      options.prefix === 'fab' ||
+      options.prefix === 'fal' ||
+      options.prefix === 'far' ||
+      options.prefix === 'fas'
+    ) {
+      glyphClass = 'fa-' + options.glyph;
+    } else if (options.glyph.slice(0, options.prefix.length + 1) === options.prefix + '-') {
+      glyphClass = options.glyph;
+    } else {
+      glyphClass = options.prefix + '-' + options.glyph;
+    }
+
+    span.className = options.prefix + ' ' + glyphClass;
+    this._applyGlyphStyles(span);
+
+    if (textContent) {
+      span.innerHTML = textContent;
+    } else {
+      span.innerHTML = '';
+    }
+  },
+
+  // Shared glyph inline style application
+  _applyGlyphStyles: function (span) {
+    var options = this.options;
     span.style.position = 'absolute';
     span.style.fontSize = options.glyphSize;
     span.style.color = options.glyphColor;
@@ -74,12 +133,6 @@ L.Icon.Glyph = L.Icon.extend({
     span.style.top = options.glyphAnchor[1] + 'px';
     span.style.pointerEvents = 'none';
     span.style.display = 'inline-block';
-
-    if (textContent) {
-      span.innerHTML = textContent;
-    }
-
-    return span;
   },
 
   _setIconStyles: function (div, name) {
@@ -118,23 +171,18 @@ L.Icon.Glyph = L.Icon.extend({
       div.style.height = size.y + 'px';
     }
 
-    // If the icon has child glyph spans (created in createIcon), update their
-    // inline styles so that in-place icon updates (Leaflet setIcon) reflect
-    // the latest glyph sizing/color/anchor without needing to recreate the
-    // DOM element.
+    // Update child glyph spans so that direct _setIconStyles calls (e.g. from
+    // Leaflet's setIcon path or tests) keep spans in sync with current options.
     try {
       const glyphSpans = div.querySelectorAll && div.querySelectorAll('span');
       if (glyphSpans && glyphSpans.length) {
         glyphSpans.forEach((span) => {
-          // Keep existing behavior but ensure properties reflect current options
           span.style.fontSize = options.glyphSize || span.style.fontSize || '';
           span.style.color = options.glyphColor || span.style.color || '';
-          // width/lineHeight should always match icon size
           if (options.iconSize) {
             span.style.width = options.iconSize[0] + 'px';
             span.style.lineHeight = options.iconSize[1] + 'px';
           }
-          // glyphAnchor is optional
           if (options.glyphAnchor && options.glyphAnchor.length >= 2) {
             span.style.left = options.glyphAnchor[0] + 'px';
             span.style.top = options.glyphAnchor[1] + 'px';
@@ -142,8 +190,7 @@ L.Icon.Glyph = L.Icon.extend({
         });
       }
     } catch (err) {
-      // Fail silently to avoid breaking Leaflet rendering if DOM operations fail
-      console.warn('Failed to update glyph span styles in-place', err);
+      // Fail silently to avoid breaking Leaflet rendering
     }
   },
 });

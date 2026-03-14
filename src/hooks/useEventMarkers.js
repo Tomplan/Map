@@ -10,6 +10,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const [isOnline, setIsOnline] = useState(initialOnline);
   const [markers, setMarkers] = useState([]);
+  const [defaultStyles, setDefaultStyles] = useState({ assigned: null, unassigned: null });
   const [loading, setLoading] = useState(true);
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
@@ -185,6 +186,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           };
         });
 
+      setDefaultStyles({
+        assigned: appearanceById[-1] || null,
+        unassigned: appearanceById[-2] || null,
+      });
       setMarkers(mergedMarkers);
       // Persist a snapshot asynchronously for offline use
       try {
@@ -513,6 +518,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
   return {
     markers,
+    defaultStyles,
     loading,
     isOnline,
     reload: () => loadMarkers(isOnline),

@@ -54,7 +54,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   } = useEventSubscriptions(selectedYear);
 
   const { companies } = useCompanies();
-  const { assignments } = useAssignments(selectedYear);
+  const { assignments, reload: reloadAssignments } = useAssignments(selectedYear);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -236,7 +236,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
 
       // Create edit line item with count deltas (if any count changed)
-      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins'];
+      // Coins is intentionally excluded — it bypasses line items and is updated directly.
+      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun'];
       const countDeltas = {};
       let hasCountChange = false;
       for (const field of COUNT_FIELDS) {
@@ -253,6 +254,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       const areaChanged = 'area' in updates && updates.area !== sub.area;
       const notesChanged = 'notes' in updates && updates.notes !== sub.notes;
 
+      // Coins bypasses the line-item system — update directly on the subscription.
+      // Must run AFTER addLineItem because recalculateTotals now computes
+      // coins = booth_count × default_coins; an explicit manual edit overrides that.
+      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
+
       if (hasCountChange || areaChanged || notesChanged) {
         await addLineItem(sub.id, {
           source: 'edit',
@@ -261,6 +267,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           notes: notesChanged ? updates.notes : undefined,
           description: 'Manually edited: ' + changes.join(', '),
         });
+      }
+
+      if (coinsChanged) {
+        await updateSubscription(sub.id, { coins: Number(updates.coins) || 0 });
       }
 
       setIsEditModalOpen(false);
@@ -376,6 +386,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               if (removeAll) {
                 const { error } = await unsubscribeCompany(subscription.id);
                 if (error) throw new Error(error);
+                await reloadAssignments(true);
                 await revertInvoicesForCompany(subscription.company_id);
                 toastSuccess('Subscription deleted.');
               } else {
@@ -391,6 +402,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 const remaining = await getActiveLineItems(subscription.id);
                 if (remaining.length === 0) {
                   await unsubscribeCompany(subscription.id);
+                  await reloadAssignments(true);
                   toastSuccess('Subscription deleted.');
                 } else {
                   toastSuccess('Selected items removed.');
@@ -429,6 +441,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     if (error) {
       toastError(`Error unsubscribing company: ${error}`);
     } else {
+      await reloadAssignments(true);
       await revertInvoicesForCompany(subscription.company_id);
     }
   };
@@ -1082,13 +1095,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         </div>
       )}
 
-      {/* Edit Modal */}
-      <SubscriptionEditModal
-        isOpen={isEditModalOpen}
-        onClose={handleModalClose}
-        subscription={editingSubscription}
-        onSave={handleModalSave}
-      />
+      {/* Edit Modal — conditionally rendered so it remounts fresh on each open */}
+      {isEditModalOpen && editingSubscription && (
+        <SubscriptionEditModal
+          onClose={handleModalClose}
+          subscription={editingSubscription}
+          onSave={handleModalSave}
+        />
+      )}
     </div>
   );
 }

@@ -20,22 +20,25 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
       .eq('id', companyId)
       .single();
 
-    // Fetch organization defaults for meal counts (separate Saturday/Sunday)
-    const { data: orgProfile } = await supabase
-      .from('organization_profile')
+    // Fetch organization defaults for meal counts and coins from organization_settings
+    // (EventDefaults saves to this table; organization_profile is legacy)
+    const { data: orgSettings } = await supabase
+      .from('organization_settings')
       .select(
-        'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun',
+        'default_breakfast_sat, default_lunch_sat, default_bbq_sat, default_breakfast_sun, default_lunch_sun, default_coins',
       )
       .eq('id', 1)
       .single();
 
-    const defaultBreakfastSat = orgProfile?.default_breakfast_sat || 0;
-    const defaultLunchSat = orgProfile?.default_lunch_sat || 0;
-    const defaultBbqSat = orgProfile?.default_bbq_sat || 0;
-    const defaultBreakfastSun = orgProfile?.default_breakfast_sun || 0;
-    const defaultLunchSun = orgProfile?.default_lunch_sun || 0;
+    // Defaults are per-booth — multiply by booth_count
+    const boothCount = typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1;
+    const defaultBreakfastSat = (orgSettings?.default_breakfast_sat || 0) * boothCount;
+    const defaultLunchSat = (orgSettings?.default_lunch_sat || 0) * boothCount;
+    const defaultBbqSat = (orgSettings?.default_bbq_sat || 0) * boothCount;
+    const defaultBreakfastSun = (orgSettings?.default_breakfast_sun || 0) * boothCount;
+    const defaultLunchSun = (orgSettings?.default_lunch_sun || 0) * boothCount;
     const defaultCoins =
-      typeof orgProfile?.default_coins === 'number' ? orgProfile.default_coins : 0;
+      typeof orgSettings?.default_coins === 'number' ? orgSettings.default_coins * boothCount : 0;
 
     // Normalize phone before inserting
     const phoneToInsert = subscriptionData.phone
@@ -99,6 +102,7 @@ export default function useEventSubscriptions(eventYear) {
       channel: null,
       reloadTimeout: null,
       loadPromise: null,
+      loadGeneration: 0,
     };
     useEventSubscriptions.cache.set(eventYear, entry);
   }
@@ -126,6 +130,7 @@ export default function useEventSubscriptions(eventYear) {
         return Promise.resolve();
       }
 
+      const gen = ++entry.loadGeneration;
       entry.loadPromise = (async () => {
         try {
           // Clear any pending debounced reload
@@ -153,13 +158,19 @@ export default function useEventSubscriptions(eventYear) {
 
           if (fetchError) throw fetchError;
 
+          // Discard stale results — a newer loadSubscriptions was started
+          if (gen < entry.loadGeneration) return;
+
           entry.state.subscriptions = data || [];
         } catch (err) {
+          if (gen < entry.loadGeneration) return;
           console.error('Error loading event subscriptions:', err);
           entry.state.error = err.message;
         } finally {
-          entry.state.loading = false;
-          entry.listeners.forEach((l) => l(entry.state));
+          if (gen === entry.loadGeneration) {
+            entry.state.loading = false;
+            entry.listeners.forEach((l) => l(entry.state));
+          }
           entry.loadPromise = null;
         }
       })();
@@ -232,13 +243,18 @@ export default function useEventSubscriptions(eventYear) {
       if (!subscription) throw new Error('Subscription not found');
 
       // Delete all booth assignments for this company in this year
-      const { error: assignmentsError } = await supabase
+      // Use count:'exact' so we detect silent RLS blocks (Supabase returns
+      // 0 deleted rows instead of an error when RLS filters everything out).
+      const { error: assignmentsError, count: assignmentsDeleted } = await supabase
         .from('assignments')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('company_id', subscription.company_id)
         .eq('event_year', subscription.event_year);
 
       if (assignmentsError) throw assignmentsError;
+      if (assignmentsDeleted !== undefined) {
+        console.log(`Deleted ${assignmentsDeleted} assignment(s) for company ${subscription.company_id}, year ${subscription.event_year}`);
+      }
 
       // Delete the subscription
       const { error: deleteError, count } = await supabase
@@ -366,6 +382,7 @@ export default function useEventSubscriptions(eventYear) {
         channel: null,
         reloadTimeout: null,
         loadPromise: null,
+        loadGeneration: 0,
       };
       useEventSubscriptions.cache.set(eventYear, currentEntry);
     }

@@ -13,8 +13,6 @@ import {
   mdiClose,
 } from '@mdi/js';
 import useOrganizationSettings from '../../hooks/useOrganizationSettings';
-import useOrganizationProfile from '../../hooks/useOrganizationProfile';
-import { supabase } from '../../supabaseClient';
 import { useDialog } from '../../contexts/DialogContext';
 
 /**
@@ -63,6 +61,7 @@ export default function EventDefaults() {
       setDefaultBbqSat(settings.default_bbq_sat ?? 0);
       setDefaultBreakfastSun(settings.default_breakfast_sun ?? 0);
       setDefaultLunchSun(settings.default_lunch_sun ?? 0);
+      setDefaultCoins(settings.default_coins ?? 0);
       setInvoiceIgnoredItems(settings.invoice_ignored_items ?? []);
 
       // Parse notification settings from JSONB
@@ -78,14 +77,6 @@ export default function EventDefaults() {
     }
   }, [settings]);
 
-  // Read default_coins from organization_profile (it lives in a different table)
-  const { profile: orgProfile } = useOrganizationProfile();
-  useEffect(() => {
-    if (typeof orgProfile?.default_coins === 'number') {
-      setDefaultCoins(orgProfile.default_coins);
-    }
-  }, [orgProfile]);
-
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -100,34 +91,20 @@ export default function EventDefaults() {
         assignmentChangeNotify,
       };
 
-      // Update organization settings using the hook
+      // Update organization settings using the hook (includes default_coins)
       const result = await updateSettings({
         default_breakfast_sat: defaultBreakfastSat,
         default_lunch_sat: defaultLunchSat,
         default_bbq_sat: defaultBbqSat,
         default_breakfast_sun: defaultBreakfastSun,
         default_lunch_sun: defaultLunchSun,
+        default_coins: defaultCoins,
         notification_settings: notificationSettings,
         invoice_ignored_items: invoiceIgnoredItems,
       });
 
       if (!result) {
         throw new Error('Failed to update settings');
-      }
-
-      // Save default_coins back to organization_profile as well
-      try {
-        // Best-effort update — do not block the overall save flow if this fails
-        const { error: coinsError } = await supabase
-          .from('organization_profile')
-          .update({ default_coins: defaultCoins })
-          .eq('id', 1);
-
-        if (coinsError) {
-          console.warn('Failed to persist default_coins to organization_profile:', coinsError);
-        }
-      } catch (err) {
-        console.warn('Failed to persist default_coins to organization_profile:', err);
       }
 
       setSuccess(true);
@@ -166,10 +143,8 @@ export default function EventDefaults() {
         setNewSubscriptionNotify(notifSettings.newSubscriptionNotify ?? true);
         setAssignmentChangeNotify(notifSettings.assignmentChangeNotify ?? true);
       }
-      // Reset coins from orgProfile if available
-      if (orgProfile && typeof orgProfile.default_coins === 'number') {
-        setDefaultCoins(orgProfile.default_coins);
-      }
+      // Reset coins from settings
+      setDefaultCoins(settings.default_coins ?? 0);
     }
   };
 

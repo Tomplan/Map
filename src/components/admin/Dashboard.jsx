@@ -20,7 +20,6 @@ import {
 import { supabase } from '../../supabaseClient';
 import {
   useSubscriptionCount,
-  useAssignmentCount,
   useMarkerCount,
   useCompanyCount,
 } from '../../hooks/useCountViews';
@@ -37,7 +36,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   // Use real-time count hooks
   const { count: subscriptionCount, loading } = useSubscriptionCount(selectedYear);
-  const { count: assignmentCount, loading: assignmentsLoading } = useAssignmentCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
 
@@ -55,6 +53,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const totals = useMemo(() => {
     return subscriptions.reduce(
       (acc, sub) => ({
+        booth_count: acc.booth_count + (sub.booth_count || 0),
         breakfast_sat: acc.breakfast_sat + (sub.breakfast_sat || 0),
         lunch_sat: acc.lunch_sat + (sub.lunch_sat || 0),
         bbq_sat: acc.bbq_sat + (sub.bbq_sat || 0),
@@ -63,6 +62,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
         coins: acc.coins + (sub.coins || 0),
       }),
       {
+        booth_count: 0,
         breakfast_sat: 0,
         lunch_sat: 0,
         bbq_sat: 0,
@@ -76,7 +76,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const stats = [
     {
       label: t('dashboard.totalAssignableBooths'),
-      value: markersLoading ? '...' : markerCount.toString(),
+      value: markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },
@@ -94,7 +94,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: `${selectedYear} ${t('dashboard.assignments')}`,
-      value: assignmentsLoading ? '...' : assignmentCount.toString(),
+      value: loading ? '...' : totals.booth_count.toString(),
       icon: mdiClipboardCheck,
       color: 'purple',
     },
@@ -115,7 +115,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       <div className="event-totals bg-white rounded-lg shadow p-6 mb-6">
         <h2 className="text-xl font-bold text-gray-900 mb-6">
           {selectedYear} {t('dashboard.eventTotals')}
-          {(loading || statsLoading || assignmentsLoading) && (
+          {(loading || statsLoading) && (
             <span className="text-sm font-normal text-gray-500 ml-2">{t('common.loading')}</span>
           )}
         </h2>

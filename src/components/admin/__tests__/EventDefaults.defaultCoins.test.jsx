@@ -7,19 +7,21 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k, fallback) => fallback || k }),
 }));
 
-// Mock the organization settings hook (used by EventDefaults)
-// for this unit test we don't care about meal defaults, so return null settings to
-// prevent the component's useEffect from ever firing and causing render noise.
-jest.mock('../../../hooks/useOrganizationSettings', () => () => ({
-  settings: null,
-  loading: false,
-  error: null,
-  updateSettings: jest.fn().mockResolvedValue(true),
-}));
+// Mock the organization settings hook (used by EventDefaults for default_coins)
+// settings object must be a stable reference to avoid infinite useEffect loop
+jest.mock('../../../hooks/useOrganizationSettings', () => {
+  const stableSettings = { default_coins: 42 };
+  return () => ({
+    settings: stableSettings,
+    loading: false,
+    error: null,
+    updateSettings: jest.fn().mockResolvedValue(true),
+  });
+});
 
-// Mock organization_profile hook to expose default_coins
+// Mock organization_profile hook (no default_coins here since it moved to organization_settings)
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
-  profile: { id: 1, name: 'Org', default_coins: 42 },
+  profile: { id: 1, name: 'Org' },
   loading: false,
   error: null,
   updateProfile: jest.fn().mockResolvedValue({ data: {}, error: null }),
@@ -35,10 +37,10 @@ jest.mock('../../../contexts/DialogContext', () => ({
 
 import EventDefaults from '../EventDefaults';
 
-test('renders default_coins input from organization_profile and allows editing', async () => {
+test('renders default_coins input from organization_settings and allows editing', async () => {
   render(<EventDefaults />);
 
-  // default_coins input should render with initial value from profile
+  // default_coins input should render with initial value from settings
   const coinsInput = await screen.findByLabelText(/Default coins/i);
   expect(coinsInput).toBeInTheDocument();
   expect(coinsInput).toHaveValue(42);

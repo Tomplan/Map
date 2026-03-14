@@ -53,6 +53,7 @@ describe('EventClusterMarkers snapshots (visual regression style)', () => {
     updateMarker: jest.fn(),
     isMarkerDraggable: () => false,
     iconCreateFunction: () => null,
+    defaultStyles: { assigned: {}, unassigned: {} },
   };
 
   it('renders a compact DOM tree for zoom=16', async () => {
