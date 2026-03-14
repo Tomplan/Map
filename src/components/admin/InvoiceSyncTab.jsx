@@ -1205,9 +1205,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
 
       // Default string/number sorting for everything else
-      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
+      const valA = a[sortConfig.key];
+      const valB = b[sortConfig.key];
+      let cmp;
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
+      } else {
+        cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
+      }
+      return sortConfig.direction === 'asc' ? cmp : -cmp;
     });
 
     return result;
