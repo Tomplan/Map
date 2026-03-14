@@ -843,24 +843,42 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                     {/* Contact */}
                     <td className="p-2 text-left">
-                      <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                        {company?.contact_name_2 && (
+                          <span className="text-xs text-gray-400">{company.contact_name_2}</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Phone */}
                     <td className="p-2 text-left">
-                      {subscription.phone ? (
-                        <span className="text-xs text-gray-700 flex items-center gap-1">
-                          <span>{getPhoneFlag(subscription.phone)}</span>
-                          <span>{formatPhoneForDisplay(subscription.phone)}</span>
-                        </span>
-                      ) : (
-                        <span className="text-xs text-gray-400">-</span>
-                      )}
+                      <div className="flex flex-col">
+                        {subscription.phone ? (
+                          <span className="text-xs text-gray-700 flex items-center gap-1">
+                            <span>{getPhoneFlag(subscription.phone)}</span>
+                            <span>{formatPhoneForDisplay(subscription.phone)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                        {company?.contact_phone_2 && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <span>{getPhoneFlag(company.contact_phone_2)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Email */}
                     <td className="p-2 text-left">
-                      <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
+                        {company?.contact_email_2 && (
+                          <span className="text-xs text-gray-400">{company.contact_email_2}</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Booth Count */}
