@@ -16,6 +16,8 @@ import {
   mdiContentCopy,
   mdiChevronUp,
   mdiChevronDown,
+  mdiTextBoxOutline,
+  mdiTextBoxOffOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -589,6 +591,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <span className="text-sm text-gray-600">
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
+          <button
+            onClick={() => {
+              setNotesExpandedIds((prev) => {
+                const allIds = new Set(filteredSubscriptions.map((s) => s.id));
+                const allExpanded = filteredSubscriptions.every((s) => prev.has(s.id));
+                return allExpanded ? new Set() : allIds;
+              });
+            }}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
+            title={t('helpPanel.subscriptions.toggleAllNotes', 'Toggle all notes')}
+          >
+            <Icon path={filteredSubscriptions.length > 0 && filteredSubscriptions.every((s) => notesExpandedIds.has(s.id)) ? mdiTextBoxOffOutline : mdiTextBoxOutline} size={0.6} />
+            {t('helpPanel.subscriptions.notes')}
+          </button>
         </div>
         <div className="flex gap-2 relative z-50">
           <button
