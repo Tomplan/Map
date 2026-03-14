@@ -43,7 +43,7 @@ function normalizePhone(p) {
 // (score ≥ 40) with the reasons that contributed to the match.
 function findBestCompanyMatch(invoice, companies) {
   let notes = {};
-  try { notes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+  try { notes = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
   const hasStoredFields = notes.contact_name || notes.contact_email || notes.kvk_number || notes.vat_number;
   if (!hasStoredFields && Array.isArray(notes.client_block) && notes.client_block.length > 1) {
     Object.assign(notes, extractFieldsFromBlock(notes.client_block));
@@ -150,7 +150,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
     setFieldChoices(prev => ({ ...prev, [dbField]: choice }));
 
   let inv = {};
-  try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+  try { inv = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
 
   // Fallback: if stored structured fields are all null (old record), derive them
   // live from the raw client_block array that was always stored.
@@ -598,7 +598,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             breakfast_sun: 0,
             lunch_sun: 0,
             area_preference: parsedData.area || '',
-            notes: JSON.stringify({
+            parsed_data: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
               notes: parsedData.notes || '',
               area: parsedData.area || '',
@@ -772,7 +772,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       let resetNotes = null;
       if (newStatus === 'pending' && !skipNotesReset) {
         let notes = {};
-        try { notes = JSON.parse(inv.notes || '{}'); } catch (_) {}
+        try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
         if (notes.line_items) {
           notes.line_items = notes.line_items.map((item) => ({ ...item, status: 'pending' }));
           resetNotes = JSON.stringify(notes);
@@ -780,7 +780,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
 
       const updatePayload = { status: newStatus, updated_at: new Date().toISOString() };
-      if (resetNotes !== null) updatePayload.notes = resetNotes;
+      if (resetNotes !== null) updatePayload.parsed_data = resetNotes;
 
       const { error } = await supabase
         .from('staged_invoices')
@@ -793,7 +793,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         prev.map((invItem) => {
           if (invItem.id !== id) return invItem;
           const next = { ...invItem, status: newStatus };
-          if (resetNotes !== null) next.notes = resetNotes;
+          if (resetNotes !== null) next.parsed_data = resetNotes;
           return next;
         }),
       );
@@ -808,7 +808,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const handleDeleteInvoice = async (invoice) => {
     // Check line item statuses — block deletion when any item is approved or rejected
     let items = [];
-    try { items = JSON.parse(invoice.notes || '{}').line_items || []; } catch (e) {}
+    try { items = JSON.parse(invoice.parsed_data || '{}').line_items || []; } catch (e) {}
     const hasResolvedItems = items.some(li => li.status === 'approved' || li.status === 'rejected');
     if (hasResolvedItems) {
       toastError('Cannot delete — undo all approved/rejected items first.');
@@ -856,7 +856,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
     // Extract human-readable notes and area from the JSON blob stored in the invoice
     let parsedInvNotes = {};
-    try { parsedInvNotes = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+    try { parsedInvNotes = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
     const customerNote = parsedInvNotes.notes || '';
     const invoiceArea = invoice.area_preference || parsedInvNotes.area || '';
 
@@ -998,7 +998,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       );
 
       let inv = {};
-      try { inv = JSON.parse(invoice.notes || '{}'); } catch (_) {}
+      try { inv = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
       // Fallback for old records that predate the structured-field extraction
       const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
                               inv.address_line1 || inv.postal_code || inv.vat_number;
@@ -1134,7 +1134,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
       let parsedDate = '';
       try {
-        const parsedNotes = JSON.parse(inv.notes || '{}');
+        const parsedNotes = JSON.parse(inv.parsed_data || '{}');
         parsedDate = parsedNotes.date || '';
       } catch (e) {}
 
@@ -1237,7 +1237,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               // parse the JSON blob stored on the invoice and backfill from the
               // legacy client_block if needed (same logic as in handleConfirmMatch).
               let parsed = {};
-              try { parsed = JSON.parse(inv.notes || '{}'); } catch (_) {}
+              try { parsed = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
               const hasStoredFields = parsed.contact_name || parsed.contact_email || parsed.contact_phone ||
                                       parsed.address_line1 || parsed.postal_code || parsed.vat_number;
               if (!hasStoredFields && Array.isArray(parsed.client_block) && parsed.client_block.length > 1) {
@@ -1598,7 +1598,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               bbq_sat: editingInvoice.bbq_sat,
                               breakfast_sun: editingInvoice.breakfast_sun,
                               lunch_sun: editingInvoice.lunch_sun,
-                              notes: editingInvoice.notes,
+                              parsed_data: editingInvoice.parsed_data,
                             })
                             .eq('id', editingInvoice.id);
 
@@ -1664,19 +1664,19 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   let parsedData = {};
                   try {
-                    parsedData = JSON.parse(inv.notes || '{}');
+                    parsedData = JSON.parse(inv.parsed_data || '{}');
                   } catch (e) {}
 
-                  // helper to persist notes changes and update local cache
+                  // helper to persist parsed_data changes and update local cache
                   const saveNotes = async (newNotes) => {
                     try {
                       const { error } = await supabase
                         .from('staged_invoices')
-                        .update({ notes: JSON.stringify(newNotes) })
+                        .update({ parsed_data: JSON.stringify(newNotes) })
                         .eq('id', inv.id);
                       if (error) throw error;
                       setInvoices((prev) =>
-                        prev.map((i) => (i.id === inv.id ? { ...i, notes: JSON.stringify(newNotes) } : i)),
+                        prev.map((i) => (i.id === inv.id ? { ...i, parsed_data: JSON.stringify(newNotes) } : i)),
                       );
                       return true;
                     } catch (err) {
@@ -1754,10 +1754,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     // multiple items are approved in quick succession.
                     const { data: _freshRow } = await supabase
                       .from('staged_invoices')
-                      .select('notes')
+                      .select('parsed_data')
                       .eq('id', inv.id)
                       .single();
-                    const _freshParsed = JSON.parse(_freshRow?.notes || '{}');
+                    const _freshParsed = JSON.parse(_freshRow?.parsed_data || '{}');
                     const items = JSON.parse(JSON.stringify(_freshParsed.line_items || []));
                     const oldStatus = items[idx]?.status || 'pending';
 
@@ -1933,10 +1933,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     // handler may have saved a different item's status in the meantime.
                     const { data: _saveRow } = await supabase
                       .from('staged_invoices')
-                      .select('notes')
+                      .select('parsed_data')
                       .eq('id', inv.id)
                       .single();
-                    const _saveParsed = JSON.parse(_saveRow?.notes || '{}');
+                    const _saveParsed = JSON.parse(_saveRow?.parsed_data || '{}');
                     const _saveItems = _saveParsed.line_items || [];
                     if (action === 'delete') {
                       _saveItems.splice(idx, 1);
@@ -1988,7 +1988,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   // Support old format strings vs new JSON payload fallback
                   const rawNotesFallback =
-                    typeof inv.notes === 'string' && !inv.notes.startsWith('{') ? inv.notes : '';
+                    typeof inv.parsed_data === 'string' && !inv.parsed_data.startsWith('{') ? inv.parsed_data : '';
                   const lineItems = parsedData.line_items || [];
                   const clientBlock = parsedData.client_block || [];
                   const isExpanded = expandedRows.has(inv.id);

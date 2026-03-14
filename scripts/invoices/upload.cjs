@@ -20,7 +20,7 @@ async function upload() {
         stands_count: inv.stands_count,
         meals_count: inv.meals_count,
         area_preference: inv.area_preference,
-        notes: inv.notes,
+        parsed_data: inv.notes,
         is_relevant: inv.is_relevant,
         status: 'pending'
     };
