@@ -930,7 +930,7 @@
 ,
   "subscriptionAlreadyExists": "Subscription already exists for {{companyName}}",
   "subscriptionAlreadyExistsForYear": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.\nReplace will overwrite it completely with this item.",
-  "subscriptionAlreadyExistsForCompany": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.",
+  "subscriptionAlreadyExistsForCompany": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerging will add counts from this invoice to the existing subscription.\nReplacing will overwrite it completely.",
   "mergeAction": "Merge",
   "replaceAction": "Replace"
 }

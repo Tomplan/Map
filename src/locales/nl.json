@@ -929,7 +929,7 @@
 ,
   "subscriptionAlreadyExists": "Er bestaat al een inschrijving voor {{companyName}}",
   "subscriptionAlreadyExistsForYear": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen ('Merge') voegt de aantallen van dit item toe aan de bestaande inschrijving.\nVervangen ('Replace') overschrijft deze volledig met dit item.",
-  "subscriptionAlreadyExistsForCompany": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen ('Merge') voegt de aantallen van deze factuur toe aan de bestaande inschrijving.\nVervangen ('Replace') overschrijft deze volledig.",
+  "subscriptionAlreadyExistsForCompany": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van deze factuur toe aan de bestaande inschrijving.\nVervangen overschrijft deze volledig.",
   "mergeAction": "Samenvoegen",
   "replaceAction": "Vervangen"
 }
