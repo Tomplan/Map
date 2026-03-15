@@ -533,9 +533,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const { data } = await supabase
       .from('invoice_folders')
       .select('*')
-      .order('position', { ascending: true })
-      .order('created_at', { ascending: true });
-    setFolders(data || []);
+      .order('position', { ascending: true });
+    // Secondary sort by created_at client-side (avoids chained .order() mock issues)
+    const sorted = (data || []).slice().sort((a, b) => {
+      if (a.position !== b.position) return a.position - b.position;
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+    setFolders(sorted);
   };
 
   // Create a new folder and return it
