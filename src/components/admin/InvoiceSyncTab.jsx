@@ -17,7 +17,6 @@ import {
   mdiArrowULeftTop,
   mdiFolder,
   mdiFolderOpen,
-  mdiFolderPlusOutline,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -465,10 +464,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [subHistoryModal, setSubHistoryModal] = useState(null); // { sub, invoice, companyName, additionLines, onConfirm } | null
   const [subHistorySelection, setSubHistorySelection] = useState([]);
 
-  // Year folder state — which year tab is active and which year to target on upload
-  const [activeFolder, setActiveFolder] = useState(
-    selectedYear ? String(selectedYear) : 'all'
-  );
+  // Upload target year for the import picker
   const [uploadTargetYear, setUploadTargetYear] = useState(selectedYear || null);
   const [showUploadYearPicker, setShowUploadYearPicker] = useState(false);
 
@@ -1144,12 +1140,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const processedInvoices = React.useMemo(() => {
     let result = [...invoices];
 
-    // Apply year folder filter
-    if (activeFolder !== 'all') {
-      const folderYear = parseInt(activeFolder, 10);
-      result = result.filter(inv => inv.year === folderYear);
-    }
-
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
       // When the invoice has an explicit company_id (confirmed match), look up
@@ -1250,7 +1240,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     });
 
     return result;
-  }, [invoices, searchTerm, sortConfig, companies, activeFolder]);
+  }, [invoices, searchTerm, sortConfig, companies]);
 
   return (
     <div>
@@ -1463,7 +1453,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 onClick={() => {
                   setShowUploadYearPicker(false);
                   pendingUploadYearRef.current = uploadTargetYear;
-                  setActiveFolder(String(uploadTargetYear));
                   fileInputRef.current?.click();
                 }}
                 className="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
@@ -1547,60 +1536,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
           </div>
         </div>
       </div>
-
-      {/* ── Year folder tabs ─────────────────────────────────────────── */}
-      {availableYears.length > 0 && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          {/* "All" tab */}
-          <button
-            onClick={() => setActiveFolder('all')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-              activeFolder === 'all'
-                ? 'bg-gray-800 text-white border-gray-800'
-                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <Icon path={mdiFolder} size={0.7} />
-            All
-            <span className={`ml-1 text-xs ${activeFolder === 'all' ? 'opacity-80' : 'text-gray-400'}`}>
-              ({invoices.length})
-            </span>
-          </button>
-
-          {/* Per-year folder tabs */}
-          {availableYears.map(yr => {
-            const count = invoices.filter(inv => inv.year === yr).length;
-            const isActive = activeFolder === String(yr);
-            return (
-              <button
-                key={yr}
-                onClick={() => setActiveFolder(String(yr))}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-600 border-gray-300 hover:bg-blue-50'
-                }`}
-              >
-                <Icon path={isActive ? mdiFolderOpen : mdiFolder} size={0.7} />
-                {yr}
-                <span className={`ml-1 text-xs ${isActive ? 'opacity-80' : 'text-gray-400'}`}>
-                  ({count})
-                </span>
-              </button>
-            );
-          })}
-
-          {/* Quick-add folder button */}
-          <button
-            onClick={() => setShowUploadYearPicker(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors bg-transparent"
-            title="Import invoices to a new or existing year folder"
-          >
-            <Icon path={mdiFolderPlusOutline} size={0.7} />
-            Import
-          </button>
-        </div>
-      )}
 
       {uploading && uploadProgress.total > 0 && (
         <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-2 relative overflow-hidden">
@@ -1860,7 +1795,36 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
-                {processedInvoices.map((inv) => {
+                {groupedInvoices.map((group) => (
+                  <React.Fragment key={group.key}>
+                    {/* ── Folder header row ── */}
+                    <tr
+                      onClick={() => toggleFolder(group.key)}
+                      className="bg-gray-100 hover:bg-blue-50 cursor-pointer select-none border-b-2 border-gray-300"
+                    >
+                      <td colSpan={8} className="px-3 py-2.5">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                          <Icon
+                            path={collapsedFolders.has(group.key) ? mdiFolder : mdiFolderOpen}
+                            size={0.85}
+                            className={collapsedFolders.has(group.key) ? 'text-gray-400' : 'text-blue-500'}
+                          />
+                          <span className="text-base">
+                            {group.year ?? 'Unassigned'}
+                          </span>
+                          <span className="text-xs font-normal text-gray-400">
+                            ({group.invoices.length} invoice{group.invoices.length !== 1 ? 's' : ''})
+                          </span>
+                          <Icon
+                            path={collapsedFolders.has(group.key) ? mdiChevronDown : mdiChevronUp}
+                            size={0.7}
+                            className="ml-auto text-gray-400"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Invoice rows (hidden when folder is collapsed) ── */}
+                    {!collapsedFolders.has(group.key) && group.invoices.map((inv) => {
                   // matchCompany is pre-computed by processedInvoices (multi-field best-match)
                   const matchCompany = inv.matchCompany;
                   const matchReasons = inv.matchReasons || [];
@@ -2475,7 +2439,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       )}
                     </React.Fragment>
                   );
-                })}
+                    })}
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
           </div>
