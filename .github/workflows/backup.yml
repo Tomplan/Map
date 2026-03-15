@@ -49,8 +49,12 @@ jobs:
           if git ls-remote --exit-code origin backups > /dev/null 2>&1; then
             git worktree add /tmp/backups-worktree origin/backups
           else
-            # First run: create the orphan branch
-            git worktree add --orphan /tmp/backups-worktree backups
+            # First run: create an orphan branch
+            git worktree add --detach /tmp/backups-worktree
+            cd /tmp/backups-worktree
+            git checkout --orphan backups
+            git rm -rf . 2>/dev/null || true
+            cd -
           fi
 
           # Copy the new backup into the worktree
