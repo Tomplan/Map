@@ -26,7 +26,9 @@ const BASE = getBase();
 
 const PRECACHE_ASSETS = [
   BASE,
-  BASE + 'index.html',
+  // we intentionally *don't* cache index.html.  navigation requests are
+  // left to the network so the inline unregister script always runs and we
+  // never serve an old HTML blob that might re-install a stale worker.
   BASE + 'assets/icons/default.svg',
   BASE + 'assets/icons/glyph-marker-icon-blue.svg',
   BASE + 'assets/icons/glyph-marker-icon-gray.svg',
@@ -75,6 +77,17 @@ self.addEventListener('activate', () => {
 
 // Cache Carto Voyager and Esri map tiles as well as local assets
 self.addEventListener('fetch', (event) => {
+  // NOTE: navigation requests include index.html (SPA shell).  we avoid
+  // handling those so the browser always goes to the network; this prevents
+  // the service worker from serving itself a cached copy of index.html which
+  // would re-run an outdated unregister script and lead to the "steps back"
+  // problem.  In local dev the worker itself is unregistered before it has a
+  // chance to intercept navs, but this guard handles the case where a
+  // production worker is still active on the GH Pages dev site.
+  if (event.request.mode === 'navigate') {
+    return; // let the browser do a normal network navigation
+  }
+
   const url = event.request.url;
   // Helper for caching arbitrary requests in the "map-tiles" cache
   const cacheTile = () => {
