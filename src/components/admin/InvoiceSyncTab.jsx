@@ -15,6 +15,9 @@ import {
   mdiChevronDown,
   mdiDelete,
   mdiArrowULeftTop,
+  mdiFolder,
+  mdiFolderOpen,
+  mdiFolderPlusOutline,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -462,7 +465,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [subHistoryModal, setSubHistoryModal] = useState(null); // { sub, invoice, companyName, additionLines, onConfirm } | null
   const [subHistorySelection, setSubHistorySelection] = useState([]);
 
+  // Year folder state — which year tab is active and which year to target on upload
+  const [activeFolder, setActiveFolder] = useState(
+    selectedYear ? String(selectedYear) : 'all'
+  );
+  const [uploadTargetYear, setUploadTargetYear] = useState(selectedYear || null);
+  const [showUploadYearPicker, setShowUploadYearPicker] = useState(false);
+
   const fileInputRef = useRef(null);
+  // Stores the year chosen in the picker so handleFileUpload can read it
+  // without stale-closure issues (file selection is async user interaction).
+  const pendingUploadYearRef = useRef(selectedYear || null);
   // Tracks invoice IDs whose status is currently being written to DB.
   // Prevents a concurrent real-time fetchInvoices() from overwriting an
   // in-flight optimistic status update with stale DB data.
@@ -598,6 +611,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             breakfast_sun: 0,
             lunch_sun: 0,
             area_preference: parsedData.area || '',
+            year: pendingUploadYearRef.current || null,
             parsed_data: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
               notes: parsedData.notes || '',
@@ -1119,8 +1133,22 @@ export default function InvoiceSyncTab({ selectedYear }) {
     );
   };
 
+  // Derive which year folders exist from loaded invoices.
+  // Always includes selectedYear so its folder is visible even if empty.
+  const availableYears = React.useMemo(() => {
+    const years = [...new Set(invoices.map(inv => inv.year).filter(y => y != null))];
+    if (selectedYear && !years.includes(selectedYear)) years.push(selectedYear);
+    return years.sort((a, b) => b - a); // newest first
+  }, [invoices, selectedYear]);
+
   const processedInvoices = React.useMemo(() => {
     let result = [...invoices];
+
+    // Apply year folder filter
+    if (activeFolder !== 'all') {
+      const folderYear = parseInt(activeFolder, 10);
+      result = result.filter(inv => inv.year === folderYear);
+    }
 
     // Calculate match info to sort/filter accurately
     result = result.map((inv) => {
@@ -1222,7 +1250,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     });
 
     return result;
-  }, [invoices, searchTerm, sortConfig, companies]);
+  }, [invoices, searchTerm, sortConfig, companies, activeFolder]);
 
   return (
     <div>
@@ -1378,6 +1406,75 @@ export default function InvoiceSyncTab({ selectedYear }) {
           }}
         />
       )}
+
+      {/* ── Upload Year Picker Modal ─────────────────────────────────── */}
+      {showUploadYearPicker && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Import to folder</h2>
+            <p className="text-sm text-gray-500 mb-5">
+              Choose the year folder for the PDFs you are about to import.
+            </p>
+
+            {/* Year pills — known years + current event year */}
+            <div className="flex flex-wrap gap-2 mb-2">
+              {availableYears.map(yr => (
+                <button
+                  key={yr}
+                  onClick={() => setUploadTargetYear(yr)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                    uploadTargetYear === yr
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                  }`}
+                >
+                  <Icon path={mdiFolder} size={0.65} />
+                  {yr}
+                </button>
+              ))}
+              {/* Custom year input if desired year doesn't appear */}
+              <input
+                type="number"
+                min="2000"
+                max="2100"
+                placeholder="Other…"
+                className="w-24 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                onChange={(e) => {
+                  const v = parseInt(e.target.value, 10);
+                  if (!isNaN(v) && v >= 2000 && v <= 2100) setUploadTargetYear(v);
+                }}
+              />
+            </div>
+            {uploadTargetYear && (
+              <p className="text-xs text-blue-600 mb-4">
+                Selected: <strong>{uploadTargetYear}</strong>
+              </p>
+            )}
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => setShowUploadYearPicker(false)}
+                className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!uploadTargetYear}
+                onClick={() => {
+                  setShowUploadYearPicker(false);
+                  pendingUploadYearRef.current = uploadTargetYear;
+                  setActiveFolder(String(uploadTargetYear));
+                  fileInputRef.current?.click();
+                }}
+                className="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Continue →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
           {t('adminNav.invoices', 'Invoices')}
@@ -1429,7 +1526,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   Data Tools
                 </div>
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => { setIsActionsOpen(false); setShowUploadYearPicker(true); }}
                   disabled={uploading}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
                 >
@@ -1450,6 +1547,60 @@ export default function InvoiceSyncTab({ selectedYear }) {
           </div>
         </div>
       </div>
+
+      {/* ── Year folder tabs ─────────────────────────────────────────── */}
+      {availableYears.length > 0 && (
+        <div className="flex items-center gap-2 mb-4 flex-wrap">
+          {/* "All" tab */}
+          <button
+            onClick={() => setActiveFolder('all')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+              activeFolder === 'all'
+                ? 'bg-gray-800 text-white border-gray-800'
+                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <Icon path={mdiFolder} size={0.7} />
+            All
+            <span className={`ml-1 text-xs ${activeFolder === 'all' ? 'opacity-80' : 'text-gray-400'}`}>
+              ({invoices.length})
+            </span>
+          </button>
+
+          {/* Per-year folder tabs */}
+          {availableYears.map(yr => {
+            const count = invoices.filter(inv => inv.year === yr).length;
+            const isActive = activeFolder === String(yr);
+            return (
+              <button
+                key={yr}
+                onClick={() => setActiveFolder(String(yr))}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                  isActive
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-gray-600 border-gray-300 hover:bg-blue-50'
+                }`}
+              >
+                <Icon path={isActive ? mdiFolderOpen : mdiFolder} size={0.7} />
+                {yr}
+                <span className={`ml-1 text-xs ${isActive ? 'opacity-80' : 'text-gray-400'}`}>
+                  ({count})
+                </span>
+              </button>
+            );
+          })}
+
+          {/* Quick-add folder button */}
+          <button
+            onClick={() => setShowUploadYearPicker(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition-colors bg-transparent"
+            title="Import invoices to a new or existing year folder"
+          >
+            <Icon path={mdiFolderPlusOutline} size={0.7} />
+            Import
+          </button>
+        </div>
+      )}
 
       {uploading && uploadProgress.total > 0 && (
         <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-2 relative overflow-hidden">
@@ -1489,7 +1640,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         <div className="bg-white rounded-xl shadow p-12 flex flex-col items-center justify-center text-gray-500">
           <p className="mb-4">No staged invoices found. Have you imported them yet?</p>
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setShowUploadYearPicker(true)}
             disabled={uploading}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -1595,6 +1746,46 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       because those values are derived from the PDF or meals_count and
                       can be adjusted manually once the invoice has been synced to a
                       subscription. */}
+
+                  {/* Year / folder assignment */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Year folder
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {availableYears.map(yr => (
+                        <button
+                          key={yr}
+                          type="button"
+                          onClick={() => setEditingInvoice({ ...editingInvoice, year: yr })}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
+                            editingInvoice.year === yr
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-gray-600 border-gray-300 hover:bg-blue-50'
+                          }`}
+                        >
+                          <Icon path={mdiFolder} size={0.65} />
+                          {yr}
+                        </button>
+                      ))}
+                      <input
+                        type="number"
+                        min="2000"
+                        max="2100"
+                        placeholder="Custom year…"
+                        value={editingInvoice.year || ''}
+                        onChange={(e) => {
+                          const v = parseInt(e.target.value, 10);
+                          setEditingInvoice({ ...editingInvoice, year: isNaN(v) ? null : v });
+                        }}
+                        className="w-32 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Assign this invoice to a year folder for organisation.
+                    </p>
+                  </div>
+
                   <button
                       onClick={async () => {
                         try {
@@ -1610,6 +1801,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               breakfast_sun: editingInvoice.breakfast_sun,
                               lunch_sun: editingInvoice.lunch_sun,
                               parsed_data: editingInvoice.parsed_data,
+                              year: editingInvoice.year ?? null,
                             })
                             .eq('id', editingInvoice.id);
 
