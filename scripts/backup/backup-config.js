@@ -115,7 +115,7 @@ export const backupConfig = {
 
 // Validate required environment variables
 export function validateConfig() {
-  const required = ['SUPABASE_DB_PASSWORD'];
+  const required = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {

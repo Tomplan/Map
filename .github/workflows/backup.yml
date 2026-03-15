@@ -1,0 +1,70 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 10 * * *' # 10:00 UTC every day
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  backup:
+    name: Backup Supabase database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source (development branch)
+        uses: actions/checkout@v4
+        with:
+          ref: development
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run full backup
+        run: node scripts/backup/backup-full.js
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # SUPABASE_DB_PASSWORD not needed — backup uses JS client, not pg_dump
+          SUPABASE_DB_PASSWORD: unused
+
+      - name: Push backup to backups branch
+        run: |
+          # Find the backup directory just created
+          BACKUP_DIR=$(ls -td backups/full-* | head -1)
+          BACKUP_NAME=$(basename "$BACKUP_DIR")
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Fetch the backups branch if it exists
+          git fetch origin backups:refs/remotes/origin/backups 2>/dev/null || true
+
+          # Create a worktree for the backups branch
+          if git ls-remote --exit-code origin backups > /dev/null 2>&1; then
+            git worktree add /tmp/backups-worktree origin/backups
+          else
+            # First run: create the orphan branch
+            git worktree add --orphan /tmp/backups-worktree backups
+          fi
+
+          # Copy the new backup into the worktree
+          cp -r "$BACKUP_DIR" /tmp/backups-worktree/
+
+          cd /tmp/backups-worktree
+
+          # Rotate: keep only the 31 most recent backups
+          ls -td full-* 2>/dev/null | tail -n +32 | xargs rm -rf
+
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "backup: $BACKUP_NAME"
+          git push origin HEAD:backups
