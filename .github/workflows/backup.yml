@@ -28,7 +28,6 @@ jobs:
       - name: Run full backup
         run: node scripts/backup/backup-full.js
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           # SUPABASE_DB_PASSWORD not needed — backup uses JS client, not pg_dump
