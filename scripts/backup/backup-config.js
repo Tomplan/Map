@@ -115,8 +115,13 @@ export const backupConfig = {
 
 // Validate required environment variables
 export function validateConfig() {
-  const required = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
-  const missing = required.filter((key) => !process.env[key]);
+  const hasUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const hasKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+  const missing = [];
+  if (!hasUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL');
+  if (!hasKey) missing.push('SUPABASE_SERVICE_ROLE_KEY or VITE_SUPABASE_ANON_KEY');
 
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
