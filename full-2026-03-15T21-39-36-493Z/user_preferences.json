@@ -1,0 +1,132 @@
+{
+  "table": "user_preferences",
+  "timestamp": "2026-03-15T21-39-36-493Z",
+  "recordCount": 4,
+  "data": [
+    {
+      "user_id": "6206a2f0-e604-46d2-99f5-cdd0a7ed7eb5",
+      "default_year": 2026,
+      "preferred_language": "nl",
+      "assignments_sort_by": "alphabetic",
+      "assignments_sort_direction": "asc",
+      "assignments_column_sort": "glyph_text",
+      "assignments_column_sort_direction": "asc",
+      "dashboard_visible_cards": [
+        "stats",
+        "recent",
+        "actions"
+      ],
+      "default_rows_per_page": 25,
+      "email_notifications": true,
+      "created_at": "2026-03-08T10:23:17.988614+00:00",
+      "updated_at": "2026-03-08T10:23:17.988614+00:00",
+      "row_version": 1,
+      "updated_by": "6206a2f0-e604-46d2-99f5-cdd0a7ed7eb5",
+      "feedback_active_tab": "all",
+      "feedback_filter_types": [],
+      "feedback_filter_statuses": [],
+      "tours_completed": [],
+      "tours_dismissed": [],
+      "last_tour_date": null
+    },
+    {
+      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "default_year": 2026,
+      "preferred_language": "nl",
+      "assignments_sort_by": "by_marker",
+      "assignments_sort_direction": "asc",
+      "assignments_column_sort": "glyph_text",
+      "assignments_column_sort_direction": "asc",
+      "dashboard_visible_cards": [
+        "stats",
+        "recent",
+        "actions"
+      ],
+      "default_rows_per_page": 25,
+      "email_notifications": true,
+      "created_at": "2025-12-01T21:11:26.802421+00:00",
+      "updated_at": "2026-03-08T11:02:54.901125+00:00",
+      "row_version": 45,
+      "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "feedback_active_tab": "all",
+      "feedback_filter_types": [],
+      "feedback_filter_statuses": [],
+      "tours_completed": [
+        "admin-dashboard",
+        "admin-settings"
+      ],
+      "tours_dismissed": [
+        "admin-dashboard"
+      ],
+      "last_tour_date": "2025-12-04T21:45:49.372+00:00"
+    },
+    {
+      "user_id": "287a76d0-3204-4e19-862c-e6e69a3f4ab6",
+      "default_year": 2026,
+      "preferred_language": "nl",
+      "assignments_sort_by": "alphabetic",
+      "assignments_sort_direction": "asc",
+      "assignments_column_sort": "glyph_text",
+      "assignments_column_sort_direction": "asc",
+      "dashboard_visible_cards": [
+        "stats",
+        "recent",
+        "actions"
+      ],
+      "default_rows_per_page": 25,
+      "email_notifications": true,
+      "created_at": "2026-03-08T15:13:49.137171+00:00",
+      "updated_at": "2026-03-08T15:13:49.137171+00:00",
+      "row_version": 1,
+      "updated_by": "287a76d0-3204-4e19-862c-e6e69a3f4ab6",
+      "feedback_active_tab": "all",
+      "feedback_filter_types": [],
+      "feedback_filter_statuses": [],
+      "tours_completed": [],
+      "tours_dismissed": [],
+      "last_tour_date": null
+    },
+    {
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "default_year": 2025,
+      "preferred_language": "nl",
+      "assignments_sort_by": "alphabetic",
+      "assignments_sort_direction": "asc",
+      "assignments_column_sort": "glyph_text",
+      "assignments_column_sort_direction": "asc",
+      "dashboard_visible_cards": [
+        "stats",
+        "recent",
+        "actions"
+      ],
+      "default_rows_per_page": 25,
+      "email_notifications": true,
+      "created_at": "2025-11-26T18:10:52.161898+00:00",
+      "updated_at": "2026-03-14T08:16:08.04894+00:00",
+      "row_version": 1252,
+      "updated_by": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "feedback_active_tab": "all",
+      "feedback_filter_types": [],
+      "feedback_filter_statuses": [
+        "open",
+        "in_progress"
+      ],
+      "tours_completed": [
+        "admin-dashboard",
+        "admin-map-management",
+        "admin-data-management",
+        "admin-subscriptions",
+        "admin-assignments",
+        "admin-program-management",
+        "admin-settings",
+        "admin-feedback-requests"
+      ],
+      "tours_dismissed": [
+        "admin-dashboard",
+        "visitor-welcome",
+        "admin-subscriptions"
+      ],
+      "last_tour_date": "2025-12-06T19:54:53.032+00:00"
+    }
+  ]
+}
