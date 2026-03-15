@@ -783,7 +783,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               </th>
               <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.contact')}</th>
               <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.phone')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.email')}</th>
               <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.boothCount')}</th>
               <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.area')}</th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
@@ -927,19 +926,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                             <span>{getPhoneFlag(company.contact_phone_2)}</span>
                             <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
                           </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Email */}
-                    <td className="p-2 text-left">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
-                        {company?.contact_email && company.contact_email !== subscription.email && (
-                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email}</span>
-                        )}
-                        {company?.contact_email_2 && company.contact_email_2 !== (company.contact_email || subscription.email) && (
-                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_email_2}</span>
                         )}
                       </div>
                     </td>

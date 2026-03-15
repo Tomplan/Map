@@ -1205,9 +1205,20 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }
 
       // Default string/number sorting for everything else
-      if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
-      return 0;
+      // For company_name, sort by the displayed name (matched company name if available)
+      const valA = sortConfig.key === 'company_name'
+        ? (a.company_id && a.matchCompany ? a.matchCompany.name : a.company_name)
+        : a[sortConfig.key];
+      const valB = sortConfig.key === 'company_name'
+        ? (b.company_id && b.matchCompany ? b.matchCompany.name : b.company_name)
+        : b[sortConfig.key];
+      let cmp;
+      if (typeof valA === 'string' && typeof valB === 'string') {
+        cmp = valA.localeCompare(valB, undefined, { sensitivity: 'base' });
+      } else {
+        cmp = valA < valB ? -1 : valA > valB ? 1 : 0;
+      }
+      return sortConfig.direction === 'asc' ? cmp : -cmp;
     });
 
     return result;
