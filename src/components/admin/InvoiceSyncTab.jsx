@@ -1242,6 +1242,29 @@ export default function InvoiceSyncTab({ selectedYear }) {
     return result;
   }, [invoices, searchTerm, sortConfig, companies]);
 
+  // ── Folder collapse state — Set of year keys that are COLLAPSED (empty = all open)
+  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+  const toggleFolder = (key) => setCollapsedFolders(prev => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
+
+  // ── Group sorted/filtered invoices by year for folder-based rendering
+  const groupedInvoices = React.useMemo(() => {
+    const groups = {};
+    for (const inv of processedInvoices) {
+      const key = inv.year != null ? String(inv.year) : 'unassigned';
+      if (!groups[key]) groups[key] = { key, year: inv.year, invoices: [] };
+      groups[key].invoices.push(inv);
+    }
+    return Object.values(groups).sort((a, b) => {
+      if (a.key === 'unassigned') return 1;
+      if (b.key === 'unassigned') return -1;
+      return parseInt(b.key) - parseInt(a.key);
+    });
+  }, [processedInvoices]);
+
   return (
     <div>
       {/* Company Search Modal — shown when no automatic match is found */}
