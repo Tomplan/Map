@@ -85,10 +85,24 @@ function parseSpatialInvoice(items, allowedItems) {
     opmerkingen: '',
     notes: '', // extracted from opmerkingen block
     is_relevant: true,
-    // breakdowns added recently
+    // breakdowns
     breakfast: 0,
     lunch: 0,
     bbq: 0,
+    // structured fields extracted from client block
+    contact_name: null,
+    contact_name_2: null,
+    contact_email: null,
+    contact_email_2: null,
+    contact_phone: null,
+    contact_phone_2: null,
+    address_line1: null,
+    address_line2: null,
+    postal_code: null,
+    city: null,
+    country: null,
+    vat_number: null,
+    kvk_number: null,
   };
 
   const lines = [];
@@ -204,13 +218,33 @@ function parseSpatialInvoice(items, allowedItems) {
         // ignore the header row that lists both column names like
       // "Betaalmethode  Opmerking"; the real notes start on the next line.
       if (lowerText.includes('betaalmethode')) {
-        // record boundary for the notes column based on position of "Opmerking"
+        // Record the left boundary of the notes column.
+        // The "Opmerking" header label is centred over its column, so its X is
+        // further right than where the actual wrapped text starts.  Use the
+        // midpoint between the left-column header ("Betaalmethode") and the
+        // right-column header ("Opmerking") so that note content (which is
+        // left-aligned within the right column) passes the filter.
+        const betaalItem = lineItems.find((i) => /betaalmethode/i.test(i.str));
         const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
         if (opItem) {
-          noteColumnX = opItem.x;
-          console.debug('HEADER SKIP: recorded noteColumnX', noteColumnX);
+          noteColumnX = betaalItem
+            ? (betaalItem.x + opItem.x) / 2
+            : opItem.x / 2;
+          console.debug('HEADER SKIP: recorded noteColumnX (midpoint)', noteColumnX);
         }
         console.debug('HEADER SKIP: setting notesStarted, ignoring line', textChunk);
+        notesStarted = true;
+        return; // skip to next line in the forEach
+      }
+      // Also handle a standalone "Opmerking(en)" header line (no Betaalmethode column).
+      // When the entire text chunk is just the header keyword (nothing after it), treat
+      // this as a header-skip too: leave noteColumnX as null (no column filter needed —
+      // the notes fill the whole row) and wait for the next line.
+      const kwMatchHeader = textChunk.match(/^(opmerking(?:en)?)\s*$/i);
+      if (kwMatchHeader) {
+        // Do NOT set noteColumnX here — when there is no Betaalmethode column the note
+        // text is left-aligned across the full width, so we must not filter by X.
+        console.debug('HEADER SKIP (no betaalmethode): ignoring standalone header', textChunk);
         notesStarted = true;
         return; // skip to next line in the forEach
       }
@@ -225,8 +259,9 @@ function parseSpatialInvoice(items, allowedItems) {
         noteStart = noteStart.replace(/^[:\s]+/, '').trim();
       }
       if (!noteStart) {
-        // fallback: take the entire line if we couldn't slice properly
-        noteStart = textChunk.trim();
+        // The line has content beyond the keyword but we couldn't slice it — skip
+        // rather than storing the bare keyword word itself as the note.
+        return;
       }
       console.debug('NOTE start:', noteStart);
       parsed.notes = noteStart;
@@ -365,7 +400,10 @@ function parseSpatialInvoice(items, allowedItems) {
       const descLower = li.item.toLowerCase();
       // Only Keep items if they partially match one of the explicit allowed list strings
       return allowedItems.some((allowedStr) => {
-        const check = allowedStr.trim().toLowerCase();
+        const check = (typeof allowedStr === 'string'
+          ? allowedStr
+          : (allowedStr?.label || '')
+        ).trim().toLowerCase();
         return check.length > 0 && descLower.includes(check);
       });
     });
@@ -417,6 +455,14 @@ function parseSpatialInvoice(items, allowedItems) {
     }
   });
 
+  // Hoist area from the first stand line item that has one
+  if (!parsed.area) {
+    const firstWithArea = parsed.line_items.find((li) => li.area);
+    if (firstWithArea) {
+      parsed.area = firstWithArea.area;
+    }
+  }
+
   // Failsafe: if the document didn't have 'omschrijving' header but did mention stands anywhere
   if (parsed.line_items.length === 0 && (!allowedItems || allowedItems.length === 0)) {
     const backupHits = items.filter(
@@ -432,6 +478,85 @@ function parseSpatialInvoice(items, allowedItems) {
   if (parsed.client_details.length > 0) {
     parsed.client_details = parsed.client_details.filter((l) => l.length > 3);
   }
+
+  // ── Extract structured contact / address from client block ──────────────
+  // Skip index 0 (company name already in parsed.company_name).
+  parsed.client_details.slice(1).forEach((line) => {
+    const l = line.trim();
+    if (!l) return;
+
+    // Email — any line containing @
+    if (/@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
+      if (!parsed.contact_email) { parsed.contact_email = l; return; }
+      if (!parsed.contact_email_2) { parsed.contact_email_2 = l; return; }
+    }
+
+    // Dutch VAT: "BTW" or "NL[9digits]" patterns
+    if (!parsed.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
+      // Extract only the VAT number token, discarding any label text (e.g. "BTW nummer: NL001670643B62")
+      const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|NL|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
+      parsed.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
+        : l.replace(/^[\w\s]*?(?:BTW|VAT|nummer|number|nr\.?)[\s:\-]*/i, '').trim();
+      return;
+    }
+
+    // Dutch KvK (Chamber of Commerce): explicit label or exactly 8 consecutive digits
+    if (!parsed.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) {
+      const m = l.match(/\d{8}/);
+      if (m) { parsed.kvk_number = m[0]; return; }
+    }
+
+    // Dutch postal code: 4 digits + 2 letters, often followed by city name
+    if (!parsed.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
+      const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
+      if (m) {
+        parsed.postal_code = m[1] + m[2].toUpperCase();
+        parsed.city = m[3].trim();
+      } else {
+        parsed.postal_code = l;
+      }
+      return;
+    }
+
+    // Country names (common)
+    if (!parsed.country && /nederland|netherlands|germany|deutschland|belgi/i.test(l)) {
+      parsed.country = l;
+      return;
+    }
+
+    // Phone: starts with + or digit, has 6+ consecutive digits (exclude postal-code-like lines)
+    if (
+      /^[+\d(][\d\s().\-]{6,}$/.test(l) &&
+      !/^\d{4}\s*[A-Z]{2}$/i.test(l)
+    ) {
+      if (!parsed.contact_phone) { parsed.contact_phone = l; return; }
+      if (!parsed.contact_phone_2) { parsed.contact_phone_2 = l; return; }
+    }
+
+    // Person name: has a capital first letter, no digits, at least two words.
+    // Also detect common Dutch prefixes (T.a.v., Dhr., Mevr., Attn) and strip them.
+    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
+    const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
+    if (
+      namePart &&
+      /^[A-Z][a-z]/.test(namePart) &&
+      !/\d/.test(namePart) &&
+      namePart.split(' ').length >= 2
+    ) {
+      if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
+      if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+    }
+
+    // Address line (street + house number)
+    if (!parsed.address_line1 && /\d/.test(l)) {
+      parsed.address_line1 = l;
+      return;
+    }
+    if (parsed.address_line1 && !parsed.address_line2 && /\d/.test(l)) {
+      parsed.address_line2 = l;
+    }
+  });
+  // ── End extraction ───────────────────────────────────────────────────────
 
   return parsed;
 }

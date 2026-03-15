@@ -40,7 +40,7 @@
     "dashboard": "Dashboard",
     "mapManagement": "Map Management",
     "companiesNav": "Companies",
-    "invoiceSync": "Invoice Sync",
+    "invoices": "Invoices",
     "eventSubscriptions": "Subscriptions",
     "programManagement": "Program Management",
     "assignments": "Assignments",
@@ -56,7 +56,11 @@
       "event_manager": "Event Manager",
       "content_editor": "Content Editor"
     },
-    "invoiceSync": "Invoice Sync"
+    "invoices": "Invoices"
+  },
+  "invoiceSync": {
+    "matchLabel": "Match:",
+    "createCompany": "No Match: create new company!"
   },
   "languages": {
     "english": "English",
@@ -666,7 +670,7 @@
     "savePersistMismatch": "Saved but the badge value wasn't applied — you may not have permission to change this. Please check your role or contact an administrator."
   },
   "dashboard": {
-    "totalAssignableBooths": "Total Assignable Booths",
+    "freeTotal": "Booths: free / total",
     "companies": "Companies",
     "subscriptions": "Subscriptions",
     "assignments": "Assignments",
@@ -830,8 +834,12 @@
       "publicInfoTab": "Public Info",
       "privateInfoTab": "Private Info",
       "categoriesLabel": "Categories",
+      "privateDetailsLabel": "Private details",
+      "detailsModalTitle": "Private details for {{name}}",
+      "notes": "Notes",
       "searchPlaceholder": "Search companies...",
       "addCompany": "Add Company",
+      "actions": "Actions",
       "newCompany": "New Company",
       "noCompanies": "No companies yet. Click \"Add Company\" to create one.",
       "noResults": "No items found matching your search",
@@ -843,6 +851,16 @@
       "contactPlaceholder": "Contact Person",
       "phonePlaceholder": "Phone",
       "emailPlaceholder": "Email",
+      "addressLine1Placeholder": "Address line 1",
+      "addressLine2Placeholder": "Address line 2",
+      "cityPlaceholder": "City",
+      "postalCodePlaceholder": "Postal Code",
+      "countryPlaceholder": "Country",
+      "vatNumberPlaceholder": "VAT / Tax ID",
+      "kvkNumberPlaceholder": "Chamber of Commerce (KvK) #",
+      "contactNamePlaceholder": "Contact person",
+      "contactEmailPlaceholder": "billing@company.com",
+      "contactPhonePlaceholder": "+31 6 ...",
       "name": "Name",
       "logo": "Logo",
       "website": "Website",
@@ -851,6 +869,8 @@
       "contact": "Contact",
       "phone": "Phone",
       "email": "Email",
+      "address": "Address",
+      "vatNumber": "VAT number",
       "actions": "Actions",
       "notSet": "Not set",
       "none": "None",
@@ -858,7 +878,7 @@
       "organizationInfo": "Organization info",
       "modal": {
         "publicInfoHeading": "Public Info (visible to attendees)",
-        "managerInfoHeading": "Manager-only Info (default contact info)",
+        "managerInfoHeading": "Private contact details",
         "infoMultiLanguageLabel": "Info (Multi-language)",
         "enterInfoInLanguage": "Enter info in {{lang}}...",
         "uploadLogo": "Upload Logo",
@@ -878,6 +898,12 @@
         "contact": "Contact",
         "phone": "Phone",
         "email": "Email",
+        "address": "Address",
+        "vatNumber": "VAT number",
+        "kvkNumber": "KvK number",
+        "contactName": "Contact",
+        "contactEmail": "Email",
+        "contactPhone": "Phone",
         "actions": "Actions"
       },
       "create": "Create"
@@ -901,4 +927,10 @@
     "startFailed": "Could not start the tour — required page elements are missing or the page is loading. Try again after navigation or check the current page.",
     "duration": "Duration: ~{{minutes}} min"
   }
+,
+  "subscriptionAlreadyExists": "Subscription already exists for {{companyName}}",
+  "subscriptionAlreadyExistsForYear": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerging will add this item's counts to the existing subscription.\nReplacing will overwrite it completely with this item.",
+  "subscriptionAlreadyExistsForCompany": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerging will add counts from this invoice to the existing subscription.\nReplacing will overwrite it completely.",
+  "mergeAction": "Merge",
+  "replaceAction": "Replace"
 }

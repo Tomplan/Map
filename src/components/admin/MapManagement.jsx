@@ -47,6 +47,7 @@ import SnapshotModal from './SnapshotModal';
  */
 export default function MapManagement({
   markersState,
+  defaultStyles,
   setMarkersState,
   updateMarker,
   deleteMarker,
@@ -1391,6 +1392,7 @@ export default function MapManagement({
               isAdminView={true}
               previewUseVisitorSizing={true}
               markersState={markersState}
+              defaultStyles={defaultStyles}
               assignmentsState={finalAssignmentsState}
               updateMarker={isReadOnly ? null : updateMarker}
               deleteMarker={isReadOnly ? null : deleteMarker}

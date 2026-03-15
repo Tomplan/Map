@@ -109,6 +109,11 @@ export default function useCompanies() {
         if (companyData?.phone) companyData.phone = normalizePhone(companyData.phone);
         // Normalize email to lowercase
         if (companyData?.email) companyData.email = companyData.email.toLowerCase().trim();
+        // support new contact-specific fields
+        if (companyData?.contact_phone) companyData.contact_phone = normalizePhone(companyData.contact_phone);
+        if (companyData?.contact_email) companyData.contact_email = companyData.contact_email.toLowerCase().trim();
+        // kvk_number is free text, no normalization required
+
         const { data, error: insertError } = await supabase
           .from('companies')
           .insert([companyData])
@@ -140,6 +145,11 @@ export default function useCompanies() {
         if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
         // Normalize email to lowercase
         if (updates?.email) updates.email = updates.email.toLowerCase().trim();
+        // new contact-specific fields
+        if (updates?.contact_phone || updates?.contact_phone === '')
+          updates.contact_phone = normalizePhone(updates.contact_phone);
+        if (updates?.contact_email) updates.contact_email = updates.contact_email.toLowerCase().trim();
+        // kvk_number no normalization
         const { data, error: updateError } = await supabase
           .from('companies')
           .update(updates)
@@ -148,6 +158,21 @@ export default function useCompanies() {
           .single();
 
         if (updateError) throw updateError;
+
+        // Sync Contact 1 fields to any existing subscriptions for this company
+        if (updates.contact || updates.phone || updates.email ||
+            updates.contact === '' || updates.phone === '' || updates.email === '') {
+          const syncFields = {};
+          if ('contact' in updates) syncFields.contact = updates.contact || '';
+          if ('phone' in updates) syncFields.phone = updates.phone || '';
+          if ('email' in updates) syncFields.email = updates.email || '';
+          if (Object.keys(syncFields).length > 0) {
+            await supabase
+              .from('event_subscriptions')
+              .update(syncFields)
+              .eq('company_id', id);
+          }
+        }
 
         const newCompanies = entry.state.companies
           .map((c) => (c.id === id ? data : c))

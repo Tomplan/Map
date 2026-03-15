@@ -81,6 +81,7 @@ describe('EventClusterMarkers -- zoom bucket behavior', () => {
       isMarkerDraggable: () => false,
       iconCreateFunction: () => null,
       currentZoom: 16, // bucket A
+      defaultStyles: { assigned: {}, unassigned: {} },
     };
 
     const { rerender } = render(<EventClusterMarkers {...props} />);

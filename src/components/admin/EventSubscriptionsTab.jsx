@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useCompanies from '../../hooks/useCompanies';
@@ -16,6 +16,8 @@ import {
   mdiContentCopy,
   mdiChevronUp,
   mdiChevronDown,
+  mdiTextBoxOutline,
+  mdiTextBoxRemoveOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -25,11 +27,19 @@ import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
 import SubscriptionEditModal from './SubscriptionEditModal';
+import {
+  addLineItem,
+  deactivateLineItem,
+  getActiveLineItems,
+  appendHistory,
+  formatHistoryTimestamp,
+} from '../../utils/subscriptionLineItems';
 
 /**
  * EventSubscriptionsTab - Manage year-specific company subscriptions with event logistics
  * Shows subscribed companies for the selected year with contact info, booth requirements, and meal counts
  */
+
 export default function EventSubscriptionsTab({ selectedYear }) {
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
@@ -46,28 +56,64 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   } = useEventSubscriptions(selectedYear);
 
   const { companies } = useCompanies();
-  const { assignments } = useAssignments(selectedYear);
+  const { assignments, reload: reloadAssignments } = useAssignments(selectedYear);
   const { markers, loading: loadingMarkers } = useMarkerGlyphs(selectedYear);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  // --- Persist UI state across tab switches via sessionStorage ---
+  const SS_KEY = `subscriptionsTab_${selectedYear}`;
+  const savedRef = useRef(null);
+  if (!savedRef.current) {
+    try { savedRef.current = JSON.parse(sessionStorage.getItem(SS_KEY)) || {}; } catch { savedRef.current = {}; }
+  }
+  const saved = savedRef.current;
+
+  const [searchTerm, setSearchTerm] = useState(saved.searchTerm || '');
   const [isAdding, setIsAdding] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const [sortBy, setSortBy] = useState('company'); // 'company' or 'booths'
-  const [sortDirection, setSortDirection] = useState('asc'); // 'asc' or 'desc'
+  const [sortBy, setSortBy] = useState(saved.sortBy || 'company');
+  const [sortDirection, setSortDirection] = useState(saved.sortDirection || 'asc');
+  const [expandedIds, setExpandedIds] = useState(() => new Set(saved.expandedIds || []));
+  const [notesExpandedIds, setNotesExpandedIds] = useState(() => new Set(saved.notesExpandedIds || []));
+
+  // Save UI state on unmount
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(SS_KEY, JSON.stringify({
+        searchTerm, sortBy, sortDirection,
+        expandedIds: [...expandedIds],
+        notesExpandedIds: [...notesExpandedIds],
+      }));
+    };
+  });
 
   // Modal state for editing
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState(null);
 
+  // Subscription history-selection modal state
+  const [subHistoryModal, setSubHistoryModal] = useState(null);
+  const [subHistorySelection, setSubHistorySelection] = useState([]);
+
+  // Merge-add modal state (adding counts to existing subscription)
+  const MERGE_FIELDS = [
+    { key: 'booth_count',   label: 'Booths',           col: 'bg-gray-50' },
+    { key: 'breakfast_sat', label: 'Breakfast (Sat)',  col: 'bg-blue-50' },
+    { key: 'lunch_sat',     label: 'Lunch (Sat)',      col: 'bg-blue-50' },
+    { key: 'bbq_sat',       label: 'BBQ (Sat)',        col: 'bg-blue-50' },
+    { key: 'breakfast_sun', label: 'Breakfast (Sun)',  col: 'bg-green-50' },
+    { key: 'lunch_sun',     label: 'Lunch (Sun)',      col: 'bg-green-50' },
+  ];
+  const [mergeModal, setMergeModal] = useState(null); // { subscription } | null
+  const [mergeValues, setMergeValues] = useState({});
+
   // Dialog context
   const { confirm, toastError, toastSuccess, toastWarning } = useDialog();
 
-  // Get list of available companies (not yet subscribed)
+  // Get list of all companies for the add selector (subscribed ones can still be merged)
   const availableCompanies = useMemo(() => {
-    const subscribedIds = new Set(subscriptions.map((s) => s.company_id));
-    return companies.filter((c) => !subscribedIds.has(c.id));
-  }, [companies, subscriptions]);
+    return [...companies].sort((a, b) => a.name.localeCompare(b.name));
+  }, [companies]);
 
   // Get booth assignments for each subscription
   const subscriptionAssignments = useMemo(() => {
@@ -183,13 +229,77 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Save from modal
   const handleModalSave = async (updates) => {
-    const { error } = await updateSubscription(editingSubscription.id, updates);
-    if (!error) {
+    const sub = editingSubscription;
+
+    // Build a human-readable summary of what changed
+    const FIELD_LABELS = {
+      booth_count: 'Booths',
+      area: 'Area',
+      breakfast_sat: 'Breakfast (Sat)',
+      lunch_sat: 'Lunch (Sat)',
+      bbq_sat: 'BBQ (Sat)',
+      breakfast_sun: 'Breakfast (Sun)',
+      lunch_sun: 'Lunch (Sun)',
+      coins: 'Coins',
+      notes: 'Notes',
+    };
+    const changes = Object.entries(FIELD_LABELS)
+      .filter(([key]) => key in updates && String(updates[key] ?? '') !== String(sub[key] ?? ''))
+      .map(([key, label]) => `${label}: ${sub[key] ?? ''} → ${updates[key] ?? ''}`);
+
+    if (changes.length === 0) {
+      setIsEditModalOpen(false);
+      setEditingSubscription(null);
+      return;
+    }
+
+    try {
+      // Append history line
+      await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
+
+      // Create edit line item with count deltas (if any count changed)
+      // Coins is intentionally excluded — it bypasses line items and is updated directly.
+      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun'];
+      const countDeltas = {};
+      let hasCountChange = false;
+      for (const field of COUNT_FIELDS) {
+        if (field in updates) {
+          const delta = (updates[field] || 0) - (sub[field] || 0);
+          if (delta !== 0) {
+            countDeltas[field] = delta;
+            hasCountChange = true;
+          }
+        }
+      }
+
+      // Detect area/notes changes
+      const areaChanged = 'area' in updates && updates.area !== sub.area;
+      const notesChanged = 'notes' in updates && updates.notes !== sub.notes;
+
+      // Coins bypasses the line-item system — update directly on the subscription.
+      // Must run AFTER addLineItem because recalculateTotals now computes
+      // coins = booth_count × default_coins; an explicit manual edit overrides that.
+      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
+
+      if (hasCountChange || areaChanged || notesChanged) {
+        await addLineItem(sub.id, {
+          source: 'edit',
+          counts: countDeltas,
+          area: areaChanged ? updates.area : undefined,
+          notes: notesChanged ? updates.notes : undefined,
+          description: 'Manually edited: ' + changes.join(', '),
+        });
+      }
+
+      if (coinsChanged) {
+        await updateSubscription(sub.id, { coins: Number(updates.coins) || 0 });
+      }
+
       setIsEditModalOpen(false);
       setEditingSubscription(null);
       toastSuccess('Subscription updated successfully');
-    } else {
-      toastError(`Error updating subscription: ${error}`);
+    } catch (e) {
+      toastError('Error updating subscription: ' + (e?.message || String(e)));
     }
   };
 
@@ -203,8 +313,138 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const handleDelete = async (subscription) => {
     const companyName = subscription.company?.name || 'this company';
     const boothLabels = getBoothLabels(subscription.company_id);
-    const assignmentInfo = boothLabels ? ` and their booth assignments (${boothLabels})` : '';
+    const assignmentInfo = boothLabels && boothLabels !== '-' ? ` and their booth assignments (${boothLabels})` : '';
 
+    // Helper: revert all invoices for a company — resets approved/rejected line items back to
+    // pending in notes, and resets the invoice-level status if it was approved/partially_approved.
+    const revertInvoicesForCompany = async (companyId) => {
+      try {
+        const { data: allInvoices } = await supabase
+          .from('staged_invoices')
+          .select('id, status, parsed_data')
+          .eq('company_id', companyId);
+        if (!allInvoices || allInvoices.length === 0) return;
+        for (const inv of allInvoices) {
+          let notes = {};
+          try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
+          const hasApprovedItems = notes.line_items?.some(
+            (item) => item.status === 'approved' || item.status === 'rejected',
+          );
+          const needsStatusReset =
+            inv.status === 'approved' || inv.status === 'partially_approved';
+          if (!hasApprovedItems && !needsStatusReset) continue;
+          if (notes.line_items) {
+            notes.line_items = notes.line_items.map((item) => ({ ...item, status: 'pending' }));
+          }
+          const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
+          if (needsStatusReset) updatePayload.status = 'pending';
+          await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
+        }
+      } catch (_) {}
+    };
+
+    // Helper: revert invoice line items matching specific subscription line item records
+    const revertLineItemInvoices = async (companyId, lineItems) => {
+      const invoiceItems = lineItems.filter(li => li.source === 'invoice' && li.source_ref);
+      const byInvoice = {};
+      for (const li of invoiceItems) {
+        if (!byInvoice[li.source_ref]) byInvoice[li.source_ref] = [];
+        byInvoice[li.source_ref].push(li);
+      }
+      for (const [invoiceNumber, items] of Object.entries(byInvoice)) {
+        try {
+          const { data: invRows } = await supabase
+            .from('staged_invoices')
+            .select('id, status, parsed_data')
+            .eq('invoice_number', invoiceNumber)
+            .eq('company_id', companyId);
+          if (!invRows || invRows.length === 0) continue;
+          for (const inv of invRows) {
+            let notes = {};
+            try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
+            if (!notes.line_items) continue;
+            let changed = false;
+            const itemDescs = items.map(li => (li.description || '').toLowerCase());
+            notes.line_items = notes.line_items.map((item) => {
+              const desc = (item.item || item.description || '').toLowerCase();
+              const matches = itemDescs.some(d => desc.includes(d) || d.includes(desc));
+              if (matches && item.status !== 'pending') {
+                changed = true;
+                return { ...item, status: 'pending' };
+              }
+              return item;
+            });
+            if (!changed) continue;
+            const allResolved = notes.line_items.length > 0 &&
+              notes.line_items.every(i => i.status === 'approved' || i.status === 'rejected');
+            const allApproved = allResolved && notes.line_items.every(i => i.status === 'approved');
+            let newStatus = inv.status;
+            if (inv.status === 'approved' || inv.status === 'partially_approved') {
+              newStatus = allResolved ? (allApproved ? 'approved' : 'partially_approved') : 'pending';
+            }
+            const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
+            if (newStatus !== inv.status) updatePayload.status = newStatus;
+            await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
+          }
+        } catch (_) {}
+      }
+    };
+
+    // Fetch active line items for this subscription
+    const activeItems = await getActiveLineItems(subscription.id);
+
+    if (activeItems.length > 1) {
+      // Multiple line items — let user choose which to remove
+      await new Promise((resolve) => {
+        setSubHistorySelection(activeItems.map(li => li.id));
+        setSubHistoryModal({
+          sub: subscription,
+          companyName,
+          lineItems: activeItems,
+          onConfirm: async (selectedIds) => {
+            setSubHistoryModal(null);
+            const removeAll = selectedIds.length === activeItems.length;
+            try {
+              if (removeAll) {
+                const { error } = await unsubscribeCompany(subscription.id);
+                if (error) throw new Error(error);
+                await reloadAssignments(true);
+                await revertInvoicesForCompany(subscription.company_id);
+                toastSuccess('Subscription deleted.');
+              } else {
+                const selectedItems = activeItems.filter(li => selectedIds.includes(li.id));
+                for (const li of selectedItems) {
+                  await deactivateLineItem(li.id);
+                }
+                await revertLineItemInvoices(subscription.company_id, selectedItems);
+                for (const li of selectedItems) {
+                  await appendHistory(subscription.id,
+                    'Removed on ' + formatHistoryTimestamp() + ': ' + (li.description || 'Line item #' + li.id));
+                }
+                const remaining = await getActiveLineItems(subscription.id);
+                if (remaining.length === 0) {
+                  await unsubscribeCompany(subscription.id);
+                  await reloadAssignments(true);
+                  toastSuccess('Subscription deleted.');
+                } else {
+                  toastSuccess('Selected items removed.');
+                }
+              }
+            } catch (e) {
+              toastError('Failed to update subscription: ' + (e?.message || String(e)));
+            }
+            resolve();
+          },
+          onCancel: () => {
+            setSubHistoryModal(null);
+            resolve();
+          },
+        });
+      });
+      return;
+    }
+
+    // Single or no line items — simple confirm
     const confirmed = await confirm({
       title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
       message: t(
@@ -215,12 +455,16 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
       variant: 'danger',
     });
-    if (!confirmed) {
-      return;
+    if (!confirmed) return;
+    if (activeItems.length === 1) {
+      await deactivateLineItem(activeItems[0].id);
     }
     const { error } = await unsubscribeCompany(subscription.id);
     if (error) {
       toastError(`Error unsubscribing company: ${error}`);
+    } else {
+      await reloadAssignments(true);
+      await revertInvoicesForCompany(subscription.company_id);
     }
   };
 
@@ -231,12 +475,63 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       return;
     }
 
-    const { error } = await subscribeCompany(parseInt(selectedCompanyId));
+    const companyIdInt = parseInt(selectedCompanyId);
+    const existing = subscriptions.find((s) => s.company_id === companyIdInt);
+
+    if (existing) {
+      // Company already subscribed — open merge modal
+      const initial = {};
+      MERGE_FIELDS.forEach((f) => { initial[f.key] = 0; });
+      setMergeValues(initial);
+      setMergeModal({ subscription: existing });
+      return;
+    }
+
+    const { error } = await subscribeCompany(companyIdInt, {
+      history: 'Manually added on ' + new Date().toLocaleDateString('en-GB'),
+    });
     if (!error) {
       setIsAdding(false);
       setSelectedCompanyId('');
     } else {
       toastError(`Error subscribing company: ${error}`);
+    }
+  };
+
+  const handleMergeConfirm = async () => {
+    if (!mergeModal) return;
+    const { subscription } = mergeModal;
+    const hasAny = MERGE_FIELDS.some((f) => (mergeValues[f.key] || 0) > 0);
+    if (!hasAny) {
+      toastWarning('Enter at least one value to add.');
+      return;
+    }
+    const addedParts = MERGE_FIELDS
+      .filter((f) => (mergeValues[f.key] || 0) > 0)
+      .map((f) => f.label + ' +' + mergeValues[f.key])
+      .join(', ');
+    try {
+      await addLineItem(subscription.id, {
+        source: 'manual',
+        counts: {
+          booth_count: mergeValues.booth_count || 0,
+          breakfast_sat: mergeValues.breakfast_sat || 0,
+          lunch_sat: mergeValues.lunch_sat || 0,
+          bbq_sat: mergeValues.bbq_sat || 0,
+          breakfast_sun: mergeValues.breakfast_sun || 0,
+          lunch_sun: mergeValues.lunch_sun || 0,
+        },
+        description: 'Manually added: ' + addedParts,
+      });
+      await appendHistory(subscription.id,
+        'Manually added on ' + formatHistoryTimestamp() + ': ' + addedParts);
+      toastSuccess('Subscription updated.');
+      setMergeModal(null);
+      setIsAdding(false);
+      setSelectedCompanyId('');
+      await reload?.();
+    } catch (e) {
+      toastError('Failed to update subscription: ' + (e?.message || String(e)));
     }
   };
 
@@ -315,6 +610,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <span className="text-sm text-gray-600">
             {filteredSubscriptions.length} of {subscriptions.length}
           </span>
+          <button
+            onClick={() => {
+              setNotesExpandedIds((prev) => {
+                const allIds = new Set(filteredSubscriptions.map((s) => s.id));
+                const allExpanded = filteredSubscriptions.every((s) => prev.has(s.id));
+                return allExpanded ? new Set() : allIds;
+              });
+            }}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
+            title={t('helpPanel.subscriptions.toggleAllNotes', 'Toggle all notes')}
+          >
+            <Icon path={filteredSubscriptions.length > 0 && filteredSubscriptions.every((s) => notesExpandedIds.has(s.id)) ? mdiTextBoxRemoveOutline : mdiTextBoxOutline} size={0.6} />
+            {t('helpPanel.subscriptions.notes')}
+          </button>
         </div>
         <div className="flex gap-2 relative z-50">
           <button
@@ -403,11 +712,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               className="flex-1 px-3 py-2 border rounded"
             >
               <option value="">Select a company...</option>
-              {availableCompanies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
+              {availableCompanies.map((company) => {
+                const alreadySubscribed = subscriptions.some((s) => s.company_id === company.id);
+                return (
+                  <option key={company.id} value={company.id}>
+                    {company.name}{alreadySubscribed ? ' (already subscribed — add more)' : ''}
+                  </option>
+                );
+              })}
             </select>
             <button
               onClick={handleAdd}
@@ -428,9 +740,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             </button>
           </div>
           {availableCompanies.length === 0 && (
-            <p className="text-sm text-gray-600 mt-2">
-              All companies are already subscribed to {selectedYear}
-            </p>
+            <p className="text-sm text-gray-600 mt-2">No companies found.</p>
           )}
         </div>
       )}
@@ -441,7 +751,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           <thead className="bg-gray-100 text-gray-900 sticky top-0 z-10">
             {/* Main header row with grouped columns */}
             <tr>
-              {/* Booths - First column with sort */}
+              {/* Expand toggle column */}
+              <th className="p-2 border-b bg-gray-100" style={{ width: '28px' }} rowSpan={3} />
+              {/* Booths - with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('booths')}
@@ -451,15 +763,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <div className="flex items-center gap-1">
                   <span>{t('helpPanel.subscriptions.booths', 'Booths')}</span>
                   {sortBy === 'booths' && (
-                    <Icon
-                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
-                      size={0.6}
-                      className="text-blue-600"
-                    />
+                    <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
                   )}
                 </div>
               </th>
-              {/* Company - Second column with sort */}
+              {/* Company - with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
                 onClick={() => handleSort('company')}
@@ -469,238 +777,246 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <div className="flex items-center gap-1">
                   <span>{t('helpPanel.subscriptions.company', 'Company')}</span>
                   {sortBy === 'company' && (
-                    <Icon
-                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
-                      size={0.6}
-                      className="text-blue-600"
-                    />
+                    <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
-                {t('helpPanel.subscriptions.contact')}
-              </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
-                {t('helpPanel.subscriptions.phone')}
-              </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
-                {t('helpPanel.subscriptions.email')}
-              </th>
-              <th className="p-2 text-center border-b bg-gray-100">
-                {t('helpPanel.subscriptions.boothCount')}
-              </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
-                {t('helpPanel.subscriptions.area')}
-              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.contact')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.phone')}</th>
+              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.boothCount')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.area')}</th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
-                <span className="font-bold text-blue-700">
-                  {t('helpPanel.subscriptions.saturday')}
-                </span>
+                <span className="font-bold text-blue-700">{t('helpPanel.subscriptions.saturday')}</span>
               </th>
               <th className="p-2 text-center border-b bg-gray-100" colSpan={2}>
-                <span className="font-bold text-green-700">
-                  {t('helpPanel.subscriptions.sunday')}
-                </span>
+                <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
               </th>
-              <th className="p-2 text-center border-b bg-gray-100">
-                {t('helpPanel.subscriptions.coins')}
-              </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
-                {t('helpPanel.subscriptions.notes')}
-              </th>
-              <th
-                className="p-2 text-center border-b bg-gray-100"
-                rowSpan={3}
-                style={{ minWidth: '80px' }}
-              >
+              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>
                 {t('helpPanel.subscriptions.actions')}
               </th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
-              <th
-                className="p-1 text-center border-b bg-gray-100 text-xs"
-                style={{ width: '60px' }}
-              ></th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
-                {t('helpPanel.subscriptions.breakfast')}
-              </th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
-                {t('helpPanel.subscriptions.lunch')}
-              </th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
-                {t('helpPanel.subscriptions.bbq')}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-green-50 text-xs"
-                style={{ width: '60px' }}
-              >
-                {t('helpPanel.subscriptions.breakfast')}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-green-50 text-xs"
-                style={{ width: '60px' }}
-              >
-                {t('helpPanel.subscriptions.lunch')}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-gray-100 text-xs"
-                style={{ width: '60px' }}
-              ></th>
+              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.bbq')}</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
+              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
+              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
             </tr>
             {/* Totals row */}
             <tr>
-              <th
-                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
-                style={{ width: '60px' }}
-              >
-                {totals.booth_count}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
-                style={{ width: '60px' }}
-              >
-                {totals.breakfast_sat}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
-                style={{ width: '60px' }}
-              >
-                {totals.lunch_sat}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
-                style={{ width: '60px' }}
-              >
-                {totals.bbq_sat}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
-                style={{ width: '60px' }}
-              >
-                {totals.breakfast_sun}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
-                style={{ width: '60px' }}
-              >
-                {totals.lunch_sun}
-              </th>
-              <th
-                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
-                style={{ width: '60px' }}
-              >
-                {totals.coins}
-              </th>
+              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.booth_count}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.breakfast_sat}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.lunch_sat}</th>
+              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.bbq_sat}</th>
+              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.breakfast_sun}</th>
+              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.lunch_sun}</th>
+              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.coins}</th>
             </tr>
           </thead>
           <tbody>
             {filteredSubscriptions.map((subscription) => {
               const company = subscription.company;
               const boothLabels = getBoothLabels(subscription.company_id);
+              const isHistoryExpanded = expandedIds.has(subscription.id);
+              const isNotesExpanded = notesExpandedIds.has(subscription.id);
+              const historyLines = (subscription.history || '')
+                .split('\n')
+                .map((l) => l.trim())
+                .filter((l) => l.length > 0)
+                .reverse();
+              // count visible columns for the colspan on the expanded rows
+              const colSpan = 14;
+              const toggleNotes = () => {
+                setNotesExpandedIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(subscription.id)) next.delete(subscription.id);
+                  else next.add(subscription.id);
+                  return next;
+                });
+              };
 
               return (
-                <tr key={subscription.id} className="bg-white hover:bg-gray-50 border-b">
-                  {/* Assigned booths - First column */}
-                  <td className="p-2 text-left">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
-                      {boothLabels}
-                    </span>
-                  </td>
+                <React.Fragment key={subscription.id}>
+                  <tr
+                    className={`hover:bg-gray-50 align-top cursor-pointer ${isNotesExpanded ? 'bg-amber-50/40' : 'bg-white border-b'}`}
+                    onClick={(e) => {
+                      if (e.target.closest('[data-history-toggle]') || e.target.closest('[data-actions]')) return;
+                      toggleNotes();
+                    }}
+                  >
+                    {/* History expand toggle */}
+                    <td className="p-1 text-center">
+                      <button
+                        data-history-toggle
+                        onClick={() =>
+                          setExpandedIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(subscription.id)) next.delete(subscription.id);
+                            else next.add(subscription.id);
+                            return next;
+                          })
+                        }
+                        className="text-gray-400 hover:text-gray-700"
+                        title={isHistoryExpanded ? 'Hide history' : 'Show history'}
+                      >
+                        <Icon path={isHistoryExpanded ? mdiChevronUp : mdiChevronDown} size={0.6} />
+                      </button>
+                    </td>
 
-                  {/* Company name with logo - Second column */}
-                  <td className="p-2 text-left">
-                    <div className="flex items-center gap-2">
-                      <img
-                        {...(() => {
-                          const source = company?.logo || organizationLogo;
-                          const s = getResponsiveLogoSources(source);
-                          if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
-                          return { src: getLogoPath(source) };
-                        })()}
-                        alt={company?.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                      <span className="font-semibold text-gray-700">{company?.name}</span>
-                    </div>
-                  </td>
-
-                  {/* Contact */}
-                  <td className="p-2 text-left">
-                    <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
-                  </td>
-
-                  {/* Phone */}
-                  <td className="p-2 text-left">
-                    {subscription.phone ? (
-                      <span className="text-xs text-gray-700 flex items-center gap-1">
-                        <span>{getPhoneFlag(subscription.phone)}</span>
-                        <span>{formatPhoneForDisplay(subscription.phone)}</span>
+                    {/* Assigned booths */}
+                    <td className="p-2 text-left">
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
+                        {boothLabels}
                       </span>
-                    ) : (
-                      <span className="text-xs text-gray-400">-</span>
-                    )}
-                  </td>
-
-                  {/* Email */}
-                  <td className="p-2 text-left">
-                    <span className="text-xs text-gray-700">{subscription.email || '-'}</span>
-                  </td>
-
-                  {/* Booth Count */}
-                  <td className="p-2 text-center">
-                    <span className="text-xs text-gray-700">{subscription.booth_count}</span>
-                  </td>
-
-                  {/* Area */}
-                  <td className="p-2">
-                    <span className="text-xs text-gray-700">{subscription.area || '-'}</span>
-                  </td>
-
-                  {/* Meals - Saturday */}
-                  {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map((field) => (
-                    <td key={field} className="p-2 text-center bg-blue-50">
-                      <span className="text-xs text-gray-700">{subscription[field]}</span>
                     </td>
-                  ))}
 
-                  {/* Meals - Sunday */}
-                  {['breakfast_sun', 'lunch_sun'].map((field) => (
-                    <td key={field} className="p-2 text-center bg-green-50">
-                      <span className="text-xs text-gray-700">{subscription[field]}</span>
+                    {/* Company name with logo */}
+                    <td className="p-2 text-left">
+                      <div className="flex items-center gap-2">
+                        <img
+                          {...(() => {
+                            const source = company?.logo || organizationLogo;
+                            const s = getResponsiveLogoSources(source);
+                            if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
+                            return { src: getLogoPath(source) };
+                          })()}
+                          alt={company?.name}
+                          className="w-8 h-8 object-contain"
+                        />
+                        <span className="font-semibold text-gray-700">{company?.name}</span>
+                      </div>
                     </td>
-                  ))}
 
-                  {/* Coins */}
-                  <td className="p-2 text-center">
-                    <span className="text-xs text-gray-700">{subscription.coins}</span>
-                  </td>
+                    {/* Contact */}
+                    <td className="p-2 text-left">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
+                        {company?.contact_name && company.contact_name !== subscription.contact && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name}</span>
+                        )}
+                        {company?.contact_name_2 && company.contact_name_2 !== (company.contact_name || subscription.contact) && (
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name_2}</span>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* Notes */}
-                  <td className="p-2 text-left">
-                    <span className="text-xs text-gray-700">{subscription.notes || '-'}</span>
-                  </td>
+                    {/* Phone */}
+                    <td className="p-2 text-left">
+                      <div className="flex flex-col gap-0.5">
+                        {subscription.phone ? (
+                          <span className="text-xs text-gray-700 flex items-center gap-1">
+                            <span>{getPhoneFlag(subscription.phone)}</span>
+                            <span>{formatPhoneForDisplay(subscription.phone)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">-</span>
+                        )}
+                        {company?.contact_phone && company.contact_phone !== subscription.phone && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
+                            <span>{getPhoneFlag(company.contact_phone)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone)}</span>
+                          </span>
+                        )}
+                        {company?.contact_phone_2 && company.contact_phone_2 !== (company.contact_phone || subscription.phone) && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
+                            <span>{getPhoneFlag(company.contact_phone_2)}</span>
+                            <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
+                          </span>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* Actions */}
-                  <td className="p-2 text-center">
-                    <div className="flex gap-1 justify-center">
-                      <button
-                        onClick={() => handleEdit(subscription)}
-                        className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        title="Edit"
-                      >
-                        <Icon path={mdiPencil} size={0.6} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(subscription)}
-                        className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
-                        title="Unsubscribe"
-                      >
-                        <Icon path={mdiDelete} size={0.6} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                    {/* Booth Count */}
+                    <td className="p-2 text-center">
+                      <span className="text-xs text-gray-700">{subscription.booth_count}</span>
+                    </td>
+
+                    {/* Area */}
+                    <td className="p-2">
+                      <span className="text-xs text-gray-700">{subscription.area || '-'}</span>
+                    </td>
+
+                    {/* Meals - Saturday */}
+                    {['breakfast_sat', 'lunch_sat', 'bbq_sat'].map((field) => (
+                      <td key={field} className="p-2 text-center bg-blue-50">
+                        <span className="text-xs text-gray-700">{subscription[field]}</span>
+                      </td>
+                    ))}
+
+                    {/* Meals - Sunday */}
+                    {['breakfast_sun', 'lunch_sun'].map((field) => (
+                      <td key={field} className="p-2 text-center bg-green-50">
+                        <span className="text-xs text-gray-700">{subscription[field]}</span>
+                      </td>
+                    ))}
+
+                    {/* Coins */}
+                    <td className="p-2 text-center">
+                      <span className="text-xs text-gray-700">{subscription.coins}</span>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="p-2 text-center" data-actions>
+                      <div className="flex gap-1 justify-center">
+                        <button
+                          onClick={() => handleEdit(subscription)}
+                          className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                          title="Edit"
+                        >
+                          <Icon path={mdiPencil} size={0.6} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(subscription)}
+                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          title="Unsubscribe"
+                        >
+                          <Icon path={mdiDelete} size={0.6} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Expandable notes row (click row to toggle) */}
+                  {isNotesExpanded && (
+                    <tr className="bg-amber-50/40 border-b">
+                      <td />
+                      <td colSpan={colSpan - 1} className="pb-2 pt-0 text-left">
+                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap"><span className="font-semibold not-italic text-amber-700">{t('helpPanel.subscriptions.notes')}:</span> {subscription.notes || <span className="text-gray-400">{t('helpPanel.subscriptions.noNotes', 'No notes')}</span>}</p>
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* Expandable history row (arrow to toggle) */}
+                  {isHistoryExpanded && (
+                    <tr className="bg-gray-50 border-b">
+                      <td colSpan={colSpan} className="px-8 py-3 text-left">
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
+                        {historyLines.length === 0 ? (
+                          <p className="text-xs text-gray-400 text-left">No history recorded.</p>
+                        ) : (
+                          <ul className="space-y-1">
+                            {historyLines.map((line, i) => (
+                              <li
+                                key={i}
+                                className={`text-xs px-2 py-1 rounded ${
+                                  line.startsWith('[')
+                                    ? 'text-gray-400 bg-gray-100'
+                                    : 'text-gray-700 bg-white border border-gray-200'
+                                }`}
+                              >
+                                {line}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
           </tbody>
@@ -719,13 +1035,146 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         )}
       </div>
 
-      {/* Edit Modal */}
-      <SubscriptionEditModal
-        isOpen={isEditModalOpen}
-        onClose={handleModalClose}
-        subscription={editingSubscription}
-        onSave={handleModalSave}
-      />
+      {/* Merge-add modal: add counts to an already-subscribed company */}
+      {mergeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Add to {mergeModal.subscription.company?.name || 'Existing Subscription'}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed for <strong>{mergeModal.subscription.event_year}</strong>.
+                Enter the amounts to add to their current subscription.
+              </p>
+            </div>
+            <div className="px-6 py-4 space-y-3">
+              {MERGE_FIELDS.map((f) => (
+                <div key={f.key} className={`flex items-center justify-between rounded px-3 py-2 ${f.col}`}>
+                  <span className="text-sm font-medium text-gray-700">
+                    {f.label}
+                    <span className="ml-2 text-xs text-gray-400">
+                      (current: {mergeModal.subscription[f.key] || 0})
+                    </span>
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={mergeValues[f.key] || ''}
+                    onChange={(e) =>
+                      setMergeValues((prev) => ({
+                        ...prev,
+                        [f.key]: Math.max(0, parseInt(e.target.value) || 0),
+                      }))
+                    }
+                    className="w-20 px-2 py-1 text-sm border border-gray-300 rounded text-right focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                onClick={() => { setMergeModal(null); }}
+                className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMergeConfirm}
+                className="px-4 py-2 rounded font-medium text-sm bg-green-600 hover:bg-green-700 text-white"
+              >
+                Add to subscription
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Subscription Line Item Selection Modal */}
+      {subHistoryModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">Remove Subscription Contributions</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Select which items to remove for <strong>{subHistoryModal.companyName}</strong>.
+                Removing all items will delete the subscription.
+              </p>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
+              <label className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer border border-gray-200 bg-gray-50">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                  checked={subHistorySelection.length === subHistoryModal.lineItems.length}
+                  onChange={(e) =>
+                    setSubHistorySelection(
+                      e.target.checked ? subHistoryModal.lineItems.map(li => li.id) : [],
+                    )
+                  }
+                />
+                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.lineItems.length})</span>
+              </label>
+              {subHistoryModal.lineItems.map((li) => {
+                const countParts = [
+                  li.booth_count > 0 && li.booth_count + ' booth(s)',
+                  li.breakfast_sat > 0 && li.breakfast_sat + ' breakfast sat',
+                  li.lunch_sat > 0 && li.lunch_sat + ' lunch sat',
+                  li.bbq_sat > 0 && li.bbq_sat + ' BBQ sat',
+                  li.breakfast_sun > 0 && li.breakfast_sun + ' breakfast sun',
+                  li.lunch_sun > 0 && li.lunch_sun + ' lunch sun',
+                  li.coins > 0 && li.coins + ' coins',
+                ].filter(Boolean).join(', ');
+                return (
+                  <label key={li.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-red-600 focus:ring-red-500 mt-0.5"
+                      checked={subHistorySelection.includes(li.id)}
+                      onChange={(e) =>
+                        setSubHistorySelection((prev) =>
+                          e.target.checked ? [...prev, li.id] : prev.filter((id) => id !== li.id),
+                        )
+                      }
+                    />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm text-gray-800 block">{li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}</span>
+                      {countParts && <span className="text-xs text-gray-500 block">{countParts}</span>}
+                      {li.area && <span className="text-xs text-blue-600 block">Area: {li.area}</span>}
+                      {li.notes && <span className="text-xs text-green-700 block">Notes: {li.notes}</span>}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button onClick={subHistoryModal.onCancel} className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button
+                disabled={subHistorySelection.length === 0}
+                onClick={() => subHistoryModal.onConfirm(subHistorySelection)}
+                className={
+                  'px-4 py-2 rounded font-medium text-sm ' +
+                  (subHistorySelection.length === subHistoryModal.lineItems.length
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : 'bg-amber-500 hover:bg-amber-600 text-white')
+                }
+              >
+                {subHistorySelection.length === subHistoryModal.lineItems.length
+                  ? 'Delete subscription'
+                  : `Remove ${subHistorySelection.length} selected`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal — conditionally rendered so it remounts fresh on each open */}
+      {isEditModalOpen && editingSubscription && (
+        <SubscriptionEditModal
+          onClose={handleModalClose}
+          subscription={editingSubscription}
+          onSave={handleModalSave}
+        />
+      )}
     </div>
   );
 }

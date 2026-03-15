@@ -284,6 +284,7 @@ function EventClusterMarkers({
   applyVisitorSizing = false,
   onMarkerDrag = null,
   assignmentsState,
+  defaultStyles: defaultStylesProp,
 }) {
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
@@ -325,51 +326,10 @@ function EventClusterMarkers({
   const finalAssignmentsState = assignmentsState || localAssignmentsState;
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
-  // Load default markers for fallback colors
-  const [defaultMarkers, setDefaultMarkers] = useState({ assigned: null, unassigned: null });
-  useEffect(() => {
-    const loadDefaults = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('markers_appearance')
-          .select('*')
-          .in('id', [-1, -2])
-          .eq('event_year', 0);
-
-        if (error) throw error;
-
-        const assigned = data.find((d) => d.id === -1) || {};
-        const unassigned = data.find((d) => d.id === -2) || {};
-
-        setDefaultMarkers({ assigned, unassigned });
-      } catch (error) {
-        console.error('Error loading default markers:', error);
-      }
-    };
-
-    loadDefaults();
-
-    // Subscribe to default marker changes
-    const subscription = supabase
-      .channel('default-markers-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'markers_appearance',
-          filter: 'event_year=eq.0',
-        },
-        () => {
-          loadDefaults();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
-  }, []);
+  // Default marker styles passed from useEventMarkers (fetched together with markers)
+  const defaultMarkers = defaultStylesProp !== undefined
+    ? (defaultStylesProp || { assigned: null, unassigned: null })
+    : { assigned: null, unassigned: null };
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();
@@ -522,50 +482,65 @@ function EventClusterMarkers({
     [deleteMarker, confirm],
   );
 
-  // Memoize event handlers by marker ID to prevent recreation
+  // Refs to latest handler functions — event handler closures read from these
+  // so they never go stale and the handler cache never needs clearing.
+  const handleDragEndRef = useRef(handleDragEnd);
+  handleDragEndRef.current = handleDragEnd;
+  const handleContextMenuRef = useRef(handleContextMenu);
+  handleContextMenuRef.current = handleContextMenu;
+  const isMarkerDraggableRef = useRef(isMarkerDraggable);
+  isMarkerDraggableRef.current = isMarkerDraggable;
+
+  // Memoize event handlers by marker ID to prevent recreation.
+  // Handlers close over refs, so they always call the latest function
+  // without needing cache invalidation.
   const eventHandlersByMarker = useRef({});
   const getEventHandlers = useCallback(
     (marker) => {
-      const draggable = isMarkerDraggable(marker);
-      const key = `${marker.id}-${draggable ? 'draggable' : 'static'}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
+      const key = `${marker.id}-${isAdminView ? 'admin' : 'visitor'}-${selectedYear}`;
 
       if (!eventHandlersByMarker.current[key]) {
         const handlers = {
           popupopen: (e) => e.target.closeTooltip(),
         };
 
-        // Only add handlers if they are defined
-        if (draggable) {
-          handlers.dragend = handleDragEnd(marker.id);
-        }
+        // dragend handler uses ref so it never goes stale
+        handlers.dragend = (e) => {
+          if (isMarkerDraggableRef.current(marker)) {
+            handleDragEndRef.current(marker.id)(e);
+          }
+        };
+
         if (isAdminView) {
-          handlers.contextmenu = handleContextMenu(marker);
+          handlers.contextmenu = (e) => {
+            handleContextMenuRef.current(marker)(e);
+          };
         }
 
         eventHandlersByMarker.current[key] = handlers;
       }
       return eventHandlersByMarker.current[key];
     },
-    [isMarkerDraggable, handleDragEnd, isAdminView, handleContextMenu, selectedYear],
+    [isAdminView, selectedYear],
   );
 
-  // Clear event handler cache when crucial props change to avoid stale closures
-  useEffect(() => {
-    eventHandlersByMarker.current = {};
-  }, [onMarkerDrag, updateMarker, isMarkerDraggable]);
-
-  // Memoize icons by marker visual properties to prevent recreation
+  // Memoize icons by marker visual properties to prevent recreation.
+  // Key includes zoomBucket so zoom changes produce new icon objects (triggering
+  // setIcon).  The Glyph plugin's DOM-reuse in createIcon() ensures setIcon()
+  // updates styles in-place without destroying/recreating the DOM element.
   const iconsByMarker = useRef({});
   const getIcon = useCallback(
     (marker, isSelected) => {
       const markerIsFavorited = marker.companyId ? isFavorite(marker.companyId) : false;
       const zoomBucket = getZoomBucket(currentZoom);
       const effectiveAdminSizing = isAdminView && !applyVisitorSizing;
+      const assignmentCount = marker.assignments?.length || 0;
 
-      // Use JSON.stringify for default markers to capture all style changes (glyphSize, fontWeight, etc.)
-      const defaultsKey = `${JSON.stringify(defaultMarkers.assigned || {})}-${JSON.stringify(defaultMarkers.unassigned || {})}`;
+      // Stable defaults key — only changes when admin edits default appearance
+      const defaultsKey = `${defaultMarkers.assigned?.id || 0}-${defaultMarkers.unassigned?.id || 0}-${defaultMarkers.assigned?.glyphColor || ''}-${defaultMarkers.unassigned?.glyphColor || ''}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}`;
 
-      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphAnchor ? JSON.stringify(marker.glyphAnchor) : ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${JSON.stringify(marker.iconSize || DEFAULT_ICON.SIZE)}-${marker.glyphSize}-${effectiveAdminSizing}-${defaultsKey}-${marker.assignments?.length || 0}`;
+      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}`;
+
       if (!iconsByMarker.current[key]) {
         iconsByMarker.current[key] = createIcon(
           marker,
@@ -626,8 +601,11 @@ function EventClusterMarkers({
     return () => clearTimeout(timeout);
   }, [focusMarkerId, filteredMarkers, onFocusHandled]);
 
-  // Don't render clusters until logo is loaded to ensure iconCreateFunction has correct value
-  if (logoLoading) {
+  // Don't render clusters until default marker styles are loaded.
+  // Without this guard, markers briefly flash with hardcoded fallback colors
+  // before the DB-configured assigned/unassigned defaults arrive.
+  // defaultStylesProp === undefined means the parent hasn't provided defaults yet (still loading).
+  if (defaultStylesProp === undefined) {
     return null;
   }
 
@@ -648,8 +626,9 @@ function EventClusterMarkers({
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
 
-          // Force remount when draggable state changes to ensure marker behavior updates
-          const markerKey = `${getMarkerKey(marker)}-${isDraggable ? 'drag' : 'static'}`;
+          // No isDraggable in key — react-leaflet handles draggable changes
+          // in-place via marker.dragging.enable()/disable(), no remount needed.
+          const markerKey = getMarkerKey(marker);
 
           return (
             <MemoizedMarker

@@ -60,9 +60,9 @@ export const backupConfig = {
 
     // Retention policies
     retention: {
-      daily: 7, // Keep 7 daily backups
-      weekly: 4, // Keep 4 weekly backups
-      monthly: 12, // Keep 12 monthly backups
+      daily: 31, // Keep at least 31 daily backups
+      weekly: 31, // Keep at least 31 full backups
+      monthly: 999, // Keep essentially forever, logic relies on keeping the first of the month
     },
   },
 

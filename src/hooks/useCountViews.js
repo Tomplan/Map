@@ -2,19 +2,19 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 
 /*
-Shared in-memory cache + single realtime subscription per (table,eventYear).
+Shared in-memory cache + single realtime subscription per (baseTable,eventYear).
 - Prevents duplicate REST queries and duplicate Supabase realtime channels when
   multiple components/hooks request the same counts.
 - Cache entries are reference-counted and removed when no subscribers remain.
 */
 const _countCache = new Map();
 
-function _getKey(table, year) {
-  return `${table}:${year}`;
+function _getKey(viewTable, year) {
+  return `${viewTable}:${year}`;
 }
 
-function _ensureCacheEntry(table, year) {
-  const key = _getKey(table, year);
+function _ensureCacheEntry(viewTable, year) {
+  const key = _getKey(viewTable, year);
   if (_countCache.has(key)) return _countCache.get(key);
 
   const entry = {
@@ -22,18 +22,18 @@ function _ensureCacheEntry(table, year) {
     listeners: new Set(),
     refCount: 0,
     channel: null,
-    loadPromise: null,
+    fetchPromise: null,
   };
   _countCache.set(key, entry);
   return entry;
 }
 
-async function _loadInitialCount(table, year, entry) {
-  if (entry.loadPromise) return entry.loadPromise;
+async function _fetchCount(viewTable, year, entry) {
+  if (entry.fetchPromise) return entry.fetchPromise;
 
-  entry.loadPromise = (async () => {
+  entry.fetchPromise = (async () => {
     try {
-      const baseQuery = supabase.from(table).select('count').eq('event_year', year);
+      const baseQuery = supabase.from(viewTable).select('count').eq('event_year', year);
       let res;
       if (baseQuery && typeof baseQuery.maybeSingle === 'function') {
         res = await baseQuery.maybeSingle();
@@ -48,83 +48,73 @@ async function _loadInitialCount(table, year, entry) {
       entry.state.count = data?.count || 0;
       entry.state.error = null;
     } catch (err) {
-      console.error(`Error loading ${table} count for ${year}:`, err);
-      entry.state.count = 0;
+      console.error(`Error loading ${viewTable} count for ${year}:`, err);
+      if (entry.state.loading) {
+        entry.state.count = 0;
+      }
       entry.state.error = err?.message || String(err);
     } finally {
       entry.state.loading = false;
-      // notify listeners
+      entry.fetchPromise = null;
       entry.listeners.forEach((l) => l(entry.state));
     }
   })();
 
-  return entry.loadPromise;
+  return entry.fetchPromise;
 }
 
-function _startRealtimeChannel(table, year, entry) {
+function _startRealtimeChannel(viewTable, baseTable, year, entry) {
   if (entry.channel) return;
 
-  const channelName = `${table}-count-${year}`;
+  const channelName = `${baseTable}-count-${year}`;
   entry.channel = supabase
     .channel(channelName)
-    .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
-      const isRelevant =
-        (payload.new && payload.new.event_year === year) ||
-        (payload.old && payload.old.event_year === year);
-      if (!isRelevant) return;
-
-      if (payload.new) {
-        entry.state.count = payload.new.count;
-      } else if (payload.eventType === 'DELETE') {
-        entry.state.count = 0;
-      }
-      entry.listeners.forEach((l) => l(entry.state));
+    .on('postgres_changes', { event: '*', schema: 'public', table: baseTable }, (payload) => {
+      // For DELETE events without REPLICA IDENTITY FULL, payload.old might only contain the ID
+      // and lack the event_year. So to be safe, we just refetch the count anytime the base 
+      // table changes. It's a very fast query.
+      _fetchCount(viewTable, year, entry);
     })
     .subscribe();
 }
 
-function _stopCacheEntry(table, year) {
-  const key = _getKey(table, year);
+function _stopCacheEntry(viewTable, year) {
+  const key = _getKey(viewTable, year);
   const entry = _countCache.get(key);
   if (!entry) return;
   if (entry.channel) supabase.removeChannel(entry.channel);
   _countCache.delete(key);
 }
 
-function _createCountHook(table) {
+function _createCountHook(viewTable, baseTable) {
   return function useCount(eventYear) {
     const [localState, setLocalState] = useState({ count: 0, loading: true, error: null });
 
     useEffect(() => {
-      // Guard invalid year
       if (eventYear == null || Number.isNaN(Number(eventYear))) {
         setLocalState({ count: 0, loading: false, error: null });
         return undefined;
       }
 
-      const entry = _ensureCacheEntry(table, eventYear);
+      const entry = _ensureCacheEntry(viewTable, eventYear);
       entry.refCount += 1;
 
-      // listener will update local hook state when cache changes
       const listener = (s) => setLocalState({ ...s });
       entry.listeners.add(listener);
 
-      // Sync immediate state from cache
       setLocalState({ ...entry.state });
 
-      // Kick off initial load (only once per cache entry)
       if (entry.state.loading) {
-        _loadInitialCount(table, eventYear, entry);
+        _fetchCount(viewTable, eventYear, entry);
       }
 
-      // Ensure single realtime subscription per cache entry
-      _startRealtimeChannel(table, eventYear, entry);
+      _startRealtimeChannel(viewTable, baseTable, eventYear, entry);
 
       return () => {
         entry.listeners.delete(listener);
         entry.refCount -= 1;
         if (entry.refCount <= 0) {
-          _stopCacheEntry(table, eventYear);
+          _stopCacheEntry(viewTable, eventYear);
         }
       };
     }, [eventYear]);
@@ -133,9 +123,9 @@ function _createCountHook(table) {
   };
 }
 
-export const useSubscriptionCount = _createCountHook('subscription_counts');
-export const useAssignmentCount = _createCountHook('assignment_counts');
-export const useMarkerCount = _createCountHook('marker_counts');
+export const useSubscriptionCount = _createCountHook('subscription_counts', 'event_subscriptions');
+export const useAssignmentCount = _createCountHook('assignment_counts', 'assignments');
+export const useMarkerCount = _createCountHook('marker_counts', 'markers_core');
 
 /**
  * Hook for total company count (not year-specific)
@@ -183,7 +173,7 @@ export function useCompanyCount() {
         {
           event: '*',
           schema: 'public',
-          table: 'company_counts',
+          table: 'companies',
         },
         (payload) => {
           // Reload count when view changes

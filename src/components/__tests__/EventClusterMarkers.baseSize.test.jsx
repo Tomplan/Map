@@ -72,6 +72,7 @@ describe('EventClusterMarkers — base size source', () => {
       isMarkerDraggable: () => false,
       iconCreateFunction: () => null,
       currentZoom: 16,
+      defaultStyles: { assigned: {}, unassigned: {} },
     };
 
     render(<EventClusterMarkers {...props} />);
@@ -93,6 +94,7 @@ describe('EventClusterMarkers — base size source', () => {
       isMarkerDraggable: () => false,
       iconCreateFunction: () => null,
       currentZoom: 16,
+      defaultStyles: { assigned: {}, unassigned: {} },
     };
 
     render(<EventClusterMarkers {...props} />);
@@ -118,6 +120,7 @@ describe('EventClusterMarkers — base size source', () => {
       isMarkerDraggable: () => false,
       iconCreateFunction: () => null,
       currentZoom: 16,
+      defaultStyles: { assigned: {}, unassigned: {} },
     };
 
     render(<EventClusterMarkers {...props} />);

@@ -45,6 +45,7 @@ L.Icon.Default.mergeOptions({
 function EventMap({
   isAdminView,
   markersState,
+  defaultStyles,
   updateMarker,
   deleteMarker,
   selectedYear,
@@ -1184,6 +1185,7 @@ function EventMap({
 
           <EventClusterMarkers
             assignmentsState={assignmentsState}
+            defaultStyles={defaultStyles}
             safeMarkers={filteredMarkers}
             infoButtonToggled={infoButtonToggled}
             setInfoButtonToggled={setInfoButtonToggled}

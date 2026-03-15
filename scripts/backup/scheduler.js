@@ -29,7 +29,7 @@ class BackupScheduler {
     this.logger = this.setupLogging();
     this.cronJobs = {
       critical: '0 2 * * *', // Daily at 2 AM
-      full: '0 3 * * 0', // Weekly on Sunday at 3 AM
+      full: '0 3 * * *', // Daily at 3 AM (Updated for full daily backups)
       schema: '0 4 1 * *', // Monthly on 1st at 4 AM
     };
   }
@@ -247,12 +247,31 @@ class BackupScheduler {
 
       filesWithStats.sort((a, b) => b.mtime - a.mtime);
 
-      // Keep critical: 7 files, full: 4 files
+      // Identify the first backup of each month to keep forever
+      const monthsKept = new Set();
+      const chronoSorted = [...filesWithStats].sort((a, b) => a.mtime - b.mtime);
+      const firstOfMonthFiles = new Set();
+      for (const file of chronoSorted) {
+        const monthMatch = file.name.match(/\d{4}-\d{2}/);
+        if (monthMatch) {
+          // Track monthly persistence for "critical" and "full" separately if needed,
+          // but for simplicity, we keep the first occurrence broadly. Let's just track globally:
+          const monthType = monthMatch[0] + (file.name.includes('critical') ? '-crit' : '-full');
+          if (!monthsKept.has(monthType)) {
+            monthsKept.add(monthType);
+            firstOfMonthFiles.add(file.name);
+          }
+        }
+      }
+
+      // Keep critical: 31 files, full: 31 files
       const toDelete = filesWithStats.filter((file) => {
+        if (firstOfMonthFiles.has(file.name)) return false;
+
         if (file.name.includes('critical')) {
-          return filesWithStats.filter((f) => f.name.includes('critical')).indexOf(file) >= 7;
+          return filesWithStats.filter((f) => f.name.includes('critical') && !firstOfMonthFiles.has(f.name)).indexOf(file) >= 31;
         } else if (file.name.includes('full')) {
-          return filesWithStats.filter((f) => f.name.includes('full')).indexOf(file) >= 4;
+          return filesWithStats.filter((f) => f.name.includes('full') && !firstOfMonthFiles.has(f.name)).indexOf(file) >= 31;
         }
         return false;
       });
@@ -376,7 +395,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   scheduler
     .run(command)
     .then((result) => {
-      process.exit(result ? 0 : 1);
+      // result can be 0 (for deleted count), false (error), or true.
+      if (result === false) process.exit(1);
+      else process.exit(0);
     })
     .catch((error) => {
       console.error('Fatal error:', error);

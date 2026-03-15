@@ -10,17 +10,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const [isOnline, setIsOnline] = useState(initialOnline);
   const [markers, setMarkers] = useState([]);
+  const [defaultStyles, setDefaultStyles] = useState({ assigned: null, unassigned: null });
   const [loading, setLoading] = useState(true);
 
   // Use ref to store current eventYear so real-time subscriptions always use latest value
   const eventYearRef = useRef(eventYear);
+  const inFlightRef = useRef(false);
+  const debounceTimerRef = useRef(null);
 
   // Update ref whenever eventYear changes
   useEffect(() => {
     eventYearRef.current = eventYear;
   }, [eventYear]);
 
-  const loadMarkers = useCallback(async (online) => {
+  const loadMarkersCore = useCallback(async (online) => {
     // Always use the latest eventYear from ref
     const targetYear = eventYearRef.current;
 
@@ -185,6 +188,10 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
           };
         });
 
+      setDefaultStyles({
+        assigned: appearanceById[-1] || null,
+        unassigned: appearanceById[-2] || null,
+      });
       setMarkers(mergedMarkers);
       // Persist a snapshot asynchronously for offline use
       try {
@@ -196,8 +203,19 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       console.error('Error loading markers:', error);
     } finally {
       setLoading(false);
+      inFlightRef.current = false;
     }
   }, []);
+
+  // Debounced wrapper: coalesces rapid real-time callbacks into one fetch
+  const loadMarkers = useCallback((online) => {
+    clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      if (inFlightRef.current) return; // skip if a fetch is already running
+      inFlightRef.current = true;
+      loadMarkersCore(online);
+    }, 300);
+  }, [loadMarkersCore]);
 
   useEffect(() => {
     loadMarkers(isOnline);
@@ -380,6 +398,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
 
     return () => {
+      clearTimeout(debounceTimerRef.current);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       // Remove any channels we created while online
@@ -392,11 +411,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       if (subscriptionsChannel) supabase.removeChannel(subscriptionsChannel);
     };
   }, [isOnline, loadMarkers, eventYear]);
-
-  // Reload markers when eventYear changes
-  useEffect(() => {
-    loadMarkers(isOnline);
-  }, [eventYear, isOnline, loadMarkers]);
 
   // Archive current year markers and prepare for next year
   const archiveCurrentYear = useCallback(async () => {
@@ -513,6 +527,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
   return {
     markers,
+    defaultStyles,
     loading,
     isOnline,
     reload: () => loadMarkers(isOnline),
