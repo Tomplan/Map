@@ -204,41 +204,127 @@ class SupabaseRestore {
   }
 
   async restoreFromDirectory(backupDir, options = {}) {
-    const { dryRun = false } = options;
+    const { dryRun = false, replace = false } = options;
 
     try {
       // Read metadata
       const metadata = await this.validateBackupDirectory(backupDir);
 
-      if (metadata.type === 'critical') {
-        // Restore individual table files
-        const tableFiles = await fs.readdir(backupDir);
-        const sqlFiles = tableFiles.filter((f) => f.endsWith('.json'));
+      // Get all JSON table files (excluding metadata.json and table-list.json)
+      const tableFiles = await fs.readdir(backupDir);
+      const dataFiles = tableFiles.filter(
+        (f) => f.endsWith('.json') && f !== 'metadata.json' && f !== 'table-list.json',
+      );
 
-        this.logger.info(`Found ${sqlFiles.length} table files to restore`);
+      this.logger.info(`Found ${dataFiles.length} table files to restore`);
 
-        for (const tableFile of sqlFiles) {
+      // Determine restore order: tables with foreign key dependencies should be
+      // restored after the tables they reference. We define a safe ordering.
+      const restoreOrder = [
+        'organization_profile',
+        'organization_settings',
+        'user_roles',
+        'user_preferences',
+        'categories',
+        'category_translations',
+        'companies',
+        'company_categories',
+        'company_translations',
+        'event_subscriptions',
+        'event_subscriptions_archive',
+        'assignments',
+        'assignments_archive',
+        'markers_core',
+        'markers_appearance',
+        'markers_content',
+        'event_activities',
+        'event_activities_archive',
+        'event_map_settings',
+        'map_snapshots',
+        'feedback_requests',
+        'feedback_votes',
+        'feedback_comments',
+        'staged_invoices',
+        'subscription_line_items',
+        'invoice_folders',
+      ];
+
+      // Sort data files according to restoreOrder; unknown tables go at the end
+      const sortedFiles = dataFiles.sort((a, b) => {
+        const nameA = path.parse(a).name;
+        const nameB = path.parse(b).name;
+        const indexA = restoreOrder.indexOf(nameA);
+        const indexB = restoreOrder.indexOf(nameB);
+        return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+      });
+
+      // If replace mode, truncate tables in REVERSE order (dependents first)
+      if (replace && !dryRun) {
+        this.logger.warn('Replace mode enabled — truncating tables before restore');
+        const reverseFiles = [...sortedFiles].reverse();
+        for (const tableFile of reverseFiles) {
           const tableName = path.parse(tableFile).name;
-          this.logger.info(`Processing table: ${tableName}`);
+          this.logger.info(`Truncating table: ${tableName}`);
+          await this.truncateTable(tableName);
+        }
+      } else if (replace && dryRun) {
+        this.logger.info('[DRY RUN] Would truncate all tables before restoring');
+      }
 
-          // Read the JSON data and convert to SQL INSERT statements
-          const jsonData = JSON.parse(await fs.readFile(path.join(backupDir, tableFile), 'utf8'));
+      for (const tableFile of sortedFiles) {
+        const tableName = path.parse(tableFile).name;
+        this.logger.info(`Processing table: ${tableName}`);
 
-          if (!dryRun && Array.isArray(jsonData)) {
-            await this.restoreTableData(tableName, jsonData);
-          }
+        const fileContent = await fs.readFile(path.join(backupDir, tableFile), 'utf8');
+        const parsed = JSON.parse(fileContent);
+
+        // Handle both formats: raw array or { data: [...] }
+        const jsonData = Array.isArray(parsed) ? parsed : parsed.data;
+
+        if (!dryRun && Array.isArray(jsonData)) {
+          await this.restoreTableData(tableName, jsonData, { replace });
+        } else if (dryRun) {
+          const count = Array.isArray(jsonData) ? jsonData.length : 0;
+          this.logger.info(`[DRY RUN] Would restore ${count} rows to ${tableName}`);
         }
       }
 
-      return { success: true, type: metadata.type, dryRun };
+      return { success: true, type: metadata.type, dryRun, tablesRestored: sortedFiles.length };
     } catch (error) {
       this.logger.error(`Directory restore failed: ${error.message}`);
       throw error;
     }
   }
 
+  async truncateTable(tableName) {
+    try {
+      const { error } = await this.getSupabaseClient()
+        .from(tableName)
+        .delete()
+        .neq('id', -99999);
+
+      if (error) {
+        this.logger.warn(`Could not truncate ${tableName} via API: ${error.message}`);
+      } else {
+        this.logger.info(`Truncated table: ${tableName}`);
+      }
+    } catch (err) {
+      this.logger.warn(`Truncate fallback for ${tableName}: ${err.message}`);
+    }
+  }
+
+  getSupabaseClient() {
+    if (!this._supabase) {
+      const { createClient } = require('@supabase/supabase-js');
+      const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      this._supabase = createClient(url, key);
+    }
+    return this._supabase;
+  }
+
   async restoreTableData(tableName, data, options = {}) {
-    const { dryRun = false } = options;
+    const { dryRun = false, replace = false } = options;
 
     try {
       if (dryRun) {
@@ -254,6 +340,7 @@ class SupabaseRestore {
       // Create batch INSERT statements
       const batchSize = 1000; // PostgreSQL limit
       const batches = Math.ceil(data.length / batchSize);
+      const conflictClause = replace ? '' : ' ON CONFLICT DO NOTHING';
 
       for (let i = 0; i < batches; i++) {
         const batch = data.slice(i * batchSize, (i + 1) * batchSize);
@@ -275,7 +362,7 @@ class SupabaseRestore {
           )
           .join(', ');
 
-        const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ${values} ON CONFLICT DO NOTHING;`;
+        const sql = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES ${values}${conflictClause};`;
 
         await this.executeSql(sql);
       }
@@ -311,7 +398,7 @@ class SupabaseRestore {
   }
 
   async run(options = {}) {
-    const { backupFile, backupDir, dryRun = false, table = null, confirm = false } = options;
+    const { backupFile, backupDir, dryRun = false, table = null, confirm = false, replace = false } = options;
 
     try {
       this.logger.info('Starting Supabase database restore');
@@ -322,6 +409,9 @@ class SupabaseRestore {
       if (!dryRun && !confirm) {
         this.logger.danger('WARNING: This will overwrite database data!');
         this.logger.info('Use --confirm flag to proceed or --dry-run to test');
+        if (replace) {
+          this.logger.danger('REPLACE MODE: Tables will be TRUNCATED before restoring!');
+        }
         return { success: false, error: 'Confirmation required' };
       }
 
@@ -336,7 +426,7 @@ class SupabaseRestore {
         restoreResult = await this.restoreFromSqlFile(backupFile, { dryRun, table });
       } else if (backupDir) {
         // Restore from directory
-        restoreResult = await this.restoreFromDirectory(backupDir, { dryRun });
+        restoreResult = await this.restoreFromDirectory(backupDir, { dryRun, replace });
       } else {
         throw new Error('Either --backup-file or --backup-dir must be specified');
       }
@@ -374,6 +464,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     dryRun: args.includes('--dry-run'),
     table: args.find((arg) => arg.startsWith('--table='))?.split('=')[1],
     confirm: args.includes('--confirm'),
+    replace: args.includes('--replace'),
   };
 
   if (!options.backupFile && !options.backupDir) {

@@ -1,12 +1,15 @@
+# Supabase Backup Cron Jobs
+# Credentials are loaded from scripts/backup/.env by the backup scripts themselves.
+# Do NOT hardcode credentials in this file.
 
-# Supabase Backup Environment
-SUPABASE_DB_HOST=db.xtkbvnnkovogqwcwdhkg.supabase.co
-SUPABASE_DB_PORT=5432
-SUPABASE_DB_NAME=postgres
-SUPABASE_DB_USER=postgres
-SUPABASE_DB_PASSWORD=VkM53SUqhIP2QJvM
+PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin
+MAP_DIR=/Users/tom/Documents/GitHub/Map
 
-# Backup cron jobs
-0 2 * * * cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-critical.js --compress >> ./logs/backup-cron.log 2>&1
-0 3 * * * cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-full.js --compress >> ./logs/backup-cron.log 2>&1
-0 4 1 * * cd /Users/tom/Documents/GitHub/Map && node scripts/backup/backup-full.js --schema-only --compress >> ./logs/backup-cron.log 2>&1
+# Daily critical backup (essential tables) at 2:00 AM
+0 2 * * * cd $MAP_DIR && node scripts/backup/backup-critical.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+
+# Daily full backup (all tables) at 3:00 AM
+0 3 * * * cd $MAP_DIR && node scripts/backup/backup-full.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+
+# Monthly schema-only backup on the 1st at 4:00 AM
+0 4 1 * * cd $MAP_DIR && node scripts/backup/backup-full.js --schema-only --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
