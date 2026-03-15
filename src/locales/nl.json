@@ -414,7 +414,82 @@
     },
     "advanced": {
       "title": "Geavanceerde Instellingen",
-      "description": "Systeemonderhoud, gegevensbeheer en gevarenzone"
+      "description": "Systeemonderhoud, gegevensbeheer en gevarenzone",
+      "backup": {
+        "title": "Database Backup Handleiding",
+        "subtitle": "Dagelijkse automatische back-ups van alle Supabase data via GitHub Actions",
+        "overview": {
+          "title": "Overzicht",
+          "description": "De applicatie gebruikt een geautomatiseerde GitHub Actions workflow om dagelijks de volledige Supabase database te back-uppen. Alle data wordt geëxporteerd als JSON-bestanden en opgeslagen op een aparte git branch, waardoor back-ups versiebeheerd, veilig en eenvoudig te herstellen zijn.",
+          "schedule": "Schema",
+          "scheduleValue": "Dagelijks om 10:00 UTC",
+          "storage": "Opslag",
+          "storageValue": "Git branch (backups)",
+          "retention": "Bewaring",
+          "retentionValue": "31 dagen rollend"
+        },
+        "tables": {
+          "title": "Wat wordt er geback-upt",
+          "description": "Alle 26 databasetabellen worden bij elke back-up meegenomen:",
+          "coreData": "Kern Evenement Data",
+          "mapData": "Kaart & Markers",
+          "orgSettings": "Organisatie & Gebruikers",
+          "otherData": "Activiteiten & Facturen",
+          "archiveData": "Archieven",
+          "totalNote": "26 tabellen totaal — plus een metadata.json met tijdstempels en een table-list.json ter verificatie."
+        },
+        "how": {
+          "title": "Hoe het werkt",
+          "step1": {
+            "title": "GitHub Actions start de workflow",
+            "description": "Elke dag om 10:00 UTC (of handmatig via het Actions-tabblad) start de workflow op de standaard branch."
+          },
+          "step2": {
+            "title": "Scripts worden opgehaald van development",
+            "description": "De workflow haalt de development branch op voor de nieuwste back-upscripts, zelfs als main achterloopt."
+          },
+          "step3": {
+            "title": "Supabase JS client exporteert alle tabellen",
+            "description": "Elke tabel wordt opgehaald via de Supabase API met de service role key (geen pg_dump), dus directe database-toegang is niet nodig."
+          },
+          "step4": {
+            "title": "JSON-bestanden worden in een map met tijdstempel opgeslagen",
+            "description": "Elke tabel wordt een apart .json bestand (bijv. companies.json, markers_core.json) in een map genaamd full-JJJJ-MM-DDTUU-MM-SS."
+          },
+          "step5": {
+            "title": "Back-up wordt gepusht naar de backups branch",
+            "description": "Een orphan git branch genaamd 'backups' bevat alleen back-updata — geen broncode — zodat de repository schoon blijft."
+          },
+          "step6": {
+            "title": "Oude back-ups worden geroteerd",
+            "description": "Alleen de 31 meest recente back-ups worden bewaard. Oudere worden automatisch verwijderd om te voorkomen dat de branch eindeloos groeit."
+          }
+        },
+        "github": {
+          "title": "GitHub Actions Configuratie",
+          "description": "De workflow is gedefinieerd in de repository en gebruikt GitHub Secrets voor authenticatie.",
+          "workflowFile": "Workflow bestand",
+          "trigger": "Trigger",
+          "triggerValue": "Cron (dagelijks) + handmatige dispatch",
+          "branch": "Back-up branch",
+          "branchValue": "backups (orphan branch)",
+          "secrets": "Vereiste secrets",
+          "manualNote": "Je kunt op elk moment handmatig een back-up starten: ga naar GitHub → Actions → Daily Database Backup → Run workflow."
+        },
+        "restore": {
+          "title": "Hoe te herstellen",
+          "description": "Om data te herstellen vanuit een back-up, gebruik het restore script vanuit de terminal:",
+          "commands": "# Beschikbare back-ups op de branch bekijken\ngit log origin/backups --oneline\n\n# Een specifieke back-up downloaden\ngit checkout origin/backups -- full-2026-03-15T21-39-36-493Z/\n\n# Herstellen naar database (maakt eerst veiligheidsback-up)\nnode scripts/backup/restore.js --backup-dir ./full-2026-03-15T21-39-36-493Z --replace --confirm",
+          "warning": "Herstellen met --replace zal alle tabellen legen en opnieuw importeren. Er wordt automatisch een veiligheidsback-up gemaakt vóór elke herstelactie. Test altijd eerst met een dry run (laat --confirm weg)."
+        },
+        "security": {
+          "title": "Beveiliging & Toegang",
+          "item1": "Inloggegevens worden opgeslagen als GitHub Secrets — nooit in code of omgevingsbestanden.",
+          "item2": "De service role key wordt alleen gebruikt tijdens geautomatiseerde back-ups en is niet zichtbaar aan de clientzijde.",
+          "item3": "De backups branch bevat alleen JSON-data — geen broncode, inloggegevens of configuratie.",
+          "item4": "Row Level Security (RLS) wordt alleen omzeild tijdens back-up export met de service role key."
+        }
+      }
     }
   },
   "homePage": {

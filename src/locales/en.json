@@ -420,7 +420,82 @@
     },
     "advanced": {
       "title": "Advanced Settings",
-      "description": "System maintenance, data management, and danger zone"
+      "description": "System maintenance, data management, and danger zone",
+      "backup": {
+        "title": "Database Backup Manual",
+        "subtitle": "Automated daily backups of all Supabase data via GitHub Actions",
+        "overview": {
+          "title": "Overview",
+          "description": "The application uses an automated GitHub Actions workflow to back up the entire Supabase database every day. All data is exported as JSON files and stored on a dedicated git branch, keeping backups versioned, secure, and easy to restore.",
+          "schedule": "Schedule",
+          "scheduleValue": "Daily at 10:00 UTC",
+          "storage": "Storage",
+          "storageValue": "Git branch (backups)",
+          "retention": "Retention",
+          "retentionValue": "31 days rolling"
+        },
+        "tables": {
+          "title": "What Gets Backed Up",
+          "description": "All 26 database tables are included in every backup:",
+          "coreData": "Core Event Data",
+          "mapData": "Map & Markers",
+          "orgSettings": "Organization & Users",
+          "otherData": "Activities & Invoices",
+          "archiveData": "Archives",
+          "totalNote": "26 tables total — plus a metadata.json with timestamps and a table-list.json for verification."
+        },
+        "how": {
+          "title": "How It Works",
+          "step1": {
+            "title": "GitHub Actions triggers the workflow",
+            "description": "Every day at 10:00 UTC (or manually via the Actions tab), the workflow starts on the default branch."
+          },
+          "step2": {
+            "title": "Scripts are checked out from development",
+            "description": "The workflow checks out the development branch to use the latest backup scripts, even if main is behind."
+          },
+          "step3": {
+            "title": "Supabase JS client exports all tables",
+            "description": "Each table is fetched via the Supabase API using the service role key (not pg_dump), so no direct database access is needed."
+          },
+          "step4": {
+            "title": "JSON files are written to a timestamped folder",
+            "description": "Each table becomes a separate .json file (e.g. companies.json, markers_core.json) inside a folder named full-YYYY-MM-DDTHH-MM-SS."
+          },
+          "step5": {
+            "title": "Backup is pushed to the backups branch",
+            "description": "An orphan git branch called 'backups' stores only backup data — no source code — keeping the repository clean."
+          },
+          "step6": {
+            "title": "Old backups are rotated out",
+            "description": "Only the 31 most recent backups are kept. Older ones are automatically deleted to prevent the branch from growing indefinitely."
+          }
+        },
+        "github": {
+          "title": "GitHub Actions Configuration",
+          "description": "The workflow is defined in the repository and uses GitHub Secrets for authentication.",
+          "workflowFile": "Workflow file",
+          "trigger": "Trigger",
+          "triggerValue": "Cron (daily) + manual dispatch",
+          "branch": "Backup branch",
+          "branchValue": "backups (orphan branch)",
+          "secrets": "Required secrets",
+          "manualNote": "You can trigger a backup manually at any time: go to GitHub → Actions → Daily Database Backup → Run workflow."
+        },
+        "restore": {
+          "title": "How to Restore",
+          "description": "To restore data from a backup, use the restore script from the terminal:",
+          "commands": "# List available backups on the branch\ngit log origin/backups --oneline\n\n# Download a specific backup\ngit checkout origin/backups -- full-2026-03-15T21-39-36-493Z/\n\n# Restore to database (creates safety backup first)\nnode scripts/backup/restore.js --backup-dir ./full-2026-03-15T21-39-36-493Z --replace --confirm",
+          "warning": "Restoring with --replace will truncate and re-import all tables. A safety backup is created automatically before any restore. Always test with a dry run first (omit --confirm)."
+        },
+        "security": {
+          "title": "Security & Access",
+          "item1": "Credentials are stored as GitHub Secrets — never in code or environment files.",
+          "item2": "The service role key is used only during automated backups and is not exposed client-side.",
+          "item3": "The backups branch contains only JSON data — no source code, credentials, or configuration.",
+          "item4": "Row Level Security (RLS) is bypassed only during backup export using the service role key."
+        }
+      }
     }
   },
   "homePage": {

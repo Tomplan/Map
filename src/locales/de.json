@@ -345,7 +345,82 @@
     },
     "advanced": {
       "title": "Erweiterte Einstellungen",
-      "description": "Systemwartung, Datenverwaltung und Gefahrenzone"
+      "description": "Systemwartung, Datenverwaltung und Gefahrenzone",
+      "backup": {
+        "title": "Datenbank-Backup Handbuch",
+        "subtitle": "Tägliche automatische Backups aller Supabase-Daten über GitHub Actions",
+        "overview": {
+          "title": "Übersicht",
+          "description": "Die Anwendung verwendet einen automatisierten GitHub Actions Workflow, um täglich die gesamte Supabase-Datenbank zu sichern. Alle Daten werden als JSON-Dateien exportiert und auf einem dedizierten Git-Branch gespeichert, wodurch Backups versioniert, sicher und einfach wiederherstellbar sind.",
+          "schedule": "Zeitplan",
+          "scheduleValue": "Täglich um 10:00 UTC",
+          "storage": "Speicher",
+          "storageValue": "Git Branch (backups)",
+          "retention": "Aufbewahrung",
+          "retentionValue": "31 Tage rollierend"
+        },
+        "tables": {
+          "title": "Was wird gesichert",
+          "description": "Alle 26 Datenbanktabellen werden bei jedem Backup einbezogen:",
+          "coreData": "Kern-Eventdaten",
+          "mapData": "Karte & Marker",
+          "orgSettings": "Organisation & Benutzer",
+          "otherData": "Aktivitäten & Rechnungen",
+          "archiveData": "Archive",
+          "totalNote": "26 Tabellen insgesamt — plus eine metadata.json mit Zeitstempeln und eine table-list.json zur Verifizierung."
+        },
+        "how": {
+          "title": "Wie es funktioniert",
+          "step1": {
+            "title": "GitHub Actions startet den Workflow",
+            "description": "Jeden Tag um 10:00 UTC (oder manuell über den Actions-Tab) startet der Workflow auf dem Standard-Branch."
+          },
+          "step2": {
+            "title": "Skripte werden von development ausgecheckt",
+            "description": "Der Workflow checkt den development Branch für die neuesten Backup-Skripte aus, auch wenn main hinterherhinkt."
+          },
+          "step3": {
+            "title": "Supabase JS Client exportiert alle Tabellen",
+            "description": "Jede Tabelle wird über die Supabase API mit dem Service Role Key abgerufen (kein pg_dump), sodass kein direkter Datenbankzugriff erforderlich ist."
+          },
+          "step4": {
+            "title": "JSON-Dateien werden in einem Zeitstempel-Ordner gespeichert",
+            "description": "Jede Tabelle wird eine separate .json Datei (z.B. companies.json, markers_core.json) in einem Ordner namens full-JJJJ-MM-TTTHH-MM-SS."
+          },
+          "step5": {
+            "title": "Backup wird auf den backups Branch gepusht",
+            "description": "Ein Orphan-Git-Branch namens 'backups' speichert nur Backup-Daten — keinen Quellcode — und hält das Repository sauber."
+          },
+          "step6": {
+            "title": "Alte Backups werden rotiert",
+            "description": "Nur die 31 neuesten Backups werden behalten. Ältere werden automatisch gelöscht, um ein endloses Wachstum des Branches zu verhindern."
+          }
+        },
+        "github": {
+          "title": "GitHub Actions Konfiguration",
+          "description": "Der Workflow ist im Repository definiert und verwendet GitHub Secrets zur Authentifizierung.",
+          "workflowFile": "Workflow-Datei",
+          "trigger": "Auslöser",
+          "triggerValue": "Cron (täglich) + manueller Dispatch",
+          "branch": "Backup Branch",
+          "branchValue": "backups (Orphan Branch)",
+          "secrets": "Erforderliche Secrets",
+          "manualNote": "Sie können jederzeit manuell ein Backup auslösen: gehen Sie zu GitHub → Actions → Daily Database Backup → Run workflow."
+        },
+        "restore": {
+          "title": "Wiederherstellung",
+          "description": "Um Daten aus einem Backup wiederherzustellen, verwenden Sie das Restore-Skript im Terminal:",
+          "commands": "# Verfügbare Backups auf dem Branch anzeigen\ngit log origin/backups --oneline\n\n# Ein bestimmtes Backup herunterladen\ngit checkout origin/backups -- full-2026-03-15T21-39-36-493Z/\n\n# In Datenbank wiederherstellen (erstellt vorher Sicherheitsbackup)\nnode scripts/backup/restore.js --backup-dir ./full-2026-03-15T21-39-36-493Z --replace --confirm",
+          "warning": "Wiederherstellung mit --replace leert alle Tabellen und importiert neu. Vor jeder Wiederherstellung wird automatisch ein Sicherheitsbackup erstellt. Testen Sie immer zuerst mit einem Dry Run (lassen Sie --confirm weg)."
+        },
+        "security": {
+          "title": "Sicherheit & Zugang",
+          "item1": "Anmeldedaten werden als GitHub Secrets gespeichert — niemals im Code oder in Umgebungsdateien.",
+          "item2": "Der Service Role Key wird nur während automatisierter Backups verwendet und ist clientseitig nicht sichtbar.",
+          "item3": "Der backups Branch enthält nur JSON-Daten — keinen Quellcode, Anmeldedaten oder Konfiguration.",
+          "item4": "Row Level Security (RLS) wird nur während des Backup-Exports mit dem Service Role Key umgangen."
+        }
+      }
     }
   },
   "homePage": {
