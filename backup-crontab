@@ -5,11 +5,11 @@
 PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin
 MAP_DIR=/Users/tom/Documents/GitHub/Map
 
-# Daily critical backup (essential tables) at 2:00 AM
-0 2 * * * cd $MAP_DIR && node scripts/backup/backup-critical.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+# Daily critical backup (essential tables) at 10:00
+0 10 * * * cd $MAP_DIR && node scripts/backup/backup-critical.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
 
-# Daily full backup (all tables) at 3:00 AM
-0 3 * * * cd $MAP_DIR && node scripts/backup/backup-full.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+# Daily full backup (all tables) at 10:15
+15 10 * * * cd $MAP_DIR && node scripts/backup/backup-full.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
 
-# Monthly schema-only backup on the 1st at 4:00 AM
-0 4 1 * * cd $MAP_DIR && node scripts/backup/backup-full.js --schema-only --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+# Monthly schema-only backup on the 1st at 10:30
+30 10 1 * * cd $MAP_DIR && node scripts/backup/backup-full.js --schema-only --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
