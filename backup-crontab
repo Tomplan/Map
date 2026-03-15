@@ -1,15 +1,18 @@
-# Supabase Backup Cron Jobs
-# Credentials are loaded from scripts/backup/.env by the backup scripts themselves.
-# Do NOT hardcode credentials in this file.
-
-PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin
-MAP_DIR=/Users/tom/Documents/GitHub/Map
-
-# Daily critical backup (essential tables) at 10:00
-0 10 * * * cd $MAP_DIR && node scripts/backup/backup-critical.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
-
-# Daily full backup (all tables) at 10:15
-15 10 * * * cd $MAP_DIR && node scripts/backup/backup-full.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
-
-# Monthly schema-only backup on the 1st at 10:30
-30 10 1 * * cd $MAP_DIR && node scripts/backup/backup-full.js --schema-only --compress >> $MAP_DIR/logs/backup-cron.log 2>&1
+# Supabase Backup — Manual / Emergency Use
+#
+# Automated daily backups now run via GitHub Actions (.github/workflows/backup.yml)
+# and are stored on the `backups` git branch.
+#
+# This file is kept as a fallback in case you need to run backups locally
+# (e.g. when working offline before a risky migration).
+#
+# To run manually:
+#   npm run backup:full
+#   npm run backup:critical
+#
+# To reinstall this crontab (if needed):
+#   crontab backup-crontab
+#
+# PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin
+# MAP_DIR=/Users/tom/Documents/GitHub/Map
+# 0 10 * * * cd $MAP_DIR && node scripts/backup/backup-full.js --compress >> $MAP_DIR/logs/backup-cron.log 2>&1

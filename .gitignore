@@ -1,6 +1,9 @@
 # Logs
 logs
 *.log
+
+# Database backups — stored on the `backups` git branch, not in source branches
+backups/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
