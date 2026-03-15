@@ -29,6 +29,9 @@ export const backupConfig = {
       'assignments',
       'organization_profile',
       'user_preferences',
+      'staged_invoices',
+      'subscription_line_items',
+      'invoice_folders',
     ],
 
     // All tables for full backup
@@ -41,15 +44,24 @@ export const backupConfig = {
       'markers_appearance',
       'markers_content',
       'organization_profile',
+      'organization_settings',
       'user_roles',
+      'user_preferences',
       'categories',
       'category_translations',
       'company_categories',
-      'event_activities',
-      'feedback_requests',
-      'organization_settings',
       'company_translations',
-      'marker_defaults',
+      'event_activities',
+      'event_activities_archive',
+      'event_subscriptions_archive',
+      'event_map_settings',
+      'feedback_requests',
+      'feedback_votes',
+      'feedback_comments',
+      'map_snapshots',
+      'staged_invoices',
+      'subscription_line_items',
+      'invoice_folders',
     ],
 
     // Backup directories
@@ -103,7 +115,7 @@ export const backupConfig = {
 
 // Validate required environment variables
 export function validateConfig() {
-  const required = ['SUPABASE_DB_PASSWORD'];
+  const required = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {

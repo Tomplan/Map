@@ -15,6 +15,10 @@ import {
   mdiChevronDown,
   mdiDelete,
   mdiArrowULeftTop,
+  mdiFolder,
+  mdiFolderOpen,
+  mdiPencilOutline,
+  mdiPlus,
 } from '@mdi/js';
 import useCompanies from '../../hooks/useCompanies';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -462,7 +466,20 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [subHistoryModal, setSubHistoryModal] = useState(null); // { sub, invoice, companyName, additionLines, onConfirm } | null
   const [subHistorySelection, setSubHistorySelection] = useState([]);
 
+  // ── Folder management state ──────────────────────────────────────────
+  const [folders, setFolders] = useState([]);          // [{id, name, position}]
+  const [showFolderPicker, setShowFolderPicker] = useState(false); // import folder picker
+  const [uploadTargetFolderId, setUploadTargetFolderId] = useState(null);
+  const [newFolderName, setNewFolderName] = useState('');
+  // Inline rename state: { id, name } of the folder being renamed, or null
+  const [renamingFolder, setRenamingFolder] = useState(null);
+  // Per-row move-to-folder popup: invoice id or null
+  const [movingInvoiceId, setMovingInvoiceId] = useState(null);
+
   const fileInputRef = useRef(null);
+  // Stores the folder id chosen before the file picker so handleFileUpload
+  // can read it without stale-closure issues.
+  const pendingUploadFolderRef = useRef(null);
   // Tracks invoice IDs whose status is currently being written to DB.
   // Prevents a concurrent real-time fetchInvoices() from overwriting an
   // in-flight optimistic status update with stale DB data.
@@ -511,8 +528,71 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
   };
 
+  // ── Fetch folders ─────────────────────────────────────────────────────
+  const fetchFolders = async () => {
+    const { data } = await supabase
+      .from('invoice_folders')
+      .select('*')
+      .order('position', { ascending: true });
+    // Secondary sort by created_at client-side (avoids chained .order() mock issues)
+    const sorted = (data || []).slice().sort((a, b) => {
+      if (a.position !== b.position) return a.position - b.position;
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+    setFolders(sorted);
+  };
+
+  // Create a new folder and return it
+  const createFolder = async (name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const position = folders.length;
+    const { data, error } = await supabase
+      .from('invoice_folders')
+      .insert([{ name: trimmed, position }])
+      .select()
+      .single();
+    if (error) { toastError('Failed to create folder: ' + error.message); return null; }
+    setFolders(prev => [...prev, data]);
+    return data;
+  };
+
+  const renameFolder = async (id, name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const { error } = await supabase.from('invoice_folders').update({ name: trimmed }).eq('id', id);
+    if (error) { toastError('Failed to rename folder: ' + error.message); return; }
+    setFolders(prev => prev.map(f => f.id === id ? { ...f, name: trimmed } : f));
+  };
+
+  const deleteFolder = async (id) => {
+    const yes = await confirm({
+      title: 'Delete folder',
+      message: 'Delete this folder? Invoices inside will move to Unassigned.',
+      confirmText: 'Delete', cancelText: 'Cancel',
+    });
+    if (!yes) return;
+    // Unassign invoices first
+    await supabase.from('staged_invoices').update({ folder_id: null }).eq('folder_id', id);
+    const { error } = await supabase.from('invoice_folders').delete().eq('id', id);
+    if (error) { toastError('Failed to delete folder: ' + error.message); return; }
+    setFolders(prev => prev.filter(f => f.id !== id));
+    setInvoices(prev => prev.map(inv => inv.folder_id === id ? { ...inv, folder_id: null } : inv));
+  };
+
+  const moveInvoiceToFolder = async (invoiceId, folderId) => {
+    const { error } = await supabase
+      .from('staged_invoices')
+      .update({ folder_id: folderId })
+      .eq('id', invoiceId);
+    if (error) { toastError('Failed to move invoice: ' + error.message); return; }
+    setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, folder_id: folderId } : inv));
+    setMovingInvoiceId(null);
+  };
+
   useEffect(() => {
     fetchInvoices();
+    fetchFolders();
 
     // Subscribe to realtime changes so the UI clears when the database table is cleared externally
     const channel = supabase
@@ -598,6 +678,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             breakfast_sun: 0,
             lunch_sun: 0,
             area_preference: parsedData.area || '',
+            folder_id: pendingUploadFolderRef.current || null,
             parsed_data: JSON.stringify({
               rawNotes: parsedData.opmerkingen || '',
               notes: parsedData.notes || '',
@@ -1224,6 +1305,36 @@ export default function InvoiceSyncTab({ selectedYear }) {
     return result;
   }, [invoices, searchTerm, sortConfig, companies]);
 
+  // ── Folder collapse state — Set of folder keys that are COLLAPSED
+  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+  const toggleFolder = (key) => setCollapsedFolders(prev => {
+    const next = new Set(prev);
+    if (next.has(key)) next.delete(key); else next.add(key);
+    return next;
+  });
+
+  // ── Group sorted/filtered invoices by folder_id for folder-based rendering
+  const groupedInvoices = React.useMemo(() => {
+    const groups = {};
+    for (const inv of processedInvoices) {
+      const key = inv.folder_id || 'unassigned';
+      if (!groups[key]) {
+        const folder = folders.find(f => f.id === key) || null;
+        groups[key] = { key, folder, invoices: [] };
+      }
+      groups[key].invoices.push(inv);
+    }
+    // Also include empty folders (so they show in the list even with no invoices)
+    for (const folder of folders) {
+      if (!groups[folder.id]) groups[folder.id] = { key: folder.id, folder, invoices: [] };
+    }
+    return Object.values(groups).sort((a, b) => {
+      if (a.key === 'unassigned') return 1;  // Unassigned always last
+      if (b.key === 'unassigned') return -1;
+      return (a.folder?.position ?? 999) - (b.folder?.position ?? 999);
+    });
+  }, [processedInvoices, folders]);
+
   return (
     <div>
       {/* Company Search Modal — shown when no automatic match is found */}
@@ -1378,6 +1489,80 @@ export default function InvoiceSyncTab({ selectedYear }) {
           }}
         />
       )}
+
+      {/* ── Import Folder Picker Modal ───────────────────────────────── */}
+      {showFolderPicker && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Import to folder</h2>
+            <p className="text-sm text-gray-500 mb-5">
+              Choose which folder to put these invoices into.
+            </p>
+
+            {/* Existing folder pills */}
+            <div className="flex flex-col gap-1.5 mb-4">
+              {folders.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setUploadTargetFolderId(f.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors text-left ${
+                    uploadTargetFolderId === f.id
+                      ? 'bg-blue-600 text-white border-blue-600'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'
+                  }`}
+                >
+                  <Icon path={uploadTargetFolderId === f.id ? mdiFolderOpen : mdiFolder} size={0.75} />
+                  {f.name}
+                </button>
+              ))}
+              {/* Create new folder inline */}
+              <div className="flex gap-2 mt-1">
+                <input
+                  type="text"
+                  placeholder="+ New folder name…"
+                  value={newFolderName}
+                  onChange={e => setNewFolderName(e.target.value)}
+                  onKeyDown={async (e) => {
+                    if (e.key === 'Enter' && newFolderName.trim()) {
+                      const created = await createFolder(newFolderName);
+                      if (created) { setUploadTargetFolderId(created.id); setNewFolderName(''); }
+                    }
+                  }}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+                <button
+                  onClick={async () => {
+                    if (!newFolderName.trim()) return;
+                    const created = await createFolder(newFolderName);
+                    if (created) { setUploadTargetFolderId(created.id); setNewFolderName(''); }
+                  }}
+                  className="px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm hover:bg-gray-200 transition"
+                >Create</button>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-2">
+              <button
+                onClick={() => { setShowFolderPicker(false); setUploadTargetFolderId(null); }}
+                className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowFolderPicker(false);
+                  pendingUploadFolderRef.current = uploadTargetFolderId; // null = Unassigned
+                  fileInputRef.current?.click();
+                }}
+                className="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                {uploadTargetFolderId ? 'Import →' : 'Import (no folder) →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
           {t('adminNav.invoices', 'Invoices')}
@@ -1414,6 +1599,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
           </button>
 
           <div className="relative">
+            {/* New folder quick-add */}
+            <button
+              onClick={async () => {
+                const name = window.prompt('New folder name:');
+                if (name?.trim()) await createFolder(name.trim());
+              }}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition-all"
+              title="Add folder"
+            >
+              <Icon path={mdiPlus} size={0.7} />
+              <Icon path={mdiFolder} size={0.7} />
+            </button>
+          </div>
+
+          <div className="relative">
             <button
               onClick={() => setIsActionsOpen(!isActionsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
@@ -1429,7 +1629,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   Data Tools
                 </div>
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() =>                   { setIsActionsOpen(false); setShowFolderPicker(true); }}
                   disabled={uploading}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
                 >
@@ -1489,7 +1689,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         <div className="bg-white rounded-xl shadow p-12 flex flex-col items-center justify-center text-gray-500">
           <p className="mb-4">No staged invoices found. Have you imported them yet?</p>
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setShowFolderPicker(true)}
             disabled={uploading}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
           >
@@ -1595,6 +1795,41 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       because those values are derived from the PDF or meals_count and
                       can be adjusted manually once the invoice has been synced to a
                       subscription. */}
+
+                  {/* Folder assignment */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Folder</label>
+                    <div className="flex flex-col gap-1.5">
+                      {folders.map(f => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => setEditingInvoice({ ...editingInvoice, folder_id: f.id })}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors text-left ${
+                            editingInvoice.folder_id === f.id
+                              ? 'bg-blue-600 text-white border-blue-600'
+                              : 'bg-white text-gray-600 border-gray-300 hover:bg-blue-50'
+                          }`}
+                        >
+                          <Icon path={editingInvoice.folder_id === f.id ? mdiFolderOpen : mdiFolder} size={0.7} />
+                          {f.name}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setEditingInvoice({ ...editingInvoice, folder_id: null })}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium border transition-colors text-left ${
+                          !editingInvoice.folder_id
+                            ? 'bg-gray-700 text-white border-gray-700'
+                            : 'bg-white text-gray-400 border-gray-200 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Icon path={mdiFolder} size={0.7} />
+                        Unassigned
+                      </button>
+                    </div>
+                  </div>
+
                   <button
                       onClick={async () => {
                         try {
@@ -1610,6 +1845,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               breakfast_sun: editingInvoice.breakfast_sun,
                               lunch_sun: editingInvoice.lunch_sun,
                               parsed_data: editingInvoice.parsed_data,
+                              folder_id: editingInvoice.folder_id ?? null,
                             })
                             .eq('id', editingInvoice.id);
 
@@ -1668,7 +1904,104 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-gray-100">
-                {processedInvoices.map((inv) => {
+                {groupedInvoices.map((group) => (
+                  <React.Fragment key={group.key}>
+                    {/* ── Folder header row ── */}
+                    <tr
+                      onClick={() => toggleFolder(group.key)}
+                      className="bg-gray-100 hover:bg-blue-50 cursor-pointer select-none border-b-2 border-gray-300"
+                    >
+                      <td colSpan={8} className="px-3 py-2">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                          <Icon
+                            path={collapsedFolders.has(group.key) ? mdiFolder : mdiFolderOpen}
+                            size={0.85}
+                            className={collapsedFolders.has(group.key) ? 'text-gray-400' : 'text-blue-500'}
+                          />
+
+                          {/* Inline rename input or static name */}
+                          {renamingFolder?.id === group.key ? (
+                            <div
+                              className="flex items-center gap-1"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <input
+                                autoFocus
+                                type="text"
+                                value={renamingFolder.name}
+                                onChange={e => setRenamingFolder({ ...renamingFolder, name: e.target.value })}
+                                onKeyDown={async (e) => {
+                                  if (e.key === 'Enter' && renamingFolder.name.trim()) {
+                                    await renameFolder(renamingFolder.id, renamingFolder.name);
+                                    setRenamingFolder(null);
+                                  }
+                                  if (e.key === 'Escape') setRenamingFolder(null);
+                                }}
+                                className="px-2 py-0.5 border border-blue-400 rounded text-sm font-semibold text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-500 w-40"
+                              />
+                              <button
+                                onClick={async () => {
+                                  if (renamingFolder.name.trim()) {
+                                    await renameFolder(renamingFolder.id, renamingFolder.name);
+                                  }
+                                  setRenamingFolder(null);
+                                }}
+                                className="p-0.5 text-green-600 hover:text-green-700"
+                                title="Save"
+                              >
+                                <Icon path={mdiCheck} size={0.75} />
+                              </button>
+                              <button
+                                onClick={() => setRenamingFolder(null)}
+                                className="p-0.5 text-gray-400 hover:text-gray-600"
+                                title="Cancel"
+                              >
+                                <Icon path={mdiCancel} size={0.75} />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-base">
+                              {group.folder?.name ?? 'Unassigned'}
+                            </span>
+                          )}
+
+                          <span className="text-xs font-normal text-gray-400">
+                            ({group.invoices.length} invoice{group.invoices.length !== 1 ? 's' : ''})
+                          </span>
+
+                          {/* Rename / Delete buttons (real folders only, not Unassigned) */}
+                          {group.key !== 'unassigned' && renamingFolder?.id !== group.key && (
+                            <div
+                              className="flex items-center gap-1 ml-1"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => setRenamingFolder({ id: group.key, name: group.folder?.name ?? '' })}
+                                className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors"
+                                title="Rename folder"
+                              >
+                                <Icon path={mdiPencilOutline} size={0.7} />
+                              </button>
+                              <button
+                                onClick={() => deleteFolder(group.key)}
+                                className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
+                                title="Delete folder"
+                              >
+                                <Icon path={mdiDelete} size={0.7} />
+                              </button>
+                            </div>
+                          )}
+
+                          <Icon
+                            path={collapsedFolders.has(group.key) ? mdiChevronDown : mdiChevronUp}
+                            size={0.7}
+                            className="ml-auto text-gray-400"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                    {/* ── Invoice rows (hidden when folder is collapsed) ── */}
+                    {!collapsedFolders.has(group.key) && group.invoices.map((inv) => {
                   // matchCompany is pre-computed by processedInvoices (multi-field best-match)
                   const matchCompany = inv.matchCompany;
                   const matchReasons = inv.matchReasons || [];
@@ -2183,24 +2516,70 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           </span>
                         </td>
                         <td className="px-1 py-2 align-top">
-                          {(() => {
-                            const hasResolved = lineItems.some(li => li.status === 'approved' || li.status === 'rejected');
-                            return (
+                          <div className="flex flex-col items-center gap-1">
+                            {/* Move to folder */}
+                            <div className="relative">
                               <button
-                                onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(inv); }}
-                                disabled={hasResolved}
-                                className={
-                                  'p-1 rounded transition-colors ' +
-                                  (hasResolved
-                                    ? 'text-gray-300 cursor-not-allowed'
-                                    : 'text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer')
-                                }
-                                title={hasResolved ? 'Undo all approved/rejected items first' : 'Delete invoice'}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setMovingInvoiceId(movingInvoiceId === inv.id ? null : inv.id);
+                                }}
+                                className="p-1 rounded text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="Move to folder"
                               >
-                                <Icon path={mdiDelete} size={0.7} />
+                                <Icon path={mdiFolder} size={0.7} />
                               </button>
-                            );
-                          })()}
+                              {movingInvoiceId === inv.id && (
+                                <div className="absolute right-0 bottom-full mb-1 w-44 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
+                                  {folders.map(f => (
+                                    <button
+                                      key={f.id}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        moveInvoiceToFolder(inv.id, f.id);
+                                        setMovingInvoiceId(null);
+                                      }}
+                                      className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-blue-50 transition-colors ${inv.folder_id === f.id ? 'font-semibold text-blue-600' : 'text-gray-700'}`}
+                                    >
+                                      <Icon path={mdiFolder} size={0.6} />
+                                      {f.name}
+                                    </button>
+                                  ))}
+                                  <div className="border-t border-gray-100 my-0.5" />
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      moveInvoiceToFolder(inv.id, null);
+                                      setMovingInvoiceId(null);
+                                    }}
+                                    className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 transition-colors ${!inv.folder_id ? 'font-semibold text-gray-800' : 'text-gray-400'}`}
+                                  >
+                                    <Icon path={mdiFolder} size={0.6} className="opacity-40" />
+                                    Unassigned
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {/* Delete */}
+                            {(() => {
+                              const hasResolved = lineItems.some(li => li.status === 'approved' || li.status === 'rejected');
+                              return (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDeleteInvoice(inv); }}
+                                  disabled={hasResolved}
+                                  className={
+                                    'p-1 rounded transition-colors ' +
+                                    (hasResolved
+                                      ? 'text-gray-300 cursor-not-allowed'
+                                      : 'text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer')
+                                  }
+                                  title={hasResolved ? 'Undo all approved/rejected items first' : 'Delete invoice'}
+                                >
+                                  <Icon path={mdiDelete} size={0.7} />
+                                </button>
+                              );
+                            })()}
+                          </div>
                         </td>
                       </tr>
                       {/* Expandable Subrow */}
@@ -2283,7 +2662,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       )}
                     </React.Fragment>
                   );
-                })}
+                    })}
+                  </React.Fragment>
+                ))}
               </tbody>
             </table>
           </div>
