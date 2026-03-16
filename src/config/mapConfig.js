@@ -33,7 +33,8 @@ export const MAP_CONFIG = {
     ZOOM_BUCKETS: [
       { minZoom: 14.0, maxZoom: 16.99, size: [6, 10] },
       { minZoom: 17.0, maxZoom: 17.49, size: [8, 13.33] },
-      { minZoom: 17.5, maxZoom: 17.99, size: [12, 20] },
+      { minZoom: 17.5, maxZoom: 17.74, size: [12, 20] },
+      { minZoom: 17.75, maxZoom: 17.99, size: [15, 25] },
       { minZoom: 18.0, maxZoom: 18.49, size: [18, 30] },
       { minZoom: 18.5, maxZoom: 18.99, size: [25, 41] },
       { minZoom: 19.0, maxZoom: 19.49, size: [30, 50] },
@@ -80,11 +81,11 @@ export const PRINT_CONFIG = {
     },
     'A4 — Landscape': {
       center: [51.89676207833922, 5.7757150597931615],
-      zoom: 18,
+      zoom: 17.75,
     },
     'A4 — Portrait': {
       center: [51.89668717526025, 5.775062626578228],
-      zoom: 18,
+      zoom: 17.75,
     },
   },
 };

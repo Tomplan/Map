@@ -1598,15 +1598,6 @@ export default function InvoiceSyncTab({ selectedYear }) {
             className="hidden"
           />
 
-          <button
-            onClick={fetchInvoices}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Icon path={mdiRefresh} size={0.8} />
-            {t('invoiceSync.refresh')}
-          </button>
-
           <div className="relative">
             {/* New folder quick-add */}
             <button
@@ -1645,15 +1636,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   <Icon path={mdiUpload} size={0.8} />
                   {uploading ? t('invoiceSync.importing') : t('invoiceSync.importPdfs')}
                 </button>
-                <div className="border-t border-gray-100 my-1"></div>
-                <button
-                  onClick={handleClearAll}
-                  disabled={loading || invoices.length === 0}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
-                >
-                  <Icon path={mdiDelete} size={0.8} className="text-red-500" />
-                  {t('invoiceSync.clearStaging')}
-                </button>
+
               </div>
             )}
           </div>

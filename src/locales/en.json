@@ -788,6 +788,8 @@
     "redoAssignment": "Redo assignment",
     "subscriptionList": "Subscription List",
     "markersList": "Markers List",
+    "freeTotalLabel": "Free / Total",
+    "freeTotalTooltip": "{{count}} booth marker(s) without assignment",
     "assignedBoothDefault": "Assigned Booth Default",
     "unassignedBoothDefault": "Unassigned Booth Default",
     "globalDefaultForBoothMarkers": "Global Default for Booth Markers",
