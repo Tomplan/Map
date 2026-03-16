@@ -782,6 +782,8 @@
     "redoAssignment": "Toewijzing opnieuw uitvoeren",
     "subscriptionList": "Inschrijvingen",
     "markersList": "Markerlijst",
+    "freeTotalLabel": "Vrij / Totaal",
+    "freeTotalTooltip": "{{count}} standmarker(s) zonder toewijzing",
     "assignedBoothDefault": "Standaard Toegewezen Stand",
     "unassignedBoothDefault": "Standaard Niet-toegewezen Stand",
     "globalDefaultForBoothMarkers": "Algemene Standaard voor Stand Markers",
