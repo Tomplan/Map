@@ -1083,6 +1083,129 @@ export const adminFeedbackRequestsTour = {
   ],
 };
 
+export const adminInvoicesTour = {
+  scope: 'admin',
+  id: 'admin-invoices',
+  path: '/admin/invoices',
+  autoStart: false,
+  roles: ['super_admin', 'system_manager', 'event_manager'],
+  title: {
+    en: 'Invoice Sync',
+    nl: 'Factuur Sync',
+  },
+  description: {
+    en: 'Import PDF invoices and sync line items to company subscriptions',
+    nl: 'Importeer PDF facturen en synchroniseer regelitems naar bedrijfsinschrijvingen',
+  },
+  steps: [
+    {
+      element: 'body',
+      popover: {
+        title: {
+          en: 'Invoice Sync Overview',
+          nl: 'Factuur Sync Overzicht',
+        },
+        description: {
+          en: "The Invoices tab lets you upload PDF invoices, automatically match them to companies, and sync line items to subscriptions. Let's walk through the key features.",
+          nl: 'Het Facturen tabblad laat je PDF facturen uploaden, automatisch koppelen aan bedrijven en regelitems synchroniseren naar inschrijvingen. Laten we de belangrijkste functies doorlopen.',
+        },
+        side: 'center',
+        align: 'center',
+      },
+    },
+    {
+      element: '[data-testid="invoices-actions-button"]',
+      popover: {
+        title: {
+          en: 'Import PDF Invoices',
+          nl: 'PDF Facturen Importeren',
+        },
+        description: {
+          en: 'Click Actions to import PDF invoices. Select one or multiple PDF files — the system will parse invoice numbers, company details, and line items automatically.',
+          nl: 'Klik op Acties om PDF facturen te importeren. Selecteer één of meerdere PDF bestanden — het systeem parseert automatisch factuurnummers, bedrijfsgegevens en regelitems.',
+        },
+        side: 'bottom',
+        align: 'end',
+      },
+    },
+    {
+      element: '[data-testid="invoices-search"]',
+      popover: {
+        title: {
+          en: 'Search Invoices',
+          nl: 'Facturen Zoeken',
+        },
+        description: {
+          en: 'Search by invoice number, company name, or any text in the invoice data. Results filter in real-time as you type.',
+          nl: 'Zoek op factuurnummer, bedrijfsnaam of tekst in de factuurdata. Resultaten filteren real-time terwijl je typt.',
+        },
+        side: 'bottom',
+        align: 'center',
+      },
+    },
+    {
+      element: '[data-testid="invoices-table"]',
+      popover: {
+        title: {
+          en: 'Invoice List & Folders',
+          nl: 'Factuurlijst & Mappen',
+        },
+        description: {
+          en: 'Invoices are displayed in a sortable table. Click column headers to sort. Use folders to organize invoices by category or import batch. Click any row to expand details.',
+          nl: 'Facturen worden weergegeven in een sorteerbare tabel. Klik op kolomkoppen om te sorteren. Gebruik mappen om facturen te organiseren per categorie of import batch. Klik op een rij om details te bekijken.',
+        },
+        side: 'top',
+        align: 'center',
+      },
+    },
+    {
+      element: 'body',
+      popover: {
+        title: {
+          en: 'Company Matching',
+          nl: 'Bedrijf Koppeling',
+        },
+        description: {
+          en: 'Each invoice is automatically matched to a company using fuzzy matching (name, email, phone, KVK, VAT). A match score of 40+ is considered valid. You can verify or override matches manually.',
+          nl: 'Elke factuur wordt automatisch gekoppeld aan een bedrijf via fuzzy matching (naam, email, telefoon, KVK, BTW). Een matchscore van 40+ wordt als geldig beschouwd. Je kunt koppelingen handmatig verifiëren of overschrijven.',
+        },
+        side: 'center',
+        align: 'center',
+      },
+    },
+    {
+      element: 'body',
+      popover: {
+        title: {
+          en: 'Line Item Sync',
+          nl: 'Regelitem Synchronisatie',
+        },
+        description: {
+          en: 'Expand an invoice row to see parsed line items. Each item can be approved (synced to subscription), rejected, or undone. Items map to subscription fields like booth count, meals, and coins based on your Invoice Import Filters in Settings.',
+          nl: 'Klap een factuurrij uit om geparseerde regelitems te zien. Elk item kan goedgekeurd (gesynchroniseerd naar inschrijving), afgewezen of ongedaan gemaakt worden. Items worden gekoppeld aan inschrijvingsvelden zoals standaantal, maaltijden en munten op basis van je Factuur Import Filters in Instellingen.',
+        },
+        side: 'center',
+        align: 'center',
+      },
+    },
+    {
+      element: 'body',
+      popover: {
+        title: {
+          en: 'Status Workflow',
+          nl: 'Status Workflow',
+        },
+        description: {
+          en: 'Invoices progress through statuses: Pending → Partial (some items synced) → Approved (all items synced) or Rejected. Use the status column to quickly see which invoices need attention.',
+          nl: 'Facturen doorlopen statussen: In Afwachting → Gedeeltelijk (sommige items gesynchroniseerd) → Goedgekeurd (alle items gesynchroniseerd) of Afgewezen. Gebruik de statuskolom om snel te zien welke facturen aandacht nodig hebben.',
+        },
+        side: 'center',
+        align: 'center',
+      },
+    },
+  ],
+};
+
 /**
  * Get all admin tours
  */
@@ -1094,6 +1217,7 @@ export function getAllAdminTours() {
     adminAssignmentsTour,
     adminProgramManagementTour,
     adminMapManagementTour,
+    adminInvoicesTour,
     adminSettingsTour,
     adminFeedbackRequestsTour,
   ];
