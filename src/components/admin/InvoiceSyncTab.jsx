@@ -1572,11 +1572,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
         </div>
       )}
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-6" data-testid="invoices-header">
         <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">
           {t('adminNav.invoices', 'Invoices')}
         </h1>
-        <div className="flex-1 max-w-md mx-6 relative">
+        <div className="flex-1 max-w-md mx-6 relative" data-testid="invoices-search">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Icon path={mdiMagnify} size={0.8} className="text-gray-400" />
           </div>
@@ -1618,6 +1618,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               onClick={() => setIsActionsOpen(!isActionsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
               title={t('common.actionsMenu', 'Actions')}
+              data-testid="invoices-actions-button"
             >
               <span>{t('common.actions', 'Actions')}</span>
               <Icon path={isActionsOpen ? mdiChevronUp : mdiChevronDown} size={0.7} />
@@ -1859,7 +1860,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               </div>
             </div>
           )}
-          <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100">
+          <div className="bg-white rounded-xl shadow overflow-hidden overflow-x-auto border border-gray-100" data-testid="invoices-table">
             <table className="w-full text-left border-collapse bg-white table-auto">
               <thead className="bg-gray-50 text-gray-700 uppercase text-xs">
                 <tr>
