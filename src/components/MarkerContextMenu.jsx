@@ -33,7 +33,7 @@ function MarkerContextMenu({
           const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
 
           const assignedBoothCount = companyAssignments.length;
-          const totalBoothCount = sub.booth_count || 1;
+          const totalBoothCount = sub.booth_count ?? 1;
 
           // Check if already assigned to this specific marker
           const isAssignedToThisMarker = companyAssignments.some((a) => a.marker_id === marker.id);
@@ -44,7 +44,7 @@ function MarkerContextMenu({
         .map((sub) => {
           const companyAssignments = assignments.filter((a) => a.company_id === sub.company_id);
           const assignedBoothCount = companyAssignments.length;
-          const totalBoothCount = sub.booth_count || 1;
+          const totalBoothCount = sub.booth_count ?? 1;
           const remainingBooths = totalBoothCount - assignedBoothCount;
 
           return {
@@ -100,7 +100,7 @@ function MarkerContextMenu({
           const subscription = subscriptions.find(
             (s) => s.company_id === currentAssignment.company_id,
           );
-          const totalBooths = subscription?.booth_count || 1;
+          const totalBooths = subscription?.booth_count ?? 1;
 
           return (
             <div className="mb-3 p-2 bg-blue-50 rounded border border-blue-200">
