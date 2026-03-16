@@ -35,6 +35,7 @@ The admin panel uses **year scoping** to separate data for different event years
 - **Event Subscriptions**: Each year has its own set of company subscriptions
 - **Booth Assignments**: Booth-to-company assignments are year-specific
 - **Program Management**: Activity schedules are organized by year
+- **Invoices**: Imported invoice data is linked to year-specific subscriptions
 
 **Global Features** (same across all years):
 - **Companies**: Company profiles exist across all years
@@ -73,6 +74,7 @@ Het admin paneel gebruikt **jaar scoping** om data voor verschillende eventjaren
 - **Event Inschrijvingen**: Elk jaar heeft zijn eigen set bedrijfsinschrijvingen
 - **Stand Toewijzingen**: Stand-naar-bedrijf toewijzingen zijn jaar-specifiek
 - **Programma Beheer**: Activiteitenschema's zijn georganiseerd per jaar
+- **Facturen**: Geïmporteerde factuurdata is gekoppeld aan jaarspecifieke inschrijvingen
 
 **Globale Functies** (hetzelfde voor alle jaren):
 - **Bedrijven**: Bedrijfsprofielen bestaan over alle jaren
@@ -89,7 +91,7 @@ Het admin paneel gebruikt **jaar scoping** om data voor verschillende eventjaren
 Het dashboard toont alle belangrijke statistieken voor het geselecteerde jaar, en Snelle Acties linken naar relevante beheerpagina's.
       `.trim(),
     },
-    updated: '2025-12-03',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Switch years using the year picker in the admin sidebar',
@@ -211,7 +213,7 @@ Zoomniveaus bepalen wanneer markers op de kaart verschijnen. Leaflet gebruikt zo
 - Rechthoeken (6m x 6m) tonen standcontouren - alleen zichtbaar in admin weergave
       `.trim(),
     },
-    updated: '2025-12-03',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Right-click on map for quick marker creation',
@@ -659,7 +661,7 @@ Beheer efficiënt bulk bedrijfsdata:
 6. Klik "Opslaan" (synchroniseert direct naar alle gebruikers)
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Add multi-language info to improve attendee experience for international visitors',
@@ -843,7 +845,7 @@ Beheer efficiënt bulkdata:
 - Exporteer regelmatig voor backup en rapportage
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Booth display updates automatically when assignments change',
@@ -1077,7 +1079,7 @@ Bulk toewijzingsbeheer:
 - Archiveer voltooide jaren jaarlijks om systeem georganiseerd te houden
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         "Use 'Unassigned First' sort to quickly complete all assignments",
@@ -1133,7 +1135,7 @@ Manage admin user accounts and role assignments:
 
 **Important**: User Management affects security and access control. Always verify role assignments before saving.
 
-**3. Category Settings** 🗝️ *System Manager+*
+**3. Categories** 🗝️ *System Manager+*
 Create and manage company categories for organization-wide filtering:
 - **Create Categories**: Add new category names and descriptions
 - **Edit Categories**: Update existing category information
@@ -1157,35 +1159,27 @@ Customize the application appearance and identity:
 - Supported formats: PNG (recommended), JPG, SVG
 - Maximum file size: 2MB
 
-**5. Map Defaults** 🗝️ *System Manager+*
-Set default map position and zoom for new event years:
-- **Default Center**: Latitude and longitude coordinates
+**5. Map Settings** 🗝️ *System Manager+*
+Configure map defaults and year-specific map visibility:
+
+**Default Position & Zoom:**
+- **Default Center**: Latitude and longitude coordinates for new event years
 - **Default Zoom**: Starting zoom level (1-20)
-- **Scope**: Applied when creating new event years
-- **Override**: Can be customized per year in Map Settings
+- Set a sensible starting point that applies to all new event years
 
-Use Map Defaults to set a sensible starting point for all future events. You can fine-tune each year individually in Map Settings (see below).
-
-**How to Set Defaults:**
-1. Navigate to Map Management
-2. Pan and zoom to desired default view
-3. Return to Settings > Map Defaults
-4. Click "Capture Current View" to save position and zoom
-
-**6. Map Settings** 🗝️ *System Manager+*
-Configure year-specific map visibility and behavior:
+**Year-Specific Configuration:**
 - **Year Selector**: Choose which event year to configure
 - **Map Visibility**: Enable/disable map for specific year
 - **Custom Center**: Override default center coordinates for this year
 - **Custom Zoom**: Override default zoom level for this year
-- **Scope**: Settings apply only to selected year
+- **Scope**: Year-specific settings override defaults
 
 **Year-Specific Use Cases:**
 - Hide map for years without physical event (online-only)
 - Adjust map center if event venue changed locations
 - Fine-tune zoom level for venue size differences
 
-**7. Event Defaults** 🔑 *Event Manager+*
+**6. Event Defaults** 🔑 *Event Manager+*
 Set default meal counts for new event subscriptions:
 - **Saturday**: Breakfast, Lunch, BBQ counts
 - **Sunday**: Breakfast, Lunch counts
@@ -1200,14 +1194,70 @@ Set default meal counts for new event subscriptions:
 
 Event Managers can set these defaults to reduce data entry time when subscribing many companies.
 
-**8. Advanced Settings** 🔒 *Super Admin Only*
-System configuration and danger zone operations:
-- **Database Maintenance**: Backup and restore options
-- **System Configuration**: Technical settings
-- **Danger Zone**: Irreversible operations
-- **Scope**: System-wide impact
+**7. Public Default Year** 🗝️ *System Manager+*
+Set the default event year shown on the public map for new visitors:
+- **Year Input**: Enter the year number (2000-2100 range)
+- **Leave Empty**: Shows the most recent year automatically
+- **Scope**: Affects all public map visitors globally
+- **Save/Reset**: Save changes or revert to previous value
 
-⚠️ **Warning**: Advanced settings can significantly impact the application. Only Super Admins with technical knowledge should access this section. Always create backups before making changes.
+Use this when you want to control which year visitors see by default, for example during an active event.
+
+**8. Share App** 🔓 *All Roles*
+Generate a custom QR code for sharing the app with visitors:
+
+**QR Code Presets:**
+- 5 built-in presets: Standard, Modern Blue, Dark Dots, Elegant Gold, Tech Purple
+- Organization default preset (saved by Super Admin)
+- Personal presets saved in browser
+
+**Customization Options:**
+- **Colors**: RGB sliders, hex input, eyedropper tool, preset swatches
+- **Dot Style**: Square, Dots, Rounded, Classy, Extra Rounded
+- **Corner Style**: Square, Dot, Extra Rounded variants
+- **Gradient**: Optional linear gradient with rotation and color stops
+- **Logo**: Embed organization logo or upload custom image
+
+**Export:**
+- Download as PNG, JPG, or SVG (high-res 2048x2048px for print)
+- Super Admin can save current style as organization default
+
+**9. Invoice Import Filters** 🔑 *Event Manager+*
+Configure which invoice line items are recognized during PDF sync and how they map to subscription fields:
+
+**Allowed Items List** (left panel):
+- Master list of recognized line items
+- Each item maps to a subscription column (booth count, meals, etc.)
+- Add items manually with name and column assignment
+- Remove items by clicking the delete icon
+
+**Column Mapping Options:**
+- Booth (×1), Booth (×2 double)
+- Breakfast Saturday, Breakfast Sunday
+- Lunch Saturday, Lunch Sunday
+- BBQ Saturday
+- Ignore (don't sync this item)
+
+**Webshop Import** (right panel):
+- Upload CSV or Excel file from webshop product list
+- System auto-detects the column containing item names
+- Preview extracted items before importing
+- Select items to add to allowed list in bulk
+
+This configuration determines what gets synced when invoices are processed in the Invoices tab. Items not in the allowed list are ignored during invoice parsing.
+
+**10. Advanced Settings** 🔒 *Super Admin Only*
+Read-only documentation about the automated backup system:
+
+**Sections:**
+- **Overview**: Backup schedule, storage, and retention policies (daily 7-day, weekly 4-week, monthly 12-month)
+- **What Gets Backed Up**: All 18+ database tables organized by category (Core Data, Map Data, Organization, Archives)
+- **How It Works**: 6-step process from database dump to monitoring
+- **GitHub Actions**: Workflow configuration, triggers, and required secrets
+- **Restore**: Commands for restoring from backup files with dry-run option
+- **Security**: Encryption, role-based access, pre-restore backups, integrity validation
+
+⚠️ **Note**: This section is informational only. Actual backup operations run automatically via GitHub Actions. Contact your system administrator for restore operations.
 
 **Best Practices:**
 
@@ -1228,8 +1278,10 @@ System configuration and danger zone operations:
 **Scenario 1: Setting Up for New Event Year**
 1. Update Event Defaults with expected meal counts
 2. Check Map Settings for the new year
-3. Verify categories are current and organized
-4. Review user roles and permissions
+3. Set Public Default Year to the new event year
+4. Verify categories are current and organized
+5. Configure Invoice Import Filters with webshop products
+6. Review user roles and permissions
 
 **Scenario 2: Branding Update**
 1. Prepare new logo file (PNG, 200x200px, transparent)
@@ -1237,6 +1289,7 @@ System configuration and danger zone operations:
 3. Upload new logo
 4. Update organization name if changed
 5. Verify logo appears correctly in header and map clusters
+6. Update Share App QR code with new branding
 
 **Scenario 3: Adding New Admin User**
 1. Navigate to Settings > User Management
@@ -1276,7 +1329,7 @@ Beheer admin gebruikersaccounts en rol toewijzingen:
 
 **Belangrijk**: Gebruikersbeheer beïnvloedt beveiliging en toegangscontrole. Verifieer altijd rol toewijzingen voordat je opslaat.
 
-**3. Categorie Instellingen** 🗝️ *System Manager+*
+**3. Categorieën** 🗝️ *System Manager+*
 Creëer en beheer bedrijfscategorieën voor organisatiebrede filtering:
 - **Creëer Categorieën**: Voeg nieuwe categorienamen en beschrijvingen toe
 - **Wijzig Categorieën**: Update bestaande categorie informatie
@@ -1300,35 +1353,27 @@ Pas de applicatie weergave en identiteit aan:
 - Ondersteunde formaten: PNG (aanbevolen), JPG, SVG
 - Maximale bestandsgrootte: 2MB
 
-**5. Kaart Standaarden** 🗝️ *System Manager+*
-Stel standaard kaartpositie en zoom in voor nieuwe eventjaren:
-- **Standaard Centrum**: Breedtegraad en lengtegraad coördinaten
+**5. Kaart Instellingen** 🗝️ *System Manager+*
+Configureer kaart standaarden en jaarspecifieke kaart zichtbaarheid:
+
+**Standaard Positie & Zoom:**
+- **Standaard Centrum**: Breedtegraad en lengtegraad coördinaten voor nieuwe eventjaren
 - **Standaard Zoom**: Start zoomniveau (1-20)
-- **Scope**: Toegepast bij het maken van nieuwe eventjaren
-- **Override**: Kan per jaar aangepast worden in Kaart Instellingen
+- Stel een verstandig startpunt in dat geldt voor alle nieuwe eventjaren
 
-Gebruik Kaart Standaarden om een verstandig startpunt in te stellen voor alle toekomstige events. Je kunt elk jaar individueel fine-tunen in Kaart Instellingen (zie hieronder).
-
-**Hoe Standaarden Instellen:**
-1. Navigeer naar Kaartbeheer
-2. Pan en zoom naar gewenste standaardweergave
-3. Keer terug naar Instellingen > Kaart Standaarden
-4. Klik "Leg Huidige Weergave Vast" om positie en zoom op te slaan
-
-**6. Kaart Instellingen** 🗝️ *System Manager+*
-Configureer jaarspecifieke kaart zichtbaarheid en gedrag:
+**Jaarspecifieke Configuratie:**
 - **Jaar Selector**: Kies welk eventjaar te configureren
 - **Kaart Zichtbaarheid**: Schakel kaart in/uit voor specifiek jaar
 - **Aangepast Centrum**: Override standaard centrum coördinaten voor dit jaar
 - **Aangepaste Zoom**: Override standaard zoomniveau voor dit jaar
-- **Scope**: Instellingen gelden alleen voor geselecteerd jaar
+- **Scope**: Jaarspecifieke instellingen overschrijven standaarden
 
 **Jaarspecifieke Use Cases:**
 - Verberg kaart voor jaren zonder fysiek event (alleen online)
 - Pas kaartcentrum aan als event locatie veranderd is
 - Fine-tune zoomniveau voor verschillen in locatiegrootte
 
-**7. Event Standaarden** 🔑 *Event Manager+*
+**6. Event Standaarden** 🔑 *Event Manager+*
 Stel standaard maaltijdaantallen in voor nieuwe event inschrijvingen:
 - **Zaterdag**: Ontbijt, Lunch, BBQ aantallen
 - **Zondag**: Ontbijt, Lunch aantallen
@@ -1343,14 +1388,70 @@ Stel standaard maaltijdaantallen in voor nieuwe event inschrijvingen:
 
 Eventbeheerders kunnen deze standaarden instellen om data-invoer tijd te verminderen bij het inschrijven van veel bedrijven.
 
-**8. Geavanceerde Instellingen** 🔒 *Super Admin Only*
-Systeemconfiguratie en danger zone operaties:
-- **Database Onderhoud**: Backup en restore opties
-- **Systeemconfiguratie**: Technische instellingen
-- **Danger Zone**: Onomkeerbare operaties
-- **Scope**: Systeembrede impact
+**7. Publiek Standaard Jaar** 🗝️ *System Manager+*
+Stel het standaard eventjaar in dat bezoekers zien op de publieke kaart:
+- **Jaar Invoer**: Voer het jaarnummer in (bereik 2000-2100)
+- **Leeg Laten**: Toont automatisch het meest recente jaar
+- **Scope**: Beïnvloedt alle publieke kaart bezoekers wereldwijd
+- **Opslaan/Reset**: Sla wijzigingen op of keer terug naar vorige waarde
 
-⚠️ **Waarschuwing**: Geavanceerde instellingen kunnen de applicatie significant beïnvloeden. Alleen Super Admins met technische kennis moeten deze sectie benaderen. Maak altijd backups voordat je wijzigingen aanbrengt.
+Gebruik dit wanneer je wilt bepalen welk jaar bezoekers standaard zien, bijvoorbeeld tijdens een actief event.
+
+**8. App Delen** 🔓 *Alle Rollen*
+Genereer een aangepaste QR-code om de app te delen met bezoekers:
+
+**QR-code Presets:**
+- 5 ingebouwde presets: Standaard, Modern Blauw, Donkere Stippen, Elegant Goud, Tech Paars
+- Organisatie standaard preset (opgeslagen door Super Admin)
+- Persoonlijke presets opgeslagen in browser
+
+**Aanpassingsopties:**
+- **Kleuren**: RGB schuifregelaars, hex invoer, pipet tool, preset kleuren
+- **Stip Stijl**: Vierkant, Stippen, Afgerond, Classy, Extra Afgerond
+- **Hoek Stijl**: Vierkant, Stip, Extra Afgerond varianten
+- **Verloop**: Optioneel lineair verloop met rotatie en kleurstops
+- **Logo**: Organisatie logo insluiten of aangepaste afbeelding uploaden
+
+**Exporteren:**
+- Download als PNG, JPG of SVG (hoge resolutie 2048x2048px voor print)
+- Super Admin kan huidige stijl opslaan als organisatie standaard
+
+**9. Factuur Import Filters** 🔑 *Event Manager+*
+Configureer welke factuurregelitems herkend worden tijdens PDF sync en hoe ze gekoppeld worden aan inschrijvingsvelden:
+
+**Toegestane Items Lijst** (linker paneel):
+- Hoofdlijst van herkende regelitems
+- Elk item koppelt aan een inschrijvingskolom (standaantal, maaltijden, etc.)
+- Voeg items handmatig toe met naam en kolomtoewijzing
+- Verwijder items door op het verwijder icoon te klikken
+
+**Kolom Koppelingen:**
+- Stand (×1), Stand (×2 dubbel)
+- Ontbijt Zaterdag, Ontbijt Zondag
+- Lunch Zaterdag, Lunch Zondag
+- BBQ Zaterdag
+- Negeren (dit item niet synchroniseren)
+
+**Webshop Import** (rechter paneel):
+- Upload CSV of Excel bestand van webshop productlijst
+- Systeem detecteert automatisch de kolom met itemnamen
+- Voorbeeld bekijken van geëxtraheerde items voor import
+- Selecteer items om in bulk toe te voegen aan toegestane lijst
+
+Deze configuratie bepaalt wat gesynchroniseerd wordt wanneer facturen verwerkt worden in het Facturen tabblad. Items die niet in de toegestane lijst staan worden genegeerd tijdens factuurverwerking.
+
+**10. Geavanceerde Instellingen** 🔒 *Alleen Super Admin*
+Alleen-lezen documentatie over het geautomatiseerde backup systeem:
+
+**Secties:**
+- **Overzicht**: Backup schema, opslag en bewaarbeleid (dagelijks 7 dagen, wekelijks 4 weken, maandelijks 12 maanden)
+- **Wat Wordt Gebackupt**: Alle 18+ database tabellen georganiseerd per categorie (Kerndata, Kaartdata, Organisatie, Archieven)
+- **Hoe Het Werkt**: 6-stappen proces van database dump tot monitoring
+- **GitHub Actions**: Workflow configuratie, triggers en vereiste secrets
+- **Herstel**: Commando's voor herstel vanuit backup bestanden met dry-run optie
+- **Beveiliging**: Encryptie, rolgebaseerde toegang, pre-restore backups, integriteitsvalidatie
+
+⚠️ **Opmerking**: Deze sectie is alleen informatief. Werkelijke backup operaties draaien automatisch via GitHub Actions. Neem contact op met je systeembeheerder voor hersteloperaties.
 
 **Best Practices:**
 
@@ -1371,8 +1472,10 @@ Systeemconfiguratie en danger zone operaties:
 **Scenario 1: Opzetten voor Nieuw Eventjaar**
 1. Update Event Standaarden met verwachte maaltijdaantallen
 2. Controleer Kaart Instellingen voor het nieuwe jaar
-3. Verifieer dat categorieën actueel en georganiseerd zijn
-4. Review gebruikersrollen en rechten
+3. Stel Publiek Standaard Jaar in op het nieuwe eventjaar
+4. Verifieer dat categorieën actueel en georganiseerd zijn
+5. Configureer Factuur Import Filters met webshop producten
+6. Review gebruikersrollen en rechten
 
 **Scenario 2: Branding Update**
 1. Bereid nieuw logo bestand voor (PNG, 200x200px, transparant)
@@ -1380,6 +1483,7 @@ Systeemconfiguratie en danger zone operaties:
 3. Upload nieuw logo
 4. Update organisatienaam indien gewijzigd
 5. Verifieer dat logo correct verschijnt in header en kaart clusters
+6. Update App Delen QR-code met nieuwe branding
 
 **Scenario 3: Nieuwe Admin Gebruiker Toevoegen**
 1. Navigeer naar Instellingen > Gebruikersbeheer
@@ -1389,7 +1493,7 @@ Systeemconfiguratie en danger zone operaties:
 5. Stuur uitnodiging en verifieer dat gebruiker toegang ontvangt
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Personal settings only affect your account, organization settings affect everyone',
@@ -1397,6 +1501,9 @@ Systeemconfiguratie en danger zone operaties:
         'Review user roles quarterly for security hygiene',
         'Use categories consistently across all company assignments',
         'Set Event Defaults before bulk-subscribing companies',
+        'Use Share App to generate QR codes for event marketing materials',
+        'Configure Invoice Import Filters before processing your first invoice batch',
+        'Set Public Default Year when opening registration for a new event',
       ],
       nl: [
         'Persoonlijke instellingen beïnvloeden alleen jouw account, organisatie instellingen iedereen',
@@ -1404,6 +1511,9 @@ Systeemconfiguratie en danger zone operaties:
         'Review gebruikersrollen elk kwartaal voor security hygiëne',
         'Gebruik categorieën consistent over alle bedrijfstoewijzingen',
         'Stel Event Standaarden in voordat je bulk-inschrijvingen doet',
+        'Gebruik App Delen om QR-codes te genereren voor event marketing materialen',
+        'Configureer Factuur Import Filters voordat je de eerste factuur batch verwerkt',
+        'Stel Publiek Standaard Jaar in bij het openen van registratie voor een nieuw event',
       ],
     },
   },
@@ -1887,7 +1997,7 @@ Stats updaten automatisch wanneer activiteiten toegevoegd, bewerkt of status wij
 5. Test publiek schema om logische progressie te verifiëren
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Fill all three languages (NL/EN/DE) for international events',
@@ -2000,17 +2110,20 @@ All Users (🔓)
 |---------|:----------------:|:------------------:|:--------------:|
 | Dashboard (view) | ✅ | ✅ | ✅ |
 | Companies | ✅ Full | ✅ Full | ✅ Full |
+| Invoices | ✅ Full | ✅ Full | ✅ Full |
 | Subscriptions | ✅ Full | ✅ Full | ✅ Full |
 | Assignments | ✅ Full | ✅ Full | ✅ Full |
 | Program Management | ✅ Full | ✅ Full | ✅ Full |
 | Map Management | ❌ | ✅ Full | ✅ Full |
 | User Management | ❌ | ✅ Full | ✅ Full |
 | UI Language | ✅ Personal | ✅ Personal | ✅ Personal |
-| Category Settings | ❌ | ✅ Full | ✅ Full |
+| Categories | ❌ | ✅ Full | ✅ Full |
 | Branding | ❌ | ✅ Full | ✅ Full |
-| Map Defaults | ❌ | ✅ Full | ✅ Full |
 | Map Settings | ❌ | ✅ Full | ✅ Full |
 | Event Defaults | ✅ Full | ✅ Full | ✅ Full |
+| Public Default Year | ❌ | ✅ Full | ✅ Full |
+| Share App | ✅ View | ✅ View | ✅ Full |
+| Invoice Import Filters | ✅ Full | ✅ Full | ✅ Full |
 | Advanced Settings | ❌ | ❌ | ✅ Full |
 | Archive Year | ❌ | ❌ | ✅ Only |
 | Delete Users | ❌ | ❌ | ✅ Only |
@@ -2143,17 +2256,20 @@ Alle Gebruikers (🔓)
 |---------|:----------------:|:------------------:|:--------------:|
 | Dashboard (bekijken) | ✅ | ✅ | ✅ |
 | Bedrijven | ✅ Volledig | ✅ Volledig | ✅ Volledig |
+| Facturen | ✅ Volledig | ✅ Volledig | ✅ Volledig |
 | Inschrijvingen | ✅ Volledig | ✅ Volledig | ✅ Volledig |
 | Toewijzingen | ✅ Volledig | ✅ Volledig | ✅ Volledig |
 | Programma Beheer | ✅ Volledig | ✅ Volledig | ✅ Volledig |
 | Kaart Beheer | ❌ | ✅ Volledig | ✅ Volledig |
 | Gebruikersbeheer | ❌ | ✅ Volledig | ✅ Volledig |
 | UI Taal | ✅ Persoonlijk | ✅ Persoonlijk | ✅ Persoonlijk |
-| Categorie Instellingen | ❌ | ✅ Volledig | ✅ Volledig |
+| Categorieën | ❌ | ✅ Volledig | ✅ Volledig |
 | Branding | ❌ | ✅ Volledig | ✅ Volledig |
-| Kaart Defaults | ❌ | ✅ Volledig | ✅ Volledig |
 | Kaart Instellingen | ❌ | ✅ Volledig | ✅ Volledig |
 | Event Defaults | ✅ Volledig | ✅ Volledig | ✅ Volledig |
+| Publiek Standaard Jaar | ❌ | ✅ Volledig | ✅ Volledig |
+| App Delen | ✅ Bekijken | ✅ Bekijken | ✅ Volledig |
+| Factuur Import Filters | ✅ Volledig | ✅ Volledig | ✅ Volledig |
 | Geavanceerde Instellingen | ❌ | ❌ | ✅ Volledig |
 | Jaar Archiveren | ❌ | ❌ | ✅ Alleen |
 | Gebruikers Verwijderen | ❌ | ❌ | ✅ Alleen |
@@ -2199,7 +2315,7 @@ Als je andere rechten nodig hebt:
 - Begrijp de mogelijkheden en beperkingen van je rol
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Your current role is always displayed in the top-right corner of the admin panel',
@@ -2651,7 +2767,7 @@ Beschikbare pictogrammen zijn: Auto, Tent, Aanhanger, Auto-onderdelen, Vliegtuig
 - Gebruikt voor badge achtergronden en visuele groepering
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Create categories before importing companies to assign them during import',
@@ -3265,7 +3381,7 @@ Het systeem transformeert automatisch data tijdens import:
 - Grote imports (1000+ rijen): ~5-10 seconden
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Always export before bulk changes to create a safety backup',
@@ -3952,7 +4068,7 @@ Het feedback systeem update real-time voor alle verbonden gebruikers:
 - Hoofdletter-ongevoelig gedeeltelijk matchen
       `.trim(),
     },
-    updated: '2025-12-02',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Search existing requests before creating new ones to avoid duplicates',
@@ -4015,6 +4131,7 @@ Welcome to the Event Map Admin Panel!
 |---------|:----------------:|:------------------:|:--------------:|
 | Dashboard | View | View | View |
 | Companies | Full Access | Full Access | Full Access |
+| Invoices | Full Access | Full Access | Full Access |
 | Event Subscriptions | Full Access | Full Access | Full Access |
 | Booth Assignments | Full Access | Full Access | Full Access |
 | Program Management | Full Access | Full Access | Full Access |
@@ -4083,6 +4200,7 @@ Welkom bij het Event Kaart Admin Paneel!
 |---------|:----------------:|:------------------:|:--------------:|
 | Dashboard | Bekijken | Bekijken | Bekijken |
 | Bedrijven | Volledige Toegang | Volledige Toegang | Volledige Toegang |
+| Facturen | Volledige Toegang | Volledige Toegang | Volledige Toegang |
 | Event Inschrijvingen | Volledige Toegang | Volledige Toegang | Volledige Toegang |
 | Stand Toewijzingen | Volledige Toegang | Volledige Toegang | Volledige Toegang |
 | Programma Beheer | Volledige Toegang | Volledige Toegang | Volledige Toegang |
@@ -4114,7 +4232,7 @@ Welkom bij het Event Kaart Admin Paneel!
 - Neem contact op met systeembeheerder voor toegangsproblemen
       `.trim(),
     },
-    updated: '2025-12-03',
+    updated: '2026-03-16',
     tips: {
       en: [
         'Start with dashboard to understand current status',
@@ -4129,6 +4247,364 @@ Welkom bij het Event Kaart Admin Paneel!
         'Vergrendel markers voor go-live',
         'Data importeren bespaart tijd vs handmatige invoer',
         'Programma beheer update publiek schema instant',
+      ],
+    },
+  },
+
+  invoices: {
+    title: {
+      en: 'Invoices',
+      nl: 'Facturen',
+    },
+    content: {
+      en: `
+Upload PDF invoices, automatically match them to companies, and sync extracted data into event subscriptions. The Invoices page streamlines the process of converting incoming exhibitor invoices into subscription records.
+
+**Workflow Overview**
+
+The invoice sync follows a clear status-based pipeline:
+1. **Upload** PDF invoices (single or batch)
+2. **Parse** — system auto-extracts company name, contact info, line items, and totals
+3. **Match** — fuzzy matching algorithm finds the best company match
+4. **Verify** — side-by-side comparison of invoice vs. company data
+5. **Approve** — confirm match and sync data to subscription
+6. **Synced** — subscription line items created, totals recalculated
+
+**Uploading Invoices** 🔑 *Event Manager+*
+
+Upload PDF invoices for processing:
+1. Click the **Upload** button (top toolbar)
+2. Select one or more PDF files from your computer
+3. A progress bar shows current/total upload progress
+4. Each PDF is parsed automatically after upload
+5. Parsed invoices appear in the list with status **Pending**
+
+**Batch Upload:**
+- Select multiple PDFs at once for bulk processing
+- Each file is parsed independently
+- Failed parses show error status with details
+
+**Automatic Company Matching** 🔑 *Event Manager+*
+
+After parsing, the system attempts to auto-match each invoice to a company using a multi-field fuzzy scoring algorithm:
+
+**Match Fields & Scoring:**
+- **Company Name** — exact match (100 pts) or partial match (40 pts)
+- **Email** — matches against all company email fields (80 pts)
+- **Phone** — normalized comparison ignoring formatting (70 pts)
+- **KVK Number** — Dutch Chamber of Commerce registration (60 pts)
+- **VAT Number** — Tax identification number (50 pts)
+
+A match is accepted when the total score reaches **40 or higher**. The best-scoring company is selected automatically.
+
+**Match Verification Modal** 🔑 *Event Manager+*
+
+When a match is found, a verification modal shows a side-by-side comparison:
+
+**Layout:**
+- **Left column**: Invoice data (extracted from PDF)
+- **Right column**: Company data (from database)
+- **Fields compared**: Company name, contact name(s), email(s), phone(s), street address, postal code, city, country, VAT number, KVK number
+
+**Field Override Options:**
+For each field where invoice and company data differ, you can choose:
+- **Use Invoice** — overwrite company field with invoice value
+- **Use Company** — keep existing company data
+- **Use Both** — store invoice value as secondary contact (for name, email, phone)
+
+**Actions:**
+- **Confirm** — accept match and sync to subscription
+- **Unmatch** — reject match and return to pending
+- **Create New** — create a new company from invoice data
+- **Cancel** — close modal without changes
+
+**Patch Company Checkbox:**
+Toggle "Also update company contact fields" to apply your field choices to the company record when confirming.
+
+**Manual Company Search** 🔑 *Event Manager+*
+
+When no automatic match is found (score < 40):
+1. A search modal appears showing the invoice company name
+2. Type to search across all companies
+3. Click a company to select it as the match
+4. Proceed to verification modal for confirmation
+5. Or click **Create New** to add a new company
+
+**Invoice Statuses**
+
+Each invoice progresses through these statuses:
+
+- **Pending** (yellow) — Uploaded and parsed, awaiting match/review
+- **Approved** (green) — Company matched and verified, subscription synced
+- **Synced** (blue) — Fully processed and integrated
+
+**Undo Feature** 🔑 *Event Manager+*
+
+Revert an approved invoice back to pending:
+1. Click the **Undo** button (↩ icon) on an approved invoice
+2. System automatically deactivates the subscription line items created from this invoice
+3. Subscription totals are recalculated
+4. Invoice returns to **Pending** status for re-processing
+
+**Line Item Removal** 🔑 *Event Manager+*
+
+When undoing, you can choose which specific line items to remove:
+- **Remove All** — deactivate all line items from this invoice
+- **Select Individual** — choose specific items to keep or remove
+- Subscription totals update automatically after removal
+
+**Folder Organization** 🔑 *Event Manager+*
+
+Organize invoices into folders for better management:
+- **Create Folder** — add new named folders
+- **Rename Folder** — update folder names
+- **Delete Folder** — remove empty folders
+- **Move to Folder** — drag or assign invoices to folders
+- Folders persist across sessions
+
+**Search & Sort** 🔑 *Event Manager+*
+
+Find and organize invoices efficiently:
+
+**Search:**
+- Type in the search bar to filter by company name, invoice number, or keywords
+- Real-time filtering as you type
+
+**Sort Options:**
+- Sort by creation date, status, company name, or invoice number
+- Toggle ascending/descending order
+- Sort preferences persist during session
+
+**Actions Menu** 🔑 *Event Manager+*
+
+The actions dropdown provides bulk operations:
+- **Upload** — open file picker for new PDFs
+- **Clear All** — remove all invoices (with confirmation)
+- **Folder Management** — create, rename, or delete folders
+
+**Row Details** 🔑 *Event Manager+*
+
+Click the expand icon on any invoice row to see:
+- Full parsed data from the PDF
+- Line items with quantities and amounts
+- Match score and match reasons (if matched)
+- History of status changes
+- Linked subscription details (if approved)
+
+**Subscription Sync Details**
+
+When an invoice is approved:
+1. System finds or creates a subscription for the matched company in the selected year
+2. Each invoice line item is added as a subscription line item
+3. Items are mapped to columns based on **Invoice Import Filters** (configured in Settings)
+4. Subscription totals (booth count, meals, coins) are recalculated automatically
+5. Changes appear immediately in the Subscriptions tab
+
+**Best Practices:**
+
+**Before Uploading:**
+- Configure **Invoice Import Filters** in Settings first — this determines which line items are recognized and how they map to subscription fields
+- Ensure companies exist in the Companies tab before importing their invoices
+- Verify the correct event year is selected
+
+**During Processing:**
+- Review the verification modal carefully — check that the right company is matched
+- Use field overrides to keep the most accurate contact data
+- Enable "patch company" only when invoice data is more current than the database
+
+**After Processing:**
+- Check the Subscriptions tab to verify totals are correct
+- Use Undo if a match was incorrect — it cleanly reverts all changes
+- Organize processed invoices into folders for archival
+
+**Workflow Efficiency:**
+- Upload invoices in batches for faster processing
+- Handle auto-matched invoices first (just verify and confirm)
+- Then handle unmatched invoices (requires manual search)
+- Use search and sort to find specific invoices in large lists
+      `.trim(),
+      nl: `
+Upload PDF facturen, koppel ze automatisch aan bedrijven en synchroniseer geëxtraheerde data naar event inschrijvingen. De Facturen pagina stroomlijnt het proces van het omzetten van binnenkomende standhouder facturen naar inschrijvingsrecords.
+
+**Workflow Overzicht**
+
+De factuur sync volgt een duidelijke status-gebaseerde pipeline:
+1. **Upload** PDF facturen (enkel of batch)
+2. **Parsed** — systeem extraheert automatisch bedrijfsnaam, contactinfo, regelitems en totalen
+3. **Match** — fuzzy matching algoritme vindt de beste bedrijfsmatch
+4. **Verifieer** — zij-aan-zij vergelijking van factuur vs. bedrijfsdata
+5. **Goedkeuren** — bevestig match en synchroniseer data naar inschrijving
+6. **Gesynchroniseerd** — inschrijving regelitems aangemaakt, totalen herberekend
+
+**Facturen Uploaden** 🔑 *Event Manager+*
+
+Upload PDF facturen voor verwerking:
+1. Klik de **Upload** knop (bovenbalk)
+2. Selecteer één of meer PDF bestanden van je computer
+3. Een voortgangsbalk toont huidige/totaal uploadvoortgang
+4. Elke PDF wordt automatisch geparsed na upload
+5. Geparsede facturen verschijnen in de lijst met status **In Afwachting**
+
+**Batch Upload:**
+- Selecteer meerdere PDFs tegelijk voor bulkverwerking
+- Elk bestand wordt onafhankelijk geparsed
+- Mislukte parses tonen foutstatus met details
+
+**Automatische Bedrijfskoppeling** 🔑 *Event Manager+*
+
+Na het parsen probeert het systeem elke factuur automatisch te koppelen aan een bedrijf met een multi-veld fuzzy scoring algoritme:
+
+**Match Velden & Scoring:**
+- **Bedrijfsnaam** — exacte match (100 punten) of gedeeltelijke match (40 punten)
+- **Email** — vergelijkt met alle bedrijfs-emailvelden (80 punten)
+- **Telefoon** — genormaliseerde vergelijking zonder opmaak (70 punten)
+- **KVK Nummer** — Kamer van Koophandel registratie (60 punten)
+- **BTW Nummer** — Belasting identificatienummer (50 punten)
+
+Een match wordt geaccepteerd wanneer de totale score **40 of hoger** bereikt. Het best scorende bedrijf wordt automatisch geselecteerd.
+
+**Match Verificatie Modal** 🔑 *Event Manager+*
+
+Wanneer een match gevonden is, toont een verificatiemodal een zij-aan-zij vergelijking:
+
+**Indeling:**
+- **Linkerkolom**: Factuurdata (geëxtraheerd uit PDF)
+- **Rechterkolom**: Bedrijfsdata (uit database)
+- **Vergeleken velden**: Bedrijfsnaam, contactnaam/namen, email(s), telefoon(s), adres, postcode, stad, land, BTW-nummer, KVK-nummer
+
+**Veld Override Opties:**
+Voor elk veld waar factuur- en bedrijfsdata verschillen, kun je kiezen:
+- **Gebruik Factuur** — overschrijf bedrijfsveld met factuurwaarde
+- **Gebruik Bedrijf** — behoud bestaande bedrijfsdata
+- **Gebruik Beide** — sla factuurwaarde op als secundair contact (voor naam, email, telefoon)
+
+**Acties:**
+- **Bevestigen** — accepteer match en synchroniseer naar inschrijving
+- **Ontkoppelen** — wijs match af en keer terug naar in afwachting
+- **Nieuw Aanmaken** — maak een nieuw bedrijf aan van factuurdata
+- **Annuleren** — sluit modal zonder wijzigingen
+
+**Bedrijf Bijwerken Selectievakje:**
+Schakel "Ook bedrijfscontactvelden bijwerken" in om je veldkeuzes toe te passen op het bedrijfsrecord bij bevestigen.
+
+**Handmatig Bedrijf Zoeken** 🔑 *Event Manager+*
+
+Wanneer geen automatische match gevonden is (score < 40):
+1. Een zoekmodal verschijnt met de factuur bedrijfsnaam
+2. Typ om door alle bedrijven te zoeken
+3. Klik een bedrijf om het als match te selecteren
+4. Ga verder naar verificatiemodal voor bevestiging
+5. Of klik **Nieuw Aanmaken** om een nieuw bedrijf toe te voegen
+
+**Factuur Statussen**
+
+Elke factuur doorloopt deze statussen:
+
+- **In Afwachting** (geel) — Geüpload en geparsed, wacht op match/review
+- **Goedgekeurd** (groen) — Bedrijf gematcht en geverifieerd, inschrijving gesynchroniseerd
+- **Gesynchroniseerd** (blauw) — Volledig verwerkt en geïntegreerd
+
+**Ongedaan Maken** 🔑 *Event Manager+*
+
+Zet een goedgekeurde factuur terug naar in afwachting:
+1. Klik de **Ongedaan Maken** knop (↩ icoon) op een goedgekeurde factuur
+2. Systeem deactiveert automatisch de inschrijving regelitems die zijn aangemaakt van deze factuur
+3. Inschrijving totalen worden herberekend
+4. Factuur keert terug naar **In Afwachting** status voor herverwerking
+
+**Regelitem Verwijdering** 🔑 *Event Manager+*
+
+Bij ongedaan maken kun je kiezen welke specifieke regelitems te verwijderen:
+- **Alles Verwijderen** — deactiveer alle regelitems van deze factuur
+- **Individueel Selecteren** — kies specifieke items om te behouden of verwijderen
+- Inschrijving totalen updaten automatisch na verwijdering
+
+**Map Organisatie** 🔑 *Event Manager+*
+
+Organiseer facturen in mappen voor beter beheer:
+- **Map Aanmaken** — voeg nieuwe benoemde mappen toe
+- **Map Hernoemen** — update mapnamen
+- **Map Verwijderen** — verwijder lege mappen
+- **Naar Map Verplaatsen** — sleep of wijs facturen toe aan mappen
+- Mappen blijven behouden over sessies
+
+**Zoeken & Sorteren** 🔑 *Event Manager+*
+
+Vind en organiseer facturen efficiënt:
+
+**Zoeken:**
+- Typ in de zoekbalk om te filteren op bedrijfsnaam, factuurnummer of trefwoorden
+- Real-time filtering terwijl je typt
+
+**Sorteer Opties:**
+- Sorteer op aanmaakdatum, status, bedrijfsnaam of factuurnummer
+- Schakel oplopend/aflopend
+- Sorteervoorkeuren blijven behouden tijdens sessie
+
+**Acties Menu** 🔑 *Event Manager+*
+
+Het acties dropdown biedt bulkoperaties:
+- **Upload** — open bestandskiezer voor nieuwe PDFs
+- **Alles Wissen** — verwijder alle facturen (met bevestiging)
+- **Map Beheer** — aanmaken, hernoemen of verwijderen van mappen
+
+**Rij Details** 🔑 *Event Manager+*
+
+Klik het uitvouwicoon op elke factuurrij om te zien:
+- Volledige geparsede data uit de PDF
+- Regelitems met hoeveelheden en bedragen
+- Match score en match redenen (indien gematcht)
+- Geschiedenis van statuswijzigingen
+- Gekoppelde inschrijvingsdetails (indien goedgekeurd)
+
+**Inschrijving Sync Details**
+
+Wanneer een factuur goedgekeurd wordt:
+1. Systeem vindt of maakt een inschrijving aan voor het gematchte bedrijf in het geselecteerde jaar
+2. Elk factuurregelitem wordt toegevoegd als inschrijving regelitem
+3. Items worden gekoppeld aan kolommen op basis van **Factuur Import Filters** (geconfigureerd in Instellingen)
+4. Inschrijving totalen (stand aantal, maaltijden, munten) worden automatisch herberekend
+5. Wijzigingen verschijnen direct in het Inschrijvingen tabblad
+
+**Best Practices:**
+
+**Voor Uploaden:**
+- Configureer **Factuur Import Filters** in Instellingen eerst — dit bepaalt welke regelitems herkend worden en hoe ze naar inschrijvingsvelden mappen
+- Zorg dat bedrijven bestaan in het Bedrijven tabblad voor het importeren van hun facturen
+- Verifieer dat het juiste eventjaar geselecteerd is
+
+**Tijdens Verwerking:**
+- Review de verificatiemodal zorgvuldig — controleer dat het juiste bedrijf gematcht is
+- Gebruik veld overrides om de meest accurate contactdata te behouden
+- Schakel "bedrijf bijwerken" alleen in wanneer factuurdata actueler is dan de database
+
+**Na Verwerking:**
+- Controleer het Inschrijvingen tabblad om te verifiëren dat totalen correct zijn
+- Gebruik Ongedaan Maken als een match incorrect was — het maakt alle wijzigingen netjes ongedaan
+- Organiseer verwerkte facturen in mappen voor archivering
+
+**Workflow Efficiëntie:**
+- Upload facturen in batches voor snellere verwerking
+- Handel auto-gematchte facturen eerst af (alleen verifiëren en bevestigen)
+- Handel daarna ongematchte facturen af (vereist handmatig zoeken)
+- Gebruik zoeken en sorteren om specifieke facturen te vinden in grote lijsten
+      `.trim(),
+    },
+    updated: '2026-03-16',
+    tips: {
+      en: [
+        'Configure Invoice Import Filters in Settings before uploading invoices',
+        'The fuzzy matcher scores on name, email, phone, KVK, and VAT number',
+        'Use "patch company" to update company contact info from invoice data',
+        'Undo cleanly reverts subscription line items if a match was wrong',
+        'Organize processed invoices into folders for easy reference',
+      ],
+      nl: [
+        'Configureer Factuur Import Filters in Instellingen voor het uploaden van facturen',
+        'De fuzzy matcher scoort op naam, email, telefoon, KVK en BTW-nummer',
+        'Gebruik "bedrijf bijwerken" om bedrijfscontactinfo bij te werken vanuit factuurdata',
+        'Ongedaan maken maakt inschrijving regelitems netjes ongedaan bij verkeerde match',
+        'Organiseer verwerkte facturen in mappen voor eenvoudige referentie',
       ],
     },
   },
@@ -4162,6 +4638,7 @@ export function getHelpContentByRoute(pathname, language = 'en') {
     '/admin': 'dashboard',
     '/admin/map': 'mapManagement',
     '/admin/companies': 'companies',
+    '/admin/invoices': 'invoices',
     '/admin/subscriptions': 'subscriptions',
     '/admin/program': 'programManagement',
     '/admin/assignments': 'assignments',

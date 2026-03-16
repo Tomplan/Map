@@ -12,6 +12,67 @@
 
 export const whatsNewBilingual = [
   {
+    date: '2026-03-16',
+    changes: [
+      {
+        text: {
+          en: 'Invoice Sync: Upload PDF invoices and auto-match to companies using fuzzy matching',
+          nl: 'Factuur Sync: Upload PDF facturen en koppel automatisch aan bedrijven met fuzzy matching',
+        },
+        type: 'feature',
+      },
+      {
+        text: {
+          en: 'Invoice verification modal with field-level overrides and confidence scores',
+          nl: 'Factuur verificatie modal met veld-niveau overschrijvingen en betrouwbaarheidsscores',
+        },
+        type: 'feature',
+      },
+      {
+        text: {
+          en: 'Invoice Import Filters: Configure recognized line items and map to subscription fields',
+          nl: 'Factuur Import Filters: Configureer herkende regelitems en koppel aan inschrijvingsvelden',
+        },
+        type: 'feature',
+      },
+      {
+        text: {
+          en: 'Share App: Generate custom QR codes with 5 presets, colors, dot styles, and logo embedding',
+          nl: 'App Delen: Genereer aangepaste QR-codes met 5 presets, kleuren, stip stijlen en logo insluiting',
+        },
+        type: 'feature',
+      },
+      {
+        text: {
+          en: 'Public Default Year: Control which event year visitors see by default on the public map',
+          nl: 'Publiek Standaard Jaar: Bepaal welk eventjaar bezoekers standaard zien op de publieke kaart',
+        },
+        type: 'feature',
+      },
+      {
+        text: {
+          en: 'Advanced Settings now shows read-only backup system documentation',
+          nl: 'Geavanceerde Instellingen toont nu alleen-lezen backup systeem documentatie',
+        },
+        type: 'improvement',
+      },
+      {
+        text: {
+          en: 'Settings reorganized: Map Defaults and Map Settings consolidated into single Map Settings section',
+          nl: 'Instellingen herschikt: Kaart Standaarden en Kaart Instellingen samengevoegd tot één Kaart Instellingen sectie',
+        },
+        type: 'improvement',
+      },
+      {
+        text: {
+          en: 'Help system updated with comprehensive documentation for all new features',
+          nl: 'Helpsysteem bijgewerkt met uitgebreide documentatie voor alle nieuwe functies',
+        },
+        type: 'improvement',
+      },
+    ],
+  },
+  {
     date: '2025-11-22',
     changes: [
       {
