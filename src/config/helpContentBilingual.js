@@ -346,6 +346,7 @@ Create new exhibitor entries:
    - Contact 1 Name
    - Phone number with country code
    - Email address
+   - Additional contacts, address, VAT/KVK as needed
 4. Click "Create" to save new company
 
 **Note**: When creating, you can only enter one language for info. Edit the company after creation to add additional language translations.
@@ -430,7 +431,7 @@ Efficiently manage bulk company data:
 6. Add/update multi-language info for international attendees
 
 **Scenario 2: Bulk Company Import (New Event or Migration)**
-1. Prepare Excel file with columns: Name, Website, Contact, Phone, Email
+1. Prepare Excel file with columns: Name, Website, Contact 1 Name/Phone/Email, Address, etc.
 2. Use international phone format (+31612345678)
 3. Click "Import" and select file
 4. Review preview to verify parsing
@@ -463,9 +464,9 @@ Bekijk publieke informatie zichtbaar voor evenementbezoekers:
 **Privé Info Tabblad** (Groen) 🔓 *Alle Rollen*
 Bekijk alleen-beheerder contactinformatie (niet publiek):
 - Bedrijfsnaam
-- Contactpersoon
-- Telefoon (met vlag indicator)
-- Email
+- Contact 1 Naam, Telefoon, Email
+- Contact 2 & 3 (indien geconfigureerd)
+- Adres, BTW/KVK nummers
 
 Schakel tussen tabbladen om verschillende aspecten van bedrijfsdata te zien. Beide tabbladen tonen dezelfde bedrijven, alleen verschillende velden.
 
@@ -555,9 +556,10 @@ Creëer nieuwe exposant entries:
    - Voer website URL in
    - Voeg info beschrijving toe (initiële taal alleen, vertaal later)
 3. Vul Alleen-Beheerder Info sectie in:
-   - Contactpersoon naam
+   - Contact 1 Naam
    - Telefoonnummer met landcode
    - Email adres
+   - Extra contacten, adres, BTW/KVK indien nodig
 4. Klik "Creëer" om nieuw bedrijf op te slaan
 
 **Opmerking**: Bij creëren kun je slechts één taal invoeren voor info. Bewerk het bedrijf na creatie om extra taal vertalingen toe te voegen.
@@ -596,7 +598,7 @@ Beheer efficiënt bulk bedrijfsdata:
 **Bedrijven Exporteren:**
 1. Klik "Exporteren" knop (groen met download icoon)
 2. Download Excel bestand met alle bedrijven
-3. Bevat: Naam, Logo URL, Website, Info, Contact, Telefoon, Email
+3. Bevat: Naam, Logo URL, Website, Info, Contacten, Adres, BTW/KVK
 4. Gebruik voor backups, rapportage of externe verwerking
 
 **Bedrijven Importeren:**
@@ -642,7 +644,7 @@ Beheer efficiënt bulk bedrijfsdata:
 6. Voeg meertalige info toe/update voor internationale bezoekers
 
 **Scenario 2: Bulk Bedrijven Import (Nieuw Event of Migratie)**
-1. Bereid Excel bestand voor met kolommen: Naam, Website, Contact, Telefoon, Email
+1. Bereid Excel bestand voor met kolommen: Naam, Website, Contact 1 Naam/Telefoon/Email, Adres, etc.
 2. Gebruik internationaal telefoonformaat (+31612345678)
 3. Klik "Importeren" en selecteer bestand
 4. Review voorbeeld om parsing te verifiëren
