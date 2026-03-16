@@ -913,6 +913,31 @@ export default function MapManagement({
               <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {selectedYear}
               </div>
+              {(() => {
+                const total = markersState?.filter((m) => m.id > 0) ?? [];
+                const boothTotal = total.filter((m) => m.id < 1000);
+                const emptyCount = boothTotal.filter(
+                  (m) => !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
+                ).length;
+                const totalCount = total.length;
+                return (
+                  <div className="flex flex-col items-center">
+                    <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-400 leading-none mb-0.5">
+                      {t('mapManagement.freeTotalLabel')}
+                    </span>
+                    <div
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        emptyCount > 0
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                      title={t('mapManagement.freeTotalTooltip', { count: emptyCount })}
+                    >
+                      {emptyCount} / {totalCount}
+                    </div>
+                  </div>
+                );
+              })()}
               {!isReadOnly && (
                 <div className="flex gap-1 items-center">
                   {/* Unified History Operations */}

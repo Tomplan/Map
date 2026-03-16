@@ -60,7 +60,208 @@
   },
   "invoiceSync": {
     "matchLabel": "Match:",
-    "createCompany": "No Match: create new company!"
+    "createCompany": "No Match: create new company!",
+    "verify": {
+      "title": "Confirm company match",
+      "subtitle": "Invoice <inv>{{number}}</inv> matches <cmp>{{company}}</cmp> — verify the details below.",
+      "invoiceColumn": "Invoice data (parsed)",
+      "companyColumn": "Company record (database)",
+      "companyName": "Company name",
+      "contact1": "Contact 1",
+      "contact2": "Contact 2",
+      "email": "Email",
+      "email2": "Email 2",
+      "phone": "Phone",
+      "phone2": "Phone 2",
+      "street": "Street",
+      "street2": "Street 2",
+      "postalCode": "Postal code",
+      "city": "City",
+      "country": "Country",
+      "vat": "VAT",
+      "kvk": "KvK",
+      "empty": "(empty)",
+      "storedSecondary": "✓ stored in secondary",
+      "useLabel": "Use:",
+      "invoiceValue": "Invoice value",
+      "keepDb": "Keep DB",
+      "both": "Both",
+      "bothTooltip": "Keep DB value as primary, store invoice value in secondary field",
+      "patchCheckbox": "Fill empty company fields from invoice data (contact, address, VAT)",
+      "lockedMessage": "This company has an active subscription. Remove the subscription first before changing the match.",
+      "close": "Close",
+      "cancel": "Cancel",
+      "unmatch": "Unmatch",
+      "createNew": "No match — create new company",
+      "confirm": "Confirm match"
+    },
+    "search": {
+      "noAutoMatch": "No automatic match found",
+      "invoiceLabel": "Invoice:",
+      "placeholder": "Search companies by name, email or city…",
+      "noResults": "No companies found",
+      "cancel": "Cancel",
+      "createNew": "+ Create new company"
+    },
+    "folder": {
+      "createError": "Failed to create folder: {{error}}",
+      "renameError": "Failed to rename folder: {{error}}",
+      "deleteTitle": "Delete folder",
+      "deleteMessage": "Delete this folder? Invoices inside will move to Unassigned.",
+      "deleteConfirm": "Delete",
+      "deleteError": "Failed to delete folder: {{error}}",
+      "moveError": "Failed to move invoice: {{error}}",
+      "unassigned": "Unassigned",
+      "invoiceCount_one": "{{count}} invoice",
+      "invoiceCount_other": "{{count}} invoices",
+      "renameTooltip": "Rename folder",
+      "deleteTooltip": "Delete folder",
+      "saveTooltip": "Save",
+      "cancelTooltip": "Cancel",
+      "newPrompt": "New folder name:"
+    },
+    "clear": {
+      "title": "Clear Staging Area",
+      "message": "Are you sure you want to delete ALL staged invoices? This cannot be undone.",
+      "confirm": "Clear All",
+      "success": "Staging area cleared successfully",
+      "error": "Failed to clear staged invoices: {{error}}"
+    },
+    "upload": {
+      "duplicateWarning": "{{count}} invoice(s) already exist and were skipped.",
+      "errorSummary": "Uploaded {{success}} invoices. {{errors}} failed. {{skipped}}",
+      "skippedSuffix": "Skipped {{count}} non-event invoices.",
+      "success": "Successfully uploaded {{count}} invoices.",
+      "successWithSkipped": "Uploaded {{success}} invoices. Skipped {{skipped}} non-event invoices.",
+      "processError": "Failed to process one or more PDFs. {{error}}",
+      "progress": "Importing PDFs ({{percent}}%)"
+    },
+    "undo": {
+      "contributionTitle": "Undo Invoice Contribution",
+      "contributionMessage": "Other items also contribute to the subscription for \"{{company}}\". This invoice's values will be subtracted (not deleted).",
+      "subscriptionTitle": "Undo Subscription",
+      "subscriptionMessage": "This will revert the invoice to pending. Do you also want to delete the created subscription for \"{{company}}\"?",
+      "contributionSuccess": "Invoice contribution removed.",
+      "subscriptionError": "Failed to update subscription: {{error}}",
+      "subscriptionRemoved": "Subscription removed.",
+      "invoiceTitle": "Undo Invoice",
+      "invoiceMessage": "Revert this invoice to pending?"
+    },
+    "delete": {
+      "blockedByResolved": "Cannot delete — undo all approved/rejected items first.",
+      "title": "Confirm Deletion",
+      "message": "Are you sure you want to permanently delete this staged invoice?",
+      "error": "Failed to delete invoice.",
+      "blockedTooltip": "Undo all approved/rejected items first",
+      "tooltip": "Delete invoice"
+    },
+    "sync": {
+      "mergeSuccess": "Merged into existing subscription!",
+      "replaceSuccess": "Subscription replaced!",
+      "success": "Successfully synced subscription!",
+      "confirmTitle": "Sync to subscription",
+      "confirmMessage": "Create subscription for \"{{company}}\"?",
+      "error": "Sync failed: {{error}}"
+    },
+    "match": {
+      "confirmSuccess": "Match confirmed — use the approve button to sync.",
+      "confirmError": "Failed to confirm match: {{error}}",
+      "unmatchError": "Failed to unmatch: {{error}}",
+      "verified": "✓ Verified:",
+      "unverified": "?",
+      "viaReasons": "via {{reasons}}",
+      "noMatch": "⚠ No match — verify",
+      "reVerify": "Click to re-verify match",
+      "clickVerify": "Click to verify match",
+      "clickVerifyOrCreate": "Click to verify or create company"
+    },
+    "company": {
+      "createSuccess": "Company created and linked — use the approve button to sync.",
+      "createError": "Failed to create company: {{error}}"
+    },
+    "history": {
+      "removeTitle": "Remove Subscription Contributions",
+      "removeDescription": "Select which additions to remove for <strong>{{company}}</strong>. Removing all entries will delete the subscription.",
+      "selectAll": "Select all ({{count}})",
+      "deleteSubscription": "Delete subscription",
+      "removeSelected": "Remove {{count}} selected"
+    },
+    "import": {
+      "folderTitle": "Import to folder",
+      "folderDescription": "Choose which folder to put these invoices into.",
+      "newFolderPlaceholder": "+ New folder name…",
+      "createFolder": "Create",
+      "importToFolder": "Import →",
+      "importNoFolder": "Import (no folder) →"
+    },
+    "searchPlaceholder": "Search invoices or companies...",
+    "refresh": "Refresh",
+    "dataTools": "Data Tools",
+    "importing": "Importing...",
+    "importPdfs": "Import PDF(s)",
+    "clearStaging": "Clear Staging Area",
+    "empty": "No staged invoices found. Have you imported them yet?",
+    "notAvailable": "N/A",
+    "errorUnknown": "Unknown error occurred",
+    "updateError": "Failed to update invoice: {{error}}",
+    "revertError": "Failed to revert subscription: {{error}}",
+    "table": {
+      "invoice": "Invoice",
+      "company": "Company",
+      "date": "Date",
+      "item": "Item",
+      "area": "Area",
+      "notes": "Notes",
+      "status": "Status",
+      "openPdf": "Open PDF"
+    },
+    "status": {
+      "subscribed": "SUBSCRIBED",
+      "partial": "PARTIAL",
+      "pending": "PENDING"
+    },
+    "edit": {
+      "title": "Edit Invoice {{number}}",
+      "viewPdf": "View Original PDF ↗",
+      "companyName": "Company Name",
+      "companyHint": "Connect to an existing company by entering their exact name, or edit the typo.",
+      "standsCount": "Stands Count (1 stands = 6x6, 2 stands = 6x12)",
+      "standsHint": "If the PDF says Standhuur 6x12, enter 2.",
+      "mealsCount": "Meals Count",
+      "folder": "Folder",
+      "save": "Save Changes"
+    },
+    "detail": {
+      "stands": "Stands:",
+      "sat": "Sat:",
+      "sun": "Sun:",
+      "breakfast": "B",
+      "lunch": "L",
+      "bbq": "BBQ",
+      "clientDetails": "Parsed Client Details",
+      "noClientBlock": "Could not extract spatial block. Was it parsed by the new format?",
+      "lineItemsTitle": "Line Items Extracted (JSON)",
+      "description": "Description",
+      "quantity": "Quantity",
+      "noItems": "No structured items parsed in JSON. Have you wiped and re-uploaded using the new parser?"
+    },
+    "item": {
+      "approveTitle": "Mark approved",
+      "rejectTitle": "Reject item",
+      "undoTitle": "Undo change",
+      "verifyFirst": "Verify company first"
+    },
+    "actions": {
+      "moveToFolder": "Move to folder"
+    },
+    "counts": {
+      "booths": "{{count}} booth(s)",
+      "breakfastSat": "{{count}} breakfast sat",
+      "lunchSat": "{{count}} lunch sat",
+      "bbqSat": "{{count}} BBQ sat",
+      "breakfastSun": "{{count}} breakfast sun",
+      "lunchSun": "{{count}} lunch sun"
+    }
   },
   "languages": {
     "english": "English",
@@ -420,7 +621,82 @@
     },
     "advanced": {
       "title": "Advanced Settings",
-      "description": "System maintenance, data management, and danger zone"
+      "description": "System maintenance, data management, and danger zone",
+      "backup": {
+        "title": "Database Backup Manual",
+        "subtitle": "Automated daily backups of all Supabase data via GitHub Actions",
+        "overview": {
+          "title": "Overview",
+          "description": "The application uses an automated GitHub Actions workflow to back up the entire Supabase database every day. All data is exported as JSON files and stored on a dedicated git branch, keeping backups versioned, secure, and easy to restore.",
+          "schedule": "Schedule",
+          "scheduleValue": "Daily at 10:00 UTC",
+          "storage": "Storage",
+          "storageValue": "Git branch (backups)",
+          "retention": "Retention",
+          "retentionValue": "31 days rolling"
+        },
+        "tables": {
+          "title": "What Gets Backed Up",
+          "description": "All 26 database tables are included in every backup:",
+          "coreData": "Core Event Data",
+          "mapData": "Map & Markers",
+          "orgSettings": "Organization & Users",
+          "otherData": "Activities & Invoices",
+          "archiveData": "Archives",
+          "totalNote": "26 tables total — plus a metadata.json with timestamps and a table-list.json for verification."
+        },
+        "how": {
+          "title": "How It Works",
+          "step1": {
+            "title": "GitHub Actions triggers the workflow",
+            "description": "Every day at 10:00 UTC (or manually via the Actions tab), the workflow starts on the default branch."
+          },
+          "step2": {
+            "title": "Scripts are checked out from development",
+            "description": "The workflow checks out the development branch to use the latest backup scripts, even if main is behind."
+          },
+          "step3": {
+            "title": "Supabase JS client exports all tables",
+            "description": "Each table is fetched via the Supabase API using the service role key (not pg_dump), so no direct database access is needed."
+          },
+          "step4": {
+            "title": "JSON files are written to a timestamped folder",
+            "description": "Each table becomes a separate .json file (e.g. companies.json, markers_core.json) inside a folder named full-YYYY-MM-DDTHH-MM-SS."
+          },
+          "step5": {
+            "title": "Backup is pushed to the backups branch",
+            "description": "An orphan git branch called 'backups' stores only backup data — no source code — keeping the repository clean."
+          },
+          "step6": {
+            "title": "Old backups are rotated out",
+            "description": "Only the 31 most recent backups are kept. Older ones are automatically deleted to prevent the branch from growing indefinitely."
+          }
+        },
+        "github": {
+          "title": "GitHub Actions Configuration",
+          "description": "The workflow is defined in the repository and uses GitHub Secrets for authentication.",
+          "workflowFile": "Workflow file",
+          "trigger": "Trigger",
+          "triggerValue": "Cron (daily) + manual dispatch",
+          "branch": "Backup branch",
+          "branchValue": "backups (orphan branch)",
+          "secrets": "Required secrets",
+          "manualNote": "You can trigger a backup manually at any time: go to GitHub → Actions → Daily Database Backup → Run workflow."
+        },
+        "restore": {
+          "title": "How to Restore",
+          "description": "To restore data from a backup, use the restore script from the terminal:",
+          "commands": "# List available backups on the branch\ngit log origin/backups --oneline\n\n# Download a specific backup\ngit checkout origin/backups -- full-2026-03-15T21-39-36-493Z/\n\n# Restore to database (creates safety backup first)\nnode scripts/backup/restore.js --backup-dir ./full-2026-03-15T21-39-36-493Z --replace --confirm",
+          "warning": "Restoring with --replace will truncate and re-import all tables. A safety backup is created automatically before any restore. Always test with a dry run first (omit --confirm)."
+        },
+        "security": {
+          "title": "Security & Access",
+          "item1": "Credentials are stored as GitHub Secrets — never in code or environment files.",
+          "item2": "The service role key is used only during automated backups and is not exposed client-side.",
+          "item3": "The backups branch contains only JSON data — no source code, credentials, or configuration.",
+          "item4": "Row Level Security (RLS) is bypassed only during backup export using the service role key."
+        }
+      }
     }
   },
   "homePage": {
@@ -512,6 +788,8 @@
     "redoAssignment": "Redo assignment",
     "subscriptionList": "Subscription List",
     "markersList": "Markers List",
+    "freeTotalLabel": "Free / Total",
+    "freeTotalTooltip": "{{count}} booth marker(s) without assignment",
     "assignedBoothDefault": "Assigned Booth Default",
     "unassignedBoothDefault": "Unassigned Booth Default",
     "globalDefaultForBoothMarkers": "Global Default for Booth Markers",

@@ -3,13 +3,27 @@ import { render, screen, waitFor, cleanup, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 
-// mock i18n
-jest.mock('react-i18next', () => ({
-  useTranslation: () => ({
-    t: (k, opts) => (typeof opts === 'string' ? opts : opts?.defaultValue) || k,
-    i18n: { language: 'en', exists: () => true },
-  }),
-}));
+// mock i18n — resolve keys from the actual English locale so test assertions
+// match real user-visible strings rather than raw key names
+jest.mock('react-i18next', () => {
+  const enLocale = require('../../../locales/en.json');
+  function resolveKey(obj, key) {
+    return key.split('.').reduce((o, k) => (o && typeof o === 'object' ? o[k] : undefined), obj);
+  }
+  const t = (k, opts) => {
+    const resolved = resolveKey(enLocale, k);
+    const base = typeof resolved === 'string' ? resolved
+      : (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
+    if (opts && typeof opts === 'object') {
+      return base.replace(/\{\{(\w+)\}\}/g, (_, p) => (opts[p] ?? '').toString());
+    }
+    return base;
+  };
+  return {
+    useTranslation: () => ({ t, i18n: { language: 'en', exists: () => true } }),
+    Trans: ({ i18nKey, children }) => children || i18nKey,
+  };
+});
 
 // need to mock supabase client so InvoiceSyncTab can fetch invoices
 const mockOrder = jest.fn();

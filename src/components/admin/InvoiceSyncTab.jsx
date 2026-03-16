@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabaseClient';
 import { parsePdfInvoice } from '../../utils/pdfParser';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import { getBaseUrl } from '../../utils/getBaseUrl';
 import Icon from '@mdi/react';
 import {
@@ -48,9 +48,11 @@ function normalizePhone(p) {
 function findBestCompanyMatch(invoice, companies) {
   let notes = {};
   try { notes = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
-  const hasStoredFields = notes.contact_name || notes.contact_email || notes.kvk_number || notes.vat_number;
-  if (!hasStoredFields && Array.isArray(notes.client_block) && notes.client_block.length > 1) {
-    Object.assign(notes, extractFieldsFromBlock(notes.client_block));
+  if (Array.isArray(notes.client_block) && notes.client_block.length > 1) {
+    const derived = extractFieldsFromBlock(notes.client_block);
+    for (const key of Object.keys(derived)) {
+      if (!notes[key] && derived[key]) notes[key] = derived[key];
+    }
   }
   const invName  = (invoice.company_name || '').toLowerCase().trim();
   const invEmail = (notes.contact_email || '').toLowerCase().trim();
@@ -144,7 +146,8 @@ function extractFieldsFromBlock(lines = []) {
 }
 
 // ── Verification Modal ──────────────────────────────────────────────────
-function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew, onUnmatch }) {
+function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreateNew, onUnmatch, locked }) {
+  const { t } = useTranslation();
   const [shouldPatch, setShouldPatch] = React.useState(false);
   // Per-field override for rows where invoice and DB values differ.
   // key = dbField, value = 'inv' (use invoice) or 'cmp' (keep DB, default)
@@ -156,20 +159,13 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
   let inv = {};
   try { inv = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
 
-  // Fallback: if stored structured fields are all null (old record), derive them
-  // live from the raw client_block array that was always stored.
-  const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
-                          inv.address_line1 || inv.postal_code || inv.vat_number;
+  // Derive structured fields from the raw client_block and backfill any
+  // that are missing in the stored parsed_data (handles old records and
+  // fields the parser failed to extract at upload time, e.g. T.a.v. names).
   if (Array.isArray(inv.client_block) && inv.client_block.length > 1) {
     const derived = extractFieldsFromBlock(inv.client_block);
-    if (!hasStoredFields) {
-      // Old record: fill everything from block
-      Object.assign(inv, derived);
-    } else {
-      // Newer record: primary fields already stored, but backfill any missing _2 fields
-      if (!inv.contact_name_2  && derived.contact_name_2)  inv.contact_name_2  = derived.contact_name_2;
-      if (!inv.contact_email_2 && derived.contact_email_2) inv.contact_email_2 = derived.contact_email_2;
-      if (!inv.contact_phone_2 && derived.contact_phone_2) inv.contact_phone_2 = derived.contact_phone_2;
+    for (const key of Object.keys(derived)) {
+      if (!inv[key] && derived[key]) inv[key] = derived[key];
     }
   }
 
@@ -186,20 +182,20 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
   const nameAlreadyStored  = invNameVal   && [company.contact, company.contact_name, company.contact_name_2].some(n => nameNorm(n) === invNameVal);
 
   const fields = [
-    { label: 'Company name',  dbField: null,            inv: invoice.company_name,  cmp: company.name },
-    { label: 'Contact 1',     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true, alreadyStored: nameAlreadyStored },
-    ...(inv.contact_name_2 ? [{ label: 'Contact 2', dbField: null, inv: inv.contact_name_2, cmp: null }] : []),
-    { label: 'Email',         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true, alreadyStored: emailAlreadyStored },
-    ...(inv.contact_email_2 ? [{ label: 'Email 2',   dbField: null, inv: inv.contact_email_2,  cmp: null }] : []),
-    { label: 'Phone',         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true, alreadyStored: phoneAlreadyStored },
-    ...(inv.contact_phone_2 ? [{ label: 'Phone 2',   dbField: null, inv: inv.contact_phone_2,  cmp: null }] : []),
-    { label: 'Street',        dbField: 'address_line1', inv: inv.address_line1,      cmp: company.address_line1 },
-    { label: 'Street 2',      dbField: 'address_line2', inv: inv.address_line2,      cmp: company.address_line2 },
-    { label: 'Postal code',   dbField: 'postal_code',   inv: inv.postal_code,        cmp: company.postal_code },
-    { label: 'City',          dbField: 'city',          inv: inv.city,               cmp: company.city },
-    { label: 'Country',       dbField: 'country',       inv: inv.country,            cmp: company.country },
-    { label: 'VAT',           dbField: 'vat_number',    inv: inv.vat_number,         cmp: company.vat_number },
-    { label: 'KvK',           dbField: 'kvk_number',    inv: inv.kvk_number,         cmp: company.kvk_number },
+    { label: t('invoiceSync.verify.companyName'),  dbField: null,            inv: invoice.company_name,  cmp: company.name },
+    { label: t('invoiceSync.verify.contact1'),     dbField: 'contact_name',  inv: inv.contact_name,       cmp: company.contact_name || company.contact, hasBoth: true, alreadyStored: nameAlreadyStored },
+    ...(inv.contact_name_2 ? [{ label: t('invoiceSync.verify.contact2'), dbField: null, inv: inv.contact_name_2, cmp: null }] : []),
+    { label: t('invoiceSync.verify.email'),         dbField: 'contact_email', inv: inv.contact_email,      cmp: company.contact_email || company.email, hasBoth: true, alreadyStored: emailAlreadyStored },
+    ...(inv.contact_email_2 ? [{ label: t('invoiceSync.verify.email2'),   dbField: null, inv: inv.contact_email_2,  cmp: null }] : []),
+    { label: t('invoiceSync.verify.phone'),         dbField: 'contact_phone', inv: inv.contact_phone,      cmp: company.contact_phone || company.phone, hasBoth: true, alreadyStored: phoneAlreadyStored },
+    ...(inv.contact_phone_2 ? [{ label: t('invoiceSync.verify.phone2'),   dbField: null, inv: inv.contact_phone_2,  cmp: null }] : []),
+    { label: t('invoiceSync.verify.street'),        dbField: 'address_line1', inv: inv.address_line1,      cmp: company.address_line1 },
+    { label: t('invoiceSync.verify.street2'),      dbField: 'address_line2', inv: inv.address_line2,      cmp: company.address_line2 },
+    { label: t('invoiceSync.verify.postalCode'),   dbField: 'postal_code',   inv: inv.postal_code,        cmp: company.postal_code },
+    { label: t('invoiceSync.verify.city'),          dbField: 'city',          inv: inv.city,               cmp: company.city },
+    { label: t('invoiceSync.verify.country'),       dbField: 'country',       inv: inv.country,            cmp: company.country },
+    { label: t('invoiceSync.verify.vat'),           dbField: 'vat_number',    inv: inv.vat_number,         cmp: company.vat_number },
+    { label: t('invoiceSync.verify.kvk'),           dbField: 'kvk_number',    inv: inv.kvk_number,         cmp: company.kvk_number },
   ];
 
   // Check if any invoice field would fill an empty company field
@@ -212,10 +208,11 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Confirm company match</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('invoiceSync.verify.title')}</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Invoice <span className="font-semibold text-blue-600">{invoice.invoice_number}</span> matches
-              &nbsp;<span className="font-semibold text-green-700">{company.name}</span> — verify the details below.
+              <Trans i18nKey="invoiceSync.verify.subtitle"
+                values={{ number: invoice.invoice_number, company: company.name }}
+                components={{ inv: <span className="font-semibold text-blue-600" />, cmp: <span className="font-semibold text-green-700" /> }} />
             </p>
           </div>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded">✕</button>
@@ -224,8 +221,8 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
         {/* Side-by-side table */}
         <div className="p-5">
           <div className="grid grid-cols-2 gap-3 mb-1">
-            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 rounded px-3 py-1.5">Invoice data (parsed)</div>
-            <div className="text-xs font-bold uppercase tracking-wider text-green-700 bg-green-50 rounded px-3 py-1.5">Company record (database)</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 rounded px-3 py-1.5">{t('invoiceSync.verify.invoiceColumn')}</div>
+            <div className="text-xs font-bold uppercase tracking-wider text-green-700 bg-green-50 rounded px-3 py-1.5">{t('invoiceSync.verify.companyColumn')}</div>
           </div>
           <div className="border border-gray-200 rounded-lg overflow-hidden">
             {fields.map((f, i) => {
@@ -239,14 +236,14 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                     <div className="px-3 py-2 text-gray-800 border-r border-gray-100 break-all">{f.inv || <span className="text-gray-300">—</span>}</div>
                     <div className={`px-3 py-2 break-all ${differs ? 'text-amber-800' : 'text-gray-800'}`}>
                       {f.cmp || <span className="text-gray-300">—</span>}
-                      {missing && <span className="ml-1 text-xs text-blue-500">(empty)</span>}
-                      {f.alreadyStored && f.inv && f.cmp && f.inv !== f.cmp && <span className="ml-1 text-xs text-green-600">✓ stored in secondary</span>}
+                      {missing && <span className="ml-1 text-xs text-blue-500">{t('invoiceSync.verify.empty')}</span>}
+                      {f.alreadyStored && f.inv && f.cmp && f.inv !== f.cmp && <span className="ml-1 text-xs text-green-600">{t('invoiceSync.verify.storedSecondary')}</span>}
                     </div>
                   </div>
                   {/* Per-row conflict resolution — only shown when both sides have different values */}
                   {differs && f.dbField && (
                     <div className="flex items-center gap-1.5 px-3 pb-2 pt-0.5">
-                      <span className="text-[10px] text-amber-700 font-semibold uppercase tracking-wide mr-1">Use:</span>
+                      <span className="text-[10px] text-amber-700 font-semibold uppercase tracking-wide mr-1">{t('invoiceSync.verify.useLabel')}</span>
                       <button
                         onClick={() => toggleChoice(f.dbField, 'inv')}
                         className={`px-2 py-0.5 rounded text-xs font-medium border transition-colors ${
@@ -255,7 +252,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                             : 'bg-white text-blue-700 border-blue-300 hover:bg-blue-50'
                         }`}
                       >
-                        Invoice value
+                        {t('invoiceSync.verify.invoiceValue')}
                       </button>
                       <button
                         onClick={() => toggleChoice(f.dbField, 'cmp')}
@@ -265,7 +262,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                             : 'bg-white text-green-700 border-green-300 hover:bg-green-50'
                         }`}
                       >
-                        Keep DB
+                        {t('invoiceSync.verify.keepDb')}
                       </button>
                       {f.hasBoth && (
                         <button
@@ -275,9 +272,9 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
                               ? 'bg-purple-600 text-white border-purple-600'
                               : 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50'
                           }`}
-                          title="Keep DB value as primary, store invoice value in secondary field"
+                          title={t('invoiceSync.verify.bothTooltip')}
                         >
-                          Both
+                          {t('invoiceSync.verify.both')}
                         </button>
                       )}
                     </div>
@@ -292,35 +289,50 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
             <label className="flex items-center gap-2 mt-4 text-sm text-gray-700 cursor-pointer select-none">
               <input type="checkbox" checked={shouldPatch} onChange={e => setShouldPatch(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-blue-600" />
-              Fill empty company fields from invoice data (contact, address, VAT)
+              {t('invoiceSync.verify.patchCheckbox')}
             </label>
           )}
         </div>
 
         {/* Actions */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-          <div className="flex gap-3">
-            <button onClick={onCancel}
-              className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-              Cancel
-            </button>
-            {invoice.company_id && onUnmatch && (
-              <button onClick={() => onUnmatch(invoice)}
-                className="px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition">
-                ✕ Unmatch
+          {locked ? (
+            <>
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+                <span className="text-base">🔒</span>
+                {t('invoiceSync.verify.lockedMessage')}
+              </div>
+              <button onClick={onCancel}
+                className="ml-3 px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex-shrink-0">
+                {t('invoiceSync.verify.close')}
               </button>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <button onClick={onCreateNew}
-              className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
-              No match — create new company
-            </button>
-            <button onClick={() => onConfirm(invoice, company, shouldPatch, fieldChoices)}
-              className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
-              ✓ Confirm match
-            </button>
-          </div>
+            </>
+          ) : (
+            <>
+              <div className="flex gap-3">
+                <button onClick={onCancel}
+                  className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                  {t('invoiceSync.verify.cancel')}
+                </button>
+                {invoice.company_id && onUnmatch && (
+                  <button onClick={() => onUnmatch(invoice)}
+                    className="px-4 py-2 text-sm text-red-600 bg-white border border-red-300 rounded-lg hover:bg-red-50 transition">
+                    ✕ {t('invoiceSync.verify.unmatch')}
+                  </button>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button onClick={onCreateNew}
+                  className="px-4 py-2 text-sm bg-white text-orange-600 border border-orange-300 rounded-lg hover:bg-orange-50 transition">
+                  {t('invoiceSync.verify.createNew')}
+                </button>
+                <button onClick={() => onConfirm(invoice, company, shouldPatch, fieldChoices)}
+                  className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow-sm">
+                  ✓ {t('invoiceSync.verify.confirm')}
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
       </div>
@@ -333,6 +345,7 @@ function MatchVerificationModal({ invoice, company, onConfirm, onCancel, onCreat
 // Shown when no automatic match is found. User can search all companies and
 // pick one (opens MatchVerificationModal) or create a brand-new record.
 function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCancel }) {
+  const { t } = useTranslation();
   const [query, setQuery] = React.useState('');
 
   const filtered = React.useMemo(() => {
@@ -354,9 +367,9 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
         {/* Header */}
         <div className="flex items-start justify-between p-5 border-b border-gray-100">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">No automatic match found</h2>
+            <h2 className="text-lg font-bold text-gray-900">{t('invoiceSync.search.noAutoMatch')}</h2>
             <p className="text-sm text-gray-500 mt-0.5">
-              Invoice: <span className="font-semibold text-blue-600">{invoice.company_name}</span>
+              {t('invoiceSync.search.invoiceLabel')} <span className="font-semibold text-blue-600">{invoice.company_name}</span>
             </p>
           </div>
           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 p-1 rounded">✕</button>
@@ -367,7 +380,7 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
           <input
             autoFocus
             type="text"
-            placeholder="Search companies by name, email or city…"
+            placeholder={t('invoiceSync.search.placeholder')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -377,7 +390,7 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
         {/* Results list */}
         <div className="overflow-y-auto flex-1 divide-y divide-gray-100">
           {filtered.length === 0 ? (
-            <p className="text-sm text-gray-400 p-6 text-center">No companies found</p>
+            <p className="text-sm text-gray-400 p-6 text-center">{t('invoiceSync.search.noResults')}</p>
           ) : (
             filtered.map((c) => (
               <button
@@ -402,13 +415,13 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
             onClick={onCancel}
             className="px-4 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
           >
-            Cancel
+            {t('invoiceSync.search.cancel')}
           </button>
           <button
             onClick={onCreateNew}
             className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
           >
-            + Create new company
+            {t('invoiceSync.search.createNew')}
           </button>
         </div>
       </div>
@@ -522,7 +535,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       }));
     } catch (err) {
       console.error('Error fetching invoices:', err);
-      setError(err?.message || 'Unknown error occurred');
+      setError(err?.message || t('invoiceSync.errorUnknown'));
     } finally {
       setLoading(false);
     }
@@ -552,7 +565,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       .insert([{ name: trimmed, position }])
       .select()
       .single();
-    if (error) { toastError('Failed to create folder: ' + error.message); return null; }
+    if (error) { toastError(t('invoiceSync.folder.createError', { error: error.message })); return null; }
     setFolders(prev => [...prev, data]);
     return data;
   };
@@ -561,21 +574,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const trimmed = name.trim();
     if (!trimmed) return;
     const { error } = await supabase.from('invoice_folders').update({ name: trimmed }).eq('id', id);
-    if (error) { toastError('Failed to rename folder: ' + error.message); return; }
+    if (error) { toastError(t('invoiceSync.folder.renameError', { error: error.message })); return; }
     setFolders(prev => prev.map(f => f.id === id ? { ...f, name: trimmed } : f));
   };
 
   const deleteFolder = async (id) => {
     const yes = await confirm({
-      title: 'Delete folder',
-      message: 'Delete this folder? Invoices inside will move to Unassigned.',
-      confirmText: 'Delete', cancelText: 'Cancel',
+      title: t('invoiceSync.folder.deleteTitle'),
+      message: t('invoiceSync.folder.deleteMessage'),
+      confirmText: t('invoiceSync.folder.deleteConfirm'), cancelText: t('common.cancel'),
     });
     if (!yes) return;
     // Unassign invoices first
     await supabase.from('staged_invoices').update({ folder_id: null }).eq('folder_id', id);
     const { error } = await supabase.from('invoice_folders').delete().eq('id', id);
-    if (error) { toastError('Failed to delete folder: ' + error.message); return; }
+    if (error) { toastError(t('invoiceSync.folder.deleteError', { error: error.message })); return; }
     setFolders(prev => prev.filter(f => f.id !== id));
     setInvoices(prev => prev.map(inv => inv.folder_id === id ? { ...inv, folder_id: null } : inv));
   };
@@ -585,7 +598,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       .from('staged_invoices')
       .update({ folder_id: folderId })
       .eq('id', invoiceId);
-    if (error) { toastError('Failed to move invoice: ' + error.message); return; }
+    if (error) { toastError(t('invoiceSync.folder.moveError', { error: error.message })); return; }
     setInvoices(prev => prev.map(inv => inv.id === invoiceId ? { ...inv, folder_id: folderId } : inv));
     setMovingInvoiceId(null);
   };
@@ -609,10 +622,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
   const handleClearAll = async () => {
     const yes = await confirm({
-      title: 'Clear Staging Area',
-      message: 'Are you sure you want to delete ALL staged invoices? This cannot be undone.',
-      confirmText: 'Clear All',
-      cancelText: 'Cancel',
+      title: t('invoiceSync.clear.title'),
+      message: t('invoiceSync.clear.message'),
+      confirmText: t('invoiceSync.clear.confirm'),
+      cancelText: t('common.cancel'),
     });
 
     if (yes) {
@@ -627,10 +640,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (deleteError) throw deleteError;
 
         await fetchInvoices();
-        toastSuccess('Staging area cleared successfully');
+        toastSuccess(t('invoiceSync.clear.success'));
       } catch (err) {
         console.error('Error clearing staged invoices:', err);
-        toastError('Failed to clear staged invoices: ' + err.message);
+        toastError(t('invoiceSync.clear.error', { error: err.message }));
       } finally {
         setLoading(false);
       }
@@ -722,18 +735,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
       // Show summary
       if (duplicateCount > 0) {
-        toastWarning(`${duplicateCount} invoice(s) already exist and were skipped.`);
+        toastWarning(t('invoiceSync.upload.duplicateWarning', { count: duplicateCount }));
       }
 
       if (errorCount > 0) {
         toastError(
-          `Uploaded ${successCount} invoices. ${errorCount} failed. ${skippedCount > 0 ? `Skipped ${skippedCount} non-event invoices.` : ''}`,
+          t('invoiceSync.upload.errorSummary', { success: successCount, errors: errorCount, skipped: skippedCount > 0 ? t('invoiceSync.upload.skippedSuffix', { count: skippedCount }) : '' }),
         );
       } else if (successCount > 0) {
-        toastSuccess(`Successfully uploaded ${successCount} invoices.`);
+        toastSuccess(t('invoiceSync.upload.success', { count: successCount }));
       } else if (duplicateCount === 0 && skippedCount > 0) {
         toastSuccess(
-          `Uploaded ${successCount} invoices. Skipped ${skippedCount} non-event invoices.`,
+          t('invoiceSync.upload.successWithSkipped', { success: successCount, skipped: skippedCount }),
         );
       }
 
@@ -741,7 +754,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       await fetchInvoices();
     } catch (err) {
       console.error('Upload error:', err);
-      toastError('Failed to process one or more PDFs. ' + err.message);
+      toastError(t('invoiceSync.upload.processError', { error: err.message }));
     } finally {
       setUploading(false);
       setUploadProgress({ current: 0, total: 0 });
@@ -778,20 +791,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
           if (otherActiveItems.length > 0) {
             // Other items remain — confirm subtraction
             const yes = await confirm({
-              title: 'Undo Invoice Contribution',
-              message:
-                'Other items also contribute to the subscription for "' +
-                (companyName || inv.company_name) +
-                '". This invoice\'s values will be subtracted (not deleted).',
+              title: t('invoiceSync.undo.contributionTitle'),
+              message: t('invoiceSync.undo.contributionMessage', { company: companyName || inv.company_name }),
             });
             if (!yes) return;
           } else {
             // This is the only contributor — confirm full deletion
             const yes = await confirm({
-              title: 'Undo Subscription',
-              message:
-                'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
-                (companyName || inv.company_name) + '"?',
+              title: t('invoiceSync.undo.subscriptionTitle'),
+              message: t('invoiceSync.undo.subscriptionMessage', { company: companyName || inv.company_name }),
             });
             if (!yes) return;
           }
@@ -812,24 +820,22 @@ export default function InvoiceSyncTab({ selectedYear }) {
               await unsubscribeCompany(tempSub.id);
             }
             await reload?.();
-            toastSuccess('Invoice contribution removed.');
+            toastSuccess(t('invoiceSync.undo.contributionSuccess'));
           } catch (e) {
-            toastError('Failed to update subscription: ' + (e?.message || String(e)));
+            toastError(t('invoiceSync.undo.subscriptionError', { error: e?.message || String(e) }));
             return;
           }
         } else {
           // No line items found (legacy subscription without migration)
           // Fall back to simple delete/confirm
           const yes = await confirm({
-            title: 'Undo Subscription',
-            message:
-              'This will revert the invoice to pending. Do you also want to delete the created subscription for "' +
-              (companyName || inv.company_name) + '"?',
+            title: t('invoiceSync.undo.subscriptionTitle'),
+            message: t('invoiceSync.undo.subscriptionMessage', { company: companyName || inv.company_name }),
           });
           if (!yes) return;
           try {
             await unsubscribeCompany(tempSub.id);
-            toastSuccess('Subscription removed.');
+            toastSuccess(t('invoiceSync.undo.subscriptionRemoved'));
           } catch (e) {
             console.error(e);
           }
@@ -837,8 +843,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       } else {
         // No subscription found — just revert invoice status
         const yes = await confirm({
-          title: 'Undo Invoice',
-          message: 'Revert this invoice to pending?',
+          title: t('invoiceSync.undo.invoiceTitle'),
+          message: t('invoiceSync.undo.invoiceMessage'),
         });
         if (!yes) return;
       }
@@ -880,7 +886,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       );
     } catch (err) {
       console.error('Error updating status:', err);
-      toastError(err?.message || 'Unknown error occurred');
+      toastError(err?.message || t('invoiceSync.errorUnknown'));
     } finally {
       pendingStatusRef.current.delete(id);
     }
@@ -892,12 +898,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
     try { items = JSON.parse(invoice.parsed_data || '{}').line_items || []; } catch (e) {}
     const hasResolvedItems = items.some(li => li.status === 'approved' || li.status === 'rejected');
     if (hasResolvedItems) {
-      toastError('Cannot delete — undo all approved/rejected items first.');
+      toastError(t('invoiceSync.delete.blockedByResolved'));
       return;
     }
     const yes = await confirm({
-      title: 'Confirm Deletion',
-      message: 'Are you sure you want to permanently delete this staged invoice?',
+      title: t('invoiceSync.delete.title'),
+      message: t('invoiceSync.delete.message'),
     });
     if (!yes) return;
     try {
@@ -906,7 +912,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       setInvoices((prev) => prev.filter((inv) => inv.id !== invoice.id));
     } catch (err) {
       console.error('Error deleting invoice:', err);
-      toastError(err?.message || 'Failed to delete invoice.');
+      toastError(err?.message || t('invoiceSync.delete.error'));
     }
   };
 
@@ -1006,7 +1012,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
         // Reload subscriptions so React state is up to date
         await reload?.();
-        toastSuccess('Merged into existing subscription!');
+        toastSuccess(t('invoiceSync.sync.mergeSuccess'));
         return;
       }
       // Replace: deactivate all existing line items, add new one
@@ -1028,7 +1034,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         .eq('id', existing.id);
       await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
       await reload?.();
-      toastSuccess('Subscription replaced!');
+      toastSuccess(t('invoiceSync.sync.replaceSuccess'));
       return;
     }
 
@@ -1060,7 +1066,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     });
 
     await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
-    toastSuccess('Successfully synced subscription!');
+    toastSuccess(t('invoiceSync.sync.success'));
   };
 
   // Called when user confirms a match in the MatchVerificationModal.
@@ -1080,11 +1086,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
       let inv = {};
       try { inv = JSON.parse(invoice.parsed_data || '{}'); } catch (_) {}
-      // Fallback for old records that predate the structured-field extraction
-      const hasStoredFields = inv.contact_name || inv.contact_email || inv.contact_phone ||
-                              inv.address_line1 || inv.postal_code || inv.vat_number;
-      if (!hasStoredFields && Array.isArray(inv.client_block) && inv.client_block.length > 1) {
-        Object.assign(inv, extractFieldsFromBlock(inv.client_block));
+      // Backfill any missing structured fields from the raw client_block
+      if (Array.isArray(inv.client_block) && inv.client_block.length > 1) {
+        const derived = extractFieldsFromBlock(inv.client_block);
+        for (const key of Object.keys(derived)) {
+          if (!inv[key] && derived[key]) inv[key] = derived[key];
+        }
       }
 
       const patch = {};
@@ -1152,9 +1159,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
         if (patchError) throw new Error(patchError);
       }
 
-      toastSuccess('Match confirmed — use the approve button to sync.');
+      toastSuccess(t('invoiceSync.match.confirmSuccess'));
     } catch (err) {
-      toastError('Failed to confirm match: ' + (err?.message || String(err)));
+      toastError(t('invoiceSync.match.confirmError', { error: err?.message || String(err) }));
     }
   };
 
@@ -1181,12 +1188,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
     // Approve button is only enabled when company_id is set.
     const company = companies.find((c) => c.id === invoice.company_id);
     const yes = await confirm({
-      title: 'Sync to subscription',
-      message: 'Create subscription for "' + (company?.name || invoice.company_name) + '"?',
+      title: t('invoiceSync.sync.confirmTitle'),
+      message: t('invoiceSync.sync.confirmMessage', { company: company?.name || invoice.company_name }),
     });
     if (!yes) return;
     try { await doSync(invoice, invoice.company_id); }
-    catch (err) { toastError('Sync failed: ' + (err?.message || String(err))); }
+    catch (err) { toastError(t('invoiceSync.sync.error', { error: err?.message || String(err) })); }
   };
 
   const getSortIcon = (key) => {
@@ -1389,9 +1396,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
               if (ce) throw new Error(ce);
               await supabase.from('staged_invoices').update({ company_id: newCo.id }).eq('id', inv.id);
               setInvoices((prev) => prev.map((i) => (i.id === inv.id ? { ...i, company_id: newCo.id } : i)));
-              toastSuccess('Company created and linked — use the approve button to sync.');
+              toastSuccess(t('invoiceSync.company.createSuccess'));
             } catch (err) {
-              toastError('Failed to create company: ' + (err?.message || String(err)));
+              toastError(t('invoiceSync.company.createError', { error: err?.message || String(err) }));
             }
           }}
           onCancel={() => setCompanySearchModal(null)}
@@ -1403,10 +1410,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Remove Subscription Contributions</h2>
+              <h2 className="text-lg font-bold text-gray-900">{t('invoiceSync.history.removeTitle')}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                Select which additions to remove for <strong>{subHistoryModal.companyName}</strong>.
-                Removing all entries will delete the subscription.
+                <Trans i18nKey="invoiceSync.history.removeDescription"
+                  values={{ company: subHistoryModal.companyName }}
+                  components={{ strong: <strong /> }} />
               </p>
             </div>
             <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
@@ -1422,7 +1430,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     )
                   }
                 />
-                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.additionLines.length})</span>
+                <span className="text-sm font-semibold text-gray-700">{t('invoiceSync.history.selectAll', { count: subHistoryModal.additionLines.length })}</span>
               </label>
               {subHistoryModal.additionLines.map((line, idx) => (
                 <label key={idx} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
@@ -1458,8 +1466,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 }
               >
                 {subHistorySelection.length === subHistoryModal.additionLines.length
-                  ? 'Delete subscription'
-                  : `Remove ${subHistorySelection.length} selected`}
+                  ? t('invoiceSync.history.deleteSubscription')
+                  : t('invoiceSync.history.removeSelected', { count: subHistorySelection.length })}
               </button>
             </div>
           </div>
@@ -1471,6 +1479,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         <MatchVerificationModal
           invoice={verifyModal.invoice}
           company={verifyModal.company}
+          locked={subscriptions.some((s) => s.company_id === verifyModal.invoice.company_id)}
           onConfirm={handleConfirmMatch}
           onCancel={() => setVerifyModal(null)}
           onUnmatch={async (invoice) => {
@@ -1479,7 +1488,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               await supabase.from('staged_invoices').update({ company_id: null }).eq('id', invoice.id);
               setInvoices((prev) => prev.map((i) => (i.id === invoice.id ? { ...i, company_id: null } : i)));
             } catch (err) {
-              toastError('Failed to unmatch: ' + (err.message || err));
+              toastError(t('invoiceSync.match.unmatchError', { error: err.message || err }));
             }
           }}
           onCreateNew={() => {
@@ -1494,9 +1503,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
       {showFolderPicker && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Import to folder</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">{t('invoiceSync.import.folderTitle')}</h2>
             <p className="text-sm text-gray-500 mb-5">
-              Choose which folder to put these invoices into.
+              {t('invoiceSync.import.folderDescription')}
             </p>
 
             {/* Existing folder pills */}
@@ -1519,7 +1528,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               <div className="flex gap-2 mt-1">
                 <input
                   type="text"
-                  placeholder="+ New folder name…"
+                  placeholder={t('invoiceSync.import.newFolderPlaceholder')}
                   value={newFolderName}
                   onChange={e => setNewFolderName(e.target.value)}
                   onKeyDown={async (e) => {
@@ -1556,7 +1565,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 }}
                 className="px-5 py-2 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                {uploadTargetFolderId ? 'Import →' : 'Import (no folder) →'}
+                {uploadTargetFolderId ? t('invoiceSync.import.importToFolder') : t('invoiceSync.import.importNoFolder')}
               </button>
             </div>
           </div>
@@ -1574,7 +1583,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
-            placeholder="Search invoices or companies..."
+            placeholder={t('invoiceSync.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -1589,20 +1598,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
             className="hidden"
           />
 
-          <button
-            onClick={fetchInvoices}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Icon path={mdiRefresh} size={0.8} />
-            Refresh
-          </button>
-
           <div className="relative">
             {/* New folder quick-add */}
             <button
               onClick={async () => {
-                const name = window.prompt('New folder name:');
+                const name = window.prompt(t('invoiceSync.folder.newPrompt'));
                 if (name?.trim()) await createFolder(name.trim());
               }}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm transition-all"
@@ -1626,7 +1626,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
             {isActionsOpen && (
               <div className="absolute right-0 mt-1 w-56 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
                 <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
-                  Data Tools
+                  {t('invoiceSync.dataTools')}
                 </div>
                 <button
                   onClick={() =>                   { setIsActionsOpen(false); setShowFolderPicker(true); }}
@@ -1634,17 +1634,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
                 >
                   <Icon path={mdiUpload} size={0.8} />
-                  {uploading ? 'Importing...' : 'Import PDF(s)'}
+                  {uploading ? t('invoiceSync.importing') : t('invoiceSync.importPdfs')}
                 </button>
-                <div className="border-t border-gray-100 my-1"></div>
-                <button
-                  onClick={handleClearAll}
-                  disabled={loading || invoices.length === 0}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 bg-transparent disabled:opacity-50 cursor-pointer"
-                >
-                  <Icon path={mdiDelete} size={0.8} className="text-red-500" />
-                  Clear Staging Area
-                </button>
+
               </div>
             )}
           </div>
@@ -1655,7 +1647,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
         <div className="mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-2 relative overflow-hidden">
           <div className="flex justify-between items-center text-sm font-medium text-gray-700 relative z-10">
             <span>
-              Importing PDFs ({Math.round((uploadProgress.current / uploadProgress.total) * 100)}%)
+              {t('invoiceSync.upload.progress', { percent: Math.round((uploadProgress.current / uploadProgress.total) * 100) })}
             </span>
             <span>
               {uploadProgress.current} / {uploadProgress.total}
@@ -1687,14 +1679,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
         </div>
       ) : invoices.length === 0 ? (
         <div className="bg-white rounded-xl shadow p-12 flex flex-col items-center justify-center text-gray-500">
-          <p className="mb-4">No staged invoices found. Have you imported them yet?</p>
+          <p className="mb-4">{t('invoiceSync.empty')}</p>
           <button
             onClick={() => setShowFolderPicker(true)}
             disabled={uploading}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer disabled:opacity-50"
           >
             <Icon path={mdiUpload} size={1} />
-            {uploading ? 'Importing...' : 'Import PDF(s)'}
+            {uploading ? t('invoiceSync.importing') : t('invoiceSync.importPdfs')}
           </button>
         </div>
       ) : (
@@ -1704,7 +1696,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
               <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center p-6 border-b border-gray-100">
                   <h2 className="text-xl font-semibold">
-                    Edit Invoice {editingInvoice.invoice_number}
+                    {t('invoiceSync.edit.title', { number: editingInvoice.invoice_number })}
                   </h2>
                   <button
                     onClick={() => setEditingInvoice(null)}
@@ -1727,13 +1719,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       rel="noreferrer"
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded"
                     >
-                      View Original PDF ↗
+                      {t('invoiceSync.edit.viewPdf')}
                     </a>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Company Name
+                      {t('invoiceSync.edit.companyName')}
                     </label>
                     <datalist id="companies-list">
                       {companies.map((c) => (
@@ -1750,14 +1742,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      Connect to an existing company by entering their exact name, or edit the typo.
+                      {t('invoiceSync.edit.companyHint')}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Stands Count (1 stands = 6x6, 2 stands = 6x12)
+                        {t('invoiceSync.edit.standsCount')}
                       </label>
                       <input
                         type="number"
@@ -1771,12 +1763,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        If the PDF says Standhuur 6x12, enter 2.
+                        {t('invoiceSync.edit.standsHint')}
                       </p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Meals Count
+                        {t('invoiceSync.edit.mealsCount')}
                       </label>
                       <input
                         type="number"
@@ -1798,7 +1790,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                   {/* Folder assignment */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Folder</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('invoiceSync.edit.folder')}</label>
                     <div className="flex flex-col gap-1.5">
                       {folders.map(f => (
                         <button
@@ -1825,7 +1817,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                         }`}
                       >
                         <Icon path={mdiFolder} size={0.7} />
-                        Unassigned
+                        {t('invoiceSync.folder.unassigned')}
                       </button>
                     </div>
                   </div>
@@ -1861,7 +1853,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       }}
                     className="px-4 py-2 bg-blue-600 text-white font-medium hover:bg-blue-700 rounded-lg transition-colors shadow-sm cursor-pointer"
                   >
-                    Save Changes
+                    {t('invoiceSync.edit.save')}
                   </button>
                 </div>
               </div>
@@ -1875,30 +1867,30 @@ export default function InvoiceSyncTab({ selectedYear }) {
                     className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[90px] whitespace-nowrap"
                     onClick={() => handleSort('invoice_number')}
                   >
-                    Invoice {getSortIcon('invoice_number')}
+                    {t('invoiceSync.table.invoice')} {getSortIcon('invoice_number')}
                   </th>
                   <th
                     className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('company_name')}
                   >
-                    Company {getSortIcon('company_name')}
+                    {t('invoiceSync.table.company')} {getSortIcon('company_name')}
                   </th>
                   <th
                     className="px-2 py-2 border-b border-gray-200 cursor-pointer hover:bg-gray-100"
                     onClick={() => handleSort('date')}
                   >
-                    Date {getSortIcon('date')}
+                    {t('invoiceSync.table.date')} {getSortIcon('date')}
                   </th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left whitespace-nowrap">Item</th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left min-w-[120px]">Area</th>
-                  <th className="px-2 py-2 border-b border-gray-200 text-left w-full">Notes</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left whitespace-nowrap">{t('invoiceSync.table.item')}</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left min-w-[120px]">{t('invoiceSync.table.area')}</th>
+                  <th className="px-2 py-2 border-b border-gray-200 text-left w-full">{t('invoiceSync.table.notes')}</th>
                   {/* split meal columns */}
 
                   <th
                     className="px-4 py-3 text-center border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[90px] whitespace-nowrap"
                     onClick={() => handleSort('status')}
                   >
-                    Status {getSortIcon('status')}
+                    {t('invoiceSync.table.status')} {getSortIcon('status')}
                   </th>
                   <th className="px-2 py-2 border-b border-gray-200 w-[40px]"></th>
                 </tr>
@@ -1947,26 +1939,26 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   setRenamingFolder(null);
                                 }}
                                 className="p-0.5 text-green-600 hover:text-green-700"
-                                title="Save"
+                                title={t('invoiceSync.folder.saveTooltip')}
                               >
                                 <Icon path={mdiCheck} size={0.75} />
                               </button>
                               <button
                                 onClick={() => setRenamingFolder(null)}
                                 className="p-0.5 text-gray-400 hover:text-gray-600"
-                                title="Cancel"
+                                title={t('invoiceSync.folder.cancelTooltip')}
                               >
                                 <Icon path={mdiCancel} size={0.75} />
                               </button>
                             </div>
                           ) : (
                             <span className="text-base">
-                              {group.folder?.name ?? 'Unassigned'}
+                              {group.folder?.name ?? t('invoiceSync.folder.unassigned')}
                             </span>
                           )}
 
                           <span className="text-xs font-normal text-gray-400">
-                            ({group.invoices.length} invoice{group.invoices.length !== 1 ? 's' : ''})
+                            ({t('invoiceSync.folder.invoiceCount', { count: group.invoices.length })})
                           </span>
 
                           {/* Rename / Delete buttons (real folders only, not Unassigned) */}
@@ -1978,14 +1970,14 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               <button
                                 onClick={() => setRenamingFolder({ id: group.key, name: group.folder?.name ?? '' })}
                                 className="p-1 text-gray-400 hover:text-blue-600 rounded transition-colors"
-                                title="Rename folder"
+                                title={t('invoiceSync.folder.renameTooltip')}
                               >
                                 <Icon path={mdiPencilOutline} size={0.7} />
                               </button>
                               <button
                                 onClick={() => deleteFolder(group.key)}
                                 className="p-1 text-gray-400 hover:text-red-600 rounded transition-colors"
-                                title="Delete folder"
+                                title={t('invoiceSync.folder.deleteTooltip')}
                               >
                                 <Icon path={mdiDelete} size={0.7} />
                               </button>
@@ -2024,7 +2016,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       );
                       return true;
                     } catch (err) {
-                      toastError('Failed to update invoice: ' + (err.message || err));
+                      toastError(t('invoiceSync.updateError', { error: err.message || err }));
                       return false;
                     }
                   };
@@ -2138,7 +2130,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           await reload?.();
                         }
                       } catch (e) {
-                        toastError('Failed to revert subscription: ' + (e?.message || e));
+                        toastError(t('invoiceSync.revertError', { error: e?.message || e }));
                       }
                     };
 
@@ -2337,7 +2329,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                   const clientBlock = parsedData.client_block || [];
                   const isExpanded = expandedRows.has(inv.id);
                   const firstItem =
-                    lineItems.length > 0 ? lineItems[0].item || lineItems[0].description : 'N/A';
+                    lineItems.length > 0 ? lineItems[0].item || lineItems[0].description : t('invoiceSync.notAvailable');
                   const hasMore = lineItems.length > 1;
                   // compute area aggregate from each line item
                   const areaList = lineItems
@@ -2360,7 +2352,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             target="_blank"
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            title="Open PDF"
+                            title={t('invoiceSync.table.openPdf')}
                             className="hover:underline truncate block w-full"
                           >
                             {inv.invoice_number}
@@ -2378,11 +2370,11 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               style={inv.company_id
                                 ? { color: '#166534', background: '#dcfce7', borderColor: '#86efac' }
                                 : { color: '#854d0e', background: '#fef9c3', borderColor: '#fde047' }}
-                              title={inv.company_id ? 'Click to re-verify match' : 'Click to verify match'}
+                              title={inv.company_id ? t('invoiceSync.match.reVerify') : t('invoiceSync.match.clickVerify')}
                             >
-                              <span>{inv.company_id ? '✓ Verified: ' : '? '}{matchCompany.name}</span>
+                              <span>{inv.company_id ? t('invoiceSync.match.verified') + ' ' : t('invoiceSync.match.unverified') + ' '}{matchCompany.name}</span>
                               {!inv.company_id && matchReasons.length > 0 && (
-                                <span className="font-normal opacity-60 text-[10px]">via {matchReasons.join(', ')}</span>
+                                <span className="font-normal opacity-60 text-[10px]">{t('invoiceSync.match.viaReasons', { reasons: matchReasons.join(', ') })}</span>
                               )}
                             </button>
                           ) : (
@@ -2390,15 +2382,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleOpenVerifyModal(inv); }}
                                 className="text-xs text-orange-700 font-semibold bg-orange-100 px-1.5 py-0.5 rounded border border-orange-300 mt-1 inline-block hover:bg-orange-200 transition-colors cursor-pointer"
-                                title="Click to verify or create company"
+                                title={t('invoiceSync.match.clickVerifyOrCreate')}
                               >
-                                ⚠ No match — verify
+                                {t('invoiceSync.match.noMatch')}
                               </button>
                             )
                           )}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 text-gray-600 whitespace-nowrap align-top">
-                          {parsedData.date || 'N/A'}
+                          {parsedData.date || t('invoiceSync.notAvailable')}
                         </td>
                         <td className="px-2 py-2 border-r border-gray-50 align-top">
                           {/* show every item inline with tiny controls so users can act without expanding */}
@@ -2427,8 +2419,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                       const icons = { approved: mdiCheck, rejected: mdiCancel };
                                       const colors = { approved: 'bg-green-600 text-white hover:bg-green-700',
                                                        rejected: 'bg-white border border-gray-300 text-red-600 hover:bg-red-50' };
-                                      const titles = { approved: 'Mark approved',
-                                                       rejected: 'Reject item' };
+                                      const titles = { approved: t('invoiceSync.item.approveTitle'),
+                                                       rejected: t('invoiceSync.item.rejectTitle') };
                                       const disabled = !inv.company_id;
                                       // Once resolved, only show undo for the active status —
                                       // switching directly between approved↔rejected is not allowed;
@@ -2445,7 +2437,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                                 ? 'p-1 rounded bg-green-600 text-white hover:bg-amber-500'
                                                 : 'p-1 rounded bg-red-500 text-white hover:bg-amber-500'
                                             }
-                                            title="Undo change"
+                                            title={t('invoiceSync.item.undoTitle')}
                                           >
                                             <Icon path={mdiArrowULeftTop} size={0.6} />
                                           </button>
@@ -2460,7 +2452,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                             `p-1 rounded ${colors[act]} ` +
                                             (disabled ? 'opacity-40 cursor-not-allowed' : '')
                                           }
-                                          title={disabled ? 'Verify company first' : titles[act]}
+                                          title={disabled ? t('invoiceSync.item.verifyFirst') : titles[act]}
                                         >
                                           <Icon path={icons[act]} size={0.6} />
                                         </button>
@@ -2507,12 +2499,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             }
                           >
                             {inv.status === 'approved'
-                              ? 'SUBSCRIBED'
+                              ? t('invoiceSync.status.subscribed')
                               : inv.status === 'partially_approved'
-                                ? 'PARTIAL'
+                                ? t('invoiceSync.status.partial')
                                 : inv.status
                                   ? inv.status.toUpperCase()
-                                  : 'PENDING'}
+                                  : t('invoiceSync.status.pending')}
                           </span>
                         </td>
                         <td className="px-1 py-2 align-top">
@@ -2525,7 +2517,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   setMovingInvoiceId(movingInvoiceId === inv.id ? null : inv.id);
                                 }}
                                 className="p-1 rounded text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-colors cursor-pointer"
-                                title="Move to folder"
+                                title={t('invoiceSync.actions.moveToFolder')}
                               >
                                 <Icon path={mdiFolder} size={0.7} />
                               </button>
@@ -2555,7 +2547,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                     className={`w-full text-left px-3 py-1.5 text-xs flex items-center gap-2 hover:bg-gray-50 transition-colors ${!inv.folder_id ? 'font-semibold text-gray-800' : 'text-gray-400'}`}
                                   >
                                     <Icon path={mdiFolder} size={0.6} className="opacity-40" />
-                                    Unassigned
+                                    {t('invoiceSync.folder.unassigned')}
                                   </button>
                                 </div>
                               )}
@@ -2573,7 +2565,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                       ? 'text-gray-300 cursor-not-allowed'
                                       : 'text-gray-400 hover:text-red-500 hover:bg-red-50 cursor-pointer')
                                   }
-                                  title={hasResolved ? 'Undo all approved/rejected items first' : 'Delete invoice'}
+                                  title={hasResolved ? t('invoiceSync.delete.blockedTooltip') : t('invoiceSync.delete.tooltip')}
                                 >
                                   <Icon path={mdiDelete} size={0.7} />
                                 </button>
@@ -2588,9 +2580,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           <td colSpan="9" className="p-4 bg-slate-50 border-x border-gray-200">
                             {/* compact summary row with counts */}
                             <div className="mb-3 text-sm text-gray-700">
-                              <strong>Stands:</strong> {inv.stands_count} &nbsp;|
-                              <strong>Sat:</strong> B {inv.breakfast_sat} L {inv.lunch_sat} BBQ {inv.bbq_sat} &nbsp;|
-                              <strong>Sun:</strong> B {inv.breakfast_sun} L {inv.lunch_sun}
+                              <strong>{t('invoiceSync.detail.stands')}</strong> {inv.stands_count} &nbsp;|
+                              <strong>{t('invoiceSync.detail.sat')}</strong> {t('invoiceSync.detail.breakfast')} {inv.breakfast_sat} {t('invoiceSync.detail.lunch')} {inv.lunch_sat} {t('invoiceSync.detail.bbq')} {inv.bbq_sat} &nbsp;|
+                              <strong>{t('invoiceSync.detail.sun')}</strong> {t('invoiceSync.detail.breakfast')} {inv.breakfast_sun} {t('invoiceSync.detail.lunch')} {inv.lunch_sun}
                             </div>
                             <div className="flex flex-col lg:flex-row gap-6">
                               {/* Sub Box 1: Client Address from PDF */}
@@ -2598,7 +2590,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
                                 <div className="flex justify-between items-center mb-3">
                                   <h4 className="text-[11px] tracking-wider font-bold text-gray-500 uppercase flex items-center gap-2">
-                                    <Icon path={mdiMagnify} size={0.5} /> Parsed Client Details
+                                    <Icon path={mdiMagnify} size={0.5} /> {t('invoiceSync.detail.clientDetails')}
                                   </h4>
                                 </div>
                                 <div className="text-sm text-gray-800 space-y-1 font-mono leading-relaxed bg-gray-50 border border-gray-100 p-3 rounded">
@@ -2606,8 +2598,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                     clientBlock.map((line, i) => <div key={i}>{line}</div>)
                                   ) : (
                                     <em className="text-gray-400 font-sans">
-                                      Could not extract spatial block. Was it parsed by the new
-                                      format?
+                                      {t('invoiceSync.detail.noClientBlock')}
                                     </em>
                                   )}
                                 </div>
@@ -2617,7 +2608,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               <div className="flex-[2] bg-white p-4 rounded border border-gray-300 shadow-sm relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                                 <h4 className="text-[11px] tracking-wider font-bold text-gray-500 uppercase mb-3 flex items-center gap-2">
-                                  Line Items Extracted (JSON)
+                                  {t('invoiceSync.detail.lineItemsTitle')}
                                 </h4>
                                 {lineItems && lineItems.length > 0 ? (
                                   <div className="border border-gray-100 rounded-lg overflow-hidden">
@@ -2625,10 +2616,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                       <thead>
                                         <tr className="border-b border-gray-200 text-left text-gray-500 bg-gray-50">
                                           <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider">
-                                            Description
+                                            {t('invoiceSync.detail.description')}
                                           </th>
                                           <th className="py-2 px-3 font-medium uppercase text-[10px] tracking-wider text-right border-l border-gray-100">
-                                            Quantity
+                                            {t('invoiceSync.detail.quantity')}
                                           </th>
                                         </tr>
                                       </thead>
@@ -2651,8 +2642,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   </div>
                                 ) : (
                                   <div className="text-sm text-gray-500 p-6 text-center bg-gray-50 rounded border border-dashed border-gray-300">
-                                    No structured items parsed in JSON. Have you wiped and
-                                    re-uploaded using the new parser?
+                                    {t('invoiceSync.detail.noItems')}
                                   </div>
                                 )}
                               </div>

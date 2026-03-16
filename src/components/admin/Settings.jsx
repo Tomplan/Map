@@ -26,6 +26,7 @@ import CategorySettings from './CategorySettings';
 import MapSettings from './MapSettings';
 import ShareApp from './ShareApp';
 import InvoiceFilters from './InvoiceFilters';
+import AdvancedSettings from './AdvancedSettings';
 
 /**
  * Settings - Main settings page with role-based sections
@@ -128,7 +129,7 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       label: t('settings.advanced.title'),
       icon: mdiAlertCircle,
       roles: ['super_admin'],
-      component: <AdvancedPlaceholder />,
+      component: <AdvancedSettings />,
       scope: 'organization',
       description: 'System configuration (danger zone)',
     },
@@ -292,22 +293,6 @@ function EventDefaultsPlaceholder() {
       <p className="text-gray-600">{t('settings.eventDefaults.description')}</p>
       <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <p className="text-sm text-blue-800">🚧 Event Defaults component coming soon...</p>
-      </div>
-    </div>
-  );
-}
-
-function AdvancedPlaceholder() {
-  const { t } = useTranslation();
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Icon path={mdiAlertCircle} size={1} className="text-red-600" />
-        {t('settings.advanced.title')}
-      </h2>
-      <p className="text-gray-600">{t('settings.advanced.description')}</p>
-      <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-sm text-red-800">⚠️ Advanced Settings (Danger Zone) coming soon...</p>
       </div>
     </div>
   );
