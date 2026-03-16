@@ -14,7 +14,7 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
   const { t } = useTranslation();
   const { organizationLogo } = useOrganizationLogo();
   const [editForm, setEditForm] = useState({
-    booth_count: subscription.booth_count || 1,
+    booth_count: subscription.booth_count ?? 1,
     area: subscription.area || '',
     breakfast_sat: subscription.breakfast_sat || 0,
     lunch_sat: subscription.lunch_sat || 0,

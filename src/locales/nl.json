@@ -60,7 +60,208 @@
   },
   "invoiceSync": {
     "matchLabel": "Match:",
-    "createCompany": "Geen match: maakt nieuw bedrijf aan!"
+    "createCompany": "Geen match: maakt nieuw bedrijf aan!",
+    "verify": {
+      "title": "Bedrijfsmatch bevestigen",
+      "subtitle": "Factuur <inv>{{number}}</inv> komt overeen met <cmp>{{company}}</cmp> — controleer de gegevens hieronder.",
+      "invoiceColumn": "Factuurgegevens (geparsed)",
+      "companyColumn": "Bedrijfsrecord (database)",
+      "companyName": "Bedrijfsnaam",
+      "contact1": "Contactpersoon 1",
+      "contact2": "Contactpersoon 2",
+      "email": "E-mail",
+      "email2": "E-mail 2",
+      "phone": "Telefoon",
+      "phone2": "Telefoon 2",
+      "street": "Straat",
+      "street2": "Straat 2",
+      "postalCode": "Postcode",
+      "city": "Plaats",
+      "country": "Land",
+      "vat": "BTW-nummer",
+      "kvk": "KvK",
+      "empty": "(leeg)",
+      "storedSecondary": "✓ opgeslagen als secundair",
+      "useLabel": "Gebruik:",
+      "invoiceValue": "Factuurwaarde",
+      "keepDb": "Behoud DB",
+      "both": "Beide",
+      "bothTooltip": "Behoud DB-waarde als primair, sla factuurwaarde op als secundair",
+      "patchCheckbox": "Vul lege bedrijfsvelden aan met factuurgegevens (contact, adres, BTW)",
+      "lockedMessage": "Dit bedrijf heeft een actieve inschrijving. Verwijder eerst de inschrijving voordat je de match wijzigt.",
+      "close": "Sluiten",
+      "cancel": "Annuleren",
+      "unmatch": "Ontkoppelen",
+      "createNew": "Geen match — nieuw bedrijf aanmaken",
+      "confirm": "Match bevestigen"
+    },
+    "search": {
+      "noAutoMatch": "Geen automatische match gevonden",
+      "invoiceLabel": "Factuur:",
+      "placeholder": "Zoek bedrijven op naam, e-mail of plaats…",
+      "noResults": "Geen bedrijven gevonden",
+      "cancel": "Annuleren",
+      "createNew": "+ Nieuw bedrijf aanmaken"
+    },
+    "folder": {
+      "createError": "Kan map niet aanmaken: {{error}}",
+      "renameError": "Kan map niet hernoemen: {{error}}",
+      "deleteTitle": "Map verwijderen",
+      "deleteMessage": "Deze map verwijderen? Facturen worden verplaatst naar Niet-toegewezen.",
+      "deleteConfirm": "Verwijderen",
+      "deleteError": "Kan map niet verwijderen: {{error}}",
+      "moveError": "Kan factuur niet verplaatsen: {{error}}",
+      "unassigned": "Niet-toegewezen",
+      "invoiceCount_one": "{{count}} factuur",
+      "invoiceCount_other": "{{count}} facturen",
+      "renameTooltip": "Map hernoemen",
+      "deleteTooltip": "Map verwijderen",
+      "saveTooltip": "Opslaan",
+      "cancelTooltip": "Annuleren",
+      "newPrompt": "Nieuwe mapnaam:"
+    },
+    "clear": {
+      "title": "Wachtruimte leegmaken",
+      "message": "Weet je zeker dat je ALLE gestage facturen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+      "confirm": "Alles wissen",
+      "success": "Wachtruimte succesvol leeggemaakt",
+      "error": "Kan gestage facturen niet wissen: {{error}}"
+    },
+    "upload": {
+      "duplicateWarning": "{{count}} factu(u)r(en) bestaan al en zijn overgeslagen.",
+      "errorSummary": "{{success}} facturen geüpload. {{errors}} mislukt. {{skipped}}",
+      "skippedSuffix": "{{count}} niet-evenement facturen overgeslagen.",
+      "success": "{{count}} facturen succesvol geüpload.",
+      "successWithSkipped": "{{success}} facturen geüpload. {{skipped}} niet-evenement facturen overgeslagen.",
+      "processError": "Kan een of meer PDF's niet verwerken. {{error}}",
+      "progress": "PDF's importeren ({{percent}}%)"
+    },
+    "undo": {
+      "contributionTitle": "Factuurbijdrage ongedaan maken",
+      "contributionMessage": "Andere items dragen ook bij aan het abonnement voor \"{{company}}\". De waarden van deze factuur worden afgetrokken (niet verwijderd).",
+      "subscriptionTitle": "Abonnement ongedaan maken",
+      "subscriptionMessage": "Dit zet de factuur terug naar in afwachting. Wil je ook het aangemaakte abonnement voor \"{{company}}\" verwijderen?",
+      "contributionSuccess": "Factuurbijdrage verwijderd.",
+      "subscriptionError": "Kan abonnement niet bijwerken: {{error}}",
+      "subscriptionRemoved": "Abonnement verwijderd.",
+      "invoiceTitle": "Factuur ongedaan maken",
+      "invoiceMessage": "Deze factuur terugzetten naar in afwachting?"
+    },
+    "delete": {
+      "blockedByResolved": "Kan niet verwijderen — maak eerst alle goedgekeurde/afgewezen items ongedaan.",
+      "title": "Verwijdering bevestigen",
+      "message": "Weet je zeker dat je deze gestage factuur permanent wilt verwijderen?",
+      "error": "Kan factuur niet verwijderen.",
+      "blockedTooltip": "Maak eerst alle goedgekeurde/afgewezen items ongedaan",
+      "tooltip": "Factuur verwijderen"
+    },
+    "sync": {
+      "mergeSuccess": "Samengevoegd met bestaand abonnement!",
+      "replaceSuccess": "Abonnement vervangen!",
+      "success": "Abonnement succesvol gesynchroniseerd!",
+      "confirmTitle": "Synchroniseren naar abonnement",
+      "confirmMessage": "Abonnement aanmaken voor \"{{company}}\"?",
+      "error": "Synchronisatie mislukt: {{error}}"
+    },
+    "match": {
+      "confirmSuccess": "Match bevestigd — gebruik de goedkeurknop om te synchroniseren.",
+      "confirmError": "Kan match niet bevestigen: {{error}}",
+      "unmatchError": "Kan niet ontkoppelen: {{error}}",
+      "verified": "✓ Geverifieerd:",
+      "unverified": "?",
+      "viaReasons": "via {{reasons}}",
+      "noMatch": "⚠ Geen match — verifieer",
+      "reVerify": "Klik om match opnieuw te verifiëren",
+      "clickVerify": "Klik om match te verifiëren",
+      "clickVerifyOrCreate": "Klik om te verifiëren of bedrijf aan te maken"
+    },
+    "company": {
+      "createSuccess": "Bedrijf aangemaakt en gekoppeld — gebruik de goedkeurknop om te synchroniseren.",
+      "createError": "Kan bedrijf niet aanmaken: {{error}}"
+    },
+    "history": {
+      "removeTitle": "Abonnementsbijdragen verwijderen",
+      "removeDescription": "Selecteer welke toevoegingen je wilt verwijderen voor <strong>{{company}}</strong>. Alle items verwijderen zal het abonnement verwijderen.",
+      "selectAll": "Alles selecteren ({{count}})",
+      "deleteSubscription": "Abonnement verwijderen",
+      "removeSelected": "{{count}} geselecteerde verwijderen"
+    },
+    "import": {
+      "folderTitle": "Importeren naar map",
+      "folderDescription": "Kies in welke map deze facturen geplaatst worden.",
+      "newFolderPlaceholder": "+ Nieuwe mapnaam…",
+      "createFolder": "Aanmaken",
+      "importToFolder": "Importeren →",
+      "importNoFolder": "Importeren (geen map) →"
+    },
+    "searchPlaceholder": "Zoek facturen of bedrijven...",
+    "refresh": "Vernieuwen",
+    "dataTools": "Datatools",
+    "importing": "Importeren...",
+    "importPdfs": "PDF('s) importeren",
+    "clearStaging": "Wachtruimte leegmaken",
+    "empty": "Geen gestage facturen gevonden. Heb je ze al geïmporteerd?",
+    "notAvailable": "N.v.t.",
+    "errorUnknown": "Onbekende fout opgetreden",
+    "updateError": "Kan factuur niet bijwerken: {{error}}",
+    "revertError": "Kan abonnement niet terugdraaien: {{error}}",
+    "table": {
+      "invoice": "Factuur",
+      "company": "Bedrijf",
+      "date": "Datum",
+      "item": "Item",
+      "area": "Gebied",
+      "notes": "Opmerkingen",
+      "status": "Status",
+      "openPdf": "PDF openen"
+    },
+    "status": {
+      "subscribed": "INGESCHREVEN",
+      "partial": "GEDEELTELIJK",
+      "pending": "IN AFWACHTING"
+    },
+    "edit": {
+      "title": "Factuur {{number}} bewerken",
+      "viewPdf": "Originele PDF bekijken ↗",
+      "companyName": "Bedrijfsnaam",
+      "companyHint": "Koppel aan een bestaand bedrijf door de exacte naam in te voeren, of corrigeer de typefout.",
+      "standsCount": "Aantal stands (1 stand = 6x6, 2 stands = 6x12)",
+      "standsHint": "Als de PDF Standhuur 6x12 zegt, voer dan 2 in.",
+      "mealsCount": "Aantal maaltijden",
+      "folder": "Map",
+      "save": "Wijzigingen opslaan"
+    },
+    "detail": {
+      "stands": "Stands:",
+      "sat": "Za:",
+      "sun": "Zo:",
+      "breakfast": "O",
+      "lunch": "L",
+      "bbq": "BBQ",
+      "clientDetails": "Geparsede klantgegevens",
+      "noClientBlock": "Kan ruimtelijk blok niet extraheren. Is het geparsed met het nieuwe formaat?",
+      "lineItemsTitle": "Geëxtraheerde regelitems (JSON)",
+      "description": "Omschrijving",
+      "quantity": "Aantal",
+      "noItems": "Geen gestructureerde items geparsed in JSON. Heb je gewist en opnieuw geüpload met de nieuwe parser?"
+    },
+    "item": {
+      "approveTitle": "Goedkeuren",
+      "rejectTitle": "Afwijzen",
+      "undoTitle": "Wijziging ongedaan maken",
+      "verifyFirst": "Verifieer eerst het bedrijf"
+    },
+    "actions": {
+      "moveToFolder": "Verplaatsen naar map"
+    },
+    "counts": {
+      "booths": "{{count}} stand(s)",
+      "breakfastSat": "{{count}} ontbijt za",
+      "lunchSat": "{{count}} lunch za",
+      "bbqSat": "{{count}} BBQ za",
+      "breakfastSun": "{{count}} ontbijt zo",
+      "lunchSun": "{{count}} lunch zo"
+    }
   },
   "languages": {
     "english": "Engels",

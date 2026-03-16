@@ -27,7 +27,208 @@
   },
   "invoiceSync": {
     "matchLabel": "Match:",
-    "createCompany": "Keine Übereinstimmung: Neues Unternehmen erstellen!"
+    "createCompany": "Keine Übereinstimmung: Neues Unternehmen erstellen!",
+    "verify": {
+      "title": "Firmenzuordnung bestätigen",
+      "subtitle": "Rechnung <inv>{{number}}</inv> stimmt mit <cmp>{{company}}</cmp> überein — überprüfen Sie die Details unten.",
+      "invoiceColumn": "Rechnungsdaten (geparst)",
+      "companyColumn": "Firmendatensatz (Datenbank)",
+      "companyName": "Firmenname",
+      "contact1": "Kontakt 1",
+      "contact2": "Kontakt 2",
+      "email": "E-Mail",
+      "email2": "E-Mail 2",
+      "phone": "Telefon",
+      "phone2": "Telefon 2",
+      "street": "Straße",
+      "street2": "Straße 2",
+      "postalCode": "Postleitzahl",
+      "city": "Stadt",
+      "country": "Land",
+      "vat": "USt-IdNr.",
+      "kvk": "HRB",
+      "empty": "(leer)",
+      "storedSecondary": "✓ als sekundär gespeichert",
+      "useLabel": "Verwenden:",
+      "invoiceValue": "Rechnungswert",
+      "keepDb": "DB behalten",
+      "both": "Beide",
+      "bothTooltip": "DB-Wert als primär behalten, Rechnungswert als sekundär speichern",
+      "patchCheckbox": "Leere Firmenfelder mit Rechnungsdaten füllen (Kontakt, Adresse, USt)",
+      "lockedMessage": "Dieses Unternehmen hat ein aktives Abonnement. Entfernen Sie zuerst das Abonnement, bevor Sie die Zuordnung ändern.",
+      "close": "Schließen",
+      "cancel": "Abbrechen",
+      "unmatch": "Trennen",
+      "createNew": "Keine Übereinstimmung — neues Unternehmen erstellen",
+      "confirm": "Zuordnung bestätigen"
+    },
+    "search": {
+      "noAutoMatch": "Keine automatische Übereinstimmung gefunden",
+      "invoiceLabel": "Rechnung:",
+      "placeholder": "Unternehmen nach Name, E-Mail oder Stadt suchen…",
+      "noResults": "Keine Unternehmen gefunden",
+      "cancel": "Abbrechen",
+      "createNew": "+ Neues Unternehmen erstellen"
+    },
+    "folder": {
+      "createError": "Ordner konnte nicht erstellt werden: {{error}}",
+      "renameError": "Ordner konnte nicht umbenannt werden: {{error}}",
+      "deleteTitle": "Ordner löschen",
+      "deleteMessage": "Diesen Ordner löschen? Rechnungen werden zu Nicht zugewiesen verschoben.",
+      "deleteConfirm": "Löschen",
+      "deleteError": "Ordner konnte nicht gelöscht werden: {{error}}",
+      "moveError": "Rechnung konnte nicht verschoben werden: {{error}}",
+      "unassigned": "Nicht zugewiesen",
+      "invoiceCount_one": "{{count}} Rechnung",
+      "invoiceCount_other": "{{count}} Rechnungen",
+      "renameTooltip": "Ordner umbenennen",
+      "deleteTooltip": "Ordner löschen",
+      "saveTooltip": "Speichern",
+      "cancelTooltip": "Abbrechen",
+      "newPrompt": "Neuer Ordnername:"
+    },
+    "clear": {
+      "title": "Staging-Bereich leeren",
+      "message": "Sind Sie sicher, dass Sie ALLE bereitgestellten Rechnungen löschen möchten? Dies kann nicht rückgängig gemacht werden.",
+      "confirm": "Alle löschen",
+      "success": "Staging-Bereich erfolgreich geleert",
+      "error": "Bereitgestellte Rechnungen konnten nicht gelöscht werden: {{error}}"
+    },
+    "upload": {
+      "duplicateWarning": "{{count}} Rechnung(en) existieren bereits und wurden übersprungen.",
+      "errorSummary": "{{success}} Rechnungen hochgeladen. {{errors}} fehlgeschlagen. {{skipped}}",
+      "skippedSuffix": "{{count}} Nicht-Event-Rechnungen übersprungen.",
+      "success": "{{count}} Rechnungen erfolgreich hochgeladen.",
+      "successWithSkipped": "{{success}} Rechnungen hochgeladen. {{skipped}} Nicht-Event-Rechnungen übersprungen.",
+      "processError": "Eine oder mehrere PDFs konnten nicht verarbeitet werden. {{error}}",
+      "progress": "PDFs importieren ({{percent}}%)"
+    },
+    "undo": {
+      "contributionTitle": "Rechnungsbeitrag rückgängig machen",
+      "contributionMessage": "Andere Positionen tragen ebenfalls zum Abonnement für \"{{company}}\" bei. Die Werte dieser Rechnung werden abgezogen (nicht gelöscht).",
+      "subscriptionTitle": "Abonnement rückgängig machen",
+      "subscriptionMessage": "Dies setzt die Rechnung auf ausstehend zurück. Möchten Sie auch das erstellte Abonnement für \"{{company}}\" löschen?",
+      "contributionSuccess": "Rechnungsbeitrag entfernt.",
+      "subscriptionError": "Abonnement konnte nicht aktualisiert werden: {{error}}",
+      "subscriptionRemoved": "Abonnement entfernt.",
+      "invoiceTitle": "Rechnung rückgängig machen",
+      "invoiceMessage": "Diese Rechnung auf ausstehend zurücksetzen?"
+    },
+    "delete": {
+      "blockedByResolved": "Kann nicht gelöscht werden — machen Sie zuerst alle genehmigten/abgelehnten Positionen rückgängig.",
+      "title": "Löschung bestätigen",
+      "message": "Sind Sie sicher, dass Sie diese bereitgestellte Rechnung dauerhaft löschen möchten?",
+      "error": "Rechnung konnte nicht gelöscht werden.",
+      "blockedTooltip": "Machen Sie zuerst alle genehmigten/abgelehnten Positionen rückgängig",
+      "tooltip": "Rechnung löschen"
+    },
+    "sync": {
+      "mergeSuccess": "Mit bestehendem Abonnement zusammengeführt!",
+      "replaceSuccess": "Abonnement ersetzt!",
+      "success": "Abonnement erfolgreich synchronisiert!",
+      "confirmTitle": "Zum Abonnement synchronisieren",
+      "confirmMessage": "Abonnement für \"{{company}}\" erstellen?",
+      "error": "Synchronisierung fehlgeschlagen: {{error}}"
+    },
+    "match": {
+      "confirmSuccess": "Zuordnung bestätigt — verwenden Sie die Genehmigungsschaltfläche zum Synchronisieren.",
+      "confirmError": "Zuordnung konnte nicht bestätigt werden: {{error}}",
+      "unmatchError": "Trennung fehlgeschlagen: {{error}}",
+      "verified": "✓ Verifiziert:",
+      "unverified": "?",
+      "viaReasons": "via {{reasons}}",
+      "noMatch": "⚠ Keine Übereinstimmung — verifizieren",
+      "reVerify": "Klicken zum erneuten Verifizieren",
+      "clickVerify": "Klicken zum Verifizieren",
+      "clickVerifyOrCreate": "Klicken zum Verifizieren oder Unternehmen erstellen"
+    },
+    "company": {
+      "createSuccess": "Unternehmen erstellt und verknüpft — verwenden Sie die Genehmigungsschaltfläche zum Synchronisieren.",
+      "createError": "Unternehmen konnte nicht erstellt werden: {{error}}"
+    },
+    "history": {
+      "removeTitle": "Abonnementsbeiträge entfernen",
+      "removeDescription": "Wählen Sie, welche Ergänzungen für <strong>{{company}}</strong> entfernt werden sollen. Das Entfernen aller Einträge löscht das Abonnement.",
+      "selectAll": "Alle auswählen ({{count}})",
+      "deleteSubscription": "Abonnement löschen",
+      "removeSelected": "{{count}} Ausgewählte entfernen"
+    },
+    "import": {
+      "folderTitle": "In Ordner importieren",
+      "folderDescription": "Wählen Sie, in welchen Ordner diese Rechnungen gelegt werden sollen.",
+      "newFolderPlaceholder": "+ Neuer Ordnername…",
+      "createFolder": "Erstellen",
+      "importToFolder": "Importieren →",
+      "importNoFolder": "Importieren (kein Ordner) →"
+    },
+    "searchPlaceholder": "Rechnungen oder Unternehmen suchen...",
+    "refresh": "Aktualisieren",
+    "dataTools": "Datenwerkzeuge",
+    "importing": "Importieren...",
+    "importPdfs": "PDF(s) importieren",
+    "clearStaging": "Staging-Bereich leeren",
+    "empty": "Keine bereitgestellten Rechnungen gefunden. Haben Sie bereits importiert?",
+    "notAvailable": "k.A.",
+    "errorUnknown": "Unbekannter Fehler aufgetreten",
+    "updateError": "Rechnung konnte nicht aktualisiert werden: {{error}}",
+    "revertError": "Abonnement konnte nicht zurückgesetzt werden: {{error}}",
+    "table": {
+      "invoice": "Rechnung",
+      "company": "Unternehmen",
+      "date": "Datum",
+      "item": "Position",
+      "area": "Bereich",
+      "notes": "Notizen",
+      "status": "Status",
+      "openPdf": "PDF öffnen"
+    },
+    "status": {
+      "subscribed": "ABONNIERT",
+      "partial": "TEILWEISE",
+      "pending": "AUSSTEHEND"
+    },
+    "edit": {
+      "title": "Rechnung {{number}} bearbeiten",
+      "viewPdf": "Original-PDF anzeigen ↗",
+      "companyName": "Firmenname",
+      "companyHint": "Verbinden Sie mit einem bestehenden Unternehmen durch Eingabe des exakten Namens, oder korrigieren Sie den Tippfehler.",
+      "standsCount": "Standanzahl (1 Stand = 6x6, 2 Stände = 6x12)",
+      "standsHint": "Wenn die PDF Standhuur 6x12 sagt, geben Sie 2 ein.",
+      "mealsCount": "Mahlzeitenanzahl",
+      "folder": "Ordner",
+      "save": "Änderungen speichern"
+    },
+    "detail": {
+      "stands": "Stände:",
+      "sat": "Sa:",
+      "sun": "So:",
+      "breakfast": "F",
+      "lunch": "M",
+      "bbq": "BBQ",
+      "clientDetails": "Geparste Kundendaten",
+      "noClientBlock": "Räumlicher Block konnte nicht extrahiert werden. Wurde er mit dem neuen Format geparst?",
+      "lineItemsTitle": "Extrahierte Positionen (JSON)",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "noItems": "Keine strukturierten Positionen in JSON geparst. Haben Sie gelöscht und mit dem neuen Parser erneut hochgeladen?"
+    },
+    "item": {
+      "approveTitle": "Genehmigen",
+      "rejectTitle": "Ablehnen",
+      "undoTitle": "Änderung rückgängig machen",
+      "verifyFirst": "Zuerst Unternehmen verifizieren"
+    },
+    "actions": {
+      "moveToFolder": "In Ordner verschieben"
+    },
+    "counts": {
+      "booths": "{{count}} Stand/Stände",
+      "breakfastSat": "{{count}} Frühstück Sa",
+      "lunchSat": "{{count}} Mittagessen Sa",
+      "bbqSat": "{{count}} BBQ Sa",
+      "breakfastSun": "{{count}} Frühstück So",
+      "lunchSun": "{{count}} Mittagessen So"
+    }
   },
   "navigation": {
     "home": "Startseite",
