@@ -17,7 +17,7 @@ describe('ImportModal preview with per-category columns', () => {
     const { parseFile } = require('../../utils/dataExportImport');
 
     const mockData = [
-      { ID: 1, 'Company Name': 'Acme', 'Category One': '+', 'Contact Person': 'Ed' },
+      { ID: 1, 'Company Name': 'Acme', 'Category One': '+', 'Contact 1 Name': 'Ed' },
     ];
     const mockMeta = {
       columns: [
