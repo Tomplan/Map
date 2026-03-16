@@ -25,7 +25,7 @@ describe('ImportModal import sanitization', () => {
       ID: 1,
       'Company Name': 'SanitizeCo',
       Categories: 'cat1, cat2',
-      'Contact Person': 'Joe',
+      'Contact 1 Name': 'Joe',
     };
     parseFile.mockResolvedValue({ data: [row], error: null, metadata: null });
 

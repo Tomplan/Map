@@ -251,9 +251,9 @@ View public-facing information visible to event attendees:
 **Private Info Tab** (Green) 🔓 *All Roles*
 View manager-only contact information (not public):
 - Company Name
-- Contact Person
-- Phone (with flag indicator)
-- Email
+- Contact 1 Name, Phone, Email
+- Contact 2 & 3 (if configured)
+- Address, VAT/KVK numbers
 
 Toggle between tabs to see different aspects of company data. Both tabs show the same companies, just different fields.
 
@@ -343,7 +343,7 @@ Create new exhibitor entries:
    - Enter website URL
    - Add info description (initial language only, translate later)
 3. Fill in Manager-Only Info section:
-   - Contact Person name
+   - Contact 1 Name
    - Phone number with country code
    - Email address
 4. Click "Create" to save new company
@@ -384,7 +384,7 @@ Efficiently manage bulk company data:
 **Exporting Companies:**
 1. Click "Export" button (green with download icon)
 2. Downloads Excel file with all companies
-3. Includes: Name, Logo URL, Website, Info, Contact, Phone, Email
+3. Includes: Name, Logo URL, Website, Info, Contacts, Address, VAT/KVK
 4. Use for backups, reporting, or external processing
 
 **Importing Companies:**
