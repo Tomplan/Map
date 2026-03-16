@@ -143,8 +143,8 @@ function MarkerContextMenu({
           );
         })()}
 
-      {/* Search Input */}
-      {onAssign && availableCompanies.length > 5 && (
+      {/* Search Input — always visible when assigning */}
+      {onAssign && !currentAssignment && (
         <div className="mb-2 relative">
           <Icon path={mdiMagnify} size={0.65} className="absolute left-2 top-2 text-gray-400" />
           <input
@@ -158,8 +158,8 @@ function MarkerContextMenu({
         </div>
       )}
 
-      {/* Available Companies List */}
-      {onAssign && (
+      {/* Available Companies List — only when marker is not assigned */}
+      {onAssign && !currentAssignment && (
         <div className="max-h-64 overflow-y-auto">
           {availableCompanies.length === 0 ? (
             <div className="text-sm text-gray-500 text-center py-4">

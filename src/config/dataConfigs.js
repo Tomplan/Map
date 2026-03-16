@@ -32,27 +32,50 @@ export const dataConfigs = {
       { key: 'id', header: 'ID', type: 'number' },
       { key: 'name', header: 'Company Name', type: 'string', required: true },
       { key: 'categories', header: 'Categories', type: 'string' },
-      { key: 'contact', header: 'Contact Person', type: 'string' },
-      { key: 'phone', header: 'Phone', type: 'phone' },
-      { key: 'email', header: 'Email', type: 'email' },
       { key: 'website', header: 'Website', type: 'string' },
+      { key: 'logo', header: 'Logo URL', type: 'string' },
       { key: 'info_nl', header: 'Info (Nederlands)', type: 'string', wrapText: true },
       { key: 'info_en', header: 'Info (English)', type: 'string', wrapText: true },
       { key: 'info_de', header: 'Info (Deutsch)', type: 'string', wrapText: true },
-      { key: 'logo', header: 'Logo URL', type: 'string' },
+      { key: 'contact', header: 'Contact 1 Name', type: 'string' },
+      { key: 'phone', header: 'Contact 1 Phone', type: 'phone' },
+      { key: 'email', header: 'Contact 1 Email', type: 'email' },
+      { key: 'contact_name', header: 'Contact 2 Name', type: 'string' },
+      { key: 'contact_phone', header: 'Contact 2 Phone', type: 'phone' },
+      { key: 'contact_email', header: 'Contact 2 Email', type: 'email' },
+      { key: 'contact_name_2', header: 'Contact 3 Name', type: 'string' },
+      { key: 'contact_phone_2', header: 'Contact 3 Phone', type: 'phone' },
+      { key: 'contact_email_2', header: 'Contact 3 Email', type: 'email' },
+      { key: 'address_line1', header: 'Address Line 1', type: 'string' },
+      { key: 'address_line2', header: 'Address Line 2', type: 'string' },
+      { key: 'city', header: 'City', type: 'string' },
+      { key: 'postal_code', header: 'Postal Code', type: 'string' },
+      { key: 'country', header: 'Country', type: 'string' },
+      { key: 'vat_number', header: 'VAT Number', type: 'string' },
+      { key: 'kvk_number', header: 'KVK Number', type: 'string' },
     ],
 
     // Transform import row to database format
     transformImport: (row) => {
       const transformed = {
         name: row['Company Name']?.trim() || '',
-        contact: row['Contact Person']?.trim() || '',
+        contact: row['Contact 1 Name']?.trim() || '',
         website: row['Website']?.trim() || '',
         logo: row['Logo URL']?.trim() || '',
+        contact_name: row['Contact 2 Name']?.trim() || '',
+        contact_name_2: row['Contact 3 Name']?.trim() || '',
+        contact_email_2: row['Contact 3 Email']?.toLowerCase().trim() || '',
+        address_line1: row['Address Line 1']?.trim() || '',
+        address_line2: row['Address Line 2']?.trim() || '',
+        city: row['City']?.trim() || '',
+        postal_code: row['Postal Code']?.trim() || '',
+        country: row['Country']?.trim() || '',
+        vat_number: row['VAT Number']?.trim() || '',
+        kvk_number: row['KVK Number']?.trim() || '',
       };
 
       // Handle phone normalization
-      const phone = row['Phone'];
+      const phone = row['Contact 1 Phone'];
       if (phone && phone.trim()) {
         transformed.phone = normalizePhone(phone.trim());
       } else {
@@ -60,11 +83,35 @@ export const dataConfigs = {
       }
 
       // Handle email normalization
-      const email = row['Email'];
+      const email = row['Contact 1 Email'];
       if (email && email.trim()) {
         transformed.email = email.toLowerCase().trim();
       } else {
         transformed.email = null;
+      }
+
+      // Handle contact 2 phone normalization
+      const contactPhone = row['Contact 2 Phone'];
+      if (contactPhone && contactPhone.trim()) {
+        transformed.contact_phone = normalizePhone(contactPhone.trim());
+      } else {
+        transformed.contact_phone = null;
+      }
+
+      // Handle contact 2 email normalization
+      const contactEmail = row['Contact 2 Email'];
+      if (contactEmail && contactEmail.trim()) {
+        transformed.contact_email = contactEmail.toLowerCase().trim();
+      } else {
+        transformed.contact_email = null;
+      }
+
+      // Handle contact 3 phone normalization
+      const contactPhone2 = row['Contact 3 Phone'];
+      if (contactPhone2 && contactPhone2.trim()) {
+        transformed.contact_phone_2 = normalizePhone(contactPhone2.trim());
+      } else {
+        transformed.contact_phone_2 = null;
       }
 
       // Extract translation data (stored separately for import handler to use)
@@ -100,14 +147,27 @@ export const dataConfigs = {
           id: c.id,
           name: c.name || '',
           categories: '',
-          contact: c.contact || '',
-          phone: c.phone || '',
-          email: c.email || '',
           website: c.website || '',
+          logo: c.logo || '',
           info_nl: c.info || '', // Legacy fallback
           info_en: '',
           info_de: '',
-          logo: c.logo || '',
+          contact: c.contact || '',
+          phone: c.phone || '',
+          email: c.email || '',
+          contact_name: c.contact_name || '',
+          contact_phone: c.contact_phone || '',
+          contact_email: c.contact_email || '',
+          contact_name_2: c.contact_name_2 || '',
+          contact_phone_2: c.contact_phone_2 || '',
+          contact_email_2: c.contact_email_2 || '',
+          address_line1: c.address_line1 || '',
+          address_line2: c.address_line2 || '',
+          city: c.city || '',
+          postal_code: c.postal_code || '',
+          country: c.country || '',
+          vat_number: c.vat_number || '',
+          kvk_number: c.kvk_number || '',
         }));
       }
 
@@ -170,14 +230,27 @@ export const dataConfigs = {
           id: c.id,
           name: c.name || '',
           categories: companyCategorySlugs.join(', '), // Comma-separated slugs
-          contact: c.contact || '',
-          phone: c.phone || '',
-          email: c.email || '',
           website: c.website || '',
+          logo: c.logo || '',
           info_nl: companyTranslations.nl || c.info || '', // Fallback to legacy info
           info_en: companyTranslations.en || '',
           info_de: companyTranslations.de || '',
-          logo: c.logo || '',
+          contact: c.contact || '',
+          phone: c.phone || '',
+          email: c.email || '',
+          contact_name: c.contact_name || '',
+          contact_phone: c.contact_phone || '',
+          contact_email: c.contact_email || '',
+          contact_name_2: c.contact_name_2 || '',
+          contact_phone_2: c.contact_phone_2 || '',
+          contact_email_2: c.contact_email_2 || '',
+          address_line1: c.address_line1 || '',
+          address_line2: c.address_line2 || '',
+          city: c.city || '',
+          postal_code: c.postal_code || '',
+          country: c.country || '',
+          vat_number: c.vat_number || '',
+          kvk_number: c.kvk_number || '',
         };
       });
     },
@@ -196,22 +269,22 @@ export const dataConfigs = {
       }
 
       // Optional: Email format
-      if (row['Email'] && row['Email'].trim()) {
-        const emailValidation = validateEmail(row['Email']);
+      if (row['Contact 1 Email'] && row['Contact 1 Email'].trim()) {
+        const emailValidation = validateEmail(row['Contact 1 Email']);
         if (!emailValidation.valid) {
           errors.push({
-            field: 'Email',
+            field: 'Contact 1 Email',
             message: emailValidation.error,
           });
         }
       }
 
       // Optional: Phone format
-      if (row['Phone'] && row['Phone'].trim()) {
-        const phoneValidation = validatePhone(row['Phone'], normalizePhone);
+      if (row['Contact 1 Phone'] && row['Contact 1 Phone'].trim()) {
+        const phoneValidation = validatePhone(row['Contact 1 Phone'], normalizePhone);
         if (!phoneValidation.valid) {
           errors.push({
-            field: 'Phone',
+            field: 'Contact 1 Phone',
             message: phoneValidation.error,
           });
         }
