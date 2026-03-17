@@ -10,6 +10,12 @@ import {
   mdiMapMarker,
   mdiViewDashboard,
   mdiAccountGroup,
+  mdiCalendarCheck,
+  mdiCalendarClock,
+  mdiMap,
+  mdiInvoice,
+  mdiCog,
+  mdiCommentAlertOutline,
 } from '@mdi/js';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import useOnboardingTour from '../../hooks/useOnboardingTour';
@@ -429,8 +435,13 @@ function isRelevantToRoute(tourId, pathname) {
     'visitor-map': ['/map'],
     'visitor-exhibitors': ['/exhibitors'],
     'admin-dashboard': ['/admin'],
+    'admin-data-management': ['/admin/companies'],
+    'admin-invoices': ['/admin/invoices'],
+    'admin-subscriptions': ['/admin/subscriptions'],
     'admin-map-management': ['/admin/map'],
-    'admin-data-management': ['/admin/companies', '/admin/subscriptions', '/admin/assignments'],
+    'admin-program-management': ['/admin/program'],
+    'admin-settings': ['/admin/settings'],
+    'admin-feedback-requests': ['/admin/feedback'],
   };
 
   const relevantRoutes = routeMap[tourId] || [];
@@ -453,8 +464,13 @@ function getTourIcon(tourId) {
     'visitor-map': mdiMapMarker,
     'visitor-exhibitors': mdiAccountGroup,
     'admin-dashboard': mdiViewDashboard,
-    'admin-map-management': mdiMapMarker,
     'admin-data-management': mdiAccountGroup,
+    'admin-invoices': mdiInvoice,
+    'admin-subscriptions': mdiCalendarCheck,
+    'admin-map-management': mdiMap,
+    'admin-program-management': mdiCalendarClock,
+    'admin-settings': mdiCog,
+    'admin-feedback-requests': mdiCommentAlertOutline,
   };
 
   return iconMap[tourId] || mdiPlayCircle;
@@ -497,8 +513,13 @@ function getTourDuration(tourId) {
     'visitor-map': 2,
     'visitor-exhibitors': 1,
     'admin-dashboard': 2,
-    'admin-map-management': 3,
     'admin-data-management': 2,
+    'admin-invoices': 3,
+    'admin-subscriptions': 3,
+    'admin-map-management': 2,
+    'admin-program-management': 3,
+    'admin-settings': 3,
+    'admin-feedback-requests': 4,
   };
 
   return durationMap[tourId] || 2;
@@ -514,8 +535,13 @@ function inferPathFromTourId(tourId) {
 
   if (tourId.startsWith('admin-')) {
     if (tourId === 'admin-dashboard') return '/admin';
-    if (tourId === 'admin-map-management') return '/admin/map';
     if (tourId === 'admin-data-management') return '/admin/companies';
+    if (tourId === 'admin-invoices') return '/admin/invoices';
+    if (tourId === 'admin-subscriptions') return '/admin/subscriptions';
+    if (tourId === 'admin-map-management') return '/admin/map';
+    if (tourId === 'admin-program-management') return '/admin/program';
+    if (tourId === 'admin-settings') return '/admin/settings';
+    if (tourId === 'admin-feedback-requests') return '/admin/feedback';
     // generic admin fallback
     return '/admin';
   }

@@ -42,8 +42,8 @@ export const adminDashboardTour = {
           nl: 'Jaarkeuze - Belangrijk!',
         },
         description: {
-          en: "This controls which event year you're managing. Subscriptions and assignments are year-specific, while companies and map markers are shared across all years.",
-          nl: 'Dit bepaalt welk eventjaar je beheert. Inschrijvingen en toewijzingen zijn jaar-specifiek, terwijl bedrijven en kaartmarkers worden gedeeld over alle jaren.',
+          en: "This controls which event year you're managing. Subscriptions, assignments, and map markers are year-specific, while companies are shared across all years.",
+          nl: 'Dit bepaalt welk eventjaar je beheert. Inschrijvingen, toewijzingen en kaartmarkers zijn jaar-specifiek, terwijl bedrijven worden gedeeld over alle jaren.',
         },
         side: 'bottom',
         align: 'start',
@@ -74,21 +74,6 @@ export const adminDashboardTour = {
         description: {
           en: 'View detailed meal counts (breakfast, lunch, BBQ) per day and total coins distributed across all subscriptions.',
           nl: 'Bekijk gedetailleerde maaltijdtelling (ontbijt, lunch, BBQ) per dag en totaal uitgedeelde munten over alle inschrijvingen.',
-        },
-        side: 'top',
-        align: 'center',
-      },
-    },
-    {
-      element: '.quick-actions',
-      popover: {
-        title: {
-          en: 'Quick Actions',
-          nl: 'Snelle Acties',
-        },
-        description: {
-          en: 'Jump directly to common management tasks: add companies, manage subscriptions, or configure settings.',
-          nl: 'Ga direct naar veel voorkomende beheertaken: bedrijven toevoegen, inschrijvingen beheren of instellingen configureren.',
         },
         side: 'top',
         align: 'center',
@@ -150,26 +135,11 @@ export const adminMapManagementTour = {
           nl: 'Kaartbeheer',
         },
         description: {
-          en: 'This is where you manage all map markers and booth locations for each event year.',
-          nl: 'Hier beheer je alle kaartmarkers en standlocaties voor elk eventjaar.',
+          en: 'This is where you manage all map markers and booth locations. Markers are year-specific — each event year has its own set of markers.',
+          nl: 'Hier beheer je alle kaartmarkers en standlocaties. Markers zijn jaar-specifiek — elk eventjaar heeft zijn eigen set markers.',
         },
         side: 'top',
         align: 'center',
-      },
-    },
-    {
-      element: '[data-testid="add-marker-button"]',
-      popover: {
-        title: {
-          en: 'Add New Markers',
-          nl: 'Nieuwe Markers Toevoegen',
-        },
-        description: {
-          en: 'Click this button on the map to add a new marker. Enter the marker ID and click on the map to place it.',
-          nl: 'Klik op deze knop op de kaart om een nieuwe marker toe te voegen. Voer het marker-ID in en klik op de kaart om deze te plaatsen.',
-        },
-        side: 'right',
-        align: 'start',
       },
     },
     {
@@ -228,8 +198,8 @@ export const adminDataManagementTour = {
           nl: 'Bedrijvenbeheer',
         },
         description: {
-          en: 'Manage exhibitor company profiles here. Companies are global and shared across all event years.',
-          nl: 'Beheer exposant bedrijfsprofielen hier. Bedrijven zijn globaal en gedeeld over alle eventjaren.',
+          en: 'Manage exhibitor company profiles here. Companies are shared across all event years.',
+          nl: 'Beheer exposant bedrijfsprofielen hier. Bedrijven worden gedeeld over alle eventjaren.',
         },
         side: 'top',
         align: 'center',
@@ -273,8 +243,8 @@ export const adminDataManagementTour = {
           nl: 'Publieke vs Privé Informatie',
         },
         description: {
-          en: 'Switch between Public Info (visible to visitors) and Private Info (internal contact details for event managers).',
-          nl: 'Schakel tussen Publieke Info (zichtbaar voor bezoekers) en Privé Info (interne contactgegevens voor eventmanagers).',
+          en: 'Company details are split into Public Info (visible to visitors) and Private Info (internal contact details for event managers).',
+          nl: 'Bedrijfsgegevens zijn opgesplitst in Publieke Info (zichtbaar voor bezoekers) en Privé Info (interne contactgegevens voor eventmanagers).',
         },
         side: 'bottom',
         align: 'start',
@@ -1210,16 +1180,18 @@ export const adminInvoicesTour = {
  * Get all admin tours
  */
 export function getAllAdminTours() {
+  // Order matches the admin sidebar layout:
+  // Dashboard → Companies → Invoices → Subscriptions → Map → Program → Settings → Feedback
   return [
     adminDashboardTour,
     adminDataManagementTour,
-    adminSubscriptionsTour,
-    adminAssignmentsTour,
-    adminProgramManagementTour,
-    adminMapManagementTour,
     adminInvoicesTour,
+    adminSubscriptionsTour,
+    adminMapManagementTour,
+    adminProgramManagementTour,
     adminSettingsTour,
     adminFeedbackRequestsTour,
+    // adminAssignmentsTour — hidden: Assignments tab is currently disabled in sidebar
   ];
 }
 
