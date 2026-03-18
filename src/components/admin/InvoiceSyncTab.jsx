@@ -607,18 +607,57 @@ export default function InvoiceSyncTab({ selectedYear }) {
     fetchInvoices();
     fetchFolders();
 
-    // Subscribe to realtime changes so the UI clears when the database table is cleared externally
-    const channel = supabase
+    // ── Debounce helper (500ms) to batch rapid real-time events ─────────
+    const makeDebounced = (fn) => {
+      let timer;
+      const debounced = () => { clearTimeout(timer); timer = setTimeout(fn, 500); };
+      debounced.cancel = () => clearTimeout(timer);
+      return debounced;
+    };
+
+    const debouncedFetchInvoices = makeDebounced(() => {
+      // Skip if a local status write is in-flight to prevent stale overwrites
+      if (pendingStatusRef.current.size > 0) return;
+      fetchInvoices();
+    });
+    const debouncedFetchFolders = makeDebounced(() => fetchFolders());
+
+    // Subscribe to realtime changes so the UI stays in sync across admins
+    const invoiceChannel = supabase
       .channel('staged_invoices_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'staged_invoices' }, () => {
-        fetchInvoices();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'staged_invoices' }, debouncedFetchInvoices)
+      .subscribe();
+
+    // Sync line-item changes (e.g. another admin approves an invoice → line items created)
+    const lineItemChannel = supabase
+      .channel('subscription_line_items_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscription_line_items' }, debouncedFetchInvoices)
+      .subscribe();
+
+    // Sync folder CRUD across admins
+    const folderChannel = supabase
+      .channel('invoice_folders_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoice_folders' }, debouncedFetchFolders)
+      .subscribe();
+
+    // Sync subscription changes (e.g. "subscribed" badge updates when another admin approves)
+    const subChannel = supabase
+      .channel(`invoice_event_subs_changes_${selectedYear}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'event_subscriptions',
+        filter: `event_year=eq.${selectedYear}`,
+      }, () => { reload(); })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      debouncedFetchInvoices.cancel();
+      debouncedFetchFolders.cancel();
+      supabase.removeChannel(invoiceChannel);
+      supabase.removeChannel(lineItemChannel);
+      supabase.removeChannel(folderChannel);
+      supabase.removeChannel(subChannel);
     };
-  }, []);
+  }, [selectedYear]);
 
   const handleClearAll = async () => {
     const yes = await confirm({
