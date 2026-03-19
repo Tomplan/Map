@@ -158,7 +158,6 @@ function EventMap({
         lat,
         lng,
         name: '',
-        label: '', // This seems unused or legacy? glyph is the main visual label
         glyph: type === 'special' ? '?' : nextGlyph,
         logo: '',
         type: type === 'special' ? 'default' : undefined,
