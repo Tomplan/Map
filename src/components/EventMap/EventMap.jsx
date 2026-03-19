@@ -153,26 +153,27 @@ function EventMap({
         }
       }
 
+      // Use DB-configured unassigned defaults, with hardcoded fallbacks
+      const defaults = defaultStyles?.unassigned || {};
+
       const newMarker = {
         id,
         lat,
         lng,
         name: '',
-        label: '', // This seems unused or legacy? glyph is the main visual label
         glyph: type === 'special' ? '?' : nextGlyph,
         logo: '',
         type: type === 'special' ? 'default' : undefined,
-        // Default appearance settings (matches unassigned marker defaults)
-        iconUrl: 'glyph-marker-icon-gray.svg',
-        iconColor: 'gray',
-        glyphColor: 'white',
-        shadowScale: 1,
-        glyphSize: '14px',
-        fontFamily: 'Roboto',
-        fontWeight: 'bold',
-        fontStyle: 'normal',
-        textDecoration: 'none',
-        glyphAnchor: [0, -5],
+        iconUrl: defaults.iconUrl || 'glyph-marker-icon-gray.svg',
+        iconColor: defaults.iconColor || 'gray',
+        glyphColor: defaults.glyphColor || 'white',
+        shadowScale: defaults.shadowScale ?? 1,
+        glyphSize: defaults.glyphSize || '14px',
+        fontFamily: defaults.fontFamily || 'Roboto',
+        fontWeight: defaults.fontWeight || 'bold',
+        fontStyle: defaults.fontStyle || 'normal',
+        textDecoration: defaults.textDecoration || 'none',
+        glyphAnchor: defaults.glyphAnchor || [0, -5],
         coreLocked: false,
         appearanceLocked: false,
         contentLocked: false,
@@ -182,7 +183,7 @@ function EventMap({
       updateMarker(id, newMarker, { add: true });
       if (onMarkerSelect) onMarkerSelect(id);
     },
-    [updateMarker, selectedYear, onMarkerSelect, safeMarkers],
+    [updateMarker, selectedYear, onMarkerSelect, safeMarkers, defaultStyles],
   );
 
   const searchControlRef = useMapSearchControl(mapInstance, searchLayer, {

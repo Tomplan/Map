@@ -58,6 +58,7 @@ export default function MapManagement({
   selectedYear,
   archiveMarkers,
   copyMarkers,
+  getAvailableYears,
   assignmentsState,
   markerHistoryStack = [], // History stack from props
   markerRedoStack = [], // Redo stack from props
@@ -80,6 +81,9 @@ export default function MapManagement({
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
+  const [isCopyYearModalOpen, setIsCopyYearModalOpen] = useState(false);
+  const [availableYears, setAvailableYears] = useState([]);
+  const [loadingYears, setLoadingYears] = useState(false);
 
   // Collapse state for sidebars
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(false); // Default to closed for Markers
@@ -506,24 +510,34 @@ export default function MapManagement({
     }
   };
 
-  // Handle copy from previous year
-  const handleCopyFromPreviousYear = async () => {
-    if (isReadOnly) return; // Event managers can't copy
+  // Open the copy-from-year modal, fetching available years
+  const handleOpenCopyYearModal = async () => {
+    if (isReadOnly) return;
+    setLoadingYears(true);
+    setIsCopyYearModalOpen(true);
+    const { data } = await getAvailableYears();
+    setAvailableYears(data || []);
+    setLoadingYears(false);
+  };
 
-    const previousYear = selectedYear - 1;
+  // Copy markers from chosen source year
+  const handleCopyFromYear = async (sourceYear) => {
+    setIsCopyYearModalOpen(false);
     const confirmed = await confirm({
-      title: 'Copy Markers',
-      message: `Copy all markers from ${previousYear} to ${selectedYear}?`,
-      confirmText: 'Copy',
+      title: t('mapManagement.copyMarkers'),
+      message: t('mapManagement.copyMarkersConfirm', { source: sourceYear, target: selectedYear }),
+      confirmText: t('mapManagement.copy'),
       variant: 'default',
     });
     if (!confirmed) return;
 
-    const { error } = await copyMarkers(previousYear);
+    const { error } = await copyMarkers(sourceYear);
     if (error) {
       toastError(`Error copying markers: ${error}`);
     } else {
-      toastSuccess(`Markers copied from ${previousYear} to ${selectedYear}`);
+      toastSuccess(
+        t('mapManagement.markersCopiedSuccess', { source: sourceYear, target: selectedYear }),
+      );
     }
   };
 
@@ -919,7 +933,7 @@ export default function MapManagement({
                 const emptyCount = boothTotal.filter(
                   (m) => !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
                 ).length;
-                const totalCount = total.length;
+                const totalCount = boothTotal.length;
                 return (
                   <div className="flex flex-col items-center">
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-400 leading-none mb-0.5">
@@ -1012,13 +1026,13 @@ export default function MapManagement({
                   {!isReadOnly && (
                     <button
                       onClick={() => {
-                        handleCopyFromPreviousYear();
+                        handleOpenCopyYearModal();
                         setIsActionsOpen(false);
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
                       <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
-                      <span>{t('mapManagement.copyFromYear', { year: selectedYear - 1 })}</span>
+                      <span>{t('mapManagement.copyMarkersFromYear')}</span>
                     </button>
                   )}
 
@@ -1129,10 +1143,10 @@ export default function MapManagement({
                 </p>
                 {!isReadOnly && (
                   <button
-                    onClick={handleCopyFromPreviousYear}
+                    onClick={handleOpenCopyYearModal}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    Copy from {selectedYear - 1}
+                    {t('mapManagement.copyMarkersFromYear')}
                   </button>
                 )}
               </div>
@@ -1835,6 +1849,58 @@ export default function MapManagement({
           window.location.reload();
         }}
       />
+
+      {/* Copy Markers From Year Modal */}
+      {isCopyYearModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full mx-4 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {t('mapManagement.copyMarkersFromYear')}
+              </h3>
+              <button
+                onClick={() => setIsCopyYearModalOpen(false)}
+                className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              >
+                <Icon path={mdiClose} size={0.8} />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              <p className="text-sm text-gray-600 mb-4">
+                {t('mapManagement.selectSourceYear', { target: selectedYear })}
+              </p>
+              {loadingYears ? (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  {t('mapManagement.loadingYears')}
+                </div>
+              ) : availableYears.length === 0 ? (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                  {t('mapManagement.noOtherYears')}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {availableYears.map((year) => (
+                    <button
+                      key={year}
+                      onClick={() => handleCopyFromYear(year)}
+                      className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors flex items-center justify-between group"
+                    >
+                      <span className="font-medium text-gray-800 group-hover:text-blue-700">
+                        {year}
+                      </span>
+                      <Icon
+                        path={mdiContentCopy}
+                        size={0.7}
+                        className="text-gray-300 group-hover:text-blue-500"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </ProtectedSection>
   );
 }
