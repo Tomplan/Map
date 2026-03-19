@@ -933,7 +933,7 @@ export default function MapManagement({
                 const emptyCount = boothTotal.filter(
                   (m) => !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
                 ).length;
-                const totalCount = total.length;
+                const totalCount = boothTotal.length;
                 return (
                   <div className="flex flex-col items-center">
                     <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-400 leading-none mb-0.5">
