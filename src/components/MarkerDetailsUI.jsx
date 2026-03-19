@@ -215,13 +215,19 @@ export const MarkerUI = ({
     <>
       {!isMobile && (
         <>
-          {showTooltip && hasTooltipContent && (
+          {showTooltip && hasTooltipContent ? (
             <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>
               <MarkerTooltipContent
                 marker={marker}
                 organizationLogo={organizationLogo}
                 showBoothNumber={showBoothNumber}
               />
+            </Tooltip>
+          ) : (
+            // Always bind a tooltip so Leaflet's _addFocusListenersOnLayer
+            // never hits a null _tooltip reference on focus events.
+            <Tooltip direction="top" offset={[0, -10]} opacity={0}>
+              <span />
             </Tooltip>
           )}
           <MarkerPopupDesktop
