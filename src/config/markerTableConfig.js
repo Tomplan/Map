@@ -44,6 +44,10 @@ export const FIELD_TABLE_MAP = {
   shadowScale: 'markers_appearance',
   glyphAnchor: 'markers_appearance',
   appearanceLocked: 'markers_appearance',
+  fontFamily: 'markers_appearance',
+  fontWeight: 'markers_appearance',
+  fontStyle: 'markers_appearance',
+  textDecoration: 'markers_appearance',
 
   // Content fields
   // Note: boothNumber removed - now using glyphText from Markers_Appearance

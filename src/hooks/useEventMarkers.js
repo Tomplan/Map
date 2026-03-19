@@ -525,6 +525,23 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     [eventYear, isOnline, loadMarkers],
   );
 
+  // Fetch distinct event_years that have markers (excluding current year and defaults)
+  const getAvailableYears = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('markers_core')
+        .select('event_year')
+        .gt('event_year', 0)
+        .neq('event_year', eventYear);
+      if (error) throw error;
+      const years = [...new Set((data || []).map((r) => r.event_year))].sort((a, b) => b - a);
+      return { data: years, error: null };
+    } catch (err) {
+      console.error('Error fetching available years:', err);
+      return { data: [], error: err.message };
+    }
+  }, [eventYear]);
+
   return {
     markers,
     defaultStyles,
@@ -533,5 +550,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     reload: () => loadMarkers(isOnline),
     archiveCurrentYear,
     copyFromPreviousYear,
+    getAvailableYears,
   };
 }
