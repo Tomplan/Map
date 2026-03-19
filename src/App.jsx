@@ -155,6 +155,7 @@ function AppContent() {
     defaultStyles,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
+    getAvailableYears,
   } = useEventMarkers(effectiveYear);
 
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
@@ -258,6 +259,7 @@ function AppContent() {
               publicYear={publicYear}
               archiveMarkers={archiveMarkers}
               copyMarkers={copyMarkers}
+              getAvailableYears={getAvailableYears}
               markerHistoryStack={markerHistoryStack}
               markerRedoStack={markerRedoStack}
             />

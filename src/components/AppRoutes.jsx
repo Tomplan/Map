@@ -52,6 +52,7 @@ function AppRoutes({
   publicYear,
   archiveMarkers,
   copyMarkers,
+  getAvailableYears,
   assignmentsState,
   defaultStyles,
   markerHistoryStack,
@@ -281,6 +282,7 @@ function AppRoutes({
                 selectedYear={selectedYear}
                 archiveMarkers={archiveMarkers}
                 copyMarkers={copyMarkers}
+                getAvailableYears={getAvailableYears}
                 markerHistoryStack={markerHistoryStack}
                 markerRedoStack={markerRedoStack}
               />
