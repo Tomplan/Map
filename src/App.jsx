@@ -132,7 +132,7 @@ function AppContent() {
 
   // Load organization settings early to determine the public-facing default year
   // This must be before useEventMarkers so markers are fetched for the correct year
-  const { settings: orgSettings } = useOrganizationSettings();
+  const { settings: orgSettings, loading: orgSettingsLoading } = useOrganizationSettings();
 
   // Public-facing year: prefer organization's public_default_year setting when present;
   // otherwise fall back to admin's selectedYear
@@ -141,7 +141,13 @@ function AppContent() {
   // Determine the effective year for data fetching:
   // If user is logged in (admin), use their selectedYear directly so they can switch years freely.
   // If user is public (not logged in), use the resolved publicYear.
-  const effectiveYear = user ? selectedYear : publicYear;
+  // While orgSettings is still loading, use currentYear as a safe default instead of
+  // localStorage (which may hold a stale year from a previous admin session).
+  const effectiveYear = user
+    ? selectedYear
+    : orgSettingsLoading
+      ? currentYear
+      : publicYear;
 
   // Fetch marker data from Supabase filtered by effectiveYear
   const {
