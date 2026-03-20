@@ -1,0 +1,31 @@
+{
+  "table": "user_roles",
+  "timestamp": "2026-03-20T10-11-16-648Z",
+  "recordCount": 4,
+  "data": [
+    {
+      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "role": "event_manager",
+      "created_at": "2025-11-21T12:35:09.813935+00:00",
+      "updated_at": "2025-11-21T12:35:09.813935+00:00"
+    },
+    {
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "role": "super_admin",
+      "created_at": "2025-11-21T12:28:23.46163+00:00",
+      "updated_at": "2025-11-21T12:28:23.46163+00:00"
+    },
+    {
+      "user_id": "6206a2f0-e604-46d2-99f5-cdd0a7ed7eb5",
+      "role": "system_manager",
+      "created_at": "2026-03-08T12:27:54.84562+00:00",
+      "updated_at": "2026-03-08T12:27:54.55+00:00"
+    },
+    {
+      "user_id": "287a76d0-3204-4e19-862c-e6e69a3f4ab6",
+      "role": "system_manager",
+      "created_at": "2026-03-08T14:49:45.893417+00:00",
+      "updated_at": "2026-03-08T14:49:45.893417+00:00"
+    }
+  ]
+}
