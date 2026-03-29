@@ -1,0 +1,39 @@
+{
+  "table": "event_map_settings",
+  "timestamp": "2026-03-29T10-08-32-350Z",
+  "recordCount": 2,
+  "data": [
+    {
+      "id": 2,
+      "event_year": 2026,
+      "map_center_lat": null,
+      "map_center_lng": null,
+      "map_default_zoom": null,
+      "map_min_zoom": null,
+      "map_max_zoom": null,
+      "map_search_zoom": null,
+      "created_at": "2025-12-05T23:15:08.234578+00:00",
+      "updated_at": "2025-12-05T23:15:08.234578+00:00",
+      "created_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "event_start_date": "2026-10-10",
+      "event_end_date": "2026-10-11"
+    },
+    {
+      "id": 1,
+      "event_year": 2025,
+      "map_center_lat": null,
+      "map_center_lng": null,
+      "map_default_zoom": null,
+      "map_min_zoom": null,
+      "map_max_zoom": null,
+      "map_search_zoom": null,
+      "created_at": "2025-12-05T23:14:07.338892+00:00",
+      "updated_at": "2025-12-05T23:36:00.550497+00:00",
+      "created_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "updated_by": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "event_start_date": "2025-10-11",
+      "event_end_date": "2025-10-12"
+    }
+  ]
+}
