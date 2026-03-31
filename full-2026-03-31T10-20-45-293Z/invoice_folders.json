@@ -1,0 +1,19 @@
+{
+  "table": "invoice_folders",
+  "timestamp": "2026-03-31T10-20-45-293Z",
+  "recordCount": 2,
+  "data": [
+    {
+      "id": "f6be0526-c53b-4437-a6fd-fb1845c1490e",
+      "name": "2025",
+      "position": 0,
+      "created_at": "2026-03-15T12:29:04.078297+00:00"
+    },
+    {
+      "id": "13a0be12-ca35-4aae-8519-d0d4f72d19c2",
+      "name": "2026",
+      "position": 1,
+      "created_at": "2026-03-15T12:34:06.830044+00:00"
+    }
+  ]
+}
