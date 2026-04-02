@@ -3,6 +3,7 @@ import { supabase } from '../../supabaseClient';
 import { parsePdfInvoice } from '../../utils/pdfParser';
 import { useTranslation, Trans } from 'react-i18next';
 import { getBaseUrl } from '../../utils/getBaseUrl';
+import { uploadInvoicePdf, getSignedInvoiceUrl } from '../../services/invoicePdfUploadService';
 import Icon from '@mdi/react';
 import {
   mdiRefresh,
@@ -753,6 +754,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
             }),
           };
 
+          // Upload the actual PDF to Supabase Storage so the invoice link always works
+          const uploadResult = await uploadInvoicePdf(file, payload.invoice_number);
+          if (uploadResult.path) {
+            payload.pdf_path = uploadResult.path;
+          }
+
           const { data, error } = await supabase.from('staged_invoices').insert([payload]).select();
 
           if (!error) {
@@ -1352,10 +1359,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
   }, [invoices, searchTerm, sortConfig, companies]);
 
   // ── Folder collapse state — Set of folder keys that are COLLAPSED
-  const [collapsedFolders, setCollapsedFolders] = useState(new Set());
+  // Persisted to sessionStorage so it survives navigating away and back.
+  const COLLAPSED_KEY = 'invoiceSyncCollapsedFolders';
+  const [collapsedFolders, setCollapsedFolders] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(COLLAPSED_KEY);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
   const toggleFolder = (key) => setCollapsedFolders(prev => {
     const next = new Set(prev);
     if (next.has(key)) next.delete(key); else next.add(key);
+    sessionStorage.setItem(COLLAPSED_KEY, JSON.stringify([...next]));
     return next;
   });
 
@@ -1749,14 +1764,16 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 <div className="p-6 space-y-4">
                   <div className="flex justify-end mb-4">
                     <a
-                      href={
-                        baseUrl +
-                        'invoices/' +
-                        editingInvoice.invoice_number +
-                        '.pdf'
-                      }
+                      href={editingInvoice.pdf_path ? '#' : baseUrl + 'invoices/' + editingInvoice.invoice_number + '.pdf'}
                       target="_blank"
                       rel="noreferrer"
+                      onClick={async (e) => {
+                        if (editingInvoice.pdf_path) {
+                          e.preventDefault();
+                          const url = await getSignedInvoiceUrl(editingInvoice.pdf_path);
+                          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
                       className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded"
                     >
                       {t('invoiceSync.edit.viewPdf')}
@@ -2386,12 +2403,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
                       >
                         <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate align-top">
                           <a
-                            href={
-                              baseUrl + 'invoices/' + inv.invoice_number + '.pdf'
-                            }
+                            href={inv.pdf_path ? '#' : baseUrl + 'invoices/' + inv.invoice_number + '.pdf'}
                             target="_blank"
                             rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (inv.pdf_path) {
+                                e.preventDefault();
+                                const url = await getSignedInvoiceUrl(inv.pdf_path);
+                                if (url) window.open(url, '_blank', 'noopener,noreferrer');
+                              }
+                            }}
                             title={t('invoiceSync.table.openPdf')}
                             className="hover:underline truncate block w-full"
                           >
