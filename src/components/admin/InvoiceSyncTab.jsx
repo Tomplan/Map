@@ -732,6 +732,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [subHistorySelection, setSubHistorySelection] = useState([]);
   // Three-option modal for merge/replace/cancel when a subscription already exists
   const [subscriptionConflict, setSubscriptionConflict] = useState(null); // { resolve, title, message } | null
+  // Tracks which invoice IDs have their notes expanded (click to toggle line-clamp)
+  const [expandedNotes, setExpandedNotes] = useState(new Set());
 
   // ── Folder management state ──────────────────────────────────────────
   const [folders, setFolders] = useState([]); // [{id, name, position}]
@@ -3264,7 +3266,20 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 ) : null}
                               </td>
                               <td className="px-2 py-2 border-r border-gray-50 align-top">
-                                <div className="text-gray-500 text-xs whitespace-pre-wrap break-words line-clamp-3">
+                                <div
+                                  className={
+                                    'text-gray-500 text-xs whitespace-pre-wrap break-words cursor-pointer' +
+                                    (expandedNotes.has(inv.id) ? '' : ' line-clamp-3')
+                                  }
+                                  onClick={() =>
+                                    setExpandedNotes((prev) => {
+                                      const next = new Set(prev);
+                                      if (next.has(inv.id)) next.delete(inv.id);
+                                      else next.add(inv.id);
+                                      return next;
+                                    })
+                                  }
+                                >
                                   {parsedData.rawNotes ||
                                     parsedData.notes ||
                                     rawNotesFallback ||
