@@ -761,39 +761,44 @@ export default function InvoiceSyncTab({ selectedYear }) {
     setSortConfig({ key, direction });
   };
 
-  const fetchInvoices = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('staged_invoices')
-        .select('*')
-        .order('created_at', { ascending: false });
+  const fetchInvoices = useCallback(
+    async ({ silent = false } = {}) => {
+      // silent=true skips the loading spinner so the scroll position is preserved
+      // during real-time background refreshes.
+      if (!silent) setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from('staged_invoices')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (fetchError) throw fetchError;
+        if (fetchError) throw fetchError;
 
-      const sorted = (data || []).sort((a, b) => {
-        // Keep everything in original uploaded order, don't move approved to the bottom
-        // so users can see the 'subscribed' state on the same row.
-        return new Date(b.created_at) - new Date(a.created_at);
-      });
+        const sorted = (data || []).sort((a, b) => {
+          // Keep everything in original uploaded order, don't move approved to the bottom
+          // so users can see the 'subscribed' state on the same row.
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
 
-      // Protect any in-flight status writes from being overwritten by stale DB reads:
-      // if another async operation has already set a status locally but its DB write
-      // hasn't been seen by this fetch yet, keep the locally-set value.
-      setInvoices(
-        sorted.map((inv) => {
-          const pendingStatus = pendingStatusRef.current.get(inv.id);
-          return pendingStatus !== undefined ? { ...inv, status: pendingStatus } : inv;
-        }),
-      );
-    } catch (err) {
-      console.error('Error fetching invoices:', err);
-      setError(err?.message || t('invoiceSync.errorUnknown'));
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+        // Protect any in-flight status writes from being overwritten by stale DB reads:
+        // if another async operation has already set a status locally but its DB write
+        // hasn't been seen by this fetch yet, keep the locally-set value.
+        setInvoices(
+          sorted.map((inv) => {
+            const pendingStatus = pendingStatusRef.current.get(inv.id);
+            return pendingStatus !== undefined ? { ...inv, status: pendingStatus } : inv;
+          }),
+        );
+      } catch (err) {
+        console.error('Error fetching invoices:', err);
+        setError(err?.message || t('invoiceSync.errorUnknown'));
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [t],
+  );
 
   // ── Fetch folders ─────────────────────────────────────────────────────
   const fetchFolders = async () => {
@@ -892,7 +897,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const debouncedFetchInvoices = makeDebounced(() => {
       // Skip if a local status write is in-flight to prevent stale overwrites
       if (pendingStatusRef.current.size > 0) return;
-      fetchInvoices();
+      fetchInvoices({ silent: true });
     });
     const debouncedFetchFolders = makeDebounced(() => fetchFolders());
 
@@ -2946,50 +2951,60 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             _saveItems[idx] = { ..._saveItems[idx], status: action };
                           }
                           const newNotes = { ..._saveParsed, line_items: _saveItems };
+
+                          // Compute the target invoice-level status BEFORE writing,
+                          // and lock pendingStatusRef early so that any real-time
+                          // fetchInvoices triggered by the saveNotes or addLineItem
+                          // DB writes won't overwrite the status with stale data.
+                          const allResolved =
+                            _saveItems.length > 0 &&
+                            _saveItems.every(
+                              (it) => it.status === 'approved' || it.status === 'rejected',
+                            );
+                          const someActioned = _saveItems.some(
+                            (it) => it.status === 'approved' || it.status === 'rejected',
+                          );
+                          const allApproved =
+                            allResolved && _saveItems.every((it) => it.status === 'approved');
+
+                          let targetStatus;
+                          if (allApproved) {
+                            targetStatus = 'approved';
+                          } else if (someActioned) {
+                            targetStatus = 'partially_approved';
+                          } else {
+                            targetStatus = 'pending';
+                          }
+
+                          // Lock the status early — before saveNotes triggers RT events
+                          const needsStatusUpdate = inv.status !== targetStatus;
+                          if (needsStatusUpdate) {
+                            pendingStatusRef.current.set(inv.id, targetStatus);
+                          }
+
                           const ok = await saveNotes(newNotes);
-                          if (ok) {
-                            // Compute the correct invoice-level status from the updated item list.
-                            const setInvoiceStatusOnly = async (newStatus) => {
-                              pendingStatusRef.current.set(inv.id, newStatus);
-                              try {
-                                await supabase
-                                  .from('staged_invoices')
-                                  .update({
-                                    status: newStatus,
-                                    updated_at: new Date().toISOString(),
-                                  })
-                                  .eq('id', inv.id);
-                                setInvoices((prev) =>
-                                  prev.map((i) =>
-                                    i.id === inv.id ? { ...i, status: newStatus } : i,
-                                  ),
-                                );
-                              } catch (e) {
-                                console.error('Failed to update invoice status:', e);
-                              } finally {
-                                pendingStatusRef.current.delete(inv.id);
-                              }
-                            };
-
-                            const allResolved =
-                              _saveItems.length > 0 &&
-                              _saveItems.every(
-                                (it) => it.status === 'approved' || it.status === 'rejected',
+                          if (ok && needsStatusUpdate) {
+                            try {
+                              await supabase
+                                .from('staged_invoices')
+                                .update({
+                                  status: targetStatus,
+                                  updated_at: new Date().toISOString(),
+                                })
+                                .eq('id', inv.id);
+                              setInvoices((prev) =>
+                                prev.map((i) =>
+                                  i.id === inv.id ? { ...i, status: targetStatus } : i,
+                                ),
                               );
-                            const allApproved =
-                              allResolved && _saveItems.every((it) => it.status === 'approved');
-
-                            if (allResolved) {
-                              const targetStatus = allApproved ? 'approved' : 'partially_approved';
-                              if (inv.status !== targetStatus) {
-                                await setInvoiceStatusOnly(targetStatus);
-                              }
-                            } else if (
-                              inv.status === 'approved' ||
-                              inv.status === 'partially_approved'
-                            ) {
-                              await setInvoiceStatusOnly('pending');
+                            } catch (e) {
+                              console.error('Failed to update invoice status:', e);
+                            } finally {
+                              pendingStatusRef.current.delete(inv.id);
                             }
+                          } else if (needsStatusUpdate) {
+                            // saveNotes failed — unlock
+                            pendingStatusRef.current.delete(inv.id);
                           }
                         };
 
