@@ -460,21 +460,24 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       return;
     }
 
-    // If booths are assigned, warn the user first
+    // If booths are assigned, warn the user first — this already serves as confirmation
+    const hadBoothWarning = hasBoothAssignments;
     if (!(await confirmBoothRemoval())) return;
 
-    // Single or no line items — simple confirm
-    const confirmed = await confirm({
-      title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
-      message: t(
-        'helpPanel.subscriptions.unsubscribeMessage',
-        'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription.',
-        { companyName, year: selectedYear },
-      ),
-      confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
-      variant: 'danger',
-    });
-    if (!confirmed) return;
+    // Skip second confirmation if user already confirmed booth removal
+    if (!hadBoothWarning) {
+      const confirmed = await confirm({
+        title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
+        message: t(
+          'helpPanel.subscriptions.unsubscribeMessage',
+          'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription.',
+          { companyName, year: selectedYear },
+        ),
+        confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
+        variant: 'danger',
+      });
+      if (!confirmed) return;
+    }
     if (activeItems.length === 1) {
       await deactivateLineItem(activeItems[0].id);
     }
