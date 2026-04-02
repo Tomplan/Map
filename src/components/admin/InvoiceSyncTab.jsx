@@ -950,6 +950,9 @@ export default function InvoiceSyncTab({ selectedYear }) {
     const yes = await confirm({
       title: t('invoiceSync.delete.title'),
       message: t('invoiceSync.delete.message'),
+      confirmText: t('invoiceSync.delete.confirm', 'Delete'),
+      cancelText: t('common.cancel'),
+      variant: 'danger',
     });
     if (!yes) return;
     try {
@@ -1392,7 +1395,10 @@ export default function InvoiceSyncTab({ selectedYear }) {
     return Object.values(groups).sort((a, b) => {
       if (a.key === 'unassigned') return 1;  // Unassigned always last
       if (b.key === 'unassigned') return -1;
-      return (a.folder?.position ?? 999) - (b.folder?.position ?? 999);
+      // Sort by folder name descending (e.g. 2026, 2025, …)
+      const nameA = a.folder?.name || '';
+      const nameB = b.folder?.name || '';
+      return nameB.localeCompare(nameA);
     });
   }, [processedInvoices, folders]);
 
