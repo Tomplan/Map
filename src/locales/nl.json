@@ -151,6 +151,7 @@
       "blockedByResolved": "Kan niet verwijderen — maak eerst alle goedgekeurde/afgewezen items ongedaan.",
       "title": "Verwijdering bevestigen",
       "message": "Weet je zeker dat je deze gestage factuur permanent wilt verwijderen?",
+      "confirm": "Verwijderen",
       "error": "Kan factuur niet verwijderen.",
       "blockedTooltip": "Maak eerst alle goedgekeurde/afgewezen items ongedaan",
       "tooltip": "Factuur verwijderen"
