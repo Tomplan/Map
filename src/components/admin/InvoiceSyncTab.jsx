@@ -730,6 +730,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
   const [companySearchModal, setCompanySearchModal] = useState(null); // invoice | null
   const [subHistoryModal, setSubHistoryModal] = useState(null); // { sub, invoice, companyName, additionLines, onConfirm } | null
   const [subHistorySelection, setSubHistorySelection] = useState([]);
+  // Three-option modal for merge/replace/cancel when a subscription already exists
+  const [subscriptionConflict, setSubscriptionConflict] = useState(null); // { resolve, title, message } | null
 
   // ── Folder management state ──────────────────────────────────────────
   const [folders, setFolders] = useState([]); // [{id, name, position}]
@@ -760,6 +762,15 @@ export default function InvoiceSyncTab({ selectedYear }) {
     }
     setSortConfig({ key, direction });
   };
+
+  // Opens a three-option modal and returns 'merge', 'replace', or null (cancel).
+  const askSubscriptionConflict = useCallback(
+    ({ title, message }) =>
+      new Promise((resolve) => {
+        setSubscriptionConflict({ resolve, title, message });
+      }),
+    [],
+  );
 
   const fetchInvoices = useCallback(
     async ({ silent = false } = {}) => {
@@ -1384,21 +1395,17 @@ export default function InvoiceSyncTab({ selectedYear }) {
       // look up the name from the companies list or the invoice itself.
       const companyName =
         companies.find((c) => c.id === companyId)?.name || invoice.company_name || '';
-      // Step 1: Ask to merge
-      const wantMerge = await confirm({
+
+      const choice = await askSubscriptionConflict({
         title: t('subscriptionAlreadyExists', { companyName }),
-        message: t('mergeConfirmMessage', {
+        message: t('subscriptionAlreadyExistsForCompany', {
           companyName,
           year: selectedYear,
           booths: existing.booth_count,
-          defaultValue:
-            'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.',
         }),
-        confirmText: t('mergeAction', 'Merge'),
-        cancelText: t('common.cancel'),
       });
 
-      if (wantMerge) {
+      if (choice === 'merge') {
         // Add line item — recalculateTotals handles count merging + area/notes dedup
         await addLineItem(existing.id, {
           source: 'invoice',
@@ -1416,43 +1423,31 @@ export default function InvoiceSyncTab({ selectedYear }) {
         return;
       }
 
-      // Step 2: Ask to replace (separate confirm so backdrop dismiss = safe abort)
-      const wantReplace = await confirm({
-        title: t('subscriptionAlreadyExists', { companyName }),
-        message: t('replaceConfirmMessage', {
-          companyName,
-          year: selectedYear,
-          booths: existing.booth_count,
-          defaultValue:
-            'Replace the existing subscription for "{{companyName}}" ({{year}}, booths: {{booths}}) entirely with this invoice?\n\nThis will overwrite all current counts.',
-        }),
-        confirmText: t('replaceAction', 'Replace'),
-        cancelText: t('common.cancel'),
-        variant: 'danger',
-      });
-
-      if (!wantReplace) return; // User cancelled — abort entirely
-
-      // Replace: deactivate all existing line items, add new one
-      const existingItems = await getActiveLineItems(existing.id);
-      for (const item of existingItems) {
-        await deactivateLineItem(item.id);
+      if (choice === 'replace') {
+        // Replace: deactivate all existing line items, add new one
+        const existingItems = await getActiveLineItems(existing.id);
+        for (const item of existingItems) {
+          await deactivateLineItem(item.id);
+        }
+        await addLineItem(existing.id, {
+          source: 'invoice',
+          sourceRef: invoice.invoice_number,
+          counts,
+          area: invoiceArea || null,
+          notes: customerNote || null,
+          description,
+        });
+        await supabase
+          .from('event_subscriptions')
+          .update({ history: historyLine })
+          .eq('id', existing.id);
+        await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
+        await reload?.();
+        toastSuccess(t('invoiceSync.sync.replaceSuccess'));
+        return;
       }
-      await addLineItem(existing.id, {
-        source: 'invoice',
-        sourceRef: invoice.invoice_number,
-        counts,
-        area: invoiceArea || null,
-        notes: customerNote || null,
-        description,
-      });
-      await supabase
-        .from('event_subscriptions')
-        .update({ history: historyLine })
-        .eq('id', existing.id);
-      await handleStatusChange(invoice.id, 'approved', null, { skipSubscriptionUndo: true });
-      await reload?.();
-      toastSuccess(t('invoiceSync.sync.replaceSuccess'));
+
+      // choice === null → user cancelled
       return;
     }
 
@@ -2005,6 +2000,58 @@ export default function InvoiceSyncTab({ selectedYear }) {
             setCompanySearchModal(invoice);
           }}
         />
+      )}
+
+      {/* Subscription Conflict Modal – Merge / Replace / Cancel */}
+      {subscriptionConflict && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => {
+            subscriptionConflict.resolve(null);
+            setSubscriptionConflict(null);
+          }}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-bold text-gray-900">{subscriptionConflict.title}</h2>
+            </div>
+            <div className="px-6 py-4 text-sm text-gray-700 whitespace-pre-line">
+              {subscriptionConflict.message}
+            </div>
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200"
+                onClick={() => {
+                  subscriptionConflict.resolve(null);
+                  setSubscriptionConflict(null);
+                }}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                className="px-4 py-2 rounded text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                onClick={() => {
+                  subscriptionConflict.resolve('replace');
+                  setSubscriptionConflict(null);
+                }}
+              >
+                {t('replaceAction', 'Replace')}
+              </button>
+              <button
+                className="px-4 py-2 rounded text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+                onClick={() => {
+                  subscriptionConflict.resolve('merge');
+                  setSubscriptionConflict(null);
+                }}
+              >
+                {t('mergeAction', 'Merge')}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Import Folder Picker Modal ───────────────────────────────── */}
@@ -2824,23 +2871,18 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                             const existing = await fetchFreshSubscription(inv.company_id);
                             if (existing) {
-                              // Step 1: Ask to merge
-                              const doMerge = await confirm({
+                              const choice = await askSubscriptionConflict({
                                 title: t('subscriptionAlreadyExists', {
                                   companyName: inv.company_name || '',
                                 }),
-                                message: t('mergeConfirmMessageItem', {
+                                message: t('subscriptionAlreadyExistsForYear', {
                                   companyName: inv.company_name || '',
                                   year: selectedYear,
                                   booths: existing.booth_count,
-                                  defaultValue:
-                                    "A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.",
                                 }),
-                                confirmText: t('mergeAction', 'Merge'),
-                                cancelText: t('common.cancel'),
                               });
 
-                              if (doMerge) {
+                              if (choice === 'merge') {
                                 await addLineItem(existing.id, {
                                   source: 'invoice',
                                   sourceRef: inv.invoice_number,
@@ -2857,25 +2899,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   description,
                                 });
                                 await appendHistory(existing.id, historyRaw);
-                              } else {
-                                // Step 2: Ask to replace (separate so backdrop dismiss = safe abort)
-                                const doReplace = await confirm({
-                                  title: t('subscriptionAlreadyExists', {
-                                    companyName: inv.company_name || '',
-                                  }),
-                                  message: t('replaceConfirmMessageItem', {
-                                    companyName: inv.company_name || '',
-                                    year: selectedYear,
-                                    booths: existing.booth_count,
-                                    defaultValue:
-                                      'Replace the existing subscription ({{year}}, booths: {{booths}}) entirely with this item?\n\nThis will overwrite all current counts.',
-                                  }),
-                                  confirmText: t('replaceAction', 'Replace'),
-                                  cancelText: t('common.cancel'),
-                                  variant: 'danger',
-                                });
-                                if (!doReplace) return; // User cancelled — abort entirely
-
+                              } else if (choice === 'replace') {
                                 // Replace: deactivate all existing, add new
                                 const existingItems = await getActiveLineItems(existing.id);
                                 for (const li of existingItems) {
@@ -2900,6 +2924,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                   .from('event_subscriptions')
                                   .update({ history: historyLine })
                                   .eq('id', existing.id);
+                              } else {
+                                return; // cancelled
                               }
                               await reload?.();
                             } else {
