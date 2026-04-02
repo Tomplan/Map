@@ -313,7 +313,22 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const handleDelete = async (subscription) => {
     const companyName = subscription.company?.name || 'this company';
     const boothLabels = getBoothLabels(subscription.company_id);
-    const assignmentInfo = boothLabels && boothLabels !== '-' ? ` and their booth assignments (${boothLabels})` : '';
+    const hasBoothAssignments = boothLabels && boothLabels !== '-';
+
+    // Guard: if booths are assigned to markers, require explicit confirmation first
+    const confirmBoothRemoval = async () => {
+      if (!hasBoothAssignments) return true;
+      return confirm({
+        title: t('helpPanel.subscriptions.boothAssignedTitle', '⚠️ Booths Assigned'),
+        message: t(
+          'helpPanel.subscriptions.boothAssignedMessage',
+          '{{companyName}} has booths assigned to markers: {{booths}}.\n\nDeleting this subscription will remove those booth assignments from the map. Are you sure?',
+          { companyName, booths: boothLabels },
+        ),
+        confirmText: t('helpPanel.subscriptions.boothAssignedConfirm', 'Remove Booths & Delete'),
+        variant: 'danger',
+      });
+    };
 
     // Helper: revert all invoices for a company — resets approved/rejected line items back to
     // pending in notes, and resets the invoice-level status if it was approved/partially_approved.
@@ -406,6 +421,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             const removeAll = selectedIds.length === activeItems.length;
             try {
               if (removeAll) {
+                if (!(await confirmBoothRemoval())) { resolve(); return; }
                 const { error } = await unsubscribeCompany(subscription.id);
                 if (error) throw new Error(error);
                 await reloadAssignments(true);
@@ -444,13 +460,16 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       return;
     }
 
+    // If booths are assigned, warn the user first
+    if (!(await confirmBoothRemoval())) return;
+
     // Single or no line items — simple confirm
     const confirmed = await confirm({
       title: t('helpPanel.subscriptions.unsubscribeCompany', 'Unsubscribe Company'),
       message: t(
         'helpPanel.subscriptions.unsubscribeMessage',
-        'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}.',
-        { companyName, year: selectedYear, assignmentInfo },
+        'Unsubscribe {{companyName}} from {{year}}? This will delete their subscription.',
+        { companyName, year: selectedYear },
       ),
       confirmText: t('helpPanel.subscriptions.unsubscribeConfirm', 'Unsubscribe'),
       variant: 'danger',
