@@ -280,6 +280,13 @@ test('approved line item shows undo and reverses subscription counts', async () 
     userEvent.click(approve);
   });
 
+  // The subscription conflict modal appears because a subscription already exists.
+  // Click "Merge" to proceed with adding the line item.
+  const mergeBtn = await screen.findByRole('button', { name: /Merge/i });
+  await act(async () => {
+    userEvent.click(mergeBtn);
+  });
+
   // The approve flow now uses addLineItem (subscription_line_items insert) + recalculateTotals
   // instead of the hook's updateSubscription. Verify supabase was called for line items.
   await waitFor(() => {
