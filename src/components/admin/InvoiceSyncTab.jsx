@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import { parsePdfInvoice } from '../../utils/pdfParser';
 import { useTranslation, Trans } from 'react-i18next';
@@ -761,7 +761,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     setSortConfig({ key, direction });
   };
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -793,7 +793,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   // ── Fetch folders ─────────────────────────────────────────────────────
   const fetchFolders = async () => {
@@ -951,7 +951,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
       supabase.removeChannel(folderChannel);
       supabase.removeChannel(subChannel);
     };
-  }, [selectedYear]);
+  }, [fetchInvoices, reload, selectedYear]);
 
   const handleClearAll = async () => {
     const yes = await confirm({
