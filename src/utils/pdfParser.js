@@ -313,7 +313,9 @@ function parseSpatialInvoice(items, allowedItems) {
           // The first recognized text in the left block is usually the company name.
           // Skip bare domain names (e.g. "4wdspecialist.nl") — they aren't the company name.
           if (!parsed.company_name && !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(leftText)) {
-            parsed.company_name = leftText;
+            // Strip T.a.v./Dhr./etc. prefixes — these are attention lines, not the company name
+            const prefixMatch = leftText.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)[\s.]+/i);
+            parsed.company_name = prefixMatch ? leftText.slice(prefixMatch[0].length).trim() : leftText;
           }
         }
       }
@@ -507,15 +509,20 @@ function parseSpatialInvoice(items, allowedItems) {
       if (m) { parsed.kvk_number = m[0]; return; }
     }
 
-    // Dutch postal code: 4 digits + 2 letters, often followed by city name
-    if (!parsed.postal_code && /\d{4}\s*[A-Z]{2}/i.test(l)) {
-      const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
-      if (m) {
-        parsed.postal_code = m[1] + m[2].toUpperCase();
-        parsed.city = m[3].trim();
-      } else {
-        parsed.postal_code = l;
+    // Dutch postal code: 4 digits + 2 letters, often followed by city name.
+    // Anchor to start of line so compound lines like "Company, Street 5411 LS City"
+    // aren't swallowed here before the compound handler can process them.
+    if (/^\s*\d{4}\s*[A-Z]{2}/i.test(l)) {
+      if (!parsed.postal_code) {
+        const m = l.match(/(\d{4})\s*([A-Z]{2})\s+(.*)/i);
+        if (m) {
+          parsed.postal_code = m[1] + m[2].toUpperCase();
+          parsed.city = m[3].trim();
+        } else {
+          parsed.postal_code = l;
+        }
       }
+      // Always return for postal-code-like lines — they should never become address_lineN
       return;
     }
 
@@ -535,13 +542,17 @@ function parseSpatialInvoice(items, allowedItems) {
     }
 
     // Person / business name with common Dutch prefixes (T.a.v., Dhr., Mevr., Attn)
-    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
+    const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)[\s.]+/i);
     const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
-    // If line had a T.a.v./Dhr./etc prefix, treat the remainder as a contact name
-    // even if it starts lowercase (e.g. "T.a.v. 4wdspecialist BV").
-    if (namePrefix && namePart && !/\d/.test(namePart)) {
-      if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
-      if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+    // Lines with a recognised prefix are always contact references, never addresses.
+    if (namePrefix && namePart) {
+      if (!/\d/.test(namePart)) {
+        if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
+        if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+      }
+      // Even when the name contains digits (e.g. "4wdspecialist BV"), skip —
+      // it's a T.a.v. reference, not a street address.
+      return;
     }
     // Regular person names: capital first letter, no digits, at least two words
     if (
