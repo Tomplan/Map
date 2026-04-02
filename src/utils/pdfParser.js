@@ -310,8 +310,9 @@ function parseSpatialInvoice(items, allowedItems) {
         // Ignore headers like "Factuur" if it appears above
         if (leftText && !lowerText.includes('factuur') && !lowerText.includes('pagina')) {
           parsed.client_details.push(leftText);
-          // The first recognized text in the left block is usually the company name
-          if (!parsed.company_name) {
+          // The first recognized text in the left block is usually the company name.
+          // Skip bare domain names (e.g. "4wdspecialist.nl") — they aren't the company name.
+          if (!parsed.company_name && !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(leftText)) {
             parsed.company_name = leftText;
           }
         }
@@ -533,11 +534,18 @@ function parseSpatialInvoice(items, allowedItems) {
       if (!parsed.contact_phone_2) { parsed.contact_phone_2 = l; return; }
     }
 
-    // Person name: has a capital first letter, no digits, at least two words.
-    // Also detect common Dutch prefixes (T.a.v., Dhr., Mevr., Attn) and strip them.
+    // Person / business name with common Dutch prefixes (T.a.v., Dhr., Mevr., Attn)
     const namePrefix = l.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)\s+/i);
     const namePart = namePrefix ? l.slice(namePrefix[0].length).trim() : l;
+    // If line had a T.a.v./Dhr./etc prefix, treat the remainder as a contact name
+    // even if it starts lowercase (e.g. "T.a.v. 4wdspecialist BV").
+    if (namePrefix && namePart && !/\d/.test(namePart)) {
+      if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
+      if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+    }
+    // Regular person names: capital first letter, no digits, at least two words
     if (
+      !namePrefix &&
       namePart &&
       /^[A-Z][a-z]/.test(namePart) &&
       !/\d/.test(namePart) &&
@@ -545,6 +553,27 @@ function parseSpatialInvoice(items, allowedItems) {
     ) {
       if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
       if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+    }
+
+    // Compound line: "Company, Street PostalCode City" — split on comma
+    // e.g. "4WD Specialist, Hoefslag 3 5411 LS Zeeland"
+    if (!parsed.address_line1 && l.includes(',')) {
+      const parts = l.split(',').map(p => p.trim());
+      if (parts.length >= 2) {
+        const afterComma = parts.slice(1).join(',').trim();
+        // Check if the part after the comma contains a street+postcode pattern
+        const addrMatch = afterComma.match(/^(.+?)\s+(\d{4})\s*([A-Z]{2})\s+(.+)$/i);
+        if (addrMatch) {
+          // parts[0] might be company name (if current one is a domain)
+          if (!parsed.company_name || /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(parsed.company_name)) {
+            parsed.company_name = parts[0];
+          }
+          parsed.address_line1 = addrMatch[1].trim();
+          parsed.postal_code = addrMatch[2] + addrMatch[3].toUpperCase();
+          parsed.city = addrMatch[4].trim();
+          return;
+        }
+      }
     }
 
     // Address line (street + house number)
