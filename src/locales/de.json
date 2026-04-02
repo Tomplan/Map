@@ -1039,6 +1039,10 @@
   "subscriptionAlreadyExists": "Abonnement existiert bereits",
   "subscriptionAlreadyExistsForYear": "Ein Abonnement existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt die Anzahlen dieses Artikels zum bestehenden Abonnement hinzu.\nErsetzen überschreibt es vollständig mit diesem Artikel.",
   "subscriptionAlreadyExistsForCompany": "Ein Abonnement für \"{{companyName}}\" existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt Anzahlen von dieser Rechnung zum bestehenden Abonnement hinzu.\nErsetzen überschreibt es vollständig.",
+  "mergeConfirmMessage": "Ein Abonnement für \"{{companyName}}\" existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt Anzahlen von dieser Rechnung zum bestehenden Abonnement hinzu.",
+  "mergeConfirmMessageItem": "Ein Abonnement existiert bereits für {{year}} (Stände: {{booths}}).\n\nZusammenführen fügt die Anzahlen dieses Artikels zum bestehenden Abonnement hinzu.",
+  "replaceConfirmMessage": "Das bestehende Abonnement für \"{{companyName}}\" ({{year}}, Stände: {{booths}}) vollständig durch diese Rechnung ersetzen?\n\nDies überschreibt alle aktuellen Anzahlen.",
+  "replaceConfirmMessageItem": "Das bestehende Abonnement ({{year}}, Stände: {{booths}}) vollständig durch diesen Artikel ersetzen?\n\nDies überschreibt alle aktuellen Anzahlen.",
   "mergeAction": "Zusammenführen",
   "replaceAction": "Ersetzen"
 }
