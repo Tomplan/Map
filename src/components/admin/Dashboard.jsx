@@ -24,6 +24,7 @@ import {
   useCompanyCount,
 } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
+import useAssignments from '../../hooks/useAssignments';
 import useVisitorPresence from '../../hooks/useVisitorPresence';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
@@ -44,6 +45,17 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   // Keep subscriptions hook for totals calculation (meal counts, coins)
   const { subscriptions } = useEventSubscriptions(selectedYear);
+  const { assignments } = useAssignments(selectedYear);
+
+  // Count how many subscriptions have at least one booth assigned
+  const assignedCompanyIds = useMemo(
+    () => new Set(assignments.map((a) => a.company_id)),
+    [assignments],
+  );
+  const assignedSubCount = useMemo(
+    () => subscriptions.filter((s) => assignedCompanyIds.has(s.company_id)).length,
+    [subscriptions, assignedCompanyIds],
+  );
 
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
@@ -75,12 +87,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   const stats = [
     {
-      label: t('dashboard.freeTotal'),
-      value: markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
-      icon: mdiMapMarker,
-      color: 'blue',
-    },
-    {
       label: t('dashboard.companies'),
       value: companiesLoading ? '...' : (companyCount - 1).toString(), // All companies minus organization
       icon: mdiDomain,
@@ -93,8 +99,14 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       color: 'orange',
     },
     {
+      label: t('dashboard.freeTotal'),
+      value: markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
+      icon: mdiMapMarker,
+      color: 'blue',
+    },
+    {
       label: `${selectedYear} ${t('dashboard.assignments')}`,
-      value: loading ? '...' : totals.booth_count.toString(),
+      value: loading ? '...' : `${assignedSubCount} / ${subscriptionCount}`,
       icon: mdiClipboardCheck,
       color: 'purple',
     },
