@@ -58,6 +58,7 @@ function MarkerContextMenu({
           };
         })
         .filter((company) => company.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => a.name.localeCompare(b.name))
     : [];
 
   // Focus search input when menu opens
