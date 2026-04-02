@@ -1221,6 +1221,10 @@
   "subscriptionAlreadyExists": "Subscription already exists for {{companyName}}",
   "subscriptionAlreadyExistsForYear": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerging will add this item's counts to the existing subscription.\nReplacing will overwrite it completely with this item.",
   "subscriptionAlreadyExistsForCompany": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerging will add counts from this invoice to the existing subscription.\nReplacing will overwrite it completely.",
+  "mergeConfirmMessage": "A subscription for \"{{companyName}}\" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.",
+  "mergeConfirmMessageItem": "A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.",
+  "replaceConfirmMessage": "Replace the existing subscription for \"{{companyName}}\" ({{year}}, booths: {{booths}}) entirely with this invoice?\n\nThis will overwrite all current counts.",
+  "replaceConfirmMessageItem": "Replace the existing subscription ({{year}}, booths: {{booths}}) entirely with this item?\n\nThis will overwrite all current counts.",
   "mergeAction": "Merge",
   "replaceAction": "Replace"
 }

@@ -1220,6 +1220,10 @@
   "subscriptionAlreadyExists": "Er bestaat al een inschrijving voor {{companyName}}",
   "subscriptionAlreadyExistsForYear": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van dit item toe aan de bestaande inschrijving.\nVervangen overschrijft deze volledig met dit item.",
   "subscriptionAlreadyExistsForCompany": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van deze factuur toe aan de bestaande inschrijving.\nVervangen overschrijft deze volledig.",
+  "mergeConfirmMessage": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van deze factuur toe aan de bestaande inschrijving.",
+  "mergeConfirmMessageItem": "Er bestaat al een inschrijving voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van dit item toe aan de bestaande inschrijving.",
+  "replaceConfirmMessage": "De bestaande inschrijving voor \"{{companyName}}\" ({{year}}, stands: {{booths}}) volledig vervangen door deze factuur?\n\nDit overschrijft alle huidige aantallen.",
+  "replaceConfirmMessageItem": "De bestaande inschrijving ({{year}}, stands: {{booths}}) volledig vervangen door dit item?\n\nDit overschrijft alle huidige aantallen.",
   "mergeAction": "Samenvoegen",
   "replaceAction": "Vervangen"
 }

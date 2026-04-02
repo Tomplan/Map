@@ -1379,20 +1379,21 @@ export default function InvoiceSyncTab({ selectedYear }) {
       // look up the name from the companies list or the invoice itself.
       const companyName =
         companies.find((c) => c.id === companyId)?.name || invoice.company_name || '';
-      const merge = await confirm({
+      // Step 1: Ask to merge
+      const wantMerge = await confirm({
         title: t('subscriptionAlreadyExists', { companyName }),
-        message: t('subscriptionAlreadyExistsForCompany', {
+        message: t('mergeConfirmMessage', {
           companyName,
           year: selectedYear,
           booths: existing.booth_count,
           defaultValue:
-            'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.\nReplace will overwrite it completely.',
+            'A subscription for "{{companyName}}" already exists for {{year}} (booths: {{booths}}).\n\nMerge will add counts from this invoice to the existing subscription.',
         }),
         confirmText: t('mergeAction', 'Merge'),
-        cancelText: t('replaceAction', 'Replace'),
+        cancelText: t('common.cancel'),
       });
 
-      if (merge) {
+      if (wantMerge) {
         // Add line item — recalculateTotals handles count merging + area/notes dedup
         await addLineItem(existing.id, {
           source: 'invoice',
@@ -1409,6 +1410,24 @@ export default function InvoiceSyncTab({ selectedYear }) {
         toastSuccess(t('invoiceSync.sync.mergeSuccess'));
         return;
       }
+
+      // Step 2: Ask to replace (separate confirm so backdrop dismiss = safe abort)
+      const wantReplace = await confirm({
+        title: t('subscriptionAlreadyExists', { companyName }),
+        message: t('replaceConfirmMessage', {
+          companyName,
+          year: selectedYear,
+          booths: existing.booth_count,
+          defaultValue:
+            'Replace the existing subscription for "{{companyName}}" ({{year}}, booths: {{booths}}) entirely with this invoice?\n\nThis will overwrite all current counts.',
+        }),
+        confirmText: t('replaceAction', 'Replace'),
+        cancelText: t('common.cancel'),
+        variant: 'danger',
+      });
+
+      if (!wantReplace) return; // User cancelled — abort entirely
+
       // Replace: deactivate all existing line items, add new one
       const existingItems = await getActiveLineItems(existing.id);
       for (const item of existingItems) {
@@ -2800,19 +2819,20 @@ export default function InvoiceSyncTab({ selectedYear }) {
 
                             const existing = await fetchFreshSubscription(inv.company_id);
                             if (existing) {
+                              // Step 1: Ask to merge
                               const doMerge = await confirm({
                                 title: t('subscriptionAlreadyExists', {
                                   companyName: inv.company_name || '',
                                 }),
-                                message: t('subscriptionAlreadyExistsForYear', {
+                                message: t('mergeConfirmMessageItem', {
                                   companyName: inv.company_name || '',
                                   year: selectedYear,
                                   booths: existing.booth_count,
                                   defaultValue:
-                                    "A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.\nReplace will overwrite it completely with this item.",
+                                    "A subscription already exists for {{year}} (booths: {{booths}}).\n\nMerge will add this item's counts to the existing subscription.",
                                 }),
                                 confirmText: t('mergeAction', 'Merge'),
-                                cancelText: t('replaceAction', 'Replace'),
+                                cancelText: t('common.cancel'),
                               });
 
                               if (doMerge) {
@@ -2833,6 +2853,24 @@ export default function InvoiceSyncTab({ selectedYear }) {
                                 });
                                 await appendHistory(existing.id, historyRaw);
                               } else {
+                                // Step 2: Ask to replace (separate so backdrop dismiss = safe abort)
+                                const doReplace = await confirm({
+                                  title: t('subscriptionAlreadyExists', {
+                                    companyName: inv.company_name || '',
+                                  }),
+                                  message: t('replaceConfirmMessageItem', {
+                                    companyName: inv.company_name || '',
+                                    year: selectedYear,
+                                    booths: existing.booth_count,
+                                    defaultValue:
+                                      'Replace the existing subscription ({{year}}, booths: {{booths}}) entirely with this item?\n\nThis will overwrite all current counts.',
+                                  }),
+                                  confirmText: t('replaceAction', 'Replace'),
+                                  cancelText: t('common.cancel'),
+                                  variant: 'danger',
+                                });
+                                if (!doReplace) return; // User cancelled — abort entirely
+
                                 // Replace: deactivate all existing, add new
                                 const existingItems = await getActiveLineItems(existing.id);
                                 for (const li of existingItems) {
