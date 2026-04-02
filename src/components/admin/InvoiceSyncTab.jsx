@@ -1393,8 +1393,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
       if (!groups[folder.id]) groups[folder.id] = { key: folder.id, folder, invoices: [] };
     }
     return Object.values(groups).sort((a, b) => {
-      if (a.key === 'unassigned') return 1;  // Unassigned always last
-      if (b.key === 'unassigned') return -1;
+      if (a.key === 'unassigned') return -1; // Unassigned always first
+      if (b.key === 'unassigned') return 1;
       // Sort by folder name descending (e.g. 2026, 2025, …)
       const nameA = a.folder?.name || '';
       const nameB = b.folder?.name || '';
