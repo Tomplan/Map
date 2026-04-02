@@ -47,16 +47,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { subscriptions } = useEventSubscriptions(selectedYear);
   const { assignments } = useAssignments(selectedYear);
 
-  // Count how many subscriptions have at least one booth assigned
-  const assignedCompanyIds = useMemo(
-    () => new Set(assignments.map((a) => a.company_id)),
-    [assignments],
-  );
-  const assignedSubCount = useMemo(
-    () => subscriptions.filter((s) => assignedCompanyIds.has(s.company_id)).length,
-    [subscriptions, assignedCompanyIds],
-  );
-
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
   const statsLoading = markersLoading || companiesLoading;
@@ -106,7 +96,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: `${selectedYear} ${t('dashboard.assignments')}`,
-      value: loading ? '...' : `${assignedSubCount} / ${subscriptionCount}`,
+      value: loading ? '...' : `${assignments.length} / ${totals.booth_count}`,
       icon: mdiClipboardCheck,
       color: 'purple',
     },
