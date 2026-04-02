@@ -1098,8 +1098,11 @@
       "areaPlaceholder": "large field, small field...",
       "subscribeCompany": "Subscribe Company",
       "unsubscribeCompany": "Unsubscribe Company",
-      "unsubscribeMessage": "Unsubscribe {{companyName}} from {{year}}? This will delete their subscription{{assignmentInfo}}",
+      "unsubscribeMessage": "Unsubscribe {{companyName}} from {{year}}? This will delete their subscription.",
       "unsubscribeConfirm": "Unsubscribe",
+      "boothAssignedTitle": "⚠️ Booths Assigned",
+      "boothAssignedMessage": "{{companyName}} has booths assigned to markers: {{booths}}.\n\nDeleting this subscription will remove those booth assignments from the map. Are you sure?",
+      "boothAssignedConfirm": "Remove Booths & Delete",
       "subscribeCompanyTo": "Subscribe Company to {{year}}",
       "noCompaniesSubscribed": "No companies subscribed to {{year}} yet. Click \"Subscribe Company\" to add one."
     },

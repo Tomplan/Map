@@ -1097,8 +1097,11 @@
       "areaPlaceholder": "groot veld, klein veld...",
       "subscribeCompany": "Bedrijf Inschrijven",
       "unsubscribeCompany": "Bedrijf Uitschrijven",
-      "unsubscribeMessage": "{{companyName}} uitschrijven voor {{year}}? Dit verwijdert hun inschrijving{{assignmentInfo}}",
+      "unsubscribeMessage": "{{companyName}} uitschrijven voor {{year}}? Dit verwijdert hun inschrijving.",
       "unsubscribeConfirm": "Uitschrijven",
+      "boothAssignedTitle": "⚠️ Stands Toegewezen",
+      "boothAssignedMessage": "{{companyName}} heeft stands toegewezen aan markers: {{booths}}.\n\nHet verwijderen van deze inschrijving zal die standtoewijzingen van de kaart verwijderen. Weet je het zeker?",
+      "boothAssignedConfirm": "Stands Verwijderen & Uitschrijven",
       "subscribeCompanyTo": "Bedrijf inschrijven voor {{year}}",
       "noCompaniesSubscribed": "Nog geen bedrijven ingeschreven voor {{year}}. Klik op \"Bedrijf Inschrijven\" om er een toe te voegen."
     },
