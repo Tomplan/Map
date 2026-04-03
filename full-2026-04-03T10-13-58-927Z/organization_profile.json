@@ -1,0 +1,80 @@
+{
+  "table": "organization_profile",
+  "timestamp": "2026-04-03T10-13-58-927Z",
+  "recordCount": 1,
+  "data": [
+    {
+      "id": 1,
+      "name": "4x4Vakantiebeurs",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/organization/1772625178273_gt5sck.webp",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.\n\n\n\n",
+      "created_at": "2025-11-11T13:41:14.516008+00:00",
+      "updated_at": "2026-03-09T17:24:55.27505+00:00",
+      "default_breakfast": 1,
+      "default_lunch": 2,
+      "default_bbq": 3,
+      "notification_settings": {
+        "emailNotifications": true,
+        "newSubscriptionNotify": true,
+        "assignmentChangeNotify": true
+      },
+      "default_breakfast_sat": 0,
+      "default_lunch_sat": 0,
+      "default_bbq_sat": 0,
+      "default_breakfast_sun": 0,
+      "default_lunch_sun": 0,
+      "theme_color": "#ffffff",
+      "font_family": "Arvo, Sans-serif",
+      "contact": "Bernd Kooi",
+      "phone": "+31621699848",
+      "email": "organisatie@4x4vakantiebeurs.nl",
+      "qr_config": {
+        "data": "http://localhost:5173/",
+        "image": "",
+        "width": 300,
+        "height": 300,
+        "margin": 10,
+        "qrOptions": {
+          "typeNumber": 4,
+          "errorCorrectionLevel": "H"
+        },
+        "dotsOptions": {
+          "type": "extra-rounded",
+          "color": "#000000",
+          "gradient": {
+            "type": "linear",
+            "rotation": 0,
+            "colorStops": [
+              {
+                "color": "#E5C644",
+                "offset": 0
+              },
+              {
+                "color": "#86875D",
+                "offset": 1
+              }
+            ]
+          }
+        },
+        "imageOptions": {
+          "margin": 0,
+          "imageSize": 0.6,
+          "crossOrigin": "anonymous"
+        },
+        "backgroundOptions": {
+          "color": "#f5f5f5",
+          "round": 0.13333333333333333
+        },
+        "cornersDotOptions": {
+          "type": "square",
+          "color": "#E5C644"
+        },
+        "cornersSquareOptions": {
+          "type": "extra-rounded",
+          "color": "#86875D"
+        }
+      }
+    }
+  ]
+}
