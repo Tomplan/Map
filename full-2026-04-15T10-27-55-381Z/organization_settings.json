@@ -1,6 +1,6 @@
 {
   "table": "organization_settings",
-  "timestamp": "2026-03-16T10-21-10-316Z",
+  "timestamp": "2026-04-15T10-27-55-381Z",
   "recordCount": 1,
   "data": [
     {
@@ -29,8 +29,8 @@
         "assignmentChangeNotify": true
       },
       "created_at": "2025-11-26T12:19:47.580085+00:00",
-      "updated_at": "2026-03-13T11:30:01.862002+00:00",
-      "row_version": 41,
+      "updated_at": "2026-03-18T12:44:54.310577+00:00",
+      "row_version": 55,
       "updated_by": "8782c8be-50de-4599-a96c-4cd824281ae5",
       "invoice_ignored_items": [],
       "invoice_allowed_items": [
@@ -121,6 +121,58 @@
         {
           "label": "Standhuur 6x6 mtr | EARLY BIRD",
           "column": "booth_count"
+        },
+        {
+          "label": "BBQ voor standhouders",
+          "column": "bbq_sat"
+        },
+        {
+          "label": "Breakfast SATURDAY",
+          "column": "breakfast_sat"
+        },
+        {
+          "label": "Breakfast SUNDAY",
+          "column": "breakfast_sun"
+        },
+        {
+          "label": "Frühstück SAMSTAG",
+          "column": "breakfast_sat"
+        },
+        {
+          "label": "Frühstück SONNTAG",
+          "column": "breakfast_sun"
+        },
+        {
+          "label": "Lunch SATURDAY",
+          "column": "lunch_sat"
+        },
+        {
+          "label": "Lunch SUNDAY",
+          "column": "lunch_sun"
+        },
+        {
+          "label": "Lunchpakket ZATERDAG",
+          "column": "lunch_sat"
+        },
+        {
+          "label": "Lunchpakket ZONDAG",
+          "column": "lunch_sun"
+        },
+        {
+          "label": "Mittagsessen SAMSTAG",
+          "column": "lunch_sat"
+        },
+        {
+          "label": "Mittagsessen SONNSTAG",
+          "column": "lunch_sun"
+        },
+        {
+          "label": "Ontbijt ZATERDAG",
+          "column": "breakfast_sat"
+        },
+        {
+          "label": "Ontbijt ZONDAG",
+          "column": "breakfast_sun"
         }
       ],
       "default_coins": 4

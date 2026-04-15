@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-03-16T10-21-10-316Z",
-  "recordCount": 190,
+  "timestamp": "2026-04-15T10-27-55-381Z",
+  "recordCount": 194,
   "data": [
     {
       "id": 1,
@@ -28,12 +28,12 @@
       "updated_at": "2025-12-04T22:40:45.17065+00:00"
     },
     {
-      "id": 22,
-      "company_id": 29,
+      "id": 9,
+      "company_id": 18,
       "language_code": "nl",
-      "info": "Defendershop",
+      "info": "Een familiecamping in Zuid-Duitsland, met ruimte en rust, en tegelijkertijd genoeg te doen. Met verschillende accommodaties en outdoor activiteiten.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:47.445666+00:00"
+      "updated_at": "2026-03-17T15:58:43.722536+00:00"
     },
     {
       "id": 148,
@@ -132,14 +132,6 @@
       "updated_at": "2025-12-04T22:40:43.7839+00:00"
     },
     {
-      "id": 9,
-      "company_id": 18,
-      "language_code": "nl",
-      "info": "Een kleine familiecamping in Zuid-Duitsland, met ruimte en rust, en tegelijkertijd genoeg te doen. Met verschillende accommodaties en outdoor activiteiten.",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:44.258157+00:00"
-    },
-    {
       "id": 168,
       "company_id": 18,
       "language_code": "en",
@@ -175,9 +167,9 @@
       "id": 13,
       "company_id": 21,
       "language_code": "nl",
-      "info": "20 Jaar later is die traditie er nog steeds en met nog evenveel enthousiasme.",
+      "info": "Wij kijken ernaar uit u binnenkort persoonlijk te mogen verwelkomen op Camping Braunlage!",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:45.629861+00:00"
+      "updated_at": "2026-03-17T15:56:57.210972+00:00"
     },
     {
       "id": 177,
@@ -204,20 +196,20 @@
       "updated_at": "2025-12-04T22:40:46.074805+00:00"
     },
     {
+      "id": 2844,
+      "company_id": 102,
+      "language_code": "nl",
+      "info": "Kwaliteit en klanttevredenheid staan hoog in het vaandel bij Sommerset outdoor. Onze laarzen en schoenen kenmerken zich als stoer en stijlvol en van topkwaliteit en pasvorm.",
+      "created_at": "2026-03-17T14:56:29.903514+00:00",
+      "updated_at": "2026-03-17T14:56:29.747+00:00"
+    },
+    {
       "id": 65,
       "company_id": 84,
       "language_code": "nl",
-      "info": "&nbsp; Onze Comfort-trailers hebben de volgende unieke eigenschappen:",
+      "info": "De Tracking Trailer is een squaredroptrailer, of makkelijker gezegd: een mini-caravan. Voorzien van de belangrijkste gemakken; een goed bed, pantrykeuken met koelkast, stroompunten en opbergruimte. ",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:41:06.074774+00:00"
-    },
-    {
-      "id": 2837,
-      "company_id": 96,
-      "language_code": "nl",
-      "info": "imme schermt en heeft helemaal niks te doen met de beurs",
-      "created_at": "2025-12-06T20:08:21.904704+00:00",
-      "updated_at": "2025-12-06T20:08:21.792+00:00"
+      "updated_at": "2026-03-17T14:46:29.288029+00:00"
     },
     {
       "id": 156,
@@ -316,12 +308,12 @@
       "updated_at": "2025-12-04T22:40:48.363791+00:00"
     },
     {
-      "id": 203,
-      "company_id": 34,
+      "id": 23,
+      "company_id": 31,
       "language_code": "nl",
-      "info": "20 Jaar later is die traditie er nog steeds en met nog evenveel enthousiasme.",
-      "created_at": "2025-11-24T17:25:57.424843+00:00",
-      "updated_at": "2025-12-04T22:40:48.840237+00:00"
+      "info": "Wij reizen sinds 2001 door Marokko, hebben ontelbare kilometers piste gereden. De regio kennen we goed en we zijn goed bekend met de cultuur en werkwijze van de Marokkanen. Hierdoor kunnen we goed anticiperen op onverwachte situaties en bieden wij alternatieven als zich onverwachte situaties voordoen. Denk hierbij bijvoorbeeld weersomstandigheden, afzettingen of andere zaken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:51:59.817653+00:00"
     },
     {
       "id": 19,
@@ -348,14 +340,6 @@
       "updated_at": "2025-12-04T22:40:49.276281+00:00"
     },
     {
-      "id": 26,
-      "company_id": 38,
-      "language_code": "nl",
-      "info": "De Fennec off road kampeeraanhanger. Off the grid kamperen met alle gemakken bij de hand.",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:49.502526+00:00"
-    },
-    {
       "id": 213,
       "company_id": 38,
       "language_code": "en",
@@ -375,9 +359,9 @@
       "id": 20,
       "company_id": 39,
       "language_code": "nl",
-      "info": "20 Jaar later is die traditie er nog steeds en met nog evenveel enthousiasme.",
+      "info": "Outdoor artikelen",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:49.942517+00:00"
+      "updated_at": "2026-03-17T15:44:37.359419+00:00"
     },
     {
       "id": 216,
@@ -412,12 +396,12 @@
       "updated_at": "2025-12-04T22:40:51.336056+00:00"
     },
     {
-      "id": 32,
-      "company_id": 46,
+      "id": 26,
+      "company_id": 38,
       "language_code": "nl",
-      "info": "\"Real Freedom Lies In Wildness, Not Civilization\"",
+      "info": "Bij Fennec Adventures weten we uit eigen ervaring wat offroad reizen en kamperen écht vragen. Die kennis en passie vertalen we naar producten die gebouwd zijn om jouw avontuur mogelijk te maken.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:52.68684+00:00"
+      "updated_at": "2026-03-17T15:45:52.741482+00:00"
     },
     {
       "id": 25,
@@ -452,12 +436,12 @@
       "updated_at": "2025-12-04T22:40:46.532985+00:00"
     },
     {
-      "id": 23,
-      "company_id": 31,
+      "id": 21,
+      "company_id": 24,
       "language_code": "nl",
-      "info": "De motor achter Dream Trails Off Road Adventures zijn wij, Dick en Monique de Graaf. Midden jaren 80 kochten wij onze eerste terreinwagen, een Lada Niva",
+      "info": "Informatie nodig over de Defender, producten en accessoires of ben je in de buurt\n en heb je gewoon trek in een een lekkere bak koffie?\nJe bent van harte welkom op de Reedijk 7T36, 3274KE te Heinenoord!",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:47.906284+00:00"
+      "updated_at": "2026-03-17T15:54:49.449579+00:00"
     },
     {
       "id": 288,
@@ -468,20 +452,36 @@
       "updated_at": "2025-12-04T22:41:01.786767+00:00"
     },
     {
+      "id": 2845,
+      "company_id": 104,
+      "language_code": "nl",
+      "info": "De Recreatieve organiseert sinds 1990 Offroad ritten voor 4x4 en SUV. Onze  ritten zijn altijd vooraf gecontroleerd en zijn ook geschikt voor beginners.",
+      "created_at": "2026-03-17T15:02:13.187405+00:00",
+      "updated_at": "2026-03-17T15:02:13.043+00:00"
+    },
+    {
+      "id": 32,
+      "company_id": 46,
+      "language_code": "nl",
+      "info": "\"Real Freedom Lies In Wildness, Not Civilization\"\nMijn doel is om jullie te helpen aan een mooie maar vooral praktische inbouw maar ook helpen we graag met dingen te maken voor op of aan de auto. We willen graag jullie idee werkelijkheid maken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:30:30.475779+00:00"
+    },
+    {
+      "id": 203,
+      "company_id": 34,
+      "language_code": "nl",
+      "info": "",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-03-17T15:59:29.96538+00:00"
+    },
+    {
       "id": 184,
       "company_id": 23,
       "language_code": "de",
       "info": "Dé webshop voor nieuwe en gebruikte 27MC apparatuur",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:46.532985+00:00"
-    },
-    {
-      "id": 21,
-      "company_id": 24,
-      "language_code": "nl",
-      "info": "Klanten aan het woord Kwaliteit Mijn producten worden met zorg gemaakt van hoogwaardige materialen. Van de hoogste kwaliteit leder tot de beste fournituren, tot zelfs de sterkste draad, overal wordt aan gedacht. Zelfs de gereedschappen in mijn atelier zijn top-of-the-bill, dit biedt me de mogelijkheid om de best mogelijke producten te maken. Ik doe geen…",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:46.990343+00:00"
     },
     {
       "id": 198,
@@ -562,6 +562,14 @@
       "info": "Unsere CampUniQ-Minicamperboxen MACBox, QuQuQ und MICABox verwandeln Ihren Lieferwagen, Ihren Kombi oder Ihren Van in ein komfortables und bezahlbares Miniwohnmobil und wieder zurück.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2026-03-08T14:11:39.313429+00:00"
+    },
+    {
+      "id": 41,
+      "company_id": 56,
+      "language_code": "nl",
+      "info": "Eén plek voor uw offroad en kampeer materiaal. Na al een paar jaar zelf actief en gepassioneerd 4x4 rijder en kampeerder te zijn, dacht ik de hobby wat verder uit te bereiden. De kans kwam op mijn pad om de mooie naam 'Made for Adventure' over te nemen en ik ben meteen aan de slag gegaan met een volledig nieuwe webshop te bouwen en het assortiment sterk uit te bereiden. ",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:13:01.578057+00:00"
     },
     {
       "id": 11,
@@ -684,6 +692,14 @@
       "updated_at": "2025-12-04T22:41:05.144764+00:00"
     },
     {
+      "id": 2851,
+      "company_id": 106,
+      "language_code": "nl",
+      "info": "Het maken van kwaliteit maatwerk aanhangwagens en trailers is iets wat al jaren ons uitgangspunt is maar met deze uitbreiding willen we onze specialisatie naar een hoger niveau brengen.",
+      "created_at": "2026-03-17T15:18:09.302934+00:00",
+      "updated_at": "2026-03-17T15:18:09.134+00:00"
+    },
+    {
       "id": 30,
       "company_id": 44,
       "language_code": "nl",
@@ -724,6 +740,14 @@
       "updated_at": "2025-12-04T22:41:04.657644+00:00"
     },
     {
+      "id": 2854,
+      "company_id": 103,
+      "language_code": "nl",
+      "info": "Begeleide 4×4 Self Drive in Afrika\nNamibië Botswana Zimbabwe\nBij Ibex Adventures geloven we dat je elke reis als een avontuur kan beleven. Wij organiseren onvergetelijke begeleide self-drive tours door zuidelijk Afrika.",
+      "created_at": "2026-03-17T15:31:30.792258+00:00",
+      "updated_at": "2026-03-17T15:31:58.824998+00:00"
+    },
+    {
       "id": 219,
       "company_id": 40,
       "language_code": "en",
@@ -746,6 +770,14 @@
       "info": "De Roof Space is de eerste opvouwbare hard cover daktent op de markt. Deze nieuw ontwikkelde, zeer robuuste en hoogwaardige aluminium hard cover koffer vervangt het traditionele dunne PVC-zeildoek van de vorige generatie soft cover daktenten. Dit betekent dat de Roof Space er niet alleen goed uitziet, maar ook de aerodynamica en het rijcomfort verhoogt. De innovatieve constructie en de gasdrukveren maken het openen en dichtklappen van deze daktent tot kinderspel.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:41:00.823646+00:00"
+    },
+    {
+      "id": 2856,
+      "company_id": 105,
+      "language_code": "nl",
+      "info": "wij organiseren Green lane routes en events",
+      "created_at": "2026-03-17T15:35:25.92816+00:00",
+      "updated_at": "2026-03-17T15:35:45.148718+00:00"
     },
     {
       "id": 220,
@@ -778,6 +810,14 @@
       "info": "Wij bouwen Mercedes Sprinter 4x4 campers. Ga weg van de gebaande paden en beleef off-grid, off-road avonturen. Ontdek wat Overland Campers voor je doet.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:58.899531+00:00"
+    },
+    {
+      "id": 22,
+      "company_id": 29,
+      "language_code": "nl",
+      "info": "Defendershop, onderdelen \nInformatie nodig over de Defender, producten en accessoires of ben je in de buurt\n en heb je gewoon trek in een een lekkere bak koffie?\nJe bent van harte welkom op de Reedijk 7T36, 3274KE te Heinenoord!",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:53:48.786492+00:00"
     },
     {
       "id": 28,
@@ -839,17 +879,17 @@
       "id": 64,
       "company_id": 83,
       "language_code": "nl",
-      "info": "Draagbare vrijetijdsproducten ontworpen voor het leven onderweg",
+      "info": "Door onze ervaring in kamperen en outdoor willen wij iedere kampeerder, visser, watersporter en outdoor liefhebber helpen om hun (kampeer)ervaring nóg leuker te maken. Dit doen wij met producten die bijdragen aan meer comfort tijdens kampeer- en outdoor trips. ",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:41:05.601217+00:00"
+      "updated_at": "2026-03-17T14:49:18.335368+00:00"
     },
     {
-      "id": 43,
-      "company_id": 59,
+      "id": 40,
+      "company_id": 55,
       "language_code": "nl",
-      "info": "Discover rugged, high-quality off-road caravans built in the Netherlands. Explore models tailored for every adventure, without middlemen.",
+      "info": "Lumberjackoutdoor.nl Verkoopt kampeerspullen die je ook zeer goed in en om het huis kunt gebruiken.\nHet assortiment van Lumberjackoutdoor.nl bestaat onder andere uit:\nDutch-ovens en andere gietijzeren pannen en accessoires hiervoor van diverse merken, olielampen, oplaadbare en dimbare led lampen, tentkachels, geëmailleerd servies, schapenvachten etc.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:57.924872+00:00"
+      "updated_at": "2026-03-17T15:14:05.112785+00:00"
     },
     {
       "id": 264,
@@ -876,12 +916,28 @@
       "updated_at": "2025-12-04T22:40:58.401812+00:00"
     },
     {
+      "id": 42,
+      "company_id": 57,
+      "language_code": "nl",
+      "info": "Offroadjuf.nl\n4x4-instructie, offroadreizen, outdooravonuren\nJe rijdt over zandpaden, door diepe plassen, steile heuvels op en af, je gidst elkaar door slingerpaadjes en over bruggetjes en je leert veilig achteruit heuvelafwaarts te gaan met vlinders in je buik. Je moedigt elkaar aan, de high-fives vliegen je om de oren als een manoeuvre lukt en dan wil je nog een keer. En nog een keer, en nog een keer! En met de modder op je auto en in je haar, weet je dat dit het begin is van je nieuwe hobby…\n\n Ga je mee op avontuur?\n\n",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:10:01.266563+00:00"
+    },
+    {
+      "id": 43,
+      "company_id": 59,
+      "language_code": "nl",
+      "info": "At OffroadCaravans.eu, we craft caravans for the most demanding adventures. Each model is built in the Netherlands using high-quality materials and designed for the toughest terrains, enabling you to go fully off-grid. And since there's no middleman, your shop at a price you won’t find anywhere else.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T15:11:11.405032+00:00"
+    },
+    {
       "id": 31,
       "company_id": 45,
       "language_code": "nl",
-      "info": "Voor wie iets wil weten over het bedrijf en het team achter Gobanna, willen we ons voorstellen. Eigenlijk zie je ons weerspiegelt in de Gobanna minicaravan.",
+      "info": "Een Gobanna minicaravan: Omdat grote avonturen klein beginnen.\nOntdek de ultieme vrijheid met de Gobanna teardrop trailer. Compact, licht en 100% Nederlands vakmanschap.\n",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:52.234293+00:00"
+      "updated_at": "2026-03-17T15:37:47.516122+00:00"
     },
     {
       "id": 231,
@@ -906,14 +962,6 @@
       "info": "Neve | Mogelijk gemaakt door WordPress",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:52.68684+00:00"
-    },
-    {
-      "id": 33,
-      "company_id": 48,
-      "language_code": "nl",
-      "info": "Je overweegt jouw mooie reisvoertuig zélf af te bouwen of het geheel of gedeeltelijk uit te besteden? Dan ben je bij KIFARU4X4 aan het juiste adres. Wij zijn",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:53.130084+00:00"
     },
     {
       "id": 237,
@@ -1036,12 +1084,12 @@
       "updated_at": "2025-12-04T22:40:56.069636+00:00"
     },
     {
-      "id": 40,
-      "company_id": 55,
+      "id": 33,
+      "company_id": 48,
       "language_code": "nl",
-      "info": "De leverancier voor kampeer en tuin inrichting",
+      "info": "Je overweegt jouw mooie reisvoertuig zélf af te bouwen of het geheel of gedeeltelijk uit te besteden? Dan ben je bij KIFARU4X4 aan het juiste adres. ",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:56.518655+00:00"
+      "updated_at": "2026-03-17T15:21:19.798898+00:00"
     },
     {
       "id": 255,
@@ -1060,14 +1108,6 @@
       "updated_at": "2025-12-04T22:40:56.518655+00:00"
     },
     {
-      "id": 41,
-      "company_id": 56,
-      "language_code": "nl",
-      "info": "Eén plek voor uw offroad en kampeer materiaal. Nauwkeuring geselecteerd op prijs kwaliteit, krijg snel en persoonlijk advies! Zit het niet in ons aanbod? Laat het ons weten en we gaan ons uiterste best doen u te helpen.",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:56.989624+00:00"
-    },
-    {
       "id": 258,
       "company_id": 56,
       "language_code": "en",
@@ -1082,14 +1122,6 @@
       "info": "Eén plek voor uw offroad en kampeer materiaal. Nauwkeuring geselecteerd op prijs kwaliteit, krijg snel en persoonlijk advies! Zit het niet in ons aanbod? Laat het ons weten en we gaan ons uiterste best doen u te helpen.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:56.989624+00:00"
-    },
-    {
-      "id": 42,
-      "company_id": 57,
-      "language_code": "nl",
-      "info": "Offroadjuf.nl\r\n4x4-instructie, offroadreizen, outdooravonuren",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:57.440057+00:00"
     },
     {
       "id": 261,
@@ -1151,9 +1183,9 @@
       "id": 45,
       "company_id": 65,
       "language_code": "nl",
-      "info": "Lees meer over ons: Pathfinder is geboren te Maassluis op 01-02-2021. De geschiedenis achter Pathfinder echter, gaat nog veel verder terug.",
+      "info": "Bij Pathfinder Adventure Campers produceren wij hoogwaardige aluminium hefdaken voor de 4×4 markt, volledig geproduceerd van aluminium. Daarnaast bieden wij zowel moduliere meubels als volledig op maat gemaakte camper interieurs, geproduceerd uit een scala van materialen inclusief de inbouw van alle interieur accesoires. Onze unieke “Atlas” roofracks zijn verkrijgbaar voor elke auto of camper.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:40:59.385831+00:00"
+      "updated_at": "2026-03-17T15:07:15.61545+00:00"
     },
     {
       "id": 273,
@@ -1340,6 +1372,14 @@
       "updated_at": "2025-12-04T22:41:07.958392+00:00"
     },
     {
+      "id": 54,
+      "company_id": 79,
+      "language_code": "nl",
+      "info": "In 2012 is Stormtenttrailers begonnen toen de eerste Storm daktent was bedacht en ontworpen. Vandaag de dag staan wij nog steeds voor mooie duurzame producten en persoonlijk contact.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-03-17T14:54:16.610062+00:00"
+    },
+    {
       "id": 53,
       "company_id": 78,
       "language_code": "nl",
@@ -1354,14 +1394,6 @@
       "info": "Smokey Goose is een speciaalzaak voor barbecues, accessoires, skillets, chunks, rubs, houtskool, kortom alles wat je aan gereedschap hebt om thuis dat mooie stuk vlees of die lekkere stoofpot te bereiden.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:41:03.214459+00:00"
-    },
-    {
-      "id": 54,
-      "company_id": 79,
-      "language_code": "nl",
-      "info": "30 augustus 2024",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:41:03.69726+00:00"
     },
     {
       "id": 300,
