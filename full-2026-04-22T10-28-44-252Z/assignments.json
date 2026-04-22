@@ -1,7 +1,7 @@
 {
   "table": "assignments",
-  "timestamp": "2026-03-22T10-05-09-187Z",
-  "recordCount": 100,
+  "timestamp": "2026-04-22T10-28-44-252Z",
+  "recordCount": 149,
   "data": [
     {
       "id": 442,
@@ -65,6 +65,38 @@
       "company_id": 102,
       "event_year": 2025,
       "created_at": "2026-03-18T11:25:32.381848+00:00",
+      "created_by": null
+    },
+    {
+      "id": 502,
+      "marker_id": 53,
+      "company_id": 59,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:18.074248+00:00",
+      "created_by": null
+    },
+    {
+      "id": 505,
+      "marker_id": 50,
+      "company_id": 59,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:36.099898+00:00",
+      "created_by": null
+    },
+    {
+      "id": 507,
+      "marker_id": 100,
+      "company_id": 20,
+      "event_year": 2026,
+      "created_at": "2026-04-10T10:59:59.134398+00:00",
+      "created_by": null
+    },
+    {
+      "id": 510,
+      "marker_id": 39,
+      "company_id": 78,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:01:40.449004+00:00",
       "created_by": null
     },
     {
@@ -564,6 +596,102 @@
       "created_by": null
     },
     {
+      "id": 513,
+      "marker_id": 46,
+      "company_id": 114,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:03:16.746193+00:00",
+      "created_by": null
+    },
+    {
+      "id": 516,
+      "marker_id": 15,
+      "company_id": 4,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:04:08.495701+00:00",
+      "created_by": null
+    },
+    {
+      "id": 519,
+      "marker_id": 6,
+      "company_id": 115,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:05:30.489308+00:00",
+      "created_by": null
+    },
+    {
+      "id": 522,
+      "marker_id": 90,
+      "company_id": 50,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:07:15.119851+00:00",
+      "created_by": null
+    },
+    {
+      "id": 525,
+      "marker_id": 34,
+      "company_id": 51,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:08:51.218243+00:00",
+      "created_by": null
+    },
+    {
+      "id": 528,
+      "marker_id": 95,
+      "company_id": 67,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:11:06.426047+00:00",
+      "created_by": null
+    },
+    {
+      "id": 531,
+      "marker_id": 30,
+      "company_id": 56,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:12:35.420528+00:00",
+      "created_by": null
+    },
+    {
+      "id": 534,
+      "marker_id": 97,
+      "company_id": 110,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:14:18.105658+00:00",
+      "created_by": null
+    },
+    {
+      "id": 540,
+      "marker_id": 83,
+      "company_id": 116,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:17:24.117367+00:00",
+      "created_by": null
+    },
+    {
+      "id": 543,
+      "marker_id": 82,
+      "company_id": 61,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:18:31.945575+00:00",
+      "created_by": null
+    },
+    {
+      "id": 546,
+      "marker_id": 8,
+      "company_id": 113,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:20:18.826771+00:00",
+      "created_by": null
+    },
+    {
+      "id": 549,
+      "marker_id": 80,
+      "company_id": 117,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:25:35.80349+00:00",
+      "created_by": null
+    },
+    {
       "id": 443,
       "marker_id": 58,
       "company_id": 74,
@@ -625,6 +753,142 @@
       "company_id": 93,
       "event_year": 2025,
       "created_at": "2026-03-18T16:09:56.333555+00:00",
+      "created_by": null
+    },
+    {
+      "id": 503,
+      "marker_id": 52,
+      "company_id": 59,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:23.508304+00:00",
+      "created_by": null
+    },
+    {
+      "id": 504,
+      "marker_id": 51,
+      "company_id": 59,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:30.576515+00:00",
+      "created_by": null
+    },
+    {
+      "id": 508,
+      "marker_id": 88,
+      "company_id": 8,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:00:43.015643+00:00",
+      "created_by": null
+    },
+    {
+      "id": 511,
+      "marker_id": 44,
+      "company_id": 42,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:02:24.094171+00:00",
+      "created_by": null
+    },
+    {
+      "id": 514,
+      "marker_id": 47,
+      "company_id": 114,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:03:25.940503+00:00",
+      "created_by": null
+    },
+    {
+      "id": 517,
+      "marker_id": 105,
+      "company_id": 5,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:04:43.71048+00:00",
+      "created_by": null
+    },
+    {
+      "id": 520,
+      "marker_id": 48,
+      "company_id": 31,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:06:46.268984+00:00",
+      "created_by": null
+    },
+    {
+      "id": 523,
+      "marker_id": 36,
+      "company_id": 51,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:08:35.647103+00:00",
+      "created_by": null
+    },
+    {
+      "id": 526,
+      "marker_id": 33,
+      "company_id": 55,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:09:34.834061+00:00",
+      "created_by": null
+    },
+    {
+      "id": 529,
+      "marker_id": 96,
+      "company_id": 67,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:11:13.751606+00:00",
+      "created_by": null
+    },
+    {
+      "id": 532,
+      "marker_id": 31,
+      "company_id": 112,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:12:46.437274+00:00",
+      "created_by": null
+    },
+    {
+      "id": 535,
+      "marker_id": 55,
+      "company_id": 74,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:15:22.441507+00:00",
+      "created_by": null
+    },
+    {
+      "id": 538,
+      "marker_id": 7,
+      "company_id": 83,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:16:41.425847+00:00",
+      "created_by": null
+    },
+    {
+      "id": 541,
+      "marker_id": 92,
+      "company_id": 73,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:17:58.021684+00:00",
+      "created_by": null
+    },
+    {
+      "id": 544,
+      "marker_id": 101,
+      "company_id": 6,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:19:04.057625+00:00",
+      "created_by": null
+    },
+    {
+      "id": 547,
+      "marker_id": 28,
+      "company_id": 46,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:21:41.455355+00:00",
+      "created_by": null
+    },
+    {
+      "id": 550,
+      "marker_id": 79,
+      "company_id": 117,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:25:39.946142+00:00",
       "created_by": null
     },
     {
@@ -801,6 +1065,134 @@
       "company_id": 93,
       "event_year": 2025,
       "created_at": "2026-03-18T16:09:59.407469+00:00",
+      "created_by": null
+    },
+    {
+      "id": 501,
+      "marker_id": 54,
+      "company_id": 59,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:10.640002+00:00",
+      "created_by": null
+    },
+    {
+      "id": 506,
+      "marker_id": 1,
+      "company_id": 24,
+      "event_year": 2026,
+      "created_at": "2026-04-02T14:16:49.017758+00:00",
+      "created_by": null
+    },
+    {
+      "id": 509,
+      "marker_id": 87,
+      "company_id": 8,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:00:46.170533+00:00",
+      "created_by": null
+    },
+    {
+      "id": 512,
+      "marker_id": 45,
+      "company_id": 42,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:02:35.531257+00:00",
+      "created_by": null
+    },
+    {
+      "id": 515,
+      "marker_id": 17,
+      "company_id": 4,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:04:05.319677+00:00",
+      "created_by": null
+    },
+    {
+      "id": 518,
+      "marker_id": 5,
+      "company_id": 115,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:05:27.220991+00:00",
+      "created_by": null
+    },
+    {
+      "id": 521,
+      "marker_id": 91,
+      "company_id": 50,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:07:10.255577+00:00",
+      "created_by": null
+    },
+    {
+      "id": 524,
+      "marker_id": 35,
+      "company_id": 51,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:08:45.026365+00:00",
+      "created_by": null
+    },
+    {
+      "id": 527,
+      "marker_id": 32,
+      "company_id": 55,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:09:46.479343+00:00",
+      "created_by": null
+    },
+    {
+      "id": 530,
+      "marker_id": 29,
+      "company_id": 56,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:12:28.817458+00:00",
+      "created_by": null
+    },
+    {
+      "id": 533,
+      "marker_id": 93,
+      "company_id": 104,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:13:28.039201+00:00",
+      "created_by": null
+    },
+    {
+      "id": 536,
+      "marker_id": 56,
+      "company_id": 74,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:15:29.290516+00:00",
+      "created_by": null
+    },
+    {
+      "id": 539,
+      "marker_id": 84,
+      "company_id": 116,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:17:13.175385+00:00",
+      "created_by": null
+    },
+    {
+      "id": 542,
+      "marker_id": 104,
+      "company_id": 73,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:18:07.153218+00:00",
+      "created_by": null
+    },
+    {
+      "id": 545,
+      "marker_id": 89,
+      "company_id": 111,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:19:44.223363+00:00",
+      "created_by": null
+    },
+    {
+      "id": 548,
+      "marker_id": 76,
+      "company_id": 109,
+      "event_year": 2026,
+      "created_at": "2026-04-10T11:24:02.646803+00:00",
       "created_by": null
     }
   ]
