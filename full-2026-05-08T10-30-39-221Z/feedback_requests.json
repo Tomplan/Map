@@ -1,7 +1,7 @@
 {
   "table": "feedback_requests",
-  "timestamp": "2026-04-07T10-21-30-752Z",
-  "recordCount": 74,
+  "timestamp": "2026-05-08T10-30-39-221Z",
+  "recordCount": 77,
   "data": [
     {
       "id": 31,
@@ -50,6 +50,22 @@
       "created_at": "2026-04-01T19:15:51.952799+00:00",
       "completed_at": "2026-04-02T16:51:24.07+00:00",
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
+    },
+    {
+      "id": 76,
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "user_email": "tom.slegers@telenet.be",
+      "type": "feature",
+      "title": "aanvinken bedrijven die gearriveerd zijn op de dag zelf",
+      "description": "",
+      "status": "open",
+      "priority": null,
+      "votes": 0,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2026-04-18T18:50:14.753122+00:00",
+      "completed_at": null,
+      "completed_by": null
     },
     {
       "id": 15,
@@ -788,6 +804,22 @@
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
     },
     {
+      "id": 77,
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "user_email": "tom.slegers@telenet.be",
+      "type": "issue",
+      "title": "move + remove markers in bulk edit mode",
+      "description": "",
+      "status": "open",
+      "priority": null,
+      "votes": 0,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2026-04-18T18:51:34.909156+00:00",
+      "completed_at": null,
+      "completed_by": null
+    },
+    {
       "id": 52,
       "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
       "user_email": "tom.slegers@telenet.be",
@@ -896,6 +928,22 @@
       "comments_count": 0,
       "version_completed": null,
       "created_at": "2025-12-08T14:22:47.929345+00:00",
+      "completed_at": null,
+      "completed_by": null
+    },
+    {
+      "id": 75,
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "user_email": "tom.slegers@telenet.be",
+      "type": "feature",
+      "title": "lijst met bedrijf, website to excel",
+      "description": "",
+      "status": "open",
+      "priority": null,
+      "votes": 0,
+      "comments_count": 1,
+      "version_completed": null,
+      "created_at": "2026-04-18T18:48:39.725331+00:00",
       "completed_at": null,
       "completed_by": null
     },
