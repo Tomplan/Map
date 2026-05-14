@@ -626,9 +626,11 @@ function EventClusterMarkers({
           const icon = getIcon(marker, isSelected);
           const isDraggable = isMarkerDraggable(marker);
 
-          // No isDraggable in key — react-leaflet handles draggable changes
-          // in-place via marker.dragging.enable()/disable(), no remount needed.
-          const markerKey = getMarkerKey(marker);
+          // In react-leaflet v3+ and React 18/19, changing `draggable` prop on an existing Marker
+          // doesn't always properly enable/disable the drag handlers if the leaflet element
+          // isn't re-initialized. By including isDraggable in the key, we force React to
+          // unmount and remount the Marker when edit mode starts/stops, ensuring it's draggable.
+          const markerKey = `${getMarkerKey(marker)}-drag-${isDraggable}`;
 
           return (
             <MemoizedMarker
