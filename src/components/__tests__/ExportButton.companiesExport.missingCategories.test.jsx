@@ -53,6 +53,10 @@ describe('ExportButton companies export - missing categories', () => {
       const button = getByText('Export as Excel (.xlsx)');
       fireEvent.click(button);
 
+      await waitFor(() => expect(getByText('Select Columns to Export')).toBeInTheDocument());
+
+      fireEvent.click(getByText(/^Export$/));
+
       // Wait for export to be called
       await waitFor(() => expect(exportSpy).toHaveBeenCalled());
 
