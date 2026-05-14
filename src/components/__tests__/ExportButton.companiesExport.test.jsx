@@ -50,6 +50,22 @@ const mockSelect = jest.fn(() => ({
 // mockFrom returns an object with select
 const mockFrom = jest.fn(() => ({ select: mockSelect }));
 
+async function openExcelExportModal() {
+  fireEvent.click(screen.getByRole('button', { name: /export/i }));
+  await act(async () => {
+    fireEvent.click(screen.getByText(/Export as Excel/i));
+  });
+  await waitFor(() => {
+    expect(screen.getByText('Select Columns to Export')).toBeInTheDocument();
+  });
+}
+
+async function confirmColumnSelection() {
+  await act(async () => {
+    fireEvent.click(screen.getAllByRole('button', { name: /^Export$/i })[1]);
+  });
+}
+
 describe('ExportButton - Companies Export', () => {
   const mockData = [
     { id: 1, name: 'Company A' },
@@ -105,14 +121,13 @@ describe('ExportButton - Companies Export', () => {
       </DialogProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button'));
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Excel/i));
-    });
+    await openExcelExportModal();
 
     // Verify Supabase was queried for categories
     expect(supabase.from).toHaveBeenCalledWith('categories');
     expect(mockOrder).toHaveBeenCalled();
+
+    await confirmColumnSelection();
 
     await waitFor(() => {
       expect(dataExportImport.exportToExcel).toHaveBeenCalled();
@@ -139,10 +154,9 @@ describe('ExportButton - Companies Export', () => {
       </DialogProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button'));
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Excel/i));
-    });
+    await openExcelExportModal();
+
+    await confirmColumnSelection();
 
     await waitFor(() => {
       expect(dataExportImport.exportToExcel).toHaveBeenCalled();
@@ -175,10 +189,9 @@ describe('ExportButton - Companies Export', () => {
       </DialogProvider>,
     );
 
-    fireEvent.click(screen.getByRole('button'));
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Excel/i));
-    });
+    await openExcelExportModal();
+
+    await confirmColumnSelection();
 
     await waitFor(() => {
       expect(dataExportImport.exportToExcel).toHaveBeenCalled();
