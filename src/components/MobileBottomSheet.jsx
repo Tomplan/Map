@@ -8,6 +8,7 @@ import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useCategories } from '../hooks/useCategories';
+import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 import { useTranslation } from 'react-i18next';
 
 const BottomSheet = ({ marker, onClose }) => {
@@ -18,6 +19,7 @@ const BottomSheet = ({ marker, onClose }) => {
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
   const { t, i18n } = useTranslation();
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
+  const translatedInfo = useTranslatedCompanyInfo(marker);
   const [categories, setCategories] = useState([]);
 
   // Lock map dragging while sheet is open
@@ -130,9 +132,9 @@ const BottomSheet = ({ marker, onClose }) => {
           )}
 
           {/* Info */}
-          {marker.info && (
+          {translatedInfo && (
             <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
-              {marker.info}
+              {translatedInfo}
             </div>
           )}
 
