@@ -378,6 +378,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
         .subscribe();
     }
 
+    let companyTranslationsChannel = null;
+    if (isOnline) {
+      companyTranslationsChannel = supabase
+        .channel('company-translations-changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'company_translations' },
+          () => {
+            loadMarkers(true);
+          },
+        )
+        .subscribe();
+    }
+
     let subscriptionsChannel = null;
     if (isOnline) {
       subscriptionsChannel = supabase
@@ -408,6 +422,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       // Also remove channels created conditionally
       if (assignmentsChannel) supabase.removeChannel(assignmentsChannel);
       if (companiesChannel) supabase.removeChannel(companiesChannel);
+      if (companyTranslationsChannel) supabase.removeChannel(companyTranslationsChannel);
       if (subscriptionsChannel) supabase.removeChannel(subscriptionsChannel);
     };
   }, [isOnline, loadMarkers, eventYear]);
