@@ -932,7 +932,16 @@
       "breakfast": "Breakfast",
       "lunch": "Lunch",
       "bbq": "BBQ",
-      "areaPlaceholder": "large field, small field..."
+      "areaPlaceholder": "large field, small field...",
+      "mailingListSubscribedCompanies": "Mailingliste angemeldeter Firmen",
+      "subscribedCompaniesDescription": "Firmen mit Anmeldung fuer {{year}}.",
+      "subscribedCompaniesCount": "{{count}} Firmen mit Anmeldung fuer {{year}} gefunden.",
+      "subscribedCompaniesEmpty": "Noch keine Firmen mit Anmeldung fuer {{year}}.",
+      "mailingListUnsubscribedCompanies": "Mailingliste nicht angemeldeter Firmen",
+      "unsubscribedCompaniesDescription": "Firmen ohne Anmeldung fuer {{year}}.",
+      "unsubscribedCompaniesCount": "{{count}} Firmen ohne Anmeldung fuer {{year}} gefunden.",
+      "unsubscribedCompaniesEmpty": "Alle Firmen haben bereits eine Anmeldung fuer {{year}}.",
+      "city": "Stadt"
     },
     "assignments": {
       "searchPlaceholder": "Search companies...",

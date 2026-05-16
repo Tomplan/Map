@@ -1104,7 +1104,16 @@
       "boothAssignedMessage": "{{companyName}} heeft stands toegewezen aan markers: {{booths}}.\n\nHet verwijderen van deze inschrijving zal die standtoewijzingen van de kaart verwijderen. Weet je het zeker?",
       "boothAssignedConfirm": "Stands Verwijderen & Uitschrijven",
       "subscribeCompanyTo": "Bedrijf inschrijven voor {{year}}",
-      "noCompaniesSubscribed": "Nog geen bedrijven ingeschreven voor {{year}}. Klik op \"Bedrijf Inschrijven\" om er een toe te voegen."
+      "noCompaniesSubscribed": "Nog geen bedrijven ingeschreven voor {{year}}. Klik op \"Bedrijf Inschrijven\" om er een toe te voegen.",
+      "mailingListSubscribedCompanies": "Mailinglijst ingeschreven bedrijven",
+      "subscribedCompaniesDescription": "Bedrijven met een inschrijving voor {{year}}.",
+      "subscribedCompaniesCount": "{{count}} bedrijven gevonden met een inschrijving voor {{year}}.",
+      "subscribedCompaniesEmpty": "Nog geen bedrijven met een inschrijving voor {{year}}.",
+      "mailingListUnsubscribedCompanies": "Mailinglijst niet-ingeschreven bedrijven",
+      "unsubscribedCompaniesDescription": "Bedrijven zonder inschrijving voor {{year}}.",
+      "unsubscribedCompaniesCount": "{{count}} bedrijven gevonden zonder inschrijving voor {{year}}.",
+      "unsubscribedCompaniesEmpty": "Alle bedrijven hebben al een inschrijving voor {{year}}.",
+      "city": "Stad"
     },
     "assignments": {
       "searchPlaceholder": "Zoek bedrijven...",

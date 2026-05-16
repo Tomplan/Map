@@ -18,6 +18,8 @@ import {
   mdiChevronDown,
   mdiTextBoxOutline,
   mdiTextBoxRemoveOutline,
+  mdiEmailCheckOutline,
+  mdiEmailOffOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
@@ -94,6 +96,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   // Subscription history-selection modal state
   const [subHistoryModal, setSubHistoryModal] = useState(null);
   const [subHistorySelection, setSubHistorySelection] = useState([]);
+  const [isSubscribedCompaniesModalOpen, setIsSubscribedCompaniesModalOpen] = useState(false);
+  const [isUnsubscribedCompaniesModalOpen, setIsUnsubscribedCompaniesModalOpen] = useState(false);
 
   // Merge-add modal state (adding counts to existing subscription)
   const MERGE_FIELDS = [
@@ -114,6 +118,22 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const availableCompanies = useMemo(() => {
     return [...companies].sort((a, b) => a.name.localeCompare(b.name));
   }, [companies]);
+
+  const unsubscribedCompanies = useMemo(() => {
+    const subscribedCompanyIds = new Set(subscriptions.map((subscription) => subscription.company_id));
+
+    return companies
+      .filter((company) => !subscribedCompanyIds.has(company.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [companies, subscriptions]);
+
+  const subscribedCompanies = useMemo(() => {
+    const subscribedCompanyIds = new Set(subscriptions.map((subscription) => subscription.company_id));
+
+    return companies
+      .filter((company) => subscribedCompanyIds.has(company.id))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [companies, subscriptions]);
 
   // Get booth assignments for each subscription
   const subscriptionAssignments = useMemo(() => {
@@ -703,16 +723,36 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
                 <button
                   onClick={() => {
-                    handleCopyFromPreviousYear();
+                    setIsSubscribedCompaniesModalOpen(true);
                     setIsActionsOpen(false);
                   }}
-                  data-testid="copy-from-previous-year-button"
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  title={`Copy from ${selectedYear - 1}`}
                 >
-                  <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
-                  <span>Copy from {selectedYear - 1}</span>
+                  <Icon path={mdiEmailCheckOutline} size={0.7} className="text-gray-400" />
+                  <span>
+                    {t(
+                      'helpPanel.subscriptions.mailingListSubscribedCompanies',
+                      'MailingList Subscribed Companies',
+                    )}
+                  </span>
                 </button>
+
+                <button
+                  onClick={() => {
+                    setIsUnsubscribedCompaniesModalOpen(true);
+                    setIsActionsOpen(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                >
+                  <Icon path={mdiEmailOffOutline} size={0.7} className="text-gray-400" />
+                  <span>
+                    {t(
+                      'helpPanel.subscriptions.mailingListUnsubscribedCompanies',
+                      'MailingList Unsubscribed Companies',
+                    )}
+                  </span>
+                </button>
+
               </div>
             )}
           </div>
@@ -1183,6 +1223,212 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 {subHistorySelection.length === subHistoryModal.lineItems.length
                   ? 'Delete subscription'
                   : `Remove ${subHistorySelection.length} selected`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isUnsubscribedCompaniesModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  {t(
+                    'helpPanel.subscriptions.mailingListUnsubscribedCompanies',
+                    'MailingList Unsubscribed Companies',
+                  )}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {t(
+                    'helpPanel.subscriptions.unsubscribedCompaniesDescription',
+                    'Companies without a subscription for {{year}}.',
+                    { year: selectedYear },
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsUnsubscribedCompaniesModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title={t('common.close', 'Close')}
+              >
+                <Icon path={mdiClose} size={1} />
+              </button>
+            </div>
+
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-gray-700">
+                {t(
+                  'helpPanel.subscriptions.unsubscribedCompaniesCount',
+                  '{{count}} companies found without a subscription for {{year}}.',
+                  { count: unsubscribedCompanies.length, year: selectedYear },
+                )}
+              </p>
+              <ExportButton
+                dataType="unsubscribed_companies"
+                data={unsubscribedCompanies}
+                additionalData={{
+                  supabase,
+                }}
+                filename={`mailinglist-unsubscribed-companies-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
+              />
+            </div>
+
+            <div className="flex-1 overflow-auto px-6 py-4">
+              {unsubscribedCompanies.length === 0 ? (
+                <div className="text-sm text-gray-500 py-8 text-center">
+                  {t(
+                    'helpPanel.subscriptions.unsubscribedCompaniesEmpty',
+                    'All companies already have a subscription for {{year}}.',
+                    { year: selectedYear },
+                  )}
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.company', 'Company')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.contact', 'Contact')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.phone', 'Phone')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.email', 'Email')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.city', 'City')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {unsubscribedCompanies.map((company) => (
+                      <tr key={company.id} className="border-b border-gray-100 last:border-0">
+                        <td className="px-3 py-2 font-medium text-gray-900">{company.name || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.contact || company.contact_name || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.phone ? formatPhoneForDisplay(company.phone) : '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.email || company.contact_email || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.city || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setIsUnsubscribedCompaniesModalOpen(false)}
+                className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                {t('common.close', 'Close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isSubscribedCompaniesModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  {t(
+                    'helpPanel.subscriptions.mailingListSubscribedCompanies',
+                    'MailingList Subscribed Companies',
+                  )}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {t(
+                    'helpPanel.subscriptions.subscribedCompaniesDescription',
+                    'Companies with a subscription for {{year}}.',
+                    { year: selectedYear },
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsSubscribedCompaniesModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title={t('common.close', 'Close')}
+              >
+                <Icon path={mdiClose} size={1} />
+              </button>
+            </div>
+
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between gap-4 flex-wrap">
+              <p className="text-sm text-gray-700">
+                {t(
+                  'helpPanel.subscriptions.subscribedCompaniesCount',
+                  '{{count}} companies found with a subscription for {{year}}.',
+                  { count: subscribedCompanies.length, year: selectedYear },
+                )}
+              </p>
+              <ExportButton
+                dataType="subscribed_companies"
+                data={subscribedCompanies}
+                additionalData={{
+                  supabase,
+                }}
+                filename={`mailinglist-subscribed-companies-${selectedYear}-${new Date().toISOString().split('T')[0]}`}
+              />
+            </div>
+
+            <div className="flex-1 overflow-auto px-6 py-4">
+              {subscribedCompanies.length === 0 ? (
+                <div className="text-sm text-gray-500 py-8 text-center">
+                  {t(
+                    'helpPanel.subscriptions.subscribedCompaniesEmpty',
+                    'No companies have a subscription for {{year}} yet.',
+                    { year: selectedYear },
+                  )}
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-gray-100 text-gray-700">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.company', 'Company')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.contact', 'Contact')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.phone', 'Phone')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.email', 'Email')}
+                      </th>
+                      <th className="px-3 py-2 text-left font-semibold border-b border-gray-200">
+                        {t('helpPanel.subscriptions.city', 'City')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subscribedCompanies.map((company) => (
+                      <tr key={company.id} className="border-b border-gray-100 last:border-0">
+                        <td className="px-3 py-2 font-medium text-gray-900">{company.name || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.contact || company.contact_name || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.phone ? formatPhoneForDisplay(company.phone) : '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.email || company.contact_email || '-'}</td>
+                        <td className="px-3 py-2 text-gray-700">{company.city || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setIsSubscribedCompaniesModalOpen(false)}
+                className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                {t('common.close', 'Close')}
               </button>
             </div>
           </div>
