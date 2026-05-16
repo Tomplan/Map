@@ -1105,7 +1105,16 @@
       "boothAssignedMessage": "{{companyName}} has booths assigned to markers: {{booths}}.\n\nDeleting this subscription will remove those booth assignments from the map. Are you sure?",
       "boothAssignedConfirm": "Remove Booths & Delete",
       "subscribeCompanyTo": "Subscribe Company to {{year}}",
-      "noCompaniesSubscribed": "No companies subscribed to {{year}} yet. Click \"Subscribe Company\" to add one."
+      "noCompaniesSubscribed": "No companies subscribed to {{year}} yet. Click \"Subscribe Company\" to add one.",
+      "mailingListSubscribedCompanies": "MailingList Subscribed Companies",
+      "subscribedCompaniesDescription": "Companies with a subscription for {{year}}.",
+      "subscribedCompaniesCount": "{{count}} companies found with a subscription for {{year}}.",
+      "subscribedCompaniesEmpty": "No companies have a subscription for {{year}} yet.",
+      "mailingListUnsubscribedCompanies": "MailingList Unsubscribed Companies",
+      "unsubscribedCompaniesDescription": "Companies without a subscription for {{year}}.",
+      "unsubscribedCompaniesCount": "{{count}} companies found without a subscription for {{year}}.",
+      "unsubscribedCompaniesEmpty": "All companies already have a subscription for {{year}}.",
+      "city": "City"
     },
     "assignments": {
       "searchPlaceholder": "Search companies...",
