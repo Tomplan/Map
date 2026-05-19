@@ -96,7 +96,7 @@ export const MAP_LAYERS = [
     key: 'carto',
     name: 'Carto Voyager',
     attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: '/assets/tiles/carto/{z}/{x}/{y}.png',
+    url: `${getBaseUrl()}assets/tiles/carto/{z}/{x}/{y}.png`,
     maxNativeZoom: 22,
   },
   {
