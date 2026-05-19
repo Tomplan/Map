@@ -13,6 +13,7 @@ import {
 } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
+import { getDefaultLogoPath } from '../utils/getDefaultLogo';
 import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useTranslation } from 'react-i18next';
@@ -449,6 +450,11 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         src={getLogoWithFallback(exhibitor.logo, organizationLogo)}
                         alt={exhibitor.name}
                         className="max-w-full max-h-full object-contain p-2"
+                        onError={(e) => {
+                          if (e.currentTarget.dataset.logoFallbackApplied === 'true') return;
+                          e.currentTarget.dataset.logoFallbackApplied = 'true';
+                          e.currentTarget.src = getDefaultLogoPath();
+                        }}
                       />
                     </div>
 

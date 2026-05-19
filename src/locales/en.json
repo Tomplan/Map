@@ -279,6 +279,7 @@
     "saving": "Saving...",
     "save": "Save",
     "cancel": "Cancel",
+    "dismiss": "Dismiss",
     "edit": "Edit",
     "delete": "Delete",
     "confirmDelete": "Are you sure you want to delete this?",
@@ -286,7 +287,9 @@
     "voted": "Voted",
     "refresh": "Regenerate",
     "actions": "Actions",
-    "actionsMenu": "Actions Menu"
+    "actionsMenu": "Actions Menu",
+    "offlineWarning": "You are offline. Saved data stays visible where possible, but some live features may be unavailable.",
+    "offlineIconLabel": "Offline mode active"
   },
   "marker": {
     "event": "Event",
@@ -463,6 +466,58 @@
         "title": "Manager Interface Language",
         "description": "This changes the language of buttons, menus, and settings. It does NOT affect content translations (company info, marker descriptions). Content translations are managed separately."
       }
+    },
+    "appActivation": {
+      "title": "Public App Availability",
+      "loading": "Loading settings...",
+      "activation": {
+        "title": "Allow visitor access",
+        "description": "Anyone with the QR code or URL can open the public map immediately."
+      },
+      "statusDescription": {
+        "live": "LIVE for visitors",
+        "offline": "OFFLINE with maintenance screen"
+      },
+      "status": {
+        "live": "LIVE",
+        "offline": "OFFLINE"
+      },
+      "actions": {
+        "goLive": "Set app live",
+        "goOffline": "Set app offline",
+        "manageDetails": "More settings"
+      },
+      "confirm": {
+        "goLive": "Are you sure you want to make the visitor app live?",
+        "goOffline": "Are you sure you want to take the visitor app offline and show the maintenance screen?"
+      },
+      "translationsTitle": "Maintenance text by language",
+      "translationsDescription": "These messages appear under the countdown when the app is offline.",
+      "languageFields": {
+        "nl": "Text Dutch",
+        "en": "Text English",
+        "de": "Text German"
+      },
+      "placeholders": {
+        "nl": "The digital fair guide will open soon!",
+        "en": "The digital fair guide will open soon!",
+        "de": "The digital fair guide will open soon!"
+      },
+      "fallback": {
+        "title": "Fallback language",
+        "description": "Use this language text when the active UI language does not have its own message.",
+        "options": {
+          "nl": "Use Dutch text as fallback",
+          "en": "Use English text as fallback",
+          "de": "Use German text as fallback"
+        }
+      },
+      "countdownLabel": "Fair start time (countdown)",
+      "countdownHint": "Leave empty if you do not want to show a countdown.",
+      "save": "Save",
+      "saving": "Saving...",
+      "saveSuccess": "Saved!",
+      "saveError": "Update failed: {{error}}"
     },
     "mapDefaults": {
       "title": "Map Defaults",
@@ -713,6 +768,12 @@
     "parking": "Parking",
     "parkingInfo": "Parking at Strandpark Slijk-Ewijk, all day for €5",
     "phaseNote": "<strong>Note:</strong> This is a Phase 1 placeholder. In Phase 2, this page will show real event data, welcome messages, and upcoming activities."
+  },
+  "maintenanceScreen": {
+    "defaultMessage": "The digital fair guide will open soon!",
+    "countdownTitle": "Countdown to the fair",
+    "hours": "Hours",
+    "minutes": "Min"
   },
   "exhibitorPage": {
     "title": "Exhibitors",

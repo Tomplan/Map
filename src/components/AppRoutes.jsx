@@ -5,10 +5,13 @@ import { useLocation } from 'react-router-dom';
 import { useOnboarding } from '../contexts/OnboardingContext';
 import { getAllAdminTours } from '../config/tourSteps/adminTourSteps';
 import { getAllVisitorTours } from '../config/tourSteps/visitorTourSteps';
-import OfflineStatus from './OfflineStatus';
-import BrandingBar from './BrandingBar';
 import { FavoritesProvider } from '../contexts/FavoritesContext';
 import TabNavigation from './TabNavigation';
+import MaintenanceScreen from './common/MaintenanceScreen';
+import PublicLoadingScreen from './common/PublicLoadingScreen';
+import useOrganizationProfile from '../hooks/useOrganizationProfile';
+import useUserRole from '../hooks/useUserRole';
+import { shouldShowMaintenanceGate } from '../utils/appAvailability';
 
 // Lazy load heavy components to reduce initial bundle size
 const EventMap = lazy(() => import('./EventMap/EventMap.jsx'));
@@ -60,6 +63,8 @@ function AppRoutes({
 }) {
   const location = useLocation();
   const { startTour } = useOnboarding();
+  const { profile, loading: profileLoading } = useOrganizationProfile();
+  const { role, isSuperAdmin } = useUserRole();
 
   // If a tab has previously requested a tour start after navigation
   // (set by the Help panel before performing a redirect), read the
@@ -100,17 +105,34 @@ function AppRoutes({
     }
     // Run when location changes / mounts
   }, [location.pathname, location.hash, startTour]);
+
+  const isAppActive = profile?.is_app_active;
+  const shouldShowMaintenance = shouldShowMaintenanceGate({
+    profileLoading,
+    hasProfile: !!profile,
+    isAppActive,
+  });
+
   // Shared visitor layout with offline status, favorites context, and tab navigation
   // Mobile-only design - bottom tabs always visible
-  const VisitorLayout = ({ children }) => (
-    <ErrorBoundary>
-      <FavoritesProvider selectedYear={user ? selectedYear : publicYear}>
-        <OfflineStatus />
-        <main className="pb-16">{children}</main>
-        <TabNavigation />
-      </FavoritesProvider>
-    </ErrorBoundary>
-  );
+  const VisitorLayout = ({ children }) => {
+    if (profileLoading || shouldShowMaintenance) {
+      return (
+        <ErrorBoundary>
+          <MaintenanceScreen branding={branding} selectedYear={user ? selectedYear : publicYear} />
+        </ErrorBoundary>
+      );
+    }
+
+    return (
+      <ErrorBoundary>
+        <FavoritesProvider selectedYear={user ? selectedYear : publicYear}>
+          <main className="pb-16">{children}</main>
+          <TabNavigation />
+        </FavoritesProvider>
+      </ErrorBoundary>
+    );
+  };
 
   // Check both HashRouter location search AND window.location.search
   // This supports ?mode=visitor in the root URL (e.g. netlify.app/?mode=visitor)
@@ -133,11 +155,7 @@ function AppRoutes({
             <Navigate to={import.meta.env.VITE_DEFAULT_PATH} replace />
           ) : (
             <VisitorLayout>
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center min-h-screen">Loading...</div>
-                }
-              >
+              <Suspense fallback={<PublicLoadingScreen />}>
                 <HomePage selectedYear={user ? selectedYear : publicYear} branding={branding} />
               </Suspense>
             </VisitorLayout>
@@ -148,7 +166,7 @@ function AppRoutes({
         path="/map"
         element={
           <VisitorLayout>
-            <Suspense fallback={<div>Loading map...</div>}>
+            <Suspense fallback={<PublicLoadingScreen />}>
               <EventMap
                 isAdminView={false}
                 markersState={markersState}
@@ -167,13 +185,7 @@ function AppRoutes({
         path="/exhibitors"
         element={
           <VisitorLayout>
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center min-h-screen">
-                  Loading exhibitors...
-                </div>
-              }
-            >
+            <Suspense fallback={<PublicLoadingScreen />}>
               <ExhibitorListView
                 markersState={markersState}
                 selectedYear={user ? selectedYear : publicYear}
@@ -186,11 +198,7 @@ function AppRoutes({
         path="/dev/excel"
         element={
           <VisitorLayout>
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center min-h-screen">Loading...</div>
-              }
-            >
+            <Suspense fallback={<PublicLoadingScreen />}>
               <ExcelImportExportDemo />
             </Suspense>
           </VisitorLayout>
@@ -200,13 +208,7 @@ function AppRoutes({
         path="/schedule"
         element={
           <VisitorLayout>
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center min-h-screen">
-                  Loading schedule...
-                </div>
-              }
-            >
+            <Suspense fallback={<PublicLoadingScreen />}>
               <EventSchedule selectedYear={user ? selectedYear : publicYear} />
             </Suspense>
           </VisitorLayout>

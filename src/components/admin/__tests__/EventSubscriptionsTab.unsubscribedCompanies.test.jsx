@@ -59,8 +59,22 @@ jest.mock('../../../hooks/useCompanies', () => ({
   __esModule: true,
   default: jest.fn(() => ({
     companies: [
-      { id: 1, name: 'Alpha BV', contact: 'Jane Doe', phone: '+31612345678', email: 'jane@alpha.test', city: 'Utrecht' },
-      { id: 2, name: 'Beta BV', contact: 'John Doe', phone: '+31611111111', email: 'john@beta.test', city: 'Amsterdam' },
+      {
+        id: 1,
+        name: 'Alpha BV',
+        contact: 'Jane Doe',
+        phone: '+31612345678',
+        email: 'jane@alpha.test',
+        city: 'Utrecht',
+      },
+      {
+        id: 2,
+        name: 'Beta BV',
+        contact: 'John Doe',
+        phone: '+31611111111',
+        email: 'john@beta.test',
+        city: 'Amsterdam',
+      },
       { id: 3, name: 'Gamma BV', contact: '', phone: '', email: '', city: '' },
     ],
   })),
@@ -111,10 +125,7 @@ jest.mock('../../common/ExportButton', () => ({
   default: (props) => {
     mockExportButton(props);
     return (
-      <div
-        data-testid={`export-button-${props.dataType}`}
-        data-count={props.data?.length ?? 0}
-      />
+      <div data-testid={`export-button-${props.dataType}`} data-count={props.data?.length ?? 0} />
     );
   },
 }));
@@ -153,7 +164,9 @@ describe('EventSubscriptionsTab unsubscribed companies action', () => {
     fireEvent.click(screen.getByText('MailingList Unsubscribed Companies'));
 
     expect(screen.getByText('Companies without a subscription for 2026.')).toBeInTheDocument();
-    expect(screen.getByText('2 companies found without a subscription for 2026.')).toBeInTheDocument();
+    expect(
+      screen.getByText('2 companies found without a subscription for 2026.'),
+    ).toBeInTheDocument();
 
     expect(screen.getByText('Beta BV')).toBeInTheDocument();
     expect(screen.getByText('Gamma BV')).toBeInTheDocument();

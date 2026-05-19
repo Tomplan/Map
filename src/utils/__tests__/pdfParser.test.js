@@ -16,9 +16,7 @@ describe('parseSpatialInvoice helper', () => {
   });
 
   it('stores notes from opmerkingen block into notes property', () => {
-    const items = [
-      { str: 'Opmerkingen: please check', x: 0, y: 0, height: 0, width: 0 },
-    ];
+    const items = [{ str: 'Opmerkingen: please check', x: 0, y: 0, height: 0, width: 0 }];
     const result = parseSpatialInvoice(items, []);
     expect(result.notes).toBe('please check');
     expect(result.opmerkingen).toBe(result.notes);

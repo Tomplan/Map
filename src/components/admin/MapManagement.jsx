@@ -931,7 +931,8 @@ export default function MapManagement({
                 const total = markersState?.filter((m) => m.id > 0) ?? [];
                 const boothTotal = total.filter((m) => m.id < 1000);
                 const emptyCount = boothTotal.filter(
-                  (m) => !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
+                  (m) =>
+                    !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
                 ).length;
                 const totalCount = boothTotal.length;
                 return (

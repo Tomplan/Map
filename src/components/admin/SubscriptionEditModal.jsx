@@ -57,12 +57,20 @@ export default function SubscriptionEditModal({ onClose, subscription, onSave })
 
   // Helper: update a field — always uses functional updater to avoid stale closures
   const setField = (field, value) => setEditForm((f) => ({ ...f, [field]: value }));
-  const setNum = (field, raw) => setField(field, raw === '' ? '' : (parseInt(raw) || 0));
+  const setNum = (field, raw) => setField(field, raw === '' ? '' : parseInt(raw) || 0);
 
   const handleSave = async () => {
     // Coerce any empty-string fields back to numbers before saving
     const cleaned = { ...editForm };
-    for (const k of ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun', 'coins']) {
+    for (const k of [
+      'booth_count',
+      'breakfast_sat',
+      'lunch_sat',
+      'bbq_sat',
+      'breakfast_sun',
+      'lunch_sun',
+      'coins',
+    ]) {
       cleaned[k] = Number(cleaned[k]) || 0;
     }
     if (cleaned.booth_count < 1) cleaned.booth_count = 1;

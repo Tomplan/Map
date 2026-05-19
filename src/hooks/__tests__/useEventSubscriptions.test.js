@@ -51,7 +51,9 @@ describe('useEventSubscriptions subscribeCompany defaults', () => {
     chain.single.mockResolvedValue({ data: { id: 123 }, error: null });
 
     await act(async () => {
-      const resp = await _subscribeCompany_internal(new Date().getFullYear(), 7, { booth_count: 0 });
+      const resp = await _subscribeCompany_internal(new Date().getFullYear(), 7, {
+        booth_count: 0,
+      });
       expect(resp.error).toBeNull();
     });
 

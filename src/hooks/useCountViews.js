@@ -9,6 +9,33 @@ Shared in-memory cache + single realtime subscription per (baseTable,eventYear).
 */
 const _countCache = new Map();
 
+function _getCountStorageKey(viewTable, year) {
+  return `count_cache:${viewTable}:${year}`;
+}
+
+function _readStoredCount(viewTable, year) {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+
+  try {
+    const raw = window.localStorage.getItem(_getCountStorageKey(viewTable, year));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return typeof parsed?.count === 'number' ? parsed.count : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function _writeStoredCount(viewTable, year, count) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
+  try {
+    window.localStorage.setItem(_getCountStorageKey(viewTable, year), JSON.stringify({ count }));
+  } catch (err) {
+    // Ignore storage failures.
+  }
+}
+
 function _getKey(viewTable, year) {
   return `${viewTable}:${year}`;
 }
@@ -17,8 +44,10 @@ function _ensureCacheEntry(viewTable, year) {
   const key = _getKey(viewTable, year);
   if (_countCache.has(key)) return _countCache.get(key);
 
+  const cachedCount = _readStoredCount(viewTable, year);
+
   const entry = {
-    state: { count: 0, loading: true, error: null },
+    state: { count: cachedCount ?? 0, loading: true, error: null },
     listeners: new Set(),
     refCount: 0,
     channel: null,
@@ -47,10 +76,12 @@ async function _fetchCount(viewTable, year, entry) {
       if (error) throw error;
       entry.state.count = data?.count || 0;
       entry.state.error = null;
+      _writeStoredCount(viewTable, year, entry.state.count);
     } catch (err) {
       console.error(`Error loading ${viewTable} count for ${year}:`, err);
       if (entry.state.loading) {
-        entry.state.count = 0;
+        const cachedCount = _readStoredCount(viewTable, year);
+        entry.state.count = cachedCount ?? entry.state.count;
       }
       entry.state.error = err?.message || String(err);
     } finally {
@@ -71,7 +102,7 @@ function _startRealtimeChannel(viewTable, baseTable, year, entry) {
     .channel(channelName)
     .on('postgres_changes', { event: '*', schema: 'public', table: baseTable }, (payload) => {
       // For DELETE events without REPLICA IDENTITY FULL, payload.old might only contain the ID
-      // and lack the event_year. So to be safe, we just refetch the count anytime the base 
+      // and lack the event_year. So to be safe, we just refetch the count anytime the base
       // table changes. It's a very fast query.
       _fetchCount(viewTable, year, entry);
     })

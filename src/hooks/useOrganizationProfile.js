@@ -119,30 +119,55 @@ export default function useOrganizationProfile() {
    * @param {object} updates - An object containing the fields to update.
    */
   const updateProfile = async (updates) => {
-    try {
-      // Normalize phone number when provided
-      if (updates?.phone || updates?.phone === '') updates.phone = normalizePhone(updates.phone);
-      // Normalize email to lowercase
-      if (updates?.email) updates.email = updates.email.toLowerCase().trim();
+    const omittedColumns = [];
 
+    const executeUpdate = async (pendingUpdates) => {
       const { data, error } = await supabase
         .from('organization_profile')
-        .update(updates)
+        .update(pendingUpdates)
         .eq('id', 1) // Always update the singleton row
         .select()
         .single();
 
       if (error) throw error;
+      return data;
+    };
+
+    try {
+      const pendingUpdates = { ...updates };
+
+      // Normalize phone number when provided
+      if (pendingUpdates?.phone || pendingUpdates?.phone === '') {
+        pendingUpdates.phone = normalizePhone(pendingUpdates.phone);
+      }
+      // Normalize email to lowercase
+      if (pendingUpdates?.email) pendingUpdates.email = pendingUpdates.email.toLowerCase().trim();
+
+      let data;
+
+      try {
+        data = await executeUpdate(pendingUpdates);
+      } catch (err) {
+        const missingColumn = err?.message?.match(/Could not find the '([^']+)' column/)?.[1];
+
+        if (missingColumn && missingColumn in pendingUpdates) {
+          delete pendingUpdates[missingColumn];
+          omittedColumns.push(missingColumn);
+          data = await executeUpdate(pendingUpdates);
+        } else {
+          throw err;
+        }
+      }
 
       // update cache state so all listeners see it immediately
       const entry = _orgCacheEntry;
       entry.state.profile = data;
       entry.listeners.forEach((l) => l(entry.state));
 
-      return { data, error: null };
+      return { data, error: null, omittedColumns };
     } catch (err) {
       console.error('Error updating organization profile:', err);
-      return { data: null, error: err.message };
+      return { data: null, error: err.message, omittedColumns };
     }
   };
 

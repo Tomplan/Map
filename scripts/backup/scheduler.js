@@ -269,9 +269,17 @@ class BackupScheduler {
         if (firstOfMonthFiles.has(file.name)) return false;
 
         if (file.name.includes('critical')) {
-          return filesWithStats.filter((f) => f.name.includes('critical') && !firstOfMonthFiles.has(f.name)).indexOf(file) >= 31;
+          return (
+            filesWithStats
+              .filter((f) => f.name.includes('critical') && !firstOfMonthFiles.has(f.name))
+              .indexOf(file) >= 31
+          );
         } else if (file.name.includes('full')) {
-          return filesWithStats.filter((f) => f.name.includes('full') && !firstOfMonthFiles.has(f.name)).indexOf(file) >= 31;
+          return (
+            filesWithStats
+              .filter((f) => f.name.includes('full') && !firstOfMonthFiles.has(f.name))
+              .indexOf(file) >= 31
+          );
         }
         return false;
       });

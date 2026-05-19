@@ -208,14 +208,17 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
   }, []);
 
   // Debounced wrapper: coalesces rapid real-time callbacks into one fetch
-  const loadMarkers = useCallback((online) => {
-    clearTimeout(debounceTimerRef.current);
-    debounceTimerRef.current = setTimeout(() => {
-      if (inFlightRef.current) return; // skip if a fetch is already running
-      inFlightRef.current = true;
-      loadMarkersCore(online);
-    }, 300);
-  }, [loadMarkersCore]);
+  const loadMarkers = useCallback(
+    (online) => {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        if (inFlightRef.current) return; // skip if a fetch is already running
+        inFlightRef.current = true;
+        loadMarkersCore(online);
+      }, 300);
+    },
+    [loadMarkersCore],
+  );
 
   useEffect(() => {
     loadMarkers(isOnline);

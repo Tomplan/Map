@@ -14,12 +14,14 @@ import {
   mdiDomain,
   mdiQrcode,
   mdiFilterMinus,
+  mdiRocketLaunch,
 } from '@mdi/js';
 import useUserRole from '../../hooks/useUserRole';
 import ProtectedSection from '../ProtectedSection';
 import UserManagement from './UserManagement';
 import EventDefaults from './EventDefaults';
 import PublicDefaultYear from './PublicDefaultYear';
+import AppActivationSettings from './AppActivationSettings';
 import BrandingSettings from './BrandingSettings';
 import UILanguageSettings from './UILanguageSettings';
 import CategorySettings from './CategorySettings';
@@ -132,6 +134,15 @@ export default function Settings({ selectedYear, setSelectedYear }) {
       component: <AdvancedSettings />,
       scope: 'organization',
       description: 'System configuration (danger zone)',
+    },
+    {
+      id: 'app-activation',
+      label: 'Beursgids Live',
+      icon: mdiRocketLaunch,
+      roles: ['super_admin', 'system_manager'],
+      component: <AppActivationSettings />,
+      scope: 'organization',
+      description: 'Zet de app online voor bezoekers en beheer de aftelklok',
     },
   ];
 

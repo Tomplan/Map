@@ -22,6 +22,35 @@ import { supabase } from '../supabaseClient';
 */
 const _settingsCache = new Map();
 
+function _getStorageKey(year) {
+  return `event_map_settings_cache:${year}`;
+}
+
+function _readStoredSettings(year) {
+  if (typeof window === 'undefined' || !window.localStorage) return null;
+
+  try {
+    const raw = window.localStorage.getItem(_getStorageKey(year));
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+function _writeStoredSettings(year, settings) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
+  try {
+    if (settings) {
+      window.localStorage.setItem(_getStorageKey(year), JSON.stringify(settings));
+    } else {
+      window.localStorage.removeItem(_getStorageKey(year));
+    }
+  } catch (err) {
+    // Ignore storage failures.
+  }
+}
+
 function _getKey(year) {
   return `event_map_settings:${year}`;
 }
@@ -30,8 +59,10 @@ function _ensureCacheEntry(year) {
   const key = _getKey(year);
   if (_settingsCache.has(key)) return _settingsCache.get(key);
 
+  const cachedSettings = _readStoredSettings(year);
+
   const entry = {
-    state: { settings: null, loading: true, error: null },
+    state: { settings: cachedSettings, loading: true, error: null },
     listeners: new Set(),
     refCount: 0,
     channel: null,
@@ -53,15 +84,14 @@ async function _loadInitialSettings(year, entry) {
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
-        entry.state.settings = null;
         entry.state.error = error.message || String(error);
       } else {
         entry.state.settings = data || null;
         entry.state.error = null;
+        _writeStoredSettings(year, entry.state.settings);
       }
     } catch (err) {
       console.error('Error loading event_map_settings for', year, err);
-      entry.state.settings = null;
       entry.state.error = err?.message || String(err);
     } finally {
       entry.state.loading = false;
@@ -166,6 +196,7 @@ export default function useEventMapSettings(eventYear) {
         entry.state.settings = data || null;
         entry.state.loading = false;
         entry.state.error = null;
+        _writeStoredSettings(eventYear, entry.state.settings);
         entry.listeners.forEach((l) => l(entry.state));
         return true;
       } catch (err) {

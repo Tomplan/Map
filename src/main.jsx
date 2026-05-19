@@ -58,36 +58,13 @@ if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && impor
   };
 }
 
-const isDev = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV;
-
 if ('serviceWorker' in navigator) {
-  // wipe any existing SW on localhost (covering both `dev` and `preview`)
-  if (window.location.hostname === 'localhost') {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((regs) => regs.forEach((r) => r.unregister()))
-      .catch(() => {});
-    if (window.caches && window.caches.keys) {
-      caches.keys().then((keys) => keys.forEach((k) => caches.delete(k)));
-    }
-  }
-
-  if (!isDev && import.meta.env.PROD) {
-    window.addEventListener('load', () => {
-      // When deploying to a subdirectory (like /Map/dev/), the service worker
-      // needs to be registered with the correct scope.  Append a version query
-      // so browsers always fetch a fresh copy and never reuse a previously
-      // cached file; this avoids the "went back a few steps" problem when the
-      // SW itself is cached by GH Pages.
-      const swUrl = `${getBaseUrl()}service-worker.js?v=${__APP_VERSION__}`;
-      navigator.serviceWorker
-        .register(swUrl, { scope: getBaseUrl() })
-        .then((registration) => {
-          // console.log('SW register success:', registration);
-        })
-        .catch((registrationError) => {
-          console.warn('SW register failed:', registrationError);
-        });
+  window.addEventListener('load', () => {
+    // The worker only caches tiles and static assets, not the app shell.
+    // That keeps local/dev behavior safe while still allowing offline map backgrounds.
+    const swUrl = `${getBaseUrl()}service-worker.js?v=${__APP_VERSION__}`;
+    navigator.serviceWorker.register(swUrl, { scope: getBaseUrl() }).catch((registrationError) => {
+      console.warn('SW register failed:', registrationError);
     });
-  }
+  });
 }

@@ -8,6 +8,7 @@ import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 import { getDefaultLogoPath } from '../utils/getDefaultLogo';
 import LanguageToggle from './LanguageToggle';
 import { useSubscriptionCount } from '../hooks/useCountViews';
+import PublicLoadingScreen from './common/PublicLoadingScreen';
 
 /**
  * Memoized logo component to prevent re-renders when other HomePage state changes
@@ -17,8 +18,8 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
   organizationLogoRaw,
   eventName,
 }) {
-  const defaultLogo = getDefaultLogoPath(organizationLogoRaw);
-  const [visibleLogo, setVisibleLogo] = React.useState(defaultLogo);
+  const defaultLogo = getDefaultLogoPath();
+  const [visibleLogo, setVisibleLogo] = React.useState(organizationLogo || defaultLogo);
 
   React.useEffect(() => {
     // Always keep default visible until the final resolved URL finishes loading
@@ -41,15 +42,20 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
     };
   }, [organizationLogo, visibleLogo]);
 
+  React.useEffect(() => {
+    if (!organizationLogo) {
+      setVisibleLogo(defaultLogo);
+    }
+  }, [defaultLogo, organizationLogo]);
+
   const responsiveSources = useMemo(
-    () =>
-      getResponsiveLogoSources(organizationLogo) || getResponsiveLogoSources(organizationLogoRaw),
-    [organizationLogo, organizationLogoRaw],
+    () => getResponsiveLogoSources(visibleLogo) || getResponsiveLogoSources(organizationLogoRaw),
+    [visibleLogo, organizationLogoRaw],
   );
 
   const pngFallback = useMemo(
-    () => getLogoPath(organizationLogoRaw || visibleLogo || organizationLogo),
-    [organizationLogoRaw, visibleLogo, organizationLogo],
+    () => getLogoPath(visibleLogo || organizationLogoRaw || organizationLogo),
+    [visibleLogo, organizationLogoRaw, organizationLogo],
   );
 
   const handleError = useCallback(
@@ -76,7 +82,7 @@ const OrganizationLogoImage = memo(function OrganizationLogoImage({
       }
 
       // Final fallback to default
-      trySetSrc(getDefaultLogoPath(organizationLogoRaw));
+      trySetSrc(getDefaultLogoPath());
     },
     [organizationLogoRaw, organizationLogo],
   );
@@ -114,15 +120,27 @@ OrganizationLogoImage.propTypes = {
  * HomePage - Landing page for event visitors
  * Optimized with memoization to reduce unnecessary re-renders
  */
-function HomePage({ selectedYear, branding }) {
+function HomePage({
+  selectedYear,
+  branding,
+  afterHeroContent = null,
+  initialLoadingEnabled = true,
+}) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { organizationLogo, organizationLogoRaw } = useOrganizationLogo();
+  const {
+    organizationLogo,
+    organizationLogoRaw,
+    displayLogo,
+    loading: logoLoading,
+  } = useOrganizationLogo();
 
   // Get subscribed companies count for the selected year
   const { count: exhibitorCount, loading: subscriptionsLoading } =
     useSubscriptionCount(selectedYear);
-  const [displayCount, setDisplayCount] = React.useState(null);
+  const [displayCount, setDisplayCount] = React.useState(() =>
+    subscriptionsLoading ? null : exhibitorCount,
+  );
 
   // Update displayed count once initial load finishes to avoid flash of 0.
   React.useEffect(() => {
@@ -140,7 +158,8 @@ function HomePage({ selectedYear, branding }) {
   );
 
   // Prefer per-year dates from the event_map_settings table (via hook).
-  const { settings: eventSettings } = useEventMapSettings(selectedYear);
+  const { settings: eventSettings, loading: eventSettingsLoading } =
+    useEventMapSettings(selectedYear);
 
   // Memoize date formatting function
   const formatDatesFromSettings = useCallback(
@@ -193,6 +212,37 @@ function HomePage({ selectedYear, branding }) {
     return 2;
   }, [eventSettings?.event_start_date, eventSettings?.event_end_date]);
 
+  const isInitialHeroLoading =
+    logoLoading || (subscriptionsLoading && displayCount === null) || eventSettingsLoading;
+  const initialLoadStartedAt = React.useRef(Date.now());
+
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] =
+    React.useState(!isInitialHeroLoading);
+
+  const showInitialLoader = initialLoadingEnabled && !hasCompletedInitialLoad;
+
+  React.useEffect(() => {
+    if (hasCompletedInitialLoad) {
+      return undefined;
+    }
+
+    if (isInitialHeroLoading) {
+      return undefined;
+    }
+
+    const elapsed = Date.now() - initialLoadStartedAt.current;
+    const remaining = Math.max(0, 700 - elapsed);
+    const timer = window.setTimeout(() => {
+      setHasCompletedInitialLoad(true);
+    }, remaining);
+
+    return () => window.clearTimeout(timer);
+  }, [hasCompletedInitialLoad, isInitialHeroLoading]);
+
+  if (showInitialLoader) {
+    return <PublicLoadingScreen />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {/* Hero Section */}
@@ -204,7 +254,7 @@ function HomePage({ selectedYear, branding }) {
           </div>
           {/* Logo - Memoized component */}
           <OrganizationLogoImage
-            organizationLogo={organizationLogo}
+            organizationLogo={displayLogo || organizationLogo}
             organizationLogoRaw={organizationLogoRaw}
             eventName={eventInfo.name}
           />
@@ -223,23 +273,25 @@ function HomePage({ selectedYear, branding }) {
           </h1>
 
           {/* Event Date */}
-          <p className="text-lg text-gray-600 mb-6">{dbEventDate || t('homePage.eventDate')}</p>
+          <p className="mb-6 min-h-7 text-lg text-gray-600">
+            {dbEventDate || t('homePage.eventDate')}
+          </p>
 
           {/* Quick Stats - Placeholder */}
           <div className="flex justify-center gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {subscriptionsLoading || displayCount === null ? '...' : displayCount}
-              </div>
+              <div className="min-h-8 text-2xl font-bold text-orange-600">{displayCount}</div>
               <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{eventDays}</div>
+              <div className="min-h-8 text-2xl font-bold text-orange-600">{eventDays}</div>
               <div className="text-sm text-gray-600">{t('homePage.days')}</div>
             </div>
           </div>
         </div>
       </div>
+
+      {afterHeroContent}
 
       {/* Event Info Cards - Placeholder */}
       <div className="max-w-screen-xl mx-auto px-4 py-6">
@@ -279,7 +331,9 @@ function HomePage({ selectedYear, branding }) {
 }
 
 HomePage.propTypes = {
+  afterHeroContent: PropTypes.node,
   selectedYear: PropTypes.number,
+  initialLoadingEnabled: PropTypes.bool,
   branding: PropTypes.shape({
     eventName: PropTypes.string,
     fontFamily: PropTypes.string,
@@ -288,6 +342,7 @@ HomePage.propTypes = {
 
 HomePage.defaultProps = {
   selectedYear: new Date().getFullYear(),
+  initialLoadingEnabled: true,
   branding: null,
 };
 
