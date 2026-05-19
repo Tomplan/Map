@@ -87,9 +87,7 @@ export async function recalculateTotals(subscriptionId) {
   // Fetch all active line items
   const { data: items, error: fetchError } = await supabase
     .from('subscription_line_items')
-    .select(
-      'booth_count, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun, area, notes',
-    )
+    .select('booth_count, breakfast_sat, lunch_sat, bbq_sat, breakfast_sun, lunch_sun, area, notes')
     .eq('subscription_id', subscriptionId)
     .eq('is_active', true);
 
@@ -175,9 +173,13 @@ export function formatHistoryTimestamp(date = new Date()) {
 // ── Resolve the current admin's display name (or email) ──────────────────────
 export async function getAdminLabel() {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (user) return user.user_metadata?.full_name || user.user_metadata?.name || user.email || '';
-  } catch (_) { /* ignore */ }
+  } catch (_) {
+    /* ignore */
+  }
   return '';
 }
 

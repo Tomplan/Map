@@ -32,6 +32,8 @@ jest.mock('../../utils/getDefaultLogo', () => ({
   getDefaultLogoPath: () => '/assets/logos/4x4Vakantiebeurs.png',
 }));
 
+jest.mock('../common/PublicLoadingScreen', () => () => <div data-testid="public-loading-screen" />);
+
 // Replace LanguageToggle so we don't need PreferencesProvider in this unit test
 jest.mock('../LanguageToggle', () => () => <div data-testid="language-toggle" />);
 
@@ -67,10 +69,11 @@ describe('HomePage logo rendering', () => {
     expect(Number(img.dataset.logoRetries)).toBeGreaterThanOrEqual(prev);
   });
 
-  it('shows placeholder while subscription count is loading', () => {
+  it('shows the initial loading screen while hero data is loading', () => {
     mockUseSubscriptionCount.mockReturnValueOnce({ count: 0, loading: true });
-    const { getByText } = render(<HomePage selectedYear={2025} branding={{ eventName: 'Test' }} />);
-    expect(getByText('...')).toBeInTheDocument();
+    render(<HomePage selectedYear={2025} branding={{ eventName: 'Test' }} />);
+    expect(screen.getByTestId('public-loading-screen')).toBeInTheDocument();
+    expect(screen.queryByText('0')).not.toBeInTheDocument();
   });
 
   it('shows the subscription count after loading finishes', () => {

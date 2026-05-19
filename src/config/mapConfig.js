@@ -96,11 +96,13 @@ export const MAP_LAYERS = [
     key: 'carto',
     name: 'Carto Voyager',
     attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png',
+    url: '/assets/tiles/carto/{z}/{x}/{y}.png',
+    maxNativeZoom: 22,
   },
   {
     key: 'esri',
     name: 'Esri World Imagery',
+    adminOnly: true, // Specific flag ensuring only admins see this option
     attribution:
       'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -108,6 +110,7 @@ export const MAP_LAYERS = [
   {
     key: 'carto_light',
     name: 'Carto Positron (Gray)',
+    adminOnly: true,
     attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
     url: 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',
   },

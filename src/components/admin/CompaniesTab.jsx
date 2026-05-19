@@ -381,7 +381,11 @@ export default function CompaniesTab() {
             >
               <Icon path={mdiDotsVertical} size={0.8} />
               {translateSafe('companies.actions')}
-              <Icon path={mdiChevronDown} size={0.7} className={`transition-transform ${actionsOpen ? 'rotate-180' : ''}`} />
+              <Icon
+                path={mdiChevronDown}
+                size={0.7}
+                className={`transition-transform ${actionsOpen ? 'rotate-180' : ''}`}
+              />
             </button>
             {actionsOpen && (
               <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
@@ -390,7 +394,10 @@ export default function CompaniesTab() {
                     <ImportButton
                       dataType="companies"
                       existingData={companies}
-                      onImportComplete={() => { reloadCompanies(); setActionsOpen(false); }}
+                      onImportComplete={() => {
+                        reloadCompanies();
+                        setActionsOpen(false);
+                      }}
                       buttonClassName="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded transition-colors"
                     />
                   </div>
@@ -417,11 +424,8 @@ export default function CompaniesTab() {
         </div>
       </div>
 
-
-
       {/* Master / Detail */}
       <div className="flex-1 flex gap-0 min-h-0 border rounded-lg overflow-hidden">
-
         {/* LEFT — company list */}
         <div className="w-72 flex-shrink-0 flex flex-col border-r bg-gray-50">
           {/* Sort bar */}
@@ -440,7 +444,9 @@ export default function CompaniesTab() {
           <div className="flex-1 overflow-y-auto">
             {filteredItems.length === 0 && (
               <p className="text-center text-sm text-gray-400 py-8">
-                {searchTerm ? translateSafe('companies.noResults') : translateSafe('companies.noCompanies')}
+                {searchTerm
+                  ? translateSafe('companies.noResults')
+                  : translateSafe('companies.noCompanies')}
               </p>
             )}
             {filteredItems.map((item) => {
@@ -473,7 +479,9 @@ export default function CompaniesTab() {
                   <div className="min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
                     {item.website && (
-                      <p className={`text-xs truncate ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}>
+                      <p
+                        className={`text-xs truncate ${isSelected ? 'text-blue-200' : 'text-gray-400'}`}
+                      >
                         {item.website.replace(/^https?:\/\//, '')}
                       </p>
                     )}
@@ -490,7 +498,13 @@ export default function CompaniesTab() {
                       </div>
                     )}
                   </div>
-                  {isOrg && <Icon path={mdiDomain} size={0.7} className="flex-shrink-0 ml-auto opacity-60" />}
+                  {isOrg && (
+                    <Icon
+                      path={mdiDomain}
+                      size={0.7}
+                      className="flex-shrink-0 ml-auto opacity-60"
+                    />
+                  )}
                 </button>
               );
             })}
@@ -511,13 +525,20 @@ export default function CompaniesTab() {
                 <div className="flex items-center gap-2 pt-4 pb-1">
                   <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                    {translateSafe('companies.modal.publicInfoHeading', { defaultValue: 'Public info' })}
+                    {translateSafe('companies.modal.publicInfoHeading', {
+                      defaultValue: 'Public info',
+                    })}
                   </span>
                 </div>
 
                 <EditRow label={translateSafe('companies.table.name')}>
-                  <input type="text" placeholder={translateSafe('companies.companyNamePlaceholder')}
-                    value={form.name || ''} onChange={(e) => set({ name: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.companyNamePlaceholder')}
+                    value={form.name || ''}
+                    onChange={(e) => set({ name: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.logo')}>
@@ -526,27 +547,44 @@ export default function CompaniesTab() {
                     onUploadComplete={(url) => set({ logo: url })}
                     folder={targetId === 'organization' ? 'organization' : 'companies'}
                     label={translateSafe('companies.modal.uploadLogo')}
-                    showPreview={true} allowDelete={true}
+                    showPreview={true}
+                    allowDelete={true}
                     onDelete={() => set({ logo: organizationLogo })}
                   />
-                  <input type="text" placeholder={translateSafe('companies.logoUrlPlaceholder')}
-                    value={form.logo || ''} onChange={(e) => set({ logo: e.target.value })}
-                    className={`${inputCls} mt-2`} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.logoUrlPlaceholder')}
+                    value={form.logo || ''}
+                    onChange={(e) => set({ logo: e.target.value })}
+                    className={`${inputCls} mt-2`}
+                  />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.website')}>
-                  <input type="text" placeholder={translateSafe('companies.websiteUrlPlaceholder')}
-                    value={form.website || ''} onChange={(e) => set({ website: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.websiteUrlPlaceholder')}
+                    value={form.website || ''}
+                    onChange={(e) => set({ website: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.info')}>
                   {targetId === 'organization' || isNew ? (
-                    <textarea placeholder={translateSafe('companies.infoPlaceholder')}
-                      value={form.info || ''} onChange={(e) => set({ info: e.target.value })}
-                      className={inputCls} rows={3} />
+                    <textarea
+                      placeholder={translateSafe('companies.infoPlaceholder')}
+                      value={form.info || ''}
+                      onChange={(e) => set({ info: e.target.value })}
+                      className={inputCls}
+                      rows={3}
+                    />
                   ) : (
-                    <InfoFieldWithTranslations companyId={targetId}
-                      editingLanguage={editingContentLanguage} onLanguageChange={setEditingContentLanguage} />
+                    <InfoFieldWithTranslations
+                      companyId={targetId}
+                      editingLanguage={editingContentLanguage}
+                      onLanguageChange={setEditingContentLanguage}
+                    />
                   )}
                 </EditRow>
 
@@ -555,22 +593,38 @@ export default function CompaniesTab() {
                     {categories.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {categories.map((cat) => (
-                          <label key={cat.id}
+                          <label
+                            key={cat.id}
                             className="inline-flex items-center gap-1.5 cursor-pointer px-2.5 py-1 rounded-full text-xs font-medium select-none"
-                            style={{ backgroundColor: editingCategories.includes(cat.id) ? cat.color + '30' : cat.color + '12',
-                              color: cat.color, border: `1px solid ${cat.color}50` }}>
-                            <input type="checkbox" checked={editingCategories.includes(cat.id)}
-                              onChange={(e) => setEditingCategories(e.target.checked
-                                ? [...editingCategories, cat.id]
-                                : editingCategories.filter((id) => id !== cat.id))}
-                              className="cursor-pointer w-3 h-3" />
+                            style={{
+                              backgroundColor: editingCategories.includes(cat.id)
+                                ? cat.color + '30'
+                                : cat.color + '12',
+                              color: cat.color,
+                              border: `1px solid ${cat.color}50`,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={editingCategories.includes(cat.id)}
+                              onChange={(e) =>
+                                setEditingCategories(
+                                  e.target.checked
+                                    ? [...editingCategories, cat.id]
+                                    : editingCategories.filter((id) => id !== cat.id),
+                                )
+                              }
+                              className="cursor-pointer w-3 h-3"
+                            />
                             {cat.icon && <Icon path={cat.icon} size={0.5} />}
                             {cat.name}
                           </label>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-red-500 text-sm italic">{translateSafe('companies.noCategoriesAvailable')}</span>
+                      <span className="text-red-500 text-sm italic">
+                        {translateSafe('companies.noCategoriesAvailable')}
+                      </span>
                     )}
                   </EditRow>
                 )}
@@ -579,95 +633,181 @@ export default function CompaniesTab() {
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
+                    {translateSafe('companies.modal.managerInfoHeading', {
+                      defaultValue: 'Private contact details',
+                    })}
                   </span>
                 </div>
 
                 {/* Contact 1 sub-heading */}
                 <div className="flex items-center gap-2 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    Contact 1
+                  </span>
                 </div>
 
                 <EditRow label={translateSafe('companies.table.contact')}>
-                  <input type="text" placeholder={translateSafe('companies.contactPlaceholder')}
-                    value={form.contact || ''} onChange={(e) => set({ contact: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.contactPlaceholder')}
+                    value={form.contact || ''}
+                    onChange={(e) => set({ contact: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.phone')}>
-                  <PhoneInput value={form.phone || ''} onChange={(value) => set({ phone: value })}
-                    placeholder={translateSafe('companies.phonePlaceholder')} />
+                  <PhoneInput
+                    value={form.phone || ''}
+                    onChange={(value) => set({ phone: value })}
+                    placeholder={translateSafe('companies.phonePlaceholder')}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.email')}>
-                  <input type="email" placeholder={translateSafe('companies.emailPlaceholder')}
-                    value={form.email || ''} onChange={(e) => set({ email: e.target.value.toLowerCase() })} className={inputCls} />
+                  <input
+                    type="email"
+                    placeholder={translateSafe('companies.emailPlaceholder')}
+                    value={form.email || ''}
+                    onChange={(e) => set({ email: e.target.value.toLowerCase() })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 {/* Contact 2 sub-heading */}
                 <div className="flex items-center gap-2 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    Contact 2
+                  </span>
                 </div>
                 <EditRow label={translateSafe('companies.table.contact')}>
-                  <input type="text" placeholder={translateSafe('companies.contactNamePlaceholder')}
-                    value={form.contact_name || ''} onChange={(e) => set({ contact_name: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.contactNamePlaceholder')}
+                    value={form.contact_name || ''}
+                    onChange={(e) => set({ contact_name: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.phone')}>
-                  <PhoneInput value={form.contact_phone || ''} onChange={(value) => set({ contact_phone: value })}
-                    placeholder={translateSafe('companies.contactPhonePlaceholder')} />
+                  <PhoneInput
+                    value={form.contact_phone || ''}
+                    onChange={(value) => set({ contact_phone: value })}
+                    placeholder={translateSafe('companies.contactPhonePlaceholder')}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.email')}>
-                  <input type="email" placeholder={translateSafe('companies.contactEmailPlaceholder')}
-                    value={form.contact_email || ''} onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })} className={inputCls} />
+                  <input
+                    type="email"
+                    placeholder={translateSafe('companies.contactEmailPlaceholder')}
+                    value={form.contact_email || ''}
+                    onChange={(e) => set({ contact_email: e.target.value.toLowerCase() })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 {/* Contact 3 sub-heading */}
                 <div className="flex items-center gap-2 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    Contact 3
+                  </span>
                 </div>
                 <EditRow label={translateSafe('companies.table.contact')}>
-                  <input type="text" placeholder="Contact 3"
-                    value={form.contact_name_2 || ''} onChange={(e) => set({ contact_name_2: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder="Contact 3"
+                    value={form.contact_name_2 || ''}
+                    onChange={(e) => set({ contact_name_2: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.phone')}>
-                  <PhoneInput value={form.contact_phone_2 || ''} onChange={(value) => set({ contact_phone_2: value })}
-                    placeholder="+31 6 ..." />
+                  <PhoneInput
+                    value={form.contact_phone_2 || ''}
+                    onChange={(value) => set({ contact_phone_2: value })}
+                    placeholder="+31 6 ..."
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.email')}>
-                  <input type="email" placeholder="contact3@company.com"
-                    value={form.contact_email_2 || ''} onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })} className={inputCls} />
+                  <input
+                    type="email"
+                    placeholder="contact3@company.com"
+                    value={form.contact_email_2 || ''}
+                    onChange={(e) => set({ contact_email_2: e.target.value.toLowerCase() })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.address')}>
                   <div className="space-y-2">
-                    <input type="text" placeholder={translateSafe('companies.addressLine1Placeholder')}
-                      value={form.address_line1 || ''} onChange={(e) => set({ address_line1: e.target.value })} className={inputCls} />
-                    <input type="text" placeholder={translateSafe('companies.addressLine2Placeholder')}
-                      value={form.address_line2 || ''} onChange={(e) => set({ address_line2: e.target.value })} className={inputCls} />
+                    <input
+                      type="text"
+                      placeholder={translateSafe('companies.addressLine1Placeholder')}
+                      value={form.address_line1 || ''}
+                      onChange={(e) => set({ address_line1: e.target.value })}
+                      className={inputCls}
+                    />
+                    <input
+                      type="text"
+                      placeholder={translateSafe('companies.addressLine2Placeholder')}
+                      value={form.address_line2 || ''}
+                      onChange={(e) => set({ address_line2: e.target.value })}
+                      className={inputCls}
+                    />
                     <div className="grid grid-cols-3 gap-2">
-                      <input type="text" placeholder={translateSafe('companies.cityPlaceholder')}
-                        value={form.city || ''} onChange={(e) => set({ city: e.target.value })} className={inputCls} />
-                      <input type="text" placeholder={translateSafe('companies.postalCodePlaceholder')}
-                        value={form.postal_code || ''} onChange={(e) => set({ postal_code: e.target.value })} className={inputCls} />
-                      <input type="text" placeholder={translateSafe('companies.countryPlaceholder')}
-                        value={form.country || ''} onChange={(e) => set({ country: e.target.value })} className={inputCls} />
+                      <input
+                        type="text"
+                        placeholder={translateSafe('companies.cityPlaceholder')}
+                        value={form.city || ''}
+                        onChange={(e) => set({ city: e.target.value })}
+                        className={inputCls}
+                      />
+                      <input
+                        type="text"
+                        placeholder={translateSafe('companies.postalCodePlaceholder')}
+                        value={form.postal_code || ''}
+                        onChange={(e) => set({ postal_code: e.target.value })}
+                        className={inputCls}
+                      />
+                      <input
+                        type="text"
+                        placeholder={translateSafe('companies.countryPlaceholder')}
+                        value={form.country || ''}
+                        onChange={(e) => set({ country: e.target.value })}
+                        className={inputCls}
+                      />
                     </div>
                   </div>
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.vatNumber')}>
-                  <input type="text" placeholder={translateSafe('companies.vatNumberPlaceholder')}
-                    value={form.vat_number || ''} onChange={(e) => set({ vat_number: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.vatNumberPlaceholder')}
+                    value={form.vat_number || ''}
+                    onChange={(e) => set({ vat_number: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
                 <EditRow label={translateSafe('companies.table.kvkNumber')}>
-                  <input type="text" placeholder={translateSafe('companies.kvkNumberPlaceholder')}
-                    value={form.kvk_number || ''} onChange={(e) => set({ kvk_number: e.target.value })} className={inputCls} />
+                  <input
+                    type="text"
+                    placeholder={translateSafe('companies.kvkNumberPlaceholder')}
+                    value={form.kvk_number || ''}
+                    onChange={(e) => set({ kvk_number: e.target.value })}
+                    className={inputCls}
+                  />
                 </EditRow>
 
                 {/* Save / Cancel */}
                 <div className="flex gap-3 py-4 justify-end">
-                  <button onClick={isNew ? handleCancelCreate : handleCancelWithCategories}
-                    className="px-4 py-2 text-sm rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition">
+                  <button
+                    onClick={isNew ? handleCancelCreate : handleCancelWithCategories}
+                    className="px-4 py-2 text-sm rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                  >
                     {t('cancel')}
                   </button>
-                  <button onClick={isNew ? handleCreate : handleSaveWithCategories}
-                    className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium">
+                  <button
+                    onClick={isNew ? handleCreate : handleSaveWithCategories}
+                    className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
+                  >
                     {isNew ? t('companies.create') : t('save')}
                   </button>
                 </div>
@@ -715,7 +855,9 @@ export default function CompaniesTab() {
                 <span className="w-28 flex-shrink-0 pt-0.5 text-left text-xs font-semibold uppercase tracking-wide text-gray-400 leading-tight">
                   {lbl}
                 </span>
-                <div className="flex-1 text-left text-sm text-gray-900 leading-relaxed break-words">{children}</div>
+                <div className="flex-1 text-left text-sm text-gray-900 leading-relaxed break-words">
+                  {children}
+                </div>
               </div>
             );
 
@@ -723,13 +865,14 @@ export default function CompaniesTab() {
             const fallback = getDefaultLogoPath();
             const source = item.logo && item.logo.trim() !== '' ? item.logo : fallback;
             const r = getResponsiveLogoSources(source);
-            return r ? { src: r.src, srcSet: r.srcSet, sizes: r.sizes } : { src: getLogoPath(source) };
+            return r
+              ? { src: r.src, srcSet: r.srcSet, sizes: r.sizes }
+              : { src: getLogoPath(source) };
           })();
 
           return (
             <div className="flex-1 overflow-y-auto">
               <div className="px-6">
-
                 {/* Actions row */}
                 <div className="flex items-center gap-2 py-4 border-b border-gray-100">
                   <button
@@ -754,7 +897,9 @@ export default function CompaniesTab() {
                 <div className="flex items-center gap-2 pt-4 pb-1">
                   <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
-                    {translateSafe('companies.modal.publicInfoHeading', { defaultValue: 'Public info' })}
+                    {translateSafe('companies.modal.publicInfoHeading', {
+                      defaultValue: 'Public info',
+                    })}
                   </span>
                 </div>
 
@@ -769,63 +914,88 @@ export default function CompaniesTab() {
                 </Row>
 
                 <Row lbl={translateSafe('companies.table.website')}>
-                  {item.website
-                    ? <a
-                        href={item.website.startsWith('http') ? item.website : `https://${item.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline break-all"
-                      >
-                        {item.website}
-                      </a>
-                    : dash}
+                  {item.website ? (
+                    <a
+                      href={
+                        item.website.startsWith('http') ? item.website : `https://${item.website}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline break-all"
+                    >
+                      {item.website}
+                    </a>
+                  ) : (
+                    dash
+                  )}
                 </Row>
 
                 {!isOrg && (
                   <Row lbl={translateSafe('companies.modal.categoriesLabel')}>
-                    {(companyCategories[item.id] || []).length > 0
-                      ? <div className="flex flex-wrap gap-1.5">
-                          {(companyCategories[item.id] || []).map((cat) => (
-                            <span
-                              key={cat.id}
-                              className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
-                              style={{ backgroundColor: cat.color + '20', color: cat.color }}
-                            >
-                              {cat.icon && <Icon path={cat.icon} size={0.45} />}
-                              {cat.name}
-                            </span>
-                          ))}
-                        </div>
-                      : dash}
+                    {(companyCategories[item.id] || []).length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {(companyCategories[item.id] || []).map((cat) => (
+                          <span
+                            key={cat.id}
+                            className="text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1"
+                            style={{ backgroundColor: cat.color + '20', color: cat.color }}
+                          >
+                            {cat.icon && <Icon path={cat.icon} size={0.45} />}
+                            {cat.name}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      dash
+                    )}
                   </Row>
                 )}
 
                 <Row lbl={translateSafe('companies.table.info')}>
-                  {isOrg ? (item.info || dash) : <InfoFieldDisplay companyId={item.id} currentLanguage="nl" />}
+                  {isOrg ? (
+                    item.info || dash
+                  ) : (
+                    <InfoFieldDisplay companyId={item.id} currentLanguage="nl" />
+                  )}
                 </Row>
 
                 {/* Private section heading */}
                 <div className="flex items-center gap-2 pt-5 pb-1">
                   <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-green-600">
-                    {translateSafe('companies.modal.managerInfoHeading', { defaultValue: 'Private contact details' })}
+                    {translateSafe('companies.modal.managerInfoHeading', {
+                      defaultValue: 'Private contact details',
+                    })}
                   </span>
                 </div>
 
                 {/* Contact 1 sub-heading */}
                 <div className="flex items-center gap-2 pt-3 pb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 1</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                    Contact 1
+                  </span>
                 </div>
                 <Row lbl={translateSafe('companies.table.contact')}>{item.contact || dash}</Row>
                 <Row lbl={translateSafe('companies.table.phone')}>
-                  {item.phone
-                    ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.phone)} {formatPhoneForDisplay(item.phone)}</span>
-                    : dash}
+                  {item.phone ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      {getPhoneFlag(item.phone)} {formatPhoneForDisplay(item.phone)}
+                    </span>
+                  ) : (
+                    dash
+                  )}
                 </Row>
                 <Row lbl={translateSafe('companies.table.email')}>
-                  {item.email
-                    ? <a href={`mailto:${item.email}`} className="text-blue-600 hover:underline break-all">{item.email}</a>
-                    : dash}
+                  {item.email ? (
+                    <a
+                      href={`mailto:${item.email}`}
+                      className="text-blue-600 hover:underline break-all"
+                    >
+                      {item.email}
+                    </a>
+                  ) : (
+                    dash
+                  )}
                 </Row>
                 {(() => {
                   // Only show the billing contact block if there is at least one
@@ -838,7 +1008,9 @@ export default function CompaniesTab() {
                     (!item.contact_phone || normPH(item.contact_phone) === normPH(item.phone));
                   return hasBilling && !isDuplicateBilling ? (
                     <div className="flex items-center gap-2 pt-3 pb-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 2</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                        Contact 2
+                      </span>
                     </div>
                   ) : null;
                 })()}
@@ -857,18 +1029,41 @@ export default function CompaniesTab() {
                   const normP = (v) => (v || '').replace(/[\s\-().+]/g, '').replace(/^00/, '');
                   return (
                     <>
-                      <Row lbl={translateSafe('companies.table.contactName')} hidden={!item.contact_name || item.contact_name === item.contact}>
+                      <Row
+                        lbl={translateSafe('companies.table.contactName')}
+                        hidden={!item.contact_name || item.contact_name === item.contact}
+                      >
                         {item.contact_name}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.contactEmail')} hidden={!item.contact_email || item.contact_email === item.email}>
-                        {item.contact_email
-                          ? <a href={`mailto:${item.contact_email}`} className="text-blue-600 hover:underline break-all">{item.contact_email}</a>
-                          : dash}
+                      <Row
+                        lbl={translateSafe('companies.table.contactEmail')}
+                        hidden={!item.contact_email || item.contact_email === item.email}
+                      >
+                        {item.contact_email ? (
+                          <a
+                            href={`mailto:${item.contact_email}`}
+                            className="text-blue-600 hover:underline break-all"
+                          >
+                            {item.contact_email}
+                          </a>
+                        ) : (
+                          dash
+                        )}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.contactPhone')} hidden={!item.contact_phone || normP(item.contact_phone) === normP(item.phone)}>
-                        {item.contact_phone
-                          ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone)} {formatPhoneForDisplay(item.contact_phone)}</span>
-                          : dash}
+                      <Row
+                        lbl={translateSafe('companies.table.contactPhone')}
+                        hidden={
+                          !item.contact_phone || normP(item.contact_phone) === normP(item.phone)
+                        }
+                      >
+                        {item.contact_phone ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            {getPhoneFlag(item.contact_phone)}{' '}
+                            {formatPhoneForDisplay(item.contact_phone)}
+                          </span>
+                        ) : (
+                          dash
+                        )}
                       </Row>
                     </>
                   );
@@ -886,47 +1081,89 @@ export default function CompaniesTab() {
                   return (
                     <>
                       <div className="flex items-center gap-2 pt-3 pb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Contact 3</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                          Contact 3
+                        </span>
                       </div>
-                      <Row lbl={translateSafe('companies.table.contact')} hidden={!item.contact_name_2 || item.contact_name_2 === (item.contact_name || item.contact)}>
+                      <Row
+                        lbl={translateSafe('companies.table.contact')}
+                        hidden={
+                          !item.contact_name_2 ||
+                          item.contact_name_2 === (item.contact_name || item.contact)
+                        }
+                      >
                         {item.contact_name_2}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.email')} hidden={!item.contact_email_2 || item.contact_email_2 === (item.contact_email || item.email)}>
-                        {item.contact_email_2
-                          ? <a href={`mailto:${item.contact_email_2}`} className="text-blue-600 hover:underline break-all">{item.contact_email_2}</a>
-                          : dash}
+                      <Row
+                        lbl={translateSafe('companies.table.email')}
+                        hidden={
+                          !item.contact_email_2 ||
+                          item.contact_email_2 === (item.contact_email || item.email)
+                        }
+                      >
+                        {item.contact_email_2 ? (
+                          <a
+                            href={`mailto:${item.contact_email_2}`}
+                            className="text-blue-600 hover:underline break-all"
+                          >
+                            {item.contact_email_2}
+                          </a>
+                        ) : (
+                          dash
+                        )}
                       </Row>
-                      <Row lbl={translateSafe('companies.table.phone')} hidden={!item.contact_phone_2 || normP3(item.contact_phone_2) === normP3(item.contact_phone || item.phone)}>
-                        {item.contact_phone_2
-                          ? <span className="inline-flex items-center gap-1.5">{getPhoneFlag(item.contact_phone_2)} {formatPhoneForDisplay(item.contact_phone_2)}</span>
-                          : dash}
+                      <Row
+                        lbl={translateSafe('companies.table.phone')}
+                        hidden={
+                          !item.contact_phone_2 ||
+                          normP3(item.contact_phone_2) === normP3(item.contact_phone || item.phone)
+                        }
+                      >
+                        {item.contact_phone_2 ? (
+                          <span className="inline-flex items-center gap-1.5">
+                            {getPhoneFlag(item.contact_phone_2)}{' '}
+                            {formatPhoneForDisplay(item.contact_phone_2)}
+                          </span>
+                        ) : (
+                          dash
+                        )}
                       </Row>
                     </>
                   );
                 })()}
-                <Row lbl={translateSafe('companies.table.vatNumber')}>{item.vat_number || dash}</Row>
-                <Row lbl={translateSafe('companies.table.kvkNumber')}>{item.kvk_number || dash}</Row>
+                <Row lbl={translateSafe('companies.table.vatNumber')}>
+                  {item.vat_number || dash}
+                </Row>
+                <Row lbl={translateSafe('companies.table.kvkNumber')}>
+                  {item.kvk_number || dash}
+                </Row>
                 <Row lbl={translateSafe('companies.table.address')}>
-                  {(item.address_line1 || item.address_line2 || item.city || item.postal_code || item.country)
-                    ? <div className="space-y-0.5">
-                        {item.address_line1 && <p>{item.address_line1}</p>}
-                        {item.address_line2 && <p>{item.address_line2}</p>}
-                        {(item.city || item.postal_code || item.country) && (
-                          <p>{[item.city, item.postal_code, item.country].filter(Boolean).join(' ')}</p>
-                        )}
-                      </div>
-                    : dash}
+                  {item.address_line1 ||
+                  item.address_line2 ||
+                  item.city ||
+                  item.postal_code ||
+                  item.country ? (
+                    <div className="space-y-0.5">
+                      {item.address_line1 && <p>{item.address_line1}</p>}
+                      {item.address_line2 && <p>{item.address_line2}</p>}
+                      {(item.city || item.postal_code || item.country) && (
+                        <p>
+                          {[item.city, item.postal_code, item.country].filter(Boolean).join(' ')}
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    dash
+                  )}
                 </Row>
                 <Row lbl={translateSafe('companies.notes')}>
                   {item.notes ? <span className="whitespace-pre-wrap">{item.notes}</span> : dash}
                 </Row>
-
               </div>
             </div>
           );
         })()}
       </div>
-
     </div>
   );
 }

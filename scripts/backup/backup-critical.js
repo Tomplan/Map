@@ -153,7 +153,7 @@ class SupabaseBackup {
       }
 
       // Filter out files that are the first of the month
-      const removableFiles = filesWithStats.filter(f => !firstOfMonthFiles.has(f.name));
+      const removableFiles = filesWithStats.filter((f) => !firstOfMonthFiles.has(f.name));
 
       // Keep only the latest N backups from the removable ones
       const toDelete = removableFiles.slice(this.config.backup.retention.daily);

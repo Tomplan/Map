@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
+import {
+  groupActivitiesByDay,
+  readCachedEventActivities,
+  writeCachedEventActivities,
+} from '../services/eventActivitiesCache';
 
 /**
  * Hook to manage Event Activities (year-specific program management)
@@ -68,13 +73,22 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
       // For now, we'll use the company name from the companies table directly.
 
       // Group activities by day
-      const saturday = activitiesData?.filter((a) => a.day === 'saturday') || [];
-      const sunday = activitiesData?.filter((a) => a.day === 'sunday') || [];
+      const groupedActivities = groupActivitiesByDay(activitiesData || []);
 
-      setActivities({ saturday, sunday });
+      setActivities(groupedActivities);
+      writeCachedEventActivities(targetYear, groupedActivities);
     } catch (err) {
       console.error('Error fetching event activities:', err);
-      setError(err.message);
+
+      const targetYear = year !== undefined ? year : eventYearRef.current;
+      const cachedActivities = readCachedEventActivities(targetYear);
+
+      if (cachedActivities) {
+        setActivities(cachedActivities);
+        setError(null);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setLoading(false);
     }

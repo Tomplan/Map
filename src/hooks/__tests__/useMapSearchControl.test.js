@@ -16,6 +16,7 @@ const mockLayerGroup = jest.fn(() => ({
 jest.mock('leaflet', () => ({
   marker: (latlng, opts) => mockMarker(latlng, opts),
   layerGroup: () => mockLayerGroup(),
+  divIcon: jest.fn(() => ({})),
   Control: {
     Search: jest.fn((opts) => ({
       on: (event, cb) => {

@@ -97,32 +97,71 @@ export function useCompanyMutations({
       const data = { ...editForm };
 
       // Promote Contact 2 → Contact 1: if phone matches, merge missing fields up
-      const c2PhoneMatchesC1 = normPhone(data.contact_phone) && normPhone(data.contact_phone) === normPhone(data.phone);
-      const c2NameMatchesC1 = norm(data.contact_name) && norm(data.contact_name) === norm(data.contact);
+      const c2PhoneMatchesC1 =
+        normPhone(data.contact_phone) && normPhone(data.contact_phone) === normPhone(data.phone);
+      const c2NameMatchesC1 =
+        norm(data.contact_name) && norm(data.contact_name) === norm(data.contact);
       if (c2PhoneMatchesC1 || c2NameMatchesC1) {
-        if (!norm(data.email) && norm(data.contact_email)) { data.email = data.contact_email; data.contact_email = null; }
-        if (!normPhone(data.phone) && normPhone(data.contact_phone)) { data.phone = data.contact_phone; data.contact_phone = null; }
-        if (!norm(data.contact) && norm(data.contact_name)) { data.contact = data.contact_name; data.contact_name = null; }
+        if (!norm(data.email) && norm(data.contact_email)) {
+          data.email = data.contact_email;
+          data.contact_email = null;
+        }
+        if (!normPhone(data.phone) && normPhone(data.contact_phone)) {
+          data.phone = data.contact_phone;
+          data.contact_phone = null;
+        }
+        if (!norm(data.contact) && norm(data.contact_name)) {
+          data.contact = data.contact_name;
+          data.contact_name = null;
+        }
       }
 
       // Promote Contact 3 → Contact 2: if phone matches, merge missing fields up
-      const c3PhoneMatchesC2 = normPhone(data.contact_phone_2) && normPhone(data.contact_phone_2) === normPhone(data.contact_phone || data.phone);
-      const c3NameMatchesC2 = norm(data.contact_name_2) && norm(data.contact_name_2) === norm(data.contact_name || data.contact);
+      const c3PhoneMatchesC2 =
+        normPhone(data.contact_phone_2) &&
+        normPhone(data.contact_phone_2) === normPhone(data.contact_phone || data.phone);
+      const c3NameMatchesC2 =
+        norm(data.contact_name_2) &&
+        norm(data.contact_name_2) === norm(data.contact_name || data.contact);
       if (c3PhoneMatchesC2 || c3NameMatchesC2) {
-        if (!norm(data.contact_email) && norm(data.contact_email_2)) { data.contact_email = data.contact_email_2; data.contact_email_2 = null; }
-        if (!normPhone(data.contact_phone) && normPhone(data.contact_phone_2)) { data.contact_phone = data.contact_phone_2; data.contact_phone_2 = null; }
-        if (!norm(data.contact_name) && norm(data.contact_name_2)) { data.contact_name = data.contact_name_2; data.contact_name_2 = null; }
+        if (!norm(data.contact_email) && norm(data.contact_email_2)) {
+          data.contact_email = data.contact_email_2;
+          data.contact_email_2 = null;
+        }
+        if (!normPhone(data.contact_phone) && normPhone(data.contact_phone_2)) {
+          data.contact_phone = data.contact_phone_2;
+          data.contact_phone_2 = null;
+        }
+        if (!norm(data.contact_name) && norm(data.contact_name_2)) {
+          data.contact_name = data.contact_name_2;
+          data.contact_name_2 = null;
+        }
       }
 
       // Clear remaining exact duplicates between Contact 3 and Contact 2/1
-      if (norm(data.contact_email_2) && norm(data.contact_email_2) === norm(data.contact_email || data.email)) data.contact_email_2 = null;
-      if (normPhone(data.contact_phone_2) && normPhone(data.contact_phone_2) === normPhone(data.contact_phone || data.phone)) data.contact_phone_2 = null;
-      if (norm(data.contact_name_2) && norm(data.contact_name_2) === norm(data.contact_name || data.contact)) data.contact_name_2 = null;
+      if (
+        norm(data.contact_email_2) &&
+        norm(data.contact_email_2) === norm(data.contact_email || data.email)
+      )
+        data.contact_email_2 = null;
+      if (
+        normPhone(data.contact_phone_2) &&
+        normPhone(data.contact_phone_2) === normPhone(data.contact_phone || data.phone)
+      )
+        data.contact_phone_2 = null;
+      if (
+        norm(data.contact_name_2) &&
+        norm(data.contact_name_2) === norm(data.contact_name || data.contact)
+      )
+        data.contact_name_2 = null;
 
       // Clear remaining exact duplicates between Contact 2 and Contact 1
-      if (norm(data.contact_email) && norm(data.contact_email) === norm(data.email)) data.contact_email = null;
-      if (normPhone(data.contact_phone) && normPhone(data.contact_phone) === normPhone(data.phone)) data.contact_phone = null;
-      if (norm(data.contact_name) && norm(data.contact_name) === norm(data.contact)) data.contact_name = null;
+      if (norm(data.contact_email) && norm(data.contact_email) === norm(data.email))
+        data.contact_email = null;
+      if (normPhone(data.contact_phone) && normPhone(data.contact_phone) === normPhone(data.phone))
+        data.contact_phone = null;
+      if (norm(data.contact_name) && norm(data.contact_name) === norm(data.contact))
+        data.contact_name = null;
 
       await updateCompany(id, data);
     }

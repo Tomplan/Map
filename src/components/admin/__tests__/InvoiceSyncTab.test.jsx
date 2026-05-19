@@ -12,8 +12,10 @@ jest.mock('react-i18next', () => {
   }
   const t = (k, opts) => {
     const resolved = resolveKey(enLocale, k);
-    const base = typeof resolved === 'string' ? resolved
-      : (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
+    const base =
+      typeof resolved === 'string'
+        ? resolved
+        : (typeof opts === 'string' ? opts : opts?.defaultValue) || k;
     if (opts && typeof opts === 'object') {
       return base.replace(/\{\{(\w+)\}\}/g, (_, p) => (opts[p] ?? '').toString());
     }
@@ -58,13 +60,13 @@ jest.mock('../../../supabaseClient', () => {
   const fromMock = jest.fn((table) => {
     if (table === 'event_subscriptions') {
       const eqTerminal = {
-        maybeSingle: jest.fn().mockResolvedValue({ 
-          data: { id: 500, company_id: 42, booth_count: 2 }, 
-          error: null 
+        maybeSingle: jest.fn().mockResolvedValue({
+          data: { id: 500, company_id: 42, booth_count: 2 },
+          error: null,
         }),
         single: jest.fn().mockResolvedValue({
           data: { id: 500, history: '' },
-          error: null
+          error: null,
         }),
       };
       // support chaining .eq().eq().maybeSingle() and .eq().maybeSingle()
@@ -82,7 +84,9 @@ jest.mock('../../../supabaseClient', () => {
       return {
         insert: jest.fn(() => ({
           select: jest.fn(() => ({
-            single: jest.fn().mockResolvedValue({ data: { id: 1, subscription_id: 500 }, error: null }),
+            single: jest
+              .fn()
+              .mockResolvedValue({ data: { id: 1, subscription_id: 500 }, error: null }),
           })),
         })),
         select: jest.fn(() => ({
@@ -131,7 +135,10 @@ jest.mock('../../../supabaseClient', () => {
             // When notes are saved, update mockOrder so subsequent reads return fresh data
             if (payload && payload.parsed_data !== undefined) {
               const current = await mockOrder();
-              const updated = (current?.data || []).map(item => ({ ...item, parsed_data: payload.parsed_data }));
+              const updated = (current?.data || []).map((item) => ({
+                ...item,
+                parsed_data: payload.parsed_data,
+              }));
               mockOrder.mockResolvedValue({ data: updated, error: null });
             }
             return { error: null };
@@ -229,7 +236,9 @@ test('creating a company from an invoice seeds additional fields', async () => {
       name: 'TestCo',
       phone: '12345',
       email: 'foo@test.com',
-      contact_name: 'Alice',      contact: 'Alice',      contact_email: 'alice@test.com',
+      contact_name: 'Alice',
+      contact: 'Alice',
+      contact_email: 'alice@test.com',
       contact_phone: '+311234567',
       address_line1: '1 Main St',
       postal_code: '1000 AA',

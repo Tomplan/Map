@@ -95,9 +95,7 @@ export default function InvoiceFilters() {
   };
 
   const handleUpdateColumn = (index, column) => {
-    const updatedItems = items.map((item, i) =>
-      i === index ? { ...item, column } : item,
-    );
+    const updatedItems = items.map((item, i) => (i === index ? { ...item, column } : item));
     setItems(updatedItems);
     handleSave(updatedItems);
   };
@@ -267,7 +265,8 @@ export default function InvoiceFilters() {
 
   const removeAllExtracted = () => {
     const updatedItems = items.filter(
-      (i) => !extractedItems.some((ext) => ext.name.toLowerCase() === (i.label || '').toLowerCase()),
+      (i) =>
+        !extractedItems.some((ext) => ext.name.toLowerCase() === (i.label || '').toLowerCase()),
     );
     setItems(updatedItems);
     handleSave(updatedItems);
@@ -291,7 +290,10 @@ export default function InvoiceFilters() {
     if (selectedRows.length === 0) return;
 
     const newAdditions = selectedRows
-      .filter((selectedName) => !items.some((i) => (i.label || '').toLowerCase() === selectedName.toLowerCase()))
+      .filter(
+        (selectedName) =>
+          !items.some((i) => (i.label || '').toLowerCase() === selectedName.toLowerCase()),
+      )
       .map((name) => ({ label: name, column: '' }));
 
     if (newAdditions.length > 0) {
@@ -395,7 +397,9 @@ export default function InvoiceFilters() {
               disabled={saving}
             >
               {COLUMN_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           </form>
@@ -428,7 +432,9 @@ export default function InvoiceFilters() {
                           }`}
                         >
                           {COLUMN_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <button

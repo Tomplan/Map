@@ -4,13 +4,9 @@
 // development.  The SW will unregister itself immediately after activation
 // on port 5173.
 
-// Determine if we're running on the built‑in dev server
-const IS_LOCAL_DEV =
-  typeof self.location !== 'undefined' &&
-  self.location.hostname === 'localhost' &&
-  (self.location.port === '5173' || self.location.port === '5174');
-
-const PRECACHE_NAME = 'static-assets-v4';
+const PRECACHE_NAME = 'static-assets-v5';
+const MAP_ASSETS_CACHE = 'map-assets-v2';
+const MAP_TILES_CACHE = 'map-tiles-v2';
 
 // We can't know the base path at build time, so compute it dynamically from the
 // service worker's own scope (e.g. '/Map/' or '/Map/dev/').
@@ -45,34 +41,41 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 
-  if (IS_LOCAL_DEV) {
-    // immediately activate then unregister ourselves
-    return;
-  }
-
   // Pre-cache essential icons and logo assets for offline/stable loading
   event.waitUntil(
     caches.open(PRECACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS).catch(() => {})),
   );
 });
 
-// During activation in dev we immediately unregister and clear caches.
 self.addEventListener('activate', (event) => {
-  if (IS_LOCAL_DEV) {
-    event.waitUntil(
-      self.registration
-        .unregister()
-        .then(() => caches.keys())
-        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-        .then(() => {})
-        .catch(() => {}),
-    );
-    return; // skip normal logic below
-  }
   self.clients.claim();
 });
 self.addEventListener('activate', () => {
   self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CACHE_URLS') {
+    const urls = event.data.urls || [];
+    event.waitUntil(
+      caches.open(MAP_ASSETS_CACHE).then((cache) => {
+        return Promise.all(
+          urls.map((url) => {
+            return cache.match(url).then((response) => {
+              if (response) return; // already cached
+              return fetch(url)
+                .then((networkResponse) => {
+                  if (networkResponse && networkResponse.ok) {
+                    cache.put(url, networkResponse.clone()).catch(() => {});
+                  }
+                })
+                .catch(() => {});
+            });
+          }),
+        );
+      }),
+    );
+  }
 });
 
 // Cache Carto Voyager and Esri map tiles as well as local assets
@@ -89,11 +92,50 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = event.request.url;
+  const parsedUrl = new URL(url);
+
+  if (
+    parsedUrl.origin === self.location.origin &&
+    parsedUrl.pathname.startsWith(`${BASE}assets/`) &&
+    /\.(js|css)$/i.test(parsedUrl.pathname)
+  ) {
+    event.respondWith(
+      caches.open(PRECACHE_NAME).then((cache) =>
+        cache.match(event.request).then((response) => {
+          if (response) return response;
+
+          return fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse && networkResponse.ok) {
+                cache.put(event.request, networkResponse.clone()).catch(() => {});
+              }
+              return networkResponse;
+            })
+            .catch(() => undefined);
+        }),
+      ),
+    );
+    return;
+  }
+
   // Helper for caching arbitrary requests in the "map-tiles" cache
   const cacheTile = () => {
+    // Normalize Leaflet map tile subdomains so they all match in the cache
+    // e.g., b.basemaps.cartocdn.com -> a.basemaps.cartocdn.com
+    let normalizedUrl = event.request.url;
+    try {
+      const u = new URL(normalizedUrl);
+      if (u.hostname.match(/^[a-z]\.basemaps\.cartocdn\.com$/)) {
+        u.hostname = 'a.basemaps.cartocdn.com';
+        normalizedUrl = u.href;
+      }
+    } catch (e) {
+      // Ignore URL parsing errors
+    }
+
     event.respondWith(
-      caches.open('map-tiles').then((cache) =>
-        cache.match(event.request).then((response) => {
+      caches.open(MAP_TILES_CACHE).then((cache) =>
+        cache.match(normalizedUrl, { ignoreSearch: true }).then((response) => {
           if (response) return response;
           // perform a network fetch; preserve original request mode (likely cors)
           // so that we don't get opaque responses for requests that need CORS (like Leaflet tiles with crossOrigin: true)
@@ -102,13 +144,13 @@ self.addEventListener('fetch', (event) => {
               // cache successful responses. For opaque (type='opaque'), only cache if we really meant to used no-cors.
               // But generally, map tiles should be CORS enabled.
               if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
-                cache.put(event.request, networkResponse.clone()).catch(() => {});
+                cache.put(normalizedUrl, networkResponse.clone()).catch(() => {});
               }
               return networkResponse;
             })
             .catch(() => {
-              // network failure - just let the request fall through
-              return fetch(event.request);
+              // network failure - return an offline response so the browser doesn't throw a fetch error
+              return new Response('', { status: 503, statusText: 'Offline' });
             });
         }),
       ),
@@ -125,10 +167,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (url.includes('/storage/v1/object/public/Logos/')) {
+    event.respondWith(
+      caches.open(MAP_ASSETS_CACHE).then((cache) =>
+        cache.match(event.request).then((response) => {
+          if (response) return response;
+
+          return fetch(event.request)
+            .then((networkResponse) => {
+              if (networkResponse && (networkResponse.ok || networkResponse.type === 'opaque')) {
+                cache.put(event.request, networkResponse.clone()).catch(() => {});
+              }
+              return networkResponse;
+            })
+            .catch(() => undefined);
+        }),
+      ),
+    );
+    return;
+  }
+
   // Cache marker icons and logos (same as before)
   if (url.match(/\/assets\/(icons|logos)\//)) {
     event.respondWith(
-      caches.open('map-assets').then((cache) => {
+      caches.open(MAP_ASSETS_CACHE).then((cache) => {
         return cache.match(event.request).then((response) => {
           if (response) return response;
 
@@ -154,7 +216,7 @@ self.addEventListener('fetch', (event) => {
 
 // Cleanup old caches on activate (basic housekeeping)
 self.addEventListener('activate', (event) => {
-  const keep = [PRECACHE_NAME, 'map-assets', 'map-tiles'];
+  const keep = [PRECACHE_NAME, MAP_ASSETS_CACHE, MAP_TILES_CACHE];
   event.waitUntil(
     caches
       .keys()

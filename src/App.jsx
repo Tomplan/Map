@@ -15,6 +15,8 @@ import { OrganizationLogoProvider } from './contexts/OrganizationLogoContext';
 import { DialogProvider } from './contexts/DialogContext';
 import { getDefaultLogoPath } from './utils/getDefaultLogo';
 import useVisitorPresence from './hooks/useVisitorPresence';
+import OfflineStatus from './components/OfflineStatus';
+import { scheduleVisitorRoutePrefetchOnIdle } from './services/prefetchOnIdle';
 import './i18n';
 import './App.css';
 
@@ -44,6 +46,10 @@ function AppContent() {
     return () => {
       listener?.subscription?.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    scheduleVisitorRoutePrefetchOnIdle();
   }, []);
 
   // Always track presence continuously in the background
@@ -143,11 +149,7 @@ function AppContent() {
   // If user is public (not logged in), use the resolved publicYear.
   // While orgSettings is still loading, use currentYear as a safe default instead of
   // localStorage (which may hold a stale year from a previous admin session).
-  const effectiveYear = user
-    ? selectedYear
-    : orgSettingsLoading
-      ? currentYear
-      : publicYear;
+  const effectiveYear = user ? selectedYear : orgSettingsLoading ? currentYear : publicYear;
 
   // Fetch marker data from Supabase filtered by effectiveYear
   const {
@@ -240,6 +242,7 @@ function AppContent() {
       <DialogProvider>
         <OrganizationLogoProvider>
           <HashRouter>
+            <OfflineStatus />
             <AppRoutes
               branding={branding}
               user={user}

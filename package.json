@@ -2,7 +2,7 @@
   "homepage": "https://tomplan.github.io/Map/",
   "name": "map",
   "private": true,
-  "version": "1.1.20",
+  "version": "1.1.21",
   "type": "module",
   "scripts": {
     "dev": "npx vite",
@@ -24,6 +24,7 @@
     "kill:dev": "bash scripts/kill-dev-servers.sh",
     "format": "prettier --write .",
     "normalize:phones": "node scripts/utils/normalize_company_phones.cjs --dry-run",
+    "companies:texts:review": "node scripts/utils/export_company_text_review.mjs",
     "scrape:emails": "node scripts/utils/scrape_company_emails.cjs",
     "backup:critical": "node scripts/backup/backup-critical.js --compress",
     "backup:full": "node scripts/backup/backup-full.js --compress",

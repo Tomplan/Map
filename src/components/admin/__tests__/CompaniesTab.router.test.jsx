@@ -144,9 +144,7 @@ describe('CompaniesTab routing', () => {
     renderWithRouter('/companies', navRef);
 
     // Wait for company data to load (language-agnostic signal that component is mounted)
-    await waitFor(() =>
-      expect(screen.getByText('TestCo')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText('TestCo')).toBeInTheDocument());
 
     // navigate away
     act(() => {
@@ -159,9 +157,7 @@ describe('CompaniesTab routing', () => {
       navRef.current('/companies');
     });
 
-    await waitFor(() =>
-      expect(screen.getByText('TestCo')).toBeInTheDocument(),
-    );
+    await waitFor(() => expect(screen.getByText('TestCo')).toBeInTheDocument());
 
     const { supabase } = require('../../../supabaseClient');
     // since we only fetch when the cache is empty, the API should be called once

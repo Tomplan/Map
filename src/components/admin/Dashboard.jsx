@@ -16,16 +16,15 @@ import {
   mdiAlert,
   mdiAccountTie,
   mdiEarth,
+  mdiRocketLaunch,
+  mdiCog,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
-import {
-  useSubscriptionCount,
-  useMarkerCount,
-  useCompanyCount,
-} from '../../hooks/useCountViews';
+import { useSubscriptionCount, useMarkerCount, useCompanyCount } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useVisitorPresence from '../../hooks/useVisitorPresence';
+import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import YearChangeModal from './YearChangeModal';
 import YearScopeBadge from './YearScopeBadge';
 
@@ -35,6 +34,7 @@ import YearScopeBadge from './YearScopeBadge';
  */
 export default function Dashboard({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
+  const { profile, updateProfile } = useOrganizationProfile();
   // Use real-time count hooks
   const { count: subscriptionCount, loading } = useSubscriptionCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
@@ -49,7 +49,32 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   const [showYearModal, setShowYearModal] = useState(false);
   const [pendingYear, setPendingYear] = useState(null);
+  const [isAppActive, setIsAppActive] = useState(false);
+  const [isSavingAppStatus, setIsSavingAppStatus] = useState(false);
   const statsLoading = markersLoading || companiesLoading;
+
+  useEffect(() => {
+    setIsAppActive(!!profile?.is_app_active);
+  }, [profile?.is_app_active]);
+
+  const handleToggleAppStatus = async () => {
+    const nextIsActive = !isAppActive;
+    const confirmationMessage = nextIsActive
+      ? t('settings.appActivation.confirm.goLive')
+      : t('settings.appActivation.confirm.goOffline');
+
+    if (typeof window !== 'undefined' && window.confirm && !window.confirm(confirmationMessage)) {
+      return;
+    }
+
+    setIsSavingAppStatus(true);
+    await updateProfile({ is_app_active: nextIsActive });
+    setIsSavingAppStatus(false);
+  };
+
+  const actionButtonClass = isAppActive
+    ? 'bg-orange-600 text-white hover:bg-orange-700'
+    : 'bg-green-600 text-white hover:bg-green-700';
 
   // Calculate meal and coin totals
   const totals = useMemo(() => {
@@ -90,7 +115,8 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: t('dashboard.freeTotal'),
-      value: markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
+      value:
+        markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },
@@ -112,6 +138,58 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   return (
     <div>
+      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-100">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div
+                className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                  isAppActive ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                }`}
+              >
+                <Icon path={mdiRocketLaunch} size={1} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  {t('settings.appActivation.title')}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {isAppActive
+                    ? t('settings.appActivation.statusDescription.live')
+                    : t('settings.appActivation.statusDescription.offline')}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-600 max-w-2xl">
+              {t('settings.appActivation.activation.description')}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={handleToggleAppStatus}
+              disabled={isSavingAppStatus}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${actionButtonClass}`}
+            >
+              {isSavingAppStatus
+                ? t('settings.appActivation.saving')
+                : isAppActive
+                  ? t('settings.appActivation.actions.goOffline')
+                  : t('settings.appActivation.actions.goLive')}
+            </button>
+
+            <Link
+              to="/admin/settings"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Icon path={mdiCog} size={0.9} />
+              {t('settings.appActivation.actions.manageDetails')}
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Year-scoped UI is handled in the admin sidebar (AdminLayout) — removed inline Dashboard card */}
       {/* Event Totals - Combined Stats and Meal/Coin Data */}
       <div className="event-totals bg-white rounded-lg shadow p-6 mb-6">

@@ -187,7 +187,7 @@ class SupabaseFullBackupFixed {
       }
 
       // Filter out files that are the first of the month
-      const removableFiles = filesWithStats.filter(f => !firstOfMonthFiles.has(f.name));
+      const removableFiles = filesWithStats.filter((f) => !firstOfMonthFiles.has(f.name));
 
       // Keep only the latest configured weekly/full backups
       const toDelete = removableFiles.slice(this.config.backup.retention.weekly);

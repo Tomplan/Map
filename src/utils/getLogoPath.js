@@ -1,4 +1,5 @@
 import { getBaseUrl } from './getBaseUrl';
+import { __getSupabaseRuntimeInfo } from '../supabaseClient';
 
 // Utility to normalize logo paths for consistent rendering
 export function getLogoPath(logo) {
@@ -123,8 +124,7 @@ export function getResponsiveLogoSources(iconUrl) {
   const basename = filename.replace(/\.[^.]+$/, '');
 
   // Prefer CDN-hosted generated assets (Supabase public storage) if VITE_SUPABASE_URL exists
-  const supabaseUrl =
-    typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL : null;
+  const { supabaseUrl } = __getSupabaseRuntimeInfo();
   const cdnBase = supabaseUrl
     ? `${supabaseUrl.replace(/\/$/, '')}/storage/v1/object/public/Logos/generated/${basename}`
     : null;

@@ -241,11 +241,14 @@
     "saving": "Speichern...",
     "save": "Speichern",
     "cancel": "Abbrechen",
+    "dismiss": "Schließen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "confirmDelete": "Sind Sie sicher, dass Sie dies löschen möchten?",
     "vote": "Abstimmen",
-    "voted": "Abgestimmt"
+    "voted": "Abgestimmt",
+    "offlineWarning": "Sie sind offline. Gespeicherte Daten bleiben nach Möglichkeit sichtbar, aber einige Live-Funktionen sind eventuell nicht verfügbar.",
+    "offlineIconLabel": "Offline-Modus aktiv"
   },
   "marker": {
     "event": "Event",
@@ -387,6 +390,58 @@
         "title": "Manager Interface Language",
         "description": "This changes the language of buttons, menus, and settings. It does NOT affect content translations (company info, marker descriptions). Content translations are managed separately."
       }
+    },
+    "appActivation": {
+      "title": "Öffentliche App-Verfügbarkeit",
+      "loading": "Einstellungen werden geladen...",
+      "activation": {
+        "title": "Besucherzugang aktivieren",
+        "description": "Jeder mit QR-Code oder URL kann die öffentliche Karte sofort öffnen."
+      },
+      "statusDescription": {
+        "live": "LIVE für Besucher",
+        "offline": "OFFLINE mit Wartungsbildschirm"
+      },
+      "status": {
+        "live": "LIVE",
+        "offline": "OFFLINE"
+      },
+      "actions": {
+        "goLive": "App live schalten",
+        "goOffline": "App offline schalten",
+        "manageDetails": "Weitere Einstellungen"
+      },
+      "confirm": {
+        "goLive": "Sind Sie sicher, dass Sie die Besucher-App live schalten möchten?",
+        "goOffline": "Sind Sie sicher, dass Sie die Besucher-App offline schalten und den Wartungsbildschirm anzeigen möchten?"
+      },
+      "translationsTitle": "Wartungstext nach Sprache",
+      "translationsDescription": "Diese Nachrichten erscheinen unter dem Countdown, wenn die App offline ist.",
+      "languageFields": {
+        "nl": "Text Niederländisch",
+        "en": "Text Englisch",
+        "de": "Text Deutsch"
+      },
+      "placeholders": {
+        "nl": "De digitale beursgids opent binnenkort!",
+        "en": "The digital fair guide will open soon!",
+        "de": "Der digitale Messeführer wird bald geöffnet!"
+      },
+      "fallback": {
+        "title": "Fallback-Sprache",
+        "description": "Verwenden Sie diesen Sprachtext, wenn die aktive UI-Sprache keine eigene Nachricht hat.",
+        "options": {
+          "nl": "Niederländischen Text als Fallback verwenden",
+          "en": "Englischen Text als Fallback verwenden",
+          "de": "Deutschen Text als Fallback verwenden"
+        }
+      },
+      "countdownLabel": "Messestart (Countdown)",
+      "countdownHint": "Leer lassen, wenn kein Countdown angezeigt werden soll.",
+      "save": "Speichern",
+      "saving": "Speichern...",
+      "saveSuccess": "Gespeichert!",
+      "saveError": "Aktualisierung fehlgeschlagen: {{error}}"
     },
     "mapDefaults": {
       "title": "Karten-Standardeinstellungen",
@@ -637,6 +692,12 @@
     "parking": "Parken",
     "parkingInfo": "Parken am Strandpark Slijk-Ewijk, den ganzen Tag für €5",
     "phaseNote": "<strong>Hinweis:</strong> Dies ist eine Phase-1-Vorabversion. In Phase 2 werden hier echte Eventdaten, Willkommensnachrichten und kommende Aktivitäten angezeigt."
+  },
+  "maintenanceScreen": {
+    "defaultMessage": "Der digitale Messeführer wird bald geöffnet!",
+    "countdownTitle": "Countdown bis zur Messe",
+    "hours": "Stunden",
+    "minutes": "Min"
   },
   "exhibitorPage": {
     "title": "Exhibitors",

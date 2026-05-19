@@ -17,6 +17,24 @@ export const DATA_TYPES = {
   ASSIGNMENTS: 'assignments',
 };
 
+function getFirstRowValue(row, headers) {
+  for (const header of headers) {
+    const value = row?.[header];
+    if (value === undefined || value === null) continue;
+    if (typeof value === 'string') {
+      if (value.trim()) return value;
+      continue;
+    }
+    return value;
+  }
+  return '';
+}
+
+function getTrimmedRowValue(row, headers) {
+  const value = getFirstRowValue(row, headers);
+  return typeof value === 'string' ? value.trim() : String(value || '').trim();
+}
+
 /**
  * Configuration for each data type
  * Defines columns, validation, transformations, and matching strategies
@@ -60,9 +78,9 @@ export const dataConfigs = {
     // Transform import row to database format
     transformImport: (row) => {
       const transformed = {
-        name: row['Company Name']?.trim() || '',
+        name: getTrimmedRowValue(row, ['Company Name', 'company', 'Company']) || '',
         contact: row['Contact 1 Name']?.trim() || '',
-        website: row['Website']?.trim() || '',
+        website: getTrimmedRowValue(row, ['Website', 'website']) || '',
         logo: row['Logo URL']?.trim() || '',
         contact_name: row['Contact 2 Name']?.trim() || '',
         contact_name_2: row['Contact 3 Name']?.trim() || '',
@@ -118,9 +136,9 @@ export const dataConfigs = {
 
       // Extract translation data (stored separately for import handler to use)
       const translations = {
-        nl: row['Info (Nederlands)']?.trim() || '',
-        en: row['Info (English)']?.trim() || '',
-        de: row['Info (Deutsch)']?.trim() || '',
+        nl: getTrimmedRowValue(row, ['Info (Nederlands)', 'nl_text']) || '',
+        en: getTrimmedRowValue(row, ['Info (English)', 'en_text']) || '',
+        de: getTrimmedRowValue(row, ['Info (Deutsch)', 'de_text']) || '',
       };
 
       // Extract categories (comma-separated slugs)
@@ -135,6 +153,7 @@ export const dataConfigs = {
       // Attach translations and categories to company data for import handler to use
       transformed._translations = translations;
       transformed._categorySlugs = categorySlugs;
+      transformed._sourceId = getTrimmedRowValue(row, ['ID', 'id']);
 
       return transformed;
     },
@@ -262,7 +281,8 @@ export const dataConfigs = {
       const errors = [];
 
       // Required field: Company Name
-      const nameValidation = validateRequired(row['Company Name'], 'Company Name');
+      const importedCompanyName = getTrimmedRowValue(row, ['Company Name', 'company', 'Company']);
+      const nameValidation = validateRequired(importedCompanyName, 'Company Name');
       if (!nameValidation.valid) {
         errors.push({
           field: 'Company Name',

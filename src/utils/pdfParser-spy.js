@@ -53,9 +53,11 @@ function parseSpatialInvoice(items, allowedItems) {
     client_details: [],
     line_items: [],
     opmerkingen: '',
-    is_relevant: true,    breakfast: 0,
+    is_relevant: true,
+    breakfast: 0,
     lunch: 0,
-    bbq: 0,  };
+    bbq: 0,
+  };
 
   const lines = [];
   let currentY = null;

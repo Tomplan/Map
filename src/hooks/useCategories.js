@@ -27,6 +27,33 @@ const ICON_MAP = {
   mdiDotsHorizontal: mdiDotsHorizontal,
 };
 
+function getCompanyCategoriesStorageKey(language) {
+  return `company_categories_cache:${language || 'nl'}`;
+}
+
+function readStoredCompanyCategories(language) {
+  if (typeof window === 'undefined' || !window.localStorage) return {};
+
+  try {
+    const raw = window.localStorage.getItem(getCompanyCategoriesStorageKey(language));
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function writeStoredCompanyCategories(language, grouped) {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+
+  try {
+    const previous = readStoredCompanyCategories(language);
+    const next = { ...previous, ...grouped };
+    window.localStorage.setItem(getCompanyCategoriesStorageKey(language), JSON.stringify(next));
+  } catch (err) {
+    // Ignore storage failures.
+  }
+}
+
 /**
  * Custom hook for managing categories with translations
  * Provides CRUD operations and real-time updates
@@ -424,10 +451,16 @@ export function useCategories(language = 'nl') {
           });
         });
 
+        writeStoredCompanyCategories(language, grouped);
+
         return grouped;
       } catch (err) {
         console.error('Error fetching all company categories:', err);
-        return {};
+        const cached = readStoredCompanyCategories(language);
+        return companyIds.reduce((acc, companyId) => {
+          acc[companyId] = cached[companyId] || [];
+          return acc;
+        }, {});
       }
     },
     [language],
