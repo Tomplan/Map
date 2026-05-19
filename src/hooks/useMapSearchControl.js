@@ -3,12 +3,7 @@ import L from 'leaflet';
 import { MAP_CONFIG } from '../config/mapConfig';
 import { createSearchText } from '../utils/mapHelpers';
 
-const invisibleSearchIcon = L.divIcon({
-  className: 'leaflet-search-hidden-marker',
-  html: '',
-  iconSize: [1, 1],
-  iconAnchor: [0, 0],
-});
+let invisibleSearchIcon = null;
 
 /**
  * Custom hook to manage Leaflet search control
@@ -39,6 +34,15 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
     markers.forEach((marker) => {
       if (marker && marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
+        if (!invisibleSearchIcon) {
+          invisibleSearchIcon = L.divIcon({
+            className: 'leaflet-search-hidden-marker',
+            html: '',
+            iconSize: [1, 1],
+            iconAnchor: [0, 0],
+          });
+        }
+        
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0,
           interactive: false,
