@@ -38,16 +38,18 @@ jest.mock('../../../utils/getDefaultLogo', () => ({
 }));
 
 // Hooks used by CompaniesTab
-jest.mock('../../../hooks/useCompanies', () => jest.fn(() => ({
-  companies: [],
-  loading: false,
-  error: null,
-  createCompany: jest.fn(),
-  updateCompany: jest.fn(),
-  deleteCompany: jest.fn(),
-  searchCompanies: jest.fn(),
-  reload: jest.fn(),
-})));
+jest.mock('../../../hooks/useCompanies', () =>
+  jest.fn(() => ({
+    companies: [],
+    loading: false,
+    error: null,
+    createCompany: jest.fn(),
+    updateCompany: jest.fn(),
+    deleteCompany: jest.fn(),
+    searchCompanies: jest.fn(),
+    reload: jest.fn(),
+  })),
+);
 
 jest.mock('../../../hooks/useOrganizationProfile', () => () => ({
   profile: {

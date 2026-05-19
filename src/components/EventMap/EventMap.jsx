@@ -24,6 +24,7 @@ import { useOrganizationLogo } from '../../contexts/OrganizationLogoContext';
 import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
 import { computePrintIconOptions } from '../../utils/printScaling';
+import { getBaseUrl } from '../../utils/getBaseUrl';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -34,12 +35,48 @@ import 'leaflet-minimap/dist/Control.MiniMap.min.css';
 import 'leaflet-minimap';
 import '../../assets/leaflet-search-custom.css';
 
+const MAP_TILES_CACHE = 'map-tiles-v2';
+const leafletBaseUrl = getBaseUrl();
+
+function isCacheableTileUrl(url) {
+  return (
+    typeof url === 'string' &&
+    (url.includes('cartocdn.com') ||
+      url.includes('cartodb-basemaps') ||
+      url.includes('arcgisonline.com/ArcGIS/rest/services/World_Imagery'))
+  );
+}
+
+function getMapSnapshotStorageKey(layerKey) {
+  return `map_tile_snapshot:${layerKey || 'default'}`;
+}
+
+function readStoredMapSnapshot(layerKey) {
+  if (typeof window === 'undefined' || !window.sessionStorage) return null;
+
+  try {
+    return window.sessionStorage.getItem(getMapSnapshotStorageKey(layerKey));
+  } catch (err) {
+    return null;
+  }
+}
+
+function writeStoredMapSnapshot(layerKey, dataUrl) {
+  if (typeof window === 'undefined' || !window.sessionStorage || !dataUrl) return;
+
+  try {
+    window.sessionStorage.setItem(getMapSnapshotStorageKey(layerKey), dataUrl);
+  } catch (err) {
+    // Ignore storage failures.
+  }
+}
+
 // Fix default Leaflet marker icons for custom base URL
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconRetinaUrl: `${leafletBaseUrl}assets/icons/marker-icon-2x.png`,
+  iconUrl: `${leafletBaseUrl}assets/icons/glyph-marker-icon-blue.svg`,
+  shadowUrl: `${leafletBaseUrl}assets/icons/marker-shadow.png`,
 });
 
 function EventMap({
@@ -192,6 +229,52 @@ function EventMap({
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
+  const tileCacheTimeoutRef = useRef(null);
+  const snapshotTimeoutRef = useRef(null);
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true,
+  );
+  const [offlineMapSnapshot, setOfflineMapSnapshot] = useState(() =>
+    readStoredMapSnapshot(MAP_LAYERS[0]?.key),
+  );
+
+  const removeMiniMapControl = useCallback(() => {
+    if (!mapInstance?._minimapControl) return;
+
+    try {
+      mapInstance.removeControl(mapInstance._minimapControl);
+    } catch (err) {
+      // Ignore teardown mismatches.
+    }
+
+    try {
+      mapInstance._minimapControl.remove?.();
+    } catch (err) {
+      // Ignore teardown mismatches.
+    }
+
+    mapInstance._minimapControl = null;
+  }, [mapInstance]);
+
+  useEffect(() => {
+    setOfflineMapSnapshot(readStoredMapSnapshot(activeLayer));
+  }, [activeLayer]);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => {
+      setIsOnline(false);
+      removeMiniMapControl();
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [removeMiniMapControl]);
 
   // Centralized draggable logic to avoid duplication and inconsistencies
   const checkMarkerDraggability = useCallback(
@@ -240,6 +323,7 @@ function EventMap({
   );
 
   const isMobile = useIsMobile();
+  const shouldShowMiniMap = true; // Restored public visibility
   const { trackMarkerView } = useAnalytics();
 
   // safeMarkers definition moved up to fix reference error in handleContextAddMarker
@@ -258,6 +342,10 @@ function EventMap({
   // Preload marker logos - Optimized to not block main thread
   useEffect(() => {
     const preloadLogos = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        return;
+      }
+
       safeMarkers.forEach((marker) => {
         if (marker.logo) {
           const img = new window.Image();
@@ -416,6 +504,137 @@ function EventMap({
     };
   }, [mapInstance]);
 
+  useEffect(() => {
+    if (!mapInstance || typeof window === 'undefined' || !window.caches) {
+      return undefined;
+    }
+
+    const cacheVisibleTiles = async () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        return;
+      }
+
+      try {
+        const container = mapInstance.getContainer?.();
+        if (!container) return;
+
+        const tileUrls = Array.from(container.querySelectorAll('img.leaflet-tile'))
+          .map((img) => img.currentSrc || img.src)
+          .filter((url, index, all) => isCacheableTileUrl(url) && all.indexOf(url) === index);
+
+        if (tileUrls.length === 0) return;
+
+        const cache = await window.caches.open(MAP_TILES_CACHE);
+        await Promise.allSettled(
+          tileUrls.map(async (url) => {
+            const request = new Request(url, { mode: 'cors', credentials: 'omit' });
+            const existing = await cache.match(request);
+            if (existing) return;
+
+            const response = await fetch(request);
+            if (response && response.ok) {
+              await cache.put(request, response.clone());
+            }
+          }),
+        );
+      } catch (err) {
+        // Best-effort cache warming only.
+      }
+    };
+
+    const scheduleTileCaching = () => {
+      if (tileCacheTimeoutRef.current) {
+        window.clearTimeout(tileCacheTimeoutRef.current);
+      }
+
+      tileCacheTimeoutRef.current = window.setTimeout(() => {
+        cacheVisibleTiles();
+      }, 400);
+    };
+
+    scheduleTileCaching();
+    mapInstance.on('moveend', scheduleTileCaching);
+    mapInstance.on('zoomend', scheduleTileCaching);
+
+    return () => {
+      mapInstance.off('moveend', scheduleTileCaching);
+      mapInstance.off('zoomend', scheduleTileCaching);
+      if (tileCacheTimeoutRef.current) {
+        window.clearTimeout(tileCacheTimeoutRef.current);
+        tileCacheTimeoutRef.current = null;
+      }
+    };
+  }, [mapInstance, activeLayer]);
+
+  useEffect(() => {
+    if (!mapInstance || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const captureVisibleTiles = () => {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        return;
+      }
+
+      try {
+        const container = mapInstance.getContainer?.();
+        if (!container) return;
+
+        const tileImages = Array.from(container.querySelectorAll('img.leaflet-tile')).filter(
+          (img) => img.complete && img.naturalWidth > 0,
+        );
+        if (tileImages.length === 0) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(containerRect.width));
+        canvas.height = Math.max(1, Math.round(containerRect.height));
+
+        const context = canvas.getContext('2d');
+        if (!context) return;
+
+        context.fillStyle = '#f3f4f6';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        tileImages.forEach((img) => {
+          const rect = img.getBoundingClientRect();
+          const left = rect.left - containerRect.left;
+          const top = rect.top - containerRect.top;
+          context.drawImage(img, left, top, rect.width, rect.height);
+        });
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        writeStoredMapSnapshot(activeLayer, dataUrl);
+        setOfflineMapSnapshot(dataUrl);
+      } catch (err) {
+        // Best-effort visual fallback only.
+      }
+    };
+
+    const scheduleSnapshot = () => {
+      if (snapshotTimeoutRef.current) {
+        window.clearTimeout(snapshotTimeoutRef.current);
+      }
+
+      snapshotTimeoutRef.current = window.setTimeout(() => {
+        captureVisibleTiles();
+      }, 500);
+    };
+
+    scheduleSnapshot();
+    mapInstance.on('moveend', scheduleSnapshot);
+    mapInstance.on('zoomend', scheduleSnapshot);
+
+    return () => {
+      mapInstance.off('moveend', scheduleSnapshot);
+      mapInstance.off('zoomend', scheduleSnapshot);
+      if (snapshotTimeoutRef.current) {
+        window.clearTimeout(snapshotTimeoutRef.current);
+        snapshotTimeoutRef.current = null;
+      }
+    };
+  }, [mapInstance, activeLayer]);
+
   // Sync rectangles/handles
   useEffect(() => {
     if (!mapInstance) return;
@@ -498,6 +717,11 @@ function EventMap({
   useEffect(() => {
     if (!mapInstance) return;
 
+    if (!isOnline || !shouldShowMiniMap) {
+      removeMiniMapControl();
+      return;
+    }
+
     // Setup minimap control only once
     if (!mapInstance._minimapControl) {
       const miniMapLayer = L.tileLayer(MAP_LAYERS[0].url, {
@@ -537,6 +761,7 @@ function EventMap({
       mapInstance._minimapControl = miniMapControl;
     }
   }, [
+    isOnline,
     mapInstance,
     MAP_CONFIG.DEFAULT_POSITION,
     MAP_CONFIG.MINIMAP.AIMING_COLOR,
@@ -545,6 +770,8 @@ function EventMap({
     MAP_CONFIG.MINIMAP.WIDTH,
     MAP_CONFIG.MINIMAP.ZOOM_LEVEL,
     MAP_LAYERS,
+    removeMiniMapControl,
+    shouldShowMiniMap,
   ]);
 
   // Browser print is now initialized synchronously in handleMapCreated
@@ -587,6 +814,7 @@ function EventMap({
     mapInstance,
     safeMarkers,
     searchLayer,
+    searchControlRef,
     searchParams,
     setSearchParams,
     MAP_CONFIG.SEARCH_ZOOM,
@@ -1181,6 +1409,7 @@ function EventMap({
               url={layer.url}
               crossOrigin="anonymous"
               maxZoom={MAP_CONFIG.MAX_ZOOM}
+              opacity={1}
             />
           ))}
 

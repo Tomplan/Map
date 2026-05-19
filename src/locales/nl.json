@@ -273,6 +273,7 @@
     "saving": "Opslaan...",
     "save": "Opslaan",
     "cancel": "Annuleren",
+    "dismiss": "Sluiten",
     "edit": "Bewerken",
     "delete": "Verwijderen",
     "confirmDelete": "Weet je zeker dat je dit wilt verwijderen?",
@@ -280,7 +281,9 @@
     "voted": "Gestemd",
     "refresh": "Vernieuwen",
     "actions": "Acties",
-    "actionsMenu": "Acties Menu"
+    "actionsMenu": "Acties Menu",
+    "offlineWarning": "Je bent offline. Opgeslagen gegevens blijven waar mogelijk zichtbaar, maar sommige live functies zijn mogelijk niet beschikbaar.",
+    "offlineIconLabel": "Offline modus actief"
   },
   "marker": {
     "event": "Evenement",
@@ -457,6 +460,58 @@
         "title": "Manager Interface Taal",
         "description": "Dit wijzigt de taal van knoppen, menu's en instellingen. Het heeft GEEN invloed op inhoudvertalingen (bedrijfsinformatie, markeerbeschrijvingen). Inhoudvertalingen worden apart beheerd."
       }
+    },
+    "appActivation": {
+      "title": "Publieke App Beschikbaarheid",
+      "loading": "Instellingen laden...",
+      "activation": {
+        "title": "App actief voor bezoekers",
+        "description": "Iedereen met de QR-code of URL heeft direct toegang tot de publieke kaart."
+      },
+      "statusDescription": {
+        "live": "LIVE voor bezoekers",
+        "offline": "OFFLINE met wachtscherm"
+      },
+      "status": {
+        "live": "LIVE",
+        "offline": "OFFLINE"
+      },
+      "actions": {
+        "goLive": "Zet app live",
+        "goOffline": "Zet app offline",
+        "manageDetails": "Meer instellingen"
+      },
+      "confirm": {
+        "goLive": "Weet je zeker dat je de bezoekersapp live wilt zetten?",
+        "goOffline": "Weet je zeker dat je de bezoekersapp offline wilt zetten en het wachtscherm wilt tonen?"
+      },
+      "translationsTitle": "Wachtschermtekst per taal",
+      "translationsDescription": "Deze berichten verschijnen onder de aftelklok wanneer de app offline staat.",
+      "languageFields": {
+        "nl": "Tekst Nederlands",
+        "en": "Tekst Engels",
+        "de": "Tekst Duits"
+      },
+      "placeholders": {
+        "nl": "De digitale beursgids opent binnenkort!",
+        "en": "The digital fair guide will open soon!",
+        "de": "Der digitale Messeführer wird bald geöffnet!"
+      },
+      "fallback": {
+        "title": "Terugvaltaal",
+        "description": "Gebruik deze taaltekst als de actieve UI-taal geen eigen bericht heeft.",
+        "options": {
+          "nl": "Gebruik Nederlandse tekst als fallback",
+          "en": "Gebruik Engelse tekst als fallback",
+          "de": "Gebruik Duitse tekst als fallback"
+        }
+      },
+      "countdownLabel": "Starttijd beurs (aftelklok)",
+      "countdownHint": "Laat dit leeg als je geen aftelklok wilt tonen.",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "saveSuccess": "Opgeslagen!",
+      "saveError": "Update mislukt: {{error}}"
     },
     "mapDefaults": {
       "title": "Kaart Standaardinstellingen",
@@ -707,6 +762,12 @@
     "parking": "Parkeren",
     "parkingInfo": "Parkeren bij Strandpark Slijk-Ewijk, hele dag voor €5",
     "phaseNote": "<strong>Let op:</strong> Dit is een Fase 1 tijdelijke versie. In Fase 2 zal deze pagina echte evenementgegevens, welkomstberichten en aankomende activiteiten tonen."
+  },
+  "maintenanceScreen": {
+    "defaultMessage": "De digitale beursgids opent binnenkort!",
+    "countdownTitle": "Aftellen tot de beurs",
+    "hours": "Uur",
+    "minutes": "Min"
   },
   "exhibitorPage": {
     "title": "Exposanten",

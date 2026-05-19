@@ -1,6 +1,44 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+function normalizeLanguageCode(languageCode) {
+  return String(languageCode || 'nl')
+    .toLowerCase()
+    .split('-')[0];
+}
+
+function findTranslation(translations, languageCode) {
+  const normalized = normalizeLanguageCode(languageCode);
+  return translations.find(
+    (translation) => normalizeLanguageCode(translation.language_code) === normalized,
+  );
+}
+
+function resolveTranslatedInfo(translations, languageCode = 'nl', deprecatedInfo = '') {
+  if (!translations || translations.length === 0) {
+    return deprecatedInfo || '';
+  }
+
+  const normalizedLanguage = normalizeLanguageCode(languageCode);
+  const currentTranslation = findTranslation(translations, normalizedLanguage);
+  if (currentTranslation?.info) {
+    return currentTranslation.info;
+  }
+
+  // Only Dutch can fall back to the legacy single-language field.
+  if (normalizedLanguage === 'nl') {
+    const dutchTranslation = findTranslation(translations, 'nl');
+    if (dutchTranslation?.info) {
+      return dutchTranslation.info;
+    }
+
+    const anyTranslation = translations.find((translation) => translation.info);
+    return anyTranslation?.info || deprecatedInfo || '';
+  }
+
+  return '';
+}
+
 /**
  * useTranslatedCompanyInfo - Get translated company info for public display
  *
@@ -15,30 +53,7 @@ export function useTranslatedCompanyInfo(marker) {
   const currentLanguage = i18n.language;
 
   const translatedInfo = useMemo(() => {
-    if (!marker?.company_translations || marker.company_translations.length === 0) {
-      // Fallback to deprecated info field for backward compatibility
-      return marker?.info || '';
-    }
-
-    // Find translation for current language
-    const currentTranslation = marker.company_translations.find(
-      (t) => t.language_code === currentLanguage,
-    );
-
-    if (currentTranslation?.info) {
-      return currentTranslation.info;
-    }
-
-    // Fallback to Dutch
-    const dutchTranslation = marker.company_translations.find((t) => t.language_code === 'nl');
-
-    if (dutchTranslation?.info) {
-      return dutchTranslation.info;
-    }
-
-    // Fallback to any available translation
-    const anyTranslation = marker.company_translations.find((t) => t.info);
-    return anyTranslation?.info || '';
+    return resolveTranslatedInfo(marker?.company_translations, currentLanguage, marker?.info || '');
   }, [marker, currentLanguage]);
 
   return translatedInfo;
@@ -54,25 +69,5 @@ export function useTranslatedCompanyInfo(marker) {
  * @returns {string} Translated info text
  */
 export function getTranslatedInfo(translations, languageCode = 'nl', deprecatedInfo = '') {
-  if (!translations || translations.length === 0) {
-    return deprecatedInfo || '';
-  }
-
-  // Find translation for requested language
-  const currentTranslation = translations.find((t) => t.language_code === languageCode);
-
-  if (currentTranslation?.info) {
-    return currentTranslation.info;
-  }
-
-  // Fallback to Dutch
-  const dutchTranslation = translations.find((t) => t.language_code === 'nl');
-
-  if (dutchTranslation?.info) {
-    return dutchTranslation.info;
-  }
-
-  // Fallback to any available translation
-  const anyTranslation = translations.find((t) => t.info);
-  return anyTranslation?.info || deprecatedInfo || '';
+  return resolveTranslatedInfo(translations, languageCode, deprecatedInfo);
 }

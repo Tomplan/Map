@@ -131,11 +131,18 @@ export default function ImportModal({
 
               // Match against existing data
               if (config.matchStrategy.matchFields.includes('name')) {
-                // Companies matching by name
-                const matchName = row['Company Name']?.toLowerCase().trim();
-                matchedRecord = existingData.find(
-                  (e) => e.name?.toLowerCase().trim() === matchName,
-                );
+                const sourceId = String(transformed?._sourceId || '').trim();
+                const matchName = transformed?.name?.toLowerCase().trim();
+
+                if (sourceId) {
+                  matchedRecord = existingData.find((e) => String(e.id || '').trim() === sourceId);
+                }
+
+                if (!matchedRecord && matchName) {
+                  matchedRecord = existingData.find(
+                    (e) => e.name?.toLowerCase().trim() === matchName,
+                  );
+                }
               } else if (config.yearDependent && companyMap) {
                 // Subscriptions/assignments matching
                 const companyName = row['Company Name']?.toLowerCase().trim();

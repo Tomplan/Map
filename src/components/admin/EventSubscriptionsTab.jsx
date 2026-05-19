@@ -65,7 +65,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const SS_KEY = `subscriptionsTab_${selectedYear}`;
   const savedRef = useRef(null);
   if (!savedRef.current) {
-    try { savedRef.current = JSON.parse(sessionStorage.getItem(SS_KEY)) || {}; } catch { savedRef.current = {}; }
+    try {
+      savedRef.current = JSON.parse(sessionStorage.getItem(SS_KEY)) || {};
+    } catch {
+      savedRef.current = {};
+    }
   }
   const saved = savedRef.current;
 
@@ -76,16 +80,23 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [sortBy, setSortBy] = useState(saved.sortBy || 'company');
   const [sortDirection, setSortDirection] = useState(saved.sortDirection || 'asc');
   const [expandedIds, setExpandedIds] = useState(() => new Set(saved.expandedIds || []));
-  const [notesExpandedIds, setNotesExpandedIds] = useState(() => new Set(saved.notesExpandedIds || []));
+  const [notesExpandedIds, setNotesExpandedIds] = useState(
+    () => new Set(saved.notesExpandedIds || []),
+  );
 
   // Save UI state on unmount
   useEffect(() => {
     return () => {
-      sessionStorage.setItem(SS_KEY, JSON.stringify({
-        searchTerm, sortBy, sortDirection,
-        expandedIds: [...expandedIds],
-        notesExpandedIds: [...notesExpandedIds],
-      }));
+      sessionStorage.setItem(
+        SS_KEY,
+        JSON.stringify({
+          searchTerm,
+          sortBy,
+          sortDirection,
+          expandedIds: [...expandedIds],
+          notesExpandedIds: [...notesExpandedIds],
+        }),
+      );
     };
   });
 
@@ -101,12 +112,12 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
   // Merge-add modal state (adding counts to existing subscription)
   const MERGE_FIELDS = [
-    { key: 'booth_count',   label: 'Booths',           col: 'bg-gray-50' },
-    { key: 'breakfast_sat', label: 'Breakfast (Sat)',  col: 'bg-blue-50' },
-    { key: 'lunch_sat',     label: 'Lunch (Sat)',      col: 'bg-blue-50' },
-    { key: 'bbq_sat',       label: 'BBQ (Sat)',        col: 'bg-blue-50' },
-    { key: 'breakfast_sun', label: 'Breakfast (Sun)',  col: 'bg-green-50' },
-    { key: 'lunch_sun',     label: 'Lunch (Sun)',      col: 'bg-green-50' },
+    { key: 'booth_count', label: 'Booths', col: 'bg-gray-50' },
+    { key: 'breakfast_sat', label: 'Breakfast (Sat)', col: 'bg-blue-50' },
+    { key: 'lunch_sat', label: 'Lunch (Sat)', col: 'bg-blue-50' },
+    { key: 'bbq_sat', label: 'BBQ (Sat)', col: 'bg-blue-50' },
+    { key: 'breakfast_sun', label: 'Breakfast (Sun)', col: 'bg-green-50' },
+    { key: 'lunch_sun', label: 'Lunch (Sun)', col: 'bg-green-50' },
   ];
   const [mergeModal, setMergeModal] = useState(null); // { subscription } | null
   const [mergeValues, setMergeValues] = useState({});
@@ -120,7 +131,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   }, [companies]);
 
   const unsubscribedCompanies = useMemo(() => {
-    const subscribedCompanyIds = new Set(subscriptions.map((subscription) => subscription.company_id));
+    const subscribedCompanyIds = new Set(
+      subscriptions.map((subscription) => subscription.company_id),
+    );
 
     return companies
       .filter((company) => !subscribedCompanyIds.has(company.id))
@@ -128,7 +141,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   }, [companies, subscriptions]);
 
   const subscribedCompanies = useMemo(() => {
-    const subscribedCompanyIds = new Set(subscriptions.map((subscription) => subscription.company_id));
+    const subscribedCompanyIds = new Set(
+      subscriptions.map((subscription) => subscription.company_id),
+    );
 
     return companies
       .filter((company) => subscribedCompanyIds.has(company.id))
@@ -275,11 +290,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     try {
       // Append history line
-      await appendHistory(sub.id, 'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '));
+      await appendHistory(
+        sub.id,
+        'Manually edited on ' + formatHistoryTimestamp() + ': ' + changes.join(', '),
+      );
 
       // Create edit line item with count deltas (if any count changed)
       // Coins is intentionally excluded — it bypasses line items and is updated directly.
-      const COUNT_FIELDS = ['booth_count', 'breakfast_sat', 'lunch_sat', 'bbq_sat', 'breakfast_sun', 'lunch_sun'];
+      const COUNT_FIELDS = [
+        'booth_count',
+        'breakfast_sat',
+        'lunch_sat',
+        'bbq_sat',
+        'breakfast_sun',
+        'lunch_sun',
+      ];
       const countDeltas = {};
       let hasCountChange = false;
       for (const field of COUNT_FIELDS) {
@@ -299,7 +324,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       // Coins bypasses the line-item system — update directly on the subscription.
       // Must run AFTER addLineItem because recalculateTotals now computes
       // coins = booth_count × default_coins; an explicit manual edit overrides that.
-      const coinsChanged = 'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
+      const coinsChanged =
+        'coins' in updates && Number(updates.coins || 0) !== Number(sub.coins || 0);
 
       if (hasCountChange || areaChanged || notesChanged) {
         await addLineItem(sub.id, {
@@ -361,17 +387,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         if (!allInvoices || allInvoices.length === 0) return;
         for (const inv of allInvoices) {
           let notes = {};
-          try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
+          try {
+            notes = JSON.parse(inv.parsed_data || '{}');
+          } catch (_) {}
           const hasApprovedItems = notes.line_items?.some(
             (item) => item.status === 'approved' || item.status === 'rejected',
           );
-          const needsStatusReset =
-            inv.status === 'approved' || inv.status === 'partially_approved';
+          const needsStatusReset = inv.status === 'approved' || inv.status === 'partially_approved';
           if (!hasApprovedItems && !needsStatusReset) continue;
           if (notes.line_items) {
             notes.line_items = notes.line_items.map((item) => ({ ...item, status: 'pending' }));
           }
-          const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
+          const updatePayload = {
+            parsed_data: JSON.stringify(notes),
+            updated_at: new Date().toISOString(),
+          };
           if (needsStatusReset) updatePayload.status = 'pending';
           await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
         }
@@ -380,7 +410,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
     // Helper: revert invoice line items matching specific subscription line item records
     const revertLineItemInvoices = async (companyId, lineItems) => {
-      const invoiceItems = lineItems.filter(li => li.source === 'invoice' && li.source_ref);
+      const invoiceItems = lineItems.filter((li) => li.source === 'invoice' && li.source_ref);
       const byInvoice = {};
       for (const li of invoiceItems) {
         if (!byInvoice[li.source_ref]) byInvoice[li.source_ref] = [];
@@ -396,13 +426,15 @@ export default function EventSubscriptionsTab({ selectedYear }) {
           if (!invRows || invRows.length === 0) continue;
           for (const inv of invRows) {
             let notes = {};
-            try { notes = JSON.parse(inv.parsed_data || '{}'); } catch (_) {}
+            try {
+              notes = JSON.parse(inv.parsed_data || '{}');
+            } catch (_) {}
             if (!notes.line_items) continue;
             let changed = false;
-            const itemDescs = items.map(li => (li.description || '').toLowerCase());
+            const itemDescs = items.map((li) => (li.description || '').toLowerCase());
             notes.line_items = notes.line_items.map((item) => {
               const desc = (item.item || item.description || '').toLowerCase();
-              const matches = itemDescs.some(d => desc.includes(d) || d.includes(desc));
+              const matches = itemDescs.some((d) => desc.includes(d) || d.includes(desc));
               if (matches && item.status !== 'pending') {
                 changed = true;
                 return { ...item, status: 'pending' };
@@ -410,14 +442,23 @@ export default function EventSubscriptionsTab({ selectedYear }) {
               return item;
             });
             if (!changed) continue;
-            const allResolved = notes.line_items.length > 0 &&
-              notes.line_items.every(i => i.status === 'approved' || i.status === 'rejected');
-            const allApproved = allResolved && notes.line_items.every(i => i.status === 'approved');
+            const allResolved =
+              notes.line_items.length > 0 &&
+              notes.line_items.every((i) => i.status === 'approved' || i.status === 'rejected');
+            const allApproved =
+              allResolved && notes.line_items.every((i) => i.status === 'approved');
             let newStatus = inv.status;
             if (inv.status === 'approved' || inv.status === 'partially_approved') {
-              newStatus = allResolved ? (allApproved ? 'approved' : 'partially_approved') : 'pending';
+              newStatus = allResolved
+                ? allApproved
+                  ? 'approved'
+                  : 'partially_approved'
+                : 'pending';
             }
-            const updatePayload = { parsed_data: JSON.stringify(notes), updated_at: new Date().toISOString() };
+            const updatePayload = {
+              parsed_data: JSON.stringify(notes),
+              updated_at: new Date().toISOString(),
+            };
             if (newStatus !== inv.status) updatePayload.status = newStatus;
             await supabase.from('staged_invoices').update(updatePayload).eq('id', inv.id);
           }
@@ -431,7 +472,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     if (activeItems.length > 1) {
       // Multiple line items — let user choose which to remove
       await new Promise((resolve) => {
-        setSubHistorySelection(activeItems.map(li => li.id));
+        setSubHistorySelection(activeItems.map((li) => li.id));
         setSubHistoryModal({
           sub: subscription,
           companyName,
@@ -441,21 +482,29 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             const removeAll = selectedIds.length === activeItems.length;
             try {
               if (removeAll) {
-                if (!(await confirmBoothRemoval())) { resolve(); return; }
+                if (!(await confirmBoothRemoval())) {
+                  resolve();
+                  return;
+                }
                 const { error } = await unsubscribeCompany(subscription.id);
                 if (error) throw new Error(error);
                 await reloadAssignments(true);
                 await revertInvoicesForCompany(subscription.company_id);
                 toastSuccess('Subscription deleted.');
               } else {
-                const selectedItems = activeItems.filter(li => selectedIds.includes(li.id));
+                const selectedItems = activeItems.filter((li) => selectedIds.includes(li.id));
                 for (const li of selectedItems) {
                   await deactivateLineItem(li.id);
                 }
                 await revertLineItemInvoices(subscription.company_id, selectedItems);
                 for (const li of selectedItems) {
-                  await appendHistory(subscription.id,
-                    'Removed on ' + formatHistoryTimestamp() + ': ' + (li.description || 'Line item #' + li.id));
+                  await appendHistory(
+                    subscription.id,
+                    'Removed on ' +
+                      formatHistoryTimestamp() +
+                      ': ' +
+                      (li.description || 'Line item #' + li.id),
+                  );
                 }
                 const remaining = await getActiveLineItems(subscription.id);
                 if (remaining.length === 0) {
@@ -523,7 +572,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     if (existing) {
       // Company already subscribed — open merge modal
       const initial = {};
-      MERGE_FIELDS.forEach((f) => { initial[f.key] = 0; });
+      MERGE_FIELDS.forEach((f) => {
+        initial[f.key] = 0;
+      });
       setMergeValues(initial);
       setMergeModal({ subscription: existing });
       return;
@@ -548,8 +599,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
       toastWarning('Enter at least one value to add.');
       return;
     }
-    const addedParts = MERGE_FIELDS
-      .filter((f) => (mergeValues[f.key] || 0) > 0)
+    const addedParts = MERGE_FIELDS.filter((f) => (mergeValues[f.key] || 0) > 0)
       .map((f) => f.label + ' +' + mergeValues[f.key])
       .join(', ');
     try {
@@ -565,8 +615,10 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         },
         description: 'Manually added: ' + addedParts,
       });
-      await appendHistory(subscription.id,
-        'Manually added on ' + formatHistoryTimestamp() + ': ' + addedParts);
+      await appendHistory(
+        subscription.id,
+        'Manually added on ' + formatHistoryTimestamp() + ': ' + addedParts,
+      );
       toastSuccess('Subscription updated.');
       setMergeModal(null);
       setIsAdding(false);
@@ -663,7 +715,15 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded hover:bg-amber-100 transition-colors"
             title={t('helpPanel.subscriptions.toggleAllNotes', 'Toggle all notes')}
           >
-            <Icon path={filteredSubscriptions.length > 0 && filteredSubscriptions.every((s) => notesExpandedIds.has(s.id)) ? mdiTextBoxRemoveOutline : mdiTextBoxOutline} size={0.6} />
+            <Icon
+              path={
+                filteredSubscriptions.length > 0 &&
+                filteredSubscriptions.every((s) => notesExpandedIds.has(s.id))
+                  ? mdiTextBoxRemoveOutline
+                  : mdiTextBoxOutline
+              }
+              size={0.6}
+            />
             {t('helpPanel.subscriptions.notes')}
           </button>
         </div>
@@ -752,7 +812,6 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     )}
                   </span>
                 </button>
-
               </div>
             )}
           </div>
@@ -778,7 +837,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 const alreadySubscribed = subscriptions.some((s) => s.company_id === company.id);
                 return (
                   <option key={company.id} value={company.id}>
-                    {company.name}{alreadySubscribed ? ' (already subscribed — add more)' : ''}
+                    {company.name}
+                    {alreadySubscribed ? ' (already subscribed — add more)' : ''}
                   </option>
                 );
               })}
@@ -825,7 +885,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <div className="flex items-center gap-1">
                   <span>{t('helpPanel.subscriptions.booths', 'Booths')}</span>
                   {sortBy === 'booths' && (
-                    <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
                   )}
                 </div>
               </th>
@@ -839,44 +903,123 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 <div className="flex items-center gap-1">
                   <span>{t('helpPanel.subscriptions.company', 'Company')}</span>
                   {sortBy === 'company' && (
-                    <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.6} className="text-blue-600" />
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
                   )}
                 </div>
               </th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.contact')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.phone')}</th>
-              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.boothCount')}</th>
-              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>{t('helpPanel.subscriptions.area')}</th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.contact')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.phone')}
+              </th>
+              <th className="p-2 text-center border-b bg-gray-100">
+                {t('helpPanel.subscriptions.boothCount')}
+              </th>
+              <th className="p-2 text-left border-b bg-gray-100" rowSpan={3}>
+                {t('helpPanel.subscriptions.area')}
+              </th>
               <th className="p-2 text-center border-b bg-blue-50" colSpan={3}>
-                <span className="font-bold text-blue-700">{t('helpPanel.subscriptions.saturday')}</span>
+                <span className="font-bold text-blue-700">
+                  {t('helpPanel.subscriptions.saturday')}
+                </span>
               </th>
               <th className="p-2 text-center border-b bg-gray-100" colSpan={2}>
-                <span className="font-bold text-green-700">{t('helpPanel.subscriptions.sunday')}</span>
+                <span className="font-bold text-green-700">
+                  {t('helpPanel.subscriptions.sunday')}
+                </span>
               </th>
-              <th className="p-2 text-center border-b bg-gray-100">{t('helpPanel.subscriptions.coins')}</th>
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3} style={{ minWidth: '80px' }}>
+              <th className="p-2 text-center border-b bg-gray-100">
+                {t('helpPanel.subscriptions.coins')}
+              </th>
+              <th
+                className="p-2 text-center border-b bg-gray-100"
+                rowSpan={3}
+                style={{ minWidth: '80px' }}
+              >
                 {t('helpPanel.subscriptions.actions')}
               </th>
             </tr>
             {/* Sub-header row for meals */}
             <tr>
-              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
-              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.bbq')}</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.breakfast')}</th>
-              <th className="p-1 text-center border-b bg-green-50 text-xs" style={{ width: '60px' }}>{t('helpPanel.subscriptions.lunch')}</th>
-              <th className="p-1 text-center border-b bg-gray-100 text-xs" style={{ width: '60px' }}></th>
+              <th
+                className="p-1 text-center border-b bg-gray-100 text-xs"
+                style={{ width: '60px' }}
+              ></th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.breakfast')}
+              </th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.lunch')}
+              </th>
+              <th className="p-1 text-center border-b bg-blue-50 text-xs" style={{ width: '60px' }}>
+                {t('helpPanel.subscriptions.bbq')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-50 text-xs"
+                style={{ width: '60px' }}
+              >
+                {t('helpPanel.subscriptions.breakfast')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-50 text-xs"
+                style={{ width: '60px' }}
+              >
+                {t('helpPanel.subscriptions.lunch')}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-gray-100 text-xs"
+                style={{ width: '60px' }}
+              ></th>
             </tr>
             {/* Totals row */}
             <tr>
-              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.booth_count}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.breakfast_sat}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.lunch_sat}</th>
-              <th className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800" style={{ width: '60px' }}>{totals.bbq_sat}</th>
-              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.breakfast_sun}</th>
-              <th className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800" style={{ width: '60px' }}>{totals.lunch_sun}</th>
-              <th className="p-1 text-center border-b bg-gray-200 text-xs font-bold" style={{ width: '60px' }}>{totals.coins}</th>
+              <th
+                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
+                style={{ width: '60px' }}
+              >
+                {totals.booth_count}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.breakfast_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.lunch_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-blue-100 text-xs font-bold text-blue-800"
+                style={{ width: '60px' }}
+              >
+                {totals.bbq_sat}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
+                style={{ width: '60px' }}
+              >
+                {totals.breakfast_sun}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-green-100 text-xs font-bold text-green-800"
+                style={{ width: '60px' }}
+              >
+                {totals.lunch_sun}
+              </th>
+              <th
+                className="p-1 text-center border-b bg-gray-200 text-xs font-bold"
+                style={{ width: '60px' }}
+              >
+                {totals.coins}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -906,7 +1049,11 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   <tr
                     className={`hover:bg-gray-50 align-top cursor-pointer ${isNotesExpanded ? 'bg-amber-50/40' : 'bg-white border-b'}`}
                     onClick={(e) => {
-                      if (e.target.closest('[data-history-toggle]') || e.target.closest('[data-actions]')) return;
+                      if (
+                        e.target.closest('[data-history-toggle]') ||
+                        e.target.closest('[data-actions]')
+                      )
+                        return;
                       toggleNotes();
                     }}
                   >
@@ -958,11 +1105,17 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-gray-700">{subscription.contact || '-'}</span>
                         {company?.contact_name && company.contact_name !== subscription.contact && (
-                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name}</span>
+                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">
+                            {company.contact_name}
+                          </span>
                         )}
-                        {company?.contact_name_2 && company.contact_name_2 !== (company.contact_name || subscription.contact) && (
-                          <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">{company.contact_name_2}</span>
-                        )}
+                        {company?.contact_name_2 &&
+                          company.contact_name_2 !==
+                            (company.contact_name || subscription.contact) && (
+                            <span className="text-xs text-gray-400 border-t border-gray-200 pt-0.5">
+                              {company.contact_name_2}
+                            </span>
+                          )}
                       </div>
                     </td>
 
@@ -983,12 +1136,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                             <span>{formatPhoneForDisplay(company.contact_phone)}</span>
                           </span>
                         )}
-                        {company?.contact_phone_2 && company.contact_phone_2 !== (company.contact_phone || subscription.phone) && (
-                          <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
-                            <span>{getPhoneFlag(company.contact_phone_2)}</span>
-                            <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
-                          </span>
-                        )}
+                        {company?.contact_phone_2 &&
+                          company.contact_phone_2 !==
+                            (company.contact_phone || subscription.phone) && (
+                            <span className="text-xs text-gray-400 flex items-center gap-1 border-t border-gray-200 pt-0.5">
+                              <span>{getPhoneFlag(company.contact_phone_2)}</span>
+                              <span>{formatPhoneForDisplay(company.contact_phone_2)}</span>
+                            </span>
+                          )}
                       </div>
                     </td>
 
@@ -1047,7 +1202,16 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     <tr className="bg-amber-50/40 border-b">
                       <td />
                       <td colSpan={colSpan - 1} className="pb-2 pt-0 text-left">
-                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap"><span className="font-semibold not-italic text-amber-700">{t('helpPanel.subscriptions.notes')}:</span> {subscription.notes || <span className="text-gray-400">{t('helpPanel.subscriptions.noNotes', 'No notes')}</span>}</p>
+                        <p className="text-xs text-gray-600 italic whitespace-pre-wrap">
+                          <span className="font-semibold not-italic text-amber-700">
+                            {t('helpPanel.subscriptions.notes')}:
+                          </span>{' '}
+                          {subscription.notes || (
+                            <span className="text-gray-400">
+                              {t('helpPanel.subscriptions.noNotes', 'No notes')}
+                            </span>
+                          )}
+                        </p>
                       </td>
                     </tr>
                   )}
@@ -1056,7 +1220,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   {isHistoryExpanded && (
                     <tr className="bg-gray-50 border-b">
                       <td colSpan={colSpan} className="px-8 py-3 text-left">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">History</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 text-left">
+                          History
+                        </p>
                         {historyLines.length === 0 ? (
                           <p className="text-xs text-gray-400 text-left">No history recorded.</p>
                         ) : (
@@ -1102,15 +1268,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Add to {mergeModal.subscription.company?.name || 'Existing Subscription'}</h2>
+              <h2 className="text-lg font-bold text-gray-900">
+                Add to {mergeModal.subscription.company?.name || 'Existing Subscription'}
+              </h2>
               <p className="text-sm text-gray-500 mt-1">
-                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed for <strong>{mergeModal.subscription.event_year}</strong>.
-                Enter the amounts to add to their current subscription.
+                <strong>{mergeModal.subscription.company?.name}</strong> is already subscribed for{' '}
+                <strong>{mergeModal.subscription.event_year}</strong>. Enter the amounts to add to
+                their current subscription.
               </p>
             </div>
             <div className="px-6 py-4 space-y-3">
               {MERGE_FIELDS.map((f) => (
-                <div key={f.key} className={`flex items-center justify-between rounded px-3 py-2 ${f.col}`}>
+                <div
+                  key={f.key}
+                  className={`flex items-center justify-between rounded px-3 py-2 ${f.col}`}
+                >
                   <span className="text-sm font-medium text-gray-700">
                     {f.label}
                     <span className="ml-2 text-xs text-gray-400">
@@ -1135,7 +1307,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
               <button
-                onClick={() => { setMergeModal(null); }}
+                onClick={() => {
+                  setMergeModal(null);
+                }}
                 className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
               >
                 Cancel
@@ -1170,11 +1344,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   checked={subHistorySelection.length === subHistoryModal.lineItems.length}
                   onChange={(e) =>
                     setSubHistorySelection(
-                      e.target.checked ? subHistoryModal.lineItems.map(li => li.id) : [],
+                      e.target.checked ? subHistoryModal.lineItems.map((li) => li.id) : [],
                     )
                   }
                 />
-                <span className="text-sm font-semibold text-gray-700">Select all ({subHistoryModal.lineItems.length})</span>
+                <span className="text-sm font-semibold text-gray-700">
+                  Select all ({subHistoryModal.lineItems.length})
+                </span>
               </label>
               {subHistoryModal.lineItems.map((li) => {
                 const countParts = [
@@ -1185,9 +1361,14 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   li.breakfast_sun > 0 && li.breakfast_sun + ' breakfast sun',
                   li.lunch_sun > 0 && li.lunch_sun + ' lunch sun',
                   li.coins > 0 && li.coins + ' coins',
-                ].filter(Boolean).join(', ');
+                ]
+                  .filter(Boolean)
+                  .join(', ');
                 return (
-                  <label key={li.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer">
+                  <label
+                    key={li.id}
+                    className="flex items-start gap-3 p-2 rounded hover:bg-gray-50 cursor-pointer"
+                  >
                     <input
                       type="checkbox"
                       className="rounded border-gray-300 text-red-600 focus:ring-red-500 mt-0.5"
@@ -1199,17 +1380,30 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       }
                     />
                     <div className="flex-1 min-w-0">
-                      <span className="text-sm text-gray-800 block">{li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}</span>
-                      {countParts && <span className="text-xs text-gray-500 block">{countParts}</span>}
-                      {li.area && <span className="text-xs text-blue-600 block">Area: {li.area}</span>}
-                      {li.notes && <span className="text-xs text-green-700 block">Notes: {li.notes}</span>}
+                      <span className="text-sm text-gray-800 block">
+                        {li.description || li.source + (li.source_ref ? ' — ' + li.source_ref : '')}
+                      </span>
+                      {countParts && (
+                        <span className="text-xs text-gray-500 block">{countParts}</span>
+                      )}
+                      {li.area && (
+                        <span className="text-xs text-blue-600 block">Area: {li.area}</span>
+                      )}
+                      {li.notes && (
+                        <span className="text-xs text-green-700 block">Notes: {li.notes}</span>
+                      )}
                     </div>
                   </label>
                 );
               })}
             </div>
             <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
-              <button onClick={subHistoryModal.onCancel} className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button
+                onClick={subHistoryModal.onCancel}
+                className="px-4 py-2 rounded font-medium text-sm border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
               <button
                 disabled={subHistorySelection.length === 0}
                 onClick={() => subHistoryModal.onConfirm(subHistorySelection)}
@@ -1308,10 +1502,18 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   <tbody>
                     {unsubscribedCompanies.map((company) => (
                       <tr key={company.id} className="border-b border-gray-100 last:border-0">
-                        <td className="px-3 py-2 font-medium text-gray-900">{company.name || '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.contact || company.contact_name || '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.phone ? formatPhoneForDisplay(company.phone) : '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.email || company.contact_email || '-'}</td>
+                        <td className="px-3 py-2 font-medium text-gray-900">
+                          {company.name || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.contact || company.contact_name || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.phone ? formatPhoneForDisplay(company.phone) : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.email || company.contact_email || '-'}
+                        </td>
                         <td className="px-3 py-2 text-gray-700">{company.city || '-'}</td>
                       </tr>
                     ))}
@@ -1411,10 +1613,18 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   <tbody>
                     {subscribedCompanies.map((company) => (
                       <tr key={company.id} className="border-b border-gray-100 last:border-0">
-                        <td className="px-3 py-2 font-medium text-gray-900">{company.name || '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.contact || company.contact_name || '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.phone ? formatPhoneForDisplay(company.phone) : '-'}</td>
-                        <td className="px-3 py-2 text-gray-700">{company.email || company.contact_email || '-'}</td>
+                        <td className="px-3 py-2 font-medium text-gray-900">
+                          {company.name || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.contact || company.contact_name || '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.phone ? formatPhoneForDisplay(company.phone) : '-'}
+                        </td>
+                        <td className="px-3 py-2 text-gray-700">
+                          {company.email || company.contact_email || '-'}
+                        </td>
                         <td className="px-3 py-2 text-gray-700">{company.city || '-'}</td>
                       </tr>
                     ))}

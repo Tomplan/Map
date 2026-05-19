@@ -298,10 +298,7 @@ class SupabaseRestore {
 
   async truncateTable(tableName) {
     try {
-      const { error } = await this.getSupabaseClient()
-        .from(tableName)
-        .delete()
-        .neq('id', -99999);
+      const { error } = await this.getSupabaseClient().from(tableName).delete().neq('id', -99999);
 
       if (error) {
         this.logger.warn(`Could not truncate ${tableName} via API: ${error.message}`);
@@ -398,7 +395,14 @@ class SupabaseRestore {
   }
 
   async run(options = {}) {
-    const { backupFile, backupDir, dryRun = false, table = null, confirm = false, replace = false } = options;
+    const {
+      backupFile,
+      backupDir,
+      dryRun = false,
+      table = null,
+      confirm = false,
+      replace = false,
+    } = options;
 
     try {
       this.logger.info('Starting Supabase database restore');

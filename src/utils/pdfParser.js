@@ -213,9 +213,11 @@ function parseSpatialInvoice(items, allowedItems) {
     // We start collecting once we hit a line containing "opmerking(s)" or "betreft".
     if (
       !notesStarted &&
-      (lowerText.includes('opmerking') || lowerText.includes('opmerkingen') || lowerText.includes('betreft'))
+      (lowerText.includes('opmerking') ||
+        lowerText.includes('opmerkingen') ||
+        lowerText.includes('betreft'))
     ) {
-        // ignore the header row that lists both column names like
+      // ignore the header row that lists both column names like
       // "Betaalmethode  Opmerking"; the real notes start on the next line.
       if (lowerText.includes('betaalmethode')) {
         // Record the left boundary of the notes column.
@@ -227,9 +229,7 @@ function parseSpatialInvoice(items, allowedItems) {
         const betaalItem = lineItems.find((i) => /betaalmethode/i.test(i.str));
         const opItem = lineItems.find((i) => /opmerking/i.test(i.str));
         if (opItem) {
-          noteColumnX = betaalItem
-            ? (betaalItem.x + opItem.x) / 2
-            : opItem.x / 2;
+          noteColumnX = betaalItem ? (betaalItem.x + opItem.x) / 2 : opItem.x / 2;
           console.debug('HEADER SKIP: recorded noteColumnX (midpoint)', noteColumnX);
         }
         console.debug('HEADER SKIP: setting notesStarted, ignoring line', textChunk);
@@ -314,8 +314,12 @@ function parseSpatialInvoice(items, allowedItems) {
           // Skip bare domain names (e.g. "4wdspecialist.nl") — they aren't the company name.
           if (!parsed.company_name && !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(leftText)) {
             // Strip T.a.v./Dhr./etc. prefixes — these are attention lines, not the company name
-            const prefixMatch = leftText.match(/^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)[\s.]+/i);
-            parsed.company_name = prefixMatch ? leftText.slice(prefixMatch[0].length).trim() : leftText;
+            const prefixMatch = leftText.match(
+              /^(?:T\.?a\.?v\.?|Dhr\.?|Mevr\.?|Attn:?|Fao:?)[\s.]+/i,
+            );
+            parsed.company_name = prefixMatch
+              ? leftText.slice(prefixMatch[0].length).trim()
+              : leftText;
           }
         }
       }
@@ -403,10 +407,9 @@ function parseSpatialInvoice(items, allowedItems) {
       const descLower = li.item.toLowerCase();
       // Only Keep items if they partially match one of the explicit allowed list strings
       return allowedItems.some((allowedStr) => {
-        const check = (typeof allowedStr === 'string'
-          ? allowedStr
-          : (allowedStr?.label || '')
-        ).trim().toLowerCase();
+        const check = (typeof allowedStr === 'string' ? allowedStr : allowedStr?.label || '')
+          .trim()
+          .toLowerCase();
         return check.length > 0 && descLower.includes(check);
       });
     });
@@ -490,15 +493,24 @@ function parseSpatialInvoice(items, allowedItems) {
 
     // Email — any line containing @
     if (/@[a-z0-9.-]+\.[a-z]{2,}/i.test(l)) {
-      if (!parsed.contact_email) { parsed.contact_email = l; return; }
-      if (!parsed.contact_email_2) { parsed.contact_email_2 = l; return; }
+      if (!parsed.contact_email) {
+        parsed.contact_email = l;
+        return;
+      }
+      if (!parsed.contact_email_2) {
+        parsed.contact_email_2 = l;
+        return;
+      }
     }
 
     // Dutch VAT: "BTW" or "NL[9digits]" patterns
     if (!parsed.vat_number && (/BTW/i.test(l) || /NL\s*\d{9}/i.test(l))) {
       // Extract only the VAT number token, discarding any label text (e.g. "BTW nummer: NL001670643B62")
-      const vatToken = l.match(/\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|NL|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i);
-      parsed.vat_number = vatToken ? vatToken[0].replace(/\s+/g, '').toUpperCase()
+      const vatToken = l.match(
+        /\b(?:NL|BE|DE|GB|FR|AT|DK|ES|FI|IT|LU|NL|PL|PT|SE)\s*[\dA-Z]{6,12}\b/i,
+      );
+      parsed.vat_number = vatToken
+        ? vatToken[0].replace(/\s+/g, '').toUpperCase()
         : l.replace(/^[\w\s]*?(?:BTW|VAT|nummer|number|nr\.?)[\s:\-]*/i, '').trim();
       return;
     }
@@ -506,7 +518,10 @@ function parseSpatialInvoice(items, allowedItems) {
     // Dutch KvK (Chamber of Commerce): explicit label or exactly 8 consecutive digits
     if (!parsed.kvk_number && (/KvK/i.test(l) || /^[\s.]*\d{8}[\s.]*$/.test(l))) {
       const m = l.match(/\d{8}/);
-      if (m) { parsed.kvk_number = m[0]; return; }
+      if (m) {
+        parsed.kvk_number = m[0];
+        return;
+      }
     }
 
     // Dutch postal code: 4 digits + 2 letters, often followed by city name.
@@ -533,12 +548,15 @@ function parseSpatialInvoice(items, allowedItems) {
     }
 
     // Phone: starts with + or digit, has 6+ consecutive digits (exclude postal-code-like lines)
-    if (
-      /^[+\d(][\d\s().\-]{6,}$/.test(l) &&
-      !/^\d{4}\s*[A-Z]{2}$/i.test(l)
-    ) {
-      if (!parsed.contact_phone) { parsed.contact_phone = l; return; }
-      if (!parsed.contact_phone_2) { parsed.contact_phone_2 = l; return; }
+    if (/^[+\d(][\d\s().\-]{6,}$/.test(l) && !/^\d{4}\s*[A-Z]{2}$/i.test(l)) {
+      if (!parsed.contact_phone) {
+        parsed.contact_phone = l;
+        return;
+      }
+      if (!parsed.contact_phone_2) {
+        parsed.contact_phone_2 = l;
+        return;
+      }
     }
 
     // Person / business name with common Dutch prefixes (T.a.v., Dhr., Mevr., Attn)
@@ -547,8 +565,14 @@ function parseSpatialInvoice(items, allowedItems) {
     // Lines with a recognised prefix are always contact references, never addresses.
     if (namePrefix && namePart) {
       if (!/\d/.test(namePart)) {
-        if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
-        if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+        if (!parsed.contact_name) {
+          parsed.contact_name = namePart;
+          return;
+        }
+        if (!parsed.contact_name_2) {
+          parsed.contact_name_2 = namePart;
+          return;
+        }
       }
       // Even when the name contains digits (e.g. "4wdspecialist BV"), skip —
       // it's a T.a.v. reference, not a street address.
@@ -562,14 +586,20 @@ function parseSpatialInvoice(items, allowedItems) {
       !/\d/.test(namePart) &&
       namePart.split(' ').length >= 2
     ) {
-      if (!parsed.contact_name) { parsed.contact_name = namePart; return; }
-      if (!parsed.contact_name_2) { parsed.contact_name_2 = namePart; return; }
+      if (!parsed.contact_name) {
+        parsed.contact_name = namePart;
+        return;
+      }
+      if (!parsed.contact_name_2) {
+        parsed.contact_name_2 = namePart;
+        return;
+      }
     }
 
     // Compound line: "Company, Street PostalCode City" — split on comma
     // e.g. "4WD Specialist, Hoefslag 3 5411 LS Zeeland"
     if (!parsed.address_line1 && l.includes(',')) {
-      const parts = l.split(',').map(p => p.trim());
+      const parts = l.split(',').map((p) => p.trim());
       if (parts.length >= 2) {
         const afterComma = parts.slice(1).join(',').trim();
         // Check if the part after the comma contains a street+postcode pattern

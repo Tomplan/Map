@@ -327,9 +327,10 @@ function EventClusterMarkers({
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
   // Default marker styles passed from useEventMarkers (fetched together with markers)
-  const defaultMarkers = defaultStylesProp !== undefined
-    ? (defaultStylesProp || { assigned: null, unassigned: null })
-    : { assigned: null, unassigned: null };
+  const defaultMarkers =
+    defaultStylesProp !== undefined
+      ? defaultStylesProp || { assigned: null, unassigned: null }
+      : { assigned: null, unassigned: null };
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();

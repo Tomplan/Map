@@ -16,7 +16,24 @@ export function OrganizationLogoProvider({ children }) {
   // DB value to attempt fallback when a generated variant doesn't exist.
   const [organizationLogoRaw, setOrganizationLogoRaw] = useState(BRANDING_CONFIG.DEFAULT_LOGO);
   const [organizationLogo, setOrganizationLogo] = useState(getDefaultLogoPath());
+  const [displayLogo, setDisplayLogo] = useState(getDefaultLogoPath());
   const [loading, setLoading] = useState(true);
+
+  const preloadDisplayLogo = React.useCallback((nextLogo) => {
+    if (!nextLogo) {
+      setDisplayLogo(getDefaultLogoPath());
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      setDisplayLogo((prev) => (prev === nextLogo ? prev : nextLogo));
+    };
+    img.onerror = () => {
+      // Keep the current display logo if the next asset fails to load.
+    };
+    img.src = nextLogo;
+  }, []);
 
   useEffect(() => {
     // Fetch organization profile logo
@@ -43,11 +60,13 @@ export function OrganizationLogoProvider({ children }) {
           // Only update state when values actually change to avoid extra re-renders
           setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
           setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
+          preloadDisplayLogo(normalized);
         } else {
           console.log(
             '[OrganizationLogoContext] Keeping default logo:',
             BRANDING_CONFIG.DEFAULT_LOGO,
           );
+          setDisplayLogo((prev) => (prev === getDefaultLogoPath() ? prev : getDefaultLogoPath()));
         }
       } catch (err) {
         console.error('Error fetching organization logo:', err);
@@ -80,11 +99,15 @@ export function OrganizationLogoProvider({ children }) {
               setOrganizationLogo((prev) =>
                 prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
               );
+              setDisplayLogo((prev) =>
+                prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
+              );
             } else {
               const raw = payload.new.logo;
               const normalized = getLogoPath(raw);
               setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
               setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
+              preloadDisplayLogo(normalized);
             }
           }
         },
@@ -94,10 +117,12 @@ export function OrganizationLogoProvider({ children }) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [preloadDisplayLogo]);
 
   return (
-    <OrganizationLogoContext.Provider value={{ organizationLogo, organizationLogoRaw, loading }}>
+    <OrganizationLogoContext.Provider
+      value={{ organizationLogo, organizationLogoRaw, displayLogo, loading }}
+    >
       {children}
     </OrganizationLogoContext.Provider>
   );

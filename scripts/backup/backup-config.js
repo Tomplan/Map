@@ -116,8 +116,7 @@ export const backupConfig = {
 // Validate required environment variables
 export function validateConfig() {
   const hasUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const hasKey =
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  const hasKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
   const missing = [];
   if (!hasUrl) missing.push('SUPABASE_URL or VITE_SUPABASE_URL');

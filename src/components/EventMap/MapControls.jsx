@@ -163,7 +163,7 @@ export default function MapControls({
               aria-label="Layer selection"
             >
               <div className="font-semibold mb-2">Base Layers</div>
-              {MAP_LAYERS.map((layer) => (
+              {MAP_LAYERS.filter((layer) => !layer.adminOnly || isAdminView).map((layer) => (
                 <button
                   key={layer.key}
                   className={`w-full text-left px-2 py-1 rounded hover:bg-blue-50 ${

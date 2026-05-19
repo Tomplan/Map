@@ -16,7 +16,9 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
     // Fetch company defaults for contact info
     const { data: company } = await supabase
       .from('companies')
-      .select('contact, phone, email, address_line1, address_line2, city, postal_code, country, vat_number')
+      .select(
+        'contact, phone, email, address_line1, address_line2, city, postal_code, country, vat_number',
+      )
       .eq('id', companyId)
       .single();
 
@@ -31,7 +33,8 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
       .single();
 
     // Defaults are per-booth — multiply by booth_count
-    const boothCount = typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1;
+    const boothCount =
+      typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1;
     const defaultBreakfastSat = (orgSettings?.default_breakfast_sat || 0) * boothCount;
     const defaultLunchSat = (orgSettings?.default_lunch_sat || 0) * boothCount;
     const defaultBbqSat = (orgSettings?.default_bbq_sat || 0) * boothCount;
@@ -58,7 +61,8 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
           contact: subscriptionData.contact || company?.contact || '',
           phone: phoneToInsert,
           email: emailToInsert,
-          booth_count: typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1,
+          booth_count:
+            typeof subscriptionData.booth_count === 'number' ? subscriptionData.booth_count : 1,
           area: subscriptionData.area || '',
           breakfast_sat: subscriptionData.breakfast_sat ?? defaultBreakfastSat,
           lunch_sat: subscriptionData.lunch_sat ?? defaultLunchSat,
@@ -182,7 +186,6 @@ export default function useEventSubscriptions(eventYear) {
     [eventYear, entry],
   );
 
-
   // expose public hook API
   // wrap internal helper so callers don't need to supply year
   const subscribeCompany = async (companyId, subscriptionData) => {
@@ -197,7 +200,6 @@ export default function useEventSubscriptions(eventYear) {
   // and also export the internal helper independently so tests can call it
   // without mounting the hook (avoids triggering live subscription logic)
   // (we export it below after the function definition)
-
 
   // Update a subscription
   const updateSubscription = async (subscriptionId, updates) => {
@@ -255,7 +257,9 @@ export default function useEventSubscriptions(eventYear) {
 
       if (assignmentsError) throw assignmentsError;
       if (assignmentsDeleted !== undefined) {
-        console.log(`Deleted ${assignmentsDeleted} assignment(s) for company ${subscription.company_id}, year ${subscription.event_year}`);
+        console.log(
+          `Deleted ${assignmentsDeleted} assignment(s) for company ${subscription.company_id}, year ${subscription.event_year}`,
+        );
       }
 
       // Delete the subscription
@@ -264,7 +268,8 @@ export default function useEventSubscriptions(eventYear) {
         .delete({ count: 'exact' })
         .eq('id', subscriptionId);
 
-      if (count !== undefined && count === 0) throw new Error('Failed to delete - row not found or blocked by RLS');
+      if (count !== undefined && count === 0)
+        throw new Error('Failed to delete - row not found or blocked by RLS');
 
       if (deleteError) throw deleteError;
 
@@ -478,4 +483,3 @@ export default function useEventSubscriptions(eventYear) {
     reload: loadSubscriptions,
   };
 }
-
