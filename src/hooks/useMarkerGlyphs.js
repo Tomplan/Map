@@ -86,30 +86,35 @@ async function _loadInitialGlyphs(year, entry) {
 function _startGlyphsChannels(year, entry) {
   if (entry.channels && entry.channels.length > 0) return;
 
-  const coreChannel = supabase
-    .channel(`markers-core-glyphs-${year}`)
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'markers_core', filter: `event_year=eq.${year}` },
-      () => _loadInitialGlyphs(year, entry),
-    )
-    .subscribe();
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data?.session?.user) return; // Scale safety
+    if (entry.channels && entry.channels.length > 0) return;
 
-  const appearanceChannel = supabase
-    .channel(`markers-appearance-glyphs-${year}`)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'markers_appearance',
-        filter: `event_year=eq.${year}`,
-      },
-      () => _loadInitialGlyphs(year, entry),
-    )
-    .subscribe();
+    const coreChannel = supabase
+      .channel(`markers-core-glyphs-${year}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'markers_core', filter: `event_year=eq.${year}` },
+        () => _loadInitialGlyphs(year, entry),
+      )
+      .subscribe();
 
-  entry.channels = [coreChannel, appearanceChannel];
+    const appearanceChannel = supabase
+      .channel(`markers-appearance-glyphs-${year}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'markers_appearance',
+          filter: `event_year=eq.${year}`,
+        },
+        () => _loadInitialGlyphs(year, entry),
+      )
+      .subscribe();
+
+    entry.channels = [coreChannel, appearanceChannel];
+  });
 }
 
 function _stopGlyphsEntry(year) {

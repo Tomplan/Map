@@ -231,31 +231,35 @@ export default function useOrganizationSettings() {
 
     // Setup channel if missing
     if (!entry.channel) {
-      entry.channel = supabase
-        .channel('organization-settings-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*', // Listen to ALL events (INSERT/UPDATE/DELETE)
-            schema: 'public',
-            table: 'organization_settings',
-            filter: 'id=eq.1',
-          },
-          (payload) => {
-            if (payload.eventType === 'UPDATE' && payload.new) {
-              const currentVersion = entry.state.settings?.row_version || 0;
-              if (payload.new.row_version > currentVersion) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data?.session?.user) return; // Scale safety
+        if (entry.channel) return;
+        entry.channel = supabase
+          .channel('organization-settings-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*', // Listen to ALL events (INSERT/UPDATE/DELETE)
+              schema: 'public',
+              table: 'organization_settings',
+              filter: 'id=eq.1',
+            },
+            (payload) => {
+              if (payload.eventType === 'UPDATE' && payload.new) {
+                const currentVersion = entry.state.settings?.row_version || 0;
+                if (payload.new.row_version > currentVersion) {
+                  entry.state.settings = payload.new;
+                  entry.listeners.forEach((l) => l(entry.state));
+                }
+              } else if (payload.eventType === 'INSERT' && payload.new) {
+                // Should happen only once
                 entry.state.settings = payload.new;
                 entry.listeners.forEach((l) => l(entry.state));
               }
-            } else if (payload.eventType === 'INSERT' && payload.new) {
-              // Should happen only once
-              entry.state.settings = payload.new;
-              entry.listeners.forEach((l) => l(entry.state));
-            }
-          },
-        )
-        .subscribe();
+            },
+          )
+          .subscribe();
+      });
     }
 
     return () => {

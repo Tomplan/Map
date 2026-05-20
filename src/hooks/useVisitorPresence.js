@@ -59,6 +59,10 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
   const [localState, setLocalState] = useState(globalState);
 
   useEffect(() => {
+    // Only establish Presence websockets for logged-in admins to prevent
+    // 5000 public visitors from crashing the 500 max connection limit.
+    if (!user) return;
+
     listeners.add(setLocalState);
 
     // Initialize the shared websocket channel once globally
@@ -96,11 +100,13 @@ export default function useVisitorPresence(shouldTrack = false, user = null) {
         activeTrackingPayload = null;
       }
     };
-  }, []); // Run socket initializer exactly once
+  }, [user]); // Re-evaluate if user logs in
 
   // Isolate Tracking Actions specifically so non-tracking components (like Dashboard)
   // don't accidentally "untrack" the main App component's connection.
   useEffect(() => {
+    if (!user) return; // Scale safety: Do not attempt to track public users via ping
+
     // If this Hook instance isn't trying to broadcast presence (shouldTrack = false)
     // do absolutely nothing. Do not interfere with global tracking!
     if (!shouldTrack) return;

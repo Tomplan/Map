@@ -54,19 +54,23 @@ async function _loadInitialProfile(entry) {
 
 function _startOrgChannel(entry) {
   if (entry.channel) return;
-  entry.channel = supabase
-    .channel('organization-profile')
-    .on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
-      (payload) => {
-        if (payload.new) {
-          entry.state.profile = payload.new;
-          entry.listeners.forEach((l) => l(entry.state));
-        }
-      },
-    )
-    .subscribe();
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
+    if (entry.channel) return;
+    entry.channel = supabase
+      .channel('organization-profile')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'organization_profile', filter: 'id=eq.1' },
+        (payload) => {
+          if (payload.new) {
+            entry.state.profile = payload.new;
+            entry.listeners.forEach((l) => l(entry.state));
+          }
+        },
+      )
+      .subscribe();
+  });
 }
 
 function _stopOrgEntry() {
