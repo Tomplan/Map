@@ -103,7 +103,8 @@ async function _loadInitialSettings(year, entry) {
 }
 
 function _startRealtimeChannel(year, entry) {
-  if (entry.channel) return;
+  if (entry.channel || entry.channelInit) return;
+  entry.channelInit = true;
   supabase.auth.getSession().then(({ data }) => {
     if (!data?.session?.user) return; // Scale safety
     if (entry.channel) return;

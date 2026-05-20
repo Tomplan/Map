@@ -84,7 +84,8 @@ async function _loadInitialGlyphs(year, entry) {
 }
 
 function _startGlyphsChannels(year, entry) {
-  if (entry.channels && entry.channels.length > 0) return;
+  if (entry.channelsInit || (entry.channels && entry.channels.length > 0)) return;
+  entry.channelsInit = true;
 
   supabase.auth.getSession().then(({ data }) => {
     if (!data?.session?.user) return; // Scale safety

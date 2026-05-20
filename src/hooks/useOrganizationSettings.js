@@ -230,7 +230,8 @@ export default function useOrganizationSettings() {
     }
 
     // Setup channel if missing
-    if (!entry.channel) {
+    if (!entry.channel && !entry.channelInit) {
+      entry.channelInit = true;
       supabase.auth.getSession().then(({ data }) => {
         if (!data?.session?.user) return; // Scale safety
         if (entry.channel) return;

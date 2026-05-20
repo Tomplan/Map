@@ -17,11 +17,10 @@ jest.mock('../../supabaseClient', () => {
   const mockRemoveChannel = jest.fn();
 
   return {
-    supabase: {
-      from: mockFrom,
+    supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: mockFrom,
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
-      auth: { getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'u-1' } } }) },
+      auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })), getUser: jest.fn().mockResolvedValue({ data: { user: { id: 'u-1' } } }) },
     },
     __mocks__: {
       mockFrom,

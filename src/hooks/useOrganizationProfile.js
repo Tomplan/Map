@@ -53,7 +53,8 @@ async function _loadInitialProfile(entry) {
 }
 
 function _startOrgChannel(entry) {
-  if (entry.channel) return;
+  if (entry.channel || entry.channelInit) return;
+  entry.channelInit = true;
   supabase.auth.getSession().then(({ data }) => {
     if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
     if (entry.channel) return;

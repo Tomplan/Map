@@ -35,8 +35,7 @@ describe('ImportModal review workbook import', () => {
     const categoriesSelect = jest.fn().mockResolvedValue({ data: [], error: null });
 
     jest.doMock('../../supabaseClient', () => ({
-      supabase: {
-        from: jest.fn((table) => {
+      supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: jest.fn((table) => {
           if (table === 'companies') {
             return { update: updateMock, insert: jest.fn() };
           }

@@ -223,7 +223,8 @@ export function useCategories(language = 'nl') {
     }
 
     // start channels only once per entry
-    if (!entry.channel) {
+    if (!entry.channel && !entry.channelInit) {
+      entry.channelInit = true;
       supabase.auth.getSession().then(({ data }) => {
         if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
         entry.channel = supabase
@@ -239,7 +240,8 @@ export function useCategories(language = 'nl') {
           .subscribe();
       });
     }
-    if (!entry.statsChannel) {
+    if (!entry.statsChannel && !entry.statsChannelInit) {
+      entry.statsChannelInit = true;
       supabase.auth.getSession().then(({ data }) => {
         if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
         entry.statsChannel = supabase

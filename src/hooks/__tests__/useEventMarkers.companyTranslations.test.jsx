@@ -54,8 +54,7 @@ jest.mock('../../supabaseClient', () => {
   });
 
   return {
-    supabase: {
-      from: mockFrom,
+    supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: mockFrom,
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
     },
@@ -71,7 +70,7 @@ jest.mock('../../supabaseClient', () => {
 import useEventMarkers from '../useEventMarkers';
 
 function Probe() {
-  const { markers, loading } = useEventMarkers(2026);
+  const { markers, loading } = useEventMarkers(2026, true);
   return <div data-testid="probe">{loading ? 'loading' : JSON.stringify(markers)}</div>;
 }
 
