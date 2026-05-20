@@ -32,8 +32,7 @@ jest.mock('../../utils/dataExportImport', () => ({
 // Mock supabase module
 jest.mock('../../supabaseClient', () => ({
   __esModule: true,
-  supabase: {
-    from: jest.fn(),
+  supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: jest.fn(),
   },
 }));
 
