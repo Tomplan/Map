@@ -6,7 +6,7 @@ import { getMarkerSnapshot, setMarkerSnapshot } from '../services/idbCache';
  * Updated hook to fetch markers with company assignments
  * Uses new Companies and Assignments tables structure
  */
-export default function useEventMarkers(eventYear = new Date().getFullYear()) {
+export default function useEventMarkers(eventYear = new Date().getFullYear(), isAdmin = false) {
   const initialOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   const [isOnline, setIsOnline] = useState(initialOnline);
   const [markers, setMarkers] = useState([]);
@@ -242,10 +242,27 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Foreground Sync: Fetch fresh data when the user brings the app back to visibility
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible' && isOnline) {
+        loadMarkers(true);
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Background Polling: Fetch fresh data periodically for non-admin viewers to avoid stale data
+    let pollingInterval = null;
+    if (!isAdmin && isOnline) {
+      pollingInterval = setInterval(() => {
+        loadMarkers(true);
+      }, 5 * 60 * 1000); // Poll every 5 minutes
+    }
+
     // Supabase realtime subscriptions for all related tables. Only create
-    // channels when online to avoid unnecessary network work while offline.
+    // channels when online AND when the user is an admin to avoid hitting
+    // the 500 max active websocket connection limit from visitors fetching map logic
     const createdChannels = [];
-    if (isOnline) {
+    if (isAdmin && isOnline) {
       const coreChannel = supabase
         .channel(`markers-core-changes-${eventYear}`)
         .on(
@@ -319,7 +336,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     // Note: Markers_Admin subscription removed - admin data comes from event_subscriptions
 
     let assignmentsChannel = null;
-    if (isOnline) {
+    if (isAdmin && isOnline) {
       assignmentsChannel = supabase
         .channel('markers-assignments-changes')
         .on(
@@ -348,7 +365,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
 
     let companiesChannel = null;
-    if (isOnline) {
+    if (isAdmin && isOnline) {
       companiesChannel = supabase
         .channel('companies-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'companies' }, (payload) => {
@@ -382,7 +399,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
 
     let companyTranslationsChannel = null;
-    if (isOnline) {
+    if (isAdmin && isOnline) {
       companyTranslationsChannel = supabase
         .channel('company-translations-changes')
         .on(
@@ -396,7 +413,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
     }
 
     let subscriptionsChannel = null;
-    if (isOnline) {
+    if (isAdmin && isOnline) {
       subscriptionsChannel = supabase
         .channel(`event-subscriptions-changes-${eventYear}`)
         .on(
@@ -416,6 +433,8 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
 
     return () => {
       clearTimeout(debounceTimerRef.current);
+      if (pollingInterval) clearInterval(pollingInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       // Remove any channels we created while online
@@ -428,7 +447,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear()) {
       if (companyTranslationsChannel) supabase.removeChannel(companyTranslationsChannel);
       if (subscriptionsChannel) supabase.removeChannel(subscriptionsChannel);
     };
-  }, [isOnline, loadMarkers, eventYear]);
+  }, [isOnline, loadMarkers, eventYear, isAdmin]);
 
   // Archive current year markers and prepare for next year
   const archiveCurrentYear = useCallback(async () => {

@@ -223,26 +223,34 @@ export function useCategories(language = 'nl') {
     }
 
     // start channels only once per entry
-    if (!entry.channel) {
-      entry.channel = supabase
-        .channel('categories-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
-          loadCategories(),
-        )
-        .on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: 'category_translations' },
-          () => loadCategories(),
-        )
-        .subscribe();
+    if (!entry.channel && !entry.channelInit) {
+      entry.channelInit = true;
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
+        entry.channel = supabase
+          .channel('categories-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
+            loadCategories(),
+          )
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'category_translations' },
+            () => loadCategories(),
+          )
+          .subscribe();
+      });
     }
-    if (!entry.statsChannel) {
-      entry.statsChannel = supabase
-        .channel('company-categories-stats')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
-          loadCategoryStats(),
-        )
-        .subscribe();
+    if (!entry.statsChannel && !entry.statsChannelInit) {
+      entry.statsChannelInit = true;
+      supabase.auth.getSession().then(({ data }) => {
+        if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
+        entry.statsChannel = supabase
+          .channel('company-categories-stats')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
+            loadCategoryStats(),
+          )
+          .subscribe();
+      });
     }
 
     return () => {

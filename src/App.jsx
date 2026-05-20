@@ -151,14 +151,14 @@ function AppContent() {
   // localStorage (which may hold a stale year from a previous admin session).
   const effectiveYear = user ? selectedYear : orgSettingsLoading ? currentYear : publicYear;
 
-  // Fetch marker data from Supabase filtered by effectiveYear
+  // Fetch marker data from Supabase filtered by effectiveYear (and conditionally enable WebSockets for logged in admins)
   const {
     markers,
     defaultStyles,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
     getAvailableYears,
-  } = useEventMarkers(effectiveYear);
+  } = useEventMarkers(effectiveYear, !!user);
 
   // Shared marker state for map and dashboard - real-time updates handled by useEventMarkers
   const {

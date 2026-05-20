@@ -103,24 +103,29 @@ async function _loadInitialSettings(year, entry) {
 }
 
 function _startRealtimeChannel(year, entry) {
-  if (entry.channel) return;
-  const channelName = `event-map-settings-${year}`;
-  entry.channel = supabase
-    .channel(channelName)
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'event_map_settings',
-        filter: `event_year=eq.${year}`,
-      },
-      () => {
-        // reload cache on any change for this year
-        _loadInitialSettings(year, entry);
-      },
-    )
-    .subscribe();
+  if (entry.channel || entry.channelInit) return;
+  entry.channelInit = true;
+  supabase.auth.getSession().then(({ data }) => {
+    if (!data?.session?.user) return; // Scale safety
+    if (entry.channel) return;
+    const channelName = `event-map-settings-${year}`;
+    entry.channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_map_settings',
+          filter: `event_year=eq.${year}`,
+        },
+        () => {
+          // reload cache on any change for this year
+          _loadInitialSettings(year, entry);
+        },
+      )
+      .subscribe();
+  });
 }
 
 function _stopCacheEntry(year) {
