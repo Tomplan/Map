@@ -55,8 +55,7 @@
       "system_manager": "Systeembeheerder",
       "event_manager": "Evenementbeheerder",
       "content_editor": "Contentbeheerder"
-    },
-    "invoices": "Facturen"
+    }
   },
   "invoiceSync": {
     "matchLabel": "Match:",
@@ -1049,8 +1048,8 @@
       "warningDesc": "We verwachten meer dan 5000 bezoekers tijdens het evenement. Om de app stabiel te houden op de Free Tier en de limiet van 500 WebSockets te vermijden, gebruiken bezoekers stateless REST verzoeken. Alleen beheerders gebruiken live real-time verbindingen.",
       "crashWarning": "Deze scheiding voorkomt dat de 5000 publieke bezoekers de app laten crashen, terwijl live bewerkingen bliksemsnel blijven voor beheerders.",
       "weekChecklist": "Checklist Evenementenweek:",
-      "upgradeTitle": "Monitor Supabase Quota's",
-      "upgradeDesc": "Hoewel WebSockets tot een minimum zijn beperkt, is het belangrijk om Data Egress en API limieten in de gaten te houden. Upgrade naar Pro als de bandbreedte limieten overschreden worden.",
+      "upgradeTitle": "Free Tier Geverifieerd (Geen Pro Upgrade Nodig)",
+      "upgradeDesc": "Onze DB-grootte is < 5MB (limiet 500MB). Een volledige test met 5.000 bezoekers verbruikt slechts ~1,5MB bandbreedte (limiet 5GB). Omdat de app REST gebruikt, raken we de limiet van 500 connecties nooit. Een Pro Plan is niet nodig.",
       "lockMapTitle": "Vergrendel Kaart (Alleen-Lezen)",
       "lockMapDesc": "Om onbedoelde live updates te voorkomen tijdens het evenement, vergrendel de UI van de kaart in het beheerpaneel zodat geen stands of markeringen per ongeluk verplaatst kunnen worden.",
       "verifyBackupsTitle": "Controleer Automatische Back-ups",
@@ -1230,7 +1229,6 @@
       "email": "E-mail",
       "address": "Adres",
       "vatNumber": "BTW-nummer",
-      "actions": "Acties",
       "notSet": "Niet ingesteld",
       "none": "Geen",
       "orPasteUrl": "Of plak URL",
@@ -1285,8 +1283,7 @@
     "navigationRequiredText": "Om de rondleiding te starten moeten we naar {{page}} navigeren. Wil je doorgaan?",
     "startFailed": "Kon de rondleiding niet starten — vereiste elementen op de pagina ontbreken of laden nog. Probeer het later of controleer of je op de juiste pagina bent.",
     "duration": "Duur: ~{{minutes}} min"
-  }
-,
+  },
   "subscriptionAlreadyExists": "Er bestaat al een inschrijving voor {{companyName}}",
   "subscriptionAlreadyExistsForYear": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van dit item toe aan de bestaande inschrijving.\nVervangen overschrijft deze volledig met dit item.",
   "subscriptionAlreadyExistsForCompany": "Een inschrijving voor \"{{companyName}}\" bestaat al voor {{year}} (stands: {{booths}}).\n\nSamenvoegen voegt de aantallen van deze factuur toe aan de bestaande inschrijving.\nVervangen overschrijft deze volledig.",
