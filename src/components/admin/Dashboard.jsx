@@ -12,6 +12,7 @@ import {
   mdiGrill,
   mdiCircleMultiple,
   mdiAlertCircle,
+  mdiInformation,
   mdiAccountGroup,
   mdiAlert,
   mdiAccountTie,
@@ -397,10 +398,10 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
           </div>
         </div>
 
-        {/* Subtle Warning & Checklist */}
-        <div className="bg-amber-50/50 border-t border-b border-amber-100/50 p-3 mt-2 text-xs">
-          <div className="flex items-start gap-2 mb-2 text-amber-700">
-            <Icon path={mdiAlertCircle} size={0.7} className="mt-0.5 flex-shrink-0" />
+        {/* Subtle Informational Checklist */}
+        <div className="bg-blue-50/50 border-t border-b border-blue-100/50 p-3 mt-2 text-xs">
+          <div className="flex items-start gap-2 mb-2 text-blue-700">
+            <Icon path={mdiInformation} size={0.7} className="mt-0.5 flex-shrink-0" />
             <div className="leading-snug">
               <span className="font-bold mr-1">{t('dashboard.checklist.title')}:</span>
               <span className="opacity-90">
@@ -411,40 +412,40 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
           </div>
 
           <div className="ml-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-2">
-            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+            <label className="flex items-start gap-1.5 cursor-pointer text-slate-700 group hover:text-slate-900 transition-colors">
               <input
                 type="checkbox"
-                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+                className="mt-0.5 h-3 w-3 rounded border-blue-200 text-blue-500 focus:ring-blue-400 bg-transparent"
               />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.upgradeTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.upgradeDesc')}</span>
               </div>
             </label>
-            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+            <label className="flex items-start gap-1.5 cursor-pointer text-slate-700 group hover:text-slate-900 transition-colors">
               <input
                 type="checkbox"
-                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+                className="mt-0.5 h-3 w-3 rounded border-blue-200 text-blue-500 focus:ring-blue-400 bg-transparent"
               />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.lockMapTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.lockMapDesc')}</span>
               </div>
             </label>
-            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+            <label className="flex items-start gap-1.5 cursor-pointer text-slate-700 group hover:text-slate-900 transition-colors">
               <input
                 type="checkbox"
-                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+                className="mt-0.5 h-3 w-3 rounded border-blue-200 text-blue-500 focus:ring-blue-400 bg-transparent"
               />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.verifyBackupsTitle')}</span>
                 <span className="opacity-70">{t('dashboard.checklist.verifyBackupsDesc')}</span>
               </div>
             </label>
-            <label className="flex items-start gap-1.5 cursor-pointer text-amber-900/80 group hover:text-amber-900 transition-colors">
+            <label className="flex items-start gap-1.5 cursor-pointer text-slate-700 group hover:text-slate-900 transition-colors">
               <input
                 type="checkbox"
-                className="mt-0.5 h-3 w-3 rounded border-amber-200 text-amber-500 focus:ring-amber-400 bg-transparent"
+                className="mt-0.5 h-3 w-3 rounded border-blue-200 text-blue-500 focus:ring-blue-400 bg-transparent"
               />
               <div className="flex flex-col text-[11px] leading-tight">
                 <span className="font-medium">{t('dashboard.checklist.checkPerfTitle')}</span>
