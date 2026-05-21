@@ -1,11 +1,14 @@
 const fs = require('fs');
 
 const run = () => {
-    let code = fs.readFileSync('temp_pdf_test.cjs', 'utf-8');
-    code = code.replace(/import \* as pdfjsLib from 'pdfjs-dist';/g, 'const pdfjsLib = require(\'pdfjs-dist/legacy/build/pdf.js\');');
-    code = code.replace(/export async function/g, 'async function');
-    code = 'const fs = require(\"fs\");\n' + code;
-    code += `
+  let code = fs.readFileSync('temp_pdf_test.cjs', 'utf-8');
+  code = code.replace(
+    /import \* as pdfjsLib from 'pdfjs-dist';/g,
+    "const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');",
+  );
+  code = code.replace(/export async function/g, 'async function');
+  code = 'const fs = require(\"fs\");\n' + code;
+  code += `
 
     async function testIt() {
       const data = new Uint8Array(fs.readFileSync('./public/invoices/2026014.pdf'));
@@ -27,7 +30,7 @@ const run = () => {
     }
     testIt().catch(console.error);
     `;
-    fs.writeFileSync('final_test.cjs', code);
+  fs.writeFileSync('final_test.cjs', code);
 };
 
 run();

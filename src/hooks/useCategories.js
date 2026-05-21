@@ -246,8 +246,10 @@ export function useCategories(language = 'nl') {
         if (!data?.session?.user) return; // Scale safety: no websockets for public visitors
         entry.statsChannel = supabase
           .channel('company-categories-stats')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'company_categories' }, () =>
-            loadCategoryStats(),
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'company_categories' },
+            () => loadCategoryStats(),
           )
           .subscribe();
       });

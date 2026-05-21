@@ -1,6 +1,9 @@
 const fs = require('fs');
 let code = fs.readFileSync('src/utils/pdfParser-spy.js', 'utf-8');
-code = code.replace(/import \* as pdfjsLib from 'pdfjs-dist';/g, 'const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");');
+code = code.replace(
+  /import \* as pdfjsLib from 'pdfjs-dist';/g,
+  'const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");',
+);
 code = code.replace(/export async function/g, 'async function');
 code = 'const fs = require("fs");\n' + code;
 code = code.replace(/pdfjsLib\.GlobalWorkerOptions\.workerSrc.*?;/g, '');

@@ -35,6 +35,30 @@ function getTrimmedRowValue(row, headers) {
   return typeof value === 'string' ? value.trim() : String(value || '').trim();
 }
 
+function parseBooleanLike(value) {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+
+  if (!normalized) return null;
+
+  if (['true', '1', 'yes', 'y', 'arrived', 'aanwezig', 'angekommen', '+'].includes(normalized)) {
+    return true;
+  }
+
+  if (
+    ['false', '0', 'no', 'n', 'not arrived', 'niet aangekomen', 'nicht angekommen', '-'].includes(
+      normalized,
+    )
+  ) {
+    return false;
+  }
+
+  return null;
+}
+
 /**
  * Configuration for each data type
  * Defines columns, validation, transformations, and matching strategies
@@ -373,6 +397,7 @@ export const dataConfigs = {
       { key: 'id', header: 'Subscription ID', type: 'number' },
       { key: 'company_name', header: 'Company Name', type: 'string', required: true },
       { key: 'event_year', header: 'Event Year', type: 'number', required: true },
+      { key: 'has_arrived', header: 'Arrived', type: 'boolean' },
       { key: 'contact', header: 'Contact Person', type: 'string' },
       { key: 'phone', header: 'Phone', type: 'phone' },
       { key: 'email', header: 'Email', type: 'email' },
@@ -398,6 +423,7 @@ export const dataConfigs = {
           id: sub.id,
           company_name: sub.company?.name || '',
           event_year: sub.event_year,
+          has_arrived: !!sub.has_arrived,
           contact: sub.contact || '',
           phone: sub.phone || '',
           email: sub.email || '',
@@ -428,6 +454,7 @@ export const dataConfigs = {
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
+            has_arrived: !!sub.has_arrived,
             contact: sub.contact || '',
             phone: sub.phone || '',
             email: sub.email || '',
@@ -459,6 +486,7 @@ export const dataConfigs = {
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
+            has_arrived: !!sub.has_arrived,
             contact: sub.contact || '',
             phone: sub.phone || '',
             email: sub.email || '',
@@ -530,6 +558,7 @@ export const dataConfigs = {
             id: sub.id,
             company_name: sub.company?.name || '',
             event_year: sub.event_year,
+            has_arrived: !!sub.has_arrived,
             contact: sub.contact || '',
             phone: sub.phone || '',
             email: sub.email || '',
@@ -552,6 +581,7 @@ export const dataConfigs = {
           id: sub.id,
           company_name: sub.company?.name || '',
           event_year: sub.event_year,
+          has_arrived: !!sub.has_arrived,
           contact: sub.contact || '',
           phone: sub.phone || '',
           email: sub.email || '',
@@ -581,6 +611,7 @@ export const dataConfigs = {
       const transformed = {
         company_id: companyId,
         event_year: parseInt(row['Event Year']) || eventYear,
+        has_arrived: parseBooleanLike(row['Arrived']) || false,
         contact: row['Contact Person']?.trim() || '',
         area: row['Area']?.trim() || '',
         notes: row['Notes']?.trim() || '',
@@ -635,6 +666,21 @@ export const dataConfigs = {
           field: 'Event Year',
           message: 'Event Year must be a valid year between 2020-2100',
         });
+      }
+
+      if (
+        row['Arrived'] !== undefined &&
+        row['Arrived'] !== null &&
+        String(row['Arrived']).trim()
+      ) {
+        const parsedArrival = parseBooleanLike(row['Arrived']);
+        if (parsedArrival === null) {
+          errors.push({
+            field: 'Arrived',
+            message:
+              'Arrived must be a boolean value like true/false, yes/no, 1/0, or arrived/not arrived',
+          });
+        }
       }
 
       // Booth count validation

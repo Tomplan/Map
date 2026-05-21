@@ -7,8 +7,8 @@ const INVOICE_DIR = path.join(process.cwd(), 'invoices_to_scan');
 const OUTPUT_FILE = path.join(process.cwd(), 'scripts', 'invoices', 'parsed_invoices.json');
 
 async function processInvoices() {
-  const files = fs.readdirSync(INVOICE_DIR).filter(f => f.toLowerCase().endsWith('.pdf'));
-  
+  const files = fs.readdirSync(INVOICE_DIR).filter((f) => f.toLowerCase().endsWith('.pdf'));
+
   if (files.length === 0) {
     console.log(`No PDFs found in ${INVOICE_DIR}.`);
     return;
@@ -23,15 +23,14 @@ async function processInvoices() {
       const dataBuffer = fs.readFileSync(filePath);
       const data = await pdf(dataBuffer);
       const text = data.text;
-      
+
       console.log(`\n--- Extracted from ${file} ---`);
       console.log(text.substring(0, 1000) + '...\n'); // Show first 1000 chars to see pattern
-      
+
       parsedData.push({
         filename: file,
         raw_text: text,
       });
-      
     } catch (err) {
       console.error(`Error processing ${file}:`, err.message);
     }

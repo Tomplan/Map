@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
 const fs = require('fs');
 
-console.log("🚀 Script started...");
+console.log('🚀 Script started...');
 
 // 1. Load Environment Variables
 const envPath = path.resolve(__dirname, '../.env');
@@ -18,37 +18,40 @@ const adminEmail = process.env.VITE_ADMIN_EMAIL;
 const adminPassword = process.env.VITE_ADMIN_PASSWORD;
 
 if (!supabaseUrl || !supabaseKey || !adminEmail || !adminPassword) {
-  console.error("❌ Error: Missing credentials in .env");
-  console.log("Need: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_ADMIN_EMAIL, VITE_ADMIN_PASSWORD");
+  console.error('❌ Error: Missing credentials in .env');
+  console.log(
+    'Need: VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, VITE_ADMIN_EMAIL, VITE_ADMIN_PASSWORD',
+  );
   process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function clearListAuthenticated() {
-  console.log("🔐 Authenticating as admin...");
+  console.log('🔐 Authenticating as admin...');
 
   try {
     // 1. Sign in
-    const { data: { session }, error: authError } = await supabase.auth.signInWithPassword({
+    const {
+      data: { session },
+      error: authError,
+    } = await supabase.auth.signInWithPassword({
       email: adminEmail,
-      password: adminPassword
+      password: adminPassword,
     });
 
     if (authError) {
-      console.error("❌ Authentication failed:", authError.message);
+      console.error('❌ Authentication failed:', authError.message);
       return;
     }
 
-    console.log("✅ Signed in successfully.");
+    console.log('✅ Signed in successfully.');
 
     // 2. Fetch all IDs (now visible because we are authenticated)
-    const { data: rows, error: fetchError } = await supabase
-      .from('staged_invoices')
-      .select('id');
+    const { data: rows, error: fetchError } = await supabase.from('staged_invoices').select('id');
 
     if (fetchError) {
-      console.error("❌ Error fetching invoices:", fetchError.message);
+      console.error('❌ Error fetching invoices:', fetchError.message);
       return;
     }
 
@@ -60,20 +63,16 @@ async function clearListAuthenticated() {
     console.log(`🧹 Found ${rows.length} invoices. Deleting...`);
 
     // 3. Delete by ID using the current session
-    const ids = rows.map(r => r.id);
-    const { error: deleteError } = await supabase
-      .from('staged_invoices')
-      .delete()
-      .in('id', ids);
+    const ids = rows.map((r) => r.id);
+    const { error: deleteError } = await supabase.from('staged_invoices').delete().in('id', ids);
 
     if (deleteError) {
-      console.error("❌ Error deleting rows:", deleteError.message);
+      console.error('❌ Error deleting rows:', deleteError.message);
     } else {
       console.log(`✅ Successfully deleted ${ids.length} invoices.`);
     }
-
   } catch (err) {
-    console.error("❌ Unexpected error:", err);
+    console.error('❌ Unexpected error:', err);
   }
 }
 

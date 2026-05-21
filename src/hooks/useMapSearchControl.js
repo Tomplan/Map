@@ -42,7 +42,7 @@ export function useMapSearchControl(mapInstance, markersOrLayer, options = {}) {
             iconAnchor: [0, 0],
           });
         }
-        
+
         const leafletMarker = L.marker([marker.lat, marker.lng], {
           opacity: 0,
           interactive: false,
