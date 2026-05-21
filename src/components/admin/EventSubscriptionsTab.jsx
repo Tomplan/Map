@@ -679,7 +679,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
         
       if (error) throw error;
       toastSuccess(newStatus ? 'Company marked as arrived' : 'Company marked as not arrived');
-      fetchData(); // Refresh list to get latest
+      reload(); // Refresh list to get latest
     } catch (err) {
       console.error('Error toggling arrival status:', err);
       toastError('Failed to update arrival status');
