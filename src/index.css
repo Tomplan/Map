@@ -151,13 +151,3 @@ h1 {
 }
 
 /* Admin Arrival Indicator */
-.leaflet-marker-icon.is-admin-arrived {
-  border-radius: 50%;
-  box-shadow: 0 0 15px 4px #22c55e, inset 0 0 10px #22c55e;
-  animation: pulse-arrive 2s infinite;
-}
-@keyframes pulse-arrive {
-  0% { box-shadow: 0 0 10px 2px #22c55e, inset 0 0 5px #22c55e; }
-  50% { box-shadow: 0 0 15px 5px #4ade80, inset 0 0 10px #4ade80; }
-  100% { box-shadow: 0 0 10px 2px #22c55e, inset 0 0 5px #22c55e; }
-}

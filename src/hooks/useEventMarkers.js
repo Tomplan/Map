@@ -152,6 +152,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
             // If this marker has a company assignment, get subscription data for admin fields
             if (primaryAssignment.companyId) {
               const subscription = subscriptionByCompany[primaryAssignment.companyId] || {};
+              console.log('PROCESS MARKER', marker.id, 'has_arrived=', subscription.has_arrived);
               adminData = {
                 contact: subscription.contact,
                 phone: subscription.phone,
@@ -163,6 +164,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
                 lunch: subscription.lunch_sat,
                 bbq: subscription.bbq_sat,
                 notes: subscription.notes,
+                sub_has_arrived: subscription.has_arrived,
               };
             }
           } else {
@@ -250,12 +252,20 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
     }
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    function handleAdminSubscriptionChange() {
+      loadMarkers(true);
+    }
+    window.addEventListener('admin_subscription_changed', handleAdminSubscriptionChange);
+
     // Background Polling: Fetch fresh data periodically for non-admin viewers to avoid stale data
     let pollingInterval = null;
     if (!isAdmin && isOnline) {
-      pollingInterval = setInterval(() => {
-        loadMarkers(true);
-      }, 5 * 60 * 1000); // Poll every 5 minutes
+      pollingInterval = setInterval(
+        () => {
+          loadMarkers(true);
+        },
+        5 * 60 * 1000,
+      ); // Poll every 5 minutes
     }
 
     // Supabase realtime subscriptions for all related tables. Only create
@@ -437,6 +447,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+
+      window.removeEventListener('admin_subscription_changed', handleAdminSubscriptionChange);
+
       // Remove any channels we created while online
       if (createdChannels.length) {
         createdChannels.forEach((ch) => supabase.removeChannel(ch));

@@ -56,7 +56,11 @@ jest.mock('../../../contexts/DialogContext', () => {
 
 // Mock Supabase & Hooks
 jest.mock('../../../supabaseClient', () => ({
-  supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: () => ({
+  supabase: {
+    auth: {
+      getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })),
+    },
+    from: () => ({
       select: () => ({
         eq: () => ({ then: (cb) => cb({ data: [], error: null }) }),
       }),
@@ -65,7 +69,10 @@ jest.mock('../../../supabaseClient', () => ({
       on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
     }),
     removeChannel: () => {},
-    auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })), getUser: () => Promise.resolve({ data: { user: {} } }) },
+    auth: {
+      getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })),
+      getUser: () => Promise.resolve({ data: { user: {} } }),
+    },
   },
 }));
 

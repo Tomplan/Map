@@ -20,12 +20,14 @@ export default function BrandingSettings() {
   // Branding state
   const [themeColor, setThemeColor] = useState('#3b82f6');
   const [fontFamily, setFontFamily] = useState('Arvo, serif');
+  const [arrivedColor, setArrivedColor] = useState('green');
 
   // Sync local state with organization settings when they load
   useEffect(() => {
     if (settings) {
       setThemeColor(settings.theme_color || '#3b82f6');
       setFontFamily(settings.font_family || 'Arvo, serif');
+      setArrivedColor(settings.arrived_marker_color || 'green');
     }
   }, [settings]);
 
@@ -36,6 +38,7 @@ export default function BrandingSettings() {
       const result = await updateSettings({
         theme_color: themeColor,
         font_family: fontFamily,
+        arrived_marker_color: arrivedColor,
       });
 
       if (!result) {
@@ -95,6 +98,34 @@ export default function BrandingSettings() {
 
       {/* Branding Form */}
       <div className="bg-white rounded-lg shadow p-6 space-y-6">
+        {/* Arrived Marker Color */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Arrived Marker Color
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Choose the color of the marker when a company has "Arrived".
+          </p>
+          <div className="flex items-center gap-4">
+            <select
+              value={arrivedColor}
+              onChange={(e) => setArrivedColor(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="green">Green</option>
+              <option value="blue">Blue</option>
+              <option value="red">Red</option>
+              <option value="yellow">Yellow</option>
+              <option value="orange">Orange</option>
+              <option value="purple">Purple</option>
+              <option value="black">Black</option>
+              <option value="gray">Gray</option>
+            </select>
+          </div>
+        </div>
+
+        <hr className="bg-gray-100 border-none h-px" />
+
         {/* Theme Color */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">

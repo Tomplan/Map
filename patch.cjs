@@ -4,31 +4,31 @@ let content = fs.readFileSync('src/components/admin/InvoiceSyncTab.jsx', 'utf8')
 // 1. Add definitions
 content = content.replace(
   '  const [uploading, setUploading] = useState(false);',
-  '  const [uploading, setUploading] = useState(false);\n  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });\n  const [isActionsOpen, setIsActionsOpen] = useState(false);'
+  '  const [uploading, setUploading] = useState(false);\n  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });\n  const [isActionsOpen, setIsActionsOpen] = useState(false);',
 );
 
 // 2. Change variables in handledFileUpload
 content = content.replace(
   '    setUploading(true);\n    let successCount = 0;',
-  '    setUploading(true);\n    setUploadProgress({ current: 0, total: files.length });\n    setIsActionsOpen(false);\n    let successCount = 0;'
+  '    setUploading(true);\n    setUploadProgress({ current: 0, total: files.length });\n    setIsActionsOpen(false);\n    let successCount = 0;',
 );
 
 // 3. Change loop to let i = 0 for progress
 content = content.replace(
   '    try {\n      for (const file of files) {\n        try {',
-  '    try {\n      for (let i = 0; i < files.length; i++) {\n        const file = files[i];\n        try {'
+  '    try {\n      for (let i = 0; i < files.length; i++) {\n        const file = files[i];\n        try {',
 );
 
 // 4. Update progress end loop
 content = content.replace(
   '          errorCount++;\n        }\n      }\n\n      // Show summary',
-  '          errorCount++;\n        }\n        setUploadProgress({ current: i + 1, total: files.length });\n      }\n\n      // Show summary'
+  '          errorCount++;\n        }\n        setUploadProgress({ current: i + 1, total: files.length });\n      }\n\n      // Show summary',
 );
 
 // 5. Update complete function and reset
 content = content.replace(
   '    } finally {\n      setUploading(false);\n      if (fileInputRef.current) {',
-  '    } finally {\n      setUploading(false);\n      setUploadProgress({ current: 0, total: 0 });\n      if (fileInputRef.current) {'
+  '    } finally {\n      setUploading(false);\n      setUploadProgress({ current: 0, total: 0 });\n      if (fileInputRef.current) {',
 );
 
 // 6. Rewrite dropdown Actions and add progress block
@@ -61,7 +61,7 @@ const oldMarkup1 = `        <div className="flex items-center gap-3">
         </div>
       </div>
 
-      {error && (`
+      {error && (`;
 
 const newMarkup1 = `        <div className="flex items-center gap-3">
           <input
@@ -128,7 +128,7 @@ const newMarkup1 = `        <div className="flex items-center gap-3">
         </div>
       )}
 
-      {error && (`
+      {error && (`;
 
 content = content.replace(oldMarkup1, newMarkup1);
 

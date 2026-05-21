@@ -3,7 +3,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 
 // Mock supabase client used by the context
 jest.mock('../../supabaseClient', () => ({
-  supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: jest.fn().mockReturnThis(),
+  supabase: {
+    auth: {
+      getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })),
+    },
+    from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     eq: jest.fn().mockReturnThis(),
     single: jest.fn(),

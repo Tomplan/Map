@@ -54,7 +54,13 @@ jest.mock('../../supabaseClient', () => {
   });
 
   return {
-    supabase: { auth: { getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })) }, from: mockFrom,
+    supabase: {
+      auth: {
+        getSession: jest.fn(() =>
+          Promise.resolve({ data: { session: { user: { id: 'admin' } } } }),
+        ),
+      },
+      from: mockFrom,
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
     },

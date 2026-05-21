@@ -87,7 +87,9 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  process.stdout.write(`Usage:\n  node scripts/utils/export_company_text_review.mjs [--input companies.json] [--output out.xlsx] [--limit 25]\n\nOptions:\n  --input       JSON array with objects containing id, name, website\n  --output      Output XLSX path\n  --limit       Only process the first N companies\n  --delay-ms    Delay between website requests (default: ${DEFAULT_DELAY_MS})\n  --timeout-ms  Per-request timeout in ms (default: ${DEFAULT_TIMEOUT_MS})\n\nEnvironment fallback when --input is omitted:\n  SUPABASE_URL and one of SUPABASE_SERVICE_ROLE_KEY, SUPABASE_KEY, VITE_SUPABASE_ANON_KEY\n`);
+  process.stdout.write(
+    `Usage:\n  node scripts/utils/export_company_text_review.mjs [--input companies.json] [--output out.xlsx] [--limit 25]\n\nOptions:\n  --input       JSON array with objects containing id, name, website\n  --output      Output XLSX path\n  --limit       Only process the first N companies\n  --delay-ms    Delay between website requests (default: ${DEFAULT_DELAY_MS})\n  --timeout-ms  Per-request timeout in ms (default: ${DEFAULT_TIMEOUT_MS})\n\nEnvironment fallback when --input is omitted:\n  SUPABASE_URL and one of SUPABASE_SERVICE_ROLE_KEY, SUPABASE_KEY, VITE_SUPABASE_ANON_KEY\n`,
+  );
 }
 
 function sleep(ms) {
@@ -226,7 +228,14 @@ function extractJsonLdDescriptions($) {
   return descriptions;
 }
 
-function collectParagraphCandidates($, selectors, sourceType, candidates, seenTexts, companyNamePattern) {
+function collectParagraphCandidates(
+  $,
+  selectors,
+  sourceType,
+  candidates,
+  seenTexts,
+  companyNamePattern,
+) {
   for (const selector of selectors) {
     const nodes = $(selector).toArray();
     for (const node of nodes) {
@@ -275,21 +284,35 @@ export function extractDescription(html, companyName = '') {
     );
   }
 
-  collectParagraphCandidates($, [
-    '[id*="about" i] p',
-    '[class*="about" i] p',
-    '[id*="mission" i] p',
-    '[class*="mission" i] p',
-    '[id*="company" i] p',
-    '[class*="company" i] p',
-    '[id*="over" i] p',
-    '[class*="over" i] p',
-    '[id*="uber" i] p',
-    '[class*="uber" i] p',
-  ], 'about-section', candidates, seenTexts, companyNamePattern);
+  collectParagraphCandidates(
+    $,
+    [
+      '[id*="about" i] p',
+      '[class*="about" i] p',
+      '[id*="mission" i] p',
+      '[class*="mission" i] p',
+      '[id*="company" i] p',
+      '[class*="company" i] p',
+      '[id*="over" i] p',
+      '[class*="over" i] p',
+      '[id*="uber" i] p',
+      '[class*="uber" i] p',
+    ],
+    'about-section',
+    candidates,
+    seenTexts,
+    companyNamePattern,
+  );
 
   collectParagraphCandidates($, ['main p'], 'main', candidates, seenTexts, companyNamePattern);
-  collectParagraphCandidates($, ['article p'], 'article', candidates, seenTexts, companyNamePattern);
+  collectParagraphCandidates(
+    $,
+    ['article p'],
+    'article',
+    candidates,
+    seenTexts,
+    companyNamePattern,
+  );
   collectParagraphCandidates($, ['body p'], 'body', candidates, seenTexts, companyNamePattern);
 
   const best = candidates.sort((left, right) => right.score - left.score)[0];
@@ -581,7 +604,9 @@ async function main() {
       status: review.status,
     });
 
-    process.stdout.write(`Processed ${company.id ?? '?'} ${company.name || 'Unknown'} [${review.status}]\n`);
+    process.stdout.write(
+      `Processed ${company.id ?? '?'} ${company.name || 'Unknown'} [${review.status}]\n`,
+    );
   }
 
   const outputPath = path.resolve(

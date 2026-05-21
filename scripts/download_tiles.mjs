@@ -23,8 +23,8 @@ const CONFIG = {
   bounds: {
     north: 51.905, // Top edge (Latitude)
     south: 51.89, // Bottom edge (Latitude)
-    west: 5.76,   // Left edge (Longitude)
-    east: 5.79    // Right edge (Longitude)
+    west: 5.76, // Left edge (Longitude)
+    east: 5.79, // Right edge (Longitude)
   },
 
   // 3. SET ZOOM LEVELS
@@ -33,7 +33,7 @@ const CONFIG = {
 
   // 4. POLITE DOWNLOADING (Don't change unless necessary)
   // Delay in milliseconds between downloads to avoid IP bans during scraping
-  delayMs: 150, 
+  delayMs: 150,
 };
 
 /**
@@ -44,39 +44,44 @@ const CONFIG = {
 
 // Convert Longitude to Tile X
 function lon2tile(lon, zoom) {
-  return Math.floor((lon + 180) / 360 * Math.pow(2, zoom));
+  return Math.floor(((lon + 180) / 360) * Math.pow(2, zoom));
 }
 
 // Convert Latitude to Tile Y
 function lat2tile(lat, zoom) {
   return Math.floor(
-    (1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * Math.pow(2, zoom)
+    ((1 -
+      Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) /
+      2) *
+      Math.pow(2, zoom),
   );
 }
 
 // Download a single file
 async function downloadTile(url, destPath) {
   return new Promise((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Failed to download: ${response.statusCode} - ${url}`));
-        return;
-      }
-      const file = fs.createWriteStream(destPath);
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        resolve();
+    https
+      .get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Failed to download: ${response.statusCode} - ${url}`));
+          return;
+        }
+        const file = fs.createWriteStream(destPath);
+        response.pipe(file);
+        file.on('finish', () => {
+          file.close();
+          resolve();
+        });
+      })
+      .on('error', (err) => {
+        fs.unlink(destPath, () => {});
+        reject(err);
       });
-    }).on('error', (err) => {
-      fs.unlink(destPath, () => {});
-      reject(err);
-    });
   });
 }
 
 // Sleep helper
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * =========================================================
@@ -100,15 +105,11 @@ async function run() {
     const yMax = lat2tile(CONFIG.bounds.south, z);
 
     console.log(`\nZoom ${z}: X [${xMin} to ${xMax}] Y [${yMin} to ${yMax}]`);
-    
+
     for (let x = xMin; x <= xMax; x++) {
       for (let y = yMin; y <= yMax; y++) {
-        
         // Build the URL based on the provider format
-        let url = CONFIG.providerUrl
-          .replace('{z}', z)
-          .replace('{x}', x)
-          .replace('{y}', y);
+        let url = CONFIG.providerUrl.replace('{z}', z).replace('{x}', x).replace('{y}', y);
 
         // Define local save path
         const tileDir = path.join(CONFIG.outputDir, z.toString(), x.toString());

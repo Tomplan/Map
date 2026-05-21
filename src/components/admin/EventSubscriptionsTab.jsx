@@ -28,6 +28,7 @@ import { useDialog } from '../../contexts/DialogContext';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
+import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
 import SubscriptionEditModal from './SubscriptionEditModal';
 import {
   addLineItem,
@@ -83,6 +84,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [notesExpandedIds, setNotesExpandedIds] = useState(
     () => new Set(saved.notesExpandedIds || []),
   );
+  const [pendingArrivalId, setPendingArrivalId] = useState(null);
 
   // Save UI state on unmount
   useEffect(() => {
@@ -668,21 +670,21 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   };
 
   // Toggle sort
-  
+
   const toggleArrivalStatus = async (subscription) => {
+    setPendingArrivalId(subscription.id);
     try {
       const newStatus = !subscription.has_arrived;
-      const { error } = await supabase
-        .from('event_subscriptions')
-        .update({ has_arrived: newStatus })
-        .eq('id', subscription.id);
-        
+      const { error } = await updateSubscription(subscription.id, { has_arrived: newStatus });
+
       if (error) throw error;
       toastSuccess(newStatus ? 'Company marked as arrived' : 'Company marked as not arrived');
-      reload(); // Refresh list to get latest
+      window.dispatchEvent(new CustomEvent('admin_subscription_changed'));
     } catch (err) {
       console.error('Error toggling arrival status:', err);
       toastError('Failed to update arrival status');
+    } finally {
+      setPendingArrivalId((current) => (current === subscription.id ? null : current));
     }
   };
 
@@ -912,7 +914,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 </div>
               </th>
               {/* Status */}
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3}>Status</th>
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3}>
+                Status
+              </th>
               {/* Company - with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
@@ -1104,22 +1108,23 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     </td>
 
                     {/* Arrival Status */}
-                      <td className="p-2 text-center">
-                        <button
-                          data-actions
-                          onClick={(e) => { e.stopPropagation(); toggleArrivalStatus(subscription); }}
-                          className={`px-2 py-1 text-xs font-bold rounded-full ${
-                            subscription.has_arrived 
-                              ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800' 
-                              : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-800'
-                          }`}
-                          title={subscription.has_arrived ? 'Mark as Not Arrived' : 'Mark as Arrived'}
-                        >
-                          {subscription.has_arrived ? '✓ Arrived' : 'Not Arrived'}
-                        </button>
-                      </td>
+                    <td className="p-2 text-center">
+                      <div
+                        data-actions
+                        className="flex justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ArrivalStatusSlider
+                          checked={!!subscription.has_arrived}
+                          disabled={pendingArrivalId === subscription.id}
+                          onChange={() => toggleArrivalStatus(subscription)}
+                          arrivedLabel="Arrived"
+                          notArrivedLabel="Not Arrived"
+                        />
+                      </div>
+                    </td>
 
-                      {/* Company name with logo */}
+                    {/* Company name with logo */}
                     <td className="p-2 text-left">
                       <div className="flex items-center gap-2">
                         <img

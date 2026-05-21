@@ -97,7 +97,8 @@ export function createMarkerIcon({
     textDecoration,
     fontFamily,
     glyphAnchor: glyphAnchor || [0, 0],
-    className: `${isActive ? 'marker-active ' : ''}${has_arrived ? 'is-admin-arrived ' : ''}${className || ''}`.trim(),
+    className:
+      `${isActive ? 'marker-active ' : ''}${has_arrived ? 'is-admin-arrived ' : ''}${className || ''}`.trim(),
     // Preserve the base icon size on the icon's options so consumers (print cloners)
     // can re-compute layout for a different zoom.
     baseIconSize: iconBaseSize || size,
