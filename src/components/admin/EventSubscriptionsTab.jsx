@@ -225,6 +225,17 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
         // Compare booth labels alphanumerically
         compareValue = boothsA.localeCompare(boothsB, undefined, { numeric: true });
+      } else if (sortBy === 'arrival') {
+        const arrivalA = a.has_arrived ? 1 : 0;
+        const arrivalB = b.has_arrived ? 1 : 0;
+
+        if (arrivalA === arrivalB) {
+          const nameA = (a.company?.name || '').toLowerCase();
+          const nameB = (b.company?.name || '').toLowerCase();
+          compareValue = nameA.localeCompare(nameB);
+        } else {
+          compareValue = arrivalA - arrivalB;
+        }
       }
 
       return sortDirection === 'asc' ? compareValue : -compareValue;
@@ -913,9 +924,24 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
-              {/* Status */}
-              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3}>
-                Status
+              {/* Arrival */}
+              <th
+                className="p-2 text-center border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
+                onClick={() => handleSort('arrival')}
+                title="Click to sort by arrival status"
+                rowSpan={3}
+                style={{ width: '72px' }}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>{t('mapManagement.arrivalStatus', 'Arrival')}</span>
+                  {sortBy === 'arrival' && (
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
+                  )}
+                </div>
               </th>
               {/* Company - with sort */}
               <th
@@ -1118,8 +1144,9 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                           checked={!!subscription.has_arrived}
                           disabled={pendingArrivalId === subscription.id}
                           onChange={() => toggleArrivalStatus(subscription)}
-                          arrivedLabel="Arrived"
-                          notArrivedLabel="Not Arrived"
+                          showLabel={false}
+                          arrivedLabel={t('mapManagement.checkedInStatus', 'Checked In')}
+                          notArrivedLabel={t('mapManagement.notCheckedInStatus', 'Not Checked In')}
                         />
                       </div>
                     </td>
