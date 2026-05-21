@@ -2,7 +2,7 @@ name: 'E2E: Admin Tour (Puppeteer)'
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   e2e-admin-tour:

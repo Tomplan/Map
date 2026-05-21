@@ -1,0 +1,170 @@
+
+> map@0.0.0 test:e2e
+> jest --config jest.config.cjs --testPathPatterns=tests/e2e --runInBand
+
+
+> map@0.0.0 build
+> npx vite build
+
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+vite v4.5.14 building for production...
+transforming...
+✓ 1016 modules transformed.
+rendering chunks...
+[plugin:vite:reporter] 
+(!) /Users/tom/Documents/GitHub/Map/src/supabaseClient.js is dynamically imported by /Users/tom/Documents/GitHub/Map/src/components/AdminMarkerPlacement.jsx, /Users/tom/Documents/GitHub/Map/src/hooks/useMarkersState.js but also statically imported by /Users/tom/Documents/GitHub/Map/src/App.jsx, /Users/tom/Documents/GitHub/Map/src/components/ActivityForm.jsx, /Users/tom/Documents/GitHub/Map/src/components/AdminLayout.jsx, /Users/tom/Documents/GitHub/Map/src/components/AdminLogin.jsx, /Users/tom/Documents/GitHub/Map/src/components/EventClusterMarkers.jsx, /Users/tom/Documents/GitHub/Map/src/components/ProgramManagement.jsx, /Users/tom/Documents/GitHub/Map/src/components/ResetPassword.jsx, /Users/tom/Documents/GitHub/Map/src/components/StorageTestPage.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/AssignmentsTab.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/CategoryManagement.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/CompaniesTab.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/Dashboard.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/EventDefaults.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/EventSubscriptionsTab.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/MapManagement.jsx, /Users/tom/Documents/GitHub/Map/src/components/admin/UserManagement.jsx, /Users/tom/Documents/GitHub/Map/src/components/common/ExportButton.jsx, /Users/tom/Documents/GitHub/Map/src/components/common/ImportModal.jsx, /Users/tom/Documents/GitHub/Map/src/contexts/OnboardingContext.jsx, /Users/tom/Documents/GitHub/Map/src/contexts/OrganizationLogoContext.jsx, /Users/tom/Documents/GitHub/Map/src/hooks/useAssignments.js, /Users/tom/Documents/GitHub/Map/src/hooks/useCategories.js, /Users/tom/Documents/GitHub/Map/src/hooks/useCompanies.js, /Users/tom/Documents/GitHub/Map/src/hooks/useCompanyTranslations.js, /Users/tom/Documents/GitHub/Map/src/hooks/useCountViews.js, /Users/tom/Documents/GitHub/Map/src/hooks/useEventActivities.js, /Users/tom/Documents/GitHub/Map/src/hooks/useEventMapSettings.js, /Users/tom/Documents/GitHub/Map/src/hooks/useEventMarkers.js, /Users/tom/Documents/GitHub/Map/src/hooks/useEventSubscriptions.js, /Users/tom/Documents/GitHub/Map/src/hooks/useFeedbackRequests.js, /Users/tom/Documents/GitHub/Map/src/hooks/useMarkerGlyphs.js, /Users/tom/Documents/GitHub/Map/src/hooks/useOrganizationProfile.js, /Users/tom/Documents/GitHub/Map/src/hooks/useOrganizationSettings.js, /Users/tom/Documents/GitHub/Map/src/hooks/useUserPreferences.js, /Users/tom/Documents/GitHub/Map/src/hooks/useUserRole.js, /Users/tom/Documents/GitHub/Map/src/services/logoUploadService.js, /Users/tom/Documents/GitHub/Map/src/services/markerUpdateService.js, dynamic import will not move module into another chunk.
+
+computing gzip size...
+dist/index.html                                       0.66 kB │ gzip:   0.39 kB
+dist/assets/toggle-a98885c3.svg                       1.77 kB │ gzip:   0.52 kB
+dist/assets/AdminLayout-17f945e4.css                  7.53 kB │ gzip:   1.65 kB
+dist/assets/EventMapInner-ed265611.css               43.72 kB │ gzip:  14.76 kB
+dist/assets/index-126011cd.css                       48.79 kB │ gzip:   8.72 kB
+dist/assets/useMarkerGlyphs-c5e12335.js               0.71 kB │ gzip:   0.43 kB
+dist/assets/useUserRole-456ebede.js                   0.93 kB │ gzip:   0.48 kB
+dist/assets/prefetchOnIdle-bea2a816.js                1.25 kB │ gzip:   0.70 kB
+dist/assets/useOrganizationProfile-ca4b3a53.js        1.29 kB │ gzip:   0.69 kB
+dist/assets/AccessibilityToggle-9094b154.js           1.31 kB │ gzip:   0.57 kB
+dist/assets/LanguageToggle-65a125c1.js                1.42 kB │ gzip:   0.77 kB
+dist/assets/EventMap-096bc7fc.js                      1.53 kB │ gzip:   0.71 kB
+dist/assets/useTranslatedCompanyInfo-fcaad9d6.js      1.73 kB │ gzip:   0.79 kB
+dist/assets/useEventMapSettings-89a7e295.js           1.76 kB │ gzip:   0.66 kB
+dist/assets/useCompanies-9015fad2.js                  2.21 kB │ gzip:   0.93 kB
+dist/assets/ProtectedSection-eceb45d7.js              2.34 kB │ gzip:   0.77 kB
+dist/assets/FeedbackForm-8b635827.js                  2.93 kB │ gzip:   0.88 kB
+dist/assets/useCountViews-8e4ed0ac.js                 3.64 kB │ gzip:   0.86 kB
+dist/assets/useAssignments-bcfd4ec0.js                3.92 kB │ gzip:   1.26 kB
+dist/assets/useEventSubscriptions-1f179163.js         5.03 kB │ gzip:   1.64 kB
+dist/assets/index-fc660dc0.js                         5.60 kB │ gzip:   1.90 kB
+dist/assets/jsx-runtime-85796ab5.js                   5.62 kB │ gzip:   2.39 kB
+dist/assets/useCategories-03d028e9.js                 5.81 kB │ gzip:   1.77 kB
+dist/assets/useEventActivities-2567e427.js            5.81 kB │ gzip:   1.69 kB
+dist/assets/ExcelImportExport-083a1580.js             6.33 kB │ gzip:   2.16 kB
+dist/assets/LogoUploader-23c1d650.js                  6.46 kB │ gzip:   1.98 kB
+dist/assets/EventSchedule-d3a611f1.js                 7.59 kB │ gzip:   1.48 kB
+dist/assets/HomePage-ff97607e.js                      9.34 kB │ gzip:   2.09 kB
+dist/assets/ResetPassword-567bd9a1.js                11.01 kB │ gzip:   2.30 kB
+dist/assets/StorageTestPage-8195e12f.js              11.16 kB │ gzip:   1.91 kB
+dist/assets/dataExportImport-e354f018.js             11.38 kB │ gzip:   4.40 kB
+dist/assets/AdminLogin-d17c843d.js                   15.74 kB │ gzip:   2.84 kB
+dist/assets/ExhibitorListView-745453bd.js            16.39 kB │ gzip:   3.73 kB
+dist/assets/Dashboard-bbb65c9e.js                    17.05 kB │ gzip:   1.98 kB
+dist/assets/AssignmentsTab-7260261f.js               19.23 kB │ gzip:   4.17 kB
+dist/assets/CategoryManagement-cd4dd91d.js           23.78 kB │ gzip:   4.09 kB
+dist/assets/ImportModal-53633112.js                  25.59 kB │ gzip:   5.32 kB
+dist/assets/ImportButton-2bc67cf0.js                 25.64 kB │ gzip:   6.60 kB
+dist/assets/CompaniesTab-e3ac24d8.js                 34.20 kB │ gzip:   6.44 kB
+dist/assets/MapManagement-ce047191.js                42.00 kB │ gzip:   7.77 kB
+dist/assets/EventSubscriptionsTab-d1a26fd8.js        45.93 kB │ gzip:   6.02 kB
+dist/assets/FeedbackRequests-7acc5cfb.js             48.80 kB │ gzip:   7.48 kB
+dist/assets/ProgramManagement-d8f04965.js            53.71 kB │ gzip:   8.00 kB
+dist/assets/Settings-c0b16b17.js                    110.88 kB │ gzip:  12.13 kB
+dist/assets/phone-376c158e.js                       122.03 kB │ gzip:  30.14 kB
+dist/assets/html2canvas.esm-38419c18.js             201.72 kB │ gzip:  47.84 kB
+dist/assets/EventMapInner-4e5f80a2.js               238.31 kB │ gzip:  71.94 kB
+dist/assets/AdminLayout-d1de11d9.js                 410.32 kB │ gzip: 120.07 kB
+dist/assets/xlsx-6ed613d4.js                        429.67 kB │ gzip: 142.11 kB
+dist/assets/exceljs.min-1297c99c.js                 938.88 kB │ gzip: 269.72 kB
+dist/assets/index-33ea6248.js                     1,044.68 kB │ gzip: 305.96 kB
+
+(!) Some chunks are larger than 500 kBs after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.17s
+(node:53990) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/e2e/service-worker.e2e.test.js (10.902 s)
+  ● Console
+
+    console.log
+      [preview stdout] > map@0.0.0 preview
+      > npx vite preview --port 5174
+
+      at Socket.log (tests/e2e/service-worker.e2e.test.js:137:47)
+
+    console.log
+      [preview stdout] [dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+
+      at Socket.log (tests/e2e/service-worker.e2e.test.js:137:47)
+
+    console.log
+      [preview stdout] ➜  Local:   http://localhost:5174/Map
+
+      at Socket.log (tests/e2e/service-worker.e2e.test.js:137:47)
+
+    console.log
+      [preview stdout] ➜  Network: http://192.168.0.109:5174/Map
+
+      at Socket.log (tests/e2e/service-worker.e2e.test.js:137:47)
+
+
+<--- Last few GCs --->
+
+[53990:0xa29c00000]  4106905 ms: Mark-Compact 4003.8 (4139.8) -> 3971.7 (4137.3) MB, pooled: 8.2 MB, 857.96 / 0.00 ms (average mu = 0.209, current mu = 0.124) allocation failure; scavenge might not succeed
+[53990:0xa29c00000]  4107862 ms: Mark-Compact 4003.9 (4137.3) -> 3971.9 (4135.3) MB, pooled: 10.2 MB, 838.18 / 0.00 ms (average mu = 0.170, current mu = 0.124) allocation failure; scavenge might not succeed
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x1092a8df4 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 2: 0x1094549e8 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 3: 0x1094549a0 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 4: 0x109602cc8 v8::internal::Heap::ShouldOptimizeForLoadTime() const [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 5: 0x1096052d8 v8::internal::Heap::OldGenerationConsumedBytes() const [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 6: 0x109605180 v8::internal::Heap::RecomputeLimits(v8::internal::GarbageCollector, v8::base::TimeTicks) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 7: 0x109612b54 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags, v8::internal::PerformHeapLimitCheck)::$_1::operator()() const [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 8: 0x1096127f8 void heap::base::Stack::SetMarkerAndCallbackImpl<v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags, v8::internal::PerformHeapLimitCheck)::$_1>(heap::base::Stack*, void*, void const*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+ 9: 0x109c365f4 PushAllRegistersAndIterateStack [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+10: 0x1096011c4 v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags, v8::internal::PerformHeapLimitCheck) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+11: 0x1095f9760 std::__1::invoke_result<v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment, v8::internal::AllocationHint)::$_0&>::type v8::internal::HeapAllocator::CollectGarbageAndRetryAllocation<v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment, v8::internal::AllocationHint)::$_0&>(v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment, v8::internal::AllocationHint)::$_0&, v8::internal::AllocationType) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+12: 0x1095f85cc v8::internal::HeapAllocator::AllocateRawWithRetryOrFailSlowPath(int, v8::internal::AllocationType, v8::internal::AllocationOrigin, v8::internal::AllocationAlignment, v8::internal::AllocationHint) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+13: 0x1095cec7c v8::internal::FactoryBase<v8::internal::Factory>::NewStructInternal(v8::internal::ReadOnlyRoots, v8::internal::Tagged<v8::internal::Map>, int, v8::internal::AllocationType) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+14: 0x1095eed5c v8::internal::Factory::NewCallSiteInfo(v8::internal::DirectHandle<v8::internal::Union<v8::internal::Smi, v8::internal::HeapNumber, v8::internal::BigInt, v8::internal::String, v8::internal::Symbol, v8::internal::Boolean, v8::internal::Null, v8::internal::Undefined, v8::internal::JSReceiver>>, v8::internal::DirectHandle<v8::internal::Union<v8::internal::Smi, v8::internal::JSFunction>>, v8::internal::DirectHandle<v8::internal::HeapObject>, int, int, v8::internal::DirectHandle<v8::internal::FixedArray>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+15: 0x10958503c v8::internal::(anonymous namespace)::CallSiteBuilder::AppendFrame(v8::internal::DirectHandle<v8::internal::Union<v8::internal::Smi, v8::internal::HeapNumber, v8::internal::BigInt, v8::internal::String, v8::internal::Symbol, v8::internal::Boolean, v8::internal::Null, v8::internal::Undefined, v8::internal::JSReceiver, v8::internal::Hole>>, v8::internal::DirectHandle<v8::internal::Union<v8::internal::Smi, v8::internal::JSFunction>>, v8::internal::DirectHandle<v8::internal::HeapObject>, int, int, v8::internal::DirectHandle<v8::internal::FixedArray>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+16: 0x109577848 v8::internal::(anonymous namespace)::CaptureSimpleStackTrace(v8::internal::Isolate*, int, v8::internal::FrameSkipMode, v8::internal::Handle<v8::internal::Object>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+17: 0x109576fd8 v8::internal::Isolate::CaptureAndSetErrorStack(v8::internal::DirectHandle<v8::internal::JSObject>, v8::internal::FrameSkipMode, v8::internal::Handle<v8::internal::Object>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+18: 0x10958b970 v8::internal::ErrorUtils::Construct(v8::internal::Isolate*, v8::internal::DirectHandle<v8::internal::JSFunction>, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::FrameSkipMode, v8::internal::DirectHandle<v8::internal::Object>, v8::internal::ErrorUtils::StackTraceCollection) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+19: 0x1094a4d3c v8::internal::Builtin_ErrorConstructor(int, unsigned long*, v8::internal::Isolate*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+20: 0x1090c9394 Builtins_CEntry_Return1_ArgvOnStack_BuiltinExit [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+21: 0x12b11378c 
+22: 0x12b15cd74 
+23: 0x12b12e3f0 
+24: 0x12b133198 
+25: 0x12b123e7c 
+26: 0x12b1bdc7c 
+27: 0x12b154168 
+28: 0x12b159c9c 
+29: 0x12b161d8c 
+30: 0x12b0bef1c 
+31: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+32: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+33: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+34: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+35: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+36: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+37: 0x10913c6b0 Builtins_PromiseConstructor [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+38: 0x109029f90 Builtins_InterpreterPushArgsThenFastConstructFunction [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+39: 0x1091b9020 Builtins_ConstructHandler [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+40: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+41: 0x1090295ec Builtins_InterpreterEntryTrampoline [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+42: 0x1090674c4 Builtins_AsyncFunctionAwaitResolveClosure [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+43: 0x10913e058 Builtins_PromiseFulfillReactionJob [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+44: 0x109056920 Builtins_RunMicrotasks [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+45: 0x109026850 Builtins_JSRunMicrotasksEntry [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+46: 0x10956b1c4 v8::internal::(anonymous namespace)::Invoke(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+47: 0x10956b874 v8::internal::(anonymous namespace)::InvokeWithTryCatch(v8::internal::Isolate*, v8::internal::(anonymous namespace)::InvokeParams const&) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+48: 0x10956b964 v8::internal::Execution::TryRunMicrotasks(v8::internal::Isolate*, v8::internal::MicrotaskQueue*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+49: 0x10958db74 v8::internal::MicrotaskQueue::RunMicrotasks(v8::internal::Isolate*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+50: 0x10958d990 v8::internal::MicrotaskQueue::PerformCheckpointInternal(v8::Isolate*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+51: 0x109200b54 node::InternalCallbackScope::Close() [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+52: 0x109200eb4 node::InternalMakeCallback(node::Environment*, v8::Local<v8::Object>, v8::Local<v8::Object>, v8::Local<v8::Function>, int, v8::Local<v8::Value>*, node::async_context, v8::Local<v8::Value>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+53: 0x1092011a8 node::InternalMakeCallback(v8::Isolate*, v8::Local<v8::Object>, v8::Local<v8::Function>, int, v8::Local<v8::Value>*, node::async_context, v8::Local<v8::Value>) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+54: 0x10a0c3174 node::Environment::CheckImmediate(uv_check_s*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+55: 0x104f6ff28 uv__run_check [/opt/homebrew/Cellar/libuv/1.51.0/lib/libuv.1.0.0.dylib]
+56: 0x104f6aa30 uv_run [/opt/homebrew/Cellar/libuv/1.51.0/lib/libuv.1.0.0.dylib]
+57: 0x1092015c8 node::SpinEventLoopInternal(node::Environment*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+58: 0x1092d4204 node::NodeMainInstance::Run(node::ExitCode*, node::Environment*) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+59: 0x1092d3f38 node::NodeMainInstance::Run() [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+60: 0x109281f44 node::Start(int, char**) [/opt/homebrew/Cellar/node/25.3.0/lib/libnode.141.dylib]
+61: 0x18eb65d54 start [/usr/lib/dyld]

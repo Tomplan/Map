@@ -4,7 +4,10 @@ let content = fs.readFileSync('src/components/common/ExportButton.jsx', 'utf8');
 
 // Replace imports to add mdiClose if not there
 if (!content.includes('mdiClose')) {
-    content = content.replace('mdiChevronDown } from \'@mdi/js\';', 'mdiChevronDown, mdiClose } from \'@mdi/js\';');
+  content = content.replace(
+    "mdiChevronDown } from '@mdi/js';",
+    "mdiChevronDown, mdiClose } from '@mdi/js';",
+  );
 }
 
 // Add state for column selection
@@ -15,14 +18,16 @@ content = content.replace(
   const [availableColumns, setAvailableColumns] = useState([]);
   const [exportFormat, setExportFormat] = useState(null);
   const [preparedData, setPreparedData] = useState([]);
-  const [exportMetadata, setExportMetadata] = useState({});`
+  const [exportMetadata, setExportMetadata] = useState({});`,
 );
 
 // We need to rewrite handleExport completely
-const handleExportMatch = content.match(/const handleExport = async \(format\) => \{[\s\S]*?(?=\n  return \()/);
+const handleExportMatch = content.match(
+  /const handleExport = async \(format\) => \{[\s\S]*?(?=\n  return \()/,
+);
 if (!handleExportMatch) {
-    console.error("Could not find handleExport!");
-    process.exit(1);
+  console.error('Could not find handleExport!');
+  process.exit(1);
 }
 
 const newLogic = `
@@ -236,8 +241,8 @@ content = content.replace(handleExportMatch[0], newLogic);
 // Add the modal UI to the return statement
 const returnMatch = content.match(/return \([\s\S]*?(?=;\n\})/);
 if (!returnMatch) {
-    console.error("Could not find return statement");
-    process.exit(1);
+  console.error('Could not find return statement');
+  process.exit(1);
 }
 
 const modalUI = `
@@ -317,5 +322,4 @@ const updatedReturn = returnMatch[0].replace('    </div>\n  )', `    </div>\n${m
 content = content.replace(returnMatch[0], updatedReturn);
 
 fs.writeFileSync('src/components/common/ExportButton.jsx', content, 'utf8');
-console.log("Updated ExportButton.jsx");
-
+console.log('Updated ExportButton.jsx');

@@ -69,7 +69,7 @@ jobs:
           publish_dir: ./dist
           publish_branch: gh-pages
           destination_dir: ${{ env.DESTINATION_DIR }}
-          keep_files: true  # Prevent wiping other environments (e.g., main keeps dev/, dev keeps root)
+          keep_files: true # Prevent wiping other environments (e.g., main keeps dev/, dev keeps root)
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
           github_token: ${{ secrets.GITHUB_TOKEN }}

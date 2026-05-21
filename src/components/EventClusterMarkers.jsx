@@ -16,6 +16,7 @@ import MarkerContextMenu from './MarkerContextMenu';
 import useEventSubscriptions from '../hooks/useEventSubscriptions';
 import useAssignments from '../hooks/useAssignments';
 import { useDialog } from '../contexts/DialogContext';
+import useOrganizationSettings from '../hooks/useOrganizationSettings';
 import { supabase } from '../supabaseClient';
 import './MobileBottomSheet.css';
 
@@ -42,10 +43,18 @@ const getIconFile = (
   isFavorited = false,
   assignedDefault = null,
   unassignedDefault = null,
+  has_arrived = false,
+  arrivedColor = 'green'
 ) => {
   // If favorited, always use yellow marker
   if (isFavorited) {
     return getIconPath('glyph-marker-icon-yellow.svg');
+  }
+
+  // If arrived, use the designated arrived color marker icon
+  // This bypasses the default overrides
+  if (has_arrived) {
+    return getIconPath(`glyph-marker-icon-${arrivedColor}.svg`);
   }
 
   // Use custom iconUrl if set
@@ -72,6 +81,8 @@ const createIcon = (
   isAdminView = false,
   assignedDefault = null,
   unassignedDefault = null,
+  has_arrived = false,
+  arrivedColor = 'green'
 ) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
   if (isActive) className += ' marker-active';
@@ -95,9 +106,17 @@ const createIcon = (
   const hasAssignment = marker.assignments?.length > 0;
 
   return createMarkerIcon({
+    has_arrived: has_arrived,
     className,
     prefix: marker.prefix,
-    iconUrl: getIconFile(marker, isFavorited, assignedDefault, unassignedDefault),
+    iconUrl: getIconFile(
+      marker,
+      isFavorited,
+      assignedDefault,
+      unassignedDefault,
+      has_arrived,
+      arrivedColor
+    ),
     iconSize,
     iconBaseSize: baseSize,
     glyph: marker.glyph || '',
@@ -286,6 +305,7 @@ function EventClusterMarkers({
   assignmentsState,
   defaultStyles: defaultStylesProp,
 }) {
+  const { settings: orgSettings } = useOrganizationSettings();
   const markerRefs = useRef({});
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
@@ -540,7 +560,9 @@ function EventClusterMarkers({
       // Stable defaults key — only changes when admin edits default appearance
       const defaultsKey = `${defaultMarkers.assigned?.id || 0}-${defaultMarkers.unassigned?.id || 0}-${defaultMarkers.assigned?.glyphColor || ''}-${defaultMarkers.unassigned?.glyphColor || ''}-${defaultMarkers.assigned?.iconUrl || ''}-${defaultMarkers.unassigned?.iconUrl || ''}`;
 
-      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}`;
+      const arrivedColor = orgSettings?.arrived_marker_color || 'green';
+
+      const key = `${marker.id}-${marker.iconUrl || ''}-${marker.glyph || ''}-${marker.glyphColor || ''}-${isSelected}-${markerIsFavorited}-${zoomBucket}-${effectiveAdminSizing}-${defaultsKey}-${assignmentCount}-${marker.sub_has_arrived ? 'arrived' : 'not-arrived'}-${arrivedColor}`;
 
       if (!iconsByMarker.current[key]) {
         iconsByMarker.current[key] = createIcon(
@@ -551,11 +573,13 @@ function EventClusterMarkers({
           effectiveAdminSizing,
           defaultMarkers.assigned,
           defaultMarkers.unassigned,
+          isAdminView && !!marker.sub_has_arrived,
+          arrivedColor
         );
       }
       return iconsByMarker.current[key];
     },
-    [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers],
+    [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers, orgSettings?.arrived_marker_color],
   );
 
   // Clean up stale cache entries when markers change to prevent memory leaks
@@ -631,7 +655,7 @@ function EventClusterMarkers({
           // doesn't always properly enable/disable the drag handlers if the leaflet element
           // isn't re-initialized. By including isDraggable in the key, we force React to
           // unmount and remount the Marker when edit mode starts/stops, ensuring it's draggable.
-          const markerKey = `${getMarkerKey(marker)}-drag-${isDraggable}`;
+          const markerKey = `${getMarkerKey(marker)}-drag-${isDraggable}-arr-${marker.sub_has_arrived ? 't' : 'f'}`;
 
           return (
             <MemoizedMarker

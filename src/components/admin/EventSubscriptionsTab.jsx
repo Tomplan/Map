@@ -28,6 +28,7 @@ import { useDialog } from '../../contexts/DialogContext';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
+import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
 import SubscriptionEditModal from './SubscriptionEditModal';
 import {
   addLineItem,
@@ -83,6 +84,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   const [notesExpandedIds, setNotesExpandedIds] = useState(
     () => new Set(saved.notesExpandedIds || []),
   );
+  const [pendingArrivalId, setPendingArrivalId] = useState(null);
 
   // Save UI state on unmount
   useEffect(() => {
@@ -223,6 +225,17 @@ export default function EventSubscriptionsTab({ selectedYear }) {
 
         // Compare booth labels alphanumerically
         compareValue = boothsA.localeCompare(boothsB, undefined, { numeric: true });
+      } else if (sortBy === 'arrival') {
+        const arrivalA = a.has_arrived ? 1 : 0;
+        const arrivalB = b.has_arrived ? 1 : 0;
+
+        if (arrivalA === arrivalB) {
+          const nameA = (a.company?.name || '').toLowerCase();
+          const nameB = (b.company?.name || '').toLowerCase();
+          compareValue = nameA.localeCompare(nameB);
+        } else {
+          compareValue = arrivalA - arrivalB;
+        }
       }
 
       return sortDirection === 'asc' ? compareValue : -compareValue;
@@ -668,6 +681,24 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   };
 
   // Toggle sort
+
+  const toggleArrivalStatus = async (subscription) => {
+    setPendingArrivalId(subscription.id);
+    try {
+      const newStatus = !subscription.has_arrived;
+      const { error } = await updateSubscription(subscription.id, { has_arrived: newStatus });
+
+      if (error) throw error;
+      toastSuccess(newStatus ? 'Company marked as arrived' : 'Company marked as not arrived');
+      window.dispatchEvent(new CustomEvent('admin_subscription_changed'));
+    } catch (err) {
+      console.error('Error toggling arrival status:', err);
+      toastError('Failed to update arrival status');
+    } finally {
+      setPendingArrivalId((current) => (current === subscription.id ? null : current));
+    }
+  };
+
   const handleSort = (column) => {
     if (sortBy === column) {
       // Toggle direction if same column
@@ -893,6 +924,25 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
+              {/* Arrival */}
+              <th
+                className="p-2 text-center border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
+                onClick={() => handleSort('arrival')}
+                title="Click to sort by arrival status"
+                rowSpan={3}
+                style={{ width: '72px' }}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <span>{t('mapManagement.arrivalStatus', 'Arrival')}</span>
+                  {sortBy === 'arrival' && (
+                    <Icon
+                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                      size={0.6}
+                      className="text-blue-600"
+                    />
+                  )}
+                </div>
+              </th>
               {/* Company - with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
@@ -1034,7 +1084,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 .filter((l) => l.length > 0)
                 .reverse();
               // count visible columns for the colspan on the expanded rows
-              const colSpan = 14;
+              const colSpan = 15;
               const toggleNotes = () => {
                 setNotesExpandedIds((prev) => {
                   const next = new Set(prev);
@@ -1081,6 +1131,24 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded font-medium">
                         {boothLabels}
                       </span>
+                    </td>
+
+                    {/* Arrival Status */}
+                    <td className="p-2 text-center">
+                      <div
+                        data-actions
+                        className="flex justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ArrivalStatusSlider
+                          checked={!!subscription.has_arrived}
+                          disabled={pendingArrivalId === subscription.id}
+                          onChange={() => toggleArrivalStatus(subscription)}
+                          showLabel={false}
+                          arrivedLabel={t('mapManagement.checkedInStatus', 'Checked In')}
+                          notArrivedLabel={t('mapManagement.notCheckedInStatus', 'Not Checked In')}
+                        />
+                      </div>
                     </td>
 
                     {/* Company name with logo */}

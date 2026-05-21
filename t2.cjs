@@ -1,1 +1,9 @@
-require('dotenv').config(); const { createClient } = require('@supabase/supabase-js'); const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY); async function run() { const {data: subs} = await supabase.from('event_subscriptions').select('event_year'); const counts = await supabase.from('subscription_counts').select('*'); console.log('counts view:', counts.data); } run();
+require('dotenv').config();
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY);
+async function run() {
+  const { data: subs } = await supabase.from('event_subscriptions').select('event_year');
+  const counts = await supabase.from('subscription_counts').select('*');
+  console.log('counts view:', counts.data);
+}
+run();

@@ -1,6 +1,9 @@
 const fs = require('fs');
 let code = fs.readFileSync('temp_pdf_test.cjs', 'utf-8');
-code = code.replace(/import \* as pdfjsLib from 'pdfjs-dist';/g, 'const pdfjsLib = require(\'pdfjs-dist/legacy/build/pdf.js\');');
+code = code.replace(
+  /import \* as pdfjsLib from 'pdfjs-dist';/g,
+  "const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');",
+);
 code = code.replace(/export async function/g, 'async function');
 code += `
 

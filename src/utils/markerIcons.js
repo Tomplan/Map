@@ -51,6 +51,7 @@ export function createMarkerIcon({
   prefix,
   glyphAnchor,
   isActive,
+  has_arrived,
 }) {
   // Ensure glyphSize is a string ending with 'px'
   let safeGlyphSize = glyphSize;
@@ -96,7 +97,8 @@ export function createMarkerIcon({
     textDecoration,
     fontFamily,
     glyphAnchor: glyphAnchor || [0, 0],
-    className: isActive ? `${className} marker-active` : className || '',
+    className:
+      `${isActive ? 'marker-active ' : ''}${has_arrived ? 'is-admin-arrived ' : ''}${className || ''}`.trim(),
     // Preserve the base icon size on the icon's options so consumers (print cloners)
     // can re-compute layout for a different zoom.
     baseIconSize: iconBaseSize || size,

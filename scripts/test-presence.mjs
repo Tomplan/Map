@@ -13,7 +13,7 @@ const supabase2 = createClient(supabaseUrl, supabaseKey);
 async function run() {
   // Client 1 with key user_1
   const c1 = supabase1.channel('global_visitors', { config: { presence: { key: 'user_1' } } });
-  
+
   // Client 2 with key user_2
   const c2 = supabase2.channel('global_visitors', { config: { presence: { key: 'user_2' } } });
 
@@ -25,10 +25,10 @@ async function run() {
       if (p[0].is_admin) admins.push(p[0].email);
     });
     console.log('[Client 1 Sync Event] Admins array:', admins);
-    
+
     // Test the uniqueAdmin deduplication logic we placed into useVisitorPresence.js manually here:
     // This is EXACTLY how it is running in Map right now:
-    const uniqueAdminsByEmail = Array.from(new Map(admins.map(a => [a, { email: a }])).values());
+    const uniqueAdminsByEmail = Array.from(new Map(admins.map((a) => [a, { email: a }])).values());
     console.log('[Client 1 Sync Event] UNIQUE Admin Count:', uniqueAdminsByEmail.length);
     console.log('----------------');
   });
@@ -50,7 +50,7 @@ async function run() {
       }
     });
   }, 1000);
-  
+
   // Wait a few seconds then kill it
   setTimeout(() => process.exit(0), 4000);
 }

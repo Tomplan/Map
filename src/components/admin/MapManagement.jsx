@@ -31,6 +31,7 @@ import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
+import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
 import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
@@ -97,8 +98,11 @@ export default function MapManagement({
   const [isResizing, setIsResizing] = useState(null); // 'left', 'right', 'split-left', 'split-right'
 
   // Subscriptions state
-  const { subscriptions: rawSubscriptions, loading: loadingSubscriptions } =
-    useEventSubscriptions(selectedYear);
+  const {
+    subscriptions: rawSubscriptions,
+    loading: loadingSubscriptions,
+    updateSubscription,
+  } = useEventSubscriptions(selectedYear);
 
   // Use passed assignments state or local if not provided (fallback)
   // This state MUST be passed down to EventMap -> EventClusterMarkers to share history stack
@@ -158,9 +162,10 @@ export default function MapManagement({
   // ------------------------------
 
   const [subscriptionSearch, setSubscriptionSearch] = useState('');
-  const [subscriptionSortBy, setSubscriptionSortBy] = useState('assigned'); // name, booths, assigned
+  const [subscriptionSortBy, setSubscriptionSortBy] = useState('assigned'); // name, booths, assigned, arrival
   const [subscriptionSortDirection, setSubscriptionSortDirection] = useState('asc'); // asc, desc
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
+  const [pendingArrivalId, setPendingArrivalId] = useState(null);
 
   // Filter and Sort subscriptions
   const filteredSubscriptions = useMemo(() => {
@@ -212,6 +217,17 @@ export default function MapManagement({
 
           return subscriptionSortDirection === 'asc' ? idA - idB : idB - idA;
         }
+
+        case 'arrival': {
+          valA = a.has_arrived ? 1 : 0;
+          valB = b.has_arrived ? 1 : 0;
+
+          if (valA === valB) {
+            return (a.company?.name || '').localeCompare(b.company?.name || '');
+          }
+
+          return subscriptionSortDirection === 'asc' ? valA - valB : valB - valA;
+        }
       }
     });
   }, [
@@ -226,6 +242,24 @@ export default function MapManagement({
     () => rawSubscriptions?.find((s) => s.id === selectedSubscriptionId),
     [rawSubscriptions, selectedSubscriptionId],
   );
+
+  const toggleArrivalStatus = async (subscription) => {
+    setPendingArrivalId(subscription.id);
+    try {
+      const newStatus = !subscription.has_arrived;
+      const { error } = await updateSubscription(subscription.id, { has_arrived: newStatus });
+
+      if (error) throw new Error(error);
+
+      toastSuccess(newStatus ? 'Company marked as arrived' : 'Company marked as not arrived');
+      window.dispatchEvent(new CustomEvent('admin_subscription_changed'));
+    } catch (err) {
+      console.error('Error toggling arrival status from map subscriptions list:', err);
+      toastError('Failed to update arrival status');
+    } finally {
+      setPendingArrivalId((current) => (current === subscription.id ? null : current));
+    }
+  };
 
   // Handle global mouse events for resizing
   useEffect(() => {
@@ -1571,6 +1605,7 @@ export default function MapManagement({
                   <option value="name">{t('mapManagement.sortByCompany')}</option>
                   <option value="booths">{t('mapManagement.sortByBooths')}</option>
                   <option value="assigned">{t('mapManagement.sortByAssigned')}</option>
+                  <option value="arrival">{t('mapManagement.sortByArrival')}</option>
                 </select>
                 <button
                   type="button"
@@ -1595,6 +1630,11 @@ export default function MapManagement({
 
             {/* List and Details Container */}
             <div className="flex-1 flex flex-col min-h-0 relative">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-[5]">
+                <span>{t('mapManagement.company')}</span>
+                <span className="text-right">{t('mapManagement.arrivalStatus')}</span>
+              </div>
+
               {/* List */}
               <div
                 className="overflow-y-auto w-full"
@@ -1675,6 +1715,23 @@ export default function MapManagement({
                               </span>
                             )}
                           </div>
+                        </div>
+                        <div
+                          className="flex-shrink-0 self-start"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ArrivalStatusSlider
+                            checked={!!sub.has_arrived}
+                            disabled={pendingArrivalId === sub.id}
+                            onChange={() => toggleArrivalStatus(sub)}
+                            showLabel={false}
+                            arrivedLabel={t('mapManagement.checkedInStatus', 'Checked In')}
+                            notArrivedLabel={t(
+                              'mapManagement.notCheckedInStatus',
+                              'Not Checked In',
+                            )}
+                            className="pr-1"
+                          />
                         </div>
                       </button>
                     );
