@@ -668,6 +668,24 @@ export default function EventSubscriptionsTab({ selectedYear }) {
   };
 
   // Toggle sort
+  
+  const toggleArrivalStatus = async (subscription) => {
+    try {
+      const newStatus = !subscription.has_arrived;
+      const { error } = await supabase
+        .from('event_subscriptions')
+        .update({ has_arrived: newStatus })
+        .eq('id', subscription.id);
+        
+      if (error) throw error;
+      toastSuccess(newStatus ? 'Company marked as arrived' : 'Company marked as not arrived');
+      fetchData(); // Refresh list to get latest
+    } catch (err) {
+      console.error('Error toggling arrival status:', err);
+      toastError('Failed to update arrival status');
+    }
+  };
+
   const handleSort = (column) => {
     if (sortBy === column) {
       // Toggle direction if same column
@@ -893,6 +911,8 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                   )}
                 </div>
               </th>
+              {/* Status */}
+              <th className="p-2 text-center border-b bg-gray-100" rowSpan={3}>Status</th>
               {/* Company - with sort */}
               <th
                 className="p-2 text-left border-b cursor-pointer hover:bg-gray-200 select-none bg-gray-100"
@@ -1034,7 +1054,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 .filter((l) => l.length > 0)
                 .reverse();
               // count visible columns for the colspan on the expanded rows
-              const colSpan = 14;
+              const colSpan = 15;
               const toggleNotes = () => {
                 setNotesExpandedIds((prev) => {
                   const next = new Set(prev);
@@ -1083,7 +1103,23 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                       </span>
                     </td>
 
-                    {/* Company name with logo */}
+                    {/* Arrival Status */}
+                      <td className="p-2 text-center">
+                        <button
+                          data-actions
+                          onClick={(e) => { e.stopPropagation(); toggleArrivalStatus(subscription); }}
+                          className={`px-2 py-1 text-xs font-bold rounded-full ${
+                            subscription.has_arrived 
+                              ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-green-100 hover:text-green-800'
+                          }`}
+                          title={subscription.has_arrived ? 'Mark as Not Arrived' : 'Mark as Arrived'}
+                        >
+                          {subscription.has_arrived ? '✓ Arrived' : 'Not Arrived'}
+                        </button>
+                      </td>
+
+                      {/* Company name with logo */}
                     <td className="p-2 text-left">
                       <div className="flex items-center gap-2">
                         <img
