@@ -1725,6 +1725,11 @@ export default function MapManagement({
                             disabled={pendingArrivalId === sub.id}
                             onChange={() => toggleArrivalStatus(sub)}
                             showLabel={false}
+                            arrivedLabel={t('mapManagement.checkedInStatus', 'Checked In')}
+                            notArrivedLabel={t(
+                              'mapManagement.notCheckedInStatus',
+                              'Not Checked In',
+                            )}
                             className="pr-1"
                           />
                         </div>
