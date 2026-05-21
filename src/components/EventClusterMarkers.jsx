@@ -95,6 +95,7 @@ const createIcon = (
   const hasAssignment = marker.assignments?.length > 0;
 
   return createMarkerIcon({
+    has_arrived: isAdminView && marker.sub_has_arrived,
     className,
     prefix: marker.prefix,
     iconUrl: getIconFile(marker, isFavorited, assignedDefault, unassignedDefault),
