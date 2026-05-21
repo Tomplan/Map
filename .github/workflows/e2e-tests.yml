@@ -25,9 +25,6 @@ jobs:
       - name: Install apt dependencies for headless Chromium
         run: |
           sudo apt-get update
-          # libasound2 isn't available on some ubuntu images as a direct package
-          # (it's provided by other packages). Remove it from the explicit list to
-          # avoid 'no installation candidate' failures and install chromium.
           sudo apt-get install -y --no-install-recommends \
             ca-certificates \
             fonts-liberation \
@@ -45,12 +42,21 @@ jobs:
             libgtk-3-0 \
             libnspr4 \
             libnss3 \
-            chromium-browser || sudo apt-get install -y chromium
+            chromium
+
+      - name: Resolve Chromium path
+        run: |
+          CHROMIUM_PATH="$(command -v chromium || command -v chromium-browser || true)"
+          if [ -z "$CHROMIUM_PATH" ]; then
+            echo "Chromium executable not found" >&2
+            exit 1
+          fi
+          echo "PUPPETEER_EXECUTABLE_PATH=$CHROMIUM_PATH" >> "$GITHUB_ENV"
 
       - name: Verify Chromium
         run: |
-          echo "Chromium path: $(which chromium-browser || true)"
-          chromium-browser --version || true
+          echo "Chromium path: $PUPPETEER_EXECUTABLE_PATH"
+          "$PUPPETEER_EXECUTABLE_PATH" --version || true
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -63,14 +69,12 @@ jobs:
       - name: Install dependencies
         env:
           PUPPETEER_SKIP_DOWNLOAD: 'true'
-          PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
         run: npm ci
 
       - name: Run E2E tests
         env:
           CI: true
           PUPPETEER_SKIP_DOWNLOAD: 'true'
-          PUPPETEER_EXECUTABLE_PATH: '/usr/bin/chromium-browser'
         run: npm run test:e2e --silent
 
       - name: Capture processes & diagnostics
