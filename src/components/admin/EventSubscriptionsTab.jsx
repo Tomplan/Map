@@ -244,6 +244,15 @@ export default function EventSubscriptionsTab({ selectedYear }) {
     return sorted;
   }, [subscriptions, searchTerm, sortBy, sortDirection, getBoothLabels]);
 
+  const checkedInSummary = useMemo(() => {
+    const checkedInCount = subscriptions.filter((subscription) => subscription.has_arrived).length;
+
+    return {
+      checkedInCount,
+      totalCount: subscriptions.length,
+    };
+  }, [subscriptions]);
+
   // Calculate totals for numeric columns
   const totals = useMemo(() => {
     return filteredSubscriptions.reduce(
@@ -932,15 +941,20 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                 rowSpan={3}
                 style={{ width: '72px' }}
               >
-                <div className="flex items-center justify-center gap-1">
-                  <span>{t('mapManagement.arrivalStatus', 'Arrival')}</span>
-                  {sortBy === 'arrival' && (
-                    <Icon
-                      path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
-                      size={0.6}
-                      className="text-blue-600"
-                    />
-                  )}
+                <div className="flex flex-col items-center justify-center leading-tight">
+                  <div className="flex items-center justify-center gap-1">
+                    <span>{t('mapManagement.arrivalStatus', 'Arrival')}</span>
+                    {sortBy === 'arrival' && (
+                      <Icon
+                        path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown}
+                        size={0.6}
+                        className="text-blue-600"
+                      />
+                    )}
+                  </div>
+                  <span className="mt-0.5 text-[10px] font-medium normal-case tracking-normal text-gray-500">
+                    {checkedInSummary.checkedInCount}/{checkedInSummary.totalCount}
+                  </span>
                 </div>
               </th>
               {/* Company - with sort */}
