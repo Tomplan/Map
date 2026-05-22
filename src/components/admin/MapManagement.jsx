@@ -238,6 +238,18 @@ export default function MapManagement({
     subscriptionSortDirection,
   ]);
 
+  const checkedInSummary = useMemo(() => {
+    const allSubscriptions = rawSubscriptions || [];
+    const checkedInCount = allSubscriptions.filter(
+      (subscription) => subscription.has_arrived,
+    ).length;
+
+    return {
+      checkedInCount,
+      totalCount: allSubscriptions.length,
+    };
+  }, [rawSubscriptions]);
+
   const selectedSubscription = useMemo(
     () => rawSubscriptions?.find((s) => s.id === selectedSubscriptionId),
     [rawSubscriptions, selectedSubscriptionId],
@@ -1631,8 +1643,13 @@ export default function MapManagement({
             {/* List and Details Container */}
             <div className="flex-1 flex flex-col min-h-0 relative">
               <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 px-3 py-2 text-[10px] font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-100 bg-white sticky top-0 z-[5]">
-                <span>{t('mapManagement.company')}</span>
-                <span className="text-right">{t('mapManagement.arrivalStatus')}</span>
+                <span className="text-left">{t('mapManagement.company')}</span>
+                <span className="text-right leading-tight">
+                  <span className="block">{t('mapManagement.arrivalStatus')}</span>
+                  <span className="mt-0.5 block text-[10px] font-medium normal-case tracking-normal text-gray-500">
+                    {checkedInSummary.checkedInCount}/{checkedInSummary.totalCount}
+                  </span>
+                </span>
               </div>
 
               {/* List */}
