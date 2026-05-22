@@ -101,6 +101,11 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     );
   }, [subscriptions]);
 
+  const checkedInCount = useMemo(
+    () => subscriptions.filter((subscription) => subscription.has_arrived).length,
+    [subscriptions],
+  );
+
   const stats = [
     {
       label: t('dashboard.companies'),
@@ -109,7 +114,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       color: 'green',
     },
     {
-      label: `${selectedYear} ${t('dashboard.subscriptions')}`,
+      label: t('dashboard.subscriptions'),
       value: loading ? '...' : subscriptionCount.toString(),
       icon: mdiCalendar,
       color: 'orange',
@@ -122,10 +127,16 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
       color: 'blue',
     },
     {
-      label: `${selectedYear} ${t('dashboard.assignments')}`,
+      label: t('dashboard.assignments'),
       value: loading ? '...' : `${assignments.length} / ${totals.booth_count}`,
       icon: mdiClipboardCheck,
       color: 'purple',
+    },
+    {
+      label: t('dashboard.checkedIn'),
+      value: loading ? '...' : `${checkedInCount} / ${subscriptionCount}`,
+      icon: mdiAccountTie,
+      color: 'yellow',
     },
   ];
 
@@ -202,14 +213,14 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
         </h2>
 
         {/* Stats Grid - Inside Event Totals */}
-        <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="stats-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
           {stats.map((stat) => (
-            <div key={stat.label} className={`p-4 rounded-lg border-2 ${colorClasses[stat.color]}`}>
-              <div className="flex items-center gap-3">
-                <Icon path={stat.icon} size={1.5} />
-                <div>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                  <div className="text-sm font-medium mt-1">{stat.label}</div>
+            <div key={stat.label} className={`p-3 rounded-lg border-2 ${colorClasses[stat.color]}`}>
+              <div className="flex items-center gap-2.5">
+                <Icon path={stat.icon} size={1.2} />
+                <div className="min-w-0 text-left">
+                  <div className="text-xl font-bold leading-tight">{stat.value}</div>
+                  <div className="mt-1 text-xs font-medium leading-snug">{stat.label}</div>
                 </div>
               </div>
             </div>
@@ -225,7 +236,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-blue-50 text-blue-700 border-blue-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiFoodCroissant} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.breakfast_sat}</div>
                   <div className="text-sm font-medium">{t('dashboard.breakfast')}</div>
                 </div>
@@ -234,7 +245,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-blue-50 text-blue-700 border-blue-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiFoodForkDrink} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.lunch_sat}</div>
                   <div className="text-sm font-medium">{t('dashboard.lunch')}</div>
                 </div>
@@ -243,7 +254,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-blue-50 text-blue-700 border-blue-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiGrill} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.bbq_sat}</div>
                   <div className="text-sm font-medium">{t('dashboard.bbq')}</div>
                 </div>
@@ -261,7 +272,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-green-50 text-green-700 border-green-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiFoodCroissant} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.breakfast_sun}</div>
                   <div className="text-sm font-medium">{t('dashboard.breakfast')}</div>
                 </div>
@@ -270,7 +281,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-green-50 text-green-700 border-green-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiFoodForkDrink} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.lunch_sun}</div>
                   <div className="text-sm font-medium">{t('dashboard.lunch')}</div>
                 </div>
@@ -280,7 +291,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 bg-gray-50 text-gray-400">
               <div className="flex items-center gap-3">
                 <Icon path={mdiGrill} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">-</div>
                   <div className="text-sm font-medium">{t('dashboard.noBBQ')}</div>
                 </div>
@@ -298,7 +309,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
             <div className="p-4 rounded-lg border-2 bg-yellow-50 text-yellow-700 border-yellow-200">
               <div className="flex items-center gap-3">
                 <Icon path={mdiCircleMultiple} size={1.5} />
-                <div>
+                <div className="text-left">
                   <div className="text-2xl font-bold">{totals.coins}</div>
                   <div className="text-sm font-medium">{t('dashboard.totalCoins')}</div>
                 </div>
