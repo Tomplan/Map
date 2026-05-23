@@ -28,6 +28,7 @@ export function useCompanyMutations({
   const [newCompanyForm, setNewCompanyForm] = useState({
     name: '',
     logo: organizationLogo || '',
+    logo_background_color: '',
     website: '',
     info: '',
     contact: '',
@@ -61,6 +62,7 @@ export function useCompanyMutations({
       const {
         name,
         logo,
+        logo_background_color,
         website,
         info,
         contact,
@@ -76,6 +78,7 @@ export function useCompanyMutations({
       await updateProfile({
         name,
         logo,
+        logo_background_color,
         website,
         info,
         contact,
@@ -205,6 +208,7 @@ export function useCompanyMutations({
       setNewCompanyForm({
         name: '',
         logo: organizationLogo,
+        logo_background_color: '',
         website: '',
         info: '',
         contact: '',
@@ -235,6 +239,7 @@ export function useCompanyMutations({
     setNewCompanyForm({
       name: '',
       logo: organizationLogo || '',
+      logo_background_color: '',
       website: '',
       info: '',
       contact: '',

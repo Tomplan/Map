@@ -32,6 +32,7 @@ import { ICON_OPTIONS } from '../../config/markerTabsConfig';
 import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
 import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
+import CompanyLogo from '../common/CompanyLogo';
 import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
@@ -1698,17 +1699,17 @@ export default function MapManagement({
                           isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500 pl-[11px]' : ''
                         }`}
                       >
-                        <div className="w-8 h-8 flex-shrink-0 bg-white border border-gray-200 rounded flex items-center justify-center overflow-hidden">
-                          {company.logo ? (
-                            <img
-                              src={getLogoPath(company.logo)}
-                              alt={company.name}
-                              className="w-full h-full object-contain"
-                            />
-                          ) : (
-                            <Icon path={mdiArchive} size={0.6} className="text-gray-300" />
-                          )}
-                        </div>
+                        <CompanyLogo
+                          logo={company.logo}
+                          name={company.name}
+                          backgroundColor={company.logo_background_color}
+                          sizeClassName="w-8 h-8"
+                          wrapperClassName="flex-shrink-0 border border-gray-200 overflow-hidden flex items-center justify-center"
+                          imgClassName="w-full h-full object-contain"
+                          roundedClassName="rounded"
+                          fallback="archive"
+                          defaultBackgroundColor="#ffffff"
+                        />
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium text-gray-900 truncate">
                             {company.name || 'Unknown Company'}

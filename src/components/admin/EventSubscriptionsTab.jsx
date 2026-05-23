@@ -29,6 +29,7 @@ import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
 import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
+import CompanyLogo from '../common/CompanyLogo';
 import SubscriptionEditModal from './SubscriptionEditModal';
 import {
   addLineItem,
@@ -1168,15 +1169,13 @@ export default function EventSubscriptionsTab({ selectedYear }) {
                     {/* Company name with logo */}
                     <td className="p-2 text-left">
                       <div className="flex items-center gap-2">
-                        <img
-                          {...(() => {
-                            const source = company?.logo || organizationLogo;
-                            const s = getResponsiveLogoSources(source);
-                            if (s) return { src: s.src, srcSet: s.srcSet, sizes: s.sizes };
-                            return { src: getLogoPath(source) };
-                          })()}
-                          alt={company?.name}
-                          className="w-8 h-8 object-contain"
+                        <CompanyLogo
+                          logo={company?.logo || organizationLogo}
+                          name={company?.name}
+                          backgroundColor={company?.logo_background_color}
+                          sizeClassName="w-8 h-8"
+                          imgClassName="w-full h-full object-contain"
+                          defaultBackgroundColor="transparent"
                         />
                         <span className="font-semibold text-gray-700">{company?.name}</span>
                       </div>
