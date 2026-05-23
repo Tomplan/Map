@@ -58,7 +58,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
             .select(
               `
             *,
-            company:companies(id, name, logo, website, info, company_translations(language_code, info))
+            company:companies(id, name, logo, logo_background_color, website, info, company_translations(language_code, info))
           `,
             )
             .eq('event_year', targetYear),

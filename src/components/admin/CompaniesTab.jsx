@@ -14,6 +14,8 @@ import {
   mdiChevronDown,
   mdiChevronUp,
   mdiDotsVertical,
+  mdiStar,
+  mdiStarOutline,
 } from '@mdi/js';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { getDefaultLogoPath } from '../../utils/getDefaultLogo';
@@ -30,6 +32,25 @@ import deLocales from '../../locales/de.json';
 // static locales used as a last-resort fallback when runtime i18n resources
 // are partially missing (e.g. HMR or old service-worker caches during dev).
 const staticLocales = { en: enLocales, nl: nlLocales, de: deLocales };
+const LOGO_BACKGROUND_PRESETS = [
+  '#FFFFFF',
+  '#F5F5F5',
+  '#E5E7EB',
+  '#111827',
+  '#1D4ED8',
+  '#0F766E',
+  '#CA8A04',
+  '#B91C1C',
+  '#7C3AED',
+  '#FDE68A',
+];
+const LOGO_BACKGROUND_FAVORITES_KEY = 'company-logo-background-favorites';
+
+function normalizeHexColor(color) {
+  if (typeof color !== 'string') return '';
+  const trimmed = color.trim();
+  return /^#[0-9a-fA-F]{6}$/.test(trimmed) ? trimmed.toUpperCase() : '';
+}
 
 function translateSafe(key, opts) {
   try {
@@ -59,6 +80,7 @@ import PhoneInput from '../common/PhoneInput';
 import { formatPhoneForDisplay, getPhoneFlag } from '../../utils/formatPhone';
 import ExportButton from '../common/ExportButton';
 import ImportButton from '../common/ImportButton';
+import CompanyLogo from '../common/CompanyLogo';
 import { supabase } from '../../supabaseClient';
 
 /**
@@ -127,6 +149,116 @@ function EditRow({ label, children }) {
         {label}
       </span>
       <div className="flex-1 text-left">{children}</div>
+    </div>
+  );
+}
+
+function LogoBackgroundColorPicker({ value, onChange }) {
+  const normalizedValue = normalizeHexColor(value) || '#FFFFFF';
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOGO_BACKGROUND_FAVORITES_KEY);
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.map(normalizeHexColor).filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const persistFavorites = (nextFavorites) => {
+    setFavorites(nextFavorites);
+    try {
+      localStorage.setItem(LOGO_BACKGROUND_FAVORITES_KEY, JSON.stringify(nextFavorites));
+    } catch {
+      // Ignore storage failures and keep the in-memory list usable.
+    }
+  };
+
+  const isFavorite = favorites.includes(normalizedValue);
+
+  return (
+    <div className="mt-2 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+      <div className="flex items-center gap-3">
+        <input
+          type="color"
+          value={normalizedValue}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-16 cursor-pointer rounded border border-gray-200 bg-white p-1"
+          aria-label={translateSafe('companies.logoBackgroundColor')}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            {translateSafe('companies.logoBackgroundColor')}
+          </div>
+          <div className="text-sm font-mono text-gray-700">{normalizedValue}</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            if (isFavorite) {
+              persistFavorites(favorites.filter((favorite) => favorite !== normalizedValue));
+              return;
+            }
+
+            persistFavorites([...favorites.filter(Boolean), normalizedValue].slice(-10));
+          }}
+          className="inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-2.5 py-2 text-xs font-medium text-gray-700 hover:bg-gray-100"
+        >
+          <Icon path={isFavorite ? mdiStar : mdiStarOutline} size={0.7} />
+          <span>
+            {isFavorite
+              ? translateSafe('companies.removeFavoriteColor')
+              : translateSafe('companies.saveFavoriteColor')}
+          </span>
+        </button>
+      </div>
+
+      <div>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          {translateSafe('companies.logoBackgroundPresets')}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {LOGO_BACKGROUND_PRESETS.map((color) => {
+            const isSelected = color === normalizedValue;
+            return (
+              <button
+                key={color}
+                type="button"
+                onClick={() => onChange(color)}
+                className={`h-7 w-7 rounded border ${isSelected ? 'border-gray-900 ring-2 ring-blue-500' : 'border-gray-300'}`}
+                style={{ backgroundColor: color }}
+                title={color}
+              />
+            );
+          })}
+        </div>
+      </div>
+
+      <div>
+        <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          {translateSafe('companies.favoriteColors')}
+        </div>
+        {favorites.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {favorites.map((color) => {
+              const isSelected = color === normalizedValue;
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => onChange(color)}
+                  className={`h-7 w-7 rounded border ${isSelected ? 'border-gray-900 ring-2 ring-blue-500' : 'border-gray-300'}`}
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">{translateSafe('companies.noFavoriteColors')}</div>
+        )}
+      </div>
     </div>
   );
 }
@@ -465,16 +597,14 @@ export default function CompaniesTab() {
                         : 'bg-white text-gray-900 hover:bg-blue-50',
                   ].join(' ')}
                 >
-                  <img
-                    {...(() => {
-                      const fallback = getDefaultLogoPath();
-                      const source = item.logo && item.logo.trim() !== '' ? item.logo : fallback;
-                      const r = getResponsiveLogoSources(source);
-                      if (r) return { src: r.src, srcSet: r.srcSet, sizes: r.sizes };
-                      return { src: getLogoPath(source) };
-                    })()}
-                    alt=""
-                    className="h-7 w-7 object-contain flex-shrink-0 rounded"
+                  <CompanyLogo
+                    logo={item.logo}
+                    name={item.name}
+                    backgroundColor={item.logo_background_color}
+                    sizeClassName="h-7 w-7"
+                    wrapperClassName="flex-shrink-0"
+                    imgClassName="w-full h-full object-contain"
+                    defaultBackgroundColor="transparent"
                   />
                   <div className="min-w-0">
                     <p className="font-semibold text-sm truncate">{item.name}</p>
@@ -542,6 +672,25 @@ export default function CompaniesTab() {
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.logo')}>
+                  <div className="mb-3 flex items-center gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <CompanyLogo
+                      logo={form.logo}
+                      name={form.name}
+                      backgroundColor={form.logo_background_color}
+                      sizeClassName="h-24 w-24"
+                      wrapperClassName="border border-gray-200 shadow-sm"
+                      imgClassName="h-full w-full object-contain p-2"
+                      defaultBackgroundColor="#ffffff"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                        {translateSafe('companies.companyLogo')}
+                      </div>
+                      <div className="mt-1 text-sm text-gray-600">
+                        {translateSafe('companies.logoPreviewHelp')}
+                      </div>
+                    </div>
+                  </div>
                   <LogoUploader
                     currentLogo={form.logo}
                     onUploadComplete={(url) => set({ logo: url })}
@@ -558,6 +707,21 @@ export default function CompaniesTab() {
                     onChange={(e) => set({ logo: e.target.value })}
                     className={`${inputCls} mt-2`}
                   />
+                  <LogoBackgroundColorPicker
+                    value={form.logo_background_color}
+                    onChange={(color) => set({ logo_background_color: color })}
+                  />
+                  <label className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={!form.logo_background_color}
+                      onChange={(e) =>
+                        set({ logo_background_color: e.target.checked ? '' : '#ffffff' })
+                      }
+                      className="h-4 w-4"
+                    />
+                    <span>{translateSafe('companies.transparentLogoBackground')}</span>
+                  </label>
                 </EditRow>
 
                 <EditRow label={translateSafe('companies.table.website')}>
@@ -861,15 +1025,6 @@ export default function CompaniesTab() {
               </div>
             );
 
-          const logoProps = (() => {
-            const fallback = getDefaultLogoPath();
-            const source = item.logo && item.logo.trim() !== '' ? item.logo : fallback;
-            const r = getResponsiveLogoSources(source);
-            return r
-              ? { src: r.src, srcSet: r.srcSet, sizes: r.sizes }
-              : { src: getLogoPath(source) };
-          })();
-
           return (
             <div className="flex-1 overflow-y-auto">
               <div className="px-6">
@@ -906,10 +1061,14 @@ export default function CompaniesTab() {
                 <Row lbl={translateSafe('companies.table.name')}>{item.name || dash}</Row>
 
                 <Row lbl={translateSafe('companies.companyLogo')}>
-                  <img
-                    {...logoProps}
-                    alt={item.name}
-                    className="h-10 w-10 object-contain rounded border bg-white"
+                  <CompanyLogo
+                    logo={item.logo}
+                    name={item.name}
+                    backgroundColor={item.logo_background_color}
+                    sizeClassName="h-10 w-10"
+                    wrapperClassName="border border-gray-200"
+                    imgClassName="w-full h-full object-contain"
+                    defaultBackgroundColor="#ffffff"
                   />
                 </Row>
 
