@@ -152,6 +152,7 @@ export default function useEventSubscriptions(eventYear) {
               `
             *,
               company:companies(id, name, logo, website, info, contact, phone, email,
+                logo_background_color,
                 contact_name, contact_email, contact_phone,
                 contact_name_2, contact_email_2, contact_phone_2,
                 address_line1, address_line2, city, postal_code, country, vat_number
@@ -216,7 +217,7 @@ export default function useEventSubscriptions(eventYear) {
         .select(
           `
           *,
-            company:companies(id, name, logo, website, info, contact, phone, email)
+            company:companies(id, name, logo, logo_background_color, website, info, contact, phone, email)
 
         `,
         )

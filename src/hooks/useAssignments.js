@@ -84,7 +84,7 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
             .select(
               `
             *,
-            company:companies(id, name, logo, website, info),
+              company:companies(id, name, logo, logo_background_color, website, info),
             marker:markers_core(id, lat, lng)
 
         `,
