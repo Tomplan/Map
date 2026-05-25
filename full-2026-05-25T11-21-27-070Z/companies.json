@@ -1,33 +1,8 @@
 {
   "table": "companies",
-  "timestamp": "2026-04-24T10-30-43-156Z",
-  "recordCount": 77,
+  "timestamp": "2026-05-25T11-21-27-070Z",
+  "recordCount": 81,
   "data": [
-    {
-      "id": 66,
-      "name": "PSP Expeditioncampers",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
-      "website": "https://psp-expeditioncampers.com",
-      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
-      "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-03-17T15:03:18.666873+00:00",
-      "contact": "Paul vd van der Beek",
-      "phone": "+31612990576",
-      "email": "info@psp-expeditioncampers.com",
-      "contact_name": null,
-      "contact_email": "aapvanderbeek@gmail.com",
-      "contact_phone": null,
-      "address_line1": "Van Wijkstraat 3",
-      "address_line2": null,
-      "city": "Huissen",
-      "postal_code": "6851GK",
-      "country": "Nederland",
-      "vat_number": "NL001380129B53",
-      "kvk_number": "09134411",
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
-    },
     {
       "id": 16,
       "name": "Camp Impuls Bruder X",
@@ -51,7 +26,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 5,
@@ -76,7 +52,8 @@
       "kvk_number": "73618470",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 80,
@@ -101,7 +78,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 6,
@@ -126,7 +104,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": "info@kowprojects.nl",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 9,
@@ -151,7 +130,8 @@
       "kvk_number": "95238751",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 3,
@@ -176,7 +156,8 @@
       "kvk_number": null,
       "contact_name_2": "",
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 4,
@@ -201,7 +182,8 @@
       "kvk_number": "81851138",
       "contact_name_2": null,
       "contact_email_2": "",
-      "contact_phone_2": ""
+      "contact_phone_2": "",
+      "logo_background_color": null
     },
     {
       "id": 23,
@@ -226,7 +208,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 10,
@@ -251,32 +234,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 112,
-      "name": "Roadtripme",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192475961_jpgrig.webp",
-      "website": null,
+      "id": 102,
+      "name": "Sommerset outdoor",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192543095_h3feca.webp",
+      "website": "https://www.sommersetoutdoor.nl/",
       "info": null,
-      "created_at": "2026-04-01T17:20:42.143362+00:00",
-      "updated_at": "2026-04-14T18:48:10.946248+00:00",
-      "contact": "Van den Eynde Pieter",
-      "phone": "+32484835727",
-      "email": "pieter@roadtripme.be",
+      "created_at": "2026-03-11T07:18:32.789371+00:00",
+      "updated_at": "2026-05-18T18:35:06.932618+00:00",
+      "contact": null,
+      "phone": null,
+      "email": "",
       "contact_name": null,
-      "contact_email": null,
-      "contact_phone": null,
-      "address_line1": "Stationsstraat 46",
+      "contact_email": "info@sommersetoutdoor.nl",
+      "contact_phone": "+31611164309",
+      "address_line1": "Eugene Luckerstraat 12",
       "address_line2": null,
-      "city": null,
-      "postal_code": "3722 Hasselt",
-      "country": "België",
-      "vat_number": "BE0771905808",
-      "kvk_number": null,
+      "city": "Nijmegen",
+      "postal_code": "6522HX",
+      "country": "Nederland",
+      "vat_number": "NL001876045B70",
+      "kvk_number": "61922862",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 21,
@@ -301,57 +286,86 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": "",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 102,
-      "name": "Sommerset outdoor",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192543095_h3feca.webp",
-      "website": null,
+      "id": 118,
+      "name": "FORVIA HELLA Benelux",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1777813183512_czjp54.svg",
+      "website": "https://www.hella.com/partnerworld/nl/",
       "info": null,
-      "created_at": "2026-03-11T07:18:32.789371+00:00",
-      "updated_at": "2026-04-14T18:49:30.869+00:00",
+      "created_at": "2026-05-03T12:50:29.766852+00:00",
+      "updated_at": "2026-05-03T13:01:45.31093+00:00",
+      "contact": "Laura Cases Miras",
+      "phone": "+31625264248",
+      "email": "laura.casesmiras@forvia.com",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Celsiusbaan 2",
+      "address_line2": null,
+      "city": "Nieuwegein",
+      "postal_code": "3439NC",
+      "country": "Nederland",
+      "vat_number": "NL001546028B01",
+      "kvk_number": "30000376",
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 112,
+      "name": "Roadtripme",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192475961_jpgrig.webp",
+      "website": "https://www.roadtripme.be/",
+      "info": null,
+      "created_at": "2026-04-01T17:20:42.143362+00:00",
+      "updated_at": "2026-05-18T18:32:08.988155+00:00",
+      "contact": "Van den Eynde Pieter",
+      "phone": "+32484835727",
+      "email": "pieter@roadtripme.be",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Stationsstraat 46",
+      "address_line2": null,
+      "city": null,
+      "postal_code": "3722 Hasselt",
+      "country": "België",
+      "vat_number": "BE0771905808",
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 103,
+      "name": "Ibex Adventures",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1778857152240_i4mo8s.webp",
+      "website": "https://www.ibexadventures.nl/",
+      "info": null,
+      "created_at": "2026-03-11T13:10:25.523897+00:00",
+      "updated_at": "2026-05-19T17:26:02.643046+00:00",
       "contact": null,
       "phone": null,
       "email": "",
       "contact_name": null,
-      "contact_email": "info@sommersetoutdoor.nl",
-      "contact_phone": "+31611164309",
-      "address_line1": "Eugene Luckerstraat 12",
+      "contact_email": "info@ibexadventures.nl",
+      "contact_phone": "+31651144823",
+      "address_line1": "Neptunusstraat 39",
       "address_line2": null,
-      "city": "Nijmegen",
-      "postal_code": "6522HX",
+      "city": "'s-Gravenhage",
+      "postal_code": "2586GR",
       "country": "Nederland",
-      "vat_number": "NL001876045B70",
-      "kvk_number": "61922862",
+      "vat_number": "NL007395097B01",
+      "kvk_number": "27116054",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
-    },
-    {
-      "id": 36,
-      "name": "Expeditech",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Expeditech.png",
-      "website": "https://expeditech.nl",
-      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
-      "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-03-16T08:01:55.320746+00:00",
-      "contact": "Paul Stroink",
-      "phone": "+31747110350",
-      "email": "info@expeditech.nl",
-      "contact_name": null,
-      "contact_email": "info@one-ten.nl",
-      "contact_phone": "+31641322851",
-      "address_line1": "Erve Oosterveld 5",
-      "address_line2": null,
-      "city": "Zenderen",
-      "postal_code": "7625NC",
-      "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": null,
-      "contact_name_2": null,
-      "contact_email_2": "",
-      "contact_phone_2": ""
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 45,
@@ -376,7 +390,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 20,
@@ -401,7 +416,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 113,
+      "name": "Custom Car Solutions",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776191763713_da8l8p.webp",
+      "website": "https://custom-car-solutions.nl",
+      "info": null,
+      "created_at": "2026-04-01T17:20:46.409193+00:00",
+      "updated_at": "2026-05-18T18:24:36.314067+00:00",
+      "contact": "Jip Staaks",
+      "phone": "+31611824371",
+      "email": "jstaaks@custom-car-solutions.nl",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Broek 5",
+      "address_line2": null,
+      "city": "Sevenum",
+      "postal_code": "5975PB",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": "72983949",
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 44,
@@ -426,7 +468,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 40,
@@ -451,7 +494,8 @@
       "kvk_number": "50890158",
       "contact_name_2": "Kay Veldhuizen",
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 43,
@@ -476,7 +520,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 65,
@@ -501,7 +546,8 @@
       "kvk_number": "82879091",
       "contact_name_2": null,
       "contact_email_2": "martijn@pathfinder-campers.com",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 34,
@@ -526,32 +572,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
-    },
-    {
-      "id": 103,
-      "name": "Ibex Adventures",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1773761598719_uxqrvv.webp",
-      "website": "https://www.ibexadventures.nl/",
-      "info": null,
-      "created_at": "2026-03-11T13:10:25.523897+00:00",
-      "updated_at": "2026-03-17T15:33:26.935903+00:00",
-      "contact": null,
-      "phone": null,
-      "email": "",
-      "contact_name": null,
-      "contact_email": "info@ibexadventures.nl",
-      "contact_phone": "+31651144823",
-      "address_line1": "Neptunusstraat 39",
-      "address_line2": null,
-      "city": "'s-Gravenhage",
-      "postal_code": "2586GR",
-      "country": "Nederland",
-      "vat_number": "NL007395097B01",
-      "kvk_number": "27116054",
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 39,
@@ -576,7 +598,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 119,
+      "name": "Dreamcab b. V.",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1778857035449_q0re4z.svg",
+      "website": "dreamcab.nl",
+      "info": null,
+      "created_at": "2026-05-15T14:34:44.142718+00:00",
+      "updated_at": "2026-05-18T18:26:24.508109+00:00",
+      "contact": "Wietse Huissen",
+      "phone": "+31683210270",
+      "email": "info@dreamcab.nl",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Breeweg 96",
+      "address_line2": null,
+      "city": "Yerseke",
+      "postal_code": "4401BS",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 33,
@@ -601,57 +650,34 @@
       "kvk_number": "85705721",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 113,
-      "name": "Custom Car Solutions",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776191763713_da8l8p.webp",
-      "website": null,
-      "info": null,
-      "created_at": "2026-04-01T17:20:46.409193+00:00",
-      "updated_at": "2026-04-14T18:44:32.35094+00:00",
-      "contact": "Jip Staaks",
-      "phone": "+31611824371",
-      "email": "jstaaks@custom-car-solutions.nl",
-      "contact_name": null,
-      "contact_email": null,
-      "contact_phone": null,
-      "address_line1": "Broek 5",
-      "address_line2": null,
-      "city": "Sevenum",
-      "postal_code": "5975PB",
-      "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": "72983949",
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
-    },
-    {
-      "id": 74,
-      "name": "Saris 4x4",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
-      "website": "https://saris4x4.nl",
+      "id": 36,
+      "name": "Expeditech",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Expeditech.png",
+      "website": "https://expeditech.nl",
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-03-11T06:42:54.547605+00:00",
-      "contact": "Suzan Saat",
-      "phone": "+31612105798",
-      "email": "info@saris4x4.nl",
+      "updated_at": "2026-05-19T17:25:30.517813+00:00",
+      "contact": "Paul Stroink",
+      "phone": "+31747110350",
+      "email": "info@expeditech.nl",
       "contact_name": null,
-      "contact_email": "administratie@saris4x4.nl",
-      "contact_phone": "+31488431422",
-      "address_line1": "Kerkstraat 30",
+      "contact_email": "info@one-ten.nl",
+      "contact_phone": "+31641322851",
+      "address_line1": "Erve Oosterveld 5",
       "address_line2": null,
-      "city": "Valburg",
-      "postal_code": "6675BS",
+      "city": "Zenderen",
+      "postal_code": "7625NC",
       "country": "Nederland",
       "vat_number": null,
       "kvk_number": null,
       "contact_name_2": null,
-      "contact_email_2": "administratie@saris4x4.nl",
-      "contact_phone_2": "+31488431422"
+      "contact_email_2": "",
+      "contact_phone_2": "",
+      "logo_background_color": null
     },
     {
       "id": 114,
@@ -676,7 +702,8 @@
       "kvk_number": "90023374",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 71,
@@ -701,32 +728,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
-    },
-    {
-      "id": 78,
-      "name": "Smokey Goose Barbecue & More",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Smokey%20Goose.jpg",
-      "website": "https://smokeygoose.nl",
-      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
-      "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-03-11T16:23:52.60039+00:00",
-      "contact": "Menno Gans",
-      "phone": "+31611144637",
-      "email": "info@smokeygoose.nl",
-      "contact_name": null,
-      "contact_email": "info@smokeygoose.nl",
-      "contact_phone": "+31611144637",
-      "address_line1": "J.D. van Leeuwenstraat 15c",
-      "address_line2": null,
-      "city": "Tiel",
-      "postal_code": "4001XE",
-      "country": "Nederland",
-      "vat_number": "NL002928075B67",
-      "kvk_number": "81555547",
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 79,
@@ -751,7 +754,8 @@
       "kvk_number": "69133492",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 73,
@@ -776,7 +780,8 @@
       "kvk_number": "20027429",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 53,
@@ -801,7 +806,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 60,
@@ -826,7 +832,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": "Jesper@outback.nl",
-      "contact_phone_2": "+31683605705"
+      "contact_phone_2": "+31683605705",
+      "logo_background_color": null
     },
     {
       "id": 59,
@@ -851,7 +858,8 @@
       "kvk_number": null,
       "contact_name_2": "Arlo van Vliet",
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 67,
@@ -876,7 +884,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 61,
@@ -901,7 +910,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 57,
@@ -926,32 +936,60 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 104,
-      "name": "Recreatieve.nl ",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1773238871201_wsvebi.webp",
-      "website": "https://www.recreatieve.nl/",
-      "info": null,
-      "created_at": "2026-03-11T13:11:36.633317+00:00",
-      "updated_at": "2026-03-17T15:02:26.299545+00:00",
-      "contact": "Peter Mastenbroek",
-      "phone": null,
-      "email": "",
+      "id": 78,
+      "name": "Smokey Goose Barbecue & More",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Smokey%20Goose.jpg",
+      "website": "https://smokeygoose.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "created_at": "2025-11-10T13:30:02.32163+00:00",
+      "updated_at": "2026-05-19T17:26:46.956624+00:00",
+      "contact": "Menno Gans",
+      "phone": "+31611144637",
+      "email": "info@smokeygoose.nl",
       "contact_name": null,
-      "contact_email": "recreatieve@planet.nl",
-      "contact_phone": "+31653142258",
-      "address_line1": "vliehors 32",
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "J.D. van Leeuwenstraat 15c",
       "address_line2": null,
-      "city": "Lelystad",
-      "postal_code": "8223CZ",
+      "city": "Tiel",
+      "postal_code": "4001XE",
       "country": "Nederland",
+      "vat_number": "NL002928075B67",
+      "kvk_number": "81555547",
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 120,
+      "name": "Roof Space GmbH",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1779211469571_evne2h.webp",
+      "website": null,
+      "info": null,
+      "created_at": "2026-05-18T16:58:42.706066+00:00",
+      "updated_at": "2026-05-19T17:24:52.895127+00:00",
+      "contact": "Björn Koop",
+      "phone": "+4915168154704",
+      "email": "koop@roofspace.de",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Im Finigen 19",
+      "address_line2": "28832 Achim",
+      "city": null,
+      "postal_code": null,
+      "country": null,
       "vat_number": null,
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 51,
@@ -976,7 +1014,60 @@
       "kvk_number": "37110364",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": "+31653783443"
+      "contact_phone_2": "+31653783443",
+      "logo_background_color": null
+    },
+    {
+      "id": 74,
+      "name": "Saris 4x4",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Saris%204x4.png",
+      "website": "https://saris4x4.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "created_at": "2025-11-10T13:30:02.32163+00:00",
+      "updated_at": "2026-05-18T14:03:14.6441+00:00",
+      "contact": "Suzan Saat",
+      "phone": "+31612105798",
+      "email": "info@saris4x4.nl",
+      "contact_name": null,
+      "contact_email": "administratie@saris4x4.nl",
+      "contact_phone": "+31488431422",
+      "address_line1": "Kerkstraat 30",
+      "address_line2": null,
+      "city": "Valburg",
+      "postal_code": "6675BS",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 104,
+      "name": "Recreatieve.nl ",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1773238871201_wsvebi.webp",
+      "website": "https://www.recreatieve.nl/",
+      "info": null,
+      "created_at": "2026-03-11T13:11:36.633317+00:00",
+      "updated_at": "2026-05-19T17:26:23.990679+00:00",
+      "contact": "Peter Mastenbroek",
+      "phone": null,
+      "email": "",
+      "contact_name": null,
+      "contact_email": "recreatieve@planet.nl",
+      "contact_phone": "+31653142258",
+      "address_line1": "vliehors 32",
+      "address_line2": null,
+      "city": "Lelystad",
+      "postal_code": "8223CZ",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 56,
@@ -1001,7 +1092,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": "laurens@madeforadventure.be",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 7,
@@ -1026,7 +1118,8 @@
       "kvk_number": "85175617",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 93,
@@ -1051,7 +1144,8 @@
       "kvk_number": "20137393",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 85,
@@ -1076,7 +1170,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 87,
@@ -1101,32 +1196,8 @@
       "kvk_number": "01064770",
       "contact_name_2": null,
       "contact_email_2": "werkplaats@vouw-wagen.nl",
-      "contact_phone_2": null
-    },
-    {
-      "id": 115,
-      "name": "Alltracks",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776190513807_t5qh26.webp",
-      "website": null,
-      "info": null,
-      "created_at": "2026-04-10T10:56:33.003142+00:00",
-      "updated_at": "2026-04-14T18:45:18.962346+00:00",
-      "contact": "Jacqueline Visser Verleg",
-      "phone": "+31644379384",
-      "email": "info@alltracks.eu",
-      "contact_name": null,
-      "contact_email": null,
-      "contact_phone": null,
-      "address_line1": "Grootschoterweg 84",
-      "address_line2": null,
-      "city": "Budel Schoot",
-      "postal_code": "6023AT",
-      "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": null,
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 2,
@@ -1151,7 +1222,60 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 115,
+      "name": "Alltracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776190513807_t5qh26.webp",
+      "website": "https://alltracks.eu",
+      "info": null,
+      "created_at": "2026-04-10T10:56:33.003142+00:00",
+      "updated_at": "2026-05-18T18:27:16.409119+00:00",
+      "contact": "Jacqueline Visser Verleg",
+      "phone": "+31644379384",
+      "email": "info@alltracks.eu",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Grootschoterweg 84",
+      "address_line2": null,
+      "city": "Budel Schoot",
+      "postal_code": "6023AT",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 121,
+      "name": "bas4cars bv",
+      "logo": null,
+      "website": null,
+      "info": null,
+      "created_at": "2026-05-22T10:25:06.404414+00:00",
+      "updated_at": "2026-05-22T10:25:06.404414+00:00",
+      "contact": "bas v driel",
+      "phone": "",
+      "email": "",
+      "contact_name": "bas v driel",
+      "contact_email": "info@bas4cars.nl",
+      "contact_phone": "+31774641120",
+      "address_line1": "jacobpoelsweg 15",
+      "address_line2": null,
+      "city": "america",
+      "postal_code": "5966RA",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 42,
@@ -1176,7 +1300,8 @@
       "kvk_number": "90023374",
       "contact_name_2": "Tomek Szugzdzinis",
       "contact_email_2": "info@suzannebeulens.nl",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 46,
@@ -1201,32 +1326,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": "info@jefistaalbouw.nl",
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 105,
-      "name": "Greenlane Tracks",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1773235132683_ya7wbt.webp",
-      "website": null,
+      "id": 116,
+      "name": "Van Dijk LCM daktenten ",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192884308_gg9yde.webp",
+      "website": "https://lcm-daktenten.nl/",
       "info": null,
-      "created_at": "2026-03-11T13:15:10.671915+00:00",
-      "updated_at": "2026-03-17T15:36:46.935421+00:00",
-      "contact": null,
-      "phone": null,
-      "email": "",
+      "created_at": "2026-04-10T10:57:08.048584+00:00",
+      "updated_at": "2026-05-18T18:36:09.591284+00:00",
+      "contact": "Inge van Dijk",
+      "phone": "+31628075883",
+      "email": "inge@vandijkmultiservice.nl",
       "contact_name": null,
-      "contact_email": "info@greenlanetracks.nl",
-      "contact_phone": "+31626776545",
-      "address_line1": "Leharstraat 26",
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Gouwe 15",
       "address_line2": null,
-      "city": "Dongen",
-      "postal_code": "5102BK",
+      "city": "Hoogwoud",
+      "postal_code": "1718LK",
       "country": "Nederland",
       "vat_number": null,
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 24,
@@ -1251,7 +1378,8 @@
       "kvk_number": "85027227",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 37,
@@ -1276,7 +1404,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 31,
@@ -1301,7 +1430,8 @@
       "kvk_number": "69417938",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 29,
@@ -1326,7 +1456,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 72,
@@ -1351,32 +1482,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 50,
-      "name": "L-R-Parts",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
-      "website": "https://l-r-parts.nl",
+      "id": 8,
+      "name": "Autobedrijf van der Zweerde",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/autobedrijf-van-der-zweerde.webp",
+      "website": "https://autobedrijfvanderzweerde.nl",
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-03-11T13:08:41.303223+00:00",
-      "contact": "Anneke de Vries",
-      "phone": "+31636555352",
-      "email": "info@l-r-parts.nl",
+      "updated_at": "2026-05-19T17:30:37.085666+00:00",
+      "contact": "Bert  van der  Zweerde",
+      "phone": "+31652690725",
+      "email": "info@autobedrijfvanderzweerde.nl",
       "contact_name": null,
-      "contact_email": "info@l-r-parts.nl",
-      "contact_phone": "+31636555352",
-      "address_line1": "Puurveenseweg 39",
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Moersberger Erven 2",
       "address_line2": null,
-      "city": "Kootwijkerbroek",
-      "postal_code": "3774PH",
+      "city": "Nijensleek",
+      "postal_code": "8383EA",
       "country": "Nederland",
-      "vat_number": "NL004965569B83",
-      "kvk_number": "92588115",
-      "contact_name_2": null,
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": "Bert van der Zweerde",
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": "+31521381010",
+      "logo_background_color": null
     },
     {
       "id": 48,
@@ -1401,7 +1534,8 @@
       "kvk_number": "09114705",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 49,
@@ -1426,66 +1560,43 @@
       "kvk_number": "24286096",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 8,
-      "name": "Autobedrijf van der Zweerde",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/autobedrijf-van-der-zweerde.webp",
-      "website": "https://autobedrijfvanderzweerde.nl",
+      "id": 66,
+      "name": "PSP Expeditioncampers",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/PSP%20Expedition%20Campers.png",
+      "website": "https://psp-expeditioncampers.com",
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-04-01T17:12:37.815852+00:00",
-      "contact": "Bert  van der  Zweerde",
-      "phone": "+31652690725",
-      "email": "info@autobedrijfvanderzweerde.nl",
+      "updated_at": "2026-05-22T10:28:00.799711+00:00",
+      "contact": "Paul vd van der Beek",
+      "phone": "+31612990576",
+      "email": "info@psp-expeditioncampers.com",
       "contact_name": null,
-      "contact_email": "info@autobedrijfvanderzweerde.nl",
-      "contact_phone": "+31652690725",
-      "address_line1": "Moersberger Erven 2",
-      "address_line2": null,
-      "city": "Nijensleek",
-      "postal_code": "8383EA",
-      "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": null,
-      "contact_name_2": "Bert van der Zweerde",
-      "contact_email_2": null,
-      "contact_phone_2": "+31521381010"
-    },
-    {
-      "id": 116,
-      "name": "Van Dijk LCM daktenten ",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192884308_gg9yde.webp",
-      "website": null,
-      "info": null,
-      "created_at": "2026-04-10T10:57:08.048584+00:00",
-      "updated_at": "2026-04-14T18:54:57.946273+00:00",
-      "contact": "Inge van Dijk",
-      "phone": "+31628075883",
-      "email": "inge@vandijkmultiservice.nl",
-      "contact_name": null,
-      "contact_email": null,
+      "contact_email": "aapvanderbeek@gmail.com",
       "contact_phone": null,
-      "address_line1": "Gouwe 15",
+      "address_line1": "Van Wijkstraat 3",
       "address_line2": null,
-      "city": "Hoogwoud",
-      "postal_code": "1718LK",
+      "city": "Huissen",
+      "postal_code": "6851GK",
       "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": null,
-      "contact_name_2": null,
+      "vat_number": "NL001380129B53",
+      "kvk_number": "09134411",
+      "contact_name_2": "Paul van der Beek",
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 109,
       "name": "Fjällvila RTT",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776191794095_n8qx51.webp",
-      "website": null,
+      "website": "https://fjallvila.nl",
       "info": null,
       "created_at": "2026-04-01T17:20:13.717848+00:00",
-      "updated_at": "2026-04-14T18:44:04.200469+00:00",
+      "updated_at": "2026-05-18T18:28:07.857375+00:00",
       "contact": "Berend Van Dijk",
       "phone": "+31657931776",
       "email": "info@fjallvila.nl",
@@ -1501,16 +1612,43 @@
       "kvk_number": "80319742",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 105,
+      "name": "Greenlane Tracks",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1773235132683_ya7wbt.webp",
+      "website": "https://www.greenlanetracks.nl/",
+      "info": null,
+      "created_at": "2026-03-11T13:15:10.671915+00:00",
+      "updated_at": "2026-05-18T18:29:25.428897+00:00",
+      "contact": null,
+      "phone": null,
+      "email": "",
+      "contact_name": null,
+      "contact_email": "info@greenlanetracks.nl",
+      "contact_phone": "+31626776545",
+      "address_line1": "Leharstraat 26",
+      "address_line2": null,
+      "city": "Dongen",
+      "postal_code": "5102BK",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 111,
       "name": "Days OFF",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776191906887_pgta1z.webp",
-      "website": null,
+      "website": "https://www.daysoff.be/",
       "info": null,
       "created_at": "2026-04-01T17:20:21.574027+00:00",
-      "updated_at": "2026-04-14T18:42:43.133136+00:00",
+      "updated_at": "2026-05-18T18:25:35.276712+00:00",
       "contact": "Kristof Saerens",
       "phone": "+32476773085",
       "email": "info@daysoff.be",
@@ -1526,7 +1664,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 50,
+      "name": "L-R-Parts",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Land%20Rover%20Parts.png",
+      "website": "https://l-r-parts.nl",
+      "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
+      "created_at": "2025-11-10T13:30:02.32163+00:00",
+      "updated_at": "2026-05-19T17:28:13.40189+00:00",
+      "contact": "Anneke de Vries",
+      "phone": "+31636555352",
+      "email": "info@l-r-parts.nl",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Puurveenseweg 39",
+      "address_line2": null,
+      "city": "Kootwijkerbroek",
+      "postal_code": "3774PH",
+      "country": "Nederland",
+      "vat_number": "NL004965569B83",
+      "kvk_number": "92588115",
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 55,
@@ -1551,7 +1716,8 @@
       "kvk_number": "76892166",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 75,
@@ -1576,7 +1742,8 @@
       "kvk_number": "84352078",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 22,
@@ -1601,7 +1768,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 82,
@@ -1626,7 +1794,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 86,
@@ -1651,7 +1820,8 @@
       "kvk_number": "61466581",
       "contact_name_2": null,
       "contact_email_2": "mail@viking-campers.nl",
-      "contact_phone_2": "+31648251477"
+      "contact_phone_2": "+31648251477",
+      "logo_background_color": null
     },
     {
       "id": 19,
@@ -1676,7 +1846,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 81,
@@ -1701,7 +1872,8 @@
       "kvk_number": "96542950",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 38,
@@ -1726,7 +1898,8 @@
       "kvk_number": "71545913",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 18,
@@ -1751,7 +1924,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 92,
@@ -1776,32 +1950,34 @@
       "kvk_number": "84711426",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
-      "id": 110,
-      "name": "Rentcruiser",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192386535_c4o8so.webp",
-      "website": null,
-      "info": null,
-      "created_at": "2026-04-01T17:20:18.709248+00:00",
-      "updated_at": "2026-04-14T18:46:46.41778+00:00",
-      "contact": "Gerard Beiboer",
-      "phone": "+31630818833",
-      "email": "info@rentcruiser.nl",
+      "id": 83,
+      "name": "Totalcool",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/TotalCool.jpg",
+      "website": "https://totalcool.nl",
+      "info": "De beste draagbare koeloplossing op de markt. 12V Draagbare koelboxen met vriezfunctie.",
+      "created_at": "2025-11-10T13:30:02.32163+00:00",
+      "updated_at": "2026-05-19T17:27:07.179996+00:00",
+      "contact": "Erik Doldersum",
+      "phone": "+31654618624",
+      "email": "sales@totalcool.nl",
       "contact_name": null,
-      "contact_email": null,
-      "contact_phone": null,
-      "address_line1": "Vossenkamp 11a",
+      "contact_email": "erik@totalcool.nl",
+      "contact_phone": "+31528314066",
+      "address_line1": "Pascalstraat 16",
       "address_line2": null,
-      "city": "Leek",
-      "postal_code": "9351VR",
+      "city": "Hoogeveen",
+      "postal_code": "7903BJ",
       "country": "Nederland",
-      "vat_number": null,
-      "kvk_number": null,
+      "vat_number": "NL865562672B01",
+      "kvk_number": "91137314",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 84,
@@ -1826,7 +2002,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 52,
@@ -1851,7 +2028,8 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": "+31654243869"
+      "contact_phone_2": "+31654243869",
+      "logo_background_color": null
     },
     {
       "id": 106,
@@ -1876,41 +2054,17 @@
       "kvk_number": "01125333",
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
-    },
-    {
-      "id": 83,
-      "name": "Totalcool",
-      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/TotalCool.jpg",
-      "website": "https://totalcool.nl",
-      "info": "De beste draagbare koeloplossing op de markt. 12V Draagbare koelboxen met vriezfunctie.",
-      "created_at": "2025-11-10T13:30:02.32163+00:00",
-      "updated_at": "2026-04-02T08:41:12.390048+00:00",
-      "contact": "Erik Doldersum",
-      "phone": "+31654618624",
-      "email": "sales@totalcool.nl",
-      "contact_name": null,
-      "contact_email": "erik@totalcool.nl",
-      "contact_phone": "+31528314066",
-      "address_line1": "Pascalstraat 16",
-      "address_line2": null,
-      "city": "Hoogeveen",
-      "postal_code": "7903BJ",
-      "country": "Nederland",
-      "vat_number": "NL865562672B01",
-      "kvk_number": "91137314",
-      "contact_name_2": null,
-      "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
     },
     {
       "id": 117,
-      "name": "Max van Veen",
+      "name": "LUME TRAVELER Max van Veen",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192051852_42msu3.webp",
-      "website": null,
+      "website": "https://www.lumetraveler.com",
       "info": null,
       "created_at": "2026-04-10T10:59:16.069668+00:00",
-      "updated_at": "2026-04-14T18:41:23.190605+00:00",
+      "updated_at": "2026-05-18T18:30:36.242783+00:00",
       "contact": null,
       "phone": null,
       "email": "",
@@ -1926,7 +2080,34 @@
       "kvk_number": null,
       "contact_name_2": null,
       "contact_email_2": null,
-      "contact_phone_2": null
+      "contact_phone_2": null,
+      "logo_background_color": null
+    },
+    {
+      "id": 110,
+      "name": "Rentcruiser",
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1776192386535_c4o8so.webp",
+      "website": "https://rentcruiser.nl/",
+      "info": null,
+      "created_at": "2026-04-01T17:20:18.709248+00:00",
+      "updated_at": "2026-05-18T18:31:35.591751+00:00",
+      "contact": "Gerard Beiboer",
+      "phone": "+31630818833",
+      "email": "info@rentcruiser.nl",
+      "contact_name": null,
+      "contact_email": null,
+      "contact_phone": null,
+      "address_line1": "Vossenkamp 11a",
+      "address_line2": null,
+      "city": "Leek",
+      "postal_code": "9351VR",
+      "country": "Nederland",
+      "vat_number": null,
+      "kvk_number": null,
+      "contact_name_2": null,
+      "contact_email_2": null,
+      "contact_phone_2": null,
+      "logo_background_color": null
     }
   ]
 }
