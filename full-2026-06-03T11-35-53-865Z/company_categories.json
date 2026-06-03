@@ -1,7 +1,7 @@
 {
   "table": "company_categories",
-  "timestamp": "2026-05-02T10-18-31-261Z",
-  "recordCount": 212,
+  "timestamp": "2026-06-03T11-35-53-865Z",
+  "recordCount": 245,
   "data": [
     {
       "company_id": 6,
@@ -64,11 +64,6 @@
       "created_at": "2026-03-17T15:38:27.796635+00:00"
     },
     {
-      "company_id": 117,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:41:23.40525+00:00"
-    },
-    {
       "company_id": 6,
       "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
       "created_at": "2026-03-11T16:29:01.144716+00:00"
@@ -94,16 +89,6 @@
       "created_at": "2026-03-15T08:54:37.029889+00:00"
     },
     {
-      "company_id": 117,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:41:23.40525+00:00"
-    },
-    {
-      "company_id": 117,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:41:23.40525+00:00"
-    },
-    {
       "company_id": 33,
       "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
       "created_at": "2026-03-17T15:49:44.676804+00:00"
@@ -112,16 +97,6 @@
       "company_id": 33,
       "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
       "created_at": "2026-03-17T15:49:44.676804+00:00"
-    },
-    {
-      "company_id": 117,
-      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
-      "created_at": "2026-04-14T18:41:23.40525+00:00"
-    },
-    {
-      "company_id": 110,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:46:46.7725+00:00"
     },
     {
       "company_id": 75,
@@ -134,16 +109,6 @@
       "created_at": "2026-03-10T20:00:46.067748+00:00"
     },
     {
-      "company_id": 110,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:46:46.7725+00:00"
-    },
-    {
-      "company_id": 110,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-04-14T18:46:46.7725+00:00"
-    },
-    {
       "company_id": 2,
       "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
       "created_at": "2026-03-16T09:18:23.666927+00:00"
@@ -179,9 +144,9 @@
       "created_at": "2026-03-17T15:03:18.998273+00:00"
     },
     {
-      "company_id": 110,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-04-14T18:46:46.7725+00:00"
+      "company_id": 118,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-03T13:01:45.9691+00:00"
     },
     {
       "company_id": 21,
@@ -204,9 +169,14 @@
       "created_at": "2026-03-17T15:58:11.452674+00:00"
     },
     {
-      "company_id": 78,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:41:03.456396+00:00"
+      "company_id": 118,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-03T13:01:45.9691+00:00"
+    },
+    {
+      "company_id": 118,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-03T13:01:45.9691+00:00"
     },
     {
       "company_id": 92,
@@ -214,9 +184,29 @@
       "created_at": "2025-12-04T22:41:08.189155+00:00"
     },
     {
-      "company_id": 111,
+      "company_id": 102,
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "created_at": "2026-05-18T18:35:07.42071+00:00"
+    },
+    {
+      "company_id": 102,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:35:07.42071+00:00"
+    },
+    {
+      "company_id": 83,
       "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:42:43.342542+00:00"
+      "created_at": "2026-05-19T17:27:07.543741+00:00"
+    },
+    {
+      "company_id": 83,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:27:07.543741+00:00"
+    },
+    {
+      "company_id": 83,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-19T17:27:07.543741+00:00"
     },
     {
       "company_id": 55,
@@ -244,41 +234,6 @@
       "created_at": "2025-12-04T22:40:44.001615+00:00"
     },
     {
-      "company_id": 111,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:42:43.342542+00:00"
-    },
-    {
-      "company_id": 111,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-04-14T18:42:43.342542+00:00"
-    },
-    {
-      "company_id": 111,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-04-14T18:42:43.342542+00:00"
-    },
-    {
-      "company_id": 112,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:48:11.217654+00:00"
-    },
-    {
-      "company_id": 112,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:48:11.217654+00:00"
-    },
-    {
-      "company_id": 112,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-04-14T18:48:11.217654+00:00"
-    },
-    {
-      "company_id": 112,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-04-14T18:48:11.217654+00:00"
-    },
-    {
       "company_id": 44,
       "category_id": "823d0488-f298-48db-9261-76195b4d3205",
       "created_at": "2025-12-04T22:40:52.011589+00:00"
@@ -287,21 +242,6 @@
       "company_id": 44,
       "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
       "created_at": "2025-12-04T22:40:52.011589+00:00"
-    },
-    {
-      "company_id": 50,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2025-12-04T22:40:54.349978+00:00"
-    },
-    {
-      "company_id": 50,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2025-12-04T22:40:54.349978+00:00"
-    },
-    {
-      "company_id": 50,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:40:54.349978+00:00"
     },
     {
       "company_id": 48,
@@ -372,6 +312,26 @@
       "company_id": 93,
       "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
       "created_at": "2025-12-04T22:41:08.685935+00:00"
+    },
+    {
+      "company_id": 113,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:24:37.126283+00:00"
+    },
+    {
+      "company_id": 113,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:24:37.126283+00:00"
+    },
+    {
+      "company_id": 113,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-18T18:24:37.126283+00:00"
+    },
+    {
+      "company_id": 105,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-18T18:29:25.742023+00:00"
     },
     {
       "company_id": 31,
@@ -392,6 +352,36 @@
       "company_id": 51,
       "category_id": "89a53a22-0d66-4be8-a348-f04f00c095d4",
       "created_at": "2026-03-10T20:50:46.082929+00:00"
+    },
+    {
+      "company_id": 105,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-18T18:29:25.742023+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:36:09.932181+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:36:09.932181+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-18T18:36:09.932181+00:00"
+    },
+    {
+      "company_id": 50,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:28:13.780692+00:00"
+    },
+    {
+      "company_id": 50,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-19T17:28:13.780692+00:00"
     },
     {
       "company_id": 31,
@@ -544,16 +534,6 @@
       "created_at": "2026-04-14T18:43:08.321862+00:00"
     },
     {
-      "company_id": 102,
-      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
-      "created_at": "2026-04-14T18:49:31.146798+00:00"
-    },
-    {
-      "company_id": 102,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:49:31.146798+00:00"
-    },
-    {
       "company_id": 4,
       "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
       "created_at": "2026-03-16T07:56:58.56501+00:00"
@@ -577,6 +557,71 @@
       "company_id": 4,
       "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
       "created_at": "2026-03-16T07:56:58.56501+00:00"
+    },
+    {
+      "company_id": 111,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:25:35.594624+00:00"
+    },
+    {
+      "company_id": 111,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:25:35.594624+00:00"
+    },
+    {
+      "company_id": 111,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-18T18:25:35.594624+00:00"
+    },
+    {
+      "company_id": 111,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-18T18:25:35.594624+00:00"
+    },
+    {
+      "company_id": 117,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:30:36.514548+00:00"
+    },
+    {
+      "company_id": 117,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:30:36.514548+00:00"
+    },
+    {
+      "company_id": 117,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:30:36.514548+00:00"
+    },
+    {
+      "company_id": 117,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-18T18:30:36.514548+00:00"
+    },
+    {
+      "company_id": 120,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-19T17:24:53.594742+00:00"
+    },
+    {
+      "company_id": 120,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:24:53.594742+00:00"
+    },
+    {
+      "company_id": 120,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-19T17:24:53.594742+00:00"
+    },
+    {
+      "company_id": 120,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-19T17:24:53.594742+00:00"
+    },
+    {
+      "company_id": 8,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-19T17:30:38.828083+00:00"
     },
     {
       "company_id": 80,
@@ -614,9 +659,19 @@
       "created_at": "2026-03-10T20:52:15.565798+00:00"
     },
     {
-      "company_id": 83,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-03-17T14:49:18.938811+00:00"
+      "company_id": 8,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:30:38.828083+00:00"
+    },
+    {
+      "company_id": 8,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-19T17:30:38.828083+00:00"
+    },
+    {
+      "company_id": 8,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-19T17:30:38.828083+00:00"
     },
     {
       "company_id": 60,
@@ -639,49 +694,9 @@
       "created_at": "2026-03-17T15:09:28.83091+00:00"
     },
     {
-      "company_id": 109,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:44:04.932525+00:00"
-    },
-    {
-      "company_id": 8,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:40:42.506057+00:00"
-    },
-    {
-      "company_id": 109,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:44:04.932525+00:00"
-    },
-    {
-      "company_id": 109,
-      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
-      "created_at": "2026-04-14T18:44:04.932525+00:00"
-    },
-    {
-      "company_id": 115,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:45:19.21588+00:00"
-    },
-    {
-      "company_id": 103,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-03-17T15:33:27.344738+00:00"
-    },
-    {
       "company_id": 38,
       "category_id": "313c9042-1382-4866-896c-80855a1a177d",
       "created_at": "2026-03-17T15:46:06.134129+00:00"
-    },
-    {
-      "company_id": 115,
-      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
-      "created_at": "2026-04-14T18:45:19.21588+00:00"
-    },
-    {
-      "company_id": 115,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:45:19.21588+00:00"
     },
     {
       "company_id": 73,
@@ -787,6 +802,21 @@
       "company_id": 114,
       "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
       "created_at": "2026-04-14T18:52:19.278775+00:00"
+    },
+    {
+      "company_id": 119,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
+    },
+    {
+      "company_id": 119,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
+    },
+    {
+      "company_id": 119,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
     },
     {
       "company_id": 79,
@@ -829,24 +859,9 @@
       "created_at": "2026-03-17T15:57:58.446747+00:00"
     },
     {
-      "company_id": 74,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2025-12-04T22:41:02.486655+00:00"
-    },
-    {
-      "company_id": 74,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2025-12-04T22:41:02.486655+00:00"
-    },
-    {
-      "company_id": 74,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2025-12-04T22:41:02.486655+00:00"
-    },
-    {
-      "company_id": 74,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:41:02.486655+00:00"
+      "company_id": 119,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
     },
     {
       "company_id": 81,
@@ -857,6 +872,121 @@
       "company_id": 81,
       "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
       "created_at": "2025-12-04T22:41:04.904088+00:00"
+    },
+    {
+      "company_id": 119,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
+    },
+    {
+      "company_id": 119,
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "created_at": "2026-05-18T18:26:25.329611+00:00"
+    },
+    {
+      "company_id": 109,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:28:08.0878+00:00"
+    },
+    {
+      "company_id": 109,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:28:08.0878+00:00"
+    },
+    {
+      "company_id": 109,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-18T18:28:08.0878+00:00"
+    },
+    {
+      "company_id": 110,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:31:35.894595+00:00"
+    },
+    {
+      "company_id": 110,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T18:31:35.894595+00:00"
+    },
+    {
+      "company_id": 110,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-18T18:31:35.894595+00:00"
+    },
+    {
+      "company_id": 110,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-18T18:31:35.894595+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 36,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-19T17:25:30.810403+00:00"
+    },
+    {
+      "company_id": 104,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-19T17:26:24.205046+00:00"
+    },
+    {
+      "company_id": 104,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:26:24.205046+00:00"
+    },
+    {
+      "company_id": 121,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-29T16:36:29.536718+00:00"
+    },
+    {
+      "company_id": 121,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-29T16:36:29.536718+00:00"
+    },
+    {
+      "company_id": 121,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-29T16:36:29.536718+00:00"
+    },
+    {
+      "company_id": 121,
+      "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
+      "created_at": "2026-05-29T16:36:29.536718+00:00"
+    },
+    {
+      "company_id": 121,
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "created_at": "2026-05-29T16:36:29.536718+00:00"
     },
     {
       "company_id": 3,
@@ -874,11 +1004,6 @@
       "created_at": "2026-03-14T19:36:25.900188+00:00"
     },
     {
-      "company_id": 113,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-04-14T18:44:32.612983+00:00"
-    },
-    {
       "company_id": 9,
       "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
       "created_at": "2025-12-04T22:40:43.05988+00:00"
@@ -889,104 +1014,114 @@
       "created_at": "2025-12-04T22:40:43.05988+00:00"
     },
     {
-      "company_id": 113,
+      "company_id": 9,
       "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:44:32.612983+00:00"
+      "created_at": "2025-12-04T22:40:43.05988+00:00"
     },
     {
-      "company_id": 113,
+      "company_id": 9,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2025-12-04T22:40:43.05988+00:00"
+    },
+    {
+      "company_id": 9,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2025-12-04T22:40:43.05988+00:00"
+    },
+    {
+      "company_id": 9,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2025-12-04T22:40:43.05988+00:00"
+    },
+    {
+      "company_id": 106,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-03-17T15:19:30.485925+00:00"
+    },
+    {
+      "company_id": 106,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-03-17T15:19:30.485925+00:00"
+    },
+    {
+      "company_id": 74,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T14:03:15.070567+00:00"
+    },
+    {
+      "company_id": 74,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-18T14:03:15.070567+00:00"
+    },
+    {
+      "company_id": 74,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-18T14:03:15.070567+00:00"
+    },
+    {
+      "company_id": 74,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-05-18T14:03:15.070567+00:00"
+    },
+    {
+      "company_id": 37,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2025-12-04T22:40:55.829325+00:00"
+    },
+    {
+      "company_id": 37,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2025-12-04T22:40:55.829325+00:00"
+    },
+    {
+      "company_id": 37,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2025-12-04T22:40:55.829325+00:00"
+    },
+    {
+      "company_id": 115,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-18T18:27:16.691878+00:00"
+    },
+    {
+      "company_id": 87,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-03-11T06:41:46.909058+00:00"
+    },
+    {
+      "company_id": 87,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-03-11T06:41:46.909058+00:00"
+    },
+    {
+      "company_id": 87,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-03-11T06:41:46.909058+00:00"
+    },
+    {
+      "company_id": 87,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-03-11T06:41:46.909058+00:00"
+    },
+    {
+      "company_id": 115,
       "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
-      "created_at": "2026-04-14T18:44:32.612983+00:00"
+      "created_at": "2026-05-18T18:27:16.691878+00:00"
     },
     {
-      "company_id": 9,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2025-12-04T22:40:43.05988+00:00"
+      "company_id": 115,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:27:16.691878+00:00"
     },
     {
-      "company_id": 9,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2025-12-04T22:40:43.05988+00:00"
+      "company_id": 112,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-18T18:32:09.326284+00:00"
     },
     {
-      "company_id": 9,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2025-12-04T22:40:43.05988+00:00"
-    },
-    {
-      "company_id": 9,
+      "company_id": 112,
       "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:40:43.05988+00:00"
-    },
-    {
-      "company_id": 106,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-03-17T15:19:30.485925+00:00"
-    },
-    {
-      "company_id": 106,
-      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
-      "created_at": "2026-03-17T15:19:30.485925+00:00"
-    },
-    {
-      "company_id": 105,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-03-17T15:36:47.371507+00:00"
-    },
-    {
-      "company_id": 105,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-03-17T15:36:47.371507+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-04-14T18:54:58.671811+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-04-14T18:54:58.671811+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
-      "created_at": "2026-04-14T18:54:58.671811+00:00"
-    },
-    {
-      "company_id": 37,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2025-12-04T22:40:55.829325+00:00"
-    },
-    {
-      "company_id": 37,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2025-12-04T22:40:55.829325+00:00"
-    },
-    {
-      "company_id": 37,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2025-12-04T22:40:55.829325+00:00"
-    },
-    {
-      "company_id": 87,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-03-11T06:41:46.909058+00:00"
-    },
-    {
-      "company_id": 87,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-03-11T06:41:46.909058+00:00"
-    },
-    {
-      "company_id": 87,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-03-11T06:41:46.909058+00:00"
-    },
-    {
-      "company_id": 87,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-03-11T06:41:46.909058+00:00"
+      "created_at": "2026-05-18T18:32:09.326284+00:00"
     },
     {
       "company_id": 49,
@@ -999,6 +1134,21 @@
       "created_at": "2026-03-11T16:02:47.588058+00:00"
     },
     {
+      "company_id": 112,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-18T18:32:09.326284+00:00"
+    },
+    {
+      "company_id": 112,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-18T18:32:09.326284+00:00"
+    },
+    {
+      "company_id": 103,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-05-19T17:26:02.89489+00:00"
+    },
+    {
       "company_id": 40,
       "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
       "created_at": "2026-03-16T08:11:10.3435+00:00"
@@ -1007,11 +1157,6 @@
       "company_id": 40,
       "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
       "created_at": "2026-03-16T08:11:10.3435+00:00"
-    },
-    {
-      "company_id": 104,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-03-17T15:02:26.731279+00:00"
     },
     {
       "company_id": 59,
@@ -1062,6 +1207,26 @@
       "company_id": 20,
       "category_id": "00b86dd8-180c-4a4d-9b7f-1d9d66260481",
       "created_at": "2026-03-17T15:58:04.788772+00:00"
+    },
+    {
+      "company_id": 103,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-05-19T17:26:02.89489+00:00"
+    },
+    {
+      "company_id": 78,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-05-19T17:26:47.21167+00:00"
+    },
+    {
+      "company_id": 78,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-05-19T17:26:47.21167+00:00"
+    },
+    {
+      "company_id": 78,
+      "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
+      "created_at": "2026-05-19T17:26:47.21167+00:00"
     }
   ]
 }
