@@ -1,6 +1,6 @@
 {
   "table": "organization_settings",
-  "timestamp": "2026-05-13T10-50-27-331Z",
+  "timestamp": "2026-06-14T10-57-35-434Z",
   "recordCount": 1,
   "data": [
     {
@@ -175,7 +175,8 @@
           "column": "breakfast_sun"
         }
       ],
-      "default_coins": 4
+      "default_coins": 4,
+      "arrived_marker_color": "green"
     }
   ]
 }
