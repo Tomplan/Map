@@ -2643,6 +2643,12 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           let qty = Number(item.quantity);
                           if (Number.isNaN(qty) || qty <= 0) qty = 1;
                           const desc = (item.item || item.description || '').toLowerCase();
+                          const detectDay = (text) => {
+                            if (/\b(zondag|sunday|sonntag)\b/i.test(text)) return 'sun';
+                            if (/\b(zaterdag|saturday|samstag)\b/i.test(text)) return 'sat';
+                            return null;
+                          };
+                          const descDay = detectDay(desc);
                           let stands = 0;
                           let breakfast_sat = 0,
                             lunch_sat = 0,
@@ -2655,14 +2661,34 @@ export default function InvoiceSyncTab({ selectedYear }) {
                           // have no column and fall through to keyword detection below.
                           const allowedItems = settings?.invoice_allowed_items || [];
                           let mappedColumn = null;
+                          let bestScore = -Infinity;
                           for (const ai of allowedItems) {
                             const label = (typeof ai === 'string' ? ai : ai?.label || '')
                               .trim()
                               .toLowerCase();
                             if (label.length > 0 && desc.includes(label)) {
-                              mappedColumn = typeof ai === 'string' ? null : ai.column || null;
-                              break;
+                              const candidateColumn = typeof ai === 'string' ? null : ai.column || null;
+                              const labelDay = detectDay(label);
+                              // Prefer the most specific label match (longest), and strongly
+                              // prefer day labels that align with the detected day in the line item.
+                              let score = label.length;
+                              if (descDay && labelDay === descDay) score += 1000;
+                              if (descDay && labelDay && labelDay !== descDay) score -= 500;
+                              if (score > bestScore) {
+                                bestScore = score;
+                                mappedColumn = candidateColumn;
+                              }
                             }
+                          }
+
+                          // Safety net: if a generic SAT mapping matched first in settings but the
+                          // description clearly says Sunday, reroute breakfast/lunch to Sunday columns.
+                          if (descDay === 'sun') {
+                            if (mappedColumn === 'breakfast_sat') mappedColumn = 'breakfast_sun';
+                            if (mappedColumn === 'lunch_sat') mappedColumn = 'lunch_sun';
+                          } else if (descDay === 'sat') {
+                            if (mappedColumn === 'breakfast_sun') mappedColumn = 'breakfast_sat';
+                            if (mappedColumn === 'lunch_sun') mappedColumn = 'lunch_sat';
                           }
 
                           if (mappedColumn) {
@@ -2717,11 +2743,13 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               desc.includes('meal') ||
                               desc.includes('maaltijd')
                             )
-                              lunch_sat += qty;
-                            if (desc.includes('breakfast') || desc.includes('ontbijt'))
-                              breakfast_sat += qty;
+                              descDay === 'sun' ? (lunch_sun += qty) : (lunch_sat += qty);
+                            if (desc.includes('breakfast') || desc.includes('ontbijt')) {
+                              descDay === 'sun'
+                                ? (breakfast_sun += qty)
+                                : (breakfast_sat += qty);
+                            }
                           }
-                          // sunday meals currently unused; could add logic if needed
                           return {
                             stands,
                             breakfast_sat,
