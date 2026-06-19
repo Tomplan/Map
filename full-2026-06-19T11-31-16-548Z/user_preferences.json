@@ -1,6 +1,6 @@
 {
   "table": "user_preferences",
-  "timestamp": "2026-05-18T11-17-54-872Z",
+  "timestamp": "2026-06-19T11-31-16-548Z",
   "recordCount": 4,
   "data": [
     {
@@ -32,7 +32,7 @@
     {
       "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
       "default_year": 2026,
-      "preferred_language": "en",
+      "preferred_language": "nl",
       "assignments_sort_by": "by_marker",
       "assignments_sort_direction": "asc",
       "assignments_column_sort": "glyph_text",
@@ -45,8 +45,8 @@
       "default_rows_per_page": 25,
       "email_notifications": true,
       "created_at": "2025-12-01T21:11:26.802421+00:00",
-      "updated_at": "2026-05-18T11:09:55.153933+00:00",
-      "row_version": 67,
+      "updated_at": "2026-06-17T04:18:41.63714+00:00",
+      "row_version": 94,
       "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
       "feedback_active_tab": "all",
       "feedback_filter_types": [],
@@ -102,8 +102,8 @@
       "default_rows_per_page": 25,
       "email_notifications": true,
       "created_at": "2025-11-26T18:10:52.161898+00:00",
-      "updated_at": "2026-05-18T10:03:33.63685+00:00",
-      "row_version": 1372,
+      "updated_at": "2026-05-21T13:30:25.293062+00:00",
+      "row_version": 1409,
       "updated_by": "8782c8be-50de-4599-a96c-4cd824281ae5",
       "feedback_active_tab": "all",
       "feedback_filter_types": [],
