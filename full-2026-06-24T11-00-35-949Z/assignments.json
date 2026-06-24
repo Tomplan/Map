@@ -1,7 +1,7 @@
 {
   "table": "assignments",
-  "timestamp": "2026-05-23T10-30-13-195Z",
-  "recordCount": 178,
+  "timestamp": "2026-06-24T11-00-35-949Z",
+  "recordCount": 195,
   "data": [
     {
       "id": 442,
@@ -60,14 +60,6 @@
       "created_by": null
     },
     {
-      "id": 592,
-      "marker_id": 99,
-      "company_id": 3,
-      "event_year": 2026,
-      "created_at": "2026-05-19T17:15:14.923449+00:00",
-      "created_by": null
-    },
-    {
       "id": 598,
       "marker_id": 81,
       "company_id": 120,
@@ -121,6 +113,30 @@
       "company_id": 92,
       "event_year": 2026,
       "created_at": "2026-05-21T12:39:46.665943+00:00",
+      "created_by": null
+    },
+    {
+      "id": 620,
+      "marker_id": 40,
+      "company_id": 121,
+      "event_year": 2026,
+      "created_at": "2026-05-23T16:48:48.733052+00:00",
+      "created_by": null
+    },
+    {
+      "id": 621,
+      "marker_id": 41,
+      "company_id": 121,
+      "event_year": 2026,
+      "created_at": "2026-05-23T16:49:00.2838+00:00",
+      "created_by": null
+    },
+    {
+      "id": 624,
+      "marker_id": 19,
+      "company_id": 23,
+      "event_year": 2026,
+      "created_at": "2026-05-31T14:06:26.116213+00:00",
       "created_by": null
     },
     {
@@ -417,6 +433,46 @@
       "company_id": 57,
       "event_year": 2025,
       "created_at": "2026-03-14T20:43:35.293472+00:00",
+      "created_by": null
+    },
+    {
+      "id": 637,
+      "marker_id": 42,
+      "company_id": 67,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:27:08.033511+00:00",
+      "created_by": null
+    },
+    {
+      "id": 640,
+      "marker_id": 48,
+      "company_id": 9,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:27:57.688696+00:00",
+      "created_by": null
+    },
+    {
+      "id": 643,
+      "marker_id": 20,
+      "company_id": 106,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:31:01.938217+00:00",
+      "created_by": null
+    },
+    {
+      "id": 647,
+      "marker_id": 99,
+      "company_id": 43,
+      "event_year": 2026,
+      "created_at": "2026-06-01T10:28:23.637387+00:00",
+      "created_by": null
+    },
+    {
+      "id": 650,
+      "marker_id": 57,
+      "company_id": 79,
+      "event_year": 2026,
+      "created_at": "2026-06-09T06:07:19.010051+00:00",
       "created_by": null
     },
     {
@@ -724,27 +780,11 @@
       "created_by": null
     },
     {
-      "id": 555,
-      "marker_id": 70,
-      "company_id": 106,
-      "event_year": 2026,
-      "created_at": "2026-05-12T09:51:56.331912+00:00",
-      "created_by": null
-    },
-    {
       "id": 558,
       "marker_id": 4,
       "company_id": 118,
       "event_year": 2026,
       "created_at": "2026-05-12T09:55:13.334154+00:00",
-      "created_by": null
-    },
-    {
-      "id": 574,
-      "marker_id": 97,
-      "company_id": 114,
-      "event_year": 2026,
-      "created_at": "2026-05-19T17:07:12.513966+00:00",
       "created_by": null
     },
     {
@@ -804,14 +844,6 @@
       "created_by": null
     },
     {
-      "id": 588,
-      "marker_id": 48,
-      "company_id": 67,
-      "event_year": 2026,
-      "created_at": "2026-05-19T17:12:49.517214+00:00",
-      "created_by": null
-    },
-    {
       "id": 472,
       "marker_id": 1,
       "company_id": 16,
@@ -860,27 +892,11 @@
       "created_by": null
     },
     {
-      "id": 602,
-      "marker_id": 21,
-      "company_id": 36,
-      "event_year": 2026,
-      "created_at": "2026-05-20T16:11:47.177891+00:00",
-      "created_by": null
-    },
-    {
       "id": 607,
       "marker_id": 59,
       "company_id": 75,
       "event_year": 2026,
       "created_at": "2026-05-20T16:12:49.903455+00:00",
-      "created_by": null
-    },
-    {
-      "id": 608,
-      "marker_id": 60,
-      "company_id": 75,
-      "event_year": 2026,
-      "created_at": "2026-05-20T16:12:52.76162+00:00",
       "created_by": null
     },
     {
@@ -980,14 +996,6 @@
       "created_by": null
     },
     {
-      "id": 547,
-      "marker_id": 28,
-      "company_id": 46,
-      "event_year": 2026,
-      "created_at": "2026-04-10T11:21:41.455355+00:00",
-      "created_by": null
-    },
-    {
       "id": 550,
       "marker_id": 79,
       "company_id": 117,
@@ -1004,19 +1012,27 @@
       "created_by": null
     },
     {
-      "id": 556,
-      "marker_id": 69,
-      "company_id": 106,
-      "event_year": 2026,
-      "created_at": "2026-05-12T09:52:16.792786+00:00",
-      "created_by": null
-    },
-    {
       "id": 618,
       "marker_id": 103,
       "company_id": 66,
       "event_year": 2026,
       "created_at": "2026-05-22T10:28:41.359665+00:00",
+      "created_by": null
+    },
+    {
+      "id": 622,
+      "marker_id": 27,
+      "company_id": 46,
+      "event_year": 2026,
+      "created_at": "2026-05-27T10:34:56.322786+00:00",
+      "created_by": null
+    },
+    {
+      "id": 625,
+      "marker_id": 78,
+      "company_id": 65,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:10:17.843938+00:00",
       "created_by": null
     },
     {
@@ -1036,19 +1052,67 @@
       "created_by": null
     },
     {
-      "id": 575,
-      "marker_id": 98,
-      "company_id": 114,
+      "id": 632,
+      "marker_id": 69,
+      "company_id": 10,
       "event_year": 2026,
-      "created_at": "2026-05-19T17:07:21.966717+00:00",
+      "created_at": "2026-05-31T16:11:48.534244+00:00",
       "created_by": null
     },
     {
-      "id": 587,
-      "marker_id": 47,
+      "id": 635,
+      "marker_id": 97,
+      "company_id": 114,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:14:05.324695+00:00",
+      "created_by": null
+    },
+    {
+      "id": 638,
+      "marker_id": 43,
       "company_id": 67,
       "event_year": 2026,
-      "created_at": "2026-05-19T17:12:44.542628+00:00",
+      "created_at": "2026-05-31T16:27:11.403849+00:00",
+      "created_by": null
+    },
+    {
+      "id": 641,
+      "marker_id": 23,
+      "company_id": 36,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:30:54.242624+00:00",
+      "created_by": null
+    },
+    {
+      "id": 644,
+      "marker_id": 24,
+      "company_id": 123,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:31:07.326682+00:00",
+      "created_by": null
+    },
+    {
+      "id": 645,
+      "marker_id": 25,
+      "company_id": 123,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:31:10.026325+00:00",
+      "created_by": null
+    },
+    {
+      "id": 648,
+      "marker_id": 77,
+      "company_id": 124,
+      "event_year": 2026,
+      "created_at": "2026-06-05T15:40:13.342315+00:00",
+      "created_by": null
+    },
+    {
+      "id": 651,
+      "marker_id": 58,
+      "company_id": 75,
+      "event_year": 2026,
+      "created_at": "2026-06-09T06:07:25.46731+00:00",
       "created_by": null
     },
     {
@@ -1268,6 +1332,30 @@
       "created_by": null
     },
     {
+      "id": 619,
+      "marker_id": 38,
+      "company_id": 121,
+      "event_year": 2026,
+      "created_at": "2026-05-23T16:48:39.412399+00:00",
+      "created_by": null
+    },
+    {
+      "id": 623,
+      "marker_id": 28,
+      "company_id": 122,
+      "event_year": 2026,
+      "created_at": "2026-05-27T20:15:06.122644+00:00",
+      "created_by": null
+    },
+    {
+      "id": 626,
+      "marker_id": 67,
+      "company_id": 65,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:10:20.605248+00:00",
+      "created_by": null
+    },
+    {
       "id": 501,
       "marker_id": 54,
       "company_id": 59,
@@ -1289,6 +1377,14 @@
       "company_id": 8,
       "event_year": 2026,
       "created_at": "2026-04-10T11:00:46.170533+00:00",
+      "created_by": null
+    },
+    {
+      "id": 631,
+      "marker_id": 68,
+      "company_id": 10,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:11:45.430604+00:00",
       "created_by": null
     },
     {
@@ -1404,6 +1500,30 @@
       "created_by": null
     },
     {
+      "id": 633,
+      "marker_id": 70,
+      "company_id": 3,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:11:51.119744+00:00",
+      "created_by": null
+    },
+    {
+      "id": 636,
+      "marker_id": 98,
+      "company_id": 114,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:14:10.11966+00:00",
+      "created_by": null
+    },
+    {
+      "id": 639,
+      "marker_id": 47,
+      "company_id": 9,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:27:53.444475+00:00",
+      "created_by": null
+    },
+    {
       "id": 570,
       "marker_id": 18,
       "company_id": 81,
@@ -1417,6 +1537,22 @@
       "company_id": 42,
       "event_year": 2026,
       "created_at": "2026-05-19T17:07:07.282897+00:00",
+      "created_by": null
+    },
+    {
+      "id": 642,
+      "marker_id": 21,
+      "company_id": 106,
+      "event_year": 2026,
+      "created_at": "2026-05-31T16:30:58.490869+00:00",
+      "created_by": null
+    },
+    {
+      "id": 646,
+      "marker_id": 46,
+      "company_id": 85,
+      "event_year": 2026,
+      "created_at": "2026-06-01T10:27:20.486452+00:00",
       "created_by": null
     },
     {
