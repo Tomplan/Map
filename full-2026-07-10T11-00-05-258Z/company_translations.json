@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-06-09T11-02-28-189Z",
-  "recordCount": 194,
+  "timestamp": "2026-07-10T11-00-05-258Z",
+  "recordCount": 207,
   "data": [
     {
       "id": 1,
@@ -130,6 +130,14 @@
       "info": "Camp Impuls biedt Beratung &amp; Verkauf von Offroad Wohnwagen Camping-Anhänger, Dachzelte, Camping-Zubehör Seilwinden uvm. Online und vor Ort in Karlsruhe",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:43.7839+00:00"
+    },
+    {
+      "id": 2883,
+      "company_id": 111,
+      "language_code": "nl",
+      "info": "WIJ  VERHUREN  LAND ROVERS\nVOOR  JOUW  VOLGENDE\nAVONTUUR",
+      "created_at": "2026-06-16T17:59:26.407135+00:00",
+      "updated_at": "2026-06-16T17:59:26.661+00:00"
     },
     {
       "id": 168,
@@ -340,6 +348,14 @@
       "updated_at": "2025-12-04T22:40:49.276281+00:00"
     },
     {
+      "id": 21,
+      "company_id": 24,
+      "language_code": "nl",
+      "info": "Bent u op zoek naar een goede tas, een oersterk ceintuur, of bijvoorbeeld een foedraal voor uw favoriete mes? Dan bent u bij Charlotte Heuvelmans aan het juiste adres. Met haar jarenlange ervaring, nauwkeurige afwerking en de mogelijkheden tot unieke personalisatie zijn de producten van CharArt Leatherworks niet alleen van hoge kwaliteit, maar ook nog eens een lust voor het oog. Het resultaat laat zich wellicht nog het beste omschrijven als draagbare kunst.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-06-16T17:55:38.862484+00:00"
+    },
+    {
       "id": 213,
       "company_id": 38,
       "language_code": "en",
@@ -354,14 +370,6 @@
       "info": "De Fennec off road kampeeraanhanger. Off the grid kamperen met alle gemakken bij de hand.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:49.502526+00:00"
-    },
-    {
-      "id": 20,
-      "company_id": 39,
-      "language_code": "nl",
-      "info": "Outdoor artikelen",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2026-03-17T15:44:37.359419+00:00"
     },
     {
       "id": 216,
@@ -436,12 +444,12 @@
       "updated_at": "2025-12-04T22:40:46.532985+00:00"
     },
     {
-      "id": 21,
-      "company_id": 24,
+      "id": 2885,
+      "company_id": 119,
       "language_code": "nl",
-      "info": "Informatie nodig over de Defender, producten en accessoires of ben je in de buurt\n en heb je gewoon trek in een een lekkere bak koffie?\nJe bent van harte welkom op de Reedijk 7T36, 3274KE te Heinenoord!",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2026-03-17T15:54:49.449579+00:00"
+      "info": "Wij zijn Dreamcab Nederland, een jong en enthousiast bedrijf, opgericht door Wietse en Marlies vanuit onze liefde voor kamperen en rondtrekken. Ons doel is om een betaalbaar en kwalitatief hoogwaardig product op de markt te zetten, waarmee avontuurlijk reizen voor iedereen bereikbaar blijft.",
+      "created_at": "2026-06-16T18:01:27.146344+00:00",
+      "updated_at": "2026-06-16T18:01:27.381+00:00"
     },
     {
       "id": 288,
@@ -572,6 +580,14 @@
       "updated_at": "2026-03-17T15:13:01.578057+00:00"
     },
     {
+      "id": 2886,
+      "company_id": 109,
+      "language_code": "nl",
+      "info": "Bij FjällVila draait het om de ultieme vrijheid van reizen en verbinding met de natuur. Wij geloven dat de mooiste momenten ontstaan wanneer je de drukte achter je laat en het onbekende ontdekt. Met onze daktenten brengen we je dichter bij de natuur, zonder in te leveren op comfort en kwaliteit. Of je nu een doorgewinterde reiziger bent of net begint aan je eerste roadtrip, met FjällVila ben je altijd klaar om een nieuwe horizon te verkennen.",
+      "created_at": "2026-06-16T18:02:10.337737+00:00",
+      "updated_at": "2026-06-16T18:02:10.57+00:00"
+    },
+    {
       "id": 11,
       "company_id": 3,
       "language_code": "nl",
@@ -700,6 +716,14 @@
       "updated_at": "2026-03-17T15:18:09.134+00:00"
     },
     {
+      "id": 20,
+      "company_id": 39,
+      "language_code": "nl",
+      "info": "Outdoor artikelen Fladde Outdoor is gespecialiseerd in duurzame outdoor kleding en high-end triatlonkleding. ",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-06-16T18:04:36.582896+00:00"
+    },
+    {
       "id": 30,
       "company_id": 44,
       "language_code": "nl",
@@ -748,6 +772,14 @@
       "updated_at": "2026-03-17T15:31:58.824998+00:00"
     },
     {
+      "id": 2888,
+      "company_id": 118,
+      "language_code": "nl",
+      "info": "gespecialiseerd in verlichting",
+      "created_at": "2026-06-16T18:05:37.717636+00:00",
+      "updated_at": "2026-06-16T18:05:37.77+00:00"
+    },
+    {
       "id": 219,
       "company_id": 40,
       "language_code": "en",
@@ -778,6 +810,14 @@
       "info": "wij organiseren Green lane routes en events",
       "created_at": "2026-03-17T15:35:25.92816+00:00",
       "updated_at": "2026-03-17T15:35:45.148718+00:00"
+    },
+    {
+      "id": 2889,
+      "company_id": 122,
+      "language_code": "nl",
+      "info": "Roof top tents for every adventure — from short trips to world tours, always set up in minutes.",
+      "created_at": "2026-06-16T18:07:28.298922+00:00",
+      "updated_at": "2026-06-16T18:07:28.437+00:00"
     },
     {
       "id": 220,
@@ -815,9 +855,17 @@
       "id": 22,
       "company_id": 29,
       "language_code": "nl",
-      "info": "Defendershop, onderdelen \nInformatie nodig over de Defender, producten en accessoires of ben je in de buurt\n en heb je gewoon trek in een een lekkere bak koffie?\nJe bent van harte welkom op de Reedijk 7T36, 3274KE te Heinenoord!",
+      "info": "Defendershop, onderdelen \nVoor de Land Rover, producten en accessoires \n",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2026-03-17T15:53:48.786492+00:00"
+      "updated_at": "2026-06-16T18:00:42.674265+00:00"
+    },
+    {
+      "id": 2890,
+      "company_id": 117,
+      "language_code": "nl",
+      "info": "The art of luxury travel with Lume Traveler",
+      "created_at": "2026-06-16T18:08:04.298496+00:00",
+      "updated_at": "2026-06-16T18:08:04.515+00:00"
     },
     {
       "id": 28,
@@ -876,12 +924,28 @@
       "updated_at": "2025-12-04T22:41:02.735477+00:00"
     },
     {
+      "id": 2876,
+      "company_id": 115,
+      "language_code": "nl",
+      "info": "Winches, accessoires, batteries, everything you need for off road performance",
+      "created_at": "2026-06-16T17:51:07.493321+00:00",
+      "updated_at": "2026-06-16T17:52:38.968347+00:00"
+    },
+    {
+      "id": 2891,
+      "company_id": 110,
+      "language_code": "nl",
+      "info": "Toyota Land Cruiser 4x4 met daktent – direct klaar voor elk avontuur",
+      "created_at": "2026-06-16T18:09:37.067213+00:00",
+      "updated_at": "2026-06-16T18:09:37.269+00:00"
+    },
+    {
       "id": 64,
       "company_id": 83,
       "language_code": "nl",
-      "info": "Door onze ervaring in kamperen en outdoor willen wij iedere kampeerder, visser, watersporter en outdoor liefhebber helpen om hun (kampeer)ervaring nóg leuker te maken. Dit doen wij met producten die bijdragen aan meer comfort tijdens kampeer- en outdoor trips. ",
+      "info": "Totalcool offers innovative, portable solutions for comfort and convenience on any adventure, providing reliable cooling, power, and accessories.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2026-03-17T14:49:18.335368+00:00"
+      "updated_at": "2026-06-16T18:16:23.231891+00:00"
     },
     {
       "id": 40,
@@ -1292,12 +1356,28 @@
       "updated_at": "2025-12-04T22:41:00.352596+00:00"
     },
     {
+      "id": 2879,
+      "company_id": 121,
+      "language_code": "nl",
+      "info": "The Bas4Cars team consists of young passionate mechanics, each with their own expertise. Thanks to their service-oriented attitude, they always know how to help Bas4Cars customers to their full satisfaction. We are constantly working to keep our knowledge up to date and are happy to help you realize your Land Rover dream.",
+      "created_at": "2026-06-16T17:53:32.523892+00:00",
+      "updated_at": "2026-06-16T17:53:32.755+00:00"
+    },
+    {
       "id": 48,
       "company_id": 71,
       "language_code": "nl",
       "info": "De Roof Space is de eerste opvouwbare hard cover daktent op de markt. Deze nieuw ontwikkelde, zeer robuuste en hoogwaardige aluminium hard cover koffer vervangt het traditionele dunne PVC-zeildoek van de vorige generatie soft cover daktenten. Dit betekent dat de Roof Space er niet alleen goed uitziet, maar ook de aerodynamica en het rijcomfort verhoogt. De innovatieve constructie en de gasdrukveren maken het openen en dichtklappen van deze daktent tot kinderspel.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
       "updated_at": "2025-12-04T22:41:00.823646+00:00"
+    },
+    {
+      "id": 2892,
+      "company_id": 112,
+      "language_code": "nl",
+      "info": "off road trips, training, verhuur\nErvaar een begeleide meerdaagse rondreis in groep met je eigen 4x4 voertuig. \nBeleef een intensieve maar leuke opleiding met je eigen wagen op de mooiste terreinen van België\nGa op pad met onze volledig uitgeruste Ford Raptor met luxe daktent.",
+      "created_at": "2026-06-16T18:10:23.316987+00:00",
+      "updated_at": "2026-06-16T18:11:16.437907+00:00"
     },
     {
       "id": 63,
@@ -1380,6 +1460,30 @@
       "updated_at": "2026-03-17T14:54:16.610062+00:00"
     },
     {
+      "id": 2881,
+      "company_id": 113,
+      "language_code": "nl",
+      "info": "Op maat gemaakte oplossingen voor elke wens\nBij Custom Car Solutions draait alles om jouw auto, jouw stijl en jouw wensen. Wij bieden op maat gemaakte onderdelen voor offroad voertuigen, campers, autosport en oldtimers/klassiekers.",
+      "created_at": "2026-06-16T17:56:09.111063+00:00",
+      "updated_at": "2026-06-16T17:56:09.367+00:00"
+    },
+    {
+      "id": 55,
+      "company_id": 85,
+      "language_code": "nl",
+      "info": "Welkom bij UAZ Specials!\nVoor ons draait alles om passie. Om het unieke gevoel van een iconische wagen die je overal naartoe brengt. Om avontuur, elkaar ontmoeten en onvergetelijke momenten. UAZ Specials is inmiddels uitgegroeid tot hét startpunt voor alles wat met UAZ te maken heeft.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-06-16T18:18:41.277657+00:00"
+    },
+    {
+      "id": 2898,
+      "company_id": 116,
+      "language_code": "nl",
+      "info": "LCM Offroad is door de passie van 4x4en. Tijdens onze trip naar en door Mauritanië leerden we één ding heel snel: je daktent is alles.",
+      "created_at": "2026-06-16T18:19:32.052556+00:00",
+      "updated_at": "2026-06-16T18:19:32.189+00:00"
+    },
+    {
       "id": 53,
       "company_id": 78,
       "language_code": "nl",
@@ -1458,14 +1562,6 @@
       "info": "&nbsp; Onze Comfort-trailers hebben de volgende unieke eigenschappen:",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:41:06.074774+00:00"
-    },
-    {
-      "id": 55,
-      "company_id": 85,
-      "language_code": "nl",
-      "info": "Wieger &amp; Tania trekken met hun gezin vijf maanden lang door Europa. Over thuisonderwijs in de bus, pech onderweg en grenzeloze gastvrijheid.",
-      "created_at": "2025-11-21T22:12:30.11997+00:00",
-      "updated_at": "2025-12-04T22:41:06.560695+00:00"
     },
     {
       "id": 57,
@@ -1554,6 +1650,14 @@
       "info": "XFood.nl - Wandel mee door de 8 hoogtepunten van Het Pieterpad. Lees onze nieuwste blog vol adembenemende landschappen en charmante dorpen!",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:41:08.44913+00:00"
+    },
+    {
+      "id": 2882,
+      "company_id": 124,
+      "language_code": "nl",
+      "info": "Jouw compacte mini caravan\n\nvan de eerste schets tot de laatste schroef.",
+      "created_at": "2026-06-16T17:58:53.415215+00:00",
+      "updated_at": "2026-06-16T17:58:53.638+00:00"
     }
   ]
 }
