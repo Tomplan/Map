@@ -1,6 +1,6 @@
 {
-  "timestamp": "2026-06-10T11-14-06-697Z",
-  "type": "full",
+  "timestamp": "2026-07-11T10-25-06-376Z",
+  "total_tables": 26,
   "tables": [
     "companies",
     "event_subscriptions",
@@ -29,9 +29,5 @@
     "subscription_line_items",
     "invoice_folders"
   ],
-  "database": "db.your-project.supabase.co",
-  "version": "2.0",
-  "generated_by": "Supabase Full Backup Script (Fixed)",
-  "method": "JavaScript Client",
-  "notes": "This backup was created using Supabase JavaScript client instead of pg_dump"
+  "source": "configuration"
 }
