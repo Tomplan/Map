@@ -1,7 +1,7 @@
 {
   "table": "feedback_requests",
-  "timestamp": "2026-06-11T11-30-04-366Z",
-  "recordCount": 80,
+  "timestamp": "2026-07-12T10-30-19-771Z",
+  "recordCount": 81,
   "data": [
     {
       "id": 31,
@@ -49,6 +49,22 @@
       "version_completed": null,
       "created_at": "2026-04-01T19:15:51.952799+00:00",
       "completed_at": "2026-04-02T16:51:24.07+00:00",
+      "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
+    },
+    {
+      "id": 36,
+      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "user_email": "organisatie@4x4vakantiebeurs.nl",
+      "type": "feature",
+      "title": "choose background color for logos",
+      "description": "",
+      "status": "completed",
+      "priority": null,
+      "votes": 0,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2025-12-02T16:04:00.321365+00:00",
+      "completed_at": "2026-07-05T11:35:25.783+00:00",
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
     },
     {
@@ -466,22 +482,6 @@
       "created_at": "2025-11-30T22:43:54.09038+00:00",
       "completed_at": "2025-12-01T10:16:59.407+00:00",
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
-    },
-    {
-      "id": 36,
-      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
-      "user_email": "organisatie@4x4vakantiebeurs.nl",
-      "type": "feature",
-      "title": "choose background color for logos",
-      "description": "",
-      "status": "open",
-      "priority": null,
-      "votes": 0,
-      "comments_count": 0,
-      "version_completed": null,
-      "created_at": "2025-12-02T16:04:00.321365+00:00",
-      "completed_at": null,
-      "completed_by": null
     },
     {
       "id": 40,
@@ -1282,6 +1282,22 @@
       "created_at": "2026-05-29T16:42:58.049894+00:00",
       "completed_at": null,
       "completed_by": null
+    },
+    {
+      "id": 81,
+      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "user_email": "organisatie@4x4vakantiebeurs.nl",
+      "type": "feature",
+      "title": "lunch ontbijt",
+      "description": "Er zit een foutje in de toewijzing van ontbijt en lunch naar de zaterdag en zondag, via de factuur teardrop quexcel staat ontbijt en lunch gewenst op zaterdag en zondag maar die zie ik niet op het overzicht,  er staat nu alleen lunch en ontbijt op zaterdag aangegeven",
+      "status": "completed",
+      "priority": null,
+      "votes": 1,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2026-06-16T18:37:10.830695+00:00",
+      "completed_at": "2026-07-05T11:33:39.25+00:00",
+      "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
     }
   ]
 }
