@@ -1,7 +1,7 @@
 {
   "table": "staged_invoices",
-  "timestamp": "2026-06-17T11-33-07-998Z",
-  "recordCount": 148,
+  "timestamp": "2026-07-18T10-28-04-469Z",
+  "recordCount": 150,
   "data": [
     {
       "id": "8968d4fb-a0b4-4b80-b856-3a9828ee6989",
@@ -2044,6 +2044,30 @@
       "pdf_path": "2026027.pdf"
     },
     {
+      "id": "a86850ce-d7a6-4197-8423-26cc43aa414f",
+      "invoice_number": "2026086",
+      "company_name": "Zixuan Zhao - WildPORT",
+      "email": "",
+      "phone": "",
+      "stands_count": 1,
+      "meals_count": 0,
+      "area_preference": "Grote Veld",
+      "parsed_data": "{\"rawNotes\":\"\",\"notes\":\"\",\"area\":\"Grote Veld\",\"date\":\"26 jun 2026\",\"line_items\":[{\"item\":\"Standfläche 6 x 6 mtr | Early Bird Angebot\",\"area\":\"Grote Veld\",\"quantity\":1,\"price\":\"€ 315,00\",\"status\":\"approved\"}],\"client_block\":[\"Zixuan Zhao - WildPORT\",\"T.a.v. Zixuan Zhao\",\"Siedlungsring 32\",\"85077 Manching\",\"Duitsland\",\"info@wildport.de\",\"+4917655219568\",\"Btw-nummer: DE458259147\"],\"filename\":\"factuur-2026086.PDF\",\"contact_name\":\"Zixuan Zhao\",\"contact_email\":\"info@wildport.de\",\"contact_phone\":\"+4917655219568\",\"address_line1\":\"Siedlungsring 32\",\"address_line2\":\"85077 Manching\",\"postal_code\":null,\"city\":null,\"country\":null,\"vat_number\":\"DE458259147\",\"kvk_number\":null}",
+      "is_relevant": false,
+      "status": "approved",
+      "created_at": "2026-06-26T19:37:37.09423+00:00",
+      "updated_at": "2026-06-26T19:37:52.783+00:00",
+      "breakfast_sat": 0,
+      "lunch_sat": 0,
+      "bbq_sat": 0,
+      "breakfast_sun": 0,
+      "lunch_sun": 0,
+      "company_id": 125,
+      "folder_id": "13a0be12-ca35-4aae-8519-d0d4f72d19c2",
+      "pdf_url": null,
+      "pdf_path": "2026086.pdf"
+    },
+    {
       "id": "42a71fa7-ee05-4e0a-81c2-aad1dbb2ff68",
       "invoice_number": "2026079",
       "company_name": "BOLT Adventure BV",
@@ -2354,6 +2378,30 @@
       "folder_id": "f6be0526-c53b-4437-a6fd-fb1845c1490e",
       "pdf_url": null,
       "pdf_path": null
+    },
+    {
+      "id": "63369fc2-8e71-4aab-ae2f-e1ca9bf75d87",
+      "invoice_number": "2026087",
+      "company_name": "Paul Farmer",
+      "email": "",
+      "phone": "",
+      "stands_count": 1,
+      "meals_count": 0,
+      "area_preference": "",
+      "parsed_data": "{\"rawNotes\":\"\",\"notes\":\"\",\"area\":\"\",\"date\":\"5 jul 2026\",\"line_items\":[{\"item\":\"Stand rental 6x6 mtr (single stand) | EARLY BIRD\",\"area\":null,\"quantity\":1,\"price\":\"€ 315,00\",\"status\":\"approved\"}],\"client_block\":[\"Paul Farmer\",\"kiebitzrain 30\",\"30657 Hannover\",\"Duitsland\",\"thehagenfarm@aol.com\",\"+491721898456\"],\"filename\":\"factuur-2026087.PDF\",\"contact_name\":null,\"contact_email\":\"thehagenfarm@aol.com\",\"contact_phone\":\"+491721898456\",\"address_line1\":\"kiebitzrain 30\",\"address_line2\":\"30657 Hannover\",\"postal_code\":null,\"city\":null,\"country\":null,\"vat_number\":null,\"kvk_number\":null}",
+      "is_relevant": false,
+      "status": "approved",
+      "created_at": "2026-07-05T17:46:37.725413+00:00",
+      "updated_at": "2026-07-05T17:46:54.01+00:00",
+      "breakfast_sat": 0,
+      "lunch_sat": 0,
+      "bbq_sat": 0,
+      "breakfast_sun": 0,
+      "lunch_sun": 0,
+      "company_id": 126,
+      "folder_id": "13a0be12-ca35-4aae-8519-d0d4f72d19c2",
+      "pdf_url": null,
+      "pdf_path": "2026087.pdf"
     },
     {
       "id": "f06dd788-1d33-41a6-aef6-af3919b69725",
