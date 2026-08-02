@@ -1,39 +1,8 @@
 {
   "table": "user_preferences",
-  "timestamp": "2026-07-02T10-53-26-029Z",
+  "timestamp": "2026-08-02T10-31-06-691Z",
   "recordCount": 4,
   "data": [
-    {
-      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
-      "default_year": 2026,
-      "preferred_language": "nl",
-      "assignments_sort_by": "by_marker",
-      "assignments_sort_direction": "asc",
-      "assignments_column_sort": "glyph_text",
-      "assignments_column_sort_direction": "asc",
-      "dashboard_visible_cards": [
-        "stats",
-        "recent",
-        "actions"
-      ],
-      "default_rows_per_page": 25,
-      "email_notifications": true,
-      "created_at": "2025-12-01T21:11:26.802421+00:00",
-      "updated_at": "2026-06-30T05:45:29.050115+00:00",
-      "row_version": 100,
-      "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
-      "feedback_active_tab": "all",
-      "feedback_filter_types": [],
-      "feedback_filter_statuses": [],
-      "tours_completed": [
-        "admin-dashboard",
-        "admin-settings"
-      ],
-      "tours_dismissed": [
-        "admin-dashboard"
-      ],
-      "last_tour_date": "2025-12-04T21:45:49.372+00:00"
-    },
     {
       "user_id": "6206a2f0-e604-46d2-99f5-cdd0a7ed7eb5",
       "default_year": 2026,
@@ -59,6 +28,37 @@
       "tours_completed": [],
       "tours_dismissed": [],
       "last_tour_date": null
+    },
+    {
+      "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "default_year": 2026,
+      "preferred_language": "nl",
+      "assignments_sort_by": "by_marker",
+      "assignments_sort_direction": "asc",
+      "assignments_column_sort": "glyph_text",
+      "assignments_column_sort_direction": "asc",
+      "dashboard_visible_cards": [
+        "stats",
+        "recent",
+        "actions"
+      ],
+      "default_rows_per_page": 25,
+      "email_notifications": true,
+      "created_at": "2025-12-01T21:11:26.802421+00:00",
+      "updated_at": "2026-07-12T15:13:40.075429+00:00",
+      "row_version": 110,
+      "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
+      "feedback_active_tab": "all",
+      "feedback_filter_types": [],
+      "feedback_filter_statuses": [],
+      "tours_completed": [
+        "admin-dashboard",
+        "admin-settings"
+      ],
+      "tours_dismissed": [
+        "admin-dashboard"
+      ],
+      "last_tour_date": "2025-12-04T21:45:49.372+00:00"
     },
     {
       "user_id": "287a76d0-3204-4e19-862c-e6e69a3f4ab6",
