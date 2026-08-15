@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-07-15T10-33-07-829Z",
-  "recordCount": 207,
+  "timestamp": "2026-08-15T10-04-06-512Z",
+  "recordCount": 208,
   "data": [
     {
       "id": 1,
@@ -1658,6 +1658,14 @@
       "info": "Jouw compacte mini caravan\n\nvan de eerste schets tot de laatste schroef.",
       "created_at": "2026-06-16T17:58:53.415215+00:00",
       "updated_at": "2026-06-16T17:58:53.638+00:00"
+    },
+    {
+      "id": 2899,
+      "company_id": 128,
+      "language_code": "nl",
+      "info": "Reis met ons mee naar de Balkanlanden & Portugal. Beleef echte off-road overlanding, de mooiste plekjes, de gaafste trails en de verste vergezichten. Dit is TravelWith4x4.be",
+      "created_at": "2026-08-14T16:55:45.33378+00:00",
+      "updated_at": "2026-08-14T16:55:23.164+00:00"
     }
   ]
 }
