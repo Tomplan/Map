@@ -1,6 +1,6 @@
 {
   "table": "user_preferences",
-  "timestamp": "2026-07-16T10-37-35-972Z",
+  "timestamp": "2026-08-16T10-04-38-239Z",
   "recordCount": 4,
   "data": [
     {
@@ -32,7 +32,7 @@
     {
       "user_id": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
       "default_year": 2026,
-      "preferred_language": "nl",
+      "preferred_language": "en",
       "assignments_sort_by": "by_marker",
       "assignments_sort_direction": "asc",
       "assignments_column_sort": "glyph_text",
@@ -45,8 +45,8 @@
       "default_rows_per_page": 25,
       "email_notifications": true,
       "created_at": "2025-12-01T21:11:26.802421+00:00",
-      "updated_at": "2026-07-12T15:13:40.075429+00:00",
-      "row_version": 110,
+      "updated_at": "2026-08-14T16:42:20.445601+00:00",
+      "row_version": 111,
       "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
       "feedback_active_tab": "all",
       "feedback_filter_types": [],
