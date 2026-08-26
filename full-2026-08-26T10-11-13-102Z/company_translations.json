@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-07-26T10-31-54-500Z",
-  "recordCount": 207,
+  "timestamp": "2026-08-26T10-11-13-102Z",
+  "recordCount": 210,
   "data": [
     {
       "id": 1,
@@ -260,6 +260,14 @@
       "updated_at": "2025-12-04T22:40:45.629861+00:00"
     },
     {
+      "id": 2900,
+      "company_id": 125,
+      "language_code": "nl",
+      "info": "Discover the freedom of the road with our lightweight, modular camper unit — designed to transform your pickup into a fully functional mobile home in minutes.",
+      "created_at": "2026-08-15T14:12:24.286916+00:00",
+      "updated_at": "2026-08-15T14:12:24.045+00:00"
+    },
+    {
       "id": 153,
       "company_id": 7,
       "language_code": "en",
@@ -370,6 +378,14 @@
       "info": "De Fennec off road kampeeraanhanger. Off the grid kamperen met alle gemakken bij de hand.",
       "created_at": "2025-11-24T17:25:57.424843+00:00",
       "updated_at": "2025-12-04T22:40:49.502526+00:00"
+    },
+    {
+      "id": 2901,
+      "company_id": 127,
+      "language_code": "nl",
+      "info": "Verhuur van dakttenttrailers en outdoorartikelen",
+      "created_at": "2026-08-15T15:38:59.344592+00:00",
+      "updated_at": "2026-08-15T15:38:59.204+00:00"
     },
     {
       "id": 216,
@@ -586,6 +602,14 @@
       "info": "Bij FjällVila draait het om de ultieme vrijheid van reizen en verbinding met de natuur. Wij geloven dat de mooiste momenten ontstaan wanneer je de drukte achter je laat en het onbekende ontdekt. Met onze daktenten brengen we je dichter bij de natuur, zonder in te leveren op comfort en kwaliteit. Of je nu een doorgewinterde reiziger bent of net begint aan je eerste roadtrip, met FjällVila ben je altijd klaar om een nieuwe horizon te verkennen.",
       "created_at": "2026-06-16T18:02:10.337737+00:00",
       "updated_at": "2026-06-16T18:02:10.57+00:00"
+    },
+    {
+      "id": 2902,
+      "company_id": 123,
+      "language_code": "nl",
+      "info": "Verhuur en verkoop van mini-caravans. SMO Overland in Nederland.\n",
+      "created_at": "2026-08-19T18:00:34.723842+00:00",
+      "updated_at": "2026-08-19T18:00:34.385+00:00"
     },
     {
       "id": 11,
@@ -930,14 +954,6 @@
       "info": "Winches, accessoires, batteries, everything you need for off road performance",
       "created_at": "2026-06-16T17:51:07.493321+00:00",
       "updated_at": "2026-06-16T17:52:38.968347+00:00"
-    },
-    {
-      "id": 2891,
-      "company_id": 110,
-      "language_code": "nl",
-      "info": "Toyota Land Cruiser 4x4 met daktent – direct klaar voor elk avontuur",
-      "created_at": "2026-06-16T18:09:37.067213+00:00",
-      "updated_at": "2026-06-16T18:09:37.269+00:00"
     },
     {
       "id": 64,
@@ -1658,6 +1674,14 @@
       "info": "Jouw compacte mini caravan\n\nvan de eerste schets tot de laatste schroef.",
       "created_at": "2026-06-16T17:58:53.415215+00:00",
       "updated_at": "2026-06-16T17:58:53.638+00:00"
+    },
+    {
+      "id": 2899,
+      "company_id": 128,
+      "language_code": "nl",
+      "info": "Reis met ons mee naar de Balkanlanden & Portugal. Beleef echte off-road overlanding, de mooiste plekjes, de gaafste trails en de verste vergezichten. Dit is TravelWith4x4.be",
+      "created_at": "2026-08-14T16:55:45.33378+00:00",
+      "updated_at": "2026-08-14T16:55:23.164+00:00"
     }
   ]
 }
