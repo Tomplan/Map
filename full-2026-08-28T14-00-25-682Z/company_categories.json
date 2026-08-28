@@ -1,7 +1,7 @@
 {
   "table": "company_categories",
-  "timestamp": "2026-07-28T10-48-52-740Z",
-  "recordCount": 254,
+  "timestamp": "2026-08-28T14-00-25-682Z",
+  "recordCount": 255,
   "data": [
     {
       "company_id": 6,
@@ -209,6 +209,26 @@
       "created_at": "2026-03-17T15:58:11.452674+00:00"
     },
     {
+      "company_id": 123,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-08-19T18:00:47.511542+00:00"
+    },
+    {
+      "company_id": 123,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-08-19T18:00:47.511542+00:00"
+    },
+    {
+      "company_id": 123,
+      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
+      "created_at": "2026-08-19T18:00:47.511542+00:00"
+    },
+    {
+      "company_id": 123,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-08-19T18:00:47.511542+00:00"
+    },
+    {
       "company_id": 92,
       "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
       "created_at": "2025-12-04T22:41:08.189155+00:00"
@@ -287,21 +307,6 @@
       "company_id": 117,
       "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
       "created_at": "2026-06-16T18:08:04.588293+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
-      "created_at": "2026-06-16T18:19:32.434405+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-06-16T18:19:32.434405+00:00"
-    },
-    {
-      "company_id": 116,
-      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
-      "created_at": "2026-06-16T18:19:32.434405+00:00"
     },
     {
       "company_id": 44,
@@ -574,26 +579,6 @@
       "created_at": "2026-03-17T15:30:38.788951+00:00"
     },
     {
-      "company_id": 110,
-      "category_id": "01bc19a8-3c14-4707-855e-19e4f3243720",
-      "created_at": "2026-06-16T18:09:37.404641+00:00"
-    },
-    {
-      "company_id": 110,
-      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
-      "created_at": "2026-06-16T18:09:37.404641+00:00"
-    },
-    {
-      "company_id": 110,
-      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
-      "created_at": "2026-06-16T18:09:37.404641+00:00"
-    },
-    {
-      "company_id": 110,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-06-16T18:09:37.404641+00:00"
-    },
-    {
       "company_id": 34,
       "category_id": "823d0488-f298-48db-9261-76195b4d3205",
       "created_at": "2026-04-14T18:43:08.321862+00:00"
@@ -802,11 +787,26 @@
       "company_id": 109,
       "category_id": "011f2631-e562-4f3e-9ad7-051098327178",
       "created_at": "2026-06-16T18:02:10.644465+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "823d0488-f298-48db-9261-76195b4d3205",
+      "created_at": "2026-08-14T16:50:48.622799+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-08-14T16:50:48.622799+00:00"
     },
     {
       "company_id": 38,
       "category_id": "313c9042-1382-4866-896c-80855a1a177d",
       "created_at": "2026-03-17T15:46:06.134129+00:00"
+    },
+    {
+      "company_id": 116,
+      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
+      "created_at": "2026-08-14T16:50:48.622799+00:00"
     },
     {
       "company_id": 73,
@@ -1084,6 +1084,21 @@
       "created_at": "2026-03-17T15:19:30.485925+00:00"
     },
     {
+      "company_id": 128,
+      "category_id": "02f54958-c5b9-401f-ab87-e353ac23df9a",
+      "created_at": "2026-08-14T16:56:07.318536+00:00"
+    },
+    {
+      "company_id": 128,
+      "category_id": "313c9042-1382-4866-896c-80855a1a177d",
+      "created_at": "2026-08-14T16:56:07.318536+00:00"
+    },
+    {
+      "company_id": 128,
+      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
+      "created_at": "2026-08-14T16:56:07.318536+00:00"
+    },
+    {
       "company_id": 74,
       "category_id": "823d0488-f298-48db-9261-76195b4d3205",
       "created_at": "2026-05-18T14:03:15.070567+00:00"
@@ -1232,16 +1247,6 @@
       "company_id": 78,
       "category_id": "e546016a-596e-495d-86b1-c70b69eccc0d",
       "created_at": "2026-05-19T17:26:47.21167+00:00"
-    },
-    {
-      "company_id": 123,
-      "category_id": "a0ef765d-d4f8-4bd2-af74-184595279e37",
-      "created_at": "2026-06-03T18:51:31.525125+00:00"
-    },
-    {
-      "company_id": 123,
-      "category_id": "a2d7ca8b-4a68-406c-a9eb-4760ce2a33fc",
-      "created_at": "2026-06-03T18:51:31.525125+00:00"
     },
     {
       "company_id": 113,
