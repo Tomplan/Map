@@ -201,22 +201,40 @@ export default function MapManagement({
           return subscriptionSortDirection === 'asc' ? valA - valB : valB - valA;
 
         case 'assigned': {
-          const getBoothId = (sub) => {
+          const getBoothSortValue = (sub) => {
             const assignment = assignments?.find((as) => as.company_id === sub.company?.id);
-            // If assigned, return marker ID. If unassigned, we want it FIRST.
-            // Using -1 for unassigned ensures it comes before marker IDs (which start at >0).
-            return assignment ? assignment.marker_id || 999999 : -1;
+            if (!assignment) {
+              return { assigned: false, value: '' };
+            }
+
+            const marker = markersState?.find((m) => m.id === assignment.marker_id);
+            return {
+              assigned: true,
+              value: marker?.glyph || String(assignment.marker_id || 999999),
+            };
           };
 
-          const idA = getBoothId(a);
-          const idB = getBoothId(b);
+          const boothA = getBoothSortValue(a);
+          const boothB = getBoothSortValue(b);
 
-          if (idA === idB) {
+          if (boothA.assigned !== boothB.assigned) {
+            return subscriptionSortDirection === 'asc'
+              ? boothA.assigned
+                ? 1
+                : -1
+              : boothA.assigned
+                ? -1
+                : 1;
+          }
+
+          if (boothA.value === boothB.value) {
             // Secondary sort by name
             return (a.company?.name || '').localeCompare(b.company?.name || '');
           }
 
-          return subscriptionSortDirection === 'asc' ? idA - idB : idB - idA;
+          return subscriptionSortDirection === 'asc'
+            ? boothA.value.localeCompare(boothB.value, undefined, { numeric: true, sensitivity: 'base' })
+            : boothB.value.localeCompare(boothA.value, undefined, { numeric: true, sensitivity: 'base' });
         }
 
         case 'arrival': {
