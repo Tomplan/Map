@@ -836,23 +836,17 @@ export default function MapManagement({
 
         if (!sub || !marker) return null;
 
+        const boothLabel = marker.glyph || marker.id?.toString() || '?';
+
         return {
-          booth: marker.id?.toString() || '?',
+          booth: boothLabel,
           company: sub.company?.name || t('mapManagement.unknown'),
           contact: sub.company?.contact || '-',
           phone: sub.company?.phone || '-',
         };
       })
       .filter(Boolean)
-      .sort((a, b) => {
-        // Sort numerically if possible, else alphabetically
-        const numA = parseInt(a.booth, 10);
-        const numB = parseInt(b.booth, 10);
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return numA - numB;
-        }
-        return a.booth.localeCompare(b.booth, undefined, { numeric: true });
-      });
+      .sort((a, b) => a.booth.localeCompare(b.booth, undefined, { numeric: true, sensitivity: 'base' }));
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
