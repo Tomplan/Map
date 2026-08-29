@@ -1670,7 +1670,7 @@ export default function MapManagement({
                     const assignedMarkerId = assignment?.marker_id;
                     const assignedMarker = markersState?.find((m) => m.id === assignedMarkerId);
                     const boothLabel = assignedMarker
-                      ? `${t('map.booth', 'Booth')} ${assignedMarker.id}`
+                      ? `${t('map.booth', 'Booth')} ${assignedMarker.glyph || assignedMarker.id}`
                       : t('mapManagement.statusAssigned', 'Assigned');
 
                     return (
