@@ -1,7 +1,7 @@
 {
   "table": "markers_content",
-  "timestamp": "2026-07-29T10-52-00-395Z",
-  "recordCount": 518,
+  "timestamp": "2026-08-29T10-04-25-665Z",
+  "recordCount": 522,
   "data": [
     {
       "id": 93,
@@ -208,6 +208,15 @@
       "website": "https://dutch-roofspace.nl",
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 111,
+      "name": "Booth-Holder",
+      "logo": "4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": false,
       "event_year": 2026
     },
     {
@@ -4063,6 +4072,15 @@
       "event_year": 2025
     },
     {
+      "id": 108,
+      "name": "Booth-Holder",
+      "logo": "4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": false,
+      "event_year": 2026
+    },
+    {
       "id": 93,
       "name": "Further Adventures",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Further%20Adventures.png",
@@ -4259,6 +4277,15 @@
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "contentLocked": true,
       "event_year": 2025
+    },
+    {
+      "id": 109,
+      "name": "Booth-Holder",
+      "logo": "4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": false,
+      "event_year": 2026
     },
     {
       "id": 99,
@@ -4466,6 +4493,15 @@
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "contentLocked": true,
       "event_year": 2025
+    },
+    {
+      "id": 110,
+      "name": "Booth-Holder",
+      "logo": "4x4Vakantiebeurs.png",
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": false,
+      "event_year": 2026
     },
     {
       "id": 57,
