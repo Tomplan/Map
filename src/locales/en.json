@@ -901,7 +901,7 @@
     "searchCompany": "Search company...",
     "sortSubscriptionsBy": "Sort subscriptions by",
     "sortByCompany": "Sort by Company",
-    "sortByBooths": "Sort by Booths",
+    "sortByBooths": "Sort by number of stands",
     "sortByAssigned": "Sort by Assigned",
     "sortByArrival": "Sort by Checked In",
     "toggleSortDesc": "Toggle sort direction to descending",
