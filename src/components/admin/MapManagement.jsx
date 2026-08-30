@@ -180,6 +180,8 @@ export default function MapManagement({
     [markersState],
   );
 
+  const freeBoothCount = Math.max(totalBoothCount - assignedBoothCount, 0);
+
   // Filter and Sort subscriptions
   const filteredSubscriptions = useMemo(() => {
     if (!rawSubscriptions) return [];
@@ -1004,16 +1006,16 @@ export default function MapManagement({
                 </span>
                 <div
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    assignedBoothCount < totalBoothCount
+                    freeBoothCount > 0
                       ? 'bg-amber-100 text-amber-800'
                       : 'bg-green-100 text-green-800'
                   }`}
                   title={t('mapManagement.freeTotalTooltip', {
-                    count: assignedBoothCount,
+                    count: freeBoothCount,
                     total: totalBoothCount,
                   })}
                 >
-                  {assignedBoothCount} / {totalBoothCount}
+                  {freeBoothCount} / {totalBoothCount}
                 </div>
               </div>
               {!isReadOnly && (
@@ -1593,8 +1595,13 @@ export default function MapManagement({
 
             {/* Title Header */}
             <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2 bg-white sticky top-0 z-10 flex justify-between items-center">
-              <span>{t('mapManagement.subscriptionList')}</span>
-              <span className="text-[10px] font-normal">
+              <div className="flex flex-col min-w-0">
+                <span>{t('mapManagement.subscriptionList')}</span>
+                <span className="text-[10px] font-normal text-gray-500 normal-case tracking-normal">
+                  {t('mapManagement.assignedBookingsLabel')}
+                </span>
+              </div>
+              <span className="text-[10px] font-normal flex-shrink-0">
                 {(() => {
                   if (!rawSubscriptions) return '0 / 0';
                   return `${assignedBoothCount} / ${totalBookedBooths}`;

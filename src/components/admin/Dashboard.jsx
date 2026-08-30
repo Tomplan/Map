@@ -21,7 +21,7 @@ import {
   mdiCog,
 } from '@mdi/js';
 import { supabase } from '../../supabaseClient';
-import { useSubscriptionCount, useMarkerCount, useCompanyCount } from '../../hooks/useCountViews';
+import { useSubscriptionCount, useMarkerCount } from '../../hooks/useCountViews';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useVisitorPresence from '../../hooks/useVisitorPresence';
@@ -39,8 +39,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   // Use real-time count hooks
   const { count: subscriptionCount, loading } = useSubscriptionCount(selectedYear);
   const { count: markerCount, loading: markersLoading } = useMarkerCount(selectedYear);
-  const { count: companyCount, loading: companiesLoading } = useCompanyCount();
-
   // Real-time site visitors
   const { onlineCount, visitorCount, adminUsers } = useVisitorPresence(false);
 
@@ -52,7 +50,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   const [pendingYear, setPendingYear] = useState(null);
   const [isAppActive, setIsAppActive] = useState(false);
   const [isSavingAppStatus, setIsSavingAppStatus] = useState(false);
-  const statsLoading = markersLoading || companiesLoading;
+  const statsLoading = markersLoading;
 
   useEffect(() => {
     setIsAppActive(!!profile?.is_app_active);
@@ -102,6 +100,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   }, [subscriptions]);
 
   const assignedBoothCount = assignments.length;
+  const freeBoothCount = Math.max(markerCount - assignedBoothCount, 0);
 
   const checkedInCount = useMemo(
     () => subscriptions.filter((subscription) => subscription.has_arrived).length,
@@ -110,12 +109,6 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
 
   const stats = [
     {
-      label: t('dashboard.companies'),
-      value: companiesLoading ? '...' : (companyCount - 1).toString(), // All companies minus organization
-      icon: mdiDomain,
-      color: 'green',
-    },
-    {
       label: t('dashboard.subscriptions'),
       value: loading ? '...' : subscriptionCount.toString(),
       icon: mdiCalendar,
@@ -123,7 +116,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: t('dashboard.freeTotal'),
-      value: markersLoading || loading ? '...' : `${assignedBoothCount} / ${markerCount}`,
+      value: markersLoading || loading ? '...' : `${freeBoothCount} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },

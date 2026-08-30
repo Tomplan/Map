@@ -843,8 +843,9 @@
     "redoAssignment": "Toewijzing opnieuw uitvoeren",
     "subscriptionList": "Inschrijvingen",
     "markersList": "Markerlijst",
-    "freeTotalLabel": "Toegewezen / totaal stands",
-    "freeTotalTooltip": "{{count}} van {{total}} standmarker(s) toegewezen",
+    "freeTotalLabel": "vrij/totaal aantal standen",
+    "freeTotalTooltip": "{{count}} van {{total}} vrije stands",
+    "assignedBookingsLabel": "Toegewezen standen / boekingen",
     "assignedBoothDefault": "Standaard Toegewezen Stand",
     "unassignedBoothDefault": "Standaard Niet-toegewezen Stand",
     "globalDefaultForBoothMarkers": "Algemene Standaard voor Stand Markers",
@@ -1020,9 +1021,9 @@
     "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
   },
   "dashboard": {
-    "freeTotal": "Standen: toegewezen / totaal standen",
+    "freeTotal": "vrij/totaal aantal standen",
     "companies": "Bedrijven",
-    "subscriptions": "Inschrijvingen",
+    "subscriptions": "Ingeschreven bedrijven",
     "checkedIn": "Ingecheckt",
     "assignments": "Toegewezen standen / boekingen",
     "eventTotals": "Evenement Totalen",

@@ -159,6 +159,85 @@ export const useAssignmentCount = _createCountHook('assignment_counts', 'assignm
 export const useMarkerCount = _createCountHook('marker_counts', 'markers_core');
 
 /**
+ * Hook for invoice count scoped to the active working year.
+ * Invoices are grouped by folder, and year folders are named after the year (for example 2026).
+ * @returns {object} { count, loading, error }
+ */
+export function useInvoiceCount(eventYear) {
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (eventYear == null || Number.isNaN(Number(eventYear))) {
+      setCount(0);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
+
+    const yearName = String(eventYear);
+
+    const loadCount = async () => {
+      try {
+        setLoading(true);
+        const { data: yearFolders, error: folderError } = await supabase
+          .from('invoice_folders')
+          .select('id')
+          .eq('name', yearName);
+
+        if (folderError) throw folderError;
+
+        const folderIds = (yearFolders || []).map((folder) => folder.id);
+        if (folderIds.length === 0) {
+          setCount(0);
+          setError(null);
+          return;
+        }
+
+        const { count: exactCount, error: fetchError } = await supabase
+          .from('staged_invoices')
+          .select('id', { count: 'exact', head: true })
+          .in('folder_id', folderIds);
+
+        if (fetchError) throw fetchError;
+        setCount(exactCount || 0);
+        setError(null);
+      } catch (err) {
+        console.error(`Error loading invoice count for ${yearName}:`, err);
+        setError(err.message);
+        setCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCount();
+
+    const invoiceChannel = supabase
+      .channel(`staged-invoices-count-${yearName}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'staged_invoices' }, () => {
+        loadCount();
+      })
+      .subscribe();
+
+    const folderChannel = supabase
+      .channel(`invoice-folders-count-${yearName}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoice_folders' }, () => {
+        loadCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(invoiceChannel);
+      supabase.removeChannel(folderChannel);
+    };
+  }, [eventYear]);
+
+  return { count, loading, error };
+}
+
+/**
  * Hook for total company count (not year-specific)
  * @returns {object} { count, loading, error }
  */
