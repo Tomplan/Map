@@ -22,7 +22,7 @@ jest.mock('react-i18next', () => ({
         'admin.yearSwitcher.wontChange.companiesDesc': 'Companies are global',
         'common.cancel': 'Cancel',
         'admin.yearSwitcher.switchButton': 'Switch',
-        'dashboard.subscriptions': 'Subscriptions',
+        'dashboard.subscriptions': 'Registered Companies',
       };
       return map[k] || k;
     },
