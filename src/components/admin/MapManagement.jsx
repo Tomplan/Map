@@ -168,6 +168,18 @@ export default function MapManagement({
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
   const [pendingArrivalId, setPendingArrivalId] = useState(null);
 
+  const totalBookedBooths = useMemo(
+    () => rawSubscriptions?.reduce((sum, sub) => sum + (sub.booth_count || 0), 0) || 0,
+    [rawSubscriptions],
+  );
+
+  const assignedBoothCount = useMemo(() => assignments?.length || 0, [assignments]);
+
+  const totalBoothCount = useMemo(
+    () => markersState?.filter((m) => m.id > 0 && m.id < 1000).length || 0,
+    [markersState],
+  );
+
   // Filter and Sort subscriptions
   const filteredSubscriptions = useMemo(() => {
     if (!rawSubscriptions) return [];
@@ -986,32 +998,24 @@ export default function MapManagement({
               <div className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
                 {selectedYear}
               </div>
-              {(() => {
-                const total = markersState?.filter((m) => m.id > 0) ?? [];
-                const boothTotal = total.filter((m) => m.id < 1000);
-                const emptyCount = boothTotal.filter(
-                  (m) =>
-                    !Array.isArray(assignments) || !assignments.some((a) => a.marker_id === m.id),
-                ).length;
-                const totalCount = boothTotal.length;
-                return (
-                  <div className="flex flex-col items-center">
-                    <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-400 leading-none mb-0.5">
-                      {t('mapManagement.freeTotalLabel')}
-                    </span>
-                    <div
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        emptyCount > 0
-                          ? 'bg-amber-100 text-amber-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}
-                      title={t('mapManagement.freeTotalTooltip', { count: emptyCount })}
-                    >
-                      {emptyCount} / {totalCount}
-                    </div>
-                  </div>
-                );
-              })()}
+              <div className="flex flex-col items-center">
+                <span className="text-[9px] font-semibold uppercase tracking-wide text-gray-400 leading-none mb-0.5">
+                  {t('mapManagement.freeTotalLabel')}
+                </span>
+                <div
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    assignedBoothCount < totalBoothCount
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}
+                  title={t('mapManagement.freeTotalTooltip', {
+                    count: assignedBoothCount,
+                    total: totalBoothCount,
+                  })}
+                >
+                  {assignedBoothCount} / {totalBoothCount}
+                </div>
+              </div>
               {!isReadOnly && (
                 <div className="flex gap-1 items-center">
                   {/* Unified History Operations */}
@@ -1592,12 +1596,8 @@ export default function MapManagement({
               <span>{t('mapManagement.subscriptionList')}</span>
               <span className="text-[10px] font-normal">
                 {(() => {
-                  if (!rawSubscriptions || !assignments) return '0 / 0';
-                  // Count how many subscriptions have at least one assignment
-                  const assignedCount = rawSubscriptions.filter((sub) =>
-                    assignments.some((a) => a.company_id === sub.company_id),
-                  ).length;
-                  return `${assignedCount} / ${rawSubscriptions.length}`;
+                  if (!rawSubscriptions) return '0 / 0';
+                  return `${assignedBoothCount} / ${totalBookedBooths}`;
                 })()}
               </span>
             </div>
@@ -1610,13 +1610,6 @@ export default function MapManagement({
                   size={0.8}
                   className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
                 />
-                <input
-                  type="text"
-                  placeholder={t('mapManagement.searchCompany')}
-                  value={subscriptionSearch}
-                  onChange={(e) => setSubscriptionSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                />
               </div>
 
               {/* Sort */}
@@ -1624,7 +1617,6 @@ export default function MapManagement({
                 <select
                   value={subscriptionSortBy}
                   onChange={(e) => setSubscriptionSortBy(e.target.value)}
-                  className="flex-1 pl-2 pr-2 py-1.5 border-0 rounded-l-md bg-white text-gray-900 text-xs focus:ring-0 appearance-none min-w-0"
                   aria-label={t('mapManagement.sortSubscriptionsBy')}
                 >
                   <option value="name">{t('mapManagement.sortByCompany')}</option>

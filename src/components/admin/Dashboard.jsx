@@ -101,6 +101,8 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     );
   }, [subscriptions]);
 
+  const assignedBoothCount = assignments.length;
+
   const checkedInCount = useMemo(
     () => subscriptions.filter((subscription) => subscription.has_arrived).length,
     [subscriptions],
@@ -121,14 +123,13 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: t('dashboard.freeTotal'),
-      value:
-        markersLoading || loading ? '...' : `${markerCount - totals.booth_count} / ${markerCount}`,
+      value: markersLoading || loading ? '...' : `${assignedBoothCount} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },
     {
       label: t('dashboard.assignments'),
-      value: loading ? '...' : `${assignments.length} / ${totals.booth_count}`,
+      value: loading ? '...' : `${assignedBoothCount} / ${totals.booth_count}`,
       icon: mdiClipboardCheck,
       color: 'purple',
     },
