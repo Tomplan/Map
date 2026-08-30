@@ -159,6 +159,70 @@ export const useAssignmentCount = _createCountHook('assignment_counts', 'assignm
 export const useMarkerCount = _createCountHook('marker_counts', 'markers_core');
 
 /**
+ * Hook for invoice count scoped to an event year.
+ * Uses the staged_invoices table directly because the count is not backed by a view.
+ * @returns {object} { count, loading, error }
+ */
+export function useInvoiceCount(eventYear) {
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (eventYear == null || Number.isNaN(Number(eventYear))) {
+      setCount(0);
+      setLoading(false);
+      setError(null);
+      return undefined;
+    }
+
+    const loadCount = async () => {
+      try {
+        setLoading(true);
+        const { count: exactCount, error: fetchError } = await supabase
+          .from('staged_invoices')
+          .select('id', { count: 'exact', head: true })
+          .eq('event_year', eventYear);
+
+        if (fetchError) throw fetchError;
+        setCount(exactCount || 0);
+        setError(null);
+      } catch (err) {
+        console.error(`Error loading invoice count for ${eventYear}:`, err);
+        setError(err.message);
+        setCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCount();
+
+    const channel = supabase
+      .channel(`staged-invoices-count-${eventYear}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'staged_invoices',
+          filter: `event_year=eq.${eventYear}`,
+        },
+        () => {
+          loadCount();
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventYear]);
+
+  return { count, loading, error };
+}
+
+/**
  * Hook for total company count (not year-specific)
  * @returns {object} { count, loading, error }
  */
