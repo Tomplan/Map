@@ -102,6 +102,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
   }, [subscriptions]);
 
   const assignedBoothCount = assignments.length;
+  const freeBoothCount = Math.max(markerCount - assignedBoothCount, 0);
 
   const checkedInCount = useMemo(
     () => subscriptions.filter((subscription) => subscription.has_arrived).length,
@@ -123,7 +124,7 @@ export default function Dashboard({ selectedYear, setSelectedYear }) {
     },
     {
       label: t('dashboard.freeTotal'),
-      value: markersLoading || loading ? '...' : `${assignedBoothCount} / ${markerCount}`,
+      value: markersLoading || loading ? '...' : `${freeBoothCount} / ${markerCount}`,
       icon: mdiMapMarker,
       color: 'blue',
     },
