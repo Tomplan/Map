@@ -843,7 +843,7 @@
     "redoAssignment": "Toewijzing opnieuw uitvoeren",
     "subscriptionList": "Inschrijvingen",
     "markersList": "Markerlijst",
-    "freeTotalLabel": "Vrije stands / totaal stands",
+    "freeTotalLabel": "vrij/totaal aantal standen",
     "freeTotalTooltip": "{{count}} van {{total}} vrije stands",
     "assignedBookingsLabel": "Toegewezen standen / boekingen",
     "assignedBoothDefault": "Standaard Toegewezen Stand",
@@ -1021,7 +1021,7 @@
     "savePersistMismatch": "Opgeslagen maar de badge-waarde is niet doorgevoerd — mogelijk heeft u geen toestemming. Controleer uw rol of neem contact op met een beheerder."
   },
   "dashboard": {
-    "freeTotal": "Vrije stands / totaal stands",
+    "freeTotal": "vrij/totaal aantal standen",
     "companies": "Bedrijven",
     "subscriptions": "Inschrijvingen",
     "checkedIn": "Ingecheckt",

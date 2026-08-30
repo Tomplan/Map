@@ -18,6 +18,7 @@ import {
   mdiInvoice,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
+import { useCompanyCount } from '../hooks/useCountViews';
 import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
@@ -34,6 +35,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { role, loading, hasAnyRole, userInfo } = useUserRole();
+  const { count: companyCount, loading: companiesLoading } = useCompanyCount();
 
   // Generate year options (current year ± 2 years)
   const currentYear = new Date().getFullYear();
@@ -126,6 +128,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       label: t('adminNav.companiesNav'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
+      badge: companiesLoading ? '...' : Math.max(companyCount - 1, 0),
     },
     {
       path: '/admin/invoices',
@@ -239,6 +242,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                       to={item.path}
                       icon={item.icon}
                       label={item.label}
+                      badge={item.badge}
                       isActive={isActive}
                       isCollapsed={isCollapsed}
                       // keep Dashboard exactly aligned: force icon & label wrappers
