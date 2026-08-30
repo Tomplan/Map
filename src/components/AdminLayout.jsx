@@ -18,6 +18,7 @@ import {
   mdiInvoice,
 } from '@mdi/js';
 import useUserRole from '../hooks/useUserRole';
+import { useCompanyCount, useInvoiceCount } from '../hooks/useCountViews';
 import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
@@ -34,6 +35,8 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const { t } = useTranslation();
   const location = useLocation();
   const { role, loading, hasAnyRole, userInfo } = useUserRole();
+  const { count: companyCount, loading: companiesLoading } = useCompanyCount();
+  const { count: invoiceCount, loading: invoicesLoading } = useInvoiceCount(selectedYear);
 
   // Generate year options (current year ± 2 years)
   const currentYear = new Date().getFullYear();
@@ -126,12 +129,14 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
       label: t('adminNav.companiesNav'),
       icon: mdiDomain,
       roles: ['super_admin', 'event_manager'],
+      badge: companiesLoading ? '...' : Math.max(companyCount - 1, 0),
     },
     {
       path: '/admin/invoices',
       label: t('adminNav.invoices', 'Invoices'),
       icon: mdiInvoice,
       roles: ['super_admin', 'system_manager', 'event_manager'],
+      badge: invoicesLoading ? '...' : invoiceCount,
     },
     // Subscriptions, Assignments, and Program management are now surfaced
     // in the compact YearScopeSidebar (per recent UX changes). Keep these
@@ -239,6 +244,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
                       to={item.path}
                       icon={item.icon}
                       label={item.label}
+                      badge={item.badge}
                       isActive={isActive}
                       isCollapsed={isCollapsed}
                       // keep Dashboard exactly aligned: force icon & label wrappers
