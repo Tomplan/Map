@@ -36,7 +36,7 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   const location = useLocation();
   const { role, loading, hasAnyRole, userInfo } = useUserRole();
   const { count: companyCount, loading: companiesLoading } = useCompanyCount();
-  const { count: invoiceCount, loading: invoicesLoading } = useInvoiceCount(selectedYear);
+  const { count: invoiceCount, loading: invoicesLoading } = useInvoiceCount();
 
   // Generate year options (current year ± 2 years)
   const currentYear = new Date().getFullYear();
