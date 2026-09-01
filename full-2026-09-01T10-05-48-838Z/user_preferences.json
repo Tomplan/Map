@@ -1,6 +1,6 @@
 {
   "table": "user_preferences",
-  "timestamp": "2026-08-01T10-31-35-439Z",
+  "timestamp": "2026-09-01T10-05-48-838Z",
   "recordCount": 4,
   "data": [
     {
@@ -45,8 +45,8 @@
       "default_rows_per_page": 25,
       "email_notifications": true,
       "created_at": "2025-12-01T21:11:26.802421+00:00",
-      "updated_at": "2026-07-12T15:13:40.075429+00:00",
-      "row_version": 110,
+      "updated_at": "2026-08-31T08:42:50.994354+00:00",
+      "row_version": 128,
       "updated_by": "49a876ea-5cfd-4b79-91c0-c6e199b50f14",
       "feedback_active_tab": "all",
       "feedback_filter_types": [],
