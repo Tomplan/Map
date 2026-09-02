@@ -1,7 +1,7 @@
 {
   "table": "markers_core",
-  "timestamp": "2026-08-02T10-31-06-691Z",
-  "recordCount": 520,
+  "timestamp": "2026-09-02T10-05-44-487Z",
+  "recordCount": 526,
   "data": [
     {
       "id": 3,
@@ -2983,6 +2983,15 @@
       "event_year": 2027
     },
     {
+      "id": 110,
+      "lat": "51.8969472596732",
+      "lng": "5.772124528884889",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 300.61846874998747,
+      "event_year": 2026
+    },
+    {
       "id": 77,
       "lat": "51.89768544232265",
       "lng": "5.771861001849175",
@@ -4084,6 +4093,33 @@
       "event_year": 2025
     },
     {
+      "id": 112,
+      "lat": "51.89698615524999",
+      "lng": "5.7719260454177865",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 197.84017600307138,
+      "event_year": 2026
+    },
+    {
+      "id": 111,
+      "lat": "51.89694146671207",
+      "lng": "5.772009193897248",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 251.56514550665952,
+      "event_year": 2026
+    },
+    {
+      "id": 108,
+      "lat": "51.89707470462908",
+      "lng": "5.772188901901246",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 34.38047159927326,
+      "event_year": 2026
+    },
+    {
       "id": 1402,
       "lat": "51.898336184471546",
       "lng": "5.7718858078716915",
@@ -4850,6 +4886,24 @@
       "rectangle": null,
       "angle": 4.820789856260035,
       "event_year": 2025
+    },
+    {
+      "id": 109,
+      "lat": "51.897003534113864",
+      "lng": "5.77220231294632",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 341.8618302928079,
+      "event_year": 2026
+    },
+    {
+      "id": 113,
+      "lat": "51.897063946302616",
+      "lng": "5.771917998790741",
+      "coreLocked": false,
+      "rectangle": null,
+      "angle": 163.300683155274,
+      "event_year": 2026
     }
   ]
 }
