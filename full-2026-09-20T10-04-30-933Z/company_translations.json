@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-08-20T10-07-36-352Z",
-  "recordCount": 210,
+  "timestamp": "2026-09-20T10-04-30-933Z",
+  "recordCount": 213,
   "data": [
     {
       "id": 1,
@@ -748,6 +748,14 @@
       "updated_at": "2026-06-16T18:04:36.582896+00:00"
     },
     {
+      "id": 2903,
+      "company_id": 130,
+      "language_code": "nl",
+      "info": "MAN expeditie truck, to sell nearby de entrance on the parking",
+      "created_at": "2026-08-29T05:39:07.777255+00:00",
+      "updated_at": "2026-08-29T05:39:06.859+00:00"
+    },
+    {
       "id": 30,
       "company_id": 44,
       "language_code": "nl",
@@ -804,6 +812,14 @@
       "updated_at": "2026-06-16T18:05:37.77+00:00"
     },
     {
+      "id": 2904,
+      "company_id": 131,
+      "language_code": "nl",
+      "info": "Wij specialiseren ons in producten gemaakt van wol. Wat natuurlijk perfect is als je van het buitenleven houdt. Zo hebben wij producten van schapen- en alpacawol. Wij zorgen altijd dat wij producten van hoogwaardige kwaliteit kunnen aanbieden. Ons assortiment bestaat onder andere uit: vesten, truien, kinderkleding, dekens/plaids, sokken, pantoffels, handschoenen, sjaals, vachten en andere natuurproducten (zoals zeep en honing).",
+      "created_at": "2026-09-02T17:00:13.518191+00:00",
+      "updated_at": "2026-09-02T17:00:46.455981+00:00"
+    },
+    {
       "id": 219,
       "company_id": 40,
       "language_code": "en",
@@ -842,6 +858,14 @@
       "info": "Roof top tents for every adventure — from short trips to world tours, always set up in minutes.",
       "created_at": "2026-06-16T18:07:28.298922+00:00",
       "updated_at": "2026-06-16T18:07:28.437+00:00"
+    },
+    {
+      "id": 2906,
+      "company_id": 132,
+      "language_code": "nl",
+      "info": "At Overland Travel, we don't do comfort zones. We'll take you from A to Best places in the world. We like to travel (far) off the beaten track to the most special places on earth. Think again before you clean your car or truck and park it in the garage. After all, a clean vehicle tells no story.",
+      "created_at": "2026-09-04T10:41:19.769455+00:00",
+      "updated_at": "2026-09-04T10:41:19.674+00:00"
     },
     {
       "id": 220,
