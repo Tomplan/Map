@@ -1013,9 +1013,6 @@ function EventMap({
                 map: printMap,
                 markers: safeMarkers,
                 rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
-                markerLayers: event.printObjects?.['L.Marker']?.length
-                  ? event.printObjects['L.Marker']
-                  : undefined,
               });
             }
 

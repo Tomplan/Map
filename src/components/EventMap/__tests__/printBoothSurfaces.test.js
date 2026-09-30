@@ -4,12 +4,21 @@ import { addBoothSurfacePrintOverlay } from '../printBoothSurfaces';
 describe('addBoothSurfacePrintOverlay', () => {
   it('draws booth rectangles and centered labels while hiding booth markers', () => {
     const addedLayers = [];
+    const mapLayers = [];
     const map = {
-      addLayer: jest.fn((layer) => addedLayers.push(layer)),
+      addLayer: jest.fn((layer) => {
+        addedLayers.push(layer);
+        mapLayers.push(layer);
+      }),
       removeLayer: jest.fn(),
+      eachLayer: (callback) => mapLayers.forEach(callback),
     };
     const boothMarker = L.marker([51.9, 5.77]);
     const specialMarker = L.marker([51.91, 5.78]);
+    const clonedCluster = {
+      getAllChildMarkers: () => [boothMarker, specialMarker],
+    };
+    mapLayers.push(clonedCluster);
     const cleanup = addBoothSurfacePrintOverlay({
       map,
       markers: [
@@ -17,7 +26,6 @@ describe('addBoothSurfacePrintOverlay', () => {
         { id: 1001, glyph: 'i', type: 'special', lat: 51.91, lng: 5.78 },
       ],
       rectangleSize: [6, 6],
-      markerLayers: [boothMarker, specialMarker],
     });
 
     expect(boothMarker.options.opacity).toBe(0);

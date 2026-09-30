@@ -34,7 +34,9 @@ function getBoothMarkers(markers) {
 }
 
 function collectMarkerLayers(layer, result = []) {
-  if (layer instanceof L.Marker) {
+  if (typeof layer?.getAllChildMarkers === 'function') {
+    layer.getAllChildMarkers().forEach((marker) => collectMarkerLayers(marker, result));
+  } else if (layer instanceof L.Marker) {
     result.push(layer);
   } else if (typeof layer?.eachLayer === 'function') {
     layer.eachLayer((child) => collectMarkerLayers(child, result));
