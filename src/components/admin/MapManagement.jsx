@@ -39,7 +39,7 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import SnapshotModal from './SnapshotModal';
-import { MAP_CONFIG, PRINT_CONFIG } from '../../config/mapConfig';
+import { MAP_CONFIG } from '../../config/mapConfig';
 import { addBoothSurfacePrintOverlay } from '../EventMap/printBoothSurfaces';
 
 const PRINT_PRESETS = [
@@ -52,38 +52,8 @@ const PRINT_PRESETS = [
     title,
     pageSize: title.slice(0, 2),
     orientation: title.includes('Landscape') ? 'Landscape' : 'Portrait',
-    center: PRINT_CONFIG.modes[title].center,
-    zoom: PRINT_CONFIG.modes[title].zoom,
   },
 }));
-
-function waitForMapIdle(map) {
-  return new Promise((resolve) => {
-    let settleTimer;
-    let maxWaitTimer;
-    let finished = false;
-
-    const finish = () => {
-      if (finished) return;
-      finished = true;
-      clearTimeout(settleTimer);
-      clearTimeout(maxWaitTimer);
-      map.off('moveend', onViewEnd);
-      map.off('zoomend', onViewEnd);
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
-    };
-
-    const onViewEnd = () => {
-      clearTimeout(settleTimer);
-      settleTimer = setTimeout(finish, 500);
-    };
-
-    map.on('moveend', onViewEnd);
-    map.on('zoomend', onViewEnd);
-    maxWaitTimer = setTimeout(finish, 4000);
-    onViewEnd();
-  });
-}
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -678,27 +648,11 @@ export default function MapManagement({
     const orientation = modeOptions.orientation?.toLowerCase().includes('landscape')
       ? 'landscape'
       : 'portrait';
-    const originalView = { center: mapInstance.getCenter(), zoom: mapInstance.getZoom() };
-
-    try {
-      if (Array.isArray(modeOptions.center) && Number.isFinite(modeOptions.zoom)) {
-        const mapIdle = waitForMapIdle(mapInstance);
-        mapInstance.setView(modeOptions.center, modeOptions.zoom, { animate: false });
-        mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-        await mapIdle;
-      }
-
-      await printMapInPlace({
-        orientation,
-        pageSize: modeOptions.pageSize,
-        boothSurfaces: printStyle === 'booth-surfaces',
-      });
-    } finally {
-      const restoredView = waitForMapIdle(mapInstance);
-      mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
-      mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-      await restoredView;
-    }
+    await printMapInPlace({
+      orientation,
+      pageSize: modeOptions.pageSize,
+      boothSurfaces: printStyle === 'booth-surfaces',
+    });
   };
 
   const printMapInPlace = async (printOptions = {}) => {
