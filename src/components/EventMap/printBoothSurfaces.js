@@ -131,6 +131,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
 
   booths.forEach((marker) => {
     const number = marker.glyph ?? marker.id;
+    const labelFontSize = String(number).length >= 3 ? 10 : 12;
     const center = L.latLng(marker.lat, marker.lng);
     const rectangle = L.polygon(getRectangleLatLngs(marker, rectangleSize), {
       color: '#202020',
@@ -142,7 +143,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
     const label = L.marker(center, {
       icon: L.divIcon({
         className: 'booth-surface-print-label',
-        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 14px/1 sans-serif;white-space:nowrap;text-shadow:0 0 1px rgba(255,255,255,0.45)">${escapeHtml(number)}</div>`,
+        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 ${labelFontSize}px/1 sans-serif;white-space:nowrap;text-shadow:0 0 1px rgba(255,255,255,0.45)">${escapeHtml(number)}</div>`,
         iconSize: [80, 28],
         iconAnchor: [40, 14],
       }),

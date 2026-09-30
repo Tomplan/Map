@@ -57,6 +57,7 @@ describe('addBoothSurfacePrintOverlay', () => {
       map,
       markers: [
         { id: 12, glyph: '12', type: 'booth', lat: 51.9, lng: 5.77 },
+        { id: 123, glyph: '123', type: 'booth', lat: 51.9, lng: 5.771 },
         { id: 1001, glyph: 'i', type: 'default', lat: 51.91, lng: 5.78 },
       ],
       rectangleSize: [6, 6],
@@ -72,12 +73,14 @@ describe('addBoothSurfacePrintOverlay', () => {
 
     const overlayLayers = [];
     addedLayers[0].eachLayer((layer) => overlayLayers.push(layer));
-    expect(overlayLayers).toHaveLength(2);
+    expect(overlayLayers).toHaveLength(4);
     expect(overlayLayers[0]).toBeInstanceOf(L.Polygon);
     expect(overlayLayers[0].options.fillOpacity).toBe(0.22);
     expect(overlayLayers[1].options.icon.options.html).toContain('12');
-    expect(overlayLayers[1].options.icon.options.html).toContain('font:700 14px/1 sans-serif');
+    expect(overlayLayers[1].options.icon.options.html).toContain('font:700 12px/1 sans-serif');
     expect(overlayLayers[1].options.icon.options.html).toContain('rgba(255,255,255,0.45)');
+    expect(overlayLayers[3].options.icon.options.html).toContain('123');
+    expect(overlayLayers[3].options.icon.options.html).toContain('font:700 10px/1 sans-serif');
 
     cleanup();
 
