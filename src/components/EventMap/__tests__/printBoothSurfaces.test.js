@@ -2,7 +2,7 @@ import L from 'leaflet';
 import { addBoothSurfacePrintOverlay } from '../printBoothSurfaces';
 
 describe('addBoothSurfacePrintOverlay', () => {
-  it('draws booth rectangles and centered labels while hiding booth markers', () => {
+  it('draws booth rectangles and labels without mutating on-screen marker opacity', () => {
     const addedLayers = [];
     const mapLayers = [];
     const renderedBoothIcon = { textContent: '12', classList: { add: jest.fn(), remove: jest.fn() } };
@@ -39,7 +39,7 @@ describe('addBoothSurfacePrintOverlay', () => {
       rectangleSize: [6, 6],
     });
 
-    expect(boothMarker.options.opacity).toBe(0);
+    expect(boothMarker.options.opacity).toBe(1);
     expect(specialMarker.options.opacity).toBe(1);
     expect(boothIcon.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
     expect(specialIcon.classList.add).not.toHaveBeenCalled();

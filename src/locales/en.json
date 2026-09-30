@@ -940,6 +940,7 @@
     "printAppearance": "Print appearance",
     "printStyleMarkers": "Markers",
     "printStyleBoothSurfaces": "Booth squares",
+    "printError": "Map printing failed. Check your browser print settings and try again.",
     "printAssignments": "Assignments List",
     "statusUnassigned": "Unassigned",
     "booth": "booth",

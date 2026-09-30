@@ -213,6 +213,12 @@ body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+
+  .leaflet-marker-icon.leaflet-search-hidden-marker {
+    display: none !important;
+    opacity: 0 !important;
+  }
+
   .map-control-button,
   .branding-bar,
   .admin-panel,

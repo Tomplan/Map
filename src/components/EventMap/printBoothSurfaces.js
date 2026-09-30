@@ -74,11 +74,10 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
   const booths = getBoothMarkers(markers);
   const boothPositions = new Set(booths.map(getPositionKey));
   const boothGlyphs = new Set(booths.map((marker) => String(marker.glyph ?? marker.id)));
-  const layersToHide = markerLayers || collectMarkerLayers(map);
-  const hiddenMarkers = [];
+  const markerLayersToMark = markerLayers || collectMarkerLayers(map);
   const hiddenIcons = new Set();
 
-  layersToHide.forEach((markerLayer) => {
+  markerLayersToMark.forEach((markerLayer) => {
     const glyph = markerLayer.options?.icon?.options?.glyph;
     const matchesBooth =
       (typeof markerLayer.getLatLng === 'function' &&
@@ -94,8 +93,6 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
         icon.classList.add('booth-surface-print-hidden');
         hiddenIcons.add(icon);
       }
-      hiddenMarkers.push({ marker: markerLayer, opacity: markerLayer.options.opacity ?? 1 });
-      markerLayer.setOpacity(0);
     }
   });
 
@@ -140,9 +137,6 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
 
   return () => {
     map.removeLayer(overlay);
-    hiddenMarkers.forEach(({ marker, opacity }) => {
-      marker.setOpacity(opacity);
-    });
     hiddenIcons.forEach((icon) => icon.classList.remove('booth-surface-print-hidden'));
   };
 }

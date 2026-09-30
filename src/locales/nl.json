@@ -934,6 +934,7 @@
     "printAppearance": "Printweergave",
     "printStyleMarkers": "Markers",
     "printStyleBoothSurfaces": "Standvakken",
+    "printError": "Kaart afdrukken is mislukt. Controleer de printinstellingen en probeer opnieuw.",
     "printAssignments": "Toewijzingenlijst",
     "statusUnassigned": "Niet-toegewezen",
     "booth": "stand",

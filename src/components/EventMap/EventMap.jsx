@@ -665,11 +665,18 @@ function EventMap({
 
     // Create and populate search layer
     const layerGroup = L.layerGroup();
+    const searchMarkerIcon = L.divIcon({
+      className: 'leaflet-search-hidden-marker',
+      html: '',
+      iconSize: [1, 1],
+      iconAnchor: [0, 0],
+    });
 
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
         const leafletMarker = L.marker([marker.lat, marker.lng], {
+          icon: searchMarkerIcon,
           opacity: 0,
           interactive: false,
         });

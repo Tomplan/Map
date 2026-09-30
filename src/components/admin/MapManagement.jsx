@@ -33,7 +33,6 @@ import { supabase } from '../../supabaseClient';
 import EventMap from '../EventMap/EventMap';
 import ArrivalStatusSlider from '../common/ArrivalStatusSlider';
 import CompanyLogo from '../common/CompanyLogo';
-import html2canvas from 'html2canvas';
 import { useDialog } from '../../contexts/DialogContext';
 import useUserRole from '../../hooks/useUserRole';
 import useEventSubscriptions from '../../hooks/useEventSubscriptions';
@@ -42,6 +41,49 @@ import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import SnapshotModal from './SnapshotModal';
 import { MAP_CONFIG, PRINT_CONFIG } from '../../config/mapConfig';
 import { addBoothSurfacePrintOverlay } from '../EventMap/printBoothSurfaces';
+
+const PRINT_PRESETS = [
+  'A3 — Landscape',
+  'A3 — Portrait',
+  'A4 — Landscape',
+  'A4 — Portrait',
+].map((title) => ({
+  options: {
+    title,
+    pageSize: title.slice(0, 2),
+    orientation: title.includes('Landscape') ? 'Landscape' : 'Portrait',
+    center: PRINT_CONFIG.modes[title].center,
+    zoom: PRINT_CONFIG.modes[title].zoom,
+  },
+}));
+
+function waitForMapIdle(map) {
+  return new Promise((resolve) => {
+    let settleTimer;
+    let maxWaitTimer;
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(settleTimer);
+      clearTimeout(maxWaitTimer);
+      map.off('moveend', onViewEnd);
+      map.off('zoomend', onViewEnd);
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    };
+
+    const onViewEnd = () => {
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(finish, 500);
+    };
+
+    map.on('moveend', onViewEnd);
+    map.on('zoomend', onViewEnd);
+    maxWaitTimer = setTimeout(finish, 4000);
+    onViewEnd();
+  });
+}
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -81,7 +123,7 @@ export default function MapManagement({
   const [mapInstance, setMapInstance] = useState(null);
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const [printModes, setPrintModes] = useState([]);
+  const printModes = PRINT_PRESETS;
   const [printStyle, setPrintStyle] = useState('markers');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
@@ -630,193 +672,63 @@ export default function MapManagement({
 
   // Programmatic print call for header presets — attempt plugin first, fallback to snapshot
   const programmaticHeaderPrint = async (mode) => {
-    if (!mapInstance || !mapInstance.printControl || !mode) return;
+    if (!mapInstance || !mode) return;
 
-    setIsPrintingHeader(true);
-    if (printStyle === 'booth-surfaces') {
-      const modeOptions = mode.options || {};
-      const modeTitle = modeOptions.title || '';
-      const orientation = (modeOptions.orientation || modeTitle).toLowerCase().includes('landscape')
-        ? 'landscape'
-        : 'portrait';
-      const printConfig = PRINT_CONFIG.modes[modeTitle];
-      const originalView = {
-        center: mapInstance.getCenter(),
-        zoom: mapInstance.getZoom(),
-      };
-
-      mapInstance._printBoothSurfaces = false;
-      try {
-        const printZoom = modeOptions.zoom ?? printConfig?.zoom;
-        if (printConfig?.center && printZoom !== undefined) {
-          mapInstance.setView(printConfig.center, printZoom, { animate: false });
-        }
-
-        await snapshotHeaderPrint({
-          orientation,
-          pageSize: modeOptions.pageSize,
-          boothSurfaces: true,
-          allowWhilePrinting: true,
-        });
-      } finally {
-        mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
-      }
-      return;
-    }
-
-    mapInstance._printBoothSurfaces = false;
-    const control = mapInstance.printControl;
-    const browserPrint = control?.browserPrint || control;
-
-    let timeoutId = null;
-    let started = false;
-    let finished = false;
-
-    const cleanup = () => {
-      if (!mapInstance || !(window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event))
-        return;
-      const Ev = window.L.BrowserPrint.Event;
-      try {
-        mapInstance.off(Ev.PrintStart, onStart);
-        mapInstance.off(Ev.PrintEnd, onEnd);
-        mapInstance.off(Ev.PrintCancel, onCancel);
-      } catch (e) {}
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
-      }
-    };
-
-    const onStart = () => {
-      started = true;
-    };
-    const onEnd = () => {
-      finished = true;
-      cleanup();
-    };
-    const onCancel = () => {
-      finished = true;
-      cleanup();
-    };
+    const modeOptions = mode.options || {};
+    const orientation = modeOptions.orientation?.toLowerCase().includes('landscape')
+      ? 'landscape'
+      : 'portrait';
+    const originalView = { center: mapInstance.getCenter(), zoom: mapInstance.getZoom() };
 
     try {
-      if (window.L && window.L.BrowserPrint && window.L.BrowserPrint.Event) {
-        const Ev = window.L.BrowserPrint.Event;
-        mapInstance.on(Ev.PrintStart, onStart);
-        mapInstance.on(Ev.PrintEnd, onEnd);
-        mapInstance.on(Ev.PrintCancel, onCancel);
+      if (Array.isArray(modeOptions.center) && Number.isFinite(modeOptions.zoom)) {
+        const mapIdle = waitForMapIdle(mapInstance);
+        mapInstance.setView(modeOptions.center, modeOptions.zoom, { animate: false });
+        mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+        await mapIdle;
       }
 
-      try {
-        if (typeof browserPrint.print === 'function') {
-          browserPrint.print(mode);
-        } else if (typeof control?._printMode === 'function') {
-          control._printMode(mode);
-        } else {
-          throw new Error('No browser print API available');
-        }
-      } catch (err) {
-        console.warn('Header BrowserPrint call failed:', err);
-        cleanup();
-
-        const isLandscape =
-          mode?.title?.toLowerCase().includes('landscape') ||
-          mode?.name?.toLowerCase().includes('landscape');
-
-        console.info(
-          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
-        );
-        alert(
-          'Browser print failed. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
-        );
-
-        await snapshotHeaderPrint({
-          orientation: isLandscape ? 'landscape' : 'portrait',
-          boothSurfaces: printStyle === 'booth-surfaces',
-          allowWhilePrinting: true,
-        });
-        return;
-      }
-
-      const waitStart = () =>
-        new Promise((resolve) => {
-          if (started) return resolve('started');
-          // Increased timeout to 8000ms to allow large maps/complex DOMs to prepare for print
-          timeoutId = setTimeout(() => resolve('timeout'), 8000);
-          const poll = setInterval(() => {
-            if (started || finished) {
-              clearInterval(poll);
-              if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-              }
-              resolve(started ? 'started' : 'finished');
-            }
-          }, 80);
-        });
-
-      const result = await waitStart();
-      if (result === 'timeout') {
-        console.warn('Header BrowserPrint did not start; falling back to snapshot export');
-        cleanup();
-
-        // Detect configuration from mode object safely handling both structure variants
-        const title = mode?.title || mode?.options?.title || mode?.name || '';
-        const isLandscape = title.toLowerCase().includes('landscape');
-
-        console.info(
-          `[MapPrint] Fallback triggered. Configuration: ${isLandscape ? 'Landscape' : 'Portrait'}`,
-        );
-        alert(
-          'Browser print timed out. Falling back to snapshot print (popup window). Verify the orientation in the dialog.',
-        );
-
-        await snapshotHeaderPrint({
-          orientation: isLandscape ? 'landscape' : 'portrait',
-          boothSurfaces: printStyle === 'booth-surfaces',
-          allowWhilePrinting: true,
-        });
-      }
+      await printMapInPlace({
+        orientation,
+        pageSize: modeOptions.pageSize,
+        boothSurfaces: printStyle === 'booth-surfaces',
+      });
     } finally {
-      setIsPrintingHeader(false);
+      const restoredView = waitForMapIdle(mapInstance);
+      mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
+      mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+      await restoredView;
     }
   };
 
-  const snapshotHeaderPrint = async (options = {}) => {
-    const { allowWhilePrinting = false, ...snapshotOptions } = options;
-    if (isPrintingHeader && !allowWhilePrinting) return;
+  const printMapInPlace = async (printOptions = {}) => {
+    if (isPrintingHeader) return;
     setIsPrintingHeader(true);
     let cleanupBoothOverlay;
     let rectangleLayerGroup;
     let rectanglesWereVisible = false;
-    let printWindow;
     let printStyles;
+    let printResizeHandler;
+
     try {
-      const mapContainer =
-        document.querySelector('#map-container') || document.querySelector('.leaflet-container');
-      if (!mapContainer) return;
+      if (!(document.querySelector('#map-container') || document.querySelector('.leaflet-container'))) {
+        return;
+      }
 
       const pageOrientation =
-        snapshotOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
-      const configuredPageSize = String(snapshotOptions.pageSize || '').toUpperCase();
+        printOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
+      const configuredPageSize = String(printOptions.pageSize || '').toUpperCase();
       const pageDefinition = ['A2', 'A3', 'A4'].includes(configuredPageSize)
         ? `${configuredPageSize} ${pageOrientation}`
         : pageOrientation;
 
-      if (!snapshotOptions.boothSurfaces) {
-        printWindow = window.open('', '_blank', 'width=900,height=700');
-        if (!printWindow) {
-          alert('Popup blocked! Please allow popups for map printing.');
-          return;
-        }
+      if (mapInstance?._rectangleLayerGroup) {
+        rectangleLayerGroup = mapInstance._rectangleLayerGroup;
+        rectanglesWereVisible = mapInstance.hasLayer(rectangleLayerGroup);
+        if (rectanglesWereVisible) mapInstance.removeLayer(rectangleLayerGroup);
       }
 
-      if (snapshotOptions.boothSurfaces && mapInstance) {
-        rectangleLayerGroup = mapInstance._rectangleLayerGroup;
-        rectanglesWereVisible = Boolean(
-          rectangleLayerGroup && mapInstance.hasLayer(rectangleLayerGroup),
-        );
-        if (rectanglesWereVisible) mapInstance.removeLayer(rectangleLayerGroup);
+      if (printOptions.boothSurfaces && mapInstance) {
         cleanupBoothOverlay = addBoothSurfacePrintOverlay({
           map: mapInstance,
           markers: Array.isArray(markersState) ? markersState : [],
@@ -824,115 +736,44 @@ export default function MapManagement({
         });
       }
 
-      await new Promise((r) => setTimeout(r, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
-      if (snapshotOptions.boothSurfaces) {
-        printStyles = document.createElement('style');
-        printStyles.textContent = `@media print {
-          @page { size: ${pageDefinition}; margin: 0; }
-          .leaflet-marker-icon.booth-surface-print-hidden {
-            display: none !important;
-            opacity: 0 !important;
-          }
-        }`;
-        document.head.appendChild(printStyles);
-        window.print();
-        return;
-      }
-
-      const canvas = await html2canvas(mapContainer, {
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scale: 2,
-        ignoreElements: (element) => element.classList?.contains('map-controls-print-hide'),
-      });
-
-      const imageDataUrl = canvas.toDataURL('image/png', 1.0);
-
-      // Avoid document.write (browser warns). Build DOM safely using DOM APIs
-      const doc = printWindow.document;
-      doc.open();
-      // Build head content
-      const head = doc.createElement('head');
-      const title = doc.createElement('title');
-      title.textContent = 'Map Print';
-      const style = doc.createElement('style');
-
-      style.textContent = `
-        * { margin: 0; padding: 0 }
-        body { 
-          display: flex; 
-          justify-content: center; 
-          align-items: center; 
-          min-height: 100vh; 
-          background: white 
+      printStyles = document.createElement('style');
+      printStyles.textContent = `@media print {
+        @page { size: ${pageDefinition}; margin: 0; }
+        .leaflet-marker-icon.booth-surface-print-hidden {
+          display: none !important;
+          opacity: 0 !important;
         }
-        img { 
-          max-width: 100%; 
-          max-height: 100vh; 
-          object-fit: contain 
-        }
-        @media print { 
-          @page { size: ${pageDefinition}; margin: 0; }
-          img { width: 100%; height: auto } 
-          body { 
-            display: block !important; 
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 100% !important;
-          }
-        }
-      `;
-      head.appendChild(title);
-      head.appendChild(style);
+      }`;
+      document.head.appendChild(printStyles);
 
-      // Build body with image and onload print
-      const body = doc.createElement('body');
-      const img = doc.createElement('img');
-      img.src = imageDataUrl;
-      img.alt = 'Map';
-      img.onload = () =>
-        setTimeout(() => {
+      if (mapInstance) {
+        printResizeHandler = () => {
           try {
-            printWindow.print();
-          } catch (e) {
-            /* ignore */
+            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+          } catch (error) {
+            // The map may already be unmounted after printing.
           }
-        }, 100);
-      body.appendChild(img);
-
-      // Attach head/body to document
-      // Ensure document has an HTML element
-      if (!doc.documentElement) {
-        doc.appendChild(doc.createElement('html'));
+        };
+        window.addEventListener('beforeprint', printResizeHandler);
+        window.addEventListener('afterprint', printResizeHandler);
       }
 
-      // Clear existing content safely
-      while (doc.documentElement.firstChild) {
-        doc.documentElement.removeChild(doc.documentElement.firstChild);
-      }
-
-      doc.documentElement.appendChild(head);
-      doc.documentElement.appendChild(body);
-      doc.close();
-      printWindow.document.close();
-      printWindow.onafterprint = () => printWindow.close();
-    } catch (err) {
-      console.error('Snapshot print failed:', err);
-      if (printWindow && !printWindow.closed) printWindow.close();
-      // For admin users show a helpful error toast explaining likely cause and next steps
-      try {
-        toastError(
-          'Snapshot failed — map tiles may be blocked by CORS or the service worker. Use the Print Map plugin preset or enable CORS for your tile provider.',
-        );
-      } catch (e) {
-        // if toast isn't available just fall back silently
-      }
       window.print();
+    } catch (error) {
+      console.error('Map print failed:', error);
+      try {
+        toastError(t('mapManagement.printError'));
+      } catch (dialogError) {
+        // Ignore errors while reporting a print failure.
+      }
     } finally {
       printStyles?.remove();
+      if (printResizeHandler) {
+        window.removeEventListener('beforeprint', printResizeHandler);
+        window.removeEventListener('afterprint', printResizeHandler);
+      }
       cleanupBoothOverlay?.();
       if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
       if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
@@ -979,7 +820,6 @@ export default function MapManagement({
     const orgName = orgProfile?.name || 'Event Map';
     let logoSrc = orgProfile?.logo ? getLogoPath(orgProfile.logo) : null;
 
-    // Ensure logo source is absolute for print window
     if (logoSrc && logoSrc.startsWith('/')) {
       logoSrc = window.location.origin + logoSrc;
     }
@@ -1043,13 +883,7 @@ export default function MapManagement({
           </tbody>
         </table>
         <script>
-          // Wait for logo to load if present before printing
-          window.onload = () => {
-             // Small delay to ensure rendering is complete
-            setTimeout(() => {
-              window.print();
-            }, 500);
-          }
+          window.onload = () => setTimeout(() => window.print(), 500);
         </script>
       </body>
       </html>
@@ -1244,7 +1078,7 @@ export default function MapManagement({
                       type="button"
                       onClick={async () => {
                         setIsActionsOpen(false);
-                        await snapshotHeaderPrint({
+                        await printMapInPlace({
                           boothSurfaces: printStyle === 'booth-surfaces',
                         });
                       }}
@@ -1688,8 +1522,6 @@ export default function MapManagement({
               }}
               onMapReady={(map) => {
                 setMapInstance(map);
-                const controlModes = map?.printControl?.options?.printModes || [];
-                setPrintModes(Array.isArray(controlModes) ? controlModes : []);
               }}
             />
           </div>
