@@ -40,7 +40,10 @@ import useAssignments from '../../hooks/useAssignments';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import SnapshotModal from './SnapshotModal';
 import { MAP_CONFIG } from '../../config/mapConfig';
-import { addBoothSurfacePrintOverlay } from '../EventMap/printBoothSurfaces';
+import {
+  addBoothSurfacePrintOverlay,
+  getPrintFrameCoordinates,
+} from '../EventMap/printBoothSurfaces';
 
 const PRINT_PRESETS = [
   'A3 — Landscape',
@@ -54,6 +57,46 @@ const PRINT_PRESETS = [
     orientation: title.includes('Landscape') ? 'Landscape' : 'Portrait',
   },
 }));
+
+const PRINT_PAGE_PIXELS = {
+  A2: [1587, 2245],
+  A3: [1123, 1587],
+  A4: [794, 1123],
+};
+
+function waitForMapTiles(map, timeoutMs = 5000) {
+  return new Promise((resolve) => {
+    const tileLayers = [];
+    let timeoutId;
+    let settled = false;
+
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeoutId);
+      tileLayers.forEach((layer) => {
+        layer.off('load', check);
+        layer.off('tileerror', check);
+      });
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    };
+
+    const check = () => {
+      if (tileLayers.every((layer) => !layer._loading)) finish();
+    };
+
+    map.eachLayer((layer) => {
+      if (layer?._url && typeof layer.on === 'function') {
+        tileLayers.push(layer);
+        layer.on('load', check);
+        layer.on('tileerror', check);
+      }
+    });
+
+    timeoutId = setTimeout(finish, timeoutMs);
+    requestAnimationFrame(check);
+  });
+}
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -95,6 +138,7 @@ export default function MapManagement({
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const printModes = PRINT_PRESETS;
   const [printStyle, setPrintStyle] = useState('markers');
+  const [printFrame, setPrintFrame] = useState('current-view');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
@@ -648,10 +692,21 @@ export default function MapManagement({
     const orientation = modeOptions.orientation?.toLowerCase().includes('landscape')
       ? 'landscape'
       : 'portrait';
+    const frameCoordinates =
+      printFrame === 'current-view'
+        ? null
+        : getPrintFrameCoordinates(markersState, printFrame);
+
+    if (frameCoordinates && frameCoordinates.length === 0) {
+      toastError(t('mapManagement.printFrameUnavailable'));
+      return;
+    }
+
     await printMapInPlace({
       orientation,
       pageSize: modeOptions.pageSize,
       boothSurfaces: printStyle === 'booth-surfaces',
+      frameCoordinates,
     });
   };
 
@@ -663,7 +718,12 @@ export default function MapManagement({
     let rectanglesWereVisible = false;
     let printStyles;
     let printResizeHandler;
+    let printAfterHandler;
     let printBodyClassAdded = false;
+    const originalView =
+      mapInstance && printOptions.frameCoordinates
+        ? { center: mapInstance.getCenter(), zoom: mapInstance.getZoom() }
+        : null;
 
     try {
       if (!(document.querySelector('#map-container') || document.querySelector('.leaflet-container'))) {
@@ -673,6 +733,11 @@ export default function MapManagement({
       const pageOrientation =
         printOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
       const configuredPageSize = String(printOptions.pageSize || '').toUpperCase();
+      const portraitDimensions = PRINT_PAGE_PIXELS[configuredPageSize] || PRINT_PAGE_PIXELS.A4;
+      const [pageWidth, pageHeight] =
+        pageOrientation === 'landscape'
+          ? [portraitDimensions[1], portraitDimensions[0]]
+          : portraitDimensions;
       const pageDefinition = ['A2', 'A3', 'A4'].includes(configuredPageSize)
         ? `${configuredPageSize} ${pageOrientation}`
         : pageOrientation;
@@ -691,26 +756,37 @@ export default function MapManagement({
         });
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
       document.body.classList.add('map-print-active');
       printBodyClassAdded = true;
       printStyles = document.createElement('style');
       printStyles.textContent = `@page { size: ${pageDefinition}; margin: 0; }
+        body.map-print-active .admin-layout-root,
+        body.map-print-active .admin-layout-root * { visibility: hidden !important; }
+        body.map-print-active #map-container,
+        body.map-print-active #map-container * { visibility: visible !important; }
+        body.map-print-active #map-container { position: fixed !important; left: 0 !important; top: 0 !important; width: ${pageWidth}px !important; height: ${pageHeight}px !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; z-index: 99999 !important; opacity: 0 !important; }
+        body.map-print-active #map-container .leaflet-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; }
         @media print {
           html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-          body.map-print-active .admin-layout-root,
-          body.map-print-active .admin-layout-root * { visibility: hidden !important; }
-          body.map-print-active #map-container,
-          body.map-print-active #map-container * { visibility: visible !important; }
-          body.map-print-active #map-container { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; z-index: 99999 !important; }
-          body.map-print-active #map-container .leaflet-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; }
+          body.map-print-active #map-container { inset: 0 !important; width: 100% !important; height: 100% !important; opacity: 1 !important; }
           .leaflet-marker-icon.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-icon.leaflet-search-hidden-marker { display: none !important; opacity: 0 !important; }
         }`;
       document.head.appendChild(printStyles);
 
       if (mapInstance) {
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+        if (printOptions.frameCoordinates?.length) {
+          mapInstance.fitBounds(printOptions.frameCoordinates, {
+            padding: [48, 48],
+            maxZoom: 20,
+            animate: false,
+          });
+          mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+        }
+        await waitForMapTiles(mapInstance);
+
         printResizeHandler = () => {
           try {
             mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
@@ -718,8 +794,15 @@ export default function MapManagement({
             // The map may already be unmounted after printing.
           }
         };
+        printAfterHandler = () => {
+          try {
+            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+          } catch (error) {
+            // The map may already be unmounted after printing.
+          }
+        };
         window.addEventListener('beforeprint', printResizeHandler);
-        window.addEventListener('afterprint', printResizeHandler);
+        window.addEventListener('afterprint', printAfterHandler);
       }
 
       window.print();
@@ -735,7 +818,18 @@ export default function MapManagement({
       if (printBodyClassAdded) document.body.classList.remove('map-print-active');
       if (printResizeHandler) {
         window.removeEventListener('beforeprint', printResizeHandler);
-        window.removeEventListener('afterprint', printResizeHandler);
+      }
+      if (printAfterHandler) {
+        window.removeEventListener('afterprint', printAfterHandler);
+      }
+      if (mapInstance) {
+        if (originalView) {
+          mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
+        }
+        mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await waitForMapTiles(mapInstance);
       }
       cleanupBoothOverlay?.();
       if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
@@ -1019,6 +1113,42 @@ export default function MapManagement({
                     </label>
                   </div>
 
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <div className="mb-1 text-xs font-semibold text-gray-500">
+                      {t('mapManagement.printFrameLabel')}
+                    </div>
+                    <label className="flex items-center gap-2 py-1 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="map-print-frame"
+                        value="current-view"
+                        checked={printFrame === 'current-view'}
+                        onChange={() => setPrintFrame('current-view')}
+                      />
+                      {t('mapManagement.printFrameCurrent')}
+                    </label>
+                    <label className="flex items-center gap-2 py-1 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="map-print-frame"
+                        value="booth-markers"
+                        checked={printFrame === 'booth-markers'}
+                        onChange={() => setPrintFrame('booth-markers')}
+                      />
+                      {t('mapManagement.printFrameBooths')}
+                    </label>
+                    <label className="flex items-center gap-2 py-1 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="map-print-frame"
+                        value="all-markers"
+                        checked={printFrame === 'all-markers'}
+                        onChange={() => setPrintFrame('all-markers')}
+                      />
+                      {t('mapManagement.printFrameAll')}
+                    </label>
+                  </div>
+
                   {printModes.length > 0 ? (
                     printModes.map((m, idx) => (
                       <button
@@ -1041,8 +1171,13 @@ export default function MapManagement({
                       type="button"
                       onClick={async () => {
                         setIsActionsOpen(false);
+                        const frameCoordinates =
+                          printFrame === 'current-view'
+                            ? null
+                            : getPrintFrameCoordinates(markersState, printFrame);
                         await printMapInPlace({
                           boothSurfaces: printStyle === 'booth-surfaces',
+                          frameCoordinates,
                         });
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"

@@ -22,6 +22,7 @@ function getBoothMarkers(markers) {
     const isSpecialMarker =
       marker.type === 'special' ||
       marker.type === 'default' ||
+      markerId <= 0 ||
       (Number.isFinite(markerId) && markerId >= 1000);
     return (
       !isSpecialMarker &&
@@ -36,6 +37,27 @@ function getBoothMarkers(markers) {
       String(number).length > 0
     );
   });
+}
+
+export function getPrintFrameCoordinates(markers, frame) {
+  return (Array.isArray(markers) ? markers : [])
+    .filter((marker) => {
+      const markerId = Number(marker.id);
+      const hasCoordinates =
+        marker.lat !== null &&
+        marker.lat !== undefined &&
+        marker.lng !== null &&
+        marker.lng !== undefined &&
+        Number.isFinite(Number(marker.lat)) &&
+        Number.isFinite(Number(marker.lng));
+
+      if (!hasCoordinates || !Number.isFinite(markerId) || markerId <= 0) return false;
+      if (frame === 'booth-markers') {
+        return markerId < 1000 && marker.type !== 'special' && marker.type !== 'default';
+      }
+      return true;
+    })
+    .map((marker) => [Number(marker.lat), Number(marker.lng)]);
 }
 
 function collectMarkerLayers(layer, result = []) {

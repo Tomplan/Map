@@ -1,5 +1,28 @@
 import L from 'leaflet';
-import { addBoothSurfacePrintOverlay } from '../printBoothSurfaces';
+import {
+  addBoothSurfacePrintOverlay,
+  getPrintFrameCoordinates,
+} from '../printBoothSurfaces';
+
+describe('getPrintFrameCoordinates', () => {
+  const markers = [
+    { id: 12, type: 'booth', lat: 51.9, lng: 5.77 },
+    { id: 1001, type: 'default', lat: 51.91, lng: 5.78 },
+    { id: -1, type: 'default', lat: 0, lng: 0 },
+    { id: 13, type: 'booth', lat: null, lng: 5.79 },
+  ];
+
+  it('frames only positive booth marker IDs when booth-only is selected', () => {
+    expect(getPrintFrameCoordinates(markers, 'booth-markers')).toEqual([[51.9, 5.77]]);
+  });
+
+  it('includes booths and specials, but excludes defaults and invalid coordinates for all markers', () => {
+    expect(getPrintFrameCoordinates(markers, 'all-markers')).toEqual([
+      [51.9, 5.77],
+      [51.91, 5.78],
+    ]);
+  });
+});
 
 describe('addBoothSurfacePrintOverlay', () => {
   it('draws booth rectangles and labels without mutating on-screen marker opacity', () => {
