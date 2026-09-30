@@ -142,7 +142,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
     const label = L.marker(center, {
       icon: L.divIcon({
         className: 'booth-surface-print-label',
-        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 16px/1 sans-serif;white-space:nowrap;text-shadow:0 0 1px rgba(255,255,255,0.45)">${escapeHtml(number)}</div>`,
+        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 14px/1 sans-serif;white-space:nowrap;text-shadow:0 0 1px rgba(255,255,255,0.45)">${escapeHtml(number)}</div>`,
         iconSize: [80, 28],
         iconAnchor: [40, 14],
       }),
