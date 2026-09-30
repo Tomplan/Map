@@ -78,7 +78,7 @@ function waitForMapTiles(map, timeoutMs = 5000) {
         layer.off('load', check);
         layer.off('tileerror', check);
       });
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
+      setTimeout(resolve, 50);
     };
 
     const check = () => {
@@ -138,7 +138,7 @@ export default function MapManagement({
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const printModes = PRINT_PRESETS;
   const [printStyle, setPrintStyle] = useState('booth-surfaces');
-  const [printFrame, setPrintFrame] = useState('current-view');
+  const [printFrame, setPrintFrame] = useState('booth-markers');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
@@ -776,7 +776,7 @@ export default function MapManagement({
       document.head.appendChild(printStyles);
 
       if (mapInstance) {
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise((resolve) => setTimeout(resolve, 50));
         mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
         if (printOptions.frameCoordinates?.length) {
           mapInstance.fitBounds(printOptions.frameCoordinates, {

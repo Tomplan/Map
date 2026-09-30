@@ -1442,14 +1442,29 @@ function EventMap({
           attributionControl={false}
         >
           <AdminMapStateHandler isAdminView={isAdminView} selectedYear={selectedYear} />
+          {activeLayer === 'carto' && (
+            <TileLayer
+              key="carto-online-fallback"
+              url={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackUrl}
+              subdomains={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackSubdomains}
+              attribution={MAP_LAYERS.find((item) => item.key === 'carto')?.attribution}
+              crossOrigin="anonymous"
+              maxNativeZoom={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackMaxNativeZoom}
+              maxZoom={MAP_CONFIG.MAX_ZOOM}
+              opacity={1}
+              zIndex={0}
+            />
+          )}
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
             <TileLayer
               key={layer.key}
-              attribution={layer.attribution}
               url={layer.url}
+              attribution={layer.attribution}
               crossOrigin="anonymous"
+              maxNativeZoom={layer.maxNativeZoom}
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
+              zIndex={layer.fallbackUrl ? 1 : undefined}
             />
           ))}
 

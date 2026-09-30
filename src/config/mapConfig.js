@@ -97,6 +97,9 @@ export const MAP_LAYERS = [
     name: 'Carto Voyager',
     attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
     url: `${getBaseUrl()}assets/tiles/carto/{z}/{x}/{y}.png`,
+    fallbackUrl: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    fallbackSubdomains: ['a', 'b', 'c', 'd'],
+    fallbackMaxNativeZoom: 20,
     maxNativeZoom: 22,
   },
   {
