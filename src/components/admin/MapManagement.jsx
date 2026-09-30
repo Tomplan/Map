@@ -717,8 +717,6 @@ export default function MapManagement({
     let rectangleLayerGroup;
     let rectanglesWereVisible = false;
     let printStyles;
-    let printResizeHandler;
-    let printAfterHandler;
     let printBodyClassAdded = false;
     const originalView =
       mapInstance && printOptions.frameCoordinates
@@ -768,7 +766,7 @@ export default function MapManagement({
         body.map-print-active #map-container .leaflet-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; }
         @media print {
           html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-          body.map-print-active #map-container { inset: 0 !important; width: 100% !important; height: 100% !important; opacity: 1 !important; }
+          body.map-print-active #map-container { inset: 0 !important; width: ${pageWidth}px !important; height: ${pageHeight}px !important; opacity: 1 !important; }
           .leaflet-marker-icon.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-shadow.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-icon.leaflet-search-hidden-marker { display: none !important; opacity: 0 !important; }
@@ -787,23 +785,6 @@ export default function MapManagement({
           mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
         }
         await waitForMapTiles(mapInstance);
-
-        printResizeHandler = () => {
-          try {
-            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-          } catch (error) {
-            // The map may already be unmounted after printing.
-          }
-        };
-        printAfterHandler = () => {
-          try {
-            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-          } catch (error) {
-            // The map may already be unmounted after printing.
-          }
-        };
-        window.addEventListener('beforeprint', printResizeHandler);
-        window.addEventListener('afterprint', printAfterHandler);
       }
 
       window.print();
@@ -817,12 +798,6 @@ export default function MapManagement({
     } finally {
       printStyles?.remove();
       if (printBodyClassAdded) document.body.classList.remove('map-print-active');
-      if (printResizeHandler) {
-        window.removeEventListener('beforeprint', printResizeHandler);
-      }
-      if (printAfterHandler) {
-        window.removeEventListener('afterprint', printAfterHandler);
-      }
       if (mapInstance) {
         if (originalView) {
           mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
