@@ -18,8 +18,13 @@ const escapeHtml = (value) =>
 function getBoothMarkers(markers) {
   return markers.filter((marker) => {
     const number = marker.glyph ?? marker.id;
+    const markerId = Number(marker.id);
+    const isSpecialMarker =
+      marker.type === 'special' ||
+      marker.type === 'default' ||
+      (Number.isFinite(markerId) && markerId >= 1000);
     return (
-      marker.type !== 'special' &&
+      !isSpecialMarker &&
       marker.lat !== null &&
       marker.lat !== undefined &&
       marker.lng !== null &&
@@ -68,16 +73,38 @@ function getRectangleLatLngs(marker, rectangleSize) {
 export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, markerLayers }) {
   const booths = getBoothMarkers(markers);
   const boothPositions = new Set(booths.map(getPositionKey));
+  const boothGlyphs = new Set(booths.map((marker) => String(marker.glyph ?? marker.id)));
   const layersToHide = markerLayers || collectMarkerLayers(map);
   const hiddenMarkers = [];
+  const hiddenIcons = new Set();
 
   layersToHide.forEach((markerLayer) => {
+    const glyph = markerLayer.options?.icon?.options?.glyph;
+    const matchesBooth =
+      (typeof markerLayer.getLatLng === 'function' &&
+        boothPositions.has(getPositionKey(markerLayer.getLatLng()))) ||
+      (glyph !== undefined && glyph !== null && boothGlyphs.has(String(glyph)));
+
     if (
-      boothPositions.has(getPositionKey(markerLayer.getLatLng())) &&
+      matchesBooth &&
       typeof markerLayer.setOpacity === 'function'
     ) {
+      const icon = markerLayer.getElement?.() || markerLayer._icon;
+      if (icon?.classList) {
+        icon.classList.add('booth-surface-print-hidden');
+        hiddenIcons.add(icon);
+      }
       hiddenMarkers.push({ marker: markerLayer, opacity: markerLayer.options.opacity ?? 1 });
       markerLayer.setOpacity(0);
+    }
+  });
+
+  const mapContainer = map.getContainer?.();
+  mapContainer?.querySelectorAll?.('.leaflet-glyph-icon').forEach((icon) => {
+    const renderedGlyph = icon.textContent?.trim();
+    if (renderedGlyph && boothGlyphs.has(renderedGlyph)) {
+      icon.classList.add('booth-surface-print-hidden');
+      hiddenIcons.add(icon);
     }
   });
 
@@ -95,7 +122,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
     });
     const label = L.marker(center, {
       icon: L.divIcon({
-        className: '',
+        className: 'booth-surface-print-label',
         html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 16px/1 sans-serif;white-space:nowrap;text-shadow:0 0 3px #fff,0 0 3px #fff">${escapeHtml(number)}</div>`,
         iconSize: [80, 28],
         iconAnchor: [40, 14],
@@ -113,6 +140,9 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
 
   return () => {
     map.removeLayer(overlay);
-    hiddenMarkers.forEach(({ marker, opacity }) => marker.setOpacity(opacity));
+    hiddenMarkers.forEach(({ marker, opacity }) => {
+      marker.setOpacity(opacity);
+    });
+    hiddenIcons.forEach((icon) => icon.classList.remove('booth-surface-print-hidden'));
   };
 }

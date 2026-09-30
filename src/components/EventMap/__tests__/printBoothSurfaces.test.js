@@ -5,6 +5,8 @@ describe('addBoothSurfacePrintOverlay', () => {
   it('draws booth rectangles and centered labels while hiding booth markers', () => {
     const addedLayers = [];
     const mapLayers = [];
+    const renderedBoothIcon = { textContent: '12', classList: { add: jest.fn(), remove: jest.fn() } };
+    const renderedSpecialIcon = { textContent: 'i', classList: { add: jest.fn(), remove: jest.fn() } };
     const map = {
       addLayer: jest.fn((layer) => {
         addedLayers.push(layer);
@@ -12,9 +14,18 @@ describe('addBoothSurfacePrintOverlay', () => {
       }),
       removeLayer: jest.fn(),
       eachLayer: (callback) => mapLayers.forEach(callback),
+      getContainer: () => ({
+        querySelectorAll: () => [renderedBoothIcon, renderedSpecialIcon],
+      }),
     };
-    const boothMarker = L.marker([51.9, 5.77]);
+    const boothMarker = L.marker([51.90001, 5.77001]);
     const specialMarker = L.marker([51.91, 5.78]);
+    boothMarker.options.icon = L.icon({ iconUrl: 'booth.svg' });
+    boothMarker.options.icon.options.glyph = '12';
+    const boothIcon = { classList: { add: jest.fn(), remove: jest.fn() } };
+    const specialIcon = { classList: { add: jest.fn(), remove: jest.fn() } };
+    boothMarker._icon = boothIcon;
+    specialMarker._icon = specialIcon;
     const clonedCluster = {
       getAllChildMarkers: () => [boothMarker, specialMarker],
     };
@@ -23,13 +34,17 @@ describe('addBoothSurfacePrintOverlay', () => {
       map,
       markers: [
         { id: 12, glyph: '12', type: 'booth', lat: 51.9, lng: 5.77 },
-        { id: 1001, glyph: 'i', type: 'special', lat: 51.91, lng: 5.78 },
+        { id: 1001, glyph: 'i', type: 'default', lat: 51.91, lng: 5.78 },
       ],
       rectangleSize: [6, 6],
     });
 
     expect(boothMarker.options.opacity).toBe(0);
     expect(specialMarker.options.opacity).toBe(1);
+    expect(boothIcon.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
+    expect(specialIcon.classList.add).not.toHaveBeenCalled();
+    expect(renderedBoothIcon.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
+    expect(renderedSpecialIcon.classList.add).not.toHaveBeenCalled();
     expect(addedLayers).toHaveLength(1);
 
     const overlayLayers = [];
@@ -42,6 +57,9 @@ describe('addBoothSurfacePrintOverlay', () => {
 
     expect(map.removeLayer).toHaveBeenCalledWith(addedLayers[0]);
     expect(boothMarker.options.opacity).toBe(1);
+    expect(specialMarker.options.opacity).toBe(1);
+    expect(boothIcon.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
+    expect(renderedBoothIcon.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
   });
 
   it('escapes booth numbers before placing them in the label markup', () => {

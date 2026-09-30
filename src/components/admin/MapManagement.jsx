@@ -40,7 +40,7 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import SnapshotModal from './SnapshotModal';
-import { MAP_CONFIG } from '../../config/mapConfig';
+import { MAP_CONFIG, PRINT_CONFIG } from '../../config/mapConfig';
 import { addBoothSurfacePrintOverlay } from '../EventMap/printBoothSurfaces';
 
 /**
@@ -633,7 +633,38 @@ export default function MapManagement({
     if (!mapInstance || !mapInstance.printControl || !mode) return;
 
     setIsPrintingHeader(true);
-    mapInstance._printBoothSurfaces = printStyle === 'booth-surfaces';
+    if (printStyle === 'booth-surfaces') {
+      const modeOptions = mode.options || {};
+      const modeTitle = modeOptions.title || '';
+      const orientation = (modeOptions.orientation || modeTitle).toLowerCase().includes('landscape')
+        ? 'landscape'
+        : 'portrait';
+      const printConfig = PRINT_CONFIG.modes[modeTitle];
+      const originalView = {
+        center: mapInstance.getCenter(),
+        zoom: mapInstance.getZoom(),
+      };
+
+      mapInstance._printBoothSurfaces = false;
+      try {
+        const printZoom = modeOptions.zoom ?? printConfig?.zoom;
+        if (printConfig?.center && printZoom !== undefined) {
+          mapInstance.setView(printConfig.center, printZoom, { animate: false });
+        }
+
+        await snapshotHeaderPrint({
+          orientation,
+          pageSize: modeOptions.pageSize,
+          boothSurfaces: true,
+          allowWhilePrinting: true,
+        });
+      } finally {
+        mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
+      }
+      return;
+    }
+
+    mapInstance._printBoothSurfaces = false;
     const control = mapInstance.printControl;
     const browserPrint = control?.browserPrint || control;
 
@@ -758,10 +789,27 @@ export default function MapManagement({
     let cleanupBoothOverlay;
     let rectangleLayerGroup;
     let rectanglesWereVisible = false;
+    let printWindow;
+    let printStyles;
     try {
       const mapContainer =
         document.querySelector('#map-container') || document.querySelector('.leaflet-container');
       if (!mapContainer) return;
+
+      const pageOrientation =
+        snapshotOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
+      const configuredPageSize = String(snapshotOptions.pageSize || '').toUpperCase();
+      const pageDefinition = ['A2', 'A3', 'A4'].includes(configuredPageSize)
+        ? `${configuredPageSize} ${pageOrientation}`
+        : pageOrientation;
+
+      if (!snapshotOptions.boothSurfaces) {
+        printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (!printWindow) {
+          alert('Popup blocked! Please allow popups for map printing.');
+          return;
+        }
+      }
 
       if (snapshotOptions.boothSurfaces && mapInstance) {
         rectangleLayerGroup = mapInstance._rectangleLayerGroup;
@@ -778,6 +826,20 @@ export default function MapManagement({
 
       await new Promise((r) => setTimeout(r, 400));
 
+      if (snapshotOptions.boothSurfaces) {
+        printStyles = document.createElement('style');
+        printStyles.textContent = `@media print {
+          @page { size: ${pageDefinition}; margin: 0; }
+          .leaflet-marker-icon.booth-surface-print-hidden {
+            display: none !important;
+            opacity: 0 !important;
+          }
+        }`;
+        document.head.appendChild(printStyles);
+        window.print();
+        return;
+      }
+
       const canvas = await html2canvas(mapContainer, {
         useCORS: true,
         allowTaint: true,
@@ -788,11 +850,6 @@ export default function MapManagement({
       });
 
       const imageDataUrl = canvas.toDataURL('image/png', 1.0);
-      const printWindow = window.open('', '_blank', 'width=900,height=700');
-      if (!printWindow) {
-        alert('Popup blocked! Please allow popups for map printing.');
-        return;
-      }
 
       // Avoid document.write (browser warns). Build DOM safely using DOM APIs
       const doc = printWindow.document;
@@ -802,10 +859,6 @@ export default function MapManagement({
       const title = doc.createElement('title');
       title.textContent = 'Map Print';
       const style = doc.createElement('style');
-
-      // Determine orientation if needed
-      const pageOrientation =
-        snapshotOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
 
       style.textContent = `
         * { margin: 0; padding: 0 }
@@ -822,7 +875,7 @@ export default function MapManagement({
           object-fit: contain 
         }
         @media print { 
-          @page { size: ${pageOrientation}; margin: 0; }
+          @page { size: ${pageDefinition}; margin: 0; }
           img { width: 100%; height: auto } 
           body { 
             display: block !important; 
@@ -868,6 +921,7 @@ export default function MapManagement({
       printWindow.onafterprint = () => printWindow.close();
     } catch (err) {
       console.error('Snapshot print failed:', err);
+      if (printWindow && !printWindow.closed) printWindow.close();
       // For admin users show a helpful error toast explaining likely cause and next steps
       try {
         toastError(
@@ -878,6 +932,7 @@ export default function MapManagement({
       }
       window.print();
     } finally {
+      printStyles?.remove();
       cleanupBoothOverlay?.();
       if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
       if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
