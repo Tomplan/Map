@@ -709,6 +709,7 @@ export default function MapManagement({
     let rectanglesWereVisible = false;
     let printStyles;
     let printResizeHandler;
+    let printBodyClassAdded = false;
 
     try {
       if (!(document.querySelector('#map-container') || document.querySelector('.leaflet-container'))) {
@@ -738,14 +739,21 @@ export default function MapManagement({
 
       await new Promise((resolve) => setTimeout(resolve, 400));
 
+      document.body.classList.add('map-print-active');
+      printBodyClassAdded = true;
       printStyles = document.createElement('style');
-      printStyles.textContent = `@media print {
-        @page { size: ${pageDefinition}; margin: 0; }
-        .leaflet-marker-icon.booth-surface-print-hidden {
-          display: none !important;
-          opacity: 0 !important;
-        }
-      }`;
+      printStyles.textContent = `@page { size: ${pageDefinition}; margin: 0; }
+        @media print {
+          html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
+          body.map-print-active .admin-layout-root,
+          body.map-print-active .admin-layout-root * { visibility: hidden !important; }
+          body.map-print-active #map-container,
+          body.map-print-active #map-container * { visibility: visible !important; }
+          body.map-print-active #map-container { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; z-index: 99999 !important; }
+          body.map-print-active #map-container .leaflet-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; }
+          .leaflet-marker-icon.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
+          .leaflet-marker-icon.leaflet-search-hidden-marker { display: none !important; opacity: 0 !important; }
+        }`;
       document.head.appendChild(printStyles);
 
       if (mapInstance) {
@@ -770,6 +778,7 @@ export default function MapManagement({
       }
     } finally {
       printStyles?.remove();
+      if (printBodyClassAdded) document.body.classList.remove('map-print-active');
       if (printResizeHandler) {
         window.removeEventListener('beforeprint', printResizeHandler);
         window.removeEventListener('afterprint', printResizeHandler);
