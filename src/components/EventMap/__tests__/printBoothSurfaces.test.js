@@ -74,7 +74,9 @@ describe('addBoothSurfacePrintOverlay', () => {
     addedLayers[0].eachLayer((layer) => overlayLayers.push(layer));
     expect(overlayLayers).toHaveLength(2);
     expect(overlayLayers[0]).toBeInstanceOf(L.Polygon);
+    expect(overlayLayers[0].options.fillOpacity).toBe(0.22);
     expect(overlayLayers[1].options.icon.options.html).toContain('12');
+    expect(overlayLayers[1].options.icon.options.html).toContain('rgba(255,255,255,0.45)');
 
     cleanup();
 
