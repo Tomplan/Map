@@ -40,6 +40,8 @@ import useEventSubscriptions from '../../hooks/useEventSubscriptions';
 import useAssignments from '../../hooks/useAssignments';
 import useOrganizationProfile from '../../hooks/useOrganizationProfile';
 import SnapshotModal from './SnapshotModal';
+import { MAP_CONFIG } from '../../config/mapConfig';
+import { addBoothSurfacePrintOverlay } from '../EventMap/printBoothSurfaces';
 
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
@@ -80,6 +82,7 @@ export default function MapManagement({
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [printModes, setPrintModes] = useState([]);
+  const [printStyle, setPrintStyle] = useState('markers');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
@@ -630,6 +633,7 @@ export default function MapManagement({
     if (!mapInstance || !mapInstance.printControl || !mode) return;
 
     setIsPrintingHeader(true);
+    mapInstance._printBoothSurfaces = printStyle === 'booth-surfaces';
     const control = mapInstance.printControl;
     const browserPrint = control?.browserPrint || control;
 
@@ -697,6 +701,8 @@ export default function MapManagement({
 
         await snapshotHeaderPrint({
           orientation: isLandscape ? 'landscape' : 'portrait',
+          boothSurfaces: printStyle === 'booth-surfaces',
+          allowWhilePrinting: true,
         });
         return;
       }
@@ -736,6 +742,8 @@ export default function MapManagement({
 
         await snapshotHeaderPrint({
           orientation: isLandscape ? 'landscape' : 'portrait',
+          boothSurfaces: printStyle === 'booth-surfaces',
+          allowWhilePrinting: true,
         });
       }
     } finally {
@@ -744,12 +752,29 @@ export default function MapManagement({
   };
 
   const snapshotHeaderPrint = async (options = {}) => {
-    if (isPrintingHeader) return;
+    const { allowWhilePrinting = false, ...snapshotOptions } = options;
+    if (isPrintingHeader && !allowWhilePrinting) return;
     setIsPrintingHeader(true);
+    let cleanupBoothOverlay;
+    let rectangleLayerGroup;
+    let rectanglesWereVisible = false;
     try {
       const mapContainer =
         document.querySelector('#map-container') || document.querySelector('.leaflet-container');
       if (!mapContainer) return;
+
+      if (snapshotOptions.boothSurfaces && mapInstance) {
+        rectangleLayerGroup = mapInstance._rectangleLayerGroup;
+        rectanglesWereVisible = Boolean(
+          rectangleLayerGroup && mapInstance.hasLayer(rectangleLayerGroup),
+        );
+        if (rectanglesWereVisible) mapInstance.removeLayer(rectangleLayerGroup);
+        cleanupBoothOverlay = addBoothSurfacePrintOverlay({
+          map: mapInstance,
+          markers: Array.isArray(markersState) ? markersState : [],
+          rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
+        });
+      }
 
       await new Promise((r) => setTimeout(r, 400));
 
@@ -779,7 +804,8 @@ export default function MapManagement({
       const style = doc.createElement('style');
 
       // Determine orientation if needed
-      const pageOrientation = options.orientation === 'landscape' ? 'landscape' : 'portrait';
+      const pageOrientation =
+        snapshotOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
 
       style.textContent = `
         * { margin: 0; padding: 0 }
@@ -852,6 +878,14 @@ export default function MapManagement({
       }
       window.print();
     } finally {
+      cleanupBoothOverlay?.();
+      if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
+      if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
+        if (!mapInstance.hasLayer(mapInstance._rectangleLayerGroup)) {
+          mapInstance._rectangleLayerGroup.addTo(mapInstance);
+        }
+        mapInstance._printRectanglesHidden = false;
+      }
       setIsPrintingHeader(false);
     }
   };
@@ -1107,6 +1141,32 @@ export default function MapManagement({
                     Print
                   </div>
 
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <div className="mb-1 text-xs font-semibold text-gray-500">
+                      {t('mapManagement.printAppearance')}
+                    </div>
+                    <label className="flex items-center gap-2 py-1 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="map-print-style"
+                        value="markers"
+                        checked={printStyle === 'markers'}
+                        onChange={() => setPrintStyle('markers')}
+                      />
+                      {t('mapManagement.printStyleMarkers')}
+                    </label>
+                    <label className="flex items-center gap-2 py-1 text-sm text-gray-700 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="map-print-style"
+                        value="booth-surfaces"
+                        checked={printStyle === 'booth-surfaces'}
+                        onChange={() => setPrintStyle('booth-surfaces')}
+                      />
+                      {t('mapManagement.printStyleBoothSurfaces')}
+                    </label>
+                  </div>
+
                   {printModes.length > 0 ? (
                     printModes.map((m, idx) => (
                       <button
@@ -1129,7 +1189,9 @@ export default function MapManagement({
                       type="button"
                       onClick={async () => {
                         setIsActionsOpen(false);
-                        await snapshotHeaderPrint();
+                        await snapshotHeaderPrint({
+                          boothSurfaces: printStyle === 'booth-surfaces',
+                        });
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
