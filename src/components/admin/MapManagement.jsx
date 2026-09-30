@@ -137,7 +137,7 @@ export default function MapManagement({
   const [printMenuOpen, setPrintMenuOpen] = useState(false);
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const printModes = PRINT_PRESETS;
-  const [printStyle, setPrintStyle] = useState('markers');
+  const [printStyle, setPrintStyle] = useState('booth-surfaces');
   const [printFrame, setPrintFrame] = useState('current-view');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
@@ -770,6 +770,7 @@ export default function MapManagement({
           html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
           body.map-print-active #map-container { inset: 0 !important; width: 100% !important; height: 100% !important; opacity: 1 !important; }
           .leaflet-marker-icon.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
+          .leaflet-marker-shadow.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-icon.leaflet-search-hidden-marker { display: none !important; opacity: 0 !important; }
         }`;
       document.head.appendChild(printStyles);

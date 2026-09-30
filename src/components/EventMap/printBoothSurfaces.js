@@ -115,6 +115,11 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
         icon.classList.add('booth-surface-print-hidden');
         hiddenIcons.add(icon);
       }
+      const shadow = markerLayer._shadow;
+      if (shadow?.classList) {
+        shadow.classList.add('booth-surface-print-hidden');
+        hiddenIcons.add(shadow);
+      }
     }
   });
 

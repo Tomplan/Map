@@ -47,8 +47,12 @@ describe('addBoothSurfacePrintOverlay', () => {
     boothMarker.options.icon.options.glyph = '12';
     const boothIcon = { classList: { add: jest.fn(), remove: jest.fn() } };
     const specialIcon = { classList: { add: jest.fn(), remove: jest.fn() } };
+    const boothShadow = { classList: { add: jest.fn(), remove: jest.fn() } };
+    const specialShadow = { classList: { add: jest.fn(), remove: jest.fn() } };
     boothMarker._icon = boothIcon;
+    boothMarker._shadow = boothShadow;
     specialMarker._icon = specialIcon;
+    specialMarker._shadow = specialShadow;
     const clonedCluster = {
       getAllChildMarkers: () => [boothMarker, specialMarker],
     };
@@ -67,6 +71,8 @@ describe('addBoothSurfacePrintOverlay', () => {
     expect(specialMarker.options.opacity).toBe(1);
     expect(boothIcon.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
     expect(specialIcon.classList.add).not.toHaveBeenCalled();
+    expect(boothShadow.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
+    expect(specialShadow.classList.add).not.toHaveBeenCalled();
     expect(renderedBoothIcon.classList.add).toHaveBeenCalledWith('booth-surface-print-hidden');
     expect(renderedSpecialIcon.classList.add).not.toHaveBeenCalled();
     expect(addedLayers).toHaveLength(1);
@@ -88,6 +94,7 @@ describe('addBoothSurfacePrintOverlay', () => {
     expect(boothMarker.options.opacity).toBe(1);
     expect(specialMarker.options.opacity).toBe(1);
     expect(boothIcon.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
+    expect(boothShadow.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
     expect(renderedBoothIcon.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
   });
 
