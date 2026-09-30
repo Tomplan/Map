@@ -16,6 +16,7 @@ import { useOptionalFavoritesContext } from '../../contexts/FavoritesContext';
 import { createIconCreateFunction } from '../../utils/clusterIcons';
 import { getLogoPath, getResponsiveLogoSources } from '../../utils/getLogoPath';
 import { syncRectangleLayers } from '../../utils/rectangleLayer';
+import { addBoothSurfacePrintOverlay } from './printBoothSurfaces';
 import { createSearchText, isMarkerDraggable } from '../../utils/mapHelpers';
 import useAnalytics from '../../hooks/useAnalytics';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -648,6 +649,7 @@ function EventMap({
       updateMarker,
       rectangleLayerRef,
     });
+    mapInstance._rectangleLayerGroup = rectangleLayerRef.current;
   }, [
     mapInstance,
     safeMarkers,
@@ -663,11 +665,18 @@ function EventMap({
 
     // Create and populate search layer
     const layerGroup = L.layerGroup();
+    const searchMarkerIcon = L.divIcon({
+      className: 'leaflet-search-hidden-marker',
+      html: '',
+      iconSize: [1, 1],
+      iconAnchor: [0, 0],
+    });
 
     safeMarkers.forEach((marker) => {
       if (marker.lat && marker.lng) {
         const searchText = createSearchText(marker);
         const leafletMarker = L.marker([marker.lat, marker.lng], {
+          icon: searchMarkerIcon,
           opacity: 0,
           interactive: false,
         });
@@ -913,6 +922,7 @@ function EventMap({
           // Store original view to restore after printing
           let originalView = null;
           let pendingPrintConfig = null;
+          let rectanglesHiddenForPrint = false;
 
           // Helper: normalize mode titles to unify different dash/hyphen characters
           const normalizeModeTitle = (t) =>
@@ -953,6 +963,16 @@ function EventMap({
           // This is our chance to set the SOURCE map's center so the plugin captures it
           // The plugin uses map.getCenter() when invalidateBounds:false
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintInit, (event) => {
+            if (
+              browserPrint._map._printBoothSurfaces &&
+              rectangleLayerRef.current &&
+              browserPrint._map.hasLayer(rectangleLayerRef.current)
+            ) {
+              browserPrint._map.removeLayer(rectangleLayerRef.current);
+              rectanglesHiddenForPrint = true;
+              browserPrint._map._printRectanglesHidden = true;
+            }
+
             const modeTitleRaw = event.mode?.options?.title || 'unknown';
             const printConfig = findPrintConfig(modeTitleRaw);
 
@@ -993,6 +1013,14 @@ function EventMap({
               // Apply our desired view - this ensures the correct center is used for presets
               printMap.setView(center, zoom, { animate: false });
               printMap.invalidateSize({ reset: true, animate: false, pan: false });
+            }
+
+            if (browserPrint._map._printBoothSurfaces) {
+              addBoothSurfacePrintOverlay({
+                map: printMap,
+                markers: safeMarkers,
+                rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
+              });
             }
 
             // Recompute marker sizes for print zoom using ZOOM_BUCKETS
@@ -1208,6 +1236,12 @@ function EventMap({
               }
               originalView = null;
             }
+            if (rectanglesHiddenForPrint && rectangleLayerRef.current) {
+              rectangleLayerRef.current.addTo(browserPrint._map);
+              rectanglesHiddenForPrint = false;
+            }
+            browserPrint._map._printRectanglesHidden = false;
+            browserPrint._map._printBoothSurfaces = false;
           });
 
           browserPrint._map.on(window.L.BrowserPrint.Event.PrintCancel, () => {
@@ -1223,6 +1257,12 @@ function EventMap({
               }
               originalView = null;
             }
+            if (rectanglesHiddenForPrint && rectangleLayerRef.current) {
+              rectangleLayerRef.current.addTo(browserPrint._map);
+              rectanglesHiddenForPrint = false;
+            }
+            browserPrint._map._printRectanglesHidden = false;
+            browserPrint._map._printBoothSurfaces = false;
           });
         } catch (err) {
           // Print initialization failed - fallback to snapshot will be used
