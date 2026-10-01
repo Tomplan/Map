@@ -148,7 +148,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
     const label = L.marker(center, {
       icon: L.divIcon({
         className: 'booth-surface-print-label',
-        html: `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="28" viewBox="0 0 80 28" aria-hidden="true"><text x="40" y="50%" dy="0.35em" text-anchor="middle" fill="#111" font-family="sans-serif" font-size="${labelFontSize}" font-weight="700" style="print-color-adjust:exact;-webkit-print-color-adjust:exact">${escapeHtml(number)}</text></svg>`,
+        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 ${labelFontSize}px/1 sans-serif;white-space:nowrap">${escapeHtml(number)}</div>`,
         iconSize: [80, 28],
         iconAnchor: [40, 14],
       }),
