@@ -1452,7 +1452,7 @@ function EventMap({
               maxNativeZoom={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackMaxNativeZoom}
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
-              zIndex={0}
+              zIndex={1}
             />
           )}
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
@@ -1464,7 +1464,7 @@ function EventMap({
               maxNativeZoom={layer.maxNativeZoom}
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
-              zIndex={layer.fallbackUrl ? 1 : undefined}
+              zIndex={layer.fallbackUrl ? 0 : undefined}
             />
           ))}
 
