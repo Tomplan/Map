@@ -98,6 +98,28 @@ function waitForMapTiles(map, timeoutMs = 5000) {
   });
 }
 
+function waitForAfterPrint(timeoutMs = 300000) {
+  let timeoutId;
+  let finish;
+  const promise = new Promise((resolve) => {
+    finish = () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('afterprint', finish);
+      resolve();
+    };
+    window.addEventListener('afterprint', finish, { once: true });
+    timeoutId = setTimeout(finish, timeoutMs);
+  });
+
+  return {
+    promise,
+    cancel: () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('afterprint', finish);
+    },
+  };
+}
+
 /**
  * MapManagement - Unified interface for managing marker positions, styling, and content
  * System Managers and Super Admins: Full editing capabilities
@@ -718,6 +740,7 @@ export default function MapManagement({
     let rectanglesWereVisible = false;
     let printStyles;
     let printBodyClassAdded = false;
+    let printCompletion;
     const originalView =
       mapInstance && printOptions.frameCoordinates
         ? { center: mapInstance.getCenter(), zoom: mapInstance.getZoom() }
@@ -787,7 +810,9 @@ export default function MapManagement({
         await waitForMapTiles(mapInstance);
       }
 
+      printCompletion = waitForAfterPrint();
       window.print();
+      await printCompletion.promise;
     } catch (error) {
       console.error('Map print failed:', error);
       try {
@@ -796,6 +821,15 @@ export default function MapManagement({
         // Ignore errors while reporting a print failure.
       }
     } finally {
+      printCompletion?.cancel();
+      cleanupBoothOverlay?.();
+      if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
+      if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
+        if (!mapInstance.hasLayer(mapInstance._rectangleLayerGroup)) {
+          mapInstance._rectangleLayerGroup.addTo(mapInstance);
+        }
+        mapInstance._printRectanglesHidden = false;
+      }
       printStyles?.remove();
       if (printBodyClassAdded) document.body.classList.remove('map-print-active');
       if (mapInstance) {
@@ -806,14 +840,6 @@ export default function MapManagement({
         await new Promise((resolve) => setTimeout(resolve, 1200));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await waitForMapTiles(mapInstance);
-      }
-      cleanupBoothOverlay?.();
-      if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
-      if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
-        if (!mapInstance.hasLayer(mapInstance._rectangleLayerGroup)) {
-          mapInstance._rectangleLayerGroup.addTo(mapInstance);
-        }
-        mapInstance._printRectanglesHidden = false;
       }
       setIsPrintingHeader(false);
     }
