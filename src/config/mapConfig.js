@@ -95,8 +95,14 @@ export const MAP_LAYERS = [
   {
     key: 'carto',
     name: 'Carto Voyager',
-    attribution: '&copy; <a href="https://carto.com/attributions">Carto</a>',
+    attribution:
+      '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
     url: `${getBaseUrl()}assets/tiles/carto/{z}/{x}/{y}.png`,
+    fallbackUrl:
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    fallbackAttribution:
+      'Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCan, Esri Japan, METI, Esri China (Hong Kong), Esri Korea, Esri (Thailand), NGCC, OpenStreetMap contributors, and the GIS User Community',
+    fallbackMaxNativeZoom: 19,
     maxNativeZoom: 22,
   },
   {
