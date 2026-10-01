@@ -1439,20 +1439,19 @@ function EventMap({
           }}
           className={`focus:outline-none focus:ring-2 focus:ring-primary ${isAdminView ? 'admin-map-view' : ''}`}
           whenReady={handleMapCreated}
-          attributionControl={false}
+          attributionControl={true}
         >
           <AdminMapStateHandler isAdminView={isAdminView} selectedYear={selectedYear} />
           {activeLayer === 'carto' && (
             <TileLayer
               key="carto-online-fallback"
               url={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackUrl}
-              subdomains={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackSubdomains}
-              attribution={MAP_LAYERS.find((item) => item.key === 'carto')?.attribution}
+              attribution={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackAttribution}
               crossOrigin="anonymous"
               maxNativeZoom={MAP_LAYERS.find((item) => item.key === 'carto')?.fallbackMaxNativeZoom}
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
-              zIndex={1}
+              zIndex={0}
             />
           )}
           {MAP_LAYERS.filter((layer) => layer.key === activeLayer).map((layer) => (
@@ -1464,7 +1463,7 @@ function EventMap({
               maxNativeZoom={layer.maxNativeZoom}
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
-              zIndex={layer.fallbackUrl ? 0 : undefined}
+              zIndex={layer.fallbackUrl ? 1 : undefined}
             />
           ))}
 

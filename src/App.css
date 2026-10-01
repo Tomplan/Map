@@ -167,7 +167,6 @@ body {
 
   /* Ensure map controls (zoom etc) are hidden unless specifically wanted */
   .leaflet-control-zoom,
-  .leaflet-control-attribution,
   .map-controls-container,
   .map-control-button {
     display: none !important;
@@ -226,7 +225,6 @@ body {
   .dashboard-btn,
   .minimap,
   .leaflet-control-minimap,
-  .leaflet-control-attribution,
   .map-controls-print-hide,
   .map-controls,
   .map-control,
