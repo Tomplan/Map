@@ -28,8 +28,14 @@ describe('addBoothSurfacePrintOverlay', () => {
   it('draws booth rectangles and labels without mutating on-screen marker opacity', () => {
     const addedLayers = [];
     const mapLayers = [];
+    const mapContainer = document.createElement('div');
     const renderedBoothIcon = { textContent: '12', classList: { add: jest.fn(), remove: jest.fn() } };
     const renderedSpecialIcon = { textContent: 'i', classList: { add: jest.fn(), remove: jest.fn() } };
+    const querySelectorAll = mapContainer.querySelectorAll.bind(mapContainer);
+    mapContainer.querySelectorAll = (selector) =>
+      selector === '.leaflet-glyph-icon'
+        ? [renderedBoothIcon, renderedSpecialIcon]
+        : querySelectorAll(selector);
     const map = {
       addLayer: jest.fn((layer) => {
         addedLayers.push(layer);
@@ -37,9 +43,10 @@ describe('addBoothSurfacePrintOverlay', () => {
       }),
       removeLayer: jest.fn(),
       eachLayer: (callback) => mapLayers.forEach(callback),
-      getContainer: () => ({
-        querySelectorAll: () => [renderedBoothIcon, renderedSpecialIcon],
-      }),
+      getContainer: () => mapContainer,
+      latLngToContainerPoint: () => ({ x: 100, y: 200 }),
+      on: jest.fn(),
+      off: jest.fn(),
     };
     const boothMarker = L.marker([51.90001, 5.77001]);
     const specialMarker = L.marker([51.91, 5.78]);
@@ -79,14 +86,20 @@ describe('addBoothSurfacePrintOverlay', () => {
 
     const overlayLayers = [];
     addedLayers[0].eachLayer((layer) => overlayLayers.push(layer));
-    expect(overlayLayers).toHaveLength(4);
+    expect(overlayLayers).toHaveLength(2);
     expect(overlayLayers[0]).toBeInstanceOf(L.Polygon);
-    expect(overlayLayers[0].options.fillOpacity).toBe(0.22);
-    expect(overlayLayers[1].options.icon.options.html).toContain('12');
-    expect(overlayLayers[1].options.icon.options.html).toContain('font:700 12px/1 sans-serif');
-    expect(overlayLayers[1].options.icon.options.html).toContain('rgba(255,255,255,0.45)');
-    expect(overlayLayers[3].options.icon.options.html).toContain('123');
-    expect(overlayLayers[3].options.icon.options.html).toContain('font:700 10px/1 sans-serif');
+    expect(overlayLayers[0].options.fillOpacity).toBe(0);
+    expect(overlayLayers[1]).toBeInstanceOf(L.Polygon);
+    const labels = mapContainer.querySelectorAll('.booth-surface-print-label');
+    expect(labels).toHaveLength(2);
+    expect(labels[0].textContent).toBe('12');
+    expect(labels[0].style.fontSize).toBe('12px');
+    expect(labels[0].style.color).toBe('rgb(17, 17, 17)');
+    expect(labels[0].style.textShadow).toBe('none');
+    expect(labels[0].style.left).toBe('100px');
+    expect(labels[0].style.top).toBe('200px');
+    expect(labels[1].textContent).toBe('123');
+    expect(labels[1].style.fontSize).toBe('10px');
 
     cleanup();
 
@@ -98,21 +111,24 @@ describe('addBoothSurfacePrintOverlay', () => {
     expect(renderedBoothIcon.classList.remove).toHaveBeenCalledWith('booth-surface-print-hidden');
   });
 
-  it('escapes booth numbers before placing them in the label markup', () => {
+  it('keeps booth numbers as text instead of interpreting them as markup', () => {
     const addedLayers = [];
-    const map = { addLayer: jest.fn((layer) => addedLayers.push(layer)), removeLayer: jest.fn() };
+    const mapContainer = document.createElement('div');
+    const map = {
+      addLayer: jest.fn((layer) => addedLayers.push(layer)),
+      removeLayer: jest.fn(),
+      getContainer: () => mapContainer,
+      latLngToContainerPoint: () => ({ x: 0, y: 0 }),
+      on: jest.fn(),
+      off: jest.fn(),
+    };
     const cleanup = addBoothSurfacePrintOverlay({
       map,
       markers: [{ id: 1, glyph: '<1>', type: 'booth', lat: 51.9, lng: 5.77 }],
       rectangleSize: [6, 6],
       markerLayers: [],
     });
-    let label;
-    addedLayers[0].eachLayer((layer) => {
-      if (layer instanceof L.Marker) label = layer;
-    });
-
-    expect(label.options.icon.options.html).toContain('&lt;1&gt;');
+    expect(mapContainer.querySelector('.booth-surface-print-label').textContent).toBe('<1>');
     cleanup();
   });
 });

@@ -109,6 +109,22 @@ body {
   bottom: 80px !important; /* Move up to avoid bottom nav (64px + padding) */
 }
 
+#map-container .leaflet-tile-pane > .leaflet-layer[style*='z-index: 0'] {
+  opacity: 0 !important;
+}
+
+.leaflet-control-attribution {
+  display: none !important;
+}
+
+body.map-print-active #map-container .leaflet-tile-pane > .leaflet-layer[style*='z-index: 0'] {
+  opacity: 1 !important;
+}
+
+body.map-print-active .leaflet-control-attribution {
+  display: block !important;
+}
+
 /* Hide map controls and overlays during print (global fallback) */
 @media print {
   /* Application Layout Resets - Ensure Map is the ONLY content visible */
@@ -167,7 +183,6 @@ body {
 
   /* Ensure map controls (zoom etc) are hidden unless specifically wanted */
   .leaflet-control-zoom,
-  .leaflet-control-attribution,
   .map-controls-container,
   .map-control-button {
     display: none !important;
@@ -226,7 +241,6 @@ body {
   .dashboard-btn,
   .minimap,
   .leaflet-control-minimap,
-  .leaflet-control-attribution,
   .map-controls-print-hide,
   .map-controls,
   .map-control,

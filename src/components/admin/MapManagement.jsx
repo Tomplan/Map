@@ -78,7 +78,7 @@ function waitForMapTiles(map, timeoutMs = 5000) {
         layer.off('load', check);
         layer.off('tileerror', check);
       });
-      requestAnimationFrame(() => requestAnimationFrame(resolve));
+      setTimeout(resolve, 50);
     };
 
     const check = () => {
@@ -96,6 +96,28 @@ function waitForMapTiles(map, timeoutMs = 5000) {
     timeoutId = setTimeout(finish, timeoutMs);
     requestAnimationFrame(check);
   });
+}
+
+function waitForAfterPrint(timeoutMs = 300000) {
+  let timeoutId;
+  let finish;
+  const promise = new Promise((resolve) => {
+    finish = () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('afterprint', finish);
+      resolve();
+    };
+    window.addEventListener('afterprint', finish, { once: true });
+    timeoutId = setTimeout(finish, timeoutMs);
+  });
+
+  return {
+    promise,
+    cancel: () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('afterprint', finish);
+    },
+  };
 }
 
 /**
@@ -138,7 +160,7 @@ export default function MapManagement({
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const printModes = PRINT_PRESETS;
   const [printStyle, setPrintStyle] = useState('booth-surfaces');
-  const [printFrame, setPrintFrame] = useState('current-view');
+  const [printFrame, setPrintFrame] = useState('booth-markers');
   const [isPrintingHeader, setIsPrintingHeader] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const [isBulkEditMode, setIsBulkEditMode] = useState(false);
@@ -717,9 +739,8 @@ export default function MapManagement({
     let rectangleLayerGroup;
     let rectanglesWereVisible = false;
     let printStyles;
-    let printResizeHandler;
-    let printAfterHandler;
     let printBodyClassAdded = false;
+    let printCompletion;
     const originalView =
       mapInstance && printOptions.frameCoordinates
         ? { center: mapInstance.getCenter(), zoom: mapInstance.getZoom() }
@@ -748,14 +769,6 @@ export default function MapManagement({
         if (rectanglesWereVisible) mapInstance.removeLayer(rectangleLayerGroup);
       }
 
-      if (printOptions.boothSurfaces && mapInstance) {
-        cleanupBoothOverlay = addBoothSurfacePrintOverlay({
-          map: mapInstance,
-          markers: Array.isArray(markersState) ? markersState : [],
-          rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
-        });
-      }
-
       document.body.classList.add('map-print-active');
       printBodyClassAdded = true;
       printStyles = document.createElement('style');
@@ -768,7 +781,7 @@ export default function MapManagement({
         body.map-print-active #map-container .leaflet-container { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; min-height: 0 !important; margin: 0 !important; }
         @media print {
           html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
-          body.map-print-active #map-container { inset: 0 !important; width: 100% !important; height: 100% !important; opacity: 1 !important; }
+          body.map-print-active #map-container { inset: 0 !important; width: ${pageWidth}px !important; height: ${pageHeight}px !important; opacity: 1 !important; }
           .leaflet-marker-icon.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-shadow.booth-surface-print-hidden { display: none !important; opacity: 0 !important; }
           .leaflet-marker-icon.leaflet-search-hidden-marker { display: none !important; opacity: 0 !important; }
@@ -776,7 +789,7 @@ export default function MapManagement({
       document.head.appendChild(printStyles);
 
       if (mapInstance) {
-        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        await new Promise((resolve) => setTimeout(resolve, 50));
         mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
         if (printOptions.frameCoordinates?.length) {
           mapInstance.fitBounds(printOptions.frameCoordinates, {
@@ -787,26 +800,27 @@ export default function MapManagement({
           mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
         }
         await waitForMapTiles(mapInstance);
-
-        printResizeHandler = () => {
-          try {
-            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-          } catch (error) {
-            // The map may already be unmounted after printing.
-          }
-        };
-        printAfterHandler = () => {
-          try {
-            mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
-          } catch (error) {
-            // The map may already be unmounted after printing.
-          }
-        };
-        window.addEventListener('beforeprint', printResizeHandler);
-        window.addEventListener('afterprint', printAfterHandler);
       }
 
+      // Let Leaflet's marker/cluster layer finish re-rendering after the zoom
+      // change before hiding icons, otherwise freshly recreated marker elements
+      // race past our hide pass and print unhidden.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      // Hide marker icons and draw booth overlay after fitBounds/zoom so cluster
+      // re-rendering can't leave fresh, unhidden marker elements on top of the print.
+      if (printOptions.boothSurfaces && mapInstance) {
+        cleanupBoothOverlay = addBoothSurfacePrintOverlay({
+          map: mapInstance,
+          markers: Array.isArray(markersState) ? markersState : [],
+          rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
+        });
+      }
+
+      printCompletion = waitForAfterPrint();
       window.print();
+      await printCompletion.promise;
     } catch (error) {
       console.error('Map print failed:', error);
       try {
@@ -815,14 +829,17 @@ export default function MapManagement({
         // Ignore errors while reporting a print failure.
       }
     } finally {
+      printCompletion?.cancel();
+      cleanupBoothOverlay?.();
+      if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
+      if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
+        if (!mapInstance.hasLayer(mapInstance._rectangleLayerGroup)) {
+          mapInstance._rectangleLayerGroup.addTo(mapInstance);
+        }
+        mapInstance._printRectanglesHidden = false;
+      }
       printStyles?.remove();
       if (printBodyClassAdded) document.body.classList.remove('map-print-active');
-      if (printResizeHandler) {
-        window.removeEventListener('beforeprint', printResizeHandler);
-      }
-      if (printAfterHandler) {
-        window.removeEventListener('afterprint', printAfterHandler);
-      }
       if (mapInstance) {
         if (originalView) {
           mapInstance.setView(originalView.center, originalView.zoom, { animate: false });
@@ -831,14 +848,6 @@ export default function MapManagement({
         await new Promise((resolve) => setTimeout(resolve, 1200));
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
         await waitForMapTiles(mapInstance);
-      }
-      cleanupBoothOverlay?.();
-      if (rectanglesWereVisible && rectangleLayerGroup) rectangleLayerGroup.addTo(mapInstance);
-      if (mapInstance?._printRectanglesHidden && mapInstance?._rectangleLayerGroup) {
-        if (!mapInstance.hasLayer(mapInstance._rectangleLayerGroup)) {
-          mapInstance._rectangleLayerGroup.addTo(mapInstance);
-        }
-        mapInstance._printRectanglesHidden = false;
       }
       setIsPrintingHeader(false);
     }

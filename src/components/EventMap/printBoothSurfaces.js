@@ -3,18 +3,6 @@ import { getMarkerAngle, metersToLat, metersToLng, rotatePoint } from '../../uti
 
 const getPositionKey = ({ lat, lng }) => `${Number(lat).toFixed(7)},${Number(lng).toFixed(7)}`;
 
-const escapeHtml = (value) =>
-  String(value).replace(/[&<>"']/g, (character) => {
-    const entities = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;',
-    };
-    return entities[character];
-  });
-
 function getBoothMarkers(markers) {
   return markers.filter((marker) => {
     const number = marker.glyph ?? marker.id;
@@ -133,6 +121,11 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
   });
 
   const overlay = L.layerGroup();
+  const labelPane = document.createElement('div');
+  const labels = [];
+  labelPane.className = 'booth-surface-print-label-pane';
+  labelPane.style.cssText =
+    'position:absolute;inset:0;z-index:1000;pointer-events:none;overflow:visible';
 
   booths.forEach((marker) => {
     const number = marker.glyph ?? marker.id;
@@ -142,28 +135,40 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
       color: '#202020',
       weight: 1.5,
       fillColor: '#ffffff',
-      fillOpacity: 0.22,
+      fillOpacity: 0,
       interactive: false,
     });
-    const label = L.marker(center, {
-      icon: L.divIcon({
-        className: 'booth-surface-print-label',
-        html: `<div style="display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 ${labelFontSize}px/1 sans-serif;white-space:nowrap;text-shadow:0 0 1px rgba(255,255,255,0.45)">${escapeHtml(number)}</div>`,
-        iconSize: [80, 28],
-        iconAnchor: [40, 14],
-      }),
-      interactive: false,
-      keyboard: false,
-      zIndexOffset: 1000,
-    });
+    const label = document.createElement('div');
+    label.className = 'booth-surface-print-label';
+    label.textContent = String(number);
+    label.style.cssText = `position:absolute;display:flex;align-items:center;justify-content:center;width:80px;height:28px;color:#111;font:700 ${labelFontSize}px/1 sans-serif;white-space:nowrap;text-shadow:none;transform:translate(-50%,-50%);print-color-adjust:exact;-webkit-print-color-adjust:exact`;
+    labelPane.appendChild(label);
+    labels.push({ label, center });
 
     overlay.addLayer(rectangle);
-    overlay.addLayer(label);
   });
+
+  const positionLabels = () => {
+    labels.forEach(({ label, center }) => {
+      const point = map.latLngToContainerPoint(center);
+      label.style.left = `${point.x}px`;
+      label.style.top = `${point.y}px`;
+    });
+  };
+
+  if (mapContainer) {
+    mapContainer.appendChild(labelPane);
+    positionLabels();
+    map.on('move zoom resize', positionLabels);
+  }
 
   overlay.addTo(map);
 
   return () => {
+    if (mapContainer) {
+      map.off('move zoom resize', positionLabels);
+      labelPane.remove();
+    }
     map.removeLayer(overlay);
     hiddenIcons.forEach((icon) => icon.classList.remove('booth-surface-print-hidden'));
   };
