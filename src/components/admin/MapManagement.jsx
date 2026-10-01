@@ -769,14 +769,6 @@ export default function MapManagement({
         if (rectanglesWereVisible) mapInstance.removeLayer(rectangleLayerGroup);
       }
 
-      if (printOptions.boothSurfaces && mapInstance) {
-        cleanupBoothOverlay = addBoothSurfacePrintOverlay({
-          map: mapInstance,
-          markers: Array.isArray(markersState) ? markersState : [],
-          rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
-        });
-      }
-
       document.body.classList.add('map-print-active');
       printBodyClassAdded = true;
       printStyles = document.createElement('style');
@@ -808,6 +800,22 @@ export default function MapManagement({
           mapInstance.invalidateSize({ reset: true, animate: false, pan: false });
         }
         await waitForMapTiles(mapInstance);
+      }
+
+      // Let Leaflet's marker/cluster layer finish re-rendering after the zoom
+      // change before hiding icons, otherwise freshly recreated marker elements
+      // race past our hide pass and print unhidden.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
+      // Hide marker icons and draw booth overlay after fitBounds/zoom so cluster
+      // re-rendering can't leave fresh, unhidden marker elements on top of the print.
+      if (printOptions.boothSurfaces && mapInstance) {
+        cleanupBoothOverlay = addBoothSurfacePrintOverlay({
+          map: mapInstance,
+          markers: Array.isArray(markersState) ? markersState : [],
+          rectangleSize: MAP_CONFIG.RECTANGLE_SIZE,
+        });
       }
 
       printCompletion = waitForAfterPrint();
