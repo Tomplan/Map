@@ -83,10 +83,12 @@ describe('addBoothSurfacePrintOverlay', () => {
     expect(overlayLayers[0]).toBeInstanceOf(L.Polygon);
     expect(overlayLayers[0].options.fillOpacity).toBe(0);
     expect(overlayLayers[1].options.icon.options.html).toContain('12');
-    expect(overlayLayers[1].options.icon.options.html).toContain('font:700 12px/1 sans-serif');
+    expect(overlayLayers[1].options.icon.options.html).toContain('<text');
+    expect(overlayLayers[1].options.icon.options.html).toContain('font-size="12"');
+    expect(overlayLayers[1].options.icon.options.html).toContain('fill="#111"');
     expect(overlayLayers[1].options.icon.options.html).not.toContain('text-shadow');
     expect(overlayLayers[3].options.icon.options.html).toContain('123');
-    expect(overlayLayers[3].options.icon.options.html).toContain('font:700 10px/1 sans-serif');
+    expect(overlayLayers[3].options.icon.options.html).toContain('font-size="10"');
 
     cleanup();
 
