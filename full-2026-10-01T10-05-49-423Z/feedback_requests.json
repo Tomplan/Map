@@ -1,7 +1,7 @@
 {
   "table": "feedback_requests",
-  "timestamp": "2026-08-31T10-05-40-177Z",
-  "recordCount": 84,
+  "timestamp": "2026-10-01T10-05-49-423Z",
+  "recordCount": 85,
   "data": [
     {
       "id": 31,
@@ -1300,22 +1300,6 @@
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
     },
     {
-      "id": 84,
-      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
-      "user_email": "tom.slegers@telenet.be",
-      "type": "feature",
-      "title": "Quint 4x4 reizen  2 stands?",
-      "description": "",
-      "status": "archived",
-      "priority": null,
-      "votes": 0,
-      "comments_count": 0,
-      "version_completed": null,
-      "created_at": "2026-08-29T09:56:40.932794+00:00",
-      "completed_at": null,
-      "completed_by": null
-    },
-    {
       "id": 83,
       "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
       "user_email": "tom.slegers@telenet.be",
@@ -1346,6 +1330,38 @@
       "created_at": "2026-08-16T16:05:22.488174+00:00",
       "completed_at": "2026-08-30T09:41:20.901+00:00",
       "completed_by": "8782c8be-50de-4599-a96c-4cd824281ae5"
+    },
+    {
+      "id": 85,
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "user_email": "tom.slegers@telenet.be",
+      "type": "feature",
+      "title": "Programma nazicht in alle talen",
+      "description": "",
+      "status": "open",
+      "priority": null,
+      "votes": 0,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2026-09-20T06:37:36.282241+00:00",
+      "completed_at": null,
+      "completed_by": null
+    },
+    {
+      "id": 84,
+      "user_id": "8782c8be-50de-4599-a96c-4cd824281ae5",
+      "user_email": "tom.slegers@telenet.be",
+      "type": "feature",
+      "title": "Quint 4x4 reizen  2 stands?",
+      "description": "",
+      "status": "archived",
+      "priority": null,
+      "votes": 1,
+      "comments_count": 0,
+      "version_completed": null,
+      "created_at": "2026-08-29T09:56:40.932794+00:00",
+      "completed_at": null,
+      "completed_by": null
     }
   ]
 }
