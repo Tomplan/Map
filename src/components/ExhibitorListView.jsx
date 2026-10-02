@@ -269,11 +269,6 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
 
           {/* Filters and Results Count */}
           <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div className="text-sm text-gray-600">
-              {t('exhibitorPage.showing')} {filteredExhibitors.length} {t('exhibitorPage.of')}{' '}
-              {exhibitors.length} {t('exhibitorPage.exhibitors')}
-              {favorites.length > 0 && ` • ${favorites.length} ${t('exhibitorPage.favorited')}`}
-            </div>
             <div className="flex flex-wrap gap-2 items-center relative">
               {/* Sort control with select + arrow button */}
               <div className="flex items-center border border-gray-300 rounded-md shadow-sm bg-white">
