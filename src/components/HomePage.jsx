@@ -7,7 +7,6 @@ import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoPath, getResponsiveLogoSources } from '../utils/getLogoPath';
 import { getDefaultLogoPath } from '../utils/getDefaultLogo';
 import LanguageToggle from './LanguageToggle';
-import { useSubscriptionCount } from '../hooks/useCountViews';
 import PublicLoadingScreen from './common/PublicLoadingScreen';
 
 /**
@@ -135,20 +134,6 @@ function HomePage({
     loading: logoLoading,
   } = useOrganizationLogo();
 
-  // Get subscribed companies count for the selected year
-  const { count: exhibitorCount, loading: subscriptionsLoading } =
-    useSubscriptionCount(selectedYear);
-  const [displayCount, setDisplayCount] = React.useState(() =>
-    subscriptionsLoading ? null : exhibitorCount,
-  );
-
-  // Update displayed count once initial load finishes to avoid flash of 0.
-  React.useEffect(() => {
-    if (!subscriptionsLoading) {
-      setDisplayCount(exhibitorCount);
-    }
-  }, [subscriptionsLoading, exhibitorCount]);
-
   // Memoize event info
   const eventInfo = useMemo(
     () => ({
@@ -192,28 +177,7 @@ function HomePage({
     [formatDatesFromSettings, eventSettings?.event_start_date, eventSettings?.event_end_date],
   );
 
-  const eventDays = useMemo(() => {
-    if (eventSettings?.event_start_date || eventSettings?.event_end_date) {
-      try {
-        const start = eventSettings?.event_start_date
-          ? new Date(eventSettings.event_start_date)
-          : null;
-        const end = eventSettings?.event_end_date ? new Date(eventSettings.event_end_date) : null;
-        if (start && end) {
-          const msPerDay = 1000 * 60 * 60 * 24;
-          const days = Math.round((end - start) / msPerDay) + 1;
-          return days > 0 ? days : 1;
-        }
-        return 1;
-      } catch (e) {
-        return 2;
-      }
-    }
-    return 2;
-  }, [eventSettings?.event_start_date, eventSettings?.event_end_date]);
-
-  const isInitialHeroLoading =
-    logoLoading || (subscriptionsLoading && displayCount === null) || eventSettingsLoading;
+  const isInitialHeroLoading = logoLoading || eventSettingsLoading;
   const initialLoadStartedAt = React.useRef(Date.now());
 
   const [hasCompletedInitialLoad, setHasCompletedInitialLoad] =
@@ -277,17 +241,6 @@ function HomePage({
             {dbEventDate || t('homePage.eventDate')}
           </p>
 
-          {/* Quick Stats - Placeholder */}
-          <div className="flex justify-center gap-6">
-            <div className="text-center">
-              <div className="min-h-8 text-2xl font-bold text-orange-600">{displayCount}</div>
-              <div className="text-sm text-gray-600">{t('homePage.exhibitors')}</div>
-            </div>
-            <div className="text-center">
-              <div className="min-h-8 text-2xl font-bold text-orange-600">{eventDays}</div>
-              <div className="text-sm text-gray-600">{t('homePage.days')}</div>
-            </div>
-          </div>
         </div>
       </div>
 
