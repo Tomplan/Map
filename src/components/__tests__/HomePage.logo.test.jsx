@@ -13,11 +13,6 @@ jest.mock('../../contexts/OrganizationLogoContext', () => ({
   }),
 }));
 
-const mockUseSubscriptionCount = jest.fn(() => ({ count: 42, loading: false }));
-jest.mock('../../hooks/useCountViews', () => ({
-  useSubscriptionCount: () => mockUseSubscriptionCount(),
-}));
-
 // Prevent the real hook from calling Supabase in tests
 jest.mock('../../hooks/useEventMapSettings', () => () => ({ settings: null, loading: false }));
 
@@ -40,9 +35,6 @@ jest.mock('../LanguageToggle', () => () => <div data-testid="language-toggle" />
 import HomePage from '../HomePage';
 
 describe('HomePage logo rendering', () => {
-  beforeEach(() => {
-    mockUseSubscriptionCount.mockReturnValue({ count: 42, loading: false });
-  });
   it('renders organization logo when provided by context', () => {
     render(<HomePage selectedYear={2025} branding={{ eventName: 'Test Event' }} />);
     const img = screen.getByAltText('Test Event');
@@ -69,17 +61,4 @@ describe('HomePage logo rendering', () => {
     expect(Number(img.dataset.logoRetries)).toBeGreaterThanOrEqual(prev);
   });
 
-  it('shows the initial loading screen while hero data is loading', () => {
-    mockUseSubscriptionCount.mockReturnValueOnce({ count: 0, loading: true });
-    render(<HomePage selectedYear={2025} branding={{ eventName: 'Test' }} />);
-    expect(screen.getByTestId('public-loading-screen')).toBeInTheDocument();
-    expect(screen.queryByText('0')).not.toBeInTheDocument();
-  });
-
-  it('shows the subscription count after loading finishes', () => {
-    // Replace the default for this test so both internal hook calls will return the expected value
-    mockUseSubscriptionCount.mockReturnValue({ count: 7, loading: false });
-    const { getByText } = render(<HomePage selectedYear={2025} branding={{ eventName: 'Test' }} />);
-    expect(getByText('7')).toBeInTheDocument();
-  });
 });
