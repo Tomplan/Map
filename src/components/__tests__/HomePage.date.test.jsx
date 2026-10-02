@@ -14,10 +14,6 @@ jest.mock('../../contexts/OrganizationLogoContext', () => ({
   }),
 }));
 
-jest.mock('../../hooks/useCountViews', () => ({
-  useSubscriptionCount: () => ({ count: 5, loading: false }),
-}));
-
 // By default, return no settings
 const mockUseEventMap = jest.fn(() => ({ settings: null, loading: false }));
 jest.mock('../../hooks/useEventMapSettings', () => (y) => mockUseEventMap(y));
@@ -43,8 +39,8 @@ describe('HomePage date rendering', () => {
     render(<HomePage selectedYear={2026} branding={{ eventName: 'Test' }} />);
     // The formatted DB-driven dates should replace the translation fallback
     expect(screen.getByText(/October/)).toBeInTheDocument();
-    // days should be computed from start/end -> 10-10 to 10-11 is 2 days
-    expect(screen.getByText('2')).toBeInTheDocument();
+    expect(screen.queryByText('homePage.exhibitors')).not.toBeInTheDocument();
+    expect(screen.queryByText('homePage.days')).not.toBeInTheDocument();
   });
 
   it('falls back to translation when no DB dates present', () => {
