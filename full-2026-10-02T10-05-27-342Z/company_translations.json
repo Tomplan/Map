@@ -1,7 +1,7 @@
 {
   "table": "company_translations",
-  "timestamp": "2026-09-01T10-05-48-838Z",
-  "recordCount": 211,
+  "timestamp": "2026-10-02T10-05-27-342Z",
+  "recordCount": 219,
   "data": [
     {
       "id": 1,
@@ -812,6 +812,14 @@
       "updated_at": "2026-06-16T18:05:37.77+00:00"
     },
     {
+      "id": 2904,
+      "company_id": 131,
+      "language_code": "nl",
+      "info": "Wij specialiseren ons in producten gemaakt van wol. Wat natuurlijk perfect is als je van het buitenleven houdt. Zo hebben wij producten van schapen- en alpacawol. Wij zorgen altijd dat wij producten van hoogwaardige kwaliteit kunnen aanbieden. Ons assortiment bestaat onder andere uit: vesten, truien, kinderkleding, dekens/plaids, sokken, pantoffels, handschoenen, sjaals, vachten en andere natuurproducten (zoals zeep en honing).",
+      "created_at": "2026-09-02T17:00:13.518191+00:00",
+      "updated_at": "2026-09-02T17:00:46.455981+00:00"
+    },
+    {
       "id": 219,
       "company_id": 40,
       "language_code": "en",
@@ -850,6 +858,14 @@
       "info": "Roof top tents for every adventure — from short trips to world tours, always set up in minutes.",
       "created_at": "2026-06-16T18:07:28.298922+00:00",
       "updated_at": "2026-06-16T18:07:28.437+00:00"
+    },
+    {
+      "id": 2906,
+      "company_id": 132,
+      "language_code": "nl",
+      "info": "At Overland Travel, we don't do comfort zones. We'll take you from A to Best places in the world. We like to travel (far) off the beaten track to the most special places on earth. Think again before you clean your car or truck and park it in the garage. After all, a clean vehicle tells no story.",
+      "created_at": "2026-09-04T10:41:19.769455+00:00",
+      "updated_at": "2026-09-04T10:41:19.674+00:00"
     },
     {
       "id": 220,
@@ -898,6 +914,14 @@
       "info": "The art of luxury travel with Lume Traveler",
       "created_at": "2026-06-16T18:08:04.298496+00:00",
       "updated_at": "2026-06-16T18:08:04.515+00:00"
+    },
+    {
+      "id": 2907,
+      "company_id": 135,
+      "language_code": "nl",
+      "info": "Hans Mertens van schrijnwerkerij Atelier H in Geel heeft de TraileeH uitgevonden. Dat is een kampeertrailer die in minder dan vijf minuten kan veranderen in een basecamp. Een nieuwe manier van glamping dus.",
+      "created_at": "2026-10-01T06:43:49.514199+00:00",
+      "updated_at": "2026-10-01T06:43:49.277+00:00"
     },
     {
       "id": 28,
@@ -970,6 +994,14 @@
       "info": "Totalcool offers innovative, portable solutions for comfort and convenience on any adventure, providing reliable cooling, power, and accessories.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
       "updated_at": "2026-06-16T18:16:23.231891+00:00"
+    },
+    {
+      "id": 2908,
+      "company_id": 129,
+      "language_code": "nl",
+      "info": "Ik heb een 4×4 en dan….?!\n\nHet rijden met een 4wd (Four Wheel Drive) is prettig. Je voelt je veilig, de instap is makkelijk en het ziet er ook nog eens stoer en avontuurlijk uit. Kortom je mag trots zijn op jouw avontuurlijke voertuig! Hoe leuk is het als je de mogelijkheden die je voertuig heeft ook kunt benutten en/of er zelfs je hobby van kunt maken.",
+      "created_at": "2026-10-01T06:51:17.978257+00:00",
+      "updated_at": "2026-10-01T06:51:17.799+00:00"
     },
     {
       "id": 40,
@@ -1196,6 +1228,14 @@
       "updated_at": "2025-12-04T22:40:56.518655+00:00"
     },
     {
+      "id": 2909,
+      "company_id": 133,
+      "language_code": "nl",
+      "info": "Camper te koop op de parking",
+      "created_at": "2026-10-01T06:52:23.420921+00:00",
+      "updated_at": "2026-10-01T06:52:23.25+00:00"
+    },
+    {
       "id": 258,
       "company_id": 56,
       "language_code": "en",
@@ -1274,6 +1314,14 @@
       "info": "Bij Pathfinder Adventure Campers produceren wij hoogwaardige aluminium hefdaken voor de 4×4 markt, volledig geproduceerd van aluminium. Daarnaast bieden wij zowel moduliere meubels als volledig op maat gemaakte camper interieurs, geproduceerd uit een scala van materialen inclusief de inbouw van alle interieur accesoires. Onze unieke “Atlas” roofracks zijn verkrijgbaar voor elke auto of camper.",
       "created_at": "2025-11-21T22:12:30.11997+00:00",
       "updated_at": "2026-03-17T15:07:15.61545+00:00"
+    },
+    {
+      "id": 2910,
+      "company_id": 126,
+      "language_code": "nl",
+      "info": "prachtige kleding stand",
+      "created_at": "2026-10-01T06:53:20.308176+00:00",
+      "updated_at": "2026-10-01T06:53:20.15+00:00"
     },
     {
       "id": 292,
@@ -1588,6 +1636,14 @@
       "updated_at": "2025-12-04T22:41:06.074774+00:00"
     },
     {
+      "id": 2911,
+      "company_id": 134,
+      "language_code": "nl",
+      "info": "First time on the 4x4 vakantiebeurs! See you at the parking!\nOdin-avonturen:\nAuthentieke vrijheid op wielen –\nvoor avontuur, het dagelijks leven en hobby",
+      "created_at": "2026-10-01T06:54:26.445752+00:00",
+      "updated_at": "2026-10-01T06:55:24.004225+00:00"
+    },
+    {
       "id": 57,
       "company_id": 87,
       "language_code": "nl",
@@ -1690,6 +1746,14 @@
       "info": "Reis met ons mee naar de Balkanlanden & Portugal. Beleef echte off-road overlanding, de mooiste plekjes, de gaafste trails en de verste vergezichten. Dit is TravelWith4x4.be",
       "created_at": "2026-08-14T16:55:45.33378+00:00",
       "updated_at": "2026-08-14T16:55:23.164+00:00"
+    },
+    {
+      "id": 2913,
+      "company_id": 120,
+      "language_code": "nl",
+      "info": "Waarschijnlijk de beste daktent voor al je outdoor avonturen - Roof Space!",
+      "created_at": "2026-10-01T06:56:59.893431+00:00",
+      "updated_at": "2026-10-01T06:56:59.742+00:00"
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "table": "markers_appearance",
-  "timestamp": "2026-09-01T10-05-48-838Z",
+  "timestamp": "2026-10-02T10-05-27-342Z",
   "recordCount": 526,
   "data": [
     {
@@ -920,33 +920,6 @@
         33
       ],
       "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1040,
-      "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": "blue",
-      "glyph": "VW",
-      "glyphColor": "black",
-      "glyphSize": "13",
-      "glyphAnchor": null,
-      "prefix": "",
-      "className": "marker-icon",
-      "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 11,
       "shadowScale": 1,
       "event_year": 2026,
       "fontWeight": null,
@@ -9122,6 +9095,33 @@
       "fontStyle": "normal",
       "textDecoration": "none",
       "fontFamily": "sans-serif"
+    },
+    {
+      "id": 1040,
+      "iconUrl": "glyph-marker-icon-yellow.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": "blue",
+      "glyph": "UAZ",
+      "glyphColor": "black",
+      "glyphSize": "10",
+      "glyphAnchor": null,
+      "prefix": "",
+      "className": "marker-icon",
+      "appearanceLocked": false,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 11,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
     },
     {
       "id": 95,
