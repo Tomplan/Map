@@ -1,0 +1,2239 @@
+{
+  "table": "company_translations",
+  "timestamp": "2026-10-03T10-04-43-250Z",
+  "recordCount": 279,
+  "data": [
+    {
+      "id": 148,
+      "company_id": 5,
+      "language_code": "de",
+      "info": "4x4-Reisen, 4x4-Training, 4x4-Automobilveranstaltungen in den Alpen, Pyrenäen, Lappland, Wales, Lake District, Albanien, Korsika, Großbritannien, Island und Marokko.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:13.370259+00:00"
+    },
+    {
+      "id": 3,
+      "company_id": 7,
+      "language_code": "nl",
+      "info": "Hier vindt u alle informatie over onze auto toertochten, greenlane routes en camper routes. Alle roadbooks worden gereden met een bolletje-pijltje roadbook.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:14.272044+00:00"
+    },
+    {
+      "id": 13,
+      "company_id": 21,
+      "language_code": "nl",
+      "info": "Wij kijken ernaar uit u binnenkort persoonlijk te mogen verwelkomen op Camping Braunlage!",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:18.736467+00:00"
+    },
+    {
+      "id": 10,
+      "company_id": 19,
+      "language_code": "nl",
+      "info": "Heerlijk ontspannen aan het water op een van de mooiste plekjes van de Belgische Ardennen.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:17.920197+00:00"
+    },
+    {
+      "id": 4,
+      "company_id": 6,
+      "language_code": "nl",
+      "info": "De Adventure Van is de stoere en praktische camper voor buitensporters. Comfortabele voorzieningen, flexibele inrichting en avontuurlijke looks.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:13.785008+00:00"
+    },
+    {
+      "id": 5,
+      "company_id": 8,
+      "language_code": "nl",
+      "info": "Autobedrijf van der Zweerde is al 40 jaar specialist in onderhoud, restauratie en occasions van Land Rovers en Range Rovers. Wij zijn gedreven door Land Rover. Met deze visie garanderen wij persoonlijk contact, kwaliteit en advies op maat.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:15.426405+00:00"
+    },
+    {
+      "id": 7,
+      "company_id": 10,
+      "language_code": "nl",
+      "info": "Lees het verhaal achter BOLT Adventure. Wij zijn gepassioneerde Land Rover-rijders die jouw Defender-ervaring naar nieuwe hoogten willen brengen.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:16.634491+00:00"
+    },
+    {
+      "id": 2844,
+      "company_id": 102,
+      "language_code": "nl",
+      "info": "Kwaliteit en klanttevredenheid staan hoog in het vaandel bij Sommerset outdoor. Onze laarzen en schoenen kenmerken zich als stoer en stijlvol en van topkwaliteit en pasvorm.",
+      "created_at": "2026-03-17T14:56:29.903514+00:00",
+      "updated_at": "2026-10-02T18:06:41.598345+00:00"
+    },
+    {
+      "id": 162,
+      "company_id": 10,
+      "language_code": "en",
+      "info": "Read the story behind BOLT Adventure. We're passionate Land Rover drivers who want to take your Defender experience to new heights.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:16.634491+00:00"
+    },
+    {
+      "id": 156,
+      "company_id": 8,
+      "language_code": "en",
+      "info": "Autobedrijf van der Zweerde has been a specialist in maintenance, restoration and used cars of Land Rovers and Range Rovers for 40 years. We are driven by Land Rover. With this vision, we guarantee personal contact, quality and tailor-made advice.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:15.426405+00:00"
+    },
+    {
+      "id": 6,
+      "company_id": 9,
+      "language_code": "nl",
+      "info": "Wij als koppel zijn altijd gepassioneerd geweest over alles wat met natuur, sport, outdoor en vakantie te maken heeft. In al die sport en outdoor materialen kijken we steeds graag naar kwaliteit en degelijkheid.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:15.805165+00:00"
+    },
+    {
+      "id": 159,
+      "company_id": 9,
+      "language_code": "en",
+      "info": "We as a couple have always been passionate about everything that has to do with nature, sports, outdoor and holidays. In all those sports and outdoor materials, we always like to look at quality and solidity.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:15.805165+00:00"
+    },
+    {
+      "id": 8,
+      "company_id": 16,
+      "language_code": "nl",
+      "info": "Camp Impuls biedt advies Verkoop van offroad-caravans, campingtrailers, daktenten, campingaccessoires, lieren en nog veel meer. Online en op locatie in Karlsruhe.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:17.041061+00:00"
+    },
+    {
+      "id": 165,
+      "company_id": 16,
+      "language_code": "en",
+      "info": "Camp Impuls offers advice Sale of off-road caravans, camping trailers, roof tents, camping accessories, winches and much more. Online and on-premise in Karlsruhe.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.041061+00:00"
+    },
+    {
+      "id": 9,
+      "company_id": 18,
+      "language_code": "nl",
+      "info": "Een familiecamping in Zuid-Duitsland, met ruimte en rust, en tegelijkertijd genoeg te doen. Met verschillende accommodaties en outdoor activiteiten.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:17.466817+00:00"
+    },
+    {
+      "id": 168,
+      "company_id": 18,
+      "language_code": "en",
+      "info": "A family campsite in southern Germany, with space and tranquility, and at the same time plenty to do. With various accommodations and outdoor activities.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.466817+00:00"
+    },
+    {
+      "id": 171,
+      "company_id": 19,
+      "language_code": "en",
+      "info": "Relax by the water in one of the most beautiful places in the Belgian Ardennes.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.920197+00:00"
+    },
+    {
+      "id": 12,
+      "company_id": 20,
+      "language_code": "nl",
+      "info": "Ga vissen, kanoën, tokkel over de Semois, bezoek de kleine speeltuin, rooster marshmallows op je eigen gemaakte kampvuur, neem een duik in de rivier, wandel /fiets/ren in de bossen rondom de camping, geniet van een hapje en drankje op het terras of doe even helemaal niets en geniet.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:18.33644+00:00"
+    },
+    {
+      "id": 174,
+      "company_id": 20,
+      "language_code": "en",
+      "info": "Go fishing, canoeing, zipline over the Semois, visit the small playground, roast marshmallows on your own made campfire, take a dip in the river, walk/cycle/run in the woods around the campsite, enjoy a snack and drink on the terrace or do nothing at all and enjoy.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:18.33644+00:00"
+    },
+    {
+      "id": 177,
+      "company_id": 21,
+      "language_code": "en",
+      "info": "We look forward to welcoming you in person at Camping Braunlage soon!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:18.736467+00:00"
+    },
+    {
+      "id": 14,
+      "company_id": 22,
+      "language_code": "nl",
+      "info": "Campventure is de specialist voor avontuurlijk kamperen, van daktent tot off-road camper. Je vindt het allemaal bij Campventure.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:19.22718+00:00"
+    },
+    {
+      "id": 180,
+      "company_id": 22,
+      "language_code": "en",
+      "info": "Campventure is the specialist for adventurous camping, from roof tent to off-road camper. You will find it all at Campventure.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.22718+00:00"
+    },
+    {
+      "id": 2883,
+      "company_id": 111,
+      "language_code": "nl",
+      "info": "WIJ  VERHUREN  LAND ROVERS\r\nVOOR  JOUW  VOLGENDE\r\nAVONTUUR",
+      "created_at": "2026-06-16T17:59:26.407135+00:00",
+      "updated_at": "2026-10-02T18:06:20.964599+00:00"
+    },
+    {
+      "id": 283,
+      "company_id": 71,
+      "language_code": "de",
+      "info": "Das Roof Space ist das erste faltbare Hardcover-Dachzelt auf dem Markt. Dieses neu entwickelte, sehr robuste und hochwertige Aluminium-Hardcover-Gehäuse ersetzt die traditionelle dünne PVC-Plane der vorherigen Generation der weichen Dachzelte. Das bedeutet, dass der Roof Space nicht nur gut aussieht, sondern auch die Aerodynamik und den Fahrkomfort erhöht. Die innovative Konstruktion und die Gasfedern machen das Öffnen und Schließen dieses Dachzeltes zu einem Kinderspiel.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:39.017094+00:00"
+    },
+    {
+      "id": 2900,
+      "company_id": 125,
+      "language_code": "nl",
+      "info": "Ontdek de vrijheid van de weg met onze lichte, modulaire camper — ontworpen om uw pickup binnen enkele minuten te transformeren tot een volledig functionele stacaravan.",
+      "created_at": "2026-08-15T14:12:24.286916+00:00",
+      "updated_at": "2026-10-02T18:06:47.253181+00:00"
+    },
+    {
+      "id": 166,
+      "company_id": 16,
+      "language_code": "de",
+      "info": "Camp Impuls biedt Beratung Verkauf von Offroad Wohnwagen Camping-Anhänger, Dachzelte, Camping-Zubehör Seilwinden uvm. Online und vor Ort in Karlsruhe.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.041061+00:00"
+    },
+    {
+      "id": 169,
+      "company_id": 18,
+      "language_code": "de",
+      "info": "Ein Familiencampingplatz im Süden Deutschlands, mit Platz und Ruhe, und gleichzeitig viel zu tun. Mit verschiedenen Unterkünften und Outdoor-Aktivitäten.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.466817+00:00"
+    },
+    {
+      "id": 172,
+      "company_id": 19,
+      "language_code": "de",
+      "info": "Entspannen Sie sich am Wasser an einem der schönsten Orte der belgischen Ardennen.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:17.920197+00:00"
+    },
+    {
+      "id": 178,
+      "company_id": 21,
+      "language_code": "de",
+      "info": "Wir freuen uns darauf, Sie bald persönlich im Camping Braunlage willkommen zu heißen!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:18.736467+00:00"
+    },
+    {
+      "id": 65,
+      "company_id": 84,
+      "language_code": "nl",
+      "info": "De Tracking Trailer is een squaredroptrailer, of makkelijker gezegd: een mini-caravan. Voorzien van de belangrijkste gemakken; een goed bed, pantrykeuken met koelkast, stroompunten en opbergruimte.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:44.227901+00:00"
+    },
+    {
+      "id": 181,
+      "company_id": 22,
+      "language_code": "de",
+      "info": "Campventure ist der Spezialist für abenteuerliches Camping, vom Dachzelt bis zum Offroad-Camper. Alles findest du bei Campventure.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.22718+00:00"
+    },
+    {
+      "id": 196,
+      "company_id": 29,
+      "language_code": "de",
+      "info": "Defendershop, Teile\r\nFür den Land Rover: Produkte und Zubehör",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:21.732134+00:00"
+    },
+    {
+      "id": 2885,
+      "company_id": 119,
+      "language_code": "nl",
+      "info": "Wij zijn Dreamcab Nederland, een jong en enthousiast bedrijf, opgericht door Wietse en Marlies vanuit onze liefde voor kamperen en rondtrekken. Ons doel is om een betaalbaar en kwalitatief hoogwaardig product op de markt te zetten, waarmee avontuurlijk reizen voor iedereen bereikbaar blijft.",
+      "created_at": "2026-06-16T18:01:27.146344+00:00",
+      "updated_at": "2026-10-02T18:06:22.525004+00:00"
+    },
+    {
+      "id": 19,
+      "company_id": 36,
+      "language_code": "nl",
+      "info": "Hefdak voor Defender, uniek ontwerp voor een scherpe prijs. Extra licht, extra veilig, extra geïsoleerd, extra lichtgewicht. Goedgekeurd door de RDW.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:23.589277+00:00"
+    },
+    {
+      "id": 24,
+      "company_id": 33,
+      "language_code": "nl",
+      "info": "Ervaar de perfecte combinatie van kracht en comfort. Ontdek de wereld met onze compacte cabines van Nederlandse topkwaliteit.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:22.907953+00:00"
+    },
+    {
+      "id": 26,
+      "company_id": 38,
+      "language_code": "nl",
+      "info": "Bij Fennec Adventures weten we uit eigen ervaring wat offroad reizen en kamperen écht vragen. Die kennis en passie vertalen we naar producten die gebouwd zijn om jouw avontuur mogelijk te maken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:23.995398+00:00"
+    },
+    {
+      "id": 213,
+      "company_id": 38,
+      "language_code": "en",
+      "info": "At Fennec Adventures, we know from our own experience what off-road travel and camping really require. We translate that knowledge and passion into products that are built to make your adventure possible.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:23.995398+00:00"
+    },
+    {
+      "id": 214,
+      "company_id": 38,
+      "language_code": "de",
+      "info": "Bei Fennec Adventures wissen wir aus eigener Erfahrung, was Offroad-Reisen und Camping wirklich erfordern. Wir übersetzen dieses Wissen und diese Leidenschaft in Produkte, die darauf ausgelegt sind, Ihr Abenteuer möglich zu machen.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:23.995398+00:00"
+    },
+    {
+      "id": 23,
+      "company_id": 31,
+      "language_code": "nl",
+      "info": "Wij reizen sinds 2001 door Marokko, hebben ontelbare kilometers piste gereden. De regio kennen we goed en we zijn goed bekend met de cultuur en werkwijze van de Marokkanen. Hierdoor kunnen we goed anticiperen op onverwachte situaties en bieden wij alternatieven als zich onverwachte situaties voordoen. Denk hierbij bijvoorbeeld weersomstandigheden, afzettingen of andere zaken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:22.130121+00:00"
+    },
+    {
+      "id": 216,
+      "company_id": 39,
+      "language_code": "en",
+      "info": "Outdoor articles Fladde Outdoor specializes in sustainable outdoor clothing and high-end triathlon clothing.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:24.734735+00:00"
+    },
+    {
+      "id": 217,
+      "company_id": 39,
+      "language_code": "de",
+      "info": "Outdoor-Artikel Fladde Outdoor spezialisiert sich auf nachhaltige Outdoor-Kleidung und hochwertige Triathlonkleidung.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:24.734735+00:00"
+    },
+    {
+      "id": 27,
+      "company_id": 40,
+      "language_code": "nl",
+      "info": "Flex Adventure 4x4, Avontuurlijke 4x4 vakantie reizen naar IJsland Ierland Engeland Wales Lake District Zweden Noorwegen Spanje en Portugal",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:25.146918+00:00"
+    },
+    {
+      "id": 2901,
+      "company_id": 127,
+      "language_code": "nl",
+      "info": "Verhuur van dakttenttrailers en outdoorartikelen",
+      "created_at": "2026-08-15T15:38:59.344592+00:00",
+      "updated_at": "2026-10-02T18:06:26.323936+00:00"
+    },
+    {
+      "id": 32,
+      "company_id": 46,
+      "language_code": "nl",
+      "info": "\"Real Freedom Lies In Wildness, Not Civilization\"\r\nMijn doel is om jullie te helpen aan een mooie maar vooral praktische inbouw maar ook helpen we graag met dingen te maken voor op of aan de auto. We willen graag jullie idee werkelijkheid maken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:28.565545+00:00"
+    },
+    {
+      "id": 25,
+      "company_id": 37,
+      "language_code": "nl",
+      "info": "Verhuur van Land Rover Defenders en Land Rover Defender camper en overland expeditievoertuig en defender met daktent of trouwauto te huur",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:31.467695+00:00"
+    },
+    {
+      "id": 226,
+      "company_id": 43,
+      "language_code": "de",
+      "info": "GEO SHOWER ist das tragbare All-in-One-Warmwassersystem, das für echten Komfort überall ausgelegt ist. Mit seinem starken Druck, robusten Design und schneller Installation ist er perfekt für Camping, Überlandung, Festivals, Schiffe, Frachttransport und Notfallrettung. Heißes Wasser, wohin auch immer das Leben dich führt.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:26.539639+00:00"
+    },
+    {
+      "id": 2845,
+      "company_id": 104,
+      "language_code": "nl",
+      "info": "De Recreatieve organiseert sinds 1990 Offroad ritten voor 4x4 en SUV. Onze  ritten zijn altijd vooraf gecontroleerd en zijn ook geschikt voor beginners.",
+      "created_at": "2026-03-17T15:02:13.187405+00:00",
+      "updated_at": "2026-10-02T18:06:37.857719+00:00"
+    },
+    {
+      "id": 288,
+      "company_id": 73,
+      "language_code": "en",
+      "info": "Unforgettable adventures Tailor-made trips Learn to drive off-road under supervision Challenging routes Experience the snow Beautiful views Adventurous routes Experience the locals A trusted team Adventurous 4×4 trips Challenging trips with all-terrain vehicles fully catered to Tunisia, Poland, France and Romania Want to know more? Then contact us directly! About Sand and Stone Sand and Stone specializes in 4×4 holiday trips to [...]",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.111773+00:00"
+    },
+    {
+      "id": 15,
+      "company_id": 23,
+      "language_code": "nl",
+      "info": "Dé webshop voor nieuwe en gebruikte 27MC apparatuur.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:19.585207+00:00"
+    },
+    {
+      "id": 201,
+      "company_id": 33,
+      "language_code": "en",
+      "info": "Experience the perfect combination of power and comfort. Discover the world with our compact cabs of Dutch top quality.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:22.907953+00:00"
+    },
+    {
+      "id": 203,
+      "company_id": 34,
+      "language_code": "nl",
+      "info": "",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-03-17T15:59:29.96538+00:00"
+    },
+    {
+      "id": 183,
+      "company_id": 23,
+      "language_code": "en",
+      "info": "The webshop for new and used 27MC equipment.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.585207+00:00"
+    },
+    {
+      "id": 202,
+      "company_id": 33,
+      "language_code": "de",
+      "info": "Erleben Sie die perfekte Kombination aus Kraft und Komfort. Entdecken Sie die Welt mit unseren kompakten Taxis von niederländischer Spitzenqualität.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:22.907953+00:00"
+    },
+    {
+      "id": 210,
+      "company_id": 36,
+      "language_code": "en",
+      "info": "Pop-up roof for Defender, unique design at a competitive price. Extra light, extra safe, extra insulated, extra lightweight. Approved by the RDW.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:23.589277+00:00"
+    },
+    {
+      "id": 211,
+      "company_id": 36,
+      "language_code": "de",
+      "info": "Pop-up-Dach für den Defender, einzigartiges Design zu einem wettbewerbsfähigen Preis. Leichter, sicherer, besser isoliert, leichter. Vom RDW genehmigt.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:23.589277+00:00"
+    },
+    {
+      "id": 207,
+      "company_id": 37,
+      "language_code": "en",
+      "info": "Rental of Land Rover Defenders and Land Rover Defender motorhome and overland expedition vehicle and defender with roof tent or wedding car for rent",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:31.467695+00:00"
+    },
+    {
+      "id": 208,
+      "company_id": 37,
+      "language_code": "de",
+      "info": "Vermietung von Land Rover Defenders und Land Rover Defender Wohnmobil- und Überlandexpeditionsfahrzeugen sowie Defender mit Dachzelt oder Hochzeitswagen zur Miete",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:31.467695+00:00"
+    },
+    {
+      "id": 204,
+      "company_id": 34,
+      "language_code": "en",
+      "info": "Discover the world of 4x4 holidays at the 4x4 Holiday Fair. The largest fair in the Benelux dedicated to 4x4 holidays, travel, and everything that comes with it.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2025-12-04T22:40:48.840237+00:00"
+    },
+    {
+      "id": 205,
+      "company_id": 34,
+      "language_code": "de",
+      "info": "Entdecke die Welt der 4x4-Reisen auf der 4x4 Urlaubsmesse. Die größte Messe in den Benelux-Ländern rund um 4x4-Urlaube, Reisen und alles, wat dazugehört.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2025-12-04T22:40:48.840237+00:00"
+    },
+    {
+      "id": 2,
+      "company_id": 5,
+      "language_code": "nl",
+      "info": "4x4 reizen, 4x4 training,  4x4 automotive events in Alpen, Pyreneeën, Lapland, Wales, Lake District, Albanië, Corsica, UK, IJsland en Marokko.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:13.370259+00:00"
+    },
+    {
+      "id": 71,
+      "company_id": 5,
+      "language_code": "en",
+      "info": "4x4 travel, 4x4 training, 4x4 automotive events in Alps, Pyrenees, Lapland, Wales, Lake District, Albania, Corsica, UK, Iceland and Morocco.",
+      "created_at": "2025-11-21T22:21:02.215876+00:00",
+      "updated_at": "2026-10-02T18:06:13.370259+00:00"
+    },
+    {
+      "id": 157,
+      "company_id": 8,
+      "language_code": "de",
+      "info": "Autobedrijf van der Zweerde ist seit 40 Jahren Spezialist für Wartung, Restaurierung und Gebrauchtwagen von Land Rovers und Range Rovers. Wir werden vom Land Rover angetrieben. Mit dieser Vision garantieren wir persönlichen Kontakt, Qualität und maßgeschneiderte Beratung.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:15.426405+00:00"
+    },
+    {
+      "id": 186,
+      "company_id": 24,
+      "language_code": "en",
+      "info": "Are you looking for a good bag, an extremely strong belt, or for example a case for your favorite knife? Then you have come to the right place at Charlotte Heuvelmans. With its years of experience, precise workmanship and the possibilities for unique personalization, the products of CharArt Leatherworks are not only of high quality, but also a feast for the eyes. The result can perhaps best be described as wearable art.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.982303+00:00"
+    },
+    {
+      "id": 187,
+      "company_id": 24,
+      "language_code": "de",
+      "info": "Suchen Sie eine gute Tasche, einen extrem starken Gürtel oder zum Beispiel eine Tasche für Ihr Lieblingsmesser? Dann sind Sie bei Charlotte Heuvelmans hier genau richtig. Mit jahrelanger Erfahrung, präziser Verarbeitung und den Möglichkeiten für einzigartige Personalisierung sind die Produkte von CharArt Leatherworks nicht nur von hoher Qualität, sondern auch ein Fest für die Augen. Das Ergebnis lässt sich vielleicht am besten als tragbare Kunst beschreiben.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.982303+00:00"
+    },
+    {
+      "id": 2990,
+      "company_id": 124,
+      "language_code": "en",
+      "info": "Your compact mini caravan.\r\nFrom the first sketch to the last screw.",
+      "created_at": "2026-10-02T18:06:20.756664+00:00",
+      "updated_at": "2026-10-02T18:06:20.666+00:00"
+    },
+    {
+      "id": 2991,
+      "company_id": 124,
+      "language_code": "de",
+      "info": "Dein kompakter Mini-Wohnwagen.\r\nVon der ersten Skizze bis zur letzten Schraube.",
+      "created_at": "2026-10-02T18:06:20.756664+00:00",
+      "updated_at": "2026-10-02T18:06:20.666+00:00"
+    },
+    {
+      "id": 2886,
+      "company_id": 109,
+      "language_code": "nl",
+      "info": "Bij FjällVila draait het om de ultieme vrijheid van reizen en verbinding met de natuur. Wij geloven dat de mooiste momenten ontstaan wanneer je de drukte achter je laat en het onbekende ontdekt. Met onze daktenten brengen we je dichter bij de natuur, zonder in te leveren op comfort en kwaliteit. Of je nu een doorgewinterde reiziger bent of net begint aan je eerste roadtrip, met FjällVila ben je altijd klaar om een nieuwe horizon te verkennen.",
+      "created_at": "2026-06-16T18:02:10.337737+00:00",
+      "updated_at": "2026-10-02T18:06:24.377921+00:00"
+    },
+    {
+      "id": 61,
+      "company_id": 2,
+      "language_code": "nl",
+      "info": "Onze CampUniQ Minicamper Boxen: Mac Box, QuQuQ, Mica Box en Mobi KitchenBox veranderen uw bestelauto, combi of MPV in een comfortable en betaalbare Minicamper en weer terug.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:12.201034+00:00"
+    },
+    {
+      "id": 3047,
+      "company_id": 129,
+      "language_code": "en",
+      "info": "I have a 4×4 and then....?!\r\nDriving a 4wd (Four Wheel Drive) is pleasant. You feel safe, the entry is easy and it also looks cool and adventurous. In short, you can be proud of your adventurous vehicle! How nice it is if you can also use the possibilities that your vehicle has and/or even make it your hobby.",
+      "created_at": "2026-10-02T18:06:28.007201+00:00",
+      "updated_at": "2026-10-02T18:06:27.899+00:00"
+    },
+    {
+      "id": 66,
+      "company_id": 2,
+      "language_code": "en",
+      "info": "Our CampUniQ Mini Camper Boxes: Mac Box, QuQuQ, Mica Box and Mobi KitchenBox turn your van, combi or MPV into a comfortable and affordable Mini Camper and back again.",
+      "created_at": "2025-11-21T22:14:21.345924+00:00",
+      "updated_at": "2026-10-02T18:06:12.201034+00:00"
+    },
+    {
+      "id": 139,
+      "company_id": 2,
+      "language_code": "de",
+      "info": "Unsere CampUniQ Mini Camper Boxen: Mac Box, QuQuQ, Mica Box und Mobi KitchenBox verwandeln Ihren Van, Kombi oder MPV in einen komfortablen und erschwinglichen Mini Camper und zurück.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:12.201034+00:00"
+    },
+    {
+      "id": 1,
+      "company_id": 4,
+      "language_code": "nl",
+      "info": "De 4WD Specialist is gespecialiseerd in het volledig inrichten van jouw 4x4 voertuig. Wij zijn importeur van Alu-Cab en Ironman 4x4.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:12.621029+00:00"
+    },
+    {
+      "id": 69,
+      "company_id": 4,
+      "language_code": "en",
+      "info": "The 4WD Specialist specializes in the complete furnishing of your 4x4 vehicle. We are importer of Alu-Cab and Ironman 4x4.",
+      "created_at": "2025-11-21T22:19:06.303324+00:00",
+      "updated_at": "2026-10-02T18:06:12.621029+00:00"
+    },
+    {
+      "id": 145,
+      "company_id": 4,
+      "language_code": "de",
+      "info": "Der 4WD-Spezialist ist auf die vollständige Ausstattung Ihres 4x4-Fahrzeugs spezialisiert. Wir sind Importeur von Alu-Cab und Ironman 4x4.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:12.621029+00:00"
+    },
+    {
+      "id": 11,
+      "company_id": 3,
+      "language_code": "nl",
+      "info": "4WD Travel organiseert ruim 30 jaar off-road reizen naar spannende bestemmingen ver weg van het massa-toerisme.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:12.995398+00:00"
+    },
+    {
+      "id": 68,
+      "company_id": 3,
+      "language_code": "en",
+      "info": "4WD Travel has been organizing off-road trips to exciting destinations far away from mass tourism for over 30 years.",
+      "created_at": "2025-11-21T22:16:33.663193+00:00",
+      "updated_at": "2026-10-02T18:06:12.995398+00:00"
+    },
+    {
+      "id": 41,
+      "company_id": 56,
+      "language_code": "nl",
+      "info": "Eén plek voor uw offroad en kampeer materiaal. Na al een paar jaar zelf actief en gepassioneerd 4x4 rijder en kampeerder te zijn, dacht ik de hobby wat verder uit te bereiden. De kans kwam op mijn pad om de mooie naam 'Made for Adventure' over te nemen en ik ben meteen aan de slag gegaan met een volledig nieuwe webshop te bouwen en het assortiment sterk uit te bereiden.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:34.029132+00:00"
+    },
+    {
+      "id": 289,
+      "company_id": 73,
+      "language_code": "de",
+      "info": "Unvergessliche Abenteuer Maßgeschneiderte Reisen Lerne das Offroad-Fahren unter Aufsicht Anspruchsvolle Routen Erleben Sie den Schnee Wunderschöne Ausblicke Abenteuerliche Routen Erleben Sie die Einheimischen Ein vertrauenswürdiges Team Abenteuerliche 4×4 Fahrten Herausfordernde Fahrten mit Geländefahrzeugen, die vollständig für Tunesien, Polen, Frankreich und Rumänien geeignet sind Möchten Sie mehr erfahren? Dann kontaktieren Sie uns direkt! Über Sand and Stone Sand and Stone spezialisiert sich auf 4×4 Urlaubsreisen nach [...]",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.111773+00:00"
+    },
+    {
+      "id": 2902,
+      "company_id": 123,
+      "language_code": "nl",
+      "info": "Verhuur en verkoop van mini-caravans. SMO Overland in Nederland.",
+      "created_at": "2026-08-19T18:00:34.723842+00:00",
+      "updated_at": "2026-10-02T18:06:42.336121+00:00"
+    },
+    {
+      "id": 142,
+      "company_id": 3,
+      "language_code": "de",
+      "info": "4WD Travel organisiert seit über 30 Jahren Offroad-Fahrten zu spannenden Zielen weit entfernt vom Massentourismus.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:12.995398+00:00"
+    },
+    {
+      "id": 310,
+      "company_id": 82,
+      "language_code": "de",
+      "info": "#VERBINDEN!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.495119+00:00"
+    },
+    {
+      "id": 150,
+      "company_id": 6,
+      "language_code": "en",
+      "info": "The Adventure Van is the tough and practical camper for outdoor sports enthusiasts. Comfortable amenities, flexible décor and adventurous looks.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:13.785008+00:00"
+    },
+    {
+      "id": 151,
+      "company_id": 6,
+      "language_code": "de",
+      "info": "Der Adventure Van ist der robuste und praktische Wohnwagen für Outdoor-Sportbegeisterte. Komfortable Annehmlichkeiten, flexible Einrichtung und abenteuerliche Looks.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:13.785008+00:00"
+    },
+    {
+      "id": 175,
+      "company_id": 20,
+      "language_code": "de",
+      "info": "Angeln gehen, Kanu fahren, Seilrutschen über den Semois, den kleinen Spielplatz besuchen, Marshmallows auf eigenem Lagerfeuer rösten, im Fluss schwimmen, spazieren/radfahren/laufen im Wald rund um den Campingplatz, einen Snack und ein Getränk auf der Terrasse genießen oder gar nichts tun und genießen.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:18.33644+00:00"
+    },
+    {
+      "id": 2993,
+      "company_id": 111,
+      "language_code": "en",
+      "info": "WE RENT OUT LAND ROBBERS\r\nFOR YOUR NEXT\r\nADVENTURE",
+      "created_at": "2026-10-02T18:06:20.964599+00:00",
+      "updated_at": "2026-10-02T18:06:20.861+00:00"
+    },
+    {
+      "id": 2994,
+      "company_id": 111,
+      "language_code": "de",
+      "info": "WIR VERMIETEN LANDRÄUBER\r\nFÜR DEIN NÄCHSTES\r\nABENTEUER",
+      "created_at": "2026-10-02T18:06:20.964599+00:00",
+      "updated_at": "2026-10-02T18:06:20.861+00:00"
+    },
+    {
+      "id": 195,
+      "company_id": 29,
+      "language_code": "en",
+      "info": "Defendershop, parts\r\nFor the Land Rover, products and accessories",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:21.732134+00:00"
+    },
+    {
+      "id": 20,
+      "company_id": 39,
+      "language_code": "nl",
+      "info": "Outdoor artikelen Fladde Outdoor is gespecialiseerd in duurzame outdoor kleding en high-end triatlonkleding.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:24.734735+00:00"
+    },
+    {
+      "id": 2903,
+      "company_id": 130,
+      "language_code": "nl",
+      "info": "MAN expeditie truck, to sell nearby de entrance on the parking",
+      "created_at": "2026-08-29T05:39:07.777255+00:00",
+      "updated_at": "2026-10-02T18:06:30.133569+00:00"
+    },
+    {
+      "id": 3065,
+      "company_id": 130,
+      "language_code": "en",
+      "info": "MAN expedition truck, to sell nearby de entrance on the parking",
+      "created_at": "2026-10-02T18:06:30.133569+00:00",
+      "updated_at": "2026-10-02T18:06:30.038+00:00"
+    },
+    {
+      "id": 3066,
+      "company_id": 130,
+      "language_code": "de",
+      "info": "MAN-Expeditions-LKW, um den nahegelegenen Eingang auf dem Parkplatz zu verkaufen",
+      "created_at": "2026-10-02T18:06:30.133569+00:00",
+      "updated_at": "2026-10-02T18:06:30.038+00:00"
+    },
+    {
+      "id": 3080,
+      "company_id": 116,
+      "language_code": "en",
+      "info": "LCM Offroad is by the passion of 4x4s. During our trip to and through Mauritania, we learned one thing very quickly: your rooftop tent is everything.",
+      "created_at": "2026-10-02T18:06:31.894406+00:00",
+      "updated_at": "2026-10-02T18:06:31.758+00:00"
+    },
+    {
+      "id": 3081,
+      "company_id": 116,
+      "language_code": "de",
+      "info": "LCM Offroad ist von der Leidenschaft der 4x4s geprägt. Während unserer Reise nach und durch Mauretanien haben wir sehr schnell eines gelernt: Ihr Dachzelt ist alles.",
+      "created_at": "2026-10-02T18:06:31.894406+00:00",
+      "updated_at": "2026-10-02T18:06:31.758+00:00"
+    },
+    {
+      "id": 2851,
+      "company_id": 106,
+      "language_code": "nl",
+      "info": "Het maken van kwaliteit maatwerk aanhangwagens en trailers is iets wat al jaren ons uitgangspunt is maar met deze uitbreiding willen we onze specialisatie naar een hoger niveau brengen.",
+      "created_at": "2026-03-17T15:18:09.302934+00:00",
+      "updated_at": "2026-10-02T18:06:32.258872+00:00"
+    },
+    {
+      "id": 3095,
+      "company_id": 117,
+      "language_code": "en",
+      "info": "The art of luxury travel with Lume Traveler",
+      "created_at": "2026-10-02T18:06:33.6513+00:00",
+      "updated_at": "2026-10-02T18:06:33.565+00:00"
+    },
+    {
+      "id": 3096,
+      "company_id": 117,
+      "language_code": "de",
+      "info": "Die Kunst des Luxusreisens mit Lume Traveler",
+      "created_at": "2026-10-02T18:06:33.6513+00:00",
+      "updated_at": "2026-10-02T18:06:33.565+00:00"
+    },
+    {
+      "id": 261,
+      "company_id": 57,
+      "language_code": "en",
+      "info": "Offroadjuf.nl\r\n4x4 instruction, off-road travel, outdoor adventures\r\nYou ride on sandy paths, through deep puddles, up and down steep hills, you guide each other through winding paths and over bridges and you learn to go downhill safely backwards with butterflies in your stomach. You encourage each other, the high-fives fly around your ears when a maneuver succeeds and then you want to go again. And again, and again! And with the mud on your car and in your hair, you know this is the beginning of your new hobby...\r\n\r\nAre you going on an adventure?",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.790587+00:00"
+    },
+    {
+      "id": 262,
+      "company_id": 57,
+      "language_code": "de",
+      "info": "Offroadjuf.nl\r\n4x4-Unterricht, Offroad-Fahrten, Outdoor-Abenteuer\r\nMan fährt auf sandigen Pfaden, durch tiefe Pfützen, steile Hügel rauf und runter, führt sich gegenseitig durch kurvige Wege und über Brücken und lernt, sicher rückwärts mit Schmetterlingen im Bauch bergab zu fahren. Ihr ermutigt euch gegenseitig, die High-Fives fliegen um eure Ohren, wenn ein Manöver gelingt, und dann wollt ihr es noch einmal versuchen. Und nochmal, und wieder! Und mit dem Schlamm auf deinem Auto und in deinen Haaren weißt du, dass das der Anfang deines neuen Hobbys ist...\r\n\r\nGehst du auf ein Abenteuer?",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.790587+00:00"
+    },
+    {
+      "id": 277,
+      "company_id": 66,
+      "language_code": "de",
+      "info": "Der Traum des Besitzers der PSP und vielleicht auch der Traum mehrerer Menschen ist es, an Orte auf dieser Erde zu reisen, die die Fantasie ansprechen. Und um das völlig unabhängig und über einen längeren Zeitraum umsetzen zu können, braucht man Produkte, die funktional sind und auf die man sich verlassen kann",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:37.137237+00:00"
+    },
+    {
+      "id": 3134,
+      "company_id": 134,
+      "language_code": "en",
+      "info": "First time on the 4x4 holiday fair! See you at the parking!\r\nOdin Adventures:\r\nAuthentic freedom on wheels –\r\nfor adventure, everyday life and hobbies",
+      "created_at": "2026-10-02T18:06:38.620468+00:00",
+      "updated_at": "2026-10-02T18:06:38.532+00:00"
+    },
+    {
+      "id": 3135,
+      "company_id": 134,
+      "language_code": "de",
+      "info": "Zum ersten Mal auf dem 4x4-Festjahrmarkt! Wir sehen uns am Parkplatz!\r\nOdin Adventures:\r\nAuthentische Freiheit auf den Rädern –\r\nfür Abenteuer, Alltagsleben und Hobbys",
+      "created_at": "2026-10-02T18:06:38.620468+00:00",
+      "updated_at": "2026-10-02T18:06:38.532+00:00"
+    },
+    {
+      "id": 3158,
+      "company_id": 102,
+      "language_code": "en",
+      "info": "Quality and customer satisfaction are of paramount importance at Sommerset outdoor. Our boots and shoes are characterized as tough and stylish and of top quality and fit.",
+      "created_at": "2026-10-02T18:06:41.598345+00:00",
+      "updated_at": "2026-10-02T18:06:41.511+00:00"
+    },
+    {
+      "id": 3159,
+      "company_id": 102,
+      "language_code": "de",
+      "info": "Qualität und Kundenzufriedenheit sind bei Sommerset Outdoor-Veranstaltungen von größter Bedeutung. Unsere Stiefel und Schuhe werden als robust und stilvoll sowie von höchster Qualität und Passform beschrieben.",
+      "created_at": "2026-10-02T18:06:41.598345+00:00",
+      "updated_at": "2026-10-02T18:06:41.511+00:00"
+    },
+    {
+      "id": 234,
+      "company_id": 46,
+      "language_code": "en",
+      "info": "\"Real Freedom Lies In Wildness, Not Civilization\"\r\nMy goal is to help you with a beautiful but above all practical installation, but we are also happy to help you make things for on or on the car. We would like to make your idea a reality.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:28.565545+00:00"
+    },
+    {
+      "id": 3083,
+      "company_id": 106,
+      "language_code": "en",
+      "info": "Making quality custom trailers and trailers is something that has been our starting point for years, but with this expansion we want to take our specialization to the next level.",
+      "created_at": "2026-10-02T18:06:32.258872+00:00",
+      "updated_at": "2026-10-02T18:06:32.17+00:00"
+    },
+    {
+      "id": 3084,
+      "company_id": 106,
+      "language_code": "de",
+      "info": "Die Herstellung hochwertiger individueller Anhänger und Anhänger ist seit Jahren unser Ausgangspunkt, aber mit dieser Erweiterung wollen wir unsere Spezialisierung auf die nächste Stufe heben.",
+      "created_at": "2026-10-02T18:06:32.258872+00:00",
+      "updated_at": "2026-10-02T18:06:32.17+00:00"
+    },
+    {
+      "id": 273,
+      "company_id": 65,
+      "language_code": "en",
+      "info": "At Pathfinder Adventure Campers we produce high-quality aluminium lifting roofs for the 4×4 market, produced entirely from aluminium. In addition, we offer both modular furniture and fully custom-made motorhome interiors, produced from a range of materials including the installation of all interior accessories. Our unique \"Atlas\" roof racks are available for any car or motorhome.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:36.422019+00:00"
+    },
+    {
+      "id": 274,
+      "company_id": 65,
+      "language_code": "de",
+      "info": "Bei Pathfinder Adventure Campers produzieren wir hochwertige Aluminium-Liftdächer für den 4×4er-Markt, die vollständig aus Aluminium gefertigt werden. Darüber hinaus bieten wir sowohl modulare Möbel als auch vollständig maßgeschneiderte Wohnmobil-Innenräume an, die aus verschiedenen Materialien hergestellt werden, einschließlich der Installation aller Innenausstattungsgegenstände. Unsere einzigartigen \"Atlas\"-Dachträger sind für jedes Auto oder Wohnmobil erhältlich.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:36.422019+00:00"
+    },
+    {
+      "id": 153,
+      "company_id": 7,
+      "language_code": "en",
+      "info": "Here you will find all information about our car tours, greenlane routes and motorhome routes. All roadbooks are ridden with a dot-arrow roadbook.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:14.272044+00:00"
+    },
+    {
+      "id": 154,
+      "company_id": 7,
+      "language_code": "de",
+      "info": "Hier finden Sie alle Informationen zu unseren Autotouren, Greenlane-Routen und Wohnmobil-Routen. Alle Roadbooks sind mit einem Punktpfeil-Roadbook gefahren.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:14.272044+00:00"
+    },
+    {
+      "id": 2904,
+      "company_id": 131,
+      "language_code": "nl",
+      "info": "Wij specialiseren ons in producten gemaakt van wol. Wat natuurlijk perfect is als je van het buitenleven houdt. Zo hebben wij producten van schapen- en alpacawol. Wij zorgen altijd dat wij producten van hoogwaardige kwaliteit kunnen aanbieden. Ons assortiment bestaat onder andere uit: vesten, truien, kinderkleding, dekens/plaids, sokken, pantoffels, handschoenen, sjaals, vachten en andere natuurproducten (zoals zeep en honing).",
+      "created_at": "2026-09-02T17:00:13.518191+00:00",
+      "updated_at": "2026-10-02T18:06:21.325404+00:00"
+    },
+    {
+      "id": 2996,
+      "company_id": 131,
+      "language_code": "en",
+      "info": "We specialize in products made of wool. Which is of course perfect if you love the outdoors. For example, we have products made of sheep and alpaca wool. We always ensure that we can offer high-quality products. Our range includes: cardigans, sweaters, children's clothing, blankets/plaids, socks, slippers, gloves, scarves, furs and other natural products (such as soap and honey).",
+      "created_at": "2026-10-02T18:06:21.325404+00:00",
+      "updated_at": "2026-10-02T18:06:21.234+00:00"
+    },
+    {
+      "id": 2997,
+      "company_id": 131,
+      "language_code": "de",
+      "info": "Wir sind auf Produkte aus Wolle spezialisiert. Das ist natürlich perfekt, wenn man die Natur liebt. Zum Beispiel haben wir Produkte aus Schaf- und Alpakawolle. Wir stellen stets sicher, dass wir hochwertige Produkte anbieten können. Unser Sortiment umfasst: Strickjacken, Pullover, Kinderkleidung, Decken/Karo, Socken, Hausschuhe, Handschuhe, Schals, Pelze und andere Naturprodukte (wie Seife und Honig).",
+      "created_at": "2026-10-02T18:06:21.325404+00:00",
+      "updated_at": "2026-10-02T18:06:21.234+00:00"
+    },
+    {
+      "id": 3006,
+      "company_id": 119,
+      "language_code": "de",
+      "info": "Wir sind Dreamcab Netherlands, ein junges und begeistertes Unternehmen, gegründet von Wietse und Marlies aus unserer Liebe zum Camping und Trekking. Unser Ziel ist es, ein erschwingliches und hochwertiges Produkt auf den Markt zu bringen, damit abenteuerliche Reisen für alle zugänglich bleiben.",
+      "created_at": "2026-10-02T18:06:22.525004+00:00",
+      "updated_at": "2026-10-02T18:06:22.439+00:00"
+    },
+    {
+      "id": 2888,
+      "company_id": 118,
+      "language_code": "nl",
+      "info": "Gespecialiseerd in verlichting.",
+      "created_at": "2026-06-16T18:05:37.717636+00:00",
+      "updated_at": "2026-10-02T18:06:25.504431+00:00"
+    },
+    {
+      "id": 30,
+      "company_id": 44,
+      "language_code": "nl",
+      "info": "Onze firma is meer dan 20 jaar actief in de 4x4 wereld. Ruime shop met alle 4x4 benodigdheden, accessoires, onderdelen, led verlichting, banden, velgen, enz.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:26.8884+00:00"
+    },
+    {
+      "id": 228,
+      "company_id": 44,
+      "language_code": "en",
+      "info": "Our company has been active in the 4x4 world for more than 20 years. Spacious shop with all 4x4 supplies, accessories, parts, LED lighting, tires, rims, etc.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:26.8884+00:00"
+    },
+    {
+      "id": 229,
+      "company_id": 44,
+      "language_code": "de",
+      "info": "Unser Unternehmen ist seit mehr als 20 Jahren in der 4x4-Welt aktiv. Geräumige Werkstatt mit allen 4x4-Zubehör, Zubehör, Teilen, LED-Beleuchtung, Reifen, Felgen usw.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:26.8884+00:00"
+    },
+    {
+      "id": 307,
+      "company_id": 81,
+      "language_code": "de",
+      "info": "Entdecken Sie die Patio Air 5 Die neue Art des Zeltes Keine Stifte. Keine Schritte. Kein Problem. In 90 Sekunden aufgebaut und mit einem wirklich guten Bett ausgestattet. Die Geschichte Patio Air 5 Meet the Patio Air 5; Eine einzigartige Mischung aus aufblasbarem Zelt, Dachzelt und Anhängerzelt. Komplett vom Boden entfernt, also kein Schlamm in deinem [...]",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.103603+00:00"
+    },
+    {
+      "id": 2854,
+      "company_id": 103,
+      "language_code": "nl",
+      "info": "Begeleide 4×4 Self Drive in Afrika, Namibië, Botswana, Zimbabwe...\r\nBij Ibex Adventures geloven we dat je elke reis als een avontuur kan beleven. Wij organiseren onvergetelijke begeleide self-drive tours door zuidelijk Afrika.",
+      "created_at": "2026-03-17T15:31:30.792258+00:00",
+      "updated_at": "2026-10-02T18:06:28.183659+00:00"
+    },
+    {
+      "id": 2945,
+      "company_id": 115,
+      "language_code": "en",
+      "info": "Winches, accessoires, batteries, everything you need for off road performance",
+      "created_at": "2026-10-02T18:06:14.641459+00:00",
+      "updated_at": "2026-10-02T18:06:14.552+00:00"
+    },
+    {
+      "id": 2946,
+      "company_id": 115,
+      "language_code": "de",
+      "info": "Winden, Zubehör, Batterien – alles, was Sie für Geländeleistung brauchen",
+      "created_at": "2026-10-02T18:06:14.641459+00:00",
+      "updated_at": "2026-10-02T18:06:14.552+00:00"
+    },
+    {
+      "id": 163,
+      "company_id": 10,
+      "language_code": "de",
+      "info": "Lesen Sie die Geschichte hinter BOLT Adventure. Wir sind leidenschaftliche Land Rover-Fahrer, die Ihr Defender-Erlebnis auf ein neues Niveau heben möchten.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:16.634491+00:00"
+    },
+    {
+      "id": 219,
+      "company_id": 40,
+      "language_code": "en",
+      "info": "Flex Adventure 4x4, Adventure 4x4 holiday travel to Iceland, Ireland, England, Wales Lake District, Sweden, Norway, Spain and Portugal",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:25.146918+00:00"
+    },
+    {
+      "id": 3026,
+      "company_id": 118,
+      "language_code": "en",
+      "info": "Specialized in lighting.",
+      "created_at": "2026-10-02T18:06:25.504431+00:00",
+      "updated_at": "2026-10-02T18:06:25.42+00:00"
+    },
+    {
+      "id": 3027,
+      "company_id": 118,
+      "language_code": "de",
+      "info": "Spezialisiert auf Beleuchtung.",
+      "created_at": "2026-10-02T18:06:25.504431+00:00",
+      "updated_at": "2026-10-02T18:06:25.42+00:00"
+    },
+    {
+      "id": 31,
+      "company_id": 45,
+      "language_code": "nl",
+      "info": "Een Gobanna minicaravan: Omdat grote avonturen klein beginnen.\r\nOntdek de ultieme vrijheid met de Gobanna teardrop trailer. Compact, licht en 100% Nederlands vakmanschap.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:27.255903+00:00"
+    },
+    {
+      "id": 231,
+      "company_id": 45,
+      "language_code": "en",
+      "info": "A Gobanna mini caravan: Because great adventures start small.\r\nDiscover the ultimate freedom with the Gobanna teardrop trailer. Compact, light and 100% Dutch craftsmanship.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:27.255903+00:00"
+    },
+    {
+      "id": 232,
+      "company_id": 45,
+      "language_code": "de",
+      "info": "Ein Gobanna-Mini-Karawane: Weil große Abenteuer klein beginnen.\r\nEntdecken Sie die ultimative Freiheit mit dem Gobanna Teardrop-Anhänger. Kompakt, leicht und zu 100 % niederländische Handwerkskunst.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:27.255903+00:00"
+    },
+    {
+      "id": 2856,
+      "company_id": 105,
+      "language_code": "nl",
+      "info": "Wij organiseren Green lane routes en events.",
+      "created_at": "2026-03-17T15:35:25.92816+00:00",
+      "updated_at": "2026-10-02T18:06:27.615603+00:00"
+    },
+    {
+      "id": 3048,
+      "company_id": 129,
+      "language_code": "de",
+      "info": "Ich habe eine 4×4 und dann...?!\r\nEinen Allradantrieb (Allradantrieb) zu fahren ist angenehm. Man fühlt sich sicher, der Einstieg ist einfach und sieht auch cool und abenteuerlich aus. Kurz gesagt, Sie können stolz auf Ihr abenteuerliches Fahrzeug sein! Wie schön ist es, wenn man auch die Möglichkeiten seines Fahrzeugs nutzen und/oder es sogar zu seinem Hobby machen kann.",
+      "created_at": "2026-10-02T18:06:28.007201+00:00",
+      "updated_at": "2026-10-02T18:06:27.899+00:00"
+    },
+    {
+      "id": 2889,
+      "company_id": 122,
+      "language_code": "nl",
+      "info": "Daktenten voor elk avontuur — van korte trips tot wereldreizen, altijd binnen enkele minuten opgezet.",
+      "created_at": "2026-06-16T18:07:28.298922+00:00",
+      "updated_at": "2026-10-02T18:06:29.747285+00:00"
+    },
+    {
+      "id": 253,
+      "company_id": 53,
+      "language_code": "de",
+      "info": "Bist du bereit für Abenteuer? Fahr in Georgia mit Lost Tracks Offroad. Zurück zu den Basics, reiner Natur und unvergesslichen Momenten.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:32.897522+00:00"
+    },
+    {
+      "id": 2906,
+      "company_id": 132,
+      "language_code": "nl",
+      "info": "Bij Overland Travel doen we geen comfortzones. We nemen je mee van A naar de beste plekken ter wereld. We reizen graag (ver) buiten de gebaande paden naar de meest bijzondere plekken op aarde. Denk nog eens na voordat je je auto of vrachtwagen schoonmaakt en in de garage parkeert. Een schoon voertuig vertelt immers geen verhaal.",
+      "created_at": "2026-09-04T10:41:19.769455+00:00",
+      "updated_at": "2026-10-02T18:06:36.001646+00:00"
+    },
+    {
+      "id": 3131,
+      "company_id": 112,
+      "language_code": "en",
+      "info": "Off Road Trips, Training, Rentals\r\nExperience a guided multi-day tour in group with your own 4x4 vehicle.\r\nExperience an intensive but fun training with your own car on the most beautiful terrains in Belgium\r\nHit the road with our fully equipped Ford Raptor with luxury roof tent.",
+      "created_at": "2026-10-02T18:06:38.256214+00:00",
+      "updated_at": "2026-10-02T18:06:38.169+00:00"
+    },
+    {
+      "id": 3132,
+      "company_id": 112,
+      "language_code": "de",
+      "info": "Off-Road-Fahrten, Training, Mietwagen\r\nErleben Sie eine mehrtägige geführte Tour in der Gruppe mit Ihrem eigenen 4x4-Fahrzeug.\r\nErleben Sie ein intensives, aber spaßiges Training mit Ihrem eigenen Auto auf dem schönsten Gelände Belgiens\r\nFahren Sie mit unserem voll ausgestatteten Ford Raptor mit luxuriösem Dachzelt auf die Straße.",
+      "created_at": "2026-10-02T18:06:38.256214+00:00",
+      "updated_at": "2026-10-02T18:06:38.169+00:00"
+    },
+    {
+      "id": 282,
+      "company_id": 71,
+      "language_code": "en",
+      "info": "The Roof Space is the first foldable hard cover roof tent on the market. This newly developed, very robust and high-quality aluminum hard cover case replaces the traditional thin PVC tarpaulin of the previous generation of soft cover roof tents. This means that the Roof Space not only looks good, but also increases aerodynamics and ride comfort. The innovative construction and the gas springs make opening and closing this roof tent child's play.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:39.017094+00:00"
+    },
+    {
+      "id": 292,
+      "company_id": 74,
+      "language_code": "de",
+      "info": "Willkommen im Team Saris 4×4! Hinter jedem Abenteuer, jeder maßgeschneiderten Lösung und jeder Offroad-Vorbereitung steht ein leidenschaftliches Team von Spezialisten. Gemeinsam sorgen wir dafür, dass Ihr 4×4, SUV, Wohnmobil oder Firmenwagen für jedes Gelände und jede Fahrt bereit ist.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.478427+00:00"
+    },
+    {
+      "id": 2907,
+      "company_id": 135,
+      "language_code": "nl",
+      "info": "Hans Mertens van schrijnwerkerij Atelier H in Geel heeft de TraileeH uitgevonden. Dat is een kampeertrailer die in minder dan vijf minuten kan veranderen in een basecamp. Een nieuwe manier van glamping dus.",
+      "created_at": "2026-10-01T06:43:49.514199+00:00",
+      "updated_at": "2026-10-02T18:06:15.032417+00:00"
+    },
+    {
+      "id": 2948,
+      "company_id": 135,
+      "language_code": "en",
+      "info": "Hans Mertens of the Atelier H joinery in Geel invented the TraileeH. That's a camping trailer that can turn into a basecamp in less than five minutes. A new way of glamping.",
+      "created_at": "2026-10-02T18:06:15.032417+00:00",
+      "updated_at": "2026-10-02T18:06:14.948+00:00"
+    },
+    {
+      "id": 2949,
+      "company_id": 135,
+      "language_code": "de",
+      "info": "Hans Mertens vom Atelier H in Geel erfand den TraileeH. Das ist ein Campinganhänger, der sich in weniger als fünf Minuten in ein Basislager verwandeln kann. Eine neue Art des Glamping.",
+      "created_at": "2026-10-02T18:06:15.032417+00:00",
+      "updated_at": "2026-10-02T18:06:14.948+00:00"
+    },
+    {
+      "id": 22,
+      "company_id": 29,
+      "language_code": "nl",
+      "info": "Defendershop, onderdelen\r\nVoor de Land Rover, producten en accessoires",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:21.732134+00:00"
+    },
+    {
+      "id": 220,
+      "company_id": 40,
+      "language_code": "de",
+      "info": "Flex Adventure 4x4, Adventure 4x4 Urlaubsreisen nach Island, Irland, England, Wales Lake District, Schweden, Norwegen, Spanien und Portugal",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:25.146918+00:00"
+    },
+    {
+      "id": 3032,
+      "company_id": 127,
+      "language_code": "en",
+      "info": "Rental of roof tent trailers and outdoor equipment",
+      "created_at": "2026-10-02T18:06:26.323936+00:00",
+      "updated_at": "2026-10-02T18:06:26.226+00:00"
+    },
+    {
+      "id": 3033,
+      "company_id": 127,
+      "language_code": "de",
+      "info": "Vermietung von Dachzeltanhängern und Outdoor-Ausrüstung",
+      "created_at": "2026-10-02T18:06:26.323936+00:00",
+      "updated_at": "2026-10-02T18:06:26.226+00:00"
+    },
+    {
+      "id": 3044,
+      "company_id": 105,
+      "language_code": "en",
+      "info": "We organize Green lane routes and events.",
+      "created_at": "2026-10-02T18:06:27.615603+00:00",
+      "updated_at": "2026-10-02T18:06:27.521+00:00"
+    },
+    {
+      "id": 3045,
+      "company_id": 105,
+      "language_code": "de",
+      "info": "Wir organisieren Green-Lane-Routen und Veranstaltungen.",
+      "created_at": "2026-10-02T18:06:27.615603+00:00",
+      "updated_at": "2026-10-02T18:06:27.521+00:00"
+    },
+    {
+      "id": 255,
+      "company_id": 55,
+      "language_code": "en",
+      "info": "Lumberjackoutdoor.nl Sells camping gear that you can also use very well in and around the house.\r\nThe range of Lumberjackoutdoor.nl includes:\r\nDutch ovens and other cast iron pans and accessories for them from various brands, oil lamps, rechargeable and dimmable LED lamps, tent stoves, enameled crockery, sheepskins, etc.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:33.269683+00:00"
+    },
+    {
+      "id": 256,
+      "company_id": 55,
+      "language_code": "de",
+      "info": "Lumberjackoutdoor.nl verkauft Campingausrüstung, die man auch sehr gut im und um das Haus verwenden kann.\r\nDas Spektrum der Lumberjackoutdoor.nl umfasst:\r\nDutch Öfen und andere gusseiserne Pfannen sowie Zubehör dafür von verschiedenen Marken, Öllampen, wiederaufladbare und dimmbare LED-Lampen, Zeltherde, emailliertes Geschirr, Schaffelle usw.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:33.269683+00:00"
+    },
+    {
+      "id": 2890,
+      "company_id": 117,
+      "language_code": "nl",
+      "info": "De kunst van luxe reizen met Lume Traveler",
+      "created_at": "2026-06-16T18:08:04.298496+00:00",
+      "updated_at": "2026-10-02T18:06:33.6513+00:00"
+    },
+    {
+      "id": 264,
+      "company_id": 59,
+      "language_code": "en",
+      "info": "At OffroadCaravans.eu, we craft caravans for the most demanding adventures. Each model is built in the Netherlands using high-quality materials and designed for the toughest terrains, enabling you to go fully off-grid. And since there's no middleman, your shop at a price you won’t find anywhere else.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.399546+00:00"
+    },
+    {
+      "id": 265,
+      "company_id": 59,
+      "language_code": "de",
+      "info": "Bei OffroadCaravans.eu bauen wir Karawanen für die anspruchsvollsten Abenteuer. Jedes Modell wird in den Niederlanden aus hochwertigen Materialien gebaut und für das härteste Gelände ausgelegt, sodass Sie vollständig off-grid fahren können. Und da es keinen Zwischenhändler gibt, ist dein Laden zu einem Preis, den du sonst nirgendwo findest.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.399546+00:00"
+    },
+    {
+      "id": 44,
+      "company_id": 61,
+      "language_code": "nl",
+      "info": "Wij bouwen Mercedes Sprinter 4x4 campers. Ga weg van de gebaande paden en beleef off-grid, off-road avonturen. Ontdek wat Overland Campers voor je doet.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:35.605566+00:00"
+    },
+    {
+      "id": 270,
+      "company_id": 61,
+      "language_code": "en",
+      "info": "We build Mercedes Sprinter 4x4 campers. Get off the beaten track and experience off-grid, off-road adventures. Discover what Overland Campers does for you.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:35.605566+00:00"
+    },
+    {
+      "id": 271,
+      "company_id": 61,
+      "language_code": "de",
+      "info": "Wir bauen Mercedes Sprinter 4x4 Wohnmobile. Verlassen Sie die ausgetretenen Pfade und erleben Sie Off-Grid-Abenteuer im Gelände. Entdecken Sie, was Overland Campers für Sie bewirkt.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:35.605566+00:00"
+    },
+    {
+      "id": 3119,
+      "company_id": 126,
+      "language_code": "en",
+      "info": "Beautiful clothing stand",
+      "created_at": "2026-10-02T18:06:36.952473+00:00",
+      "updated_at": "2026-10-02T18:06:36.864+00:00"
+    },
+    {
+      "id": 3120,
+      "company_id": 126,
+      "language_code": "de",
+      "info": "Wunderschöner Kleiderstand",
+      "created_at": "2026-10-02T18:06:36.952473+00:00",
+      "updated_at": "2026-10-02T18:06:36.864+00:00"
+    },
+    {
+      "id": 3128,
+      "company_id": 104,
+      "language_code": "en",
+      "info": "The Recreational has been organizing Offroad rides for 4x4 and SUV since 1990. Our rides are always checked in advance and are also suitable for beginners.",
+      "created_at": "2026-10-02T18:06:37.857719+00:00",
+      "updated_at": "2026-10-02T18:06:37.769+00:00"
+    },
+    {
+      "id": 3129,
+      "company_id": 104,
+      "language_code": "de",
+      "info": "The Recreational organisiert seit 1990 Offroad-Fahrten für 4x4 und SUVs. Unsere Fahrgeschäfte werden immer im Voraus überprüft und sind auch für Anfänger geeignet.",
+      "created_at": "2026-10-02T18:06:37.857719+00:00",
+      "updated_at": "2026-10-02T18:06:37.769+00:00"
+    },
+    {
+      "id": 3200,
+      "company_id": 125,
+      "language_code": "en",
+      "info": "Discover the freedom of the road with our lightweight, modular camper unit — designed to transform your pickup into a fully functional mobile home in minutes.",
+      "created_at": "2026-10-02T18:06:47.253181+00:00",
+      "updated_at": "2026-10-02T18:06:47.169+00:00"
+    },
+    {
+      "id": 3201,
+      "company_id": 125,
+      "language_code": "de",
+      "info": "Entdecken Sie die Freiheit der Straße mit unserem leichten, modularen Wohnmobil – entworfen, um Ihren Pickup in wenigen Minuten in ein voll funktionsfähiges Mobilheim zu verwandeln.",
+      "created_at": "2026-10-02T18:06:47.253181+00:00",
+      "updated_at": "2026-10-02T18:06:47.169+00:00"
+    },
+    {
+      "id": 294,
+      "company_id": 75,
+      "language_code": "en",
+      "info": "Saris Adventure Vehicles: Thanks to my years of experience with 4×4/4WD, I can help you realize your dream like no other.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.843261+00:00"
+    },
+    {
+      "id": 295,
+      "company_id": 75,
+      "language_code": "de",
+      "info": "Saris Adventure Vehicles: Dank meiner jahrelangen Erfahrung mit 4×4/4WD kann ich Ihnen helfen, Ihren Traum wie kein anderer zu verwirklichen.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.843261+00:00"
+    },
+    {
+      "id": 64,
+      "company_id": 83,
+      "language_code": "nl",
+      "info": "Totalcool offers innovative, portable solutions for comfort and convenience on any adventure, providing reliable cooling, power, and accessories.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:43.853006+00:00"
+    },
+    {
+      "id": 28,
+      "company_id": 42,
+      "language_code": "nl",
+      "info": "4x4 vakanties, expedities en overland reizen met eigen 4WD of 4x4 huurauto | Further Adventures organiseert kleinschalige 4x4 self-drive reizen in Oost Europa, Centraal Azië en West Afrika",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:25.901258+00:00"
+    },
+    {
+      "id": 222,
+      "company_id": 42,
+      "language_code": "en",
+      "info": "4x4 holidays, expeditions and overland trips with your own 4WD or 4x4 rental car | Further Adventures organizes small-scale 4x4 self-drive trips in Eastern Europe, Central Asia and West Africa",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:25.901258+00:00"
+    },
+    {
+      "id": 223,
+      "company_id": 42,
+      "language_code": "de",
+      "info": "4x4-Urlaube, Expeditionen und Überlandreisen mit eigenem 4WD oder 4x4-Mietwagen | Further Adventures organisiert kleine 4x4-Selbstfahrfahrten in Osteuropa, Zentralasien und Westafrika",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:25.901258+00:00"
+    },
+    {
+      "id": 29,
+      "company_id": 43,
+      "language_code": "nl",
+      "info": "GEO SHOWER is het alles-in-één draagbare warmwatersysteem, ontworpen voor echt comfort, waar dan ook. Met zijn sterke druk, robuuste ontwerp en snelle installatie is hij perfect voor kamperen, overlanding, festivals, schepen, vrachtvervoer en noodhulp. Warm water, waar het leven je ook brengt.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:26.539639+00:00"
+    },
+    {
+      "id": 225,
+      "company_id": 43,
+      "language_code": "en",
+      "info": "GEO SHOWER is the all-in-one portable hot water system, designed for true comfort wherever you are. With its strong pressure, robust design, and quick installation, it is perfect for camping, overlanding, festivals, ships, cargo transportation, and emergency rescue. Warm water, wherever life takes you.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:26.539639+00:00"
+    },
+    {
+      "id": 2908,
+      "company_id": 129,
+      "language_code": "nl",
+      "info": "Ik heb een 4×4 en dan….?!\r\nHet rijden met een 4wd (Four Wheel Drive) is prettig. Je voelt je veilig, de instap is makkelijk en het ziet er ook nog eens stoer en avontuurlijk uit. Kortom je mag trots zijn op jouw avontuurlijke voertuig! Hoe leuk is het als je de mogelijkheden die je voertuig heeft ook kunt benutten en/of er zelfs je hobby van kunt maken.",
+      "created_at": "2026-10-01T06:51:17.978257+00:00",
+      "updated_at": "2026-10-02T18:06:28.007201+00:00"
+    },
+    {
+      "id": 3050,
+      "company_id": 103,
+      "language_code": "en",
+      "info": "Guided 4×4 Self Drive in Africa, Namibia, Botswana, Zimbabwe,...\r\nAt Ibex Adventures, we believe that you can experience every trip as an adventure. We organize unforgettable guided self-drive tours through southern Africa.",
+      "created_at": "2026-10-02T18:06:28.183659+00:00",
+      "updated_at": "2026-10-02T18:06:28.097+00:00"
+    },
+    {
+      "id": 3051,
+      "company_id": 103,
+      "language_code": "de",
+      "info": "Geführte 4×4 Selbstfahrt in Afrika\r\nNamibia, Botswana, Simbabwe\r\nBei Ibex Adventures glauben wir, dass Sie jede Reise als Abenteuer erleben können. Wir organisieren unvergessliche geführte Selbstfahrtouren durch das südliche Afrika.",
+      "created_at": "2026-10-02T18:06:28.183659+00:00",
+      "updated_at": "2026-10-02T18:06:28.097+00:00"
+    },
+    {
+      "id": 3113,
+      "company_id": 132,
+      "language_code": "en",
+      "info": "At Overland Travel, we don't do comfort zones. We'll take you from A to Best places in the world. We like to travel (far) off the beaten track to the most special places on earth. Think again before you clean your car or truck and park it in the garage. After all, a clean vehicle tells no story.",
+      "created_at": "2026-10-02T18:06:36.001646+00:00",
+      "updated_at": "2026-10-02T18:06:35.911+00:00"
+    },
+    {
+      "id": 3114,
+      "company_id": 132,
+      "language_code": "de",
+      "info": "Bei Overland Travel nutzen wir keine Komfortzonen. Wir bringen Sie von A zu den besten Orten der Welt. Wir reisen gerne (weit) abseits der ausgetretenen Pfade zu den ganz besonderen Orten der Welt. Denken Sie noch einmal nach, bevor Sie Ihr Auto reinigen und in der Garage parken. Schließlich erzählt ein sauberes Fahrzeug keine Geschichte.",
+      "created_at": "2026-10-02T18:06:36.001646+00:00",
+      "updated_at": "2026-10-02T18:06:35.911+00:00"
+    },
+    {
+      "id": 2876,
+      "company_id": 115,
+      "language_code": "nl",
+      "info": "Lieren, accessoires, accu's, alles wat je nodig hebt voor offroadprestaties.",
+      "created_at": "2026-06-16T17:51:07.493321+00:00",
+      "updated_at": "2026-10-02T18:06:14.641459+00:00"
+    },
+    {
+      "id": 160,
+      "company_id": 9,
+      "language_code": "de",
+      "info": "Wir als Paar waren schon immer leidenschaftlich für alles, was mit Natur, Sport, Outdoor-Aktivitäten und Feiertagen zu tun hat. Bei all diesen Sport- und Outdoor-Materialien legen wir immer Wert auf Qualität und Solidität.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:15.805165+00:00"
+    },
+    {
+      "id": 2987,
+      "company_id": 113,
+      "language_code": "en",
+      "info": "Tailor-made solutions for every requirement.\r\nCustom Car Solutions is all about your car, your style and your wishes. We offer tailor-made parts for off-road vehicles, motorhomes, motorsport and classic cars.",
+      "created_at": "2026-10-02T18:06:20.349313+00:00",
+      "updated_at": "2026-10-02T18:06:20.261+00:00"
+    },
+    {
+      "id": 2988,
+      "company_id": 113,
+      "language_code": "de",
+      "info": "Maßgeschneiderte Lösungen für jede Forderung.\r\nCustom Car Solutions dreht sich ganz um Ihr Auto, Ihren Stil und Ihre Wünsche. Wir bieten maßgeschneiderte Teile für Geländefahrzeuge, Wohnmobile, Motorsport und Oldtimer an.",
+      "created_at": "2026-10-02T18:06:20.349313+00:00",
+      "updated_at": "2026-10-02T18:06:20.261+00:00"
+    },
+    {
+      "id": 198,
+      "company_id": 31,
+      "language_code": "en",
+      "info": "We have been traveling through Morocco since 2001, have ridden countless kilometers of slopes. We know the region well and we are well acquainted with the culture and working methods of the Moroccans. This allows us to anticipate unexpected situations well and offer alternatives if unexpected situations arise. Think, for example, of weather conditions, deposits or other matters.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:22.130121+00:00"
+    },
+    {
+      "id": 199,
+      "company_id": 31,
+      "language_code": "de",
+      "info": "Wir reisen seit 2001 durch Marokko und sind unzählige Kilometer an Hängen gefahren. Wir kennen die Region gut und sind mit der Kultur und Arbeitsweise der Marokkaner vertraut. Das ermöglicht es uns, unerwartete Situationen gut vorherzusehen und Alternativen anzubieten, falls unerwartete Situationen auftreten. Denken Sie zum Beispiel an Wetterbedingungen, Ablagerungen oder andere Faktoren.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:22.130121+00:00"
+    },
+    {
+      "id": 258,
+      "company_id": 56,
+      "language_code": "en",
+      "info": "One place for your off-road and camping equipment. After being an active and passionate 4x4 driver and camper myself for a few years, I thought I would expand the hobby a bit further. The opportunity came my way to take over the beautiful name 'Made for Adventure' and I immediately started building a completely new webshop and greatly expanding the range.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.029132+00:00"
+    },
+    {
+      "id": 42,
+      "company_id": 57,
+      "language_code": "nl",
+      "info": "Offroadjuf.nl\r\n4x4-instructie, offroadreizen, outdooravonuren\r\nJe rijdt over zandpaden, door diepe plassen, steile heuvels op en af, je gidst elkaar door slingerpaadjes en over bruggetjes en je leert veilig achteruit heuvelafwaarts te gaan met vlinders in je buik. Je moedigt elkaar aan, de high-fives vliegen je om de oren als een manoeuvre lukt en dan wil je nog een keer. En nog een keer, en nog een keer! En met de modder op je auto en in je haar, weet je dat dit het begin is van je nieuwe hobby…\r\n\r\n Ga je mee op avontuur?",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:34.790587+00:00"
+    },
+    {
+      "id": 37,
+      "company_id": 60,
+      "language_code": "nl",
+      "info": "Net zo comfortabel kamperen als je rijdt: dat kan met de hyperlichte, comfortabele en robuuste Outback Cabin. Een pick-upunit vol slim design.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:35.20488+00:00"
+    },
+    {
+      "id": 267,
+      "company_id": 60,
+      "language_code": "en",
+      "info": "Camping as comfortably as you drive: that's possible with the hyper-light, comfortable and robust Outback Cabin. A pick-up unit full of smart design.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:35.20488+00:00"
+    },
+    {
+      "id": 235,
+      "company_id": 46,
+      "language_code": "de",
+      "info": "\"Wahre Freiheit liegt in der Wildnis, nicht in der Zivilisation\"\r\nMein Ziel ist es, Ihnen bei einer schönen, aber vor allem praktischen Installation zu helfen, aber wir helfen Ihnen auch gerne dabei, Dinge für oder am Auto anzufertigen. Wir möchten Ihre Idee Wirklichkeit werden lassen.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:28.565545+00:00"
+    },
+    {
+      "id": 33,
+      "company_id": 48,
+      "language_code": "nl",
+      "info": "Je overweegt jouw mooie reisvoertuig zélf af te bouwen of het geheel of gedeeltelijk uit te besteden? Dan ben je bij KIFARU4X4 aan het juiste adres.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:28.972291+00:00"
+    },
+    {
+      "id": 237,
+      "company_id": 48,
+      "language_code": "en",
+      "info": "Are you considering finishing your beautiful travel vehicle yourself or outsourcing it in whole or in part? Then you've come to the right place at KIFARU4X4.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:28.972291+00:00"
+    },
+    {
+      "id": 238,
+      "company_id": 48,
+      "language_code": "de",
+      "info": "Überlegen Sie, Ihr schönes Reisefahrzeug selbst fertigzustellen oder es ganz oder teilweise auszulagern? Dann bist du bei KIFARU4X4 hier genau richtig.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:28.972291+00:00"
+    },
+    {
+      "id": 34,
+      "company_id": 49,
+      "language_code": "nl",
+      "info": "Subaru Kleinwier al ruim 30 jaar een begrip in Subaru beleving. Maak een proefrit in één van onze demo of voorraad modellen.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:29.364488+00:00"
+    },
+    {
+      "id": 35,
+      "company_id": 50,
+      "language_code": "nl",
+      "info": "De beste Land Rover onderdelen voor de Defender, Discovery, Series, Freelander en Range Rover. Verkrijgbaar in aftermarket, NOS en OEM.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:30.322342+00:00"
+    },
+    {
+      "id": 243,
+      "company_id": 50,
+      "language_code": "en",
+      "info": "The best Land Rover parts for the Defender, Discovery, Series, Freelander and Range Rover. Available in aftermarket, NOS and OEM.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:30.322342+00:00"
+    },
+    {
+      "id": 244,
+      "company_id": 50,
+      "language_code": "de",
+      "info": "Die besten Land Rover-Teile für den Defender, Discovery, Series, Freelander und Range Rover. Erhältlich als Aftermarket, NOS und OEM.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:30.322342+00:00"
+    },
+    {
+      "id": 38,
+      "company_id": 52,
+      "language_code": "nl",
+      "info": "De ultieme expeditie camper: sfeervol, luxe, robuust &amp; huiselijk. Met veel leef- en bergruimte en onder de 3.500 kg",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:30.702323+00:00"
+    },
+    {
+      "id": 249,
+      "company_id": 52,
+      "language_code": "en",
+      "info": "The ultimate expedition camper: atmospheric, luxurious, robust &amp; homely. With plenty of living and storage space and under 3,500 kg",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:30.702323+00:00"
+    },
+    {
+      "id": 250,
+      "company_id": 52,
+      "language_code": "de",
+      "info": "Der ultimative Expeditionscamper: Atmosphäre, luxuriös, robust und heimelig. Mit viel Wohn- und Stauraum und unter 3.500 kg",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:30.702323+00:00"
+    },
+    {
+      "id": 2909,
+      "company_id": 133,
+      "language_code": "nl",
+      "info": "Camper te koop op de parking",
+      "created_at": "2026-10-01T06:52:23.420921+00:00",
+      "updated_at": "2026-10-02T18:06:32.705289+00:00"
+    },
+    {
+      "id": 39,
+      "company_id": 53,
+      "language_code": "nl",
+      "info": "Ben jij klaar voor avontuur? Ga met Lost Tracks offroad in Georgië. Back to basic, puur natuur en onvergetelijke momenten.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:32.897522+00:00"
+    },
+    {
+      "id": 252,
+      "company_id": 53,
+      "language_code": "en",
+      "info": "Are you ready for adventure? Go off-road in Georgia with Lost Tracks. Back to basics, pure nature and unforgettable moments.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:32.897522+00:00"
+    },
+    {
+      "id": 36,
+      "company_id": 51,
+      "language_code": "nl",
+      "info": "Bij de LandCruiserClub Nederland gaat het om rijden, reizen, sleutelen, kennis delen en gezelligheid.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:31.100716+00:00"
+    },
+    {
+      "id": 246,
+      "company_id": 51,
+      "language_code": "en",
+      "info": "The LandCruiserClub Netherlands is all about driving, traveling, tinkering, sharing knowledge and fun.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:31.100716+00:00"
+    },
+    {
+      "id": 247,
+      "company_id": 51,
+      "language_code": "de",
+      "info": "Der LandCruiserClub Niederlande dreht sich ganz um Fahren, Reisen, Basteln, Wissensaustausch und Spaß.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:31.100716+00:00"
+    },
+    {
+      "id": 40,
+      "company_id": 55,
+      "language_code": "nl",
+      "info": "Lumberjackoutdoor.nl verkoopt kampeerspullen die je ook zeer goed in en om het huis kunt gebruiken.\r\nHet assortiment van Lumberjackoutdoor.nl bestaat onder andere uit:\r\nDutch-ovens en andere gietijzeren pannen en accessoires hiervoor van diverse merken, olielampen, oplaadbare en dimbare led lampen, tentkachels, geëmailleerd servies, schapenvachten etc.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:33.269683+00:00"
+    },
+    {
+      "id": 259,
+      "company_id": 56,
+      "language_code": "de",
+      "info": "Ein Ort für deine Gelände- und Campingausrüstung. Nachdem ich selbst einige Jahre lang aktiver und leidenschaftlicher 4x4-Fahrer und Camper war, dachte ich, ich könnte das Hobby noch etwas weiter ausbauen. Die Gelegenheit bot sich, den schönen Namen 'Made for Adventure' zu übernehmen, und ich begann sofort, einen komplett neuen Webshop aufzubauen und das Angebot stark zu erweitern.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:34.029132+00:00"
+    },
+    {
+      "id": 240,
+      "company_id": 49,
+      "language_code": "en",
+      "info": "Subaru Kleinwier has been a household name in the Subaru experience for over 30 years. Take a test drive in one of our demo or stock models.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:29.364488+00:00"
+    },
+    {
+      "id": 43,
+      "company_id": 59,
+      "language_code": "nl",
+      "info": "Bij OffroadCaravans.eu maken we caravans voor de meest veeleisende avonturen. Elk model wordt in Nederland gebouwd met hoogwaardige materialen en ontworpen voor de zwaarste terreinen, waardoor je volledig off-grid kunt gaan. En omdat er geen tussenpersoon is, is je winkel voor een prijs die je nergens anders zult vinden.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:34.399546+00:00"
+    },
+    {
+      "id": 268,
+      "company_id": 60,
+      "language_code": "de",
+      "info": "Camping so komfortabel wie Sie fahren: Das ist möglich mit der hyperleichten, komfortablen und robusten Outback Cabin. Ein Pick-up-Gerät voller intelligentem Design.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:35.20488+00:00"
+    },
+    {
+      "id": 241,
+      "company_id": 49,
+      "language_code": "de",
+      "info": "Subaru Kleinwier ist seit über 30 Jahren ein bekannter Name im Subaru-Bereich. Probe eines unserer Demo- oder Serienmodelle.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:29.364488+00:00"
+    },
+    {
+      "id": 50,
+      "company_id": 73,
+      "language_code": "nl",
+      "info": "Onvergetelijke avonturen Reizen op maat Leer onder begeleiding terrein rijden Uitdagende routes Beleef de sneeuw Mooie vergezichten Avontuurlijke routes Ervaar de lokale bevolking Een vertrouwd team Avontuurlijke 4×4 reizen Uitdagende reizen met terreinwagens volledig verzorgd naar Tunesië, Polen, Frankrijk en Roemenië Meer weten? Neem dan direct contact met ons op! Over Sand and Stone Sand and Stone is gespecialiseerd in 4×4 vakantie reizen naar […]",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:40.111773+00:00"
+    },
+    {
+      "id": 2910,
+      "company_id": 126,
+      "language_code": "nl",
+      "info": "prachtige kleding stand",
+      "created_at": "2026-10-01T06:53:20.308176+00:00",
+      "updated_at": "2026-10-02T18:06:36.952473+00:00"
+    },
+    {
+      "id": 2879,
+      "company_id": 121,
+      "language_code": "nl",
+      "info": "Het Bas4Cars-team bestaat uit jonge, gepassioneerde monteurs, elk met hun eigen expertise. Dankzij hun servicegerichte houding weten ze altijd hoe ze Bas4Cars-klanten volledig naar tevredenheid kunnen helpen. We werken voortdurend aan het up-to-date houden van onze kennis en helpen je graag je Land Rover-droom te realiseren.",
+      "created_at": "2026-06-16T17:53:32.523892+00:00",
+      "updated_at": "2026-10-02T18:06:16.240306+00:00"
+    },
+    {
+      "id": 2957,
+      "company_id": 121,
+      "language_code": "en",
+      "info": "The Bas4Cars team consists of young passionate mechanics, each with their own expertise. Thanks to their service-oriented attitude, they always know how to help Bas4Cars customers to their full satisfaction. We are constantly working to keep our knowledge up to date and are happy to help you realize your Land Rover dream.",
+      "created_at": "2026-10-02T18:06:16.240306+00:00",
+      "updated_at": "2026-10-02T18:06:16.147+00:00"
+    },
+    {
+      "id": 52,
+      "company_id": 75,
+      "language_code": "nl",
+      "info": "Saris Adventure Vehicles: Dankzij mijn jarenlange ervaring met 4×4/4WD, kan ik u als geen ander helpen met het verwezenlijken van uw droom.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:40.843261+00:00"
+    },
+    {
+      "id": 2958,
+      "company_id": 121,
+      "language_code": "de",
+      "info": "Das Bas4Cars-Team besteht aus jungen, leidenschaftlichen Mechanikern, von denen jeder seine eigene Expertise besitzt. Dank ihrer serviceorientierten Einstellung wissen sie immer, wie sie den Bas4Cars-Kunden zu ihrer vollen Zufriedenheit helfen können. Wir arbeiten ständig daran, unser Wissen auf dem neuesten Stand zu halten, und helfen Ihnen gerne, Ihren Land Rover-Traum zu verwirklichen.",
+      "created_at": "2026-10-02T18:06:16.240306+00:00",
+      "updated_at": "2026-10-02T18:06:16.147+00:00"
+    },
+    {
+      "id": 46,
+      "company_id": 66,
+      "language_code": "nl",
+      "info": "De droom van de eigenaar van PSP en wellicht de droom van meerdere mensen is het reizen naar plekken op deze aarde die tot de verbeelding spreken. En om in staat zijn om dit compleet onafhankelijk en voor een langere tijd te kunnen doen heb je producten nodig die functioneel zijn en waarop je kunt vertrouwen",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:37.137237+00:00"
+    },
+    {
+      "id": 51,
+      "company_id": 74,
+      "language_code": "nl",
+      "info": "Welkom bij Team Saris 4×4! Achter elk avontuur, elke maatwerkoplossing en elke off-road voorbereiding staat een gepassioneerd team van specialisten. Samen zorgen wij ervoor dat jouw 4×4, SUV, camper of bedrijfsbus klaar is voor elk terrein en elke reis.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:40.478427+00:00"
+    },
+    {
+      "id": 291,
+      "company_id": 74,
+      "language_code": "en",
+      "info": "Welcome to Team Saris 4×4! Behind every adventure, every tailor-made solution and every off-road preparation is a passionate team of specialists. Together we ensure that your 4×4, SUV, motorhome or company van is ready for any terrain and any journey.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:40.478427+00:00"
+    },
+    {
+      "id": 276,
+      "company_id": 66,
+      "language_code": "en",
+      "info": "The dream of the owner of PSP and perhaps the dream of several people is to travel to places on this earth that appeal to the imagination. And to be able to do this completely independently and for a longer period of time, you need products that are functional and that you can rely on",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:37.137237+00:00"
+    },
+    {
+      "id": 47,
+      "company_id": 67,
+      "language_code": "nl",
+      "info": "Ontdek Europa op een andere manier met Quint 4x4 Reizen. Wij organiseren complete 4x4 avontuurlijke reizen met spannende activiteiten in kleine groepen. Eigen auto of huur een volledig uitgeruste 4x4 met daktent. Survive the wild!",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:37.489456+00:00"
+    },
+    {
+      "id": 279,
+      "company_id": 67,
+      "language_code": "en",
+      "info": "Discover Europe in a different way with Quint 4x4 Travel. We organize complete 4x4 adventure trips with exciting activities in small groups. Own car or rent a fully equipped 4x4 with roof tent. Survive the wild!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:37.489456+00:00"
+    },
+    {
+      "id": 2892,
+      "company_id": 112,
+      "language_code": "nl",
+      "info": "off road trips, training, verhuur\r\nErvaar een begeleide meerdaagse rondreis in groep met je eigen 4x4 voertuig.\r\nBeleef een intensieve maar leuke opleiding met je eigen wagen op de mooiste terreinen van België\r\nGa op pad met onze volledig uitgeruste Ford Raptor met luxe daktent.",
+      "created_at": "2026-06-16T18:10:23.316987+00:00",
+      "updated_at": "2026-10-02T18:06:38.256214+00:00"
+    },
+    {
+      "id": 48,
+      "company_id": 71,
+      "language_code": "nl",
+      "info": "De Roof Space is de eerste opvouwbare hard cover daktent op de markt. Deze nieuw ontwikkelde, zeer robuuste en hoogwaardige aluminium hard cover koffer vervangt het traditionele dunne PVC-zeildoek van de vorige generatie soft cover daktenten. Dit betekent dat de Roof Space er niet alleen goed uitziet, maar ook de aerodynamica en het rijcomfort verhoogt. De innovatieve constructie en de gasdrukveren maken het openen en dichtklappen van deze daktent tot kinderspel.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:39.017094+00:00"
+    },
+    {
+      "id": 184,
+      "company_id": 23,
+      "language_code": "de",
+      "info": "Der Webshop für neue und gebrauchte 27MC-Ausrüstung.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:19.585207+00:00"
+    },
+    {
+      "id": 3005,
+      "company_id": 119,
+      "language_code": "en",
+      "info": "We are Dreamcab Netherlands, a young and enthusiastic company, founded by Wietse and Marlies from our love for camping and trekking. Our goal is to bring an affordable and high-quality product to the market, so that adventurous travel remains accessible to everyone.",
+      "created_at": "2026-10-02T18:06:22.525004+00:00",
+      "updated_at": "2026-10-02T18:06:22.439+00:00"
+    },
+    {
+      "id": 45,
+      "company_id": 65,
+      "language_code": "nl",
+      "info": "Bij Pathfinder Adventure Campers produceren wij hoogwaardige aluminium hefdaken voor de 4×4 markt, volledig geproduceerd van aluminium. Daarnaast bieden wij zowel moduliere meubels als volledig op maat gemaakte camper interieurs, geproduceerd uit een scala van materialen inclusief de inbouw van alle interieur accesoires. Onze unieke “Atlas” roofracks zijn verkrijgbaar voor elke auto of camper.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:36.422019+00:00"
+    },
+    {
+      "id": 49,
+      "company_id": 72,
+      "language_code": "nl",
+      "info": "Bij Roverland vindt u Overland- en reisgerelateerde producten. Wij verkopen universele en merkspecifieke producten. We breiden onze unieke productlijst continu uit zodat u uw reizen comfortabel en veilig kunt maken.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:39.732484+00:00"
+    },
+    {
+      "id": 285,
+      "company_id": 72,
+      "language_code": "en",
+      "info": "At Roverland you can find Overlanding and travel related products. We sell universal and brand specific goods. We continuously expand our unique list of products so that you can make your travels comfortable and safe.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:39.732484+00:00"
+    },
+    {
+      "id": 286,
+      "company_id": 72,
+      "language_code": "de",
+      "info": "In Roverland finden Sie Overland- und reisebezogene Produkte. Wir verkaufen universelle und markenspezifische Produkte. Wir erweitern kontinuierlich unsere einzigartige Produktpalette, damit Sie Ihre Reisen komfortabel und sicher gestalten können.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:39.732484+00:00"
+    },
+    {
+      "id": 280,
+      "company_id": 67,
+      "language_code": "de",
+      "info": "Entdecken Sie Europa auf eine andere Weise mit Quint 4x4 Travel. Wir organisieren komplette 4x4-Abenteuerreisen mit spannenden Aktivitäten in kleinen Gruppen. Besitzen Sie ein Auto oder mieten Sie ein voll ausgestattetes 4x4 mit Dachzelt. Überlebt die Wildnis!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:37.489456+00:00"
+    },
+    {
+      "id": 312,
+      "company_id": 83,
+      "language_code": "en",
+      "info": "Totalcool offers innovative, portable solutions for comfort and convenience on any adventure, providing reliable cooling, power, and accessories.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.853006+00:00"
+    },
+    {
+      "id": 313,
+      "company_id": 83,
+      "language_code": "de",
+      "info": "Totalcool bietet innovative, tragbare Lösungen für Komfort und Bequemlichkeit bei jedem Abenteuer und bietet zuverlässige Kühlung, Stromversorgung und Zubehör.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.853006+00:00"
+    },
+    {
+      "id": 315,
+      "company_id": 84,
+      "language_code": "en",
+      "info": "The Tracking Trailer is a square drop trailer, or more simply: a mini-caravan. Equipped with the most important conveniences; a good bed, pantry kitchen with refrigerator, power points and storage space.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:44.227901+00:00"
+    },
+    {
+      "id": 316,
+      "company_id": 84,
+      "language_code": "de",
+      "info": "Der Tracking Trailer ist ein quadratischer Abwurfanhänger, oder einfacher: ein Mini-Wohnwagen. Ausgestattet mit den wichtigsten Annehmlichkeiten; Ein gutes Bett, Vorratsküche mit Kühlschrank, Steckdosen und Stauraum.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:44.227901+00:00"
+    },
+    {
+      "id": 57,
+      "company_id": 87,
+      "language_code": "nl",
+      "info": "Wij vertellen graag meer over ons. Zo weet je vooraf met wie je te maken hebt. Kom ook gerust langs in onze showroom!",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:46.057581+00:00"
+    },
+    {
+      "id": 324,
+      "company_id": 87,
+      "language_code": "en",
+      "info": "We are happy to tell you more about us. This way you know in advance who you are dealing with. Feel free to visit our showroom!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.057581+00:00"
+    },
+    {
+      "id": 325,
+      "company_id": 87,
+      "language_code": "de",
+      "info": "Wir freuen uns, Ihnen mehr über uns zu erzählen. So wissen Sie im Voraus, mit wem Sie es zu tun haben. Besuchen Sie gerne unseren Showroom!",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.057581+00:00"
+    },
+    {
+      "id": 60,
+      "company_id": 93,
+      "language_code": "nl",
+      "info": "XFood.nl - Hét 5 sterren restaurant in jouw backpack. Vandaag voor 22h00 besteld is morgen gratis* geleverd in Nederland en België.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:46.868529+00:00"
+    },
+    {
+      "id": 330,
+      "company_id": 93,
+      "language_code": "en",
+      "info": "XFood.nl - The 5 star restaurant in your backpack. Ordered today before 22h00 is delivered tomorrow for free* in the Netherlands and Belgium.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.868529+00:00"
+    },
+    {
+      "id": 16,
+      "company_id": 80,
+      "language_code": "nl",
+      "info": "4×4 Expedition Camper Units &amp; Expedition Trucks",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:42.734311+00:00"
+    },
+    {
+      "id": 56,
+      "company_id": 86,
+      "language_code": "nl",
+      "info": "Bekijk de MINK producten vrijblijvend bij Viking Campers in Westerhoven of Lelystad. Altijd op afspraak voor maximale service.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:45.700152+00:00"
+    },
+    {
+      "id": 54,
+      "company_id": 79,
+      "language_code": "nl",
+      "info": "In 2012 is Stormtenttrailers begonnen toen de eerste Storm daktent was bedacht en ontworpen. Vandaag de dag staan wij nog steeds voor mooie duurzame producten en persoonlijk contact.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:41.970348+00:00"
+    },
+    {
+      "id": 300,
+      "company_id": 79,
+      "language_code": "en",
+      "info": "Storm tent trailers started in 2012 when the first Storm roof tent was conceived and designed. Today, we still stand for beautiful sustainable products and personal contact.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:41.970348+00:00"
+    },
+    {
+      "id": 303,
+      "company_id": 80,
+      "language_code": "en",
+      "info": "4×4 Expedition Camper Units &amp; Expedition Trucks",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:42.734311+00:00"
+    },
+    {
+      "id": 62,
+      "company_id": 81,
+      "language_code": "nl",
+      "info": "Ontdek de Patio Air 5 De nieuwe manier van kamperen Geen haringen. Geen trapjes. Geen gedoe.Wél in 90 seconden opgezet en uitgerust met een écht goed bed. Het verhaal Patio Air 5 Maak kennis met de Patio Air 5; een unieke mix van opblaastent, daktent en vouwwagen. Volledig van de grond, dus geen modder in je [...]",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:43.103603+00:00"
+    },
+    {
+      "id": 306,
+      "company_id": 81,
+      "language_code": "en",
+      "info": "Discover the Patio Air 5 The new way of camping No pegs. No steps. No hassle. Set up in 90 seconds and equipped with a really good bed. The story Patio Air 5 Meet the Patio Air 5; A unique mix of inflatable tent, roof tent and trailer tent. Completely off the ground, so no mud in your [...]",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.103603+00:00"
+    },
+    {
+      "id": 63,
+      "company_id": 82,
+      "language_code": "nl",
+      "info": "Classic Adventure Store. Classic Adventure Wear. Outdoor Wear. Country Wear. Outback Wear. Safari Wear. Coastline Wear. Army Wear. Uniforms. Scouting Wear. Yachting. twead clothing.wax clothing. softshell clothing. canvas clothing. rain clothing. hats boots buitensport wandelen fietsen backpacking survival equestrian",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:43.495119+00:00"
+    },
+    {
+      "id": 309,
+      "company_id": 82,
+      "language_code": "en",
+      "info": "Classic Adventure Store. Classic Adventure Wear. Outdoor Wear. Country Wear. Outback Wear. Safari Wear. Coastline Wear. Army Wear. Uniforms. Scouting Wear. Yachting. twead clothing.wax clothing. Softshell clothing. Canvas clothing. rain clothing. Hats Boots Outdoor Sports Hiking Cycling Backpacking Survival Equestrian",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:43.495119+00:00"
+    },
+    {
+      "id": 55,
+      "company_id": 85,
+      "language_code": "nl",
+      "info": "Welkom bij UAZ Specials!\r\nVoor ons draait alles om passie. Om het unieke gevoel van een iconische wagen die je overal naartoe brengt. Om avontuur, elkaar ontmoeten en onvergetelijke momenten. UAZ Specials is inmiddels uitgegroeid tot hét startpunt voor alles wat met UAZ te maken heeft.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:45.338882+00:00"
+    },
+    {
+      "id": 321,
+      "company_id": 86,
+      "language_code": "en",
+      "info": "View the MINK products without obligation at Viking Campers in Westerhoven or Lelystad. Always by appointment for maximum service.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:45.700152+00:00"
+    },
+    {
+      "id": 322,
+      "company_id": 86,
+      "language_code": "de",
+      "info": "Sehen Sie sich die MINK-Produkte unverbindlich bei Viking Campers in Westerhoven oder Lelystad an. Immer nach Terminvereinbarung für maximalen Service.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:45.700152+00:00"
+    },
+    {
+      "id": 53,
+      "company_id": 78,
+      "language_code": "nl",
+      "info": "Smokey Goose is een speciaalzaak voor barbecues, accessoires, skillets, chunks, rubs, houtskool, kortom alles wat je aan gereedschap hebt om thuis dat mooie stuk vlees of die lekkere stoofpot te bereiden.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:41.221108+00:00"
+    },
+    {
+      "id": 59,
+      "company_id": 92,
+      "language_code": "nl",
+      "info": "Onze grootste motivatie is klant tevredenheid. Door de feedback en wensen van onze klanten ontvangen wij continu informatie om onze bestaande producten te verbeteren en nieuwe toepassingen te ontwikkelen",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:46.465969+00:00"
+    },
+    {
+      "id": 327,
+      "company_id": 92,
+      "language_code": "en",
+      "info": "Our biggest motivation is customer satisfaction. Through the feedback and wishes of our customers, we continuously receive information to improve our existing products and develop new applications",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.465969+00:00"
+    },
+    {
+      "id": 2881,
+      "company_id": 113,
+      "language_code": "nl",
+      "info": "Op maat gemaakte oplossingen voor elke wens.\r\nBij Custom Car Solutions draait alles om jouw auto, jouw stijl en jouw wensen. Wij bieden op maat gemaakte onderdelen voor offroad voertuigen, campers, autosport en oldtimers/klassiekers.",
+      "created_at": "2026-06-16T17:56:09.111063+00:00",
+      "updated_at": "2026-10-02T18:06:20.349313+00:00"
+    },
+    {
+      "id": 304,
+      "company_id": 80,
+      "language_code": "de",
+      "info": "4×4 Expeditionscamper-Einheiten und Expeditionsfahrzeuge",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:42.734311+00:00"
+    },
+    {
+      "id": 328,
+      "company_id": 92,
+      "language_code": "de",
+      "info": "Unsere größte Motivation ist die Kundenzufriedenheit. Durch das Feedback und die Wünsche unserer Kunden erhalten wir kontinuierlich Informationen, um unsere bestehenden Produkte zu verbessern und neue Anwendungen zu entwickeln",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.465969+00:00"
+    },
+    {
+      "id": 2898,
+      "company_id": 116,
+      "language_code": "nl",
+      "info": "LCM Offroad is door de passie van 4x4en. Tijdens onze trip naar en door Mauritanië leerden we één ding heel snel: je daktent is alles.",
+      "created_at": "2026-06-16T18:19:32.052556+00:00",
+      "updated_at": "2026-10-02T18:06:31.894406+00:00"
+    },
+    {
+      "id": 2911,
+      "company_id": 134,
+      "language_code": "nl",
+      "info": "First time on the 4x4 vakantiebeurs! See you at the parking!\r\nOdin-avonturen:\r\nAuthentieke vrijheid op wielen –\r\nvoor avontuur, het dagelijks leven en hobby",
+      "created_at": "2026-10-01T06:54:26.445752+00:00",
+      "updated_at": "2026-10-02T18:06:38.620468+00:00"
+    },
+    {
+      "id": 301,
+      "company_id": 79,
+      "language_code": "de",
+      "info": "Sturmzeltanhänger entstanden 2012, als das erste Storm-Dachzelt konzipiert und entworfen wurde. Heute stehen wir immer noch für schöne, nachhaltige Produkte und persönlichen Kontakt.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:41.970348+00:00"
+    },
+    {
+      "id": 21,
+      "company_id": 24,
+      "language_code": "nl",
+      "info": "Bent u op zoek naar een goede tas, een oersterk ceintuur, of bijvoorbeeld een foedraal voor uw favoriete mes? Dan bent u bij Charlotte Heuvelmans aan het juiste adres. Met haar jarenlange ervaring, nauwkeurige afwerking en de mogelijkheden tot unieke personalisatie zijn de producten van CharArt Leatherworks niet alleen van hoge kwaliteit, maar ook nog eens een lust voor het oog. Het resultaat laat zich wellicht nog het beste omschrijven als draagbare kunst.",
+      "created_at": "2025-11-21T22:12:30.11997+00:00",
+      "updated_at": "2026-10-02T18:06:19.982303+00:00"
+    },
+    {
+      "id": 2882,
+      "company_id": 124,
+      "language_code": "nl",
+      "info": "Jouw compacte mini caravan\r\nVan de eerste schets tot de laatste schroef.",
+      "created_at": "2026-06-16T17:58:53.415215+00:00",
+      "updated_at": "2026-10-02T18:06:20.756664+00:00"
+    },
+    {
+      "id": 3017,
+      "company_id": 109,
+      "language_code": "en",
+      "info": "FjällVila is all about the ultimate freedom of travel and connection with nature. We believe that the most beautiful moments happen when you leave the hustle and bustle behind and discover the unknown. With our rooftop tents, we bring you closer to nature, without compromising on comfort and quality. Whether you're a seasoned traveler or just starting out on your first road trip, with FjällVila you'll always be ready to explore new horizons.",
+      "created_at": "2026-10-02T18:06:24.377921+00:00",
+      "updated_at": "2026-10-02T18:06:24.288+00:00"
+    },
+    {
+      "id": 3018,
+      "company_id": 109,
+      "language_code": "de",
+      "info": "FjällVila steht für die ultimative Reise und die Verbindung zur Natur. Wir glauben, dass die schönsten Momente entstehen, wenn man das Trubel hinter sich lässt und das Unbekannte entdeckt. Mit unseren Dachzelten bringen wir Sie der Natur näher, ohne Komfort und Qualität zu beeinträchtigen. Egal, ob Sie ein erfahrener Reisender sind oder gerade erst Ihre erste Roadtrip starten – mit FjällVila sind Sie immer bereit, neue Horizonte zu erkunden.",
+      "created_at": "2026-10-02T18:06:24.377921+00:00",
+      "updated_at": "2026-10-02T18:06:24.288+00:00"
+    },
+    {
+      "id": 3062,
+      "company_id": 122,
+      "language_code": "en",
+      "info": "Roof top tents for every adventure — from short trips to world tours, always set up in minutes.",
+      "created_at": "2026-10-02T18:06:29.747285+00:00",
+      "updated_at": "2026-10-02T18:06:29.659+00:00"
+    },
+    {
+      "id": 3063,
+      "company_id": 122,
+      "language_code": "de",
+      "info": "Dachzelte für jedes Abenteuer – von kurzen Reisen bis zu Welttourneen – immer in wenigen Minuten aufgebaut.",
+      "created_at": "2026-10-02T18:06:29.747285+00:00",
+      "updated_at": "2026-10-02T18:06:29.659+00:00"
+    },
+    {
+      "id": 3086,
+      "company_id": 133,
+      "language_code": "en",
+      "info": "Motorhome for sale in the car park",
+      "created_at": "2026-10-02T18:06:32.705289+00:00",
+      "updated_at": "2026-10-02T18:06:32.619+00:00"
+    },
+    {
+      "id": 3087,
+      "company_id": 133,
+      "language_code": "de",
+      "info": "Wohnmobil zum Verkauf auf dem Parkplatz",
+      "created_at": "2026-10-02T18:06:32.705289+00:00",
+      "updated_at": "2026-10-02T18:06:32.619+00:00"
+    },
+    {
+      "id": 2913,
+      "company_id": 120,
+      "language_code": "nl",
+      "info": "Waarschijnlijk de beste daktent voor al je outdoor avonturen - Roof Space!",
+      "created_at": "2026-10-01T06:56:59.893431+00:00",
+      "updated_at": "2026-10-02T18:06:39.391296+00:00"
+    },
+    {
+      "id": 3140,
+      "company_id": 120,
+      "language_code": "en",
+      "info": "Probably the best rooftop tent for all your outdoor adventures - Roof Space!",
+      "created_at": "2026-10-02T18:06:39.391296+00:00",
+      "updated_at": "2026-10-02T18:06:39.306+00:00"
+    },
+    {
+      "id": 3141,
+      "company_id": 120,
+      "language_code": "de",
+      "info": "Wahrscheinlich das beste Dachzelt für all Ihre Outdoor-Abenteuer – Dachraum!",
+      "created_at": "2026-10-02T18:06:39.391296+00:00",
+      "updated_at": "2026-10-02T18:06:39.306+00:00"
+    },
+    {
+      "id": 297,
+      "company_id": 78,
+      "language_code": "en",
+      "info": "Smokey Goose is a specialty store for barbecues, accessories, skillets, chunks, rubs, charcoal, in short, everything you have in terms of tools to prepare that beautiful piece of meat or that tasty stew at home.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:41.221108+00:00"
+    },
+    {
+      "id": 298,
+      "company_id": 78,
+      "language_code": "de",
+      "info": "Smokey Goose ist ein Spezialgeschäft für Grills, Zubehör, Pfannen, Stücke, Rubs, Holzkohle – kurz gesagt, alles, was Sie an Werkzeugen haben, um dieses schöne Stück Fleisch oder den leckeren Eintopf zu Hause zuzubereiten.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:41.221108+00:00"
+    },
+    {
+      "id": 3164,
+      "company_id": 123,
+      "language_code": "en",
+      "info": "Rental and sale of mini-caravans. SMO Overland in the Netherlands.",
+      "created_at": "2026-10-02T18:06:42.336121+00:00",
+      "updated_at": "2026-10-02T18:06:42.251+00:00"
+    },
+    {
+      "id": 3165,
+      "company_id": 123,
+      "language_code": "de",
+      "info": "Vermietung und Verkauf von Mini-Wohnwagen. SMO Overland in den Niederlanden.",
+      "created_at": "2026-10-02T18:06:42.336121+00:00",
+      "updated_at": "2026-10-02T18:06:42.251+00:00"
+    },
+    {
+      "id": 2899,
+      "company_id": 128,
+      "language_code": "nl",
+      "info": "Reis met ons mee naar de Balkanlanden & Portugal. Beleef echte off-road overlanding, de mooiste plekjes, de gaafste trails en de verste vergezichten. Dit is TravelWith4x4.be",
+      "created_at": "2026-08-14T16:55:45.33378+00:00",
+      "updated_at": "2026-10-02T18:06:44.694725+00:00"
+    },
+    {
+      "id": 3182,
+      "company_id": 128,
+      "language_code": "en",
+      "info": "Travel with us to the Balkan countries & Portugal. Experience real off-road overlanding, the most beautiful places, the coolest trails and the furthest views. This is TravelWith4x4.be",
+      "created_at": "2026-10-02T18:06:44.694725+00:00",
+      "updated_at": "2026-10-02T18:06:44.608+00:00"
+    },
+    {
+      "id": 3183,
+      "company_id": 128,
+      "language_code": "de",
+      "info": "Reisen Sie mit uns in die Balkanländer und nach Portugal. Erleben Sie echtes Offroad-Overlanding, die schönsten Orte, die coolsten Wege und die entferntesten Ausblicke. Das ist TravelWith4x4.be",
+      "created_at": "2026-10-02T18:06:44.694725+00:00",
+      "updated_at": "2026-10-02T18:06:44.608+00:00"
+    },
+    {
+      "id": 318,
+      "company_id": 85,
+      "language_code": "en",
+      "info": "Welcome to UAZ Specials!\r\nFor us, it's all about passion. For the unique feeling of an iconic car that takes you anywhere. For adventure, meeting each other and unforgettable moments. UAZ Specials has now become the starting point for everything that has to do with UAZ.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:45.338882+00:00"
+    },
+    {
+      "id": 319,
+      "company_id": 85,
+      "language_code": "de",
+      "info": "Willkommen bei UAZ Specials!\r\nFür uns dreht sich alles um Leidenschaft. Für das einzigartige Gefühl eines ikonischen Autos, das einen überallhin mitnimmt. Für Abenteuer, Begegnungen und unvergessliche Momente. UAZ Specials ist nun zum Ausgangspunkt für alles geworden, was mit UAZ zu tun hat.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:45.338882+00:00"
+    },
+    {
+      "id": 331,
+      "company_id": 93,
+      "language_code": "de",
+      "info": "XFood.nl – Das 5-Sterne-Restaurant in deinem Rucksack. Heute vor 22:00 Uhr bestellt, wird morgen kostenlos* in den Niederlanden und Belgien geliefert.",
+      "created_at": "2025-11-24T17:25:57.424843+00:00",
+      "updated_at": "2026-10-02T18:06:46.868529+00:00"
+    }
+  ]
+}
