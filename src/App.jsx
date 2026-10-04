@@ -155,6 +155,7 @@ function AppContent() {
   const {
     markers,
     defaultStyles,
+    loading: markersLoading,
     archiveCurrentYear: archiveMarkers,
     copyFromPreviousYear: copyMarkers,
     getAvailableYears,
@@ -247,6 +248,7 @@ function AppContent() {
               branding={branding}
               user={user}
               markersState={markersState}
+              markersLoading={markersLoading}
               defaultStyles={defaultStyles}
               updateMarker={updateMarker}
               deleteMarker={deleteMarker}
