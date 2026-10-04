@@ -289,7 +289,11 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 <button
                   type="button"
                   onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                  aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                  aria-label={t(
+                    sortDirection === 'asc'
+                      ? 'exhibitorPage.sortDirectionToDescending'
+                      : 'exhibitorPage.sortDirectionToAscending',
+                  )}
                   className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                 >
                   <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
@@ -443,7 +447,14 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 >
                   <div className="flex items-center gap-4">
                     {/* Logo */}
-                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                    <div
+                      className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200"
+                      style={
+                        exhibitor.logo_background_color
+                          ? { backgroundColor: exhibitor.logo_background_color }
+                          : undefined
+                      }
+                    >
                       <img
                         src={getLogoWithFallback(exhibitor.logo, organizationLogo)}
                         alt={exhibitor.name}

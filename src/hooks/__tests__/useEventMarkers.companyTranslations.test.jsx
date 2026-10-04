@@ -23,6 +23,7 @@ jest.mock('../../supabaseClient', () => {
           id: 7,
           name: 'DefenderShop',
           logo: '',
+          logo_background_color: '#123456',
           website: 'https://defendershop.com',
           info: 'Legacy info',
           company_translations: [{ language_code: 'nl', info: 'Translated info' }],
@@ -103,6 +104,8 @@ describe('useEventMarkers company translations realtime', () => {
     await waitFor(() => {
       expect(screen.getByTestId('probe').textContent).toContain('DefenderShop');
     });
+    const loadedMarkers = JSON.parse(screen.getByTestId('probe').textContent);
+    expect(loadedMarkers[0].logo_background_color).toBe('#123456');
 
     const coreCallsAfterInitialLoad = __mocks__.mockFrom.mock.calls.filter(
       ([table]) => table === 'markers_core',

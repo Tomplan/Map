@@ -16,10 +16,19 @@ describe('getTranslatedInfo', () => {
     expect(getTranslatedInfo(translations, 'en')).toBe('');
   });
 
-  test('does not fall back to Dutch for missing German', () => {
+  test('falls back to Dutch for missing German', () => {
     const translations = [{ language_code: 'nl', info: 'Nederlandse tekst' }];
 
-    expect(getTranslatedInfo(translations, 'de')).toBe('');
+    expect(getTranslatedInfo(translations, 'de')).toBe('Nederlandse tekst');
+  });
+
+  test('returns German company info when it is available', () => {
+    const translations = [
+      { language_code: 'nl', info: 'Nederlandse tekst' },
+      { language_code: 'de', info: 'Deutscher Text' },
+    ];
+
+    expect(getTranslatedInfo(translations, 'de')).toBe('Deutscher Text');
   });
 
   test('still falls back to deprecated legacy info when Dutch is requested', () => {

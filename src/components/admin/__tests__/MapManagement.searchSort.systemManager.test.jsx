@@ -59,6 +59,11 @@ describe('MapManagement search & sort visibility for system_manager', () => {
     const searchInput = screen.queryByPlaceholderText('mapManagement.searchPlaceholder');
     expect(searchInput).toBeInTheDocument();
 
+    const subscriptionSearchInput = screen.queryByPlaceholderText(
+      'mapManagement.searchSubscriptionsPlaceholder',
+    );
+    expect(subscriptionSearchInput).toBeInTheDocument();
+
     const sortSelect = screen.queryByLabelText('mapManagement.sortBy');
     expect(sortSelect).toBeInTheDocument();
   });

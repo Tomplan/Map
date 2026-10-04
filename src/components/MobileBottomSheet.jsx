@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { mdiMapMarker } from '@mdi/js';
 import Icon from '@mdi/react';
 import { useMap } from 'react-leaflet';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
@@ -11,8 +12,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 import { useTranslation } from 'react-i18next';
 
-const BottomSheet = ({ marker, onClose }) => {
-  const map = useMap();
+export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, className = '' }) => {
   const { organizationLogo } = useOrganizationLogo();
   const favoritesContext = useOptionalFavoritesContext();
   const isFavorite = favoritesContext?.isFavorite || (() => false);
@@ -22,14 +22,6 @@ const BottomSheet = ({ marker, onClose }) => {
   const translatedInfo = useTranslatedCompanyInfo(marker);
   const [categories, setCategories] = useState([]);
 
-  // Lock map dragging while sheet is open
-  useEffect(() => {
-    if (map) map.dragging.disable();
-    return () => {
-      if (map) map.dragging.enable();
-    };
-  }, [map]);
-
   // Fetch categories when marker.companyId changes
   useEffect(() => {
     if (marker?.companyId) {
@@ -38,6 +30,101 @@ const BottomSheet = ({ marker, onClose }) => {
       setCategories([]);
     }
   }, [marker?.companyId, getCompanyCategories, allCategories]);
+
+  if (!marker) return null;
+
+  return (
+    <div className={`content ${className}`.trim()}>
+      {/* Logo */}
+      <div
+        className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden"
+        style={{ backgroundColor: marker.logo_background_color || '#ffffff' }}
+      >
+        <img
+          src={getLogoWithFallback(marker.logo, organizationLogo)}
+          alt={marker.name || 'Logo'}
+          className="max-w-[80%] max-h-[80%] object-contain"
+        />
+      </div>
+
+      {/* Name, Favorite, and Booth */}
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+        {marker.companyId && (
+          <FavoriteButton
+            isFavorite={isFavorite(marker.companyId)}
+            onToggle={() => toggleFavorite(marker.companyId)}
+            size="md"
+          />
+        )}
+      </div>
+      {marker.glyph && (
+        <div className="mb-2 flex items-center gap-1 text-sm font-medium text-orange-600">
+          <Icon path={mdiMapMarker} size={0.7} />
+          {t('map.booth', 'Booth')} {marker.glyph}
+        </div>
+      )}
+
+      {/* Category Badges */}
+      {categories && categories.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {categories.map((category) => (
+            <span
+              key={category.id}
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
+              style={{ backgroundColor: category.color }}
+              title={category.name}
+            >
+              <Icon path={category.icon} size={0.5} />
+              {category.name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Website */}
+      {marker.website && (
+        <div className="text-sm mb-1">
+          <a
+            href={marker.website.startsWith('http') ? marker.website : `https://${marker.website}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline"
+          >
+            {marker.website}
+          </a>
+        </div>
+      )}
+
+      {/* Info */}
+      {translatedInfo && (
+        <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
+          {translatedInfo}
+        </div>
+      )}
+
+      {showCloseButton && (
+        <button
+          onClick={onClose}
+          className="mt-4 w-full bg-gray-200 py-2 rounded-md text-gray-700 font-medium hover:bg-gray-300"
+        >
+          {t('common.close')}
+        </button>
+      )}
+    </div>
+  );
+};
+
+const BottomSheet = ({ marker, onClose }) => {
+  const map = useMap();
+
+  // Lock map dragging while sheet is open
+  useEffect(() => {
+    if (map) map.dragging.disable();
+    return () => {
+      if (map) map.dragging.enable();
+    };
+  }, [map]);
 
   if (!marker) return null;
 
@@ -71,81 +158,7 @@ const BottomSheet = ({ marker, onClose }) => {
         transition={{ type: 'spring', stiffness: 180, damping: 22 }}
       >
         <div className="handle" />
-        <div className="content">
-          {/* Logo */}
-          <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
-            <img
-              src={getLogoWithFallback(marker.logo, organizationLogo)}
-              alt={marker.name || 'Logo'}
-              className="max-w-[80%] max-h-[80%] object-contain"
-            />
-          </div>
-
-          {/* Name, Favorite, and Booth */}
-          <div className="flex items-start justify-between gap-2 mb-1">
-            <div className="text-base font-semibold text-gray-900">{marker.name}</div>
-            {marker.companyId && (
-              <FavoriteButton
-                isFavorite={isFavorite(marker.companyId)}
-                onToggle={() => toggleFavorite(marker.companyId)}
-                size="md"
-              />
-            )}
-          </div>
-          {marker.glyph && (
-            <div className="text-sm text-gray-700 mb-1">
-              {t('map.booth', 'Booth')} {marker.glyph}
-            </div>
-          )}
-
-          {/* Category Badges */}
-          {categories && categories.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1.5">
-              {categories.map((category) => (
-                <span
-                  key={category.id}
-                  className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-white rounded"
-                  style={{ backgroundColor: category.color }}
-                  title={category.name}
-                >
-                  <Icon path={category.icon} size={0.5} />
-                  {category.name}
-                </span>
-              ))}
-            </div>
-          )}
-
-          {/* Website */}
-          {marker.website && (
-            <div className="text-sm mb-1">
-              <a
-                href={
-                  marker.website.startsWith('http') ? marker.website : `https://${marker.website}`
-                }
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline"
-              >
-                {marker.website}
-              </a>
-            </div>
-          )}
-
-          {/* Info */}
-          {translatedInfo && (
-            <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
-              {translatedInfo}
-            </div>
-          )}
-
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="mt-4 w-full bg-gray-200 py-2 rounded-md text-gray-700 font-medium hover:bg-gray-300"
-          >
-            Close
-          </button>
-        </div>
+        <BottomSheetContent marker={marker} onClose={onClose} />
       </motion.div>
     </AnimatePresence>,
     document.body, // Render directly to document.body, outside the map container

@@ -4,6 +4,9 @@ import Icon from '@mdi/react';
 import { mdiClockOutline, mdiMapMarker, mdiAlert } from '@mdi/js';
 import useEventActivities from '../hooks/useEventActivities';
 
+const getActivityText = (activity, field, language) =>
+  activity[`${field}_${language}`] || activity[`${field}_nl`] || activity[`${field}_en`] || '';
+
 /**
  * EventSchedule - Timeline of event activities
  * Loads program data from database with live booth numbers
@@ -12,7 +15,7 @@ import useEventActivities from '../hooks/useEventActivities';
 export default function EventSchedule({ selectedYear }) {
   const { t, i18n } = useTranslation();
   const [selectedDay, setSelectedDay] = useState('saturday');
-  const lang = i18n.language || 'en';
+  const lang = (i18n.resolvedLanguage || i18n.language || 'en').split('-')[0];
 
   // Load activities from database
   const {
@@ -34,7 +37,7 @@ export default function EventSchedule({ selectedYear }) {
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
           <p className="text-gray-600">
-            {lang === 'en' ? 'Loading schedule...' : 'Programma laden...'}
+            {t('eventSchedule.loading')}
           </p>
         </div>
       </div>
@@ -48,7 +51,7 @@ export default function EventSchedule({ selectedYear }) {
         <div className="text-center max-w-md mx-auto px-4">
           <Icon path={mdiAlert} size={2} className="text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {lang === 'en' ? 'Unable to load schedule' : 'Kan programma niet laden'}
+            {t('eventSchedule.loadError')}
           </h2>
           <p className="text-gray-600">{error}</p>
         </div>
@@ -359,7 +362,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="bg-white border-b">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            {lang === 'en' ? 'Program' : 'Programma'}
+            {t('eventSchedule.title')}
           </h1>
 
           {/* Day Selector */}
@@ -372,7 +375,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {lang === 'en' ? 'Saturday' : 'Zaterdag'}
+              {t('eventSchedule.saturday')}
             </button>
             <button
               onClick={() => setSelectedDay('sunday')}
@@ -382,7 +385,7 @@ export default function EventSchedule({ selectedYear }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              {lang === 'en' ? 'Sunday' : 'Zondag'}
+              {t('eventSchedule.sunday')}
             </button>
           </div>
         </div>
@@ -393,6 +396,9 @@ export default function EventSchedule({ selectedYear }) {
         <div className="space-y-4">
           {activities.map((activity) => {
             const location = getActivityLocation(activity, i18n.language);
+            const badge = getActivityText(activity, 'badge', lang);
+            const title = getActivityText(activity, 'title', lang);
+            const description = getActivityText(activity, 'description', lang);
 
             return (
               <div
@@ -407,36 +413,22 @@ export default function EventSchedule({ selectedYear }) {
                       {activity.start_time} - {activity.end_time}
                     </span>
                   </div>
-                  {(activity.badge_nl || activity.badge_en || activity.badge_de) && (
+                  {badge && (
                     <span className="inline-block px-2 py-1 bg-orange-600 text-white text-xs font-semibold rounded">
-                      {lang === 'nl'
-                        ? activity.badge_nl
-                        : lang === 'de'
-                          ? activity.badge_de
-                          : activity.badge_en}
+                      {badge}
                     </span>
                   )}
                 </div>
 
                 {/* Title */}
                 <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {lang === 'nl'
-                    ? activity.title_nl
-                    : lang === 'de'
-                      ? activity.title_de
-                      : activity.title_en}
+                  {title}
                 </h3>
 
                 {/* Description */}
-                {(activity.description_nl ||
-                  activity.description_en ||
-                  activity.description_de) && (
+                {description && (
                   <p className="text-gray-700 mb-3">
-                    {lang === 'nl'
-                      ? activity.description_nl
-                      : lang === 'de'
-                        ? activity.description_de
-                        : activity.description_en}
+                    {description}
                   </p>
                 )}
 
@@ -444,7 +436,7 @@ export default function EventSchedule({ selectedYear }) {
                 <div className="flex items-center gap-2 text-sm">
                   <Icon path={mdiMapMarker} size={0.8} className="text-orange-600" />
                   <span className="text-gray-700">
-                    <span className="font-medium">{t('programManagement.location')}:</span>{' '}
+                    <span className="font-medium">{t('eventSchedule.location')}:</span>{' '}
                     {location.text}
                   </span>
                   {activity.show_location_type_badge && (

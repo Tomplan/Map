@@ -6,12 +6,16 @@ import { useDialog } from '../contexts/DialogContext';
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
   { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ];
 
-export default function LanguageToggle({ className = '', excludeCodes = [] }) {
+export default function LanguageToggle({ className = '', excludeCodes = [], enableGerman = false }) {
   const { i18n } = useTranslation();
   // Allow excluding languages from the UI (used in tests and some embedded contexts)
-  const availableLanguages = LANGUAGES.filter((l) => !excludeCodes.includes(l.code));
+  const availableLanguages = LANGUAGES.filter(
+    (language) =>
+      (enableGerman || language.code !== 'de') && !excludeCodes.includes(language.code),
+  );
   const { preferences, updatePreference } = usePreferences();
   const { toastError, toastWarning } = useDialog();
   const current = i18n.language;
