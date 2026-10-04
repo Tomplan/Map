@@ -20,28 +20,46 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
   const websiteLink = getWebsiteLink(marker.website);
 
   return (
-    <div className="flex items-center gap-2 p-1">
+    <div className="flex max-w-[280px] items-start gap-3 p-2 text-left">
       {hasCompanyData && (
-        <div className="w-8 h-8 flex items-center justify-center bg-white rounded-sm border border-gray-200 overflow-hidden">
+        <div
+          className="h-14 w-14 flex-shrink-0 flex items-center justify-center bg-white rounded-md border border-gray-200 overflow-hidden"
+          style={{ backgroundColor: marker.logo_background_color || '#ffffff' }}
+        >
           <img
             src={getLogoWithFallback(marker.logo, organizationLogo)}
-            className="max-w-[70%] max-h-[70%] object-contain"
-            // Use 'logo' as alt text if available, otherwise empty string for decorative
+            className="max-w-full max-h-full object-contain p-1"
             alt={marker.name || ''}
           />
         </div>
       )}
-      <div className="flex flex-col min-w-0">
+      <div className="min-w-0 flex-1">
+        {marker.name ? (
+          <div className="break-words text-sm font-semibold text-gray-900">{marker.name}</div>
+        ) : (
+          <div className="text-sm font-semibold italic text-gray-500">
+            {t('map.unassigned', 'Unassigned')}
+          </div>
+        )}
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs font-semibold text-gray-700">
+          <div className="mt-1 flex items-center gap-1 text-xs font-medium text-orange-600">
+            <Icon path={mdiMapMarker} size={0.65} />
             {t('map.booth', 'Booth')} {marker.glyph}
           </div>
         )}
-        {marker.name ? (
-          <div className="text-sm font-medium text-gray-900 truncate">{marker.name}</div>
-        ) : (
-          <div className="text-xs font-medium text-gray-500 italic">
-            {t('map.unassigned', 'Unassigned')}
+        {websiteLink && (
+          <div className="mt-1 text-xs">
+            <a
+              href={websiteLink.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={websiteLink.href}
+              onClick={(event) => event.stopPropagation()}
+              className="inline-flex items-center gap-1 font-medium text-[#0078a8] underline break-all"
+            >
+              {websiteLink.label}
+              <Icon path={mdiOpenInNew} size={0.6} />
+            </a>
           </div>
         )}
       </div>
