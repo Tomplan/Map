@@ -66,5 +66,10 @@ describe('MobileBottomSheet translated info', () => {
 
     expect(screen.getByText('Translated DefenderShop text')).toBeInTheDocument();
     expect(screen.queryByText('Legacy DefenderShop text')).not.toBeInTheDocument();
+
+    const boothLabel = screen.getByText('Booth A1');
+    const boothRow = boothLabel.closest('div');
+    expect(boothRow).toHaveClass('text-orange-600');
+    expect(boothRow.querySelector('svg')).toBeInTheDocument();
   });
 });

@@ -273,8 +273,11 @@
     "save": "Opslaan",
     "cancel": "Annuleren",
     "dismiss": "Sluiten",
+    "close": "Sluiten",
     "edit": "Bewerken",
     "delete": "Verwijderen",
+    "addToFavorites": "Toevoegen aan favorieten",
+    "removeFromFavorites": "Verwijderen uit favorieten",
     "confirmDelete": "Weet je zeker dat je dit wilt verwijderen?",
     "vote": "Stem",
     "voted": "Gestemd",
@@ -777,6 +780,8 @@
     "favorited": "favoriet",
     "favoritesOnly": "Alleen Favorieten",
     "sortBy": "Sorteren op",
+    "sortDirectionToAscending": "Sorteerrichting wijzigen naar oplopend",
+    "sortDirectionToDescending": "Sorteerrichting wijzigen naar aflopend",
     "sortNameAsc": "Naam (A–Z)",
     "sortNameDesc": "Naam (Z–A)",
     "sortBoothAsc": "Stand (Laag→Hoog)",
@@ -800,6 +805,14 @@
     "comingInFuturePhases": "Binnenkort beschikbaar:",
     "categoryFiltering": "Filteren op categorie",
     "sortOptions": "Sorteeropties"
+  },
+  "eventSchedule": {
+    "title": "Programma",
+    "loading": "Programma laden...",
+    "loadError": "Kan programma niet laden",
+    "location": "Locatie",
+    "saturday": "Zaterdag",
+    "sunday": "Zondag"
   },
   "map": {
     "searchPlaceholder": "Zoek op naam of standnummer...",

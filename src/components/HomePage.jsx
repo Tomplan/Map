@@ -214,7 +214,7 @@ function HomePage({
         <div className="max-w-screen-xl mx-auto px-4 py-8 text-center">
           {/* Language Toggle - Top Right */}
           <div className="flex justify-end mb-4">
-            <LanguageToggle />
+            <LanguageToggle enableGerman />
           </div>
           {/* Logo - Memoized component */}
           <OrganizationLogoImage

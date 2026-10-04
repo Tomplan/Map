@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import '../../i18n';
 
 jest.mock('../../contexts/PreferencesContext', () => ({
@@ -21,6 +21,7 @@ test('single click on language button updates i18n.language and button active st
 
   const nlButton = screen.getByText('Nederlands');
   expect(nlButton).toBeInTheDocument();
+  expect(screen.queryByText('Deutsch')).not.toBeInTheDocument();
 
   // Initially not active
   expect(nlButton).toHaveAttribute('aria-pressed', 'false');
@@ -33,4 +34,20 @@ test('single click on language button updates i18n.language and button active st
 
   // Button should reflect active state
   expect(nlButton).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('German is available on the visitor toggle and persists the selected language', async () => {
+  await i18n.changeLanguage('nl');
+
+  render(<LanguageToggle enableGerman />);
+
+  const germanButton = screen.getByText('Deutsch');
+  fireEvent.click(germanButton);
+
+  expect(i18n.language).toBe('de');
+  expect(localStorage.getItem('preferredLanguage')).toBe('de');
+
+  await act(async () => {
+    await i18n.changeLanguage('nl');
+  });
 });
