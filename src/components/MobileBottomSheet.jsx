@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { mdiMapMarker } from '@mdi/js';
 import Icon from '@mdi/react';
 import { useMap } from 'react-leaflet';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
@@ -58,7 +59,8 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
         )}
       </div>
       {marker.glyph && (
-        <div className="text-sm text-gray-700 mb-1">
+        <div className="mb-2 flex items-center gap-1 text-sm font-medium text-orange-600">
+          <Icon path={mdiMapMarker} size={0.7} />
           {t('map.booth', 'Booth')} {marker.glyph}
         </div>
       )}
@@ -106,7 +108,7 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
           onClick={onClose}
           className="mt-4 w-full bg-gray-200 py-2 rounded-md text-gray-700 font-medium hover:bg-gray-300"
         >
-          Close
+          {t('common.close')}
         </button>
       )}
     </div>

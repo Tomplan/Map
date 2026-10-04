@@ -383,13 +383,14 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
     }
 
     // Venue location - use static text
+    const normalizedLanguage = String(language || 'nl').split('-')[0];
+
     return {
       text:
-        language === 'nl'
-          ? activity.location_nl
-          : language === 'de'
-            ? activity.location_de
-            : activity.location_en,
+        activity[`location_${normalizedLanguage}`] ||
+        activity.location_nl ||
+        activity.location_en ||
+        '',
       boothNumber: null,
       companyId: null,
     };

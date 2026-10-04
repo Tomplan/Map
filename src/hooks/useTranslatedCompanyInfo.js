@@ -25,7 +25,13 @@ function resolveTranslatedInfo(translations, languageCode = 'nl', deprecatedInfo
     return currentTranslation.info;
   }
 
-  // Only Dutch can fall back to the legacy single-language field.
+  // German content falls back to Dutch when no German translation is available.
+  if (normalizedLanguage === 'de') {
+    const dutchTranslation = findTranslation(translations, 'nl');
+    return dutchTranslation?.info || deprecatedInfo || '';
+  }
+
+  // Only Dutch can fall back to other legacy content.
   if (normalizedLanguage === 'nl') {
     const dutchTranslation = findTranslation(translations, 'nl');
     if (dutchTranslation?.info) {

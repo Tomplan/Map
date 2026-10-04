@@ -289,7 +289,11 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 <button
                   type="button"
                   onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
-                  aria-label={`Toggle sort direction to ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
+                  aria-label={t(
+                    sortDirection === 'asc'
+                      ? 'exhibitorPage.sortDirectionToDescending'
+                      : 'exhibitorPage.sortDirectionToAscending',
+                  )}
                   className="px-2 py-1.5 border-l border-gray-300 text-gray-500 hover:bg-gray-50 rounded-r-md"
                 >
                   <Icon path={sortDirection === 'asc' ? mdiChevronUp : mdiChevronDown} size={0.8} />
