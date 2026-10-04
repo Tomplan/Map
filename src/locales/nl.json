@@ -843,6 +843,7 @@
     "undoAssignment": "Toewijzing ongedaan maken",
     "redoAssignment": "Toewijzing opnieuw uitvoeren",
     "subscriptionList": "Inschrijvingen",
+    "searchSubscriptionsPlaceholder": "Zoek ingeschreven bedrijven...",
     "markersList": "Markerlijst",
     "freeTotalLabel": "vrij/totaal aantal standen",
     "freeTotalTooltip": "{{count}} van {{total}} vrije stands",
