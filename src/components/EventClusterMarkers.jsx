@@ -237,6 +237,7 @@ const MemoizedMarker = memo(
     eventHandlers,
     markerRef,
     isMobile,
+    isAdminView,
     organizationLogo,
     onMarkerSelect,
   }) => {
@@ -261,6 +262,7 @@ const MemoizedMarker = memo(
         <MarkerUI
           marker={marker}
           isMobile={isMobile}
+          isAdminView={isAdminView}
           organizationLogo={organizationLogo}
           onMoreInfo={() => onMarkerSelect(marker)}
           showTooltip={!isDraggable}
@@ -273,10 +275,11 @@ const MemoizedMarker = memo(
     // Check if cached icon is the same object (meaning visual properties haven't changed)
     const iconUnchanged = prevProps.icon === nextProps.icon;
     const draggableUnchanged = prevProps.isDraggable === nextProps.isDraggable;
+    const adminViewUnchanged = prevProps.isAdminView === nextProps.isAdminView;
     const handlersUnchanged = prevProps.eventHandlers === nextProps.eventHandlers;
 
     // If visual properties unchanged, check if tooltip content needs update
-    if (iconUnchanged && draggableUnchanged && handlersUnchanged) {
+    if (iconUnchanged && draggableUnchanged && adminViewUnchanged && handlersUnchanged) {
       // Allow tooltip/popup content to update without remounting marker
       // Check if metadata changed (name, logo, website, info)
       const metadataChanged =
@@ -707,6 +710,7 @@ function EventClusterMarkers({
               eventHandlers={getEventHandlers(marker)}
               markerRef={getMarkerRef(marker.id)}
               isMobile={isMobile}
+              isAdminView={isAdminView}
               organizationLogo={organizationLogo}
               onMarkerSelect={setSelectedMarker}
             />

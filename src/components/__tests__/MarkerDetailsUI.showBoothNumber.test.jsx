@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 
 jest.mock('react-leaflet', () => ({
   Tooltip: ({ children }) =>
@@ -8,7 +8,12 @@ jest.mock('react-leaflet', () => ({
     require('react').createElement('div', { 'data-testid': 'popup' }, children),
 }));
 
-jest.mock('../MobileBottomSheet', () => () => null);
+jest.mock('../MobileBottomSheet', () => ({
+  __esModule: true,
+  default: () => null,
+  BottomSheetContent: ({ marker }) =>
+    require('react').createElement('div', { 'data-testid': 'bottom-sheet-content' }, marker.name),
+}));
 jest.mock('../FavoriteButton', () => () => null);
 jest.mock('../../utils/getDefaultLogo', () => ({
   getLogoWithFallback: (logo, org) => logo || org || '/assets/default-logo.png',
@@ -41,6 +46,7 @@ describe('MarkerDetailsUI — showBoothNumber', () => {
     glyph: 'B12',
     logo: '/assets/test.png',
     companyId: 9001,
+    website: 'https://test.example',
   };
 
   it('does not show Booth text when showBoothNumber is false', async () => {
@@ -80,5 +86,37 @@ describe('MarkerDetailsUI — showBoothNumber', () => {
     await waitFor(() => expect(popup).toBeTruthy());
     expect(tooltip.textContent).toMatch(/Booth/);
     expect(popup.textContent).toMatch(/Booth/);
+  });
+
+  it('uses bottom-sheet content in the admin popup while keeping the app preview on hover', () => {
+    render(
+      <MarkerUI marker={baseMarker} isMobile={false} isAdminView={true} organizationLogo={null} />,
+    );
+
+    expect(screen.getByTestId('tooltip').textContent).toMatch(/test\.example/);
+    expect(
+      screen.getByTestId('popup').querySelector('[data-testid="bottom-sheet-content"]'),
+    ).not.toBeNull();
+  });
+
+  it('keeps the mobile admin popup linked to the actual bottom sheet', () => {
+    const onMoreInfo = jest.fn();
+
+    render(
+      <MarkerUI
+        marker={baseMarker}
+        isMobile={true}
+        isAdminView={true}
+        organizationLogo={null}
+        onMoreInfo={onMoreInfo}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'More Info' }));
+
+    expect(onMoreInfo).toHaveBeenCalled();
+    expect(
+      screen.getByTestId('popup').querySelector('[data-testid="bottom-sheet-content"]'),
+    ).toBeNull();
   });
 });
