@@ -172,9 +172,13 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
             // Special markers (ID >= 1000): use Markers_Content data
             contentData = {
               name: content.name,
+              name_en: content.name_en,
+              name_de: content.name_de,
               logo: content.logo,
               website: content.website,
               info: content.info,
+              info_en: content.info_en,
+              info_de: content.info_de,
             };
             // Special markers don't have admin data (no booth logistics)
             adminData = {};

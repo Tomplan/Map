@@ -12,11 +12,13 @@ import { useCategories } from '../hooks/useCategories';
 import { useTranslation } from 'react-i18next';
 import { mdiOpenInNew } from '@mdi/js';
 import getWebsiteLink from '../utils/getWebsiteLink';
+import { getSpecialMarkerText } from '../hooks/useTranslatedCompanyInfo';
 
 // --- Tooltip for both cluster + special markers ---
 const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true }) => {
-  const { t } = useTranslation();
-  const hasCompanyData = marker.name || marker.companyId;
+  const { t, i18n } = useTranslation();
+  const markerName = getSpecialMarkerText(marker, 'name', i18n.language);
+  const hasCompanyData = markerName || marker.companyId;
   const websiteLink = getWebsiteLink(marker.website);
 
   return (
@@ -29,13 +31,13 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
           <img
             src={getLogoWithFallback(marker.logo, organizationLogo)}
             className="max-w-full max-h-full object-contain p-1"
-            alt={marker.name || ''}
+            alt={markerName || ''}
           />
         </div>
       )}
       <div className="min-w-0 flex-1">
-        {marker.name ? (
-          <div className="break-words text-sm font-semibold text-gray-900">{marker.name}</div>
+        {markerName ? (
+          <div className="break-words text-sm font-semibold text-gray-900">{markerName}</div>
         ) : (
           <div className="text-sm font-semibold italic text-gray-500">
             {t('map.unassigned', 'Unassigned')}
@@ -69,13 +71,14 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
 
 // --- Desktop Popup with scrollable content ---
 const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }) => {
-  const hasCompanyData = marker.name || marker.companyId;
+  const { t, i18n } = useTranslation();
+  const markerName = getSpecialMarkerText(marker, 'name', i18n.language);
+  const hasCompanyData = markerName || marker.companyId;
   const websiteLink = getWebsiteLink(marker.website);
   const favoritesContext = useOptionalFavoritesContext();
   const isFavorite = favoritesContext?.isFavorite || (() => false);
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
   const translatedInfo = useTranslatedCompanyInfo(marker);
-  const { t, i18n } = useTranslation();
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const [categories, setCategories] = useState([]);
 
@@ -105,14 +108,14 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
             >
               <img
                 src={getLogoWithFallback(marker.logo, organizationLogo)}
-                alt={marker.name || 'Logo'}
+                alt={markerName || 'Logo'}
                 className="max-w-[80%] max-h-[80%] object-contain"
               />
             </div>
           )}
-          {marker.name ? (
+          {markerName ? (
             <div className="flex items-center justify-between gap-2 mb-1">
-              <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+              <div className="text-base font-semibold text-gray-900">{markerName}</div>
               {marker.companyId && (
                 <FavoriteButton
                   isFavorite={isFavorite(marker.companyId)}
@@ -182,8 +185,9 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
 
 // --- Mobile Popup + Bottom Sheet pair ---
 const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumber = true }) => {
-  const { t } = useTranslation();
-  const hasCompanyData = marker.name || marker.companyId;
+  const { t, i18n } = useTranslation();
+  const markerName = getSpecialMarkerText(marker, 'name', i18n.language);
+  const hasCompanyData = markerName || marker.companyId;
   const websiteLink = getWebsiteLink(marker.website);
 
   return (
@@ -197,15 +201,15 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
             >
               <img
                 src={getLogoWithFallback(marker.logo, organizationLogo)}
-                alt={marker.name || ''}
+                alt={markerName || ''}
                 className="max-w-full max-h-full object-contain p-1"
               />
             </div>
           )}
 
           <div className="min-w-0 flex-1">
-            {marker.name ? (
-              <div className="font-semibold text-gray-900 text-sm break-words">{marker.name}</div>
+            {markerName ? (
+              <div className="font-semibold text-gray-900 text-sm break-words">{markerName}</div>
             ) : (
               <div className="font-semibold text-gray-500 italic text-sm">
                 {t('map.unassignedBooth', 'Unassigned Booth')}
@@ -276,11 +280,13 @@ export const MarkerUI = ({
   showBoothNumber = true,
   showTooltip = true, // Default to true if not provided
 }) => {
+  const { i18n } = useTranslation();
+  const markerName = getSpecialMarkerText(marker, 'name', i18n.language);
   // Only show tooltip if marker has meaningful content (glyph or name)
   // This prevents showing empty/incomplete tooltips on first hover
   const hasTooltipContent =
     marker &&
-    ((marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') || marker.name);
+    ((marker.glyph !== undefined && marker.glyph !== null && marker.glyph !== '') || markerName);
 
   return (
     <>
