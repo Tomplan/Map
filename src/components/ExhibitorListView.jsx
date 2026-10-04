@@ -10,6 +10,7 @@ import {
   mdiChevronDown,
   mdiClose,
   mdiTag,
+  mdiOpenInNew,
 } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
@@ -23,6 +24,21 @@ import useCategories from '../hooks/useCategories';
 const EMPTY_FAVORITES = [];
 const NO_FAVORITE_CHECK = () => false;
 const NO_TOGGLE_FAVORITES = () => {};
+
+const getWebsiteLink = (website) => {
+  if (typeof website !== 'string' || !website.trim()) return null;
+
+  const value = website.trim();
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `https://${value}`;
+
+  try {
+    const url = new URL(candidate);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return { href: url.href, label: url.hostname.replace(/^www\./i, '') };
+  } catch {
+    return null;
+  }
+};
 
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
@@ -424,6 +440,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
         ) : (
           <div className="space-y-3">
             {sortedExhibitors.map((exhibitor) => {
+              const websiteLink = getWebsiteLink(exhibitor.website);
               const info = getTranslatedInfo(
                 exhibitor.company_translations,
                 i18n.language,
@@ -514,6 +531,24 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         <p className="text-gray-400 italic mb-4">
                           {t('exhibitorPage.noDescription') || 'No description available'}
                         </p>
+                      )}
+
+                      {websiteLink && (
+                        <div className="mb-4">
+                          <span className="mr-1 text-sm text-gray-600">
+                            {t('exhibitorPage.website') || 'Website'}:
+                          </span>
+                          <a
+                            href={websiteLink.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-orange-700 hover:text-orange-800 hover:underline break-all"
+                          >
+                            {websiteLink.label}
+                            <Icon path={mdiOpenInNew} size={0.65} />
+                          </a>
+                        </div>
                       )}
 
                       <div className="flex justify-end">
