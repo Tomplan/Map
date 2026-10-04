@@ -27,7 +27,9 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
     if (marker?.companyId) {
       getCompanyCategories(marker.companyId).then(setCategories);
     } else {
-      setCategories([]);
+      setCategories((currentCategories) =>
+        currentCategories.length === 0 ? currentCategories : [],
+      );
     }
   }, [marker?.companyId, getCompanyCategories, allCategories]);
 
@@ -58,7 +60,7 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
           />
         )}
       </div>
-      {marker.glyph && (
+      {marker.id < 1000 && marker.glyph && (
         <div className="mb-2 flex items-center gap-1 text-sm font-medium text-orange-600">
           <Icon path={mdiMapMarker} size={0.7} />
           {t('map.booth', 'Booth')} {marker.glyph}
@@ -117,49 +119,52 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
 
 const BottomSheet = ({ marker, onClose }) => {
   const map = useMap();
+  const isOpen = Boolean(marker);
 
   // Lock map dragging while sheet is open
   useEffect(() => {
-    if (map) map.dragging.disable();
-    return () => {
-      if (map) map.dragging.enable();
-    };
-  }, [map]);
+    if (!isOpen || !map) return undefined;
 
-  if (!marker) return null;
+    map.dragging.disable();
+    return () => {
+      map.dragging.enable();
+    };
+  }, [isOpen, map]);
 
   // Render bottom sheet outside the map container using a portal
   return createPortal(
     <AnimatePresence>
-      {/* Backdrop */}
-      <motion.div
-        key="backdrop"
-        className="bottom-sheet-backdrop"
-        onClick={onClose}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25 }}
-      />
+      {marker && (
+        <motion.div
+          key="backdrop"
+          className="bottom-sheet-backdrop"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.35, ease: 'easeInOut' }}
+        />
+      )}
 
-      {/* Sheet */}
-      <motion.div
-        key="sheet"
-        className="bottom-sheet"
-        drag="y"
-        dragConstraints={{ top: 0, bottom: 0 }}
-        dragElastic={0.25}
-        onDragEnd={(event, info) => {
-          if (info.offset.y > 100) onClose();
-        }}
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', stiffness: 180, damping: 22 }}
-      >
-        <div className="handle" />
-        <BottomSheetContent marker={marker} onClose={onClose} />
-      </motion.div>
+      {marker && (
+        <motion.div
+          key="sheet"
+          className="bottom-sheet"
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={0.25}
+          onDragEnd={(event, info) => {
+            if (info.offset.y > 100) onClose();
+          }}
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
+          transition={{ type: 'spring', stiffness: 130, damping: 26, mass: 1 }}
+        >
+          <div className="handle" />
+          <BottomSheetContent marker={marker} onClose={onClose} />
+        </motion.div>
+      )}
     </AnimatePresence>,
     document.body, // Render directly to document.body, outside the map container
   );
