@@ -1,0 +1,5 @@
+ALTER TABLE public.markers_content
+  ADD COLUMN IF NOT EXISTS name_en TEXT,
+  ADD COLUMN IF NOT EXISTS name_de TEXT,
+  ADD COLUMN IF NOT EXISTS info_en TEXT,
+  ADD COLUMN IF NOT EXISTS info_de TEXT;

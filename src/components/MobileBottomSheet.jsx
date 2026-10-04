@@ -9,7 +9,10 @@ import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useCategories } from '../hooks/useCategories';
-import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
+import {
+  getSpecialMarkerText,
+  useTranslatedCompanyInfo,
+} from '../hooks/useTranslatedCompanyInfo';
 import { useTranslation } from 'react-i18next';
 
 export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, className = '' }) => {
@@ -18,6 +21,7 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
   const isFavorite = favoritesContext?.isFavorite || (() => false);
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
   const { t, i18n } = useTranslation();
+  const markerName = getSpecialMarkerText(marker, 'name', i18n.language);
   const { getCompanyCategories, categories: allCategories } = useCategories(i18n.language);
   const translatedInfo = useTranslatedCompanyInfo(marker);
   const [categories, setCategories] = useState([]);
@@ -44,14 +48,14 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
       >
         <img
           src={getLogoWithFallback(marker.logo, organizationLogo)}
-          alt={marker.name || 'Logo'}
+          alt={markerName || 'Logo'}
           className="max-w-[80%] max-h-[80%] object-contain"
         />
       </div>
 
       {/* Name, Favorite, and Booth */}
       <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="text-base font-semibold text-gray-900">{marker.name}</div>
+        <div className="text-base font-semibold text-gray-900">{markerName}</div>
         {marker.companyId && (
           <FavoriteButton
             isFavorite={isFavorite(marker.companyId)}
