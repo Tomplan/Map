@@ -10,6 +10,7 @@ import {
   mdiChevronDown,
   mdiClose,
   mdiTag,
+  mdiOpenInNew,
 } from '@mdi/js';
 import { useOrganizationLogo } from '../contexts/OrganizationLogoContext';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
@@ -19,6 +20,7 @@ import FavoriteButton from './FavoriteButton';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
 import useCategories from '../hooks/useCategories';
+import getWebsiteLink from '../utils/getWebsiteLink';
 
 const EMPTY_FAVORITES = [];
 const NO_FAVORITE_CHECK = () => false;
@@ -424,6 +426,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
         ) : (
           <div className="space-y-3">
             {sortedExhibitors.map((exhibitor) => {
+              const websiteLink = getWebsiteLink(exhibitor.website);
               const info = getTranslatedInfo(
                 exhibitor.company_translations,
                 i18n.language,
@@ -434,7 +437,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 <div
                   key={exhibitor.companyId || exhibitor.id}
                   onClick={() => toggleExpand(exhibitor.companyId || exhibitor.id)}
-                  className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 ${
+                  className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 text-left ${
                     isExpanded ? 'ring-2 ring-orange-500' : ''
                   }`}
                 >
@@ -496,6 +499,20 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                             </span>
                           ))}
                         </div>
+                      )}
+
+                      {websiteLink && (
+                        <a
+                          href={websiteLink.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title={websiteLink.href}
+                          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[#0078a8] hover:text-[#0078a8] underline break-all"
+                        >
+                          {websiteLink.label}
+                          <Icon path={mdiOpenInNew} size={0.65} />
+                        </a>
                       )}
 
                       {/* Info Preview (Only shown when collapsed) */}

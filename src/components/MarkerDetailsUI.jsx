@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tooltip, Popup } from 'react-leaflet';
 import Icon from '@mdi/react';
+import { mdiMapMarker } from '@mdi/js';
 import BottomSheet from './MobileBottomSheet';
 import useIsMobile from '../hooks/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
@@ -9,11 +10,14 @@ import FavoriteButton from './FavoriteButton';
 import { useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 import { useCategories } from '../hooks/useCategories';
 import { useTranslation } from 'react-i18next';
+import { mdiOpenInNew } from '@mdi/js';
+import getWebsiteLink from '../utils/getWebsiteLink';
 
 // --- Tooltip for both cluster + special markers ---
 const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true }) => {
   const { t } = useTranslation();
   const hasCompanyData = marker.name || marker.companyId;
+  const websiteLink = getWebsiteLink(marker.website);
 
   return (
     <div className="flex items-center gap-2 p-1">
@@ -48,6 +52,7 @@ const MarkerTooltipContent = ({ marker, organizationLogo, showBoothNumber = true
 // --- Desktop Popup with scrollable content ---
 const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }) => {
   const hasCompanyData = marker.name || marker.companyId;
+  const websiteLink = getWebsiteLink(marker.website);
   const favoritesContext = useOptionalFavoritesContext();
   const isFavorite = favoritesContext?.isFavorite || (() => false);
   const toggleFavorite = favoritesContext?.toggleFavorite || (() => {});
@@ -74,7 +79,7 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
       minWidth={240}
     >
       <div className="popup-scroll-container">
-        <div className="popup-scroll-content">
+        <div className="popup-scroll-content text-left">
           {hasCompanyData && (
             <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
               <img
@@ -101,7 +106,8 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
             </div>
           )}
           {showBoothNumber && marker.glyph && (
-            <div className="text-sm text-gray-700 mb-2">
+            <div className="mb-2 flex items-center gap-1 text-sm font-medium text-orange-600">
+              <Icon path={mdiMapMarker} size={0.7} />
               {t('map.booth', 'Booth')} {marker.glyph}
             </div>
           )}
@@ -121,18 +127,17 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
               ))}
             </div>
           )}
-          {marker.website && (
+          {websiteLink && (
             <div className="text-sm mb-2">
               <a
-                href={
-                  marker.website.startsWith('http') ? marker.website : `https://${marker.website}`
-                }
+                href={websiteLink.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:text-blue-800 underline"
-                style={{ wordBreak: 'break-all' }}
+                title={websiteLink.href}
+                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 underline break-all"
               >
-                {marker.website}
+                {websiteLink.label}
+                <Icon path={mdiOpenInNew} size={0.65} />
               </a>
             </div>
           )}
@@ -161,7 +166,7 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
 
   return (
     <Popup closeButton={true} className="marker-popup" autoPan={true}>
-      <div className="p-2 text-center">
+      <div className="p-2 text-left">
         {hasCompanyData && (
           <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
             <img
@@ -179,7 +184,8 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
           </div>
         )}
         {showBoothNumber && marker.glyph && (
-          <div className="text-xs text-gray-700 mb-2">
+          <div className="mb-2 flex items-center gap-1 text-xs font-medium text-orange-600">
+            <Icon path={mdiMapMarker} size={0.7} />
             {t('map.booth', 'Booth')} {marker.glyph}
           </div>
         )}
