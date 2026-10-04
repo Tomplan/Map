@@ -20,7 +20,17 @@ const APPEARANCE_FIELDS = [
   'textDecoration',
   'fontFamily',
 ];
-const CONTENT_FIELDS = ['name', 'logo', 'website', 'info', 'contentLocked'];
+const CONTENT_FIELDS = [
+  'name',
+  'name_en',
+  'name_de',
+  'logo',
+  'website',
+  'info',
+  'info_en',
+  'info_de',
+  'contentLocked',
+];
 
 /**
  * Custom hook to manage an array of marker objects and their state.

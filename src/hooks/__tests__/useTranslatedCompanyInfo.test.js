@@ -1,4 +1,4 @@
-import { getTranslatedInfo } from '../useTranslatedCompanyInfo';
+import { getSpecialMarkerText, getTranslatedInfo } from '../useTranslatedCompanyInfo';
 
 describe('getTranslatedInfo', () => {
   test('returns the requested language when present', () => {
@@ -33,5 +33,28 @@ describe('getTranslatedInfo', () => {
 
   test('still falls back to deprecated legacy info when Dutch is requested', () => {
     expect(getTranslatedInfo([], 'nl', 'Legacy Dutch info')).toBe('Legacy Dutch info');
+  });
+});
+
+describe('getSpecialMarkerText', () => {
+  const marker = {
+    id: 1001,
+    name: 'Niederländischer Titel',
+    name_en: 'English title',
+    name_de: 'Deutscher Titel',
+    info: 'Nederlandse tekst',
+    info_en: 'English text',
+    info_de: 'Deutscher Text',
+  };
+
+  test('returns the requested special-marker translation', () => {
+    expect(getSpecialMarkerText(marker, 'name', 'en')).toBe('English title');
+    expect(getSpecialMarkerText(marker, 'info', 'de')).toBe('Deutscher Text');
+  });
+
+  test('falls back to the base Dutch field when a translation is missing', () => {
+    expect(getSpecialMarkerText({ name: 'Nederlandse titel' }, 'name', 'de')).toBe(
+      'Nederlandse titel',
+    );
   });
 });

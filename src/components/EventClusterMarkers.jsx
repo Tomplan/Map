@@ -284,9 +284,13 @@ const MemoizedMarker = memo(
       // Check if metadata changed (name, logo, website, info)
       const metadataChanged =
         prevProps.marker.name !== nextProps.marker.name ||
+        prevProps.marker.name_en !== nextProps.marker.name_en ||
+        prevProps.marker.name_de !== nextProps.marker.name_de ||
         prevProps.marker.logo !== nextProps.marker.logo ||
         prevProps.marker.website !== nextProps.marker.website ||
-        prevProps.marker.info !== nextProps.marker.info;
+        prevProps.marker.info !== nextProps.marker.info ||
+        prevProps.marker.info_en !== nextProps.marker.info_en ||
+        prevProps.marker.info_de !== nextProps.marker.info_de;
 
       // Check if position changed (crucial for undo/redo or external updates)
       const positionChanged =

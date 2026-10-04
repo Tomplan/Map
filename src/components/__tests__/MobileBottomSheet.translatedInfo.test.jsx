@@ -55,7 +55,10 @@ jest.mock('../../hooks/useCategories', () => {
 });
 
 jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({
-  useTranslatedCompanyInfo: () => 'Translated DefenderShop text',
+  getSpecialMarkerText: (marker, field, language) =>
+    marker?.[`${field}_${language}`] || marker?.[field] || '',
+  useTranslatedCompanyInfo: (marker) =>
+    marker?.id >= 1000 ? marker.info_en || marker.info || '' : 'Translated DefenderShop text',
 }));
 
 jest.mock('react-i18next', () => ({
@@ -104,8 +107,10 @@ describe('MobileBottomSheet translated info', () => {
           marker={{
             id: 1001,
             name: 'Parking',
+            name_en: 'Parking area',
             glyph: 'P1',
             info: 'Special marker info',
+            info_en: 'Special marker information in English',
           }}
           onClose={() => {}}
         />,
@@ -113,6 +118,7 @@ describe('MobileBottomSheet translated info', () => {
     });
 
     expect(screen.queryByText('Booth P1')).not.toBeInTheDocument();
-    expect(screen.getByText('Parking')).toBeInTheDocument();
+    expect(screen.getByText('Parking area')).toBeInTheDocument();
+    expect(screen.getByText('Special marker information in English')).toBeInTheDocument();
   });
 });

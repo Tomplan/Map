@@ -10,9 +10,23 @@ jest.mock('../../supabaseClient', () => {
   const registrations = [];
 
   const tableData = {
-    markers_core: [{ id: 1, lat: 1, lng: 2, glyph: 'A1', event_year: 2026 }],
+    markers_core: [
+      { id: 1, lat: 1, lng: 2, glyph: 'A1', event_year: 2026 },
+      { id: 1001, lat: 3, lng: 4, glyph: 'P1', event_year: 2026 },
+    ],
     markers_appearance: [],
-    markers_content: [],
+    markers_content: [
+      {
+        id: 1001,
+        event_year: 2026,
+        name: 'Parkeerplaats',
+        name_en: 'Parking',
+        name_de: 'Parkplatz',
+        info: 'Nederlandse informatie',
+        info_en: 'English information',
+        info_de: 'Deutsche Information',
+      },
+    ],
     assignments: [
       {
         id: 10,
@@ -106,6 +120,14 @@ describe('useEventMarkers company translations realtime', () => {
     });
     const loadedMarkers = JSON.parse(screen.getByTestId('probe').textContent);
     expect(loadedMarkers[0].logo_background_color).toBe('#123456');
+    const specialMarker = loadedMarkers.find((marker) => marker.id === 1001);
+    expect(specialMarker).toMatchObject({
+      name: 'Parkeerplaats',
+      name_en: 'Parking',
+      name_de: 'Parkplatz',
+      info_en: 'English information',
+      info_de: 'Deutsche Information',
+    });
 
     const coreCallsAfterInitialLoad = __mocks__.mockFrom.mock.calls.filter(
       ([table]) => table === 'markers_core',
