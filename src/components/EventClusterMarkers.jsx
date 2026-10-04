@@ -749,7 +749,7 @@ function EventClusterMarkers({
       )}
 
       {/* MOBILE Bottom Sheet */}
-      {isMobile && selectedMarker && (
+      {isMobile && (
         <BottomSheet marker={selectedMarker} onClose={() => setSelectedMarker(null)} />
       )}
     </>
