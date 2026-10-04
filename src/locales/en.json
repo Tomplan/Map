@@ -849,6 +849,7 @@
     "undoAssignment": "Undo assignment",
     "redoAssignment": "Redo assignment",
     "subscriptionList": "Subscription List",
+    "searchSubscriptionsPlaceholder": "Search subscribed companies...",
     "markersList": "Markers List",
     "freeTotalLabel": "Free stands / total stands",
     "freeTotalTooltip": "{{count}} of {{total}} free stands",
