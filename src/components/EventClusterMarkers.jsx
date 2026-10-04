@@ -85,6 +85,7 @@ const createIcon = (
   arrivedColor = 'green'
 ) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
+  if (marker.id < 1000) className += ' booth-marker-icon';
   if (isActive) className += ' marker-active';
   if (isFavorited) className += ' marker-favorited';
 
@@ -238,23 +239,35 @@ const MemoizedMarker = memo(
     isMobile,
     organizationLogo,
     onMarkerSelect,
-  }) => (
-    <Marker
-      position={[marker.lat, marker.lng]}
-      icon={icon}
-      draggable={isDraggable}
-      eventHandlers={eventHandlers}
-      ref={markerRef}
-    >
-      <MarkerUI
-        marker={marker}
-        isMobile={isMobile}
-        organizationLogo={organizationLogo}
-        onMoreInfo={() => onMarkerSelect(marker)}
-        showTooltip={!isDraggable}
-      />
-    </Marker>
-  ),
+  }) => {
+    const previousIcon = markerRef.current?.options?.icon;
+    const iconElement = markerRef.current?.getElement?.() || markerRef.current?._icon;
+    const focusResizeActive = iconElement
+      ?.closest('.leaflet-container')
+      ?.classList.contains('map-is-focus-resizing');
+
+    if (focusResizeActive && previousIcon && previousIcon !== icon && icon?.options) {
+      icon.options.focusResizeFrom = previousIcon.options;
+    }
+
+    return (
+      <Marker
+        position={[marker.lat, marker.lng]}
+        icon={icon}
+        draggable={isDraggable}
+        eventHandlers={eventHandlers}
+        ref={markerRef}
+      >
+        <MarkerUI
+          marker={marker}
+          isMobile={isMobile}
+          organizationLogo={organizationLogo}
+          onMoreInfo={() => onMarkerSelect(marker)}
+          showTooltip={!isDraggable}
+        />
+      </Marker>
+    );
+  },
   (prevProps, nextProps) => {
     // Return true to SKIP re-render, false to re-render
     // Check if cached icon is the same object (meaning visual properties haven't changed)
@@ -299,6 +312,9 @@ function EventClusterMarkers({
   onMarkerSelect,
   focusMarkerId,
   onFocusHandled,
+  initialDataReady,
+  onMarkersReady,
+  isFocusZooming,
   currentZoom,
   applyVisitorSizing = false,
   onMarkerDrag = null,
@@ -307,6 +323,7 @@ function EventClusterMarkers({
 }) {
   const { settings: orgSettings } = useOrganizationSettings();
   const markerRefs = useRef({});
+  const clusterGroupRef = useRef(null);
   const isMobile = useIsMobile('md');
   const [internalSelectedMarker, setInternalSelectedMarker] = useState(null);
 
@@ -359,6 +376,26 @@ function EventClusterMarkers({
     () => safeMarkers.filter((m) => m.id < CLUSTER_CONFIG.MAX_MARKER_ID),
     [safeMarkers],
   );
+
+  const handleChunkProgress = useCallback(
+    (processed, total) => {
+      if (total === 0 || processed >= total) onMarkersReady?.();
+    },
+    [onMarkersReady],
+  );
+
+  useEffect(() => {
+    if (initialDataReady && filteredMarkers.length === 0) onMarkersReady?.();
+  }, [filteredMarkers.length, initialDataReady, onMarkersReady]);
+
+  useEffect(() => {
+    const clusterGroup = clusterGroupRef.current;
+    if (clusterGroup?.options) {
+      clusterGroup.options.removeOutsideVisibleBounds = isFocusZooming
+        ? false
+        : CLUSTER_CONFIG.REMOVE_OUTSIDE_VISIBLE_BOUNDS;
+    }
+  }, [isFocusZooming]);
 
   const handleDragEnd = useCallback(
     (markerId) => (e) => {
@@ -637,11 +674,15 @@ function EventClusterMarkers({
   return (
     <>
       <MarkerClusterGroup
+        ref={clusterGroupRef}
         key="cluster-group"
         chunkedLoading={CLUSTER_CONFIG.CHUNKED_LOADING}
+        chunkProgress={handleChunkProgress}
         showCoverageOnHover={CLUSTER_CONFIG.SHOW_COVERAGE_ON_HOVER}
         spiderfyOnMaxZoom={CLUSTER_CONFIG.SPIDERFY_ON_MAX_ZOOM}
-        removeOutsideVisibleBounds={CLUSTER_CONFIG.REMOVE_OUTSIDE_VISIBLE_BOUNDS}
+        removeOutsideVisibleBounds={
+          isFocusZooming ? false : CLUSTER_CONFIG.REMOVE_OUTSIDE_VISIBLE_BOUNDS
+        }
         disableClusteringAtZoom={CLUSTER_CONFIG.DISABLE_CLUSTERING_AT_ZOOM}
         maxClusterRadius={CLUSTER_CONFIG.MAX_CLUSTER_RADIUS}
         iconCreateFunction={iconCreateFunction}
@@ -742,6 +783,9 @@ EventClusterMarkers.propTypes = {
   onMarkerSelect: PropTypes.func,
   focusMarkerId: PropTypes.number,
   onFocusHandled: PropTypes.func,
+  initialDataReady: PropTypes.bool,
+  onMarkersReady: PropTypes.func,
+  isFocusZooming: PropTypes.bool,
   currentZoom: PropTypes.number,
   applyVisitorSizing: PropTypes.bool,
   onMarkerDrag: PropTypes.func,
@@ -756,6 +800,9 @@ EventClusterMarkers.defaultProps = {
   onMarkerSelect: null,
   focusMarkerId: null,
   onFocusHandled: null,
+  initialDataReady: true,
+  onMarkersReady: null,
+  isFocusZooming: false,
   currentZoom: 17,
   applyVisitorSizing: false,
 };

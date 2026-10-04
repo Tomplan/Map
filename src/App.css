@@ -98,6 +98,15 @@ body {
   transition: none !important;
 }
 
+/* Ease marker size updates after the visitor's automatic focus zoom. */
+.map-is-focus-resizing .leaflet-marker-icon {
+  transition:
+    width 600ms ease-out,
+    height 600ms ease-out,
+    margin-left 600ms ease-out,
+    margin-top 600ms ease-out !important;
+}
+
 /* Ensure markers are visible otherwise with a nice fade-in */
 .leaflet-marker-icon,
 .leaflet-marker-shadow {
