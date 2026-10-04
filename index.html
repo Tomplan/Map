@@ -34,5 +34,21 @@
       }
     </script>
     <script type="module" src="/src/main.jsx"></script>
+    <script type="module">
+      const isProductionVisitorSite =
+        window.location.hostname === 'tomplan.github.io' &&
+        ['/Map', '/Map/'].includes(window.location.pathname);
+
+      if (isProductionVisitorSite) {
+        const cloudflareBeacon = document.createElement('script');
+        cloudflareBeacon.type = 'module';
+        cloudflareBeacon.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+        cloudflareBeacon.setAttribute(
+          'data-cf-beacon',
+          JSON.stringify({ token: '59203ef7fd67406db01a0b1f9bf4a049' }),
+        );
+        document.body.appendChild(cloudflareBeacon);
+      }
+    </script>
   </body>
 </html>
