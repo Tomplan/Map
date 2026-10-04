@@ -443,7 +443,14 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 >
                   <div className="flex items-center gap-4">
                     {/* Logo */}
-                    <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200">
+                    <div
+                      className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200"
+                      style={
+                        exhibitor.logo_background_color
+                          ? { backgroundColor: exhibitor.logo_background_color }
+                          : undefined
+                      }
+                    >
                       <img
                         src={getLogoWithFallback(exhibitor.logo, organizationLogo)}
                         alt={exhibitor.name}
