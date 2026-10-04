@@ -142,6 +142,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
             contentData = {
               name: primaryAssignment.name,
               logo: primaryAssignment.logo,
+              logo_background_color: primaryAssignment.logo_background_color,
               website: primaryAssignment.website,
               info: primaryAssignment.info,
               companyId: primaryAssignment.companyId,
@@ -389,6 +390,7 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
                       ...m,
                       name: company.name,
                       logo: company.logo,
+                      logo_background_color: company.logo_background_color,
                       website: company.website,
                       info: company.info,
                     }

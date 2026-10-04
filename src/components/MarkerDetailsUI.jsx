@@ -81,7 +81,10 @@ const MarkerPopupDesktop = ({ marker, organizationLogo, showBoothNumber = true }
       <div className="popup-scroll-container">
         <div className="popup-scroll-content text-left">
           {hasCompanyData && (
-            <div className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0">
+            <div
+              className="w-24 h-24 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden flex-shrink-0"
+              style={{ backgroundColor: marker.logo_background_color || '#ffffff' }}
+            >
               <img
                 src={getLogoWithFallback(marker.logo, organizationLogo)}
                 alt={marker.name || 'Logo'}
@@ -168,7 +171,10 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
     <Popup closeButton={true} className="marker-popup" autoPan={true}>
       <div className="p-2 text-left">
         {hasCompanyData && (
-          <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
+          <div
+            className="w-12 h-12 mx-auto mb-2 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden"
+            style={{ backgroundColor: marker.logo_background_color || '#ffffff' }}
+          >
             <img
               src={getLogoWithFallback(marker.logo, organizationLogo)}
               alt=""

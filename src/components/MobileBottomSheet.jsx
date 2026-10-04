@@ -73,7 +73,10 @@ const BottomSheet = ({ marker, onClose }) => {
         <div className="handle" />
         <div className="content">
           {/* Logo */}
-          <div className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden">
+          <div
+            className="w-20 h-20 mx-auto mb-3 flex items-center justify-center bg-white rounded-md border border-gray-300 overflow-hidden"
+            style={{ backgroundColor: marker.logo_background_color || '#ffffff' }}
+          >
             <img
               src={getLogoWithFallback(marker.logo, organizationLogo)}
               alt={marker.name || 'Logo'}
