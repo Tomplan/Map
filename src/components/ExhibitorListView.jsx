@@ -20,25 +20,11 @@ import FavoriteButton from './FavoriteButton';
 import { useTranslation } from 'react-i18next';
 import { getTranslatedInfo } from '../hooks/useTranslatedCompanyInfo';
 import useCategories from '../hooks/useCategories';
+import getWebsiteLink from '../utils/getWebsiteLink';
 
 const EMPTY_FAVORITES = [];
 const NO_FAVORITE_CHECK = () => false;
 const NO_TOGGLE_FAVORITES = () => {};
-
-const getWebsiteLink = (website) => {
-  if (typeof website !== 'string' || !website.trim()) return null;
-
-  const value = website.trim();
-  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(value) ? value : `https://${value}`;
-
-  try {
-    const url = new URL(candidate);
-    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
-    return { href: url.href, label: url.hostname.replace(/^www\./i, '') };
-  } catch {
-    return null;
-  }
-};
 
 export default function ExhibitorListView({ markersState, selectedYear }) {
   const navigate = useNavigate();
@@ -451,7 +437,7 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                 <div
                   key={exhibitor.companyId || exhibitor.id}
                   onClick={() => toggleExpand(exhibitor.companyId || exhibitor.id)}
-                  className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 ${
+                  className={`bg-white rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer p-4 text-left ${
                     isExpanded ? 'ring-2 ring-orange-500' : ''
                   }`}
                 >
@@ -515,6 +501,20 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         </div>
                       )}
 
+                      {websiteLink && (
+                        <a
+                          href={websiteLink.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title={websiteLink.href}
+                          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[#0078a8] hover:text-[#0078a8] underline break-all"
+                        >
+                          {websiteLink.label}
+                          <Icon path={mdiOpenInNew} size={0.65} />
+                        </a>
+                      )}
+
                       {/* Info Preview (Only shown when collapsed) */}
                       {!isExpanded && info && (
                         <p className="text-sm text-gray-600 mt-2 line-clamp-2">{info}</p>
@@ -531,24 +531,6 @@ export default function ExhibitorListView({ markersState, selectedYear }) {
                         <p className="text-gray-400 italic mb-4">
                           {t('exhibitorPage.noDescription') || 'No description available'}
                         </p>
-                      )}
-
-                      {websiteLink && (
-                        <div className="mb-4">
-                          <span className="mr-1 text-sm text-gray-600">
-                            {t('exhibitorPage.website') || 'Website'}:
-                          </span>
-                          <a
-                            href={websiteLink.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1 text-sm font-medium text-orange-700 hover:text-orange-800 hover:underline break-all"
-                          >
-                            {websiteLink.label}
-                            <Icon path={mdiOpenInNew} size={0.65} />
-                          </a>
-                        </div>
                       )}
 
                       <div className="flex justify-end">
