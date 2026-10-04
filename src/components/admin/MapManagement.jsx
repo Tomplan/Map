@@ -1674,6 +1674,14 @@ export default function MapManagement({
                   size={0.8}
                   className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400"
                 />
+                <input
+                  type="search"
+                  value={subscriptionSearch}
+                  onChange={(event) => setSubscriptionSearch(event.target.value)}
+                  placeholder={t('mapManagement.searchSubscriptionsPlaceholder')}
+                  aria-label={t('mapManagement.searchSubscriptionsPlaceholder')}
+                  className="w-full rounded-md border border-gray-300 bg-white py-2 pl-8 pr-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
               </div>
 
               {/* Sort */}
