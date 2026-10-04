@@ -1,7 +1,7 @@
 {
   "table": "markers_content",
-  "timestamp": "2026-09-03T10-05-18-189Z",
-  "recordCount": 524,
+  "timestamp": "2026-10-04T11-19-49-129Z",
+  "recordCount": 525,
   "data": [
     {
       "id": 93,
@@ -355,15 +355,6 @@
       "event_year": 2026
     },
     {
-      "id": 1040,
-      "name": "VW CLUB Nederland",
-      "logo": null,
-      "website": "4x4vakantiebeurs.nl",
-      "info": "info",
-      "contentLocked": true,
-      "event_year": 2026
-    },
-    {
       "id": 9,
       "name": "Kifaru Services",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/Kifaru4x4.jpg",
@@ -436,6 +427,15 @@
       "event_year": 2026
     },
     {
+      "id": 1040,
+      "name": "UAZ",
+      "logo": null,
+      "website": "4x4vakantiebeurs.nl",
+      "info": "info",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
       "id": 21,
       "name": "CB-shop",
       "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/generated/CB-webshop.jpg",
@@ -504,15 +504,6 @@
       "logo": null,
       "website": "4x4vakantiebeurs.nl",
       "info": "info",
-      "contentLocked": true,
-      "event_year": 2026
-    },
-    {
-      "id": 1005,
-      "name": "DJ",
-      "logo": null,
-      "website": "4x4vakantiebeurs.nl",
-      "info": "Bij een jubileum hoort een feestje en bij een feestje hoort muziek!\nDJ Lungarno gaat de feestvreugde op het beursterrein op de zaterdag naar een next level brengen met ontspannen lounge en uptempo disco klassiekers!",
       "contentLocked": true,
       "event_year": 2026
     },
@@ -2576,6 +2567,24 @@
       "info": "Ontdek de wereld van de 4x4 vakanties op de 4x4 Vakantiebeurs. De grootste beurs in de BeNeLux op het gebied van 4x4 vakanties, reizen en alles wat ermee gemoeid is.",
       "contentLocked": true,
       "event_year": 2024
+    },
+    {
+      "id": 1005,
+      "name": "DJ",
+      "logo": null,
+      "website": "4x4vakantiebeurs.nl",
+      "info": "DJ Lungarno gaat de feestvreugde op het beursterrein op de zaterdag naar een next level brengen met ontspannen lounge en uptempo disco klassiekers!",
+      "contentLocked": true,
+      "event_year": 2026
+    },
+    {
+      "id": 1041,
+      "name": null,
+      "logo": "https://xtkbvnnkovogqwcwdhkg.supabase.co/storage/v1/object/public/Logos/companies/1790618933397_vsc6u7.webp",
+      "website": "rodin-adventures.com",
+      "info": "First time on the 4x4 vakantiebeurs! See you at the parking!\nOdin-avonturen:\nAuthentieke vrijheid op wielen –\nvoor avontuur, het dagelijks leven en hobby",
+      "contentLocked": false,
+      "event_year": 2026
     },
     {
       "id": 1005,
