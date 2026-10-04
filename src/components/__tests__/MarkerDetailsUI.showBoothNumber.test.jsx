@@ -23,6 +23,8 @@ jest.mock('../../contexts/OrganizationLogoContext', () => ({
   useOrganizationLogo: () => ({ organizationLogo: null, loading: false }),
 }));
 jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({
+  getSpecialMarkerText: (marker, field, language) =>
+    marker?.[`${field}_${language}`] || marker?.[field] || '',
   useTranslatedCompanyInfo: () => 'Some translated info',
 }));
 const mockGetCompanyCategories = async () => [];
@@ -86,6 +88,21 @@ describe('MarkerDetailsUI — showBoothNumber', () => {
     await waitFor(() => expect(popup).toBeTruthy());
     expect(tooltip.textContent).toMatch(/Booth/);
     expect(popup.textContent).toMatch(/Booth/);
+  });
+
+  it('shows the English title for a translated special marker', () => {
+    const translatedMarker = {
+      ...baseMarker,
+      name: 'Parkeerplaats',
+      name_en: 'Parking area',
+    };
+
+    render(
+      <MarkerUI marker={translatedMarker} isMobile={false} organizationLogo={null} />,
+    );
+
+    expect(screen.getAllByText('Parking area').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Parkeerplaats')).not.toBeInTheDocument();
   });
 
   it('uses bottom-sheet content in the admin popup while keeping the app preview on hover', () => {

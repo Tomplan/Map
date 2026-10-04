@@ -7,6 +7,11 @@ function normalizeLanguageCode(languageCode) {
     .split('-')[0];
 }
 
+export function getSpecialMarkerText(marker, field, languageCode) {
+  const language = normalizeLanguageCode(languageCode);
+  return marker?.[`${field}_${language}`] || marker?.[field] || '';
+}
+
 function findTranslation(translations, languageCode) {
   const normalized = normalizeLanguageCode(languageCode);
   return translations.find(
@@ -59,6 +64,10 @@ export function useTranslatedCompanyInfo(marker) {
   const currentLanguage = i18n.language;
 
   const translatedInfo = useMemo(() => {
+    if (marker?.id >= 1000) {
+      return getSpecialMarkerText(marker, 'info', currentLanguage);
+    }
+
     return resolveTranslatedInfo(marker?.company_translations, currentLanguage, marker?.info || '');
   }, [marker, currentLanguage]);
 

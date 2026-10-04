@@ -3,6 +3,7 @@ import { FIELD_TABLE_MAP, LOCK_FIELDS } from '../config/markerTableConfig';
 
 // Fields that belong to companies table
 const COMPANY_FIELDS = ['name', 'logo', 'website', 'info'];
+const SPECIAL_MARKER_TRANSLATION_FIELDS = ['name_en', 'name_de', 'info_en', 'info_de'];
 
 /**
  * Update a marker field in Supabase
@@ -35,7 +36,7 @@ export async function updateMarkerField(id, key, value, eventYear = new Date().g
       }
     } else {
       // For special markers (>= 1000), content fields go directly to Markers_Content
-      if (COMPANY_FIELDS.includes(key)) {
+      if (COMPANY_FIELDS.includes(key) || SPECIAL_MARKER_TRANSLATION_FIELDS.includes(key)) {
         const { error } = await supabase
           .from('markers_content')
           .update({ [key]: sendValue })

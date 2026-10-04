@@ -2418,7 +2418,17 @@ function EditPanel({
       {/* Content (Special Markers Only) */}
       {isSpecialMarker && (
         <Section title="Content (Special Marker)">
-          <InputField label="Name" value={marker.name} onChange={(v) => onChange('name', v)} />
+          <InputField label="Name (NL)" value={marker.name} onChange={(v) => onChange('name', v)} />
+          <InputField
+            label="Name (EN)"
+            value={marker.name_en || ''}
+            onChange={(v) => onChange('name_en', v)}
+          />
+          <InputField
+            label="Name (DE)"
+            value={marker.name_de || ''}
+            onChange={(v) => onChange('name_de', v)}
+          />
           <div>
             <InputField
               label="Logo URL"
@@ -2441,7 +2451,21 @@ function EditPanel({
             value={marker.website}
             onChange={(v) => onChange('website', v)}
           />
-          <TextAreaField label="Info" value={marker.info} onChange={(v) => onChange('info', v)} />
+          <TextAreaField
+            label="Info (NL)"
+            value={marker.info}
+            onChange={(v) => onChange('info', v)}
+          />
+          <TextAreaField
+            label="Info (EN)"
+            value={marker.info_en || ''}
+            onChange={(v) => onChange('info_en', v)}
+          />
+          <TextAreaField
+            label="Info (DE)"
+            value={marker.info_de || ''}
+            onChange={(v) => onChange('info_de', v)}
+          />
         </Section>
       )}
 
