@@ -42,6 +42,7 @@ function AppRoutes({
   branding,
   user,
   markersState,
+  markersLoading = false,
   updateMarker,
   deleteMarker,
   setMarkersState,
@@ -170,6 +171,7 @@ function AppRoutes({
               <EventMap
                 isAdminView={false}
                 markersState={markersState}
+                markersLoading={markersLoading}
                 defaultStyles={defaultStyles}
                 updateMarker={updateMarker}
                 setMarkersState={setMarkersState}

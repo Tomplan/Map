@@ -26,6 +26,69 @@ L.Icon.Glyph = L.Icon.extend({
   createIcon: function (oldIcon) {
     var options = this.options;
     var div;
+    var focusResizeFrom = options.focusResizeFrom;
+    if (focusResizeFrom) delete options.focusResizeFrom;
+    var animateBoothResize =
+      options.className?.includes('booth-marker-icon') &&
+      (focusResizeFrom ||
+        (oldIcon &&
+          oldIcon.classList.contains('booth-marker-icon') &&
+          oldIcon.closest('.leaflet-container')?.classList.contains('map-is-focus-resizing')));
+    var previousIconSize = focusResizeFrom
+      ? {
+          width:
+            (Array.isArray(focusResizeFrom.iconSize)
+              ? focusResizeFrom.iconSize[0]
+              : focusResizeFrom.iconSize?.x) + 'px',
+          height:
+            (Array.isArray(focusResizeFrom.iconSize)
+              ? focusResizeFrom.iconSize[1]
+              : focusResizeFrom.iconSize?.y) + 'px',
+          marginLeft:
+            -(
+              (Array.isArray(focusResizeFrom.iconAnchor)
+                ? focusResizeFrom.iconAnchor[0]
+                : focusResizeFrom.iconAnchor?.x) || 0
+            ) + 'px',
+          marginTop:
+            -(
+              (Array.isArray(focusResizeFrom.iconAnchor)
+                ? focusResizeFrom.iconAnchor[1]
+                : focusResizeFrom.iconAnchor?.y) || 0
+            ) + 'px',
+        }
+      : oldIcon
+        ? {
+            width: oldIcon.style.width,
+            height: oldIcon.style.height,
+            marginLeft: oldIcon.style.marginLeft,
+            marginTop: oldIcon.style.marginTop,
+          }
+        : null;
+    var previousGlyph = oldIcon && oldIcon.querySelector('span');
+    var previousGlyphStyle = previousGlyph
+      ? {
+          fontSize: previousGlyph.style.fontSize,
+          width: previousGlyph.style.width,
+          lineHeight: previousGlyph.style.lineHeight,
+          left: previousGlyph.style.left,
+          top: previousGlyph.style.top,
+        }
+      : focusResizeFrom
+        ? {
+            fontSize: focusResizeFrom.glyphSize,
+            width: previousIconSize.width,
+            lineHeight: previousIconSize.height,
+            left:
+              (Array.isArray(focusResizeFrom.glyphAnchor)
+                ? focusResizeFrom.glyphAnchor[0]
+                : focusResizeFrom.glyphAnchor?.x) + 'px',
+            top:
+              (Array.isArray(focusResizeFrom.glyphAnchor)
+                ? focusResizeFrom.glyphAnchor[1]
+                : focusResizeFrom.glyphAnchor?.y) + 'px',
+          }
+        : null;
 
     // If Leaflet passes the existing DOM element and it's one of ours,
     // reuse it in-place so Leaflet skips _removeIcon() + DOM insertion.
@@ -49,6 +112,46 @@ L.Icon.Glyph = L.Icon.extend({
     }
 
     this._setIconStyles(div, options.className);
+    if (animateBoothResize && previousIconSize && typeof div.animate === 'function') {
+      const animateResize = () => {
+        if (!div.isConnected) return;
+
+        const animationOptions = { duration: 600, easing: 'ease-out' };
+        div.animate(
+          [
+            previousIconSize,
+            {
+              width: div.style.width,
+              height: div.style.height,
+              marginLeft: div.style.marginLeft,
+              marginTop: div.style.marginTop,
+            },
+          ],
+          animationOptions,
+        );
+
+        const glyph = div.querySelector('span');
+        if (glyph && previousGlyphStyle) {
+          glyph.animate(
+            [
+              previousGlyphStyle,
+              {
+                fontSize: glyph.style.fontSize,
+                width: glyph.style.width,
+                lineHeight: glyph.style.lineHeight,
+                left: glyph.style.left,
+                top: glyph.style.top,
+              },
+            ],
+            animationOptions,
+          );
+        }
+      };
+
+      if (div.isConnected) animateResize();
+      else requestAnimationFrame(animateResize);
+    }
+
     return div;
   },
 

@@ -26,6 +26,7 @@ import useMapConfig from '../../hooks/useMapConfig';
 import { PRINT_CONFIG } from '../../config/mapConfig';
 import { computePrintIconOptions } from '../../utils/printScaling';
 import { getBaseUrl } from '../../utils/getBaseUrl';
+import PublicLoadingScreen from '../common/PublicLoadingScreen';
 
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
@@ -83,6 +84,7 @@ L.Icon.Default.mergeOptions({
 function EventMap({
   isAdminView,
   markersState,
+  markersLoading = false,
   defaultStyles,
   updateMarker,
   deleteMarker,
@@ -146,9 +148,13 @@ function EventMap({
   const [activeLayer, setActiveLayer] = useState(MAP_LAYERS[0].key);
   const [showRectanglesAndHandles, setShowRectanglesAndHandles] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
+  const [baseTilesLoaded, setBaseTilesLoaded] = useState(false);
+  const [clusterMarkersReady, setClusterMarkersReady] = useState(false);
+  const [hasInitialMarkersLoaded, setHasInitialMarkersLoaded] = useState(!markersLoading);
+  const [hasRevealedInitialMap, setHasRevealedInitialMap] = useState(isAdminView);
   const [searchLayer, setSearchLayer] = useState(null);
   const { organizationLogo } = useOrganizationLogo();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   // Persist favorites-only toggle per-event-year in localStorage (keeps map & list aligned)
   const favoritesStorageKey = `exhibitors_showFavoritesOnly_${selectedYear}`;
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(() => {
@@ -174,6 +180,27 @@ function EventMap({
     () => (Array.isArray(markersState) ? markersState : []),
     [markersState],
   );
+
+  const handleBaseTilesLoaded = useCallback(() => setBaseTilesLoaded(true), []);
+  const handleClusterMarkersReady = useCallback(() => setClusterMarkersReady(true), []);
+
+  useEffect(() => {
+    if (!markersLoading) setHasInitialMarkersLoaded(true);
+  }, [markersLoading]);
+
+  useEffect(() => {
+    if (
+      !isAdminView &&
+      mapInstance &&
+      hasInitialMarkersLoaded &&
+      baseTilesLoaded &&
+      clusterMarkersReady
+    ) {
+      setHasRevealedInitialMap(true);
+    }
+  }, [isAdminView, mapInstance, hasInitialMarkersLoaded, baseTilesLoaded, clusterMarkersReady]);
+
+  const isInitialMapReady = isAdminView || hasRevealedInitialMap;
 
   const handleContextAddMarker = useCallback(
     ({ id, lat, lng, type }) => {
@@ -229,6 +256,12 @@ function EventMap({
   });
   const rectangleLayerRef = useRef(null);
   const hasProcessedFocus = useRef(false);
+  const focusHighlightRef = useRef(null);
+  const focusMoveTimeoutRef = useRef(null);
+  const focusSequenceTimeoutRef = useRef(null);
+  const focusPopupTimeoutRef = useRef(null);
+  const isFocusMoveRef = useRef(false);
+  const [isFocusZooming, setIsFocusZooming] = useState(false);
   const [focusMarkerId, setFocusMarkerId] = useState(null);
   const tileCacheTimeoutRef = useRef(null);
   const snapshotTimeoutRef = useRef(null);
@@ -411,6 +444,11 @@ function EventMap({
     const updateZoomingClass = (isZooming) => {
       try {
         const container = mapInstance.getContainer();
+        if (isFocusMoveRef.current) {
+          container.classList.remove('map-is-zooming');
+          return;
+        }
+
         if (isZooming) {
           container.classList.add('map-is-zooming');
         } else {
@@ -786,46 +824,168 @@ function EventMap({
   // Browser print is now initialized synchronously in handleMapCreated
   // to ensure printControl is available before onMapReady is called
 
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    const clearFocusHighlight = () => {
+      if (isFocusMoveRef.current) return;
+
+      mapInstance.getContainer().classList.remove('map-is-focus-resizing');
+      window.clearTimeout(focusSequenceTimeoutRef.current);
+
+      if (focusHighlightRef.current) {
+        mapInstance.removeLayer(focusHighlightRef.current);
+        focusHighlightRef.current = null;
+      }
+    };
+
+    mapInstance.on('zoomstart', clearFocusHighlight);
+    return () => {
+      mapInstance.off('zoomstart', clearFocusHighlight);
+      window.clearTimeout(focusMoveTimeoutRef.current);
+      window.clearTimeout(focusSequenceTimeoutRef.current);
+      window.clearTimeout(focusPopupTimeoutRef.current);
+      isFocusMoveRef.current = false;
+      clearFocusHighlight();
+    };
+  }, [mapInstance]);
+
   // Handle focus parameter from URL (navigate from exhibitor list)
   useEffect(() => {
-    // Wait for map, search layer, and search control to be ready
-    const control = searchControlRef?.current;
-    if (
-      !mapInstance ||
-      !safeMarkers.length ||
-      !searchLayer ||
-      !control ||
-      hasProcessedFocus.current
-    ) {
+    if (!mapInstance || !safeMarkers.length || !isInitialMapReady || hasProcessedFocus.current)
       return;
-    }
 
     const focusId = searchParams.get('focus');
     if (focusId) {
       const markerId = parseInt(focusId, 10);
       const marker = safeMarkers.find((m) => m.id === markerId);
 
-      if (marker) {
-        // Use the search control to locate the marker programmatically.
-        // This ensures the behavior matches the manual search experience exactly
-        // (including the zoom animation and red circle highlight).
-        const searchText = createSearchText(marker);
+      if (marker && Number.isFinite(Number(marker.lat)) && Number.isFinite(Number(marker.lng))) {
+        const markerLocation = [Number(marker.lat), Number(marker.lng)];
+        const overviewDuration = 1;
+        const overviewHold = 1100;
+        const highlightPause = 650;
+        const focusDuration = 2400;
+        const initialRadius = 6;
+        const finalRadius = 20;
+        const isAtOverview =
+          mapInstance.getZoom() === homeZoom &&
+          mapInstance.getCenter().distanceTo(L.latLng(homeCenter)) < 1;
+        const overviewDelay = overviewHold + (isAtOverview ? 0 : overviewDuration * 1000);
 
-        // Execute search (which triggers the zoom/highlight effects via the control's event handlers)
-        control.searchText(searchText);
+        if (focusHighlightRef.current) {
+          mapInstance.removeLayer(focusHighlightRef.current);
+        }
+
+        window.clearTimeout(focusMoveTimeoutRef.current);
+        window.clearTimeout(focusSequenceTimeoutRef.current);
+        window.clearTimeout(focusPopupTimeoutRef.current);
+        if (!isAtOverview) {
+          mapInstance.flyTo(homeCenter, homeZoom, {
+            animate: true,
+            duration: overviewDuration,
+          });
+        }
+        focusSequenceTimeoutRef.current = window.setTimeout(() => {
+          const focusIcon = L.divIcon({
+            className: 'leaflet-focus-highlight',
+            html: '<span></span>',
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+          });
+          const focusMarker = L.marker(markerLocation, {
+            icon: focusIcon,
+            interactive: false,
+            keyboard: false,
+            zIndexOffset: 1,
+          }).addTo(mapInstance);
+          focusHighlightRef.current = focusMarker;
+          const iconElement = focusMarker.getElement();
+          const ringElement = iconElement?.firstElementChild;
+
+          if (iconElement && ringElement) {
+            Object.assign(iconElement.style, {
+              width: '0px',
+              height: '0px',
+              border: '0',
+              background: 'transparent',
+            });
+            Object.assign(ringElement.style, {
+              position: 'absolute',
+              left: '0',
+              top: '0',
+              width: `${initialRadius * 2}px`,
+              height: `${initialRadius * 2}px`,
+              transform: 'translate(-50%, -50%)',
+              boxSizing: 'border-box',
+              border: '3px solid #d32f2f',
+              borderRadius: '50%',
+              background: 'rgba(211, 47, 47, 0.2)',
+              transition: `width ${focusDuration}ms cubic-bezier(0.2, 0.7, 0.2, 1), height ${focusDuration}ms cubic-bezier(0.2, 0.7, 0.2, 1)`,
+            });
+          }
+
+          focusSequenceTimeoutRef.current = window.setTimeout(() => {
+            isFocusMoveRef.current = true;
+            setIsFocusZooming(true);
+            const zoomRing = focusHighlightRef.current?.getElement()?.firstElementChild;
+            window.requestAnimationFrame(() => {
+              if (zoomRing) {
+                zoomRing.style.width = `${finalRadius * 2}px`;
+                zoomRing.style.height = `${finalRadius * 2}px`;
+              }
+            });
+            const mapContainer = mapInstance.getContainer();
+            mapContainer.classList.add('map-is-focus-resizing');
+            mapInstance.once('moveend', () => {
+              isFocusMoveRef.current = false;
+              setIsFocusZooming(false);
+              window.clearTimeout(focusMoveTimeoutRef.current);
+              focusMoveTimeoutRef.current = window.setTimeout(() => {
+                mapContainer.classList.remove('map-is-focus-resizing');
+              }, 2200);
+            });
+            mapInstance.flyTo(markerLocation, MAP_CONFIG.SEARCH_ZOOM, {
+              animate: true,
+              duration: focusDuration / 1000,
+            });
+            focusMoveTimeoutRef.current = window.setTimeout(() => {
+              isFocusMoveRef.current = false;
+              setIsFocusZooming(false);
+              mapContainer.classList.remove('map-is-focus-resizing');
+            }, focusDuration + 1000);
+            focusPopupTimeoutRef.current = window.setTimeout(
+              () => setFocusMarkerId(markerId),
+              focusDuration - 1200,
+            );
+          }, highlightPause);
+        }, overviewDelay);
 
         // Mark as processed and clear URL parameter
         hasProcessedFocus.current = true;
-        setSearchParams({}, { replace: true });
+        const routeHash = window.location.hash.slice(1);
+        const queryIndex = routeHash.indexOf('?');
+        const routePath = queryIndex === -1 ? routeHash : routeHash.slice(0, queryIndex);
+        const routeParams = new URLSearchParams(
+          queryIndex === -1 ? '' : routeHash.slice(queryIndex + 1),
+        );
+        routeParams.delete('focus');
+        const remainingQuery = routeParams.toString();
+        const cleanHash = `${routePath}${remainingQuery ? `?${remainingQuery}` : ''}`;
+        window.history.replaceState(
+          window.history.state,
+          '',
+          `${window.location.pathname}${window.location.search}#${cleanHash}`,
+        );
       }
     }
   }, [
     mapInstance,
     safeMarkers,
-    searchLayer,
-    searchControlRef,
     searchParams,
-    setSearchParams,
+    homeCenter,
+    homeZoom,
+    isInitialMapReady,
     MAP_CONFIG.SEARCH_ZOOM,
   ]);
 
@@ -1421,6 +1581,8 @@ function EventMap({
           height: isAdminView ? '100%' : '100svh',
           touchAction: 'pan-x pan-y',
           overflow: 'hidden',
+          opacity: isInitialMapReady ? 1 : 0,
+          transition: isAdminView ? undefined : 'opacity 180ms ease-out',
         }}
         aria-label={t('map.ariaLabel')}
       >
@@ -1464,6 +1626,7 @@ function EventMap({
               maxZoom={MAP_CONFIG.MAX_ZOOM}
               opacity={1}
               zIndex={layer.fallbackUrl ? 1 : undefined}
+              eventHandlers={{ load: handleBaseTilesLoaded }}
             />
           ))}
 
@@ -1491,6 +1654,9 @@ function EventMap({
             onMarkerSelect={onMarkerSelect}
             focusMarkerId={focusMarkerId}
             onFocusHandled={() => setFocusMarkerId(null)}
+            initialDataReady={hasInitialMarkersLoaded}
+            onMarkersReady={handleClusterMarkersReady}
+            isFocusZooming={isFocusZooming}
             currentZoom={currentZoom}
             onMarkerDrag={onMarkerDrag}
           />
@@ -1523,6 +1689,11 @@ function EventMap({
           />
         </MapContainer>
       </div>
+      {!isInitialMapReady && (
+        <div className="fixed inset-0 z-[2000]">
+          <PublicLoadingScreen />
+        </div>
+      )}
     </div>
   );
 }
