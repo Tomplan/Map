@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tooltip, Popup } from 'react-leaflet';
 import Icon from '@mdi/react';
 import { mdiMapMarker } from '@mdi/js';
-import BottomSheet from './MobileBottomSheet';
+import { BottomSheetContent } from './MobileBottomSheet';
 import useIsMobile from '../hooks/useIsMobile';
 import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
@@ -250,12 +250,29 @@ const MarkerPopupMobile = ({ marker, onMoreInfo, organizationLogo, showBoothNumb
   );
 };
 
+const AdminMarkerPopup = ({ marker }) => (
+  <Popup
+    closeButton={true}
+    className="marker-popup-scrollable"
+    autoPan={true}
+    maxWidth={360}
+    minWidth={280}
+  >
+    <BottomSheetContent
+      marker={marker}
+      showCloseButton={false}
+      className="max-h-[60vh] overflow-y-auto px-4 pb-4"
+    />
+  </Popup>
+);
+
 // --- Combined helper ---
 export const MarkerUI = ({
   marker,
   onMoreInfo,
   isMobile,
   organizationLogo,
+  isAdminView = false,
   showBoothNumber = true,
   showTooltip = true, // Default to true if not provided
 }) => {
@@ -284,14 +301,19 @@ export const MarkerUI = ({
               <span />
             </Tooltip>
           )}
+        </>
+      )}
+      {!isMobile ? (
+        isAdminView ? (
+          <AdminMarkerPopup marker={marker} />
+        ) : (
           <MarkerPopupDesktop
             marker={marker}
             organizationLogo={organizationLogo}
             showBoothNumber={showBoothNumber}
           />
-        </>
-      )}
-      {isMobile && (
+        )
+      ) : (
         <MarkerPopupMobile
           marker={marker}
           onMoreInfo={onMoreInfo}
