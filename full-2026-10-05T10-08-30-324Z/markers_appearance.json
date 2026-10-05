@@ -1,7 +1,7 @@
 {
   "table": "markers_appearance",
-  "timestamp": "2026-09-04T10-08-27-220Z",
-  "recordCount": 526,
+  "timestamp": "2026-10-05T10-08-30-324Z",
+  "recordCount": 525,
   "data": [
     {
       "id": 1303,
@@ -757,90 +757,6 @@
       "fontFamily": null
     },
     {
-      "id": 1403,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "carabiner",
-      "glyphColor": null,
-      "glyphSize": "20",
-      "glyphAnchor": null,
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1402,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "parachute",
-      "glyphColor": null,
-      "glyphSize": "22",
-      "glyphAnchor": null,
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1401,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "kangaroo",
-      "glyphColor": null,
-      "glyphSize": "22",
-      "glyphAnchor": [
-        -0.5,
-        -6
-      ],
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
       "id": 1004,
       "iconUrl": "glyph-marker-icon-purple.svg",
       "iconSize": [
@@ -920,33 +836,6 @@
         33
       ],
       "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1040,
-      "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": "blue",
-      "glyph": "VW",
-      "glyphColor": "black",
-      "glyphSize": "13",
-      "glyphAnchor": null,
-      "prefix": "",
-      "className": "marker-icon",
-      "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 11,
       "shadowScale": 1,
       "event_year": 2026,
       "fontWeight": null,
@@ -1405,66 +1294,6 @@
       "fontFamily": null
     },
     {
-      "id": 1005,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "music",
-      "glyphColor": "white",
-      "glyphSize": "20",
-      "glyphAnchor": [
-        -0.5,
-        -4.8
-      ],
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1008,
-      "iconUrl": "glyph-marker-icon-yellow.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": "blue",
-      "glyph": "LRCH",
-      "glyphColor": "black",
-      "glyphSize": "7.5",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
-      "prefix": "",
-      "className": "marker-icon",
-      "appearanceLocked": false,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 65,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
       "id": 1030,
       "iconUrl": "glyph-marker-icon-blue.svg",
       "iconSize": [
@@ -1593,36 +1422,6 @@
       "glyphColor": "white",
       "glyphSize": "20",
       "glyphAnchor": null,
-      "prefix": "mdi",
-      "className": "marker-icon",
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2026,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1302,
-      "iconUrl": "glyph-marker-icon-black.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": "blue",
-      "glyph": "tent",
-      "glyphColor": "white",
-      "glyphSize": "20",
-      "glyphAnchor": [
-        0,
-        -7
-      ],
       "prefix": "mdi",
       "className": "marker-icon",
       "appearanceLocked": true,
@@ -1832,6 +1631,153 @@
       "appearanceLocked": true,
       "iconBaseSize": null,
       "glyphBaseSize": null,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
+      "id": 1402,
+      "iconUrl": "glyph-marker-icon-green.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": null,
+      "glyph": null,
+      "glyphColor": null,
+      "glyphSize": "22",
+      "glyphAnchor": null,
+      "prefix": "mdi",
+      "className": null,
+      "appearanceLocked": true,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 15,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
+      "id": 1005,
+      "iconUrl": "glyph-marker-icon-green.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": null,
+      "glyph": "jeepney",
+      "glyphColor": "white",
+      "glyphSize": "20",
+      "glyphAnchor": [
+        -0.5,
+        -7
+      ],
+      "prefix": "mdi",
+      "className": null,
+      "appearanceLocked": true,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 15,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
+      "id": 1401,
+      "iconUrl": "glyph-marker-icon-green.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": null,
+      "glyph": "kangaroo",
+      "glyphColor": null,
+      "glyphSize": "22",
+      "glyphAnchor": [
+        -0.5,
+        -6
+      ],
+      "prefix": "mdi",
+      "className": null,
+      "appearanceLocked": true,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 15,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
+      "id": 1008,
+      "iconUrl": "glyph-marker-icon-yellow.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": "blue",
+      "glyph": "LRCH",
+      "glyphColor": "black",
+      "glyphSize": "7.5",
+      "glyphAnchor": [
+        0,
+        -7
+      ],
+      "prefix": "",
+      "className": "marker-icon",
+      "appearanceLocked": false,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 65,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
+      "id": 1302,
+      "iconUrl": "glyph-marker-icon-black.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": "blue",
+      "glyph": "tent",
+      "glyphColor": "white",
+      "glyphSize": "20",
+      "glyphAnchor": [
+        0,
+        -7
+      ],
+      "prefix": "mdi",
+      "className": "marker-icon",
+      "appearanceLocked": true,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 15,
       "shadowScale": 1,
       "event_year": 2026,
       "fontWeight": null,
@@ -3639,33 +3585,6 @@
         -0.5,
         -7
       ],
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2024,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1403,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "carabiner",
-      "glyphColor": null,
-      "glyphSize": "20",
-      "glyphAnchor": null,
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
@@ -6984,33 +6903,6 @@
         -0.5,
         -7
       ],
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2025,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1403,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "carabiner",
-      "glyphColor": null,
-      "glyphSize": "20",
-      "glyphAnchor": null,
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
@@ -9124,6 +9016,33 @@
       "fontFamily": "sans-serif"
     },
     {
+      "id": 1040,
+      "iconUrl": "glyph-marker-icon-yellow.svg",
+      "iconSize": [
+        25,
+        null
+      ],
+      "iconColor": "blue",
+      "glyph": "UAZ",
+      "glyphColor": "black",
+      "glyphSize": "10",
+      "glyphAnchor": null,
+      "prefix": "",
+      "className": "marker-icon",
+      "appearanceLocked": false,
+      "iconBaseSize": [
+        20,
+        33
+      ],
+      "glyphBaseSize": 11,
+      "shadowScale": 1,
+      "event_year": 2026,
+      "fontWeight": null,
+      "fontStyle": null,
+      "textDecoration": null,
+      "fontFamily": null
+    },
+    {
       "id": 95,
       "iconUrl": null,
       "iconSize": null,
@@ -9143,6 +9062,48 @@
       "fontStyle": null,
       "textDecoration": null,
       "fontFamily": null
+    },
+    {
+      "id": 116,
+      "iconUrl": null,
+      "iconSize": null,
+      "iconColor": null,
+      "glyph": "114",
+      "glyphColor": null,
+      "glyphSize": "8",
+      "glyphAnchor": null,
+      "prefix": null,
+      "className": null,
+      "appearanceLocked": false,
+      "iconBaseSize": null,
+      "glyphBaseSize": null,
+      "shadowScale": null,
+      "event_year": 2026,
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "fontFamily": "sans-serif"
+    },
+    {
+      "id": 114,
+      "iconUrl": null,
+      "iconSize": null,
+      "iconColor": null,
+      "glyph": "112",
+      "glyphColor": null,
+      "glyphSize": "9",
+      "glyphAnchor": null,
+      "prefix": null,
+      "className": null,
+      "appearanceLocked": false,
+      "iconBaseSize": null,
+      "glyphBaseSize": null,
+      "shadowScale": null,
+      "event_year": 2026,
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "fontFamily": "sans-serif"
     },
     {
       "id": 53,
@@ -9260,6 +9221,27 @@
       "fontStyle": null,
       "textDecoration": null,
       "fontFamily": null
+    },
+    {
+      "id": 115,
+      "iconUrl": null,
+      "iconSize": null,
+      "iconColor": null,
+      "glyph": "113",
+      "glyphColor": null,
+      "glyphSize": "8",
+      "glyphAnchor": null,
+      "prefix": null,
+      "className": null,
+      "appearanceLocked": false,
+      "iconBaseSize": null,
+      "glyphBaseSize": null,
+      "shadowScale": null,
+      "event_year": 2026,
+      "fontWeight": "normal",
+      "fontStyle": "normal",
+      "textDecoration": "none",
+      "fontFamily": "sans-serif"
     },
     {
       "id": 17,
@@ -9675,33 +9657,6 @@
         -0.5,
         -7
       ],
-      "prefix": "mdi",
-      "className": null,
-      "appearanceLocked": true,
-      "iconBaseSize": [
-        20,
-        33
-      ],
-      "glyphBaseSize": 15,
-      "shadowScale": 1,
-      "event_year": 2027,
-      "fontWeight": null,
-      "fontStyle": null,
-      "textDecoration": null,
-      "fontFamily": null
-    },
-    {
-      "id": 1403,
-      "iconUrl": "glyph-marker-icon-green.svg",
-      "iconSize": [
-        25,
-        null
-      ],
-      "iconColor": null,
-      "glyph": "carabiner",
-      "glyphColor": null,
-      "glyphSize": "20",
-      "glyphAnchor": null,
       "prefix": "mdi",
       "className": null,
       "appearanceLocked": true,
