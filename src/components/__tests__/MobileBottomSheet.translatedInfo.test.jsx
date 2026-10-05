@@ -58,7 +58,9 @@ jest.mock('../../hooks/useTranslatedCompanyInfo', () => ({
   getSpecialMarkerText: (marker, field, language) =>
     marker?.[`${field}_${language}`] || marker?.[field] || '',
   useTranslatedCompanyInfo: (marker) =>
-    marker?.id >= 1000 ? marker.info_en || marker.info || '' : 'Translated DefenderShop text',
+    marker?.id >= 1000
+      ? marker.info_en || marker.info || ''
+      : 'Translated DefenderShop text\nMore info\n\nNew paragraph',
 }));
 
 jest.mock('react-i18next', () => ({
@@ -91,7 +93,12 @@ describe('MobileBottomSheet translated info', () => {
       await Promise.resolve();
     });
 
-    expect(screen.getByText('Translated DefenderShop text')).toBeInTheDocument();
+    const translatedInfo = screen.getByText(/Translated DefenderShop text/);
+    expect(translatedInfo).toBeInTheDocument();
+    expect(translatedInfo.textContent).toBe(
+      'Translated DefenderShop text\nMore info\n\nNew paragraph',
+    );
+    expect(translatedInfo).toHaveClass('whitespace-pre-wrap');
     expect(screen.queryByText('Legacy DefenderShop text')).not.toBeInTheDocument();
 
     const boothLabel = screen.getByText('Booth A1');

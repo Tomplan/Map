@@ -104,7 +104,7 @@ export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, cl
 
       {/* Info */}
       {translatedInfo && (
-        <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200">
+        <div className="text-sm text-gray-600 mt-2 pt-2 border-t border-gray-200 whitespace-pre-wrap">
           {translatedInfo}
         </div>
       )}
