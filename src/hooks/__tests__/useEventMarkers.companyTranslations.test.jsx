@@ -45,6 +45,7 @@ jest.mock('../../supabaseClient', () => {
       },
     ],
     event_subscriptions: [],
+    public_map_data_version: [{ version: 1 }],
   };
 
   const makeResult = (table) => Promise.resolve({ data: tableData[table] || [], error: null });
@@ -53,6 +54,9 @@ jest.mock('../../supabaseClient', () => {
     select: jest.fn(() => ({
       or: jest.fn(() => makeResult(table)),
       eq: jest.fn(() => makeResult(table)),
+      maybeSingle: jest.fn(() =>
+        Promise.resolve({ data: tableData[table]?.[0] || null, error: null }),
+      ),
     })),
   }));
 
@@ -84,6 +88,9 @@ jest.mock('../../supabaseClient', () => {
       mockChannel,
       mockRemoveChannel,
       registrations,
+      setPublicDataVersion: (version) => {
+        tableData.public_map_data_version = [{ version }];
+      },
     },
   };
 });
@@ -93,6 +100,11 @@ import useEventMarkers from '../useEventMarkers';
 function Probe() {
   const { markers, loading } = useEventMarkers(2026, true);
   return <div data-testid="probe">{loading ? 'loading' : JSON.stringify(markers)}</div>;
+}
+
+function PublicProbe() {
+  const { markers, loading } = useEventMarkers(2026, false);
+  return <div data-testid="public-probe">{loading ? 'loading' : JSON.stringify(markers)}</div>;
 }
 
 describe('useEventMarkers company translations realtime', () => {
@@ -153,5 +165,38 @@ describe('useEventMarkers company translations realtime', () => {
       ).length;
       expect(coreCallsAfterRealtimeUpdate).toBeGreaterThan(coreCallsAfterInitialLoad);
     });
+  });
+
+  it('visitors reload markers only when the public data version changes', async () => {
+    const { __mocks__ } = require('../../supabaseClient');
+    __mocks__.setPublicDataVersion(1);
+
+    const { unmount } = render(<PublicProbe />);
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(400);
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('public-probe').textContent).toContain('DefenderShop');
+    });
+
+    const coreCalls = () =>
+      __mocks__.mockFrom.mock.calls.filter(([table]) => table === 'markers_core').length;
+    const initialCoreCalls = coreCalls();
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(5 * 60 * 1000);
+    });
+    expect(coreCalls()).toBe(initialCoreCalls);
+    expect(__mocks__.mockChannel).not.toHaveBeenCalled();
+
+    __mocks__.setPublicDataVersion(2);
+
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000);
+    });
+    await waitFor(() => expect(coreCalls()).toBeGreaterThan(initialCoreCalls));
+
+    unmount();
   });
 });

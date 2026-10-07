@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { getMarkerSnapshot, setMarkerSnapshot } from '../services/idbCache';
+import { subscribePublicDataVersion } from '../services/publicDataVersion';
 
 /**
  * Updated hook to fetch markers with company assignments
@@ -228,7 +229,18 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
   );
 
   useEffect(() => {
-    loadMarkers(isOnline);
+    let isActive = true;
+    let versionSub = null;
+
+    if (!isAdmin && isOnline) {
+      // Visitors: wait for the baseline version, then reload only when it changes
+      versionSub = subscribePublicDataVersion(() => loadMarkers(true));
+      versionSub.ready.then(() => {
+        if (isActive) loadMarkers(isOnline);
+      });
+    } else {
+      loadMarkers(isOnline);
+    }
 
     function handleOnline() {
       setIsOnline(true);
@@ -249,9 +261,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
-    // Foreground Sync: Fetch fresh data when the user brings the app back to visibility
+    // Foreground sync for admins; visitors get their foreground check from the version poller
     function handleVisibilityChange() {
-      if (document.visibilityState === 'visible' && isOnline) {
+      if (isAdmin && document.visibilityState === 'visible' && isOnline) {
         loadMarkers(true);
       }
     }
@@ -261,17 +273,6 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
       loadMarkers(true);
     }
     window.addEventListener('admin_subscription_changed', handleAdminSubscriptionChange);
-
-    // Background Polling: Fetch fresh data periodically for non-admin viewers to avoid stale data
-    let pollingInterval = null;
-    if (!isAdmin && isOnline) {
-      pollingInterval = setInterval(
-        () => {
-          loadMarkers(true);
-        },
-        5 * 60 * 1000,
-      ); // Poll every 5 minutes
-    }
 
     // Supabase realtime subscriptions for all related tables. Only create
     // channels when online AND when the user is an admin to avoid hitting
@@ -448,8 +449,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
     }
 
     return () => {
+      isActive = false;
       clearTimeout(debounceTimerRef.current);
-      if (pollingInterval) clearInterval(pollingInterval);
+      if (versionSub) versionSub.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);

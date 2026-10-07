@@ -430,26 +430,32 @@ export default function useEventSubscriptions(eventYear) {
       }
     }
 
-    // start realtime channel if first subscriber
-    if (!currentEntry.channel) {
-      currentEntry.channel = supabase
-        .channel(`event-subscriptions-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'event_subscriptions',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          () => {
-            if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
-            currentEntry.reloadTimeout = setTimeout(() => {
-              loadSubscriptions(true);
-            }, 500);
-          },
-        )
-        .subscribe();
+    // Realtime only for logged-in users; anonymous visitors must not hold a websocket
+    if (!currentEntry.channel && !currentEntry.channelInit) {
+      currentEntry.channelInit = true;
+      supabase.auth.getSession().then(({ data }) => {
+        // Reset so a later mount (e.g. an admin screen after login) re-checks the session
+        currentEntry.channelInit = false;
+        if (!data?.session?.user || currentEntry.channel || currentEntry.refCount <= 0) return;
+        currentEntry.channel = supabase
+          .channel(`event-subscriptions-changes-${eventYear}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'event_subscriptions',
+              filter: `event_year=eq.${eventYear}`,
+            },
+            () => {
+              if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
+              currentEntry.reloadTimeout = setTimeout(() => {
+                loadSubscriptions(true);
+              }, 500);
+            },
+          )
+          .subscribe();
+      });
     }
 
     return () => {
