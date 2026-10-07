@@ -1,11 +1,12 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 
 // Mock supabase client used by the context
 jest.mock('../../supabaseClient', () => ({
   supabase: {
     auth: {
       getSession: jest.fn(() => Promise.resolve({ data: { session: { user: { id: 'admin' } } } })),
+      onAuthStateChange: jest.fn(() => ({ data: { subscription: { unsubscribe: jest.fn() } } })),
     },
     from: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
@@ -111,5 +112,69 @@ describe('OrganizationLogoProvider', () => {
 
     expect(screen.getByTestId('logo').textContent).toBe('/mocked/default/logo.png');
     expect(screen.getByTestId('raw').textContent).toBe('fallback.png');
+  });
+
+  describe('realtime channel', () => {
+    const mockLogoFetch = () =>
+      supabase.from.mockReturnValueOnce({
+        select: () => ({
+          eq: () => ({
+            single: () => Promise.resolve({ data: { logo: 'company.png' }, error: null }),
+          }),
+        }),
+      });
+
+    const renderProvider = async () => {
+      const view = render(
+        <OrganizationLogoProvider>
+          <Consumer />
+        </OrganizationLogoProvider>,
+      );
+      await waitFor(() => expect(screen.getByTestId('loading').textContent).toBe('0'));
+      await act(async () => {
+        await Promise.resolve();
+      });
+      return view;
+    };
+
+    it('does not open a realtime channel for anonymous visitors', async () => {
+      mockLogoFetch();
+      supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
+
+      await renderProvider();
+
+      expect(supabase.channel).not.toHaveBeenCalled();
+      expect(screen.getByTestId('raw').textContent).toBe('company.png');
+    });
+
+    it('opens the channel for a logged-in user and removes it on unmount', async () => {
+      mockLogoFetch();
+
+      const { unmount } = await renderProvider();
+
+      expect(supabase.channel).toHaveBeenCalledWith('organization-logo-sync');
+
+      unmount();
+      expect(supabase.removeChannel).toHaveBeenCalledTimes(1);
+    });
+
+    it('opens the channel when a user logs in after the app has loaded', async () => {
+      mockLogoFetch();
+      supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
+      let authCallback;
+      supabase.auth.onAuthStateChange.mockImplementationOnce((cb) => {
+        authCallback = cb;
+        return { data: { subscription: { unsubscribe: jest.fn() } } };
+      });
+
+      await renderProvider();
+      expect(supabase.channel).not.toHaveBeenCalled();
+
+      act(() => {
+        authCallback('SIGNED_IN', { user: { id: 'admin' } });
+      });
+
+      expect(supabase.channel).toHaveBeenCalledWith('organization-logo-sync');
+    });
   });
 });

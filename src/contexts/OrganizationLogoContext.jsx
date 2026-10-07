@@ -77,45 +77,69 @@ export function OrganizationLogoProvider({ children }) {
 
     fetchOrganizationLogo();
 
-    // Subscribe to changes in organization_profile
-    const channel = supabase
-      .channel('organization-logo-sync')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'organization_profile',
-          filter: 'id=eq.1',
-        },
-        (payload) => {
-          if (payload.new) {
-            // If the new value is empty/cleared, fall back to static default path
-            if (!payload.new.logo || payload.new.logo.trim() === '') {
-              // Cleared -> restore raw default & resolved default
-              setOrganizationLogoRaw((prev) =>
-                prev === BRANDING_CONFIG.DEFAULT_LOGO ? prev : BRANDING_CONFIG.DEFAULT_LOGO,
-              );
-              setOrganizationLogo((prev) =>
-                prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
-              );
-              setDisplayLogo((prev) =>
-                prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
-              );
-            } else {
-              const raw = payload.new.logo;
-              const normalized = getLogoPath(raw);
-              setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
-              setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
-              preloadDisplayLogo(normalized);
+    // Realtime only for logged-in users; anonymous visitors must not hold a websocket
+    let channel = null;
+    let cancelled = false;
+
+    const startChannel = () => {
+      if (channel || cancelled) return;
+      channel = supabase
+        .channel('organization-logo-sync')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'organization_profile',
+            filter: 'id=eq.1',
+          },
+          (payload) => {
+            if (payload.new) {
+              // If the new value is empty/cleared, fall back to static default path
+              if (!payload.new.logo || payload.new.logo.trim() === '') {
+                // Cleared -> restore raw default & resolved default
+                setOrganizationLogoRaw((prev) =>
+                  prev === BRANDING_CONFIG.DEFAULT_LOGO ? prev : BRANDING_CONFIG.DEFAULT_LOGO,
+                );
+                setOrganizationLogo((prev) =>
+                  prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
+                );
+                setDisplayLogo((prev) =>
+                  prev === getDefaultLogoPath() ? prev : getDefaultLogoPath(),
+                );
+              } else {
+                const raw = payload.new.logo;
+                const normalized = getLogoPath(raw);
+                setOrganizationLogoRaw((prev) => (prev === raw ? prev : raw));
+                setOrganizationLogo((prev) => (prev === normalized ? prev : normalized));
+                preloadDisplayLogo(normalized);
+              }
             }
-          }
-        },
-      )
-      .subscribe();
+          },
+        )
+        .subscribe();
+    };
+
+    const stopChannel = () => {
+      if (!channel) return;
+      supabase.removeChannel(channel);
+      channel = null;
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session?.user) startChannel();
+    });
+
+    // Covers an admin who logs in after the app has already loaded
+    const authListener = supabase.auth.onAuthStateChange?.((_event, session) => {
+      if (session?.user) startChannel();
+      else stopChannel();
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      authListener?.data?.subscription?.unsubscribe?.();
+      stopChannel();
     };
   }, [preloadDisplayLogo]);
 
