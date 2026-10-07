@@ -184,7 +184,7 @@ function AppContent() {
     eventName: null, // Will be set from database or use translation
   });
 
-  // Fetch branding from organization_profile and subscribe to changes
+  // Fetch branding from organization_profile
   useEffect(() => {
     async function fetchBranding() {
       const { data, error } = await supabase
@@ -209,6 +209,12 @@ function AppContent() {
       }
     }
     fetchBranding();
+  }, [t]);
+
+  // Realtime branding updates only for logged-in users; visitors must not hold a websocket
+  const isLoggedIn = !!user;
+  useEffect(() => {
+    if (!isLoggedIn) return undefined;
     const channel = supabase
       .channel('organization-profile-branding-sync')
       .on(
@@ -236,7 +242,7 @@ function AppContent() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [t]);
+  }, [isLoggedIn, t]);
 
   return (
     <OnboardingProvider>
