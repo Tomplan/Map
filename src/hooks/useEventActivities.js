@@ -5,6 +5,62 @@ import {
   readCachedEventActivities,
   writeCachedEventActivities,
 } from '../services/eventActivitiesCache';
+import { subscribePublicDataVersion } from '../services/publicDataVersion';
+
+// Concurrent reads for the same year (remounts, duplicate effects, poller) share one request.
+const inFlightFetches = new Map();
+
+function fetchGroupedActivities(targetYear, share) {
+  if (share && inFlightFetches.has(targetYear)) return inFlightFetches.get(targetYear);
+
+  const promise = (async () => {
+    // Fetch activities with basic company info and badge visibility
+    // TODO: Remove fallback logic after event_year column is added
+    let query = supabase
+      .from('event_activities')
+      .select(
+        `
+          id, organization_id, day, start_time, end_time, display_order,
+          title_nl, title_en, title_de,
+          description_nl, description_en, description_de,
+          location_type, company_id,
+          location_nl, location_en, location_de,
+          badge_nl, badge_en, badge_de,
+          is_active, show_location_type_badge,
+          created_at, updated_at, created_by, updated_by,
+          companies!event_activities_company_id_fkey (
+            id,
+            name
+          )
+        `,
+      )
+      .order('display_order', { ascending: true });
+
+    // Only filter by event_year if the column exists (after migration)
+    // For now, this will work with existing data
+    try {
+      query = query.eq('event_year', targetYear);
+    } catch (e) {
+      // Column doesn't exist yet, fetch all activities
+      console.warn('event_year column not found, fetching all activities');
+    }
+
+    const { data: activitiesData, error: fetchError } = await query;
+
+    if (fetchError) throw fetchError;
+
+    // Note: company_translations table only contains 'info' field for descriptions,
+    // not company names. Company names are stored directly in the companies table.
+    // For now, we'll use the company name from the companies table directly.
+
+    return groupActivitiesByDay(activitiesData || []);
+  })().finally(() => {
+    if (inFlightFetches.get(targetYear) === promise) inFlightFetches.delete(targetYear);
+  });
+
+  inFlightFetches.set(targetYear, promise);
+  return promise;
+}
 
 /**
  * Hook to manage Event Activities (year-specific program management)
@@ -24,63 +80,22 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
     eventYearRef.current = eventYear;
   }, [eventYear]);
 
-  // Load activities for specific year
-  const loadActivities = useCallback(async (year) => {
+  // Load activities for specific year; `share` reuses an in-flight read (never use after a mutation)
+  const loadActivities = useCallback(async (year, silent = false, share = silent) => {
+    // Always use the latest eventYear from ref if no year specified
+    const targetYear = year !== undefined ? year : eventYearRef.current;
+
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
 
-      // Always use the latest eventYear from ref if no year specified
-      const targetYear = year !== undefined ? year : eventYearRef.current;
-
-      // Fetch activities with basic company info and badge visibility
-      // TODO: Remove fallback logic after event_year column is added
-      let query = supabase
-        .from('event_activities')
-        .select(
-          `
-          id, organization_id, day, start_time, end_time, display_order,
-          title_nl, title_en, title_de,
-          description_nl, description_en, description_de,
-          location_type, company_id,
-          location_nl, location_en, location_de,
-          badge_nl, badge_en, badge_de,
-          is_active, show_location_type_badge,
-          created_at, updated_at, created_by, updated_by,
-          companies!event_activities_company_id_fkey (
-            id,
-            name
-          )
-        `,
-        )
-        .order('display_order', { ascending: true });
-
-      // Only filter by event_year if the column exists (after migration)
-      // For now, this will work with existing data
-      try {
-        query = query.eq('event_year', targetYear);
-      } catch (e) {
-        // Column doesn't exist yet, fetch all activities
-        console.warn('event_year column not found, fetching all activities');
-      }
-
-      const { data: activitiesData, error: fetchError } = await query;
-
-      if (fetchError) throw fetchError;
-
-      // Note: company_translations table only contains 'info' field for descriptions,
-      // not company names. Company names are stored directly in the companies table.
-      // For now, we'll use the company name from the companies table directly.
-
-      // Group activities by day
-      const groupedActivities = groupActivitiesByDay(activitiesData || []);
+      const groupedActivities = await fetchGroupedActivities(targetYear, share);
 
       setActivities(groupedActivities);
       writeCachedEventActivities(targetYear, groupedActivities);
     } catch (err) {
       console.error('Error fetching event activities:', err);
 
-      const targetYear = year !== undefined ? year : eventYearRef.current;
       const cachedActivities = readCachedEventActivities(targetYear);
 
       if (cachedActivities) {
@@ -299,57 +314,66 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
     [eventYear, loadActivities],
   );
 
-  // Initial load
+  // Initial load and reload when the year changes
   useEffect(() => {
-    loadActivities();
-  }, [loadActivities]);
-
-  // Reload activities when eventYear changes
-  useEffect(() => {
-    loadActivities();
+    loadActivities(undefined, false, true);
   }, [eventYear, loadActivities]);
 
-  // Subscribe to realtime changes - filter by event year
+  // Realtime only for logged-in users; visitors poll the shared data version instead of holding a websocket
   useEffect(() => {
     let channel = null;
+    let versionSub = null;
+    let cancelled = false;
 
     if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
-      channel = supabase
-        .channel(`event-activities-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'event_activities',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          (payload) => {
-            // For INSERT events, check if we already have this activity locally
-            if (payload.eventType === 'INSERT' && payload.new) {
-              setActivities((prev) => {
-                // Check if this activity already exists
-                const day = payload.new.day;
-                const exists = prev[day]?.some((a) => a.id === payload.new.id);
-                if (exists) {
-                  // We already have it (we created it locally), no need to reload
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        if (!data?.session?.user) {
+          versionSub = subscribePublicDataVersion(() => loadActivities(undefined, true));
+          versionSub.ready.then(() => {
+            if (!cancelled) loadActivities(undefined, true);
+          });
+          return;
+        }
+        channel = supabase
+          .channel(`event-activities-changes-${eventYear}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'event_activities',
+              filter: `event_year=eq.${eventYear}`,
+            },
+            (payload) => {
+              // For INSERT events, check if we already have this activity locally
+              if (payload.eventType === 'INSERT' && payload.new) {
+                setActivities((prev) => {
+                  // Check if this activity already exists
+                  const day = payload.new.day;
+                  const exists = prev[day]?.some((a) => a.id === payload.new.id);
+                  if (exists) {
+                    // We already have it (we created it locally), no need to reload
+                    return prev;
+                  }
+                  // New activity from another user/session, reload to get full data
+                  loadActivities();
                   return prev;
-                }
-                // New activity from another user/session, reload to get full data
+                });
+              } else {
+                // For UPDATE/DELETE, always reload
                 loadActivities();
-                return prev;
-              });
-            } else {
-              // For UPDATE/DELETE, always reload
-              loadActivities();
-            }
-          },
-        )
-        .subscribe();
+              }
+            },
+          )
+          .subscribe();
+      });
     }
 
     return () => {
+      cancelled = true;
       if (channel) supabase.removeChannel(channel);
+      if (versionSub) versionSub.unsubscribe();
     };
   }, [eventYear, loadActivities]);
 

@@ -22,13 +22,11 @@ jest.mock('../../supabaseClient', () => {
         getSession: jest.fn(() =>
           Promise.resolve({ data: { session: { user: { id: 'admin' } } } }),
         ),
+        getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }),
       },
       from: mockFrom,
       channel: mockChannel,
       removeChannel: mockRemoveChannel,
-      auth: {
-        getUser: jest.fn().mockResolvedValue({ data: { user: { email: 'test@example.com' } } }),
-      },
     },
     __mocks__: { mockFrom, mockSelect, mockChannel, mockSubscribe, mockRemoveChannel, mockOn },
   };
@@ -62,7 +60,31 @@ describe('useAssignments cache/dedupe', () => {
     expect(supabase.from).toHaveBeenCalledTimes(2);
     expect(supabase.from).toHaveBeenNthCalledWith(1, 'markers_core');
     expect(supabase.from).toHaveBeenNthCalledWith(2, 'assignments');
-    expect(supabase.channel).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(supabase.channel).toHaveBeenCalledTimes(1));
     expect(String(supabase.channel.mock.calls[0][0])).toMatch(/assignments-changes-2026/);
+  });
+
+  it('does not open a realtime channel for anonymous visitors', async () => {
+    const { supabase } = require('../../supabaseClient');
+    supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
+
+    render(<Probe id="v" year={2027} />);
+
+    await waitFor(() => expect(screen.getByTestId('p-v').textContent).not.toMatch(/loading/));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(supabase.channel).not.toHaveBeenCalled();
+    // visitors still load the data once
+    expect(supabase.from).toHaveBeenCalledWith('assignments');
+  });
+
+  it('removes the channel when the last logged-in consumer unmounts', async () => {
+    const { supabase } = require('../../supabaseClient');
+
+    const { unmount } = render(<Probe id="l" year={2028} />);
+    await waitFor(() => expect(supabase.channel).toHaveBeenCalledTimes(1));
+
+    unmount();
+    expect(supabase.removeChannel).toHaveBeenCalledTimes(1);
   });
 });

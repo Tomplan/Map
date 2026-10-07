@@ -450,34 +450,40 @@ export default function useAssignments(eventYearInput = new Date().getFullYear()
       }
     }
 
-    // start realtime channel if first subscriber
-    if (!currentEntry.channel) {
-      currentEntry.channel = supabase
-        .channel(`assignments-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'assignments',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          (payload) => {
-            if (payload.eventType === 'INSERT' && payload.new) {
-              // insert could come from self, just reload to keep logic simple
-              currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
-              currentEntry.reloadTimeout = setTimeout(() => {
-                loadAssignments(true);
-              }, 500);
-            } else {
-              currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
-              currentEntry.reloadTimeout = setTimeout(() => {
-                loadAssignments(true);
-              }, 500);
-            }
-          },
-        )
-        .subscribe();
+    // Realtime only for logged-in users; anonymous visitors must not hold a websocket
+    if (!currentEntry.channel && !currentEntry.channelInit) {
+      currentEntry.channelInit = true;
+      supabase.auth.getSession().then(({ data }) => {
+        // Reset so a later mount (e.g. an admin screen after login) re-checks the session
+        currentEntry.channelInit = false;
+        if (!data?.session?.user || currentEntry.channel || currentEntry.refCount <= 0) return;
+        currentEntry.channel = supabase
+          .channel(`assignments-changes-${eventYear}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'assignments',
+              filter: `event_year=eq.${eventYear}`,
+            },
+            (payload) => {
+              if (payload.eventType === 'INSERT' && payload.new) {
+                // insert could come from self, just reload to keep logic simple
+                currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
+                currentEntry.reloadTimeout = setTimeout(() => {
+                  loadAssignments(true);
+                }, 500);
+              } else {
+                currentEntry.reloadTimeout && clearTimeout(currentEntry.reloadTimeout);
+                currentEntry.reloadTimeout = setTimeout(() => {
+                  loadAssignments(true);
+                }, 500);
+              }
+            },
+          )
+          .subscribe();
+      });
     }
 
     return () => {
