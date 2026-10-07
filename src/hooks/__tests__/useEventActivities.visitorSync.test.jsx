@@ -48,6 +48,19 @@ describe('useEventActivities realtime vs. version polling', () => {
     expect(subscribePublicDataVersion).not.toHaveBeenCalled();
   });
 
+  it('concurrent mounts share one activities request', async () => {
+    const { supabase } = require('../../supabaseClient');
+    render(
+      <div>
+        <Probe />
+        <Probe />
+        <Probe />
+      </div>,
+    );
+    await waitFor(() => expect(screen.getAllByTestId('p')[0].textContent).toBe('done'));
+    expect(supabase.from.mock.calls.filter(([t]) => t === 'event_activities')).toHaveLength(1);
+  });
+
   it('visitors use the version poller and open no channel', async () => {
     const { supabase } = require('../../supabaseClient');
     supabase.auth.getSession.mockResolvedValueOnce({ data: { session: null } });
