@@ -5,6 +5,7 @@ import {
   readCachedEventActivities,
   writeCachedEventActivities,
 } from '../services/eventActivitiesCache';
+import { subscribePublicDataVersion } from '../services/publicDataVersion';
 
 /**
  * Hook to manage Event Activities (year-specific program management)
@@ -25,9 +26,9 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
   }, [eventYear]);
 
   // Load activities for specific year
-  const loadActivities = useCallback(async (year) => {
+  const loadActivities = useCallback(async (year, silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       setError(null);
 
       // Always use the latest eventYear from ref if no year specified
@@ -309,47 +310,61 @@ export default function useEventActivities(eventYear = new Date().getFullYear())
     loadActivities();
   }, [eventYear, loadActivities]);
 
-  // Subscribe to realtime changes - filter by event year
+  // Realtime only for logged-in users; visitors poll the shared data version instead of holding a websocket
   useEffect(() => {
     let channel = null;
+    let versionSub = null;
+    let cancelled = false;
 
     if (typeof navigator !== 'undefined' ? navigator.onLine : true) {
-      channel = supabase
-        .channel(`event-activities-changes-${eventYear}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'event_activities',
-            filter: `event_year=eq.${eventYear}`,
-          },
-          (payload) => {
-            // For INSERT events, check if we already have this activity locally
-            if (payload.eventType === 'INSERT' && payload.new) {
-              setActivities((prev) => {
-                // Check if this activity already exists
-                const day = payload.new.day;
-                const exists = prev[day]?.some((a) => a.id === payload.new.id);
-                if (exists) {
-                  // We already have it (we created it locally), no need to reload
+      supabase.auth.getSession().then(({ data }) => {
+        if (cancelled) return;
+        if (!data?.session?.user) {
+          versionSub = subscribePublicDataVersion(() => loadActivities(undefined, true));
+          versionSub.ready.then(() => {
+            if (!cancelled) loadActivities(undefined, true);
+          });
+          return;
+        }
+        channel = supabase
+          .channel(`event-activities-changes-${eventYear}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'event_activities',
+              filter: `event_year=eq.${eventYear}`,
+            },
+            (payload) => {
+              // For INSERT events, check if we already have this activity locally
+              if (payload.eventType === 'INSERT' && payload.new) {
+                setActivities((prev) => {
+                  // Check if this activity already exists
+                  const day = payload.new.day;
+                  const exists = prev[day]?.some((a) => a.id === payload.new.id);
+                  if (exists) {
+                    // We already have it (we created it locally), no need to reload
+                    return prev;
+                  }
+                  // New activity from another user/session, reload to get full data
+                  loadActivities();
                   return prev;
-                }
-                // New activity from another user/session, reload to get full data
+                });
+              } else {
+                // For UPDATE/DELETE, always reload
                 loadActivities();
-                return prev;
-              });
-            } else {
-              // For UPDATE/DELETE, always reload
-              loadActivities();
-            }
-          },
-        )
-        .subscribe();
+              }
+            },
+          )
+          .subscribe();
+      });
     }
 
     return () => {
+      cancelled = true;
       if (channel) supabase.removeChannel(channel);
+      if (versionSub) versionSub.unsubscribe();
     };
   }, [eventYear, loadActivities]);
 
