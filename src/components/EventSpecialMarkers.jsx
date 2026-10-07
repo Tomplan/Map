@@ -53,7 +53,9 @@ function EventSpecialMarkers({
   const [contextMenuLoading, setContextMenuLoading] = useState(false);
 
   // Load subscriptions (assignments not needed for special markers)
-  const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
+  const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear(), {
+    enabled: !!isAdminView,
+  });
 
   // Dialog context for confirmations
   const { confirm } = useDialog();

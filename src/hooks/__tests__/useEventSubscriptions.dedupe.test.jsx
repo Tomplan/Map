@@ -34,6 +34,11 @@ function Probe({ year, id }) {
   return <div data-testid={`p-${id}`}>{loading ? 'loading' : JSON.stringify(subscriptions)}</div>;
 }
 
+function DisabledProbe({ year }) {
+  const { loading } = useEventSubscriptions(year, { enabled: false });
+  return <div data-testid="disabled">{loading ? 'loading' : 'idle'}</div>;
+}
+
 describe('useEventSubscriptions cache/dedupe', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -68,6 +73,17 @@ describe('useEventSubscriptions cache/dedupe', () => {
 
     expect(supabase.channel).not.toHaveBeenCalled();
     expect(supabase.from).toHaveBeenCalledWith('event_subscriptions');
+  });
+
+  it('does not load or subscribe when disabled (visitors)', async () => {
+    const { supabase } = require('../../supabaseClient');
+    render(<DisabledProbe year={2029} />);
+
+    expect(screen.getByTestId('disabled').textContent).toBe('idle');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(supabase.from).not.toHaveBeenCalled();
+    expect(supabase.channel).not.toHaveBeenCalled();
   });
 
   it('removes the channel when the last logged-in consumer unmounts', async () => {

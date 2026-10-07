@@ -24,6 +24,12 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
     eventYearRef.current = eventYear;
   }, [eventYear]);
 
+  // Subscription rows hold private contact data: only logged-in users may fetch them
+  const isAdminRef = useRef(isAdmin);
+  useEffect(() => {
+    isAdminRef.current = isAdmin;
+  }, [isAdmin]);
+
   const loadMarkersCore = useCallback(async (online) => {
     // Always use the latest eventYear from ref
     const targetYear = eventYearRef.current;
@@ -63,7 +69,9 @@ export default function useEventMarkers(eventYear = new Date().getFullYear(), is
           `,
             )
             .eq('event_year', targetYear),
-          supabase.from('event_subscriptions').select('*').eq('event_year', targetYear),
+          isAdminRef.current
+            ? supabase.from('event_subscriptions').select('*').eq('event_year', targetYear)
+            : Promise.resolve({ data: [], error: null }),
           supabase.from('markers_appearance').select('*').or('id.eq.-1,id.eq.-2'), // Fetch defaults separately
         ]);
 

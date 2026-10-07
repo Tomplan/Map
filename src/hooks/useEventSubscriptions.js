@@ -92,9 +92,10 @@ export const _subscribeCompany_internal = async (eventYear, companyId, subscript
 /**
  * Hook for managing event subscriptions (year-specific company participation)
  * @param {number} eventYear - The year to load subscriptions for
+ * @param {{enabled?: boolean}} options - enabled=false skips loading and realtime (visitors must not read private contact data)
  * @returns {object} Subscriptions data and CRUD operations
  */
-export default function useEventSubscriptions(eventYear) {
+export default function useEventSubscriptions(eventYear, { enabled = true } = {}) {
   // cache per eventYear
   if (!useEventSubscriptions.cache) useEventSubscriptions.cache = new Map();
   let entry = useEventSubscriptions.cache.get(eventYear);
@@ -379,6 +380,8 @@ export default function useEventSubscriptions(eventYear) {
 
   // hook instance lifecycle: register listener / kick off load / start channel
   useEffect(() => {
+    if (!enabled) return undefined;
+
     // update entry reference (in case eventYear changed)
     let currentEntry = useEventSubscriptions.cache.get(eventYear);
     if (!currentEntry) {
@@ -476,10 +479,10 @@ export default function useEventSubscriptions(eventYear) {
       }
       if (currentEntry.reloadTimeout) clearTimeout(currentEntry.reloadTimeout);
     };
-  }, [eventYear, loadSubscriptions]);
+  }, [eventYear, loadSubscriptions, enabled]);
   return {
     subscriptions: local.subscriptions,
-    loading: local.loading,
+    loading: enabled ? local.loading : false,
     error: local.error,
     subscribeCompany,
     updateSubscription,

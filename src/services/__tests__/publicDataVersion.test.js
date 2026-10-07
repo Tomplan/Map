@@ -24,13 +24,17 @@ const flush = async () => {
 };
 
 describe('publicDataVersion poller', () => {
+  let randomSpy;
+
   beforeEach(() => {
     jest.useFakeTimers();
+    randomSpy = jest.spyOn(Math, 'random').mockReturnValue(0.5);
     mockVersion = 5;
     mockError = null;
   });
 
   afterEach(() => {
+    randomSpy.mockRestore();
     jest.useRealTimers();
   });
 

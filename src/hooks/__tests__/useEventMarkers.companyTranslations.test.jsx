@@ -199,4 +199,27 @@ describe('useEventMarkers company translations realtime', () => {
 
     unmount();
   });
+
+  it('visitors never fetch private event_subscriptions, admins do', async () => {
+    const { __mocks__ } = require('../../supabaseClient');
+    const subscriptionCalls = () =>
+      __mocks__.mockFrom.mock.calls.filter(([table]) => table === 'event_subscriptions').length;
+
+    const visitor = render(<PublicProbe />);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(400);
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('public-probe').textContent).toContain('DefenderShop');
+    });
+    expect(subscriptionCalls()).toBe(0);
+    visitor.unmount();
+
+    const admin = render(<Probe />);
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(400);
+    });
+    await waitFor(() => expect(subscriptionCalls()).toBeGreaterThan(0));
+    admin.unmount();
+  });
 });
