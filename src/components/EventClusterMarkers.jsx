@@ -44,7 +44,7 @@ const getIconFile = (
   assignedDefault = null,
   unassignedDefault = null,
   has_arrived = false,
-  arrivedColor = 'green'
+  arrivedColor = 'green',
 ) => {
   // If favorited, always use yellow marker
   if (isFavorited) {
@@ -82,7 +82,7 @@ const createIcon = (
   assignedDefault = null,
   unassignedDefault = null,
   has_arrived = false,
-  arrivedColor = 'green'
+  arrivedColor = 'green',
 ) => {
   let className = marker.type ? `marker-icon marker-type-${marker.type}` : 'marker-icon';
   if (marker.id < 1000) className += ' booth-marker-icon';
@@ -116,7 +116,7 @@ const createIcon = (
       assignedDefault,
       unassignedDefault,
       has_arrived,
-      arrivedColor
+      arrivedColor,
     ),
     iconSize,
     iconBaseSize: baseSize,
@@ -365,7 +365,9 @@ function EventClusterMarkers({
   const [contextMenuLoading, setContextMenuLoading] = useState(false);
 
   // Load subscriptions and assignments (only when in admin view and year is provided)
-  const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear());
+  const { subscriptions } = useEventSubscriptions(selectedYear || new Date().getFullYear(), {
+    enabled: !!isAdminView,
+  });
   const localAssignmentsState = useAssignments(selectedYear || new Date().getFullYear());
   const finalAssignmentsState = assignmentsState || localAssignmentsState;
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
@@ -618,12 +620,19 @@ function EventClusterMarkers({
           defaultMarkers.assigned,
           defaultMarkers.unassigned,
           isAdminView && !!marker.sub_has_arrived,
-          arrivedColor
+          arrivedColor,
         );
       }
       return iconsByMarker.current[key];
     },
-    [isFavorite, currentZoom, isAdminView, applyVisitorSizing, defaultMarkers, orgSettings?.arrived_marker_color],
+    [
+      isFavorite,
+      currentZoom,
+      isAdminView,
+      applyVisitorSizing,
+      defaultMarkers,
+      orgSettings?.arrived_marker_color,
+    ],
   );
 
   // Clean up stale cache entries when markers change to prevent memory leaks
@@ -753,9 +762,7 @@ function EventClusterMarkers({
       )}
 
       {/* MOBILE Bottom Sheet */}
-      {isMobile && (
-        <BottomSheet marker={selectedMarker} onClose={() => setSelectedMarker(null)} />
-      )}
+      {isMobile && <BottomSheet marker={selectedMarker} onClose={() => setSelectedMarker(null)} />}
     </>
   );
 }
