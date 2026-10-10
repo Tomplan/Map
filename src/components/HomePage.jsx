@@ -248,7 +248,7 @@ function HomePage({
 
       {/* Event Info Cards - Placeholder */}
       <div className="max-w-screen-xl mx-auto px-4 py-6">
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-flow-col md:grid-rows-2 md:grid-cols-2 gap-4">
           {/* Opening Hours */}
           <div className="bg-white rounded-lg shadow p-6">
             <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
@@ -256,6 +256,15 @@ function HomePage({
               {t('homePage.openingHours')}
             </h3>
             <p className="text-gray-700 whitespace-pre-line">{t('homePage.openingHoursInfo')}</p>
+          </div>
+
+          {/* Payment */}
+          <div className="bg-white rounded-lg shadow p-6">
+            <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+              <span>💳</span>
+              {t('homePage.payment')}
+            </h3>
+            <p className="text-gray-700">{t('homePage.paymentInfo')}</p>
           </div>
 
           {/* Location */}
