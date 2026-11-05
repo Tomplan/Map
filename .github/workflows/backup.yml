@@ -97,7 +97,8 @@ jobs:
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --body "$body"
           else
-            gh issue create --label backup-failed \
+            # Assigning the repository owner makes GitHub notify them even if they do not watch the repo
+            gh issue create --label backup-failed --assignee "${{ github.repository_owner }}" \
               --title "Daily database backup failed" --body "$body"
           fi
 
