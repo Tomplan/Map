@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import QRCodeStyling from 'qr-code-styling';
@@ -585,8 +585,8 @@ const ShareApp = () => {
     fetchOrgDefault();
   }, []);
 
-  // Initialize generic QR Code Styling instance
-  const qrCode = useMemo(() => new QRCodeStyling(config), []);
+  // Initialize generic QR Code Styling instance once; later config changes are applied via update()
+  const [qrCode] = useState(() => new QRCodeStyling(config));
 
   // Update QR Code instance on config change
   useEffect(() => {
