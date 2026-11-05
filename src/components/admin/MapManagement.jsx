@@ -350,6 +350,7 @@ export default function MapManagement({
   }, [
     rawSubscriptions,
     assignments,
+    markersState,
     subscriptionSearch,
     subscriptionSortBy,
     subscriptionSortDirection,

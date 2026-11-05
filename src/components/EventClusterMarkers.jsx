@@ -372,11 +372,12 @@ function EventClusterMarkers({
   const finalAssignmentsState = assignmentsState || localAssignmentsState;
   const { assignments, assignCompanyToMarker, unassignCompanyFromMarker } = finalAssignmentsState;
 
-  // Default marker styles passed from useEventMarkers (fetched together with markers)
-  const defaultMarkers =
-    defaultStylesProp !== undefined
-      ? defaultStylesProp || { assigned: null, unassigned: null }
-      : { assigned: null, unassigned: null };
+  // Default marker styles passed from useEventMarkers (fetched together with markers).
+  // Memoized so the fallback object keeps a stable identity across renders (getIcon depends on it).
+  const defaultMarkers = useMemo(
+    () => defaultStylesProp || { assigned: null, unassigned: null },
+    [defaultStylesProp],
+  );
 
   // Dialog context for confirmations
   const { confirm, toastError } = useDialog();
