@@ -778,7 +778,7 @@ export default function EventSubscriptionsTab({ selectedYear }) {
             {t('helpPanel.subscriptions.subscribeCompany', 'Subscribe Company')}
           </button>
 
-          <div className="relative">
+          <div className="relative" data-testid="import-export-buttons">
             <button
               onClick={() => setIsActionsOpen(!isActionsOpen)}
               className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm transition-all"
