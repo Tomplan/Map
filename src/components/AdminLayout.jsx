@@ -23,6 +23,7 @@ import YearChangeModal from './admin/YearChangeModal';
 import { supabase } from '../supabaseClient';
 import HelpPanel from './HelpPanel';
 import { useOnboarding } from '../contexts/OnboardingContext';
+import { useDialog } from '../contexts/DialogContext';
 import YearScopeSidebar from './admin/YearScopeSidebar';
 import CollapsedShortcuts from './admin/CollapsedShortcuts';
 import SidebarTile from './admin/SidebarTile';
@@ -51,7 +52,29 @@ export default function AdminLayout({ selectedYear, setSelectedYear }) {
   // Help panel state
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [initialHelpTab, setInitialHelpTab] = useState(null);
-  const { lastCompletedTour, clearLastCompletedTour } = useOnboarding();
+  const { lastCompletedTour, clearLastCompletedTour, lastFailedTour, clearLastFailedTour } =
+    useOnboarding();
+  const { toastWarning } = useDialog();
+
+  // When a tour that was requested from the Help panel could not start (for example
+  // because its page elements are missing), bring the user back to the Help panel
+  // instead of leaving them without any way back.
+  useEffect(() => {
+    if (!lastFailedTour) return;
+    if (lastFailedTour.source === 'help') {
+      if (!isHelpOpen) {
+        toastWarning(
+          t(
+            'tour.startFailed',
+            'This tour could not be started because required page elements are not present.',
+          ),
+        );
+      }
+      setInitialHelpTab('interactive-tour');
+      setIsHelpOpen(true);
+    }
+    clearLastFailedTour();
+  }, [lastFailedTour, isHelpOpen, clearLastFailedTour, toastWarning, t]);
 
   // When a tour completes *and* it was started from the Help panel, reopen
   // the Help panel to the interactive-tour tab so the user can review or

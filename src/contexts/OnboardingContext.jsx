@@ -17,6 +17,7 @@ const OnboardingContext = createContext(null);
 export function OnboardingProvider({ children }) {
   const { preferences, loading: preferencesLoading, updatePreferences } = usePreferences();
   const [activeTour, setActiveTour] = useState(null);
+  const activeTourRef = useRef(null);
   const [isRunning, setIsRunning] = useState(false);
   // Track where the current/last tours were started from (eg 'help', 'admin', 'ui')
   const [activeTourSource, setActiveTourSource] = useState(null);
@@ -76,10 +77,17 @@ export function OnboardingProvider({ children }) {
    * Start a tour
    */
   // startTour can accept optional metadata, e.g. { source: 'help' }
-  const startTour = useCallback((tourId, meta = {}) => {
+  // When meta carries no `source` key, the current source is kept so a follow-up start()
+  // (for example from the page after navigating from Help) does not lose where the tour began.
+  const startTour = useCallback((tourId, meta) => {
+    activeTourRef.current = tourId;
     setActiveTour(tourId);
     setIsRunning(true);
-    setActiveTourSource(meta?.source || null);
+    if (meta && Object.prototype.hasOwnProperty.call(meta, 'source')) {
+      const source = meta.source || null;
+      activeTourSourceRef.current = source;
+      setActiveTourSource(source);
+    }
   }, []);
 
   /**
@@ -157,6 +165,10 @@ export function OnboardingProvider({ children }) {
     activeTourSourceRef.current = activeTourSource;
   }, [activeTourSource]);
 
+  useEffect(() => {
+    activeTourRef.current = activeTour;
+  }, [activeTour]);
+
   /**
    * Permanently dismiss a tour
    */
@@ -186,6 +198,8 @@ export function OnboardingProvider({ children }) {
         );
       }
 
+      activeTourSourceRef.current = null;
+      setActiveTourSource(null);
       stopTour();
     },
     [user, preferences, updatePreferences, stopTour],
@@ -220,6 +234,24 @@ export function OnboardingProvider({ children }) {
   const [lastCompletedTour, setLastCompletedTour] = useState(null);
 
   const clearLastCompletedTour = useCallback(() => setLastCompletedTour(null), []);
+
+  // A tour that was requested but could not start (for example because its target
+  // elements are missing). Consumers use it to bring the user back to Help.
+  const [lastFailedTour, setLastFailedTour] = useState(null);
+  const clearLastFailedTour = useCallback(() => setLastFailedTour(null), []);
+
+  const reportTourStartFailed = useCallback((tourId) => {
+    // Never tear down a different tour that is currently active
+    if (activeTourRef.current && activeTourRef.current !== tourId) return;
+    const source = activeTourSourceRef.current ?? null;
+    activeTourRef.current = null;
+    activeTourSourceRef.current = null;
+    setActiveTourSource(null);
+    document.body.classList.remove('driver-active');
+    setActiveTour(null);
+    setIsRunning(false);
+    setLastFailedTour({ id: tourId, source });
+  }, []);
 
   /**
    * Check if a tour has been completed
@@ -335,6 +367,7 @@ export function OnboardingProvider({ children }) {
     isRunning,
     activeTourSource,
     lastCompletedTour,
+    lastFailedTour,
     completedTours,
     dismissedTours,
     loading: preferencesLoading,
@@ -346,9 +379,11 @@ export function OnboardingProvider({ children }) {
     dismissTour,
     resetTour,
     resetAllTours,
+    reportTourStartFailed,
 
-    // Last-completed helpers
+    // Last-completed / last-failed helpers
     clearLastCompletedTour,
+    clearLastFailedTour,
 
     // Query functions
     isTourCompleted,
@@ -380,6 +415,7 @@ export function useOnboarding() {
       isRunning: false,
       activeTourSource: null,
       lastCompletedTour: null,
+      lastFailedTour: null,
       completedTours: [],
       dismissedTours: [],
       loading: false,
@@ -391,7 +427,9 @@ export function useOnboarding() {
       dismissTour: () => {},
       resetTour: () => {},
       resetAllTours: () => {},
+      reportTourStartFailed: () => {},
       clearLastCompletedTour: () => {},
+      clearLastFailedTour: () => {},
 
       // Query helpers
       isTourCompleted: () => false,

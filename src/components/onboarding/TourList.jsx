@@ -105,6 +105,7 @@ export default function TourList({ startSource, onClose, onReopen }) {
           isTourCompleted={isTourCompleted}
           startSource={startSource}
           onClose={onClose}
+          onReopen={onReopen}
         />
       ))}
     </div>
@@ -127,7 +128,7 @@ TourList.defaultProps = {
  *
  * Individual tour card with title, description, and start button
  */
-function TourCard({ tour, startTour, startSource, onClose, isTourCompleted }) {
+function TourCard({ tour, startTour, startSource, onClose, onReopen, isTourCompleted }) {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -410,11 +411,13 @@ TourCard.propTypes = {
   startTour: PropTypes.func.isRequired,
   startSource: PropTypes.string.isRequired,
   onClose: PropTypes.func,
+  onReopen: PropTypes.func,
   isTourCompleted: PropTypes.func.isRequired,
 };
 
 TourCard.defaultProps = {
   onClose: () => {},
+  onReopen: null,
 };
 
 /**
