@@ -36,9 +36,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mb-4"></div>
-          <p className="text-gray-600">
-            {t('eventSchedule.loading')}
-          </p>
+          <p className="text-gray-600">{t('eventSchedule.loading')}</p>
         </div>
       </div>
     );
@@ -50,9 +48,7 @@ export default function EventSchedule({ selectedYear }) {
       <div className="min-h-screen bg-gray-50 pb-20 md:pb-0 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
           <Icon path={mdiAlert} size={2} className="text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            {t('eventSchedule.loadError')}
-          </h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('eventSchedule.loadError')}</h2>
           <p className="text-gray-600">{error}</p>
         </div>
       </div>
@@ -361,9 +357,7 @@ export default function EventSchedule({ selectedYear }) {
       {/* Header */}
       <div className="bg-white border-b">
         <div className="max-w-screen-xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 mb-3">
-            {t('eventSchedule.title')}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">{t('eventSchedule.title')}</h1>
 
           {/* Day Selector */}
           <div className="flex gap-2">
@@ -421,16 +415,10 @@ export default function EventSchedule({ selectedYear }) {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {title}
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
 
                 {/* Description */}
-                {description && (
-                  <p className="text-gray-700 mb-3">
-                    {description}
-                  </p>
-                )}
+                {description && <p className="text-gray-700 mb-3">{description}</p>}
 
                 {/* Location with live booth number */}
                 <div className="flex items-center gap-2 text-sm">

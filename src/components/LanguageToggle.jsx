@@ -9,12 +9,15 @@ const LANGUAGES = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
 ];
 
-export default function LanguageToggle({ className = '', excludeCodes = [], enableGerman = false }) {
+export default function LanguageToggle({
+  className = '',
+  excludeCodes = [],
+  enableGerman = false,
+}) {
   const { i18n } = useTranslation();
   // Allow excluding languages from the UI (used in tests and some embedded contexts)
   const availableLanguages = LANGUAGES.filter(
-    (language) =>
-      (enableGerman || language.code !== 'de') && !excludeCodes.includes(language.code),
+    (language) => (enableGerman || language.code !== 'de') && !excludeCodes.includes(language.code),
   );
   const { preferences, updatePreference } = usePreferences();
   const { toastError, toastWarning } = useDialog();

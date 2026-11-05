@@ -97,9 +97,7 @@ describe('MarkerDetailsUI — showBoothNumber', () => {
       name_en: 'Parking area',
     };
 
-    render(
-      <MarkerUI marker={translatedMarker} isMobile={false} organizationLogo={null} />,
-    );
+    render(<MarkerUI marker={translatedMarker} isMobile={false} organizationLogo={null} />);
 
     expect(screen.getAllByText('Parking area').length).toBeGreaterThan(0);
     expect(screen.queryByText('Parkeerplaats')).not.toBeInTheDocument();

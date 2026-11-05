@@ -9,10 +9,7 @@ import { getLogoWithFallback } from '../utils/getDefaultLogo';
 import { useOptionalFavoritesContext } from '../contexts/FavoritesContext';
 import FavoriteButton from './FavoriteButton';
 import { useCategories } from '../hooks/useCategories';
-import {
-  getSpecialMarkerText,
-  useTranslatedCompanyInfo,
-} from '../hooks/useTranslatedCompanyInfo';
+import { getSpecialMarkerText, useTranslatedCompanyInfo } from '../hooks/useTranslatedCompanyInfo';
 import { useTranslation } from 'react-i18next';
 
 export const BottomSheetContent = ({ marker, onClose, showCloseButton = true, className = '' }) => {
