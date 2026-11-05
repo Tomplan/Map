@@ -6,12 +6,11 @@
 
 ## After the event (Na de beurs)
 
-- [ ] **Move the Supabase project from Micro back to Nano so it costs nothing.** Nano is a Free-plan compute size: paid organizations cannot launch Nano, and a Nano instance in a paid organization is billed like Micro (Supabase docs, "Compute and Disk"). So changing the compute size alone is not enough; the organization must be downgraded to the Free plan (Dashboard → Organization → Billing), after which the project runs on Nano. Before downgrading, check:
-  - Database size and storage are within Free limits (500 MB database, 1 GB storage; the `invoices` bucket and logos count towards storage) and egress stays under 5 GB/month.
-  - Free projects have no Supabase-managed backups: keep the daily GitHub Actions backup (`.github/workflows/backup.yml` → private repo `Map-backups`) running and take one manual full backup first (`npm run backup:full`).
-  - Free projects pause after about a week without activity; the daily backup job makes API calls that normally keep the project active, but verify in the dashboard after the first week.
-  - Pro-only features are lost (daily/PITR backups, longer log retention, higher Realtime/connection limits); see `docs/SCALING_LIMITS_MEMO.md` before the next event.
-  - Compute changes can cause a short downtime; do it outside event hours and re-run `npm run backup:status` afterwards.
+- [x] **Move the Supabase project from Micro back to Nano so it costs nothing.** Done 2026-11-05: the organization was downgraded to the Free plan (Nano is a Free-plan compute size; a Nano instance in a paid organization is billed like Micro, so the plan change was required). After the restart the REST API answered, both sites loaded and a manual run of the backup workflow succeeded. Free limits for reference: 500 MB database, 1 GB storage, 5 GB egress/month, no Supabase-managed backups, auto-pause after about a week of inactivity. Still to verify:
+  - [ ] In the dashboard: project shows Nano under Settings → Compute and Disk, and Billing shows no further charges.
+  - [ ] After the first week: the project was not paused and egress stays under 5 GB (Reports).
+  - [ ] Before the next event, re-read `docs/SCALING_LIMITS_MEMO.md` (Pro limits are lost: backups/PITR, log retention, Realtime and connection limits) and decide whether to upgrade for that month.
+- [x] A failed daily backup now opens (or comments on) a GitHub issue labelled `backup-failed` with a link to the run, and the next successful run closes it (`.github/workflows/backup.yml`; test with the manual input `simulate_failure`). Make sure GitHub e-mail notifications for issues are on for the repository owner.
 - [ ] _(add the other after-event tasks here)_
 
 ## Open verification (invoices)
