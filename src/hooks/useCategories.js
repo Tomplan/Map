@@ -230,12 +230,12 @@ export function useCategories(language = 'nl') {
         entry.channel = supabase
           .channel('categories-changes')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () =>
-            loadCategories(),
+            loadCategories(true),
           )
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'category_translations' },
-            () => loadCategories(),
+            () => loadCategories(true),
           )
           .subscribe();
       });
@@ -308,7 +308,7 @@ export function useCategories(language = 'nl') {
         if (translationsError) throw translationsError;
       }
 
-      await loadCategories();
+      await loadCategories(true);
       return { success: true, data: category };
     } catch (err) {
       console.error('Error creating category:', err);
@@ -351,7 +351,7 @@ export function useCategories(language = 'nl') {
         }
       }
 
-      await loadCategories();
+      await loadCategories(true);
       return { success: true };
     } catch (err) {
       console.error('Error updating category:', err);
@@ -366,7 +366,7 @@ export function useCategories(language = 'nl') {
 
       if (error) throw error;
 
-      await loadCategories();
+      await loadCategories(true);
       return { success: true };
     } catch (err) {
       console.error('Error deleting category:', err);
@@ -538,7 +538,7 @@ export function useCategories(language = 'nl') {
     assignCategoriesToCompany,
     getCategoryStats,
     categoryStats: local.categoryStats,
-    refetch: loadCategories,
+    refetch: () => loadCategories(true),
   };
 }
 

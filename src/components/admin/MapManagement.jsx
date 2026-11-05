@@ -979,7 +979,7 @@ export default function MapManagement({
 
   return (
     <ProtectedSection requiredRole={['super_admin', 'system_manager', 'event_manager']}>
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white rounded-lg shadow" data-testid="map-management-container">
         <div className="p-3 border-b border-gray-200">
           {/* Header with year info and actions */}
           <div className="flex justify-between items-center mb-0">
@@ -1086,6 +1086,7 @@ export default function MapManagement({
                         setIsActionsOpen(false);
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                      data-testid="copy-from-year-button"
                     >
                       <Icon path={mdiContentCopy} size={0.7} className="text-gray-400" />
                       <span>{t('mapManagement.copyMarkersFromYear')}</span>
@@ -1479,6 +1480,7 @@ export default function MapManagement({
               {selectedMarkerId && (
                 <div
                   className="w-full overflow-y-auto p-6 bg-gray-50/50 flex-shrink-0"
+                  data-testid="marker-properties-panel"
                   style={{
                     height: `${(1 - listSplitRatio) * 100}%`,
                     transition: isResizing ? 'none' : 'height 0.3s ease-in-out',
