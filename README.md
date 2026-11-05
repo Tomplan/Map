@@ -108,6 +108,13 @@ See docs/ROOT_CAUSE_POLICY.md for the full policy and checklist.
 
     The application will be available at `http://localhost:5173`.
 
+    If the dev server shows an interactive prompt (for example "Press h to show help") and waits for input, use one of the non-interactive scripts instead, e.g. for automation or when starting it from an external tool:
+
+    - `npm run dev:ci` — sets `CI=true` so the dev server does not use interactive prompts.
+    - `npm run dev:strict` — starts Vite on port `5173` with `--strictPort`, so it fails if the port is already in use instead of switching to another port.
+
+    Tip: if you see `Port 5173 is in use`, run `npm run kill:dev` to stop any running dev servers, then start `npm run dev:strict` again.
+
 6.  **Stop dev servers cleanly:**
     We added a small helper script to stop `vite`/`node`/`npm` processes that belong to this repository.
 

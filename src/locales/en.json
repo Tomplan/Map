@@ -280,6 +280,8 @@
     "cancel": "Cancel",
     "dismiss": "Dismiss",
     "close": "Close",
+    "showAllColumns": "Show all columns",
+    "showFewerColumns": "Show fewer columns",
     "edit": "Edit",
     "delete": "Delete",
     "addToFavorites": "Add to favorites",

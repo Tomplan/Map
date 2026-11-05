@@ -275,6 +275,8 @@
     "cancel": "Abbrechen",
     "dismiss": "Schließen",
     "close": "Schließen",
+    "showAllColumns": "Alle Spalten anzeigen",
+    "showFewerColumns": "Weniger Spalten anzeigen",
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "addToFavorites": "Zu Favoriten hinzufügen",
