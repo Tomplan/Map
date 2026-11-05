@@ -21,6 +21,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
     stopTour: contextStopTour,
     completeTour: contextCompleteTour,
     dismissTour: contextDismissTour,
+    reportTourStartFailed: contextReportStartFailed,
     shouldAutoStart,
     isRunning,
     activeTour,
@@ -538,6 +539,17 @@ export default function useOnboardingTour(tourConfig, options = {}) {
   // retrying after navigation (helpful for slow/lazy loaded admin views).
   const start = useCallback(
     async (opts = {}) => {
+      // Reset the onboarding state and let the app (e.g. the Help panel) react when a
+      // requested tour cannot start; always resolves to `false`.
+      const failStart = () => {
+        try {
+          contextReportStartFailed?.(tourConfig?.id);
+        } catch (e) {
+          /* ignore */
+        }
+        return false;
+      };
+
       try {
         if (!tourConfig?.id) {
           console.error('Tour ID is required to start a tour');
@@ -692,11 +704,11 @@ export default function useOnboardingTour(tourConfig, options = {}) {
               }
 
               // Return false — the caller can show UI or navigate as desired
-              return false;
+              return failStart();
             }
           } catch (e) {
             console.warn('Error while waiting for tour targets:', e);
-            return false;
+            return failStart();
           }
         }
 
@@ -769,7 +781,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
                 /* ignore */
               }
             }
-            return false;
+            return failStart();
           }
 
           if (presentSteps.length === 0) {
@@ -785,7 +797,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
                 /* ignore */
               }
             }
-            return false;
+            return failStart();
           }
 
           // Some steps are missing but we have at least one step to show —
@@ -802,7 +814,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
                 /* ignore */
               }
             }
-            return false;
+            return failStart();
           }
 
           console.warn(
@@ -911,6 +923,7 @@ export default function useOnboardingTour(tourConfig, options = {}) {
       tourConfig,
       contextStartTour,
       contextStopTour,
+      contextReportStartFailed,
       initializeDriver,
       getDriverSteps,
       options,
