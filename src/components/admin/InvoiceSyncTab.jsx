@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import { parsePdfInvoice } from '../../utils/pdfParser';
 import { useTranslation, Trans } from 'react-i18next';
-import { getBaseUrl } from '../../utils/getBaseUrl';
 import { uploadInvoicePdf, getSignedInvoiceUrl } from '../../services/invoicePdfUploadService';
 import Icon from '@mdi/react';
 import {
@@ -670,7 +669,6 @@ function CompanySearchModal({ invoice, companies, onSelect, onCreateNew, onCance
 // ── End CompanySearchModal ────────────────────────────────────────────────────
 
 export default function InvoiceSyncTab({ selectedYear }) {
-  const baseUrl = getBaseUrl();
   const { t } = useTranslation();
   const { companies, createCompany, updateCompany } = useCompanies();
   const { settings } = useOrganizationSettings();
@@ -2287,27 +2285,23 @@ export default function InvoiceSyncTab({ selectedYear }) {
                 </div>
 
                 <div className="p-6 space-y-4">
-                  <div className="flex justify-end mb-4">
-                    <a
-                      href={
-                        editingInvoice.pdf_path
-                          ? '#'
-                          : baseUrl + 'invoices/' + editingInvoice.invoice_number + '.pdf'
-                      }
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={async (e) => {
-                        if (editingInvoice.pdf_path) {
+                  {editingInvoice.pdf_path && (
+                    <div className="flex justify-end mb-4">
+                      <a
+                        href="#"
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={async (e) => {
                           e.preventDefault();
                           const url = await getSignedInvoiceUrl(editingInvoice.pdf_path);
                           if (url) window.open(url, '_blank', 'noopener,noreferrer');
-                        }
-                      }}
-                      className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded"
-                    >
-                      {t('invoiceSync.edit.viewPdf')}
-                    </a>
-                  </div>
+                        }}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 bg-blue-50 px-3 py-1.5 rounded"
+                      >
+                        {t('invoiceSync.edit.viewPdf')}
+                      </a>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3091,27 +3085,27 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               className="hover:bg-blue-50/50 transition-colors cursor-pointer group"
                             >
                               <td className="px-2 py-2 font-medium text-blue-600 w-[100px] overflow-hidden truncate align-top">
-                                <a
-                                  href={
-                                    inv.pdf_path
-                                      ? '#'
-                                      : baseUrl + 'invoices/' + inv.invoice_number + '.pdf'
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    if (inv.pdf_path) {
+                                {inv.pdf_path ? (
+                                  <a
+                                    href="#"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
                                       e.preventDefault();
                                       const url = await getSignedInvoiceUrl(inv.pdf_path);
                                       if (url) window.open(url, '_blank', 'noopener,noreferrer');
-                                    }
-                                  }}
-                                  title={t('invoiceSync.table.openPdf')}
-                                  className="hover:underline truncate block w-full"
-                                >
-                                  {inv.invoice_number}
-                                </a>
+                                    }}
+                                    title={t('invoiceSync.table.openPdf')}
+                                    className="hover:underline truncate block w-full"
+                                  >
+                                    {inv.invoice_number}
+                                  </a>
+                                ) : (
+                                  <span className="truncate block w-full">
+                                    {inv.invoice_number}
+                                  </span>
+                                )}
                               </td>
                               <td className="px-2 py-2 border-r border-gray-50 align-top overflow-hidden truncate">
                                 <div className="font-medium text-gray-900 truncate">

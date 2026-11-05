@@ -24,4 +24,7 @@ New imports are uploaded by the Invoice Sync tab to the **private** Supabase Sto
    is safe to re-run.
 4. Open a few invoices in the admin Invoice Sync tab (View PDF) to verify the signed links.
 
-Only after this is verified are the PDFs removed from `public/` and git.
+Only after this is verified are the PDFs removed from `public/` and git (done in v1.2.64: the
+`public/invoices` fallback is gone, the folder is git-ignored and the app only opens PDFs through
+signed URLs; invoices without a `pdf_path` show no PDF link). Keep a local copy of the originals
+outside the repo if you still need them.
