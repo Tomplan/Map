@@ -4,6 +4,16 @@
 
 - Always add Dutch (`nl.json`), English (`en.json`) and German (`de.json`) translations for all new text and UI components.
 
+## After the event (Na de beurs)
+
+- [ ] **Move the Supabase project from Micro back to Nano so it costs nothing.** Nano is a Free-plan compute size: paid organizations cannot launch Nano, and a Nano instance in a paid organization is billed like Micro (Supabase docs, "Compute and Disk"). So changing the compute size alone is not enough; the organization must be downgraded to the Free plan (Dashboard → Organization → Billing), after which the project runs on Nano. Before downgrading, check:
+  - Database size and storage are within Free limits (500 MB database, 1 GB storage; the `invoices` bucket and logos count towards storage) and egress stays under 5 GB/month.
+  - Free projects have no Supabase-managed backups: keep the daily GitHub Actions backup (`.github/workflows/backup.yml` → private repo `Map-backups`) running and take one manual full backup first (`npm run backup:full`).
+  - Free projects pause after about a week without activity; the daily backup job makes API calls that normally keep the project active, but verify in the dashboard after the first week.
+  - Pro-only features are lost (daily/PITR backups, longer log retention, higher Realtime/connection limits); see `docs/SCALING_LIMITS_MEMO.md` before the next event.
+  - Compute changes can cause a short downtime; do it outside event hours and re-run `npm run backup:status` afterwards.
+- [ ] _(add the other after-event tasks here)_
+
 ## Open verification (invoices)
 
 - [ ] Validate granular line-item invoice approval mapping into the `event_subscriptions` table.
