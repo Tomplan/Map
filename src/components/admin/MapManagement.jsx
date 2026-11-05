@@ -45,18 +45,15 @@ import {
   getPrintFrameCoordinates,
 } from '../EventMap/printBoothSurfaces';
 
-const PRINT_PRESETS = [
-  'A3 — Landscape',
-  'A3 — Portrait',
-  'A4 — Landscape',
-  'A4 — Portrait',
-].map((title) => ({
-  options: {
-    title,
-    pageSize: title.slice(0, 2),
-    orientation: title.includes('Landscape') ? 'Landscape' : 'Portrait',
-  },
-}));
+const PRINT_PRESETS = ['A3 — Landscape', 'A3 — Portrait', 'A4 — Landscape', 'A4 — Portrait'].map(
+  (title) => ({
+    options: {
+      title,
+      pageSize: title.slice(0, 2),
+      orientation: title.includes('Landscape') ? 'Landscape' : 'Portrait',
+    },
+  }),
+);
 
 const PRINT_PAGE_PIXELS = {
   A2: [1587, 2245],
@@ -328,8 +325,14 @@ export default function MapManagement({
           }
 
           return subscriptionSortDirection === 'asc'
-            ? boothA.value.localeCompare(boothB.value, undefined, { numeric: true, sensitivity: 'base' })
-            : boothB.value.localeCompare(boothA.value, undefined, { numeric: true, sensitivity: 'base' });
+            ? boothA.value.localeCompare(boothB.value, undefined, {
+                numeric: true,
+                sensitivity: 'base',
+              })
+            : boothB.value.localeCompare(boothA.value, undefined, {
+                numeric: true,
+                sensitivity: 'base',
+              });
         }
 
         case 'arrival': {
@@ -347,6 +350,7 @@ export default function MapManagement({
   }, [
     rawSubscriptions,
     assignments,
+    markersState,
     subscriptionSearch,
     subscriptionSortBy,
     subscriptionSortDirection,
@@ -715,9 +719,7 @@ export default function MapManagement({
       ? 'landscape'
       : 'portrait';
     const frameCoordinates =
-      printFrame === 'current-view'
-        ? null
-        : getPrintFrameCoordinates(markersState, printFrame);
+      printFrame === 'current-view' ? null : getPrintFrameCoordinates(markersState, printFrame);
 
     if (frameCoordinates && frameCoordinates.length === 0) {
       toastError(t('mapManagement.printFrameUnavailable'));
@@ -747,12 +749,13 @@ export default function MapManagement({
         : null;
 
     try {
-      if (!(document.querySelector('#map-container') || document.querySelector('.leaflet-container'))) {
+      if (
+        !(document.querySelector('#map-container') || document.querySelector('.leaflet-container'))
+      ) {
         return;
       }
 
-      const pageOrientation =
-        printOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
+      const pageOrientation = printOptions.orientation === 'landscape' ? 'landscape' : 'portrait';
       const configuredPageSize = String(printOptions.pageSize || '').toUpperCase();
       const portraitDimensions = PRINT_PAGE_PIXELS[configuredPageSize] || PRINT_PAGE_PIXELS.A4;
       const [pageWidth, pageHeight] =
@@ -875,7 +878,9 @@ export default function MapManagement({
         };
       })
       .filter(Boolean)
-      .sort((a, b) => a.booth.localeCompare(b.booth, undefined, { numeric: true, sensitivity: 'base' }));
+      .sort((a, b) =>
+        a.booth.localeCompare(b.booth, undefined, { numeric: true, sensitivity: 'base' }),
+      );
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) {

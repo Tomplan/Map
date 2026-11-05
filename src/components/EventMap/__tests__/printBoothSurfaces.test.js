@@ -1,8 +1,5 @@
 import L from 'leaflet';
-import {
-  addBoothSurfacePrintOverlay,
-  getPrintFrameCoordinates,
-} from '../printBoothSurfaces';
+import { addBoothSurfacePrintOverlay, getPrintFrameCoordinates } from '../printBoothSurfaces';
 
 describe('getPrintFrameCoordinates', () => {
   const markers = [
@@ -29,8 +26,14 @@ describe('addBoothSurfacePrintOverlay', () => {
     const addedLayers = [];
     const mapLayers = [];
     const mapContainer = document.createElement('div');
-    const renderedBoothIcon = { textContent: '12', classList: { add: jest.fn(), remove: jest.fn() } };
-    const renderedSpecialIcon = { textContent: 'i', classList: { add: jest.fn(), remove: jest.fn() } };
+    const renderedBoothIcon = {
+      textContent: '12',
+      classList: { add: jest.fn(), remove: jest.fn() },
+    };
+    const renderedSpecialIcon = {
+      textContent: 'i',
+      classList: { add: jest.fn(), remove: jest.fn() },
+    };
     const querySelectorAll = mapContainer.querySelectorAll.bind(mapContainer);
     mapContainer.querySelectorAll = (selector) =>
       selector === '.leaflet-glyph-icon'

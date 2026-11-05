@@ -240,7 +240,6 @@ function HomePage({
           <p className="mb-6 min-h-7 text-lg text-gray-600">
             {dbEventDate || t('homePage.eventDate')}
           </p>
-
         </div>
       </div>
 
