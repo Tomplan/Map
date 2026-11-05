@@ -18,4 +18,4 @@
 
 ## Privacy
 
-- [ ] Decide whether to purge the removed invoice PDFs, `out/my-company-texts.xlsx` and `scripts/invoices/parsed_invoices.json` from git history (needs a force-push; see `docs/development/INVOICE_PDF_STORAGE.md`).
+- Decided 2026-11-05 not to rewrite git history for the removed invoice PDFs, `out/my-company-texts.xlsx` and `scripts/invoices/parsed_invoices.json`; see the incident note in `docs/development/INVOICE_PDF_STORAGE.md`. Revisit only if the assessment changes (a backup of the repository from before any rewrite exists outside the repo).
