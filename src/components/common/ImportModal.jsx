@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Icon from '@mdi/react';
 import {
   mdiFileUpload,
@@ -54,10 +55,17 @@ export default function ImportModal({
   const [error, setError] = useState(null);
   const [suppressToasts, setSuppressToasts] = useState(false);
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0, message: '' });
+  // Companies have many export columns; the preview shows the first 6 unless expanded
+  const [showAllColumns, setShowAllColumns] = useState(false);
 
   const fileInputRef = useRef(null);
+  const { t } = useTranslation();
   const { toastError, toastSuccess, toastWarning } = useDialog();
   const config = getDataConfig(dataType);
+  const previewBaseColumns =
+    dataType === 'event_subscriptions' || showAllColumns
+      ? config.exportColumns
+      : config.exportColumns.slice(0, 6);
 
   // Reset state when modal closes
   const handleClose = useCallback(() => {
@@ -683,7 +691,7 @@ export default function ImportModal({
                         {validatedRows.filter((r) => !r.validation.valid).length} errors
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <label className="flex items-center gap-2 text-sm">
                         <input
                           type="checkbox"
@@ -697,6 +705,17 @@ export default function ImportModal({
                         />
                         <span>Select All ({selectedRows.size} selected)</span>
                       </label>
+                      {dataType !== 'event_subscriptions' && config.exportColumns.length > 6 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowAllColumns((show) => !show)}
+                          className="px-3 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                        >
+                          {showAllColumns
+                            ? t('common.showFewerColumns')
+                            : t('common.showAllColumns')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -704,7 +723,9 @@ export default function ImportModal({
                 {/* Preview Table */}
                 <div className="flex-1 overflow-auto p-6">
                   <div className="transition-all duration-200 ease-in-out">
-                    <table className="w-full text-sm border-collapse">
+                    <table
+                      className={`w-full text-sm border-collapse ${showAllColumns ? 'min-w-max' : ''}`}
+                    >
                       <thead>
                         <tr className="border-b border-gray-200">
                           <th className="text-left p-2 font-medium text-gray-700">Select</th>
@@ -712,14 +733,7 @@ export default function ImportModal({
                           <th className="text-left p-2 font-medium text-gray-700">Status</th>
                           {(() => {
                             // Build preview columns from config export columns
-                            let base;
-                            if (dataType === 'event_subscriptions') {
-                              // Use all configured export columns for subscriptions
-                              base = config.exportColumns;
-                            } else {
-                              // Default: show first 6 columns for better visibility
-                              base = config.exportColumns.slice(0, 6);
-                            }
+                            const base = previewBaseColumns;
                             const extra =
                               parsedMeta && Array.isArray(parsedMeta.columns)
                                 ? parsedMeta.columns.filter(
@@ -778,14 +792,7 @@ export default function ImportModal({
                             </td>
                             {(() => {
                               // Build preview columns from config export columns
-                              let base;
-                              if (dataType === 'event_subscriptions') {
-                                // Use all configured export columns for subscriptions
-                                base = config.exportColumns;
-                              } else {
-                                // Default: show first 6 columns for better visibility
-                                base = config.exportColumns.slice(0, 6);
-                              }
+                              const base = previewBaseColumns;
                               const extra =
                                 parsedMeta && Array.isArray(parsedMeta.columns)
                                   ? parsedMeta.columns.filter(
@@ -935,6 +942,9 @@ export default function ImportModal({
       selectedRows,
       validatedRows,
       parsedMeta,
+      showAllColumns,
+      previewBaseColumns,
+      t,
       // selectedFile is intentionally excluded here — it's only used by input
       // handlers and doesn't affect the rendered step content memoization.
       error,
