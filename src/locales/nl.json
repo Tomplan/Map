@@ -274,6 +274,8 @@
     "cancel": "Annuleren",
     "dismiss": "Sluiten",
     "close": "Sluiten",
+    "showAllColumns": "Alle kolommen tonen",
+    "showFewerColumns": "Minder kolommen tonen",
     "edit": "Bewerken",
     "delete": "Verwijderen",
     "addToFavorites": "Toevoegen aan favorieten",
