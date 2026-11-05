@@ -42,3 +42,9 @@ public/assets/logos/*[0-9]*_*.*
 # Ignore process id files created by preview/dev servers
 *.pid
 preview.pid
+
+# Invoice PDFs and parsed invoice data contain customer names/addresses.
+# They live in the private Supabase Storage bucket "invoices", never in git or public/.
+public/invoices/
+scripts/invoices/parsed_invoices.json
+out/my-company-texts.xlsx
