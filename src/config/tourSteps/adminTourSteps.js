@@ -333,21 +333,6 @@ export const adminSubscriptionsTour = {
       },
     },
     {
-      element: '[data-testid="archive-year-button"]',
-      popover: {
-        title: {
-          en: 'Archive Year',
-          nl: 'Archiveer Jaar',
-        },
-        description: {
-          en: 'Archive all subscriptions for this year once the event is complete. Archived data can still be viewed but not edited.',
-          nl: 'Archiveer alle inschrijvingen voor dit jaar zodra het evenement voltooid is. Gearchiveerde gegevens kunnen nog worden bekeken maar niet bewerkt.',
-        },
-        side: 'bottom',
-        align: 'center',
-      },
-    },
-    {
       element: '[data-testid="subscribe-company-button"]',
       popover: {
         title: {
@@ -439,21 +424,6 @@ export const adminAssignmentsTour = {
         description: {
           en: 'Toggle to view assignments from archived years for reference or comparison.',
           nl: 'Schakel om toewijzingen van gearchiveerde jaren te bekijken ter referentie of vergelijking.',
-        },
-        side: 'bottom',
-        align: 'center',
-      },
-    },
-    {
-      element: '[data-testid="archive-assignments-button"]',
-      popover: {
-        title: {
-          en: 'Archive Assignments',
-          nl: 'Archiveer Toewijzingen',
-        },
-        description: {
-          en: 'Archive all booth assignments for this year when the event is complete.',
-          nl: 'Archiveer alle standtoewijzingen voor dit jaar wanneer het evenement voltooid is.',
         },
         side: 'bottom',
         align: 'center',
@@ -566,21 +536,6 @@ export const adminProgramManagementTour = {
         description: {
           en: 'Quickly set up the program by copying all activities from the previous year as a starting template.',
           nl: 'Stel snel het programma in door alle activiteiten van het vorige jaar te kopiëren als startsjabloon.',
-        },
-        side: 'bottom',
-        align: 'center',
-      },
-    },
-    {
-      element: '[data-testid="archive-year-button"]',
-      popover: {
-        title: {
-          en: 'Archive Year',
-          nl: 'Archiveer Jaar',
-        },
-        description: {
-          en: 'Archive the entire program for this year once the event is complete.',
-          nl: 'Archiveer het volledige programma voor dit jaar zodra het evenement voltooid is.',
         },
         side: 'bottom',
         align: 'center',

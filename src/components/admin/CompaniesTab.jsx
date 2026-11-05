@@ -486,7 +486,7 @@ export default function CompaniesTab() {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="companies-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -506,7 +506,7 @@ export default function CompaniesTab() {
         {/* Action buttons: Actions dropdown + Add */}
         <div className="flex gap-2 items-center">
           {/* Actions dropdown */}
-          <div className="relative" ref={actionsRef}>
+          <div className="relative" ref={actionsRef} data-testid="import-export-buttons">
             <button
               onClick={() => setActionsOpen((o) => !o)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors shadow-sm"
@@ -548,6 +548,7 @@ export default function CompaniesTab() {
           </div>
           <button
             onClick={handleStartCreate}
+            data-testid="add-company-button"
             className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
           >
             <Icon path={mdiPlus} size={0.8} />
@@ -652,7 +653,7 @@ export default function CompaniesTab() {
             <div className="flex-1 overflow-y-auto">
               <div className="px-6">
                 {/* Public heading */}
-                <div className="flex items-center gap-2 pt-4 pb-1">
+                <div className="flex items-center gap-2 pt-4 pb-1" data-testid="public-info-tab">
                   <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
                   <span className="text-xs font-bold uppercase tracking-widest text-blue-600">
                     {translateSafe('companies.modal.publicInfoHeading', {

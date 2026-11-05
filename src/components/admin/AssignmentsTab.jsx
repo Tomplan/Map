@@ -416,10 +416,10 @@ export default function AssignmentsTab({ selectedYear }) {
   }
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4" data-testid="assignments-container">
       {/* Header with search and action buttons */}
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" data-testid="assignments-search">
           <Icon path={mdiMagnify} size={1} className="text-gray-500" />
           <input
             type="text"
@@ -455,6 +455,7 @@ export default function AssignmentsTab({ selectedYear }) {
                     setIsActionsOpen(false);
                   }}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                  data-testid="view-archived-button"
                   title={`View archived assignments for ${selectedYear}`}
                 >
                   <Icon path={mdiHistory} size={0.7} className="text-gray-400" />
@@ -476,7 +477,7 @@ export default function AssignmentsTab({ selectedYear }) {
 
           {/* Sort Controls */}
           <div className="flex items-end gap-3">
-            <div>
+            <div data-testid="sort-companies-dropdown">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('helpPanel.assignments.sortCompanies')}
               </label>
@@ -502,7 +503,7 @@ export default function AssignmentsTab({ selectedYear }) {
                 </button>
               </div>
             </div>
-            <div>
+            <div data-testid="sort-markers-dropdown">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 {t('helpPanel.assignments.sortMarkers')}
               </label>
@@ -537,6 +538,7 @@ export default function AssignmentsTab({ selectedYear }) {
       {/* Assignment Matrix */}
       <div
         className="flex-1 overflow-auto border rounded-lg relative"
+        data-testid="assignments-matrix"
         style={{ maxHeight: 'calc(100vh - 8rem)' }}
       >
         <table className="w-full table-auto border-separate" style={{ fontSize: '11px' }}>
@@ -638,7 +640,7 @@ export default function AssignmentsTab({ selectedYear }) {
       </div>
 
       {/* Legend and Stats */}
-      <div className="mt-4 p-3 bg-gray-100 rounded-lg space-y-2">
+      <div className="mt-4 p-3 bg-gray-100 rounded-lg space-y-2" data-testid="assignments-legend">
         <div className="flex items-center gap-4 text-sm text-gray-900">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 bg-green-100 border border-green-200 rounded flex items-center justify-center">
