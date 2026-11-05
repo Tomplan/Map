@@ -94,10 +94,7 @@ export function addBoothSurfacePrintOverlay({ map, markers, rectangleSize, marke
         boothPositions.has(getPositionKey(markerLayer.getLatLng()))) ||
       (glyph !== undefined && glyph !== null && boothGlyphs.has(String(glyph)));
 
-    if (
-      matchesBooth &&
-      typeof markerLayer.setOpacity === 'function'
-    ) {
+    if (matchesBooth && typeof markerLayer.setOpacity === 'function') {
       const icon = markerLayer.getElement?.() || markerLayer._icon;
       if (icon?.classList) {
         icon.classList.add('booth-surface-print-hidden');
