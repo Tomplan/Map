@@ -60,5 +60,4 @@ describe('HomePage logo rendering', () => {
     img.dispatchEvent(new Event('error'));
     expect(Number(img.dataset.logoRetries)).toBeGreaterThanOrEqual(prev);
   });
-
 });

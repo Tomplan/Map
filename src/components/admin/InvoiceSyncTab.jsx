@@ -2661,7 +2661,8 @@ export default function InvoiceSyncTab({ selectedYear }) {
                               .trim()
                               .toLowerCase();
                             if (label.length > 0 && desc.includes(label)) {
-                              const candidateColumn = typeof ai === 'string' ? null : ai.column || null;
+                              const candidateColumn =
+                                typeof ai === 'string' ? null : ai.column || null;
                               const labelDay = detectDay(label);
                               // Prefer the most specific label match (longest), and strongly
                               // prefer day labels that align with the detected day in the line item.
@@ -2739,9 +2740,7 @@ export default function InvoiceSyncTab({ selectedYear }) {
                             )
                               descDay === 'sun' ? (lunch_sun += qty) : (lunch_sat += qty);
                             if (desc.includes('breakfast') || desc.includes('ontbijt')) {
-                              descDay === 'sun'
-                                ? (breakfast_sun += qty)
-                                : (breakfast_sat += qty);
+                              descDay === 'sun' ? (breakfast_sun += qty) : (breakfast_sat += qty);
                             }
                           }
                           return {
