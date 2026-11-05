@@ -15,8 +15,7 @@ function fetchGroupedActivities(targetYear, share) {
 
   const promise = (async () => {
     // Fetch activities with basic company info and badge visibility
-    // TODO: Remove fallback logic after event_year column is added
-    let query = supabase
+    const { data: activitiesData, error: fetchError } = await supabase
       .from('event_activities')
       .select(
         `
@@ -34,18 +33,8 @@ function fetchGroupedActivities(targetYear, share) {
           )
         `,
       )
-      .order('display_order', { ascending: true });
-
-    // Only filter by event_year if the column exists (after migration)
-    // For now, this will work with existing data
-    try {
-      query = query.eq('event_year', targetYear);
-    } catch (e) {
-      // Column doesn't exist yet, fetch all activities
-      console.warn('event_year column not found, fetching all activities');
-    }
-
-    const { data: activitiesData, error: fetchError } = await query;
+      .order('display_order', { ascending: true })
+      .eq('event_year', targetYear);
 
     if (fetchError) throw fetchError;
 

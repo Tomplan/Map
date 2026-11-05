@@ -178,8 +178,6 @@ export default function ActivityForm({
       show_location_type_badge: !!showLocationTypeBadge,
     };
 
-    // TODO: Remove this after event_year column migration is complete
-    // For now, always include event_year (will be ignored if column doesn't exist)
     payload.event_year = year;
 
     try {
