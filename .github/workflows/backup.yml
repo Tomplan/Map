@@ -5,6 +5,9 @@ on:
     - cron: '0 10 * * *' # 10:00 UTC every day
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
+permissions:
+  contents: read
+
 jobs:
   backup:
     name: Backup Supabase database
@@ -33,42 +36,34 @@ jobs:
           # SUPABASE_DB_PASSWORD not needed — backup uses JS client, not pg_dump
           SUPABASE_DB_PASSWORD: unused
 
-      - name: Push backup to backups branch
+      # Backups contain company/contact data: they go ONLY to the private repo, never to this public one.
+      - name: Push backup to private repo (Tomplan/Map-backups)
+        env:
+          BACKUP_DEPLOY_KEY: ${{ secrets.BACKUP_DEPLOY_KEY }}
         run: |
-          # Find the backup directory just created
+          set -euo pipefail
           BACKUP_DIR=$(ls -td backups/full-* | head -1)
           BACKUP_NAME=$(basename "$BACKUP_DIR")
 
+          mkdir -p ~/.ssh
+          printf '%s\n' "$BACKUP_DEPLOY_KEY" > ~/.ssh/backup_key
+          chmod 600 ~/.ssh/backup_key
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/backup_key -o IdentitiesOnly=yes"
+
+          git clone --depth 1 git@github.com:Tomplan/Map-backups.git /tmp/backups-repo
+          cp -r "$BACKUP_DIR" /tmp/backups-repo/
+          cd /tmp/backups-repo
+
+          # Rotate by folder name (mtimes are meaningless in a fresh clone): keep the 31 newest full-* folders
+          ls -d full-* | sort -r | tail -n +32 | xargs -r rm -rf
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Fetch the backups branch if it exists
-          git fetch origin backups:refs/remotes/origin/backups 2>/dev/null || true
-
-          # Create a worktree for the backups branch
-          if git ls-remote --exit-code origin backups > /dev/null 2>&1; then
-            git worktree add /tmp/backups-worktree origin/backups
-          else
-            # First run: create an orphan branch
-            git worktree add --detach /tmp/backups-worktree
-            cd /tmp/backups-worktree
-            git checkout --orphan backups
-            git rm -rf . 2>/dev/null || true
-            cd -
-          fi
-
-          # Copy the new backup into the worktree
-          cp -r "$BACKUP_DIR" /tmp/backups-worktree/
-
-          cd /tmp/backups-worktree
-
-          # Rotate: keep only the 31 most recent backups
-          ls -td full-* 2>/dev/null | tail -n +32 | xargs rm -rf
-
-          git add .
+          git add -A
           if git diff --staged --quiet; then
             echo "No changes to commit"
             exit 0
           fi
           git commit -m "backup: $BACKUP_NAME"
-          git push origin HEAD:backups
+          git push origin HEAD:main
